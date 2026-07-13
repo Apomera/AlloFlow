@@ -1,0 +1,1245 @@
+{
+  "generatedAt": "2026-07-03T00:27:07.882Z",
+  "scope": [
+    "zones",
+    "coping",
+    "journal",
+    "emotions",
+    "thoughtRecord",
+    "anxietyToolkit",
+    "safety",
+    "conflict",
+    "strengths",
+    "social",
+    "peersupport"
+  ],
+  "summary": {
+    "total": 96,
+    "passed": 96,
+    "failed": 0
+  },
+  "scenarios": [
+    {
+      "name": "desktop-light",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "tools": [
+        {
+          "toolId": "zones",
+          "label": "Emotion Zones",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 2037,
+                "hasHeading": true,
+                "controlCount": 41,
+                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🚦 Self awareness Emotion Zones 5-8 min Private checkpoint Share Packet eligible Export now"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🚦 Check-In",
+                "aria": "🚦 Check-In",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🚦Emotion Zones•Identify your zone (blue, green, yellow, red) and explore strategies to se",
+                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
+                "toolCardId": "zones",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "coping",
+          "label": "Coping Toolkit",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 33955,
+                "hasHeading": true,
+                "controlCount": 363,
+                "selectedToolText": "Opened Coping Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🧨 Self regulation Coping Toolkit 3-10 min Private checkpoint Share Packet eligible Export"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "📚 Library",
+                "aria": "📚 Library",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🧨Coping Toolkit•Explore and practice coping strategies — breathing, grounding, movement, ",
+                "aria": "Coping Toolkit (Grades K-12). Explore and practice coping strategies — breathing, grounding, movement, and more.. Teacher cue: 3-10 min, Solo or group. Best for a regulation reset.",
+                "toolCardId": "coping",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "journal",
+          "label": "Feelings Journal",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 1678,
+                "hasHeading": true,
+                "controlCount": 32,
+                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Responsible decision making Feelings Journal 5-12 min Private checkpoint Share Packet"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🙂 Check-In",
+                "aria": "🙂 Check-In",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "📓Feelings Journal•Daily check-in journal — log moods, triggers, and reflections over time",
+                "aria": "Feelings Journal (Grades K-12). Daily check-in journal — log moods, triggers, and reflections over time.. Teacher cue: 5-12 min, Solo. Private reflection. Sharing should be optional.",
+                "toolCardId": "journal",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "emotions",
+          "label": "Emotion Explorer",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 1873,
+                "hasHeading": true,
+                "controlCount": 46,
+                "selectedToolText": "Opened Emotion Explorer ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 😊 Self awareness Emotions Explorer 4-8 min Private checkpoint Share Packet eligible Exp"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🌈 Emotion Wheel",
+                "aria": "🌈 Emotion Wheel",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "😊Emotion Explorer•Build emotional vocabulary — identify, name, and rate the intensity of ",
+                "aria": "Emotion Explorer (Grades K-8). Build emotional vocabulary — identify, name, and rate the intensity of feelings.. Teacher cue: 5-8 min, Solo or pair. Good vocabulary warm-up.",
+                "toolCardId": "emotions",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "thoughtRecord",
+          "label": "CBT Thought Record",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 3496,
+                "hasHeading": true,
+                "controlCount": 33,
+                "selectedToolText": "Opened CBT Thought Record ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Inner work CBT Thought Record 8-15 min Private checkpoint Share Packet eligible Exp"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "← Back",
+                "aria": "Back to SEL Hub",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "📓CBT Thought Record•The 7-column thought record from Cognitive Behavioral Therapy.Strong ",
+                "aria": "CBT Thought Record (Grades 5-12). The 7-column thought record from Cognitive Behavioral Therapy.",
+                "toolCardId": "thoughtRecord",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "anxietyToolkit",
+          "label": "Anxiety Toolkit",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 1029,
+                "hasHeading": true,
+                "controlCount": 17,
+                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🫧 Self regulation Anxiety Toolkit 5-12 min Private checkpoint Share Packet eligible Expo"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "← Back",
+                "aria": "Back to SEL Hub",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🫧Anxiety Toolkit•CBT-based skills for working with anxiety: psychoeducation, the worry tr",
+                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,...",
+                "toolCardId": "anxietyToolkit",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "safety",
+          "label": "Safety & Boundaries",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 2473,
+                "hasHeading": true,
+                "controlCount": 23,
+                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Private checkpoint Share"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "📚 Learn",
+                "aria": "",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.8-15 m",
+                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
+                "toolCardId": "safety",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "conflict",
+          "label": "Conflict Resolution",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 1723,
+                "hasHeading": true,
+                "controlCount": 27,
+                "selectedToolText": "Opened Conflict Resolution ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Conflict Resolution Lab 6-12 min Private checkpoint Share Pack"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🎭 Conflict Theater",
+                "aria": "🎭 Conflict Theater",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "⚖️Conflict Resolution•Practice resolving conflicts with role-play scenarios and I-statemen",
+                "aria": "Conflict Resolution (Grades 2-12). Practice resolving conflicts with role-play scenarios and I-statements.. Teacher cue: 8-12 min, Pair or small group. Preview norms before role-play.",
+                "toolCardId": "conflict",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "strengths",
+          "label": "Strengths Finder",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 1328,
+                "hasHeading": true,
+                "controlCount": 45,
+                "selectedToolText": "Opened Strengths Finder ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← ⭐ Self awareness Strengths Finder SEL practice Private checkpoint Share Packet eligible "
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "← Back",
+                "aria": "Back",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "⭐Strengths Finder•Discover and reflect on personal strengths, talents, and growth areas.Re",
+                "aria": "Strengths Finder (Grades K-12). Discover and reflect on personal strengths, talents, and growth areas.",
+                "toolCardId": "strengths",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "social",
+          "label": "Social Skills Lab",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 803,
+                "hasHeading": true,
+                "controlCount": 21,
+                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🗣️ Relationship skills Social Skills Lab SEL practice Private checkpoint Share Packet "
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🗣️ Conversation",
+                "aria": "",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🗣️Social Skills Lab•Practice conversation skills, active listening, body language, and co",
+                "aria": "Social Skills Lab (Grades K-8). Practice conversation skills, active listening, body language, and cooperation.",
+                "toolCardId": "social",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "peersupport",
+          "label": "Peer Support Coach",
+          "scenario": "desktop-light",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 2193,
+                "hasHeading": true,
+                "controlCount": 11,
+                "selectedToolText": "Opened Peer Support Coach ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Peer Support Coach SEL practice Private checkpoint Share Packet"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "❓ Open vs. Closed Questions — 3 exercises",
+                "aria": "",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 1280,
+                "viewportWidth": 1280,
+                "dialogScrollWidth": 1280,
+                "dialogClientWidth": 1280,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🤝Peer Support Coach•Learn OARS listening skills and when to get adult help.8-15 min | Pai",
+                "aria": "Peer Support Coach (Grades 3-12). Learn OARS listening skills and when to get adult help.. Teacher cue: 8-15 min, Pair practice. Strong for listening-skills rehearsal.",
+                "toolCardId": "peersupport",
+                "inSelDialog": true
+              }
+            }
+          ]
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "mobile-high-contrast-sample",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "tools": [
+        {
+          "toolId": "zones",
+          "label": "Emotion Zones",
+          "scenario": "mobile-high-contrast-sample",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 2006,
+                "hasHeading": true,
+                "controlCount": 41,
+                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🚦 Self awareness Emotion Zones 5-8 min Private checkpoint Share Packet eligible Export now PurposeName your current zone "
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🚦 Check-In",
+                "aria": "🚦 Check-In",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 390,
+                "viewportWidth": 390,
+                "dialogScrollWidth": 390,
+                "dialogClientWidth": 390,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🚦Emotion Zones•Identify your zone (blue, green, yellow, red) and explore strategies to se",
+                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
+                "toolCardId": "zones",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "journal",
+          "label": "Feelings Journal",
+          "scenario": "mobile-high-contrast-sample",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 1647,
+                "hasHeading": true,
+                "controlCount": 32,
+                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 📓 Responsible decision making Feelings Journal 5-12 min Private checkpoint Share Packet eligible Export now PurposeWri"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🙂 Check-In",
+                "aria": "🙂 Check-In",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 390,
+                "viewportWidth": 390,
+                "dialogScrollWidth": 390,
+                "dialogClientWidth": 390,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "📓Feelings Journal•Daily check-in journal — log moods, triggers, and reflections over time",
+                "aria": "Feelings Journal (Grades K-12). Daily check-in journal — log moods, triggers, and reflections over time.. Teacher cue: 5-12 min, Solo. Private reflection. Sharing should be optional.",
+                "toolCardId": "journal",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "anxietyToolkit",
+          "label": "Anxiety Toolkit",
+          "scenario": "mobile-high-contrast-sample",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 998,
+                "hasHeading": true,
+                "controlCount": 17,
+                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🫧 Self regulation Anxiety Toolkit 5-12 min Private checkpoint Share Packet eligible Export now PurposeSort worry, reduc"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "← Back",
+                "aria": "Back to SEL Hub",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 390,
+                "viewportWidth": 390,
+                "dialogScrollWidth": 390,
+                "dialogClientWidth": 390,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🫧Anxiety Toolkit•CBT-based skills for working with anxiety: psychoeducation, the worry tr",
+                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,...",
+                "toolCardId": "anxietyToolkit",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "safety",
+          "label": "Safety & Boundaries",
+          "scenario": "mobile-high-contrast-sample",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 2442,
+                "hasHeading": true,
+                "controlCount": 23,
+                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Private checkpoint Share Packet eligible Export now Pur"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "📚 Learn",
+                "aria": "",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 390,
+                "viewportWidth": 390,
+                "dialogScrollWidth": 390,
+                "dialogClientWidth": 390,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.8-15 m",
+                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
+                "toolCardId": "safety",
+                "inSelDialog": true
+              }
+            }
+          ]
+        },
+        {
+          "toolId": "social",
+          "label": "Social Skills Lab",
+          "scenario": "mobile-high-contrast-sample",
+          "checks": [
+            {
+              "id": "tool-open-focus",
+              "pass": true,
+              "activeAfterOpen": {
+                "tag": "button",
+                "id": "",
+                "text": "←",
+                "aria": "Back to SEL tools",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-readable-interactive",
+              "pass": true,
+              "details": {
+                "textLength": 772,
+                "hasHeading": true,
+                "controlCount": 21,
+                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🗣️ Relationship skills Social Skills Lab SEL practice Private checkpoint Share Packet eligible Export now PurposePrac"
+              }
+            },
+            {
+              "id": "tool-save-consistency-cues",
+              "pass": true,
+              "details": {
+                "hasStandardShell": true,
+                "hasPrivateCheckpoint": true,
+                "hasSharePacketEligible": true,
+                "hasSavedWorkCue": true,
+                "hasExportButton": true
+              }
+            },
+            {
+              "id": "tool-keyboard-progress",
+              "pass": true,
+              "activeAfterTabs": {
+                "tag": "button",
+                "id": "",
+                "text": "🗣️ Conversation",
+                "aria": "",
+                "toolCardId": "",
+                "inSelDialog": true
+              }
+            },
+            {
+              "id": "tool-responsive-overflow",
+              "pass": true,
+              "details": {
+                "bodyScrollWidth": 390,
+                "viewportWidth": 390,
+                "dialogScrollWidth": 390,
+                "dialogClientWidth": 390,
+                "offenders": []
+              }
+            },
+            {
+              "id": "tool-back-focus-restore",
+              "pass": true,
+              "activeAfterBack": {
+                "tag": "button",
+                "id": "",
+                "text": "🗣️Social Skills Lab•Practice conversation skills, active listening, body language, and co",
+                "aria": "Social Skills Lab (Grades K-8). Practice conversation skills, active listening, body language, and cooperation.",
+                "toolCardId": "social",
+                "inSelDialog": true
+              }
+            }
+          ]
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

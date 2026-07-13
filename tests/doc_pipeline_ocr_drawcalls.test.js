@@ -31,6 +31,37 @@ describe('_ocrWordsToDrawCalls', () => {
     expect(c.y).toBe(60);              // pageH(100) - y1(40)
     expect(c.size).toBeCloseTo(18.4, 5); // (40-20)*0.92
     expect(c.w).toBe(40);              // x1(50) - x0(10)  <-- the new horizontal-scale input
+    expect(c.angle).toBe(0);
+  });
+
+  it('scales and offsets OCR viewport boxes into the selected PDF page frame', () => {
+    const calls = toDrawCalls([{ t: 'hi', x0: 0, x1: 100, y0: 20, y1: 40 }], 792, {
+      sizeFactor: 0.92,
+      targetH: 396,
+      offsetX: 10,
+      offsetY: 20,
+      scaleX: 0.5,
+      scaleY: 0.5,
+    });
+    const c = calls[0];
+    expect(c.x).toBe(10);
+    expect(c.y).toBe(396);              // offsetY(20) + targetH(396) - y1(40)*0.5
+    expect(c.size).toBeCloseTo(9.2, 5); // (40-20)*0.5*0.92
+    expect(c.w).toBe(50);
+  });
+
+  it('uses a pdf.js viewport transform when present, preserving PDF-space baseline and angle', () => {
+    // PDF -> viewport: x_v = x_pdf + 5, y_v = 805 - y_pdf.
+    const calls = toDrawCalls([{ t: 'hi', x0: 15, x1: 55, y0: 25, y1: 45 }], 792, {
+      sizeFactor: 0.92,
+      viewportTransform: [1, 0, 0, -1, 5, 805],
+    });
+    const c = calls[0];
+    expect(c.x).toBe(10);
+    expect(c.y).toBe(760);
+    expect(c.size).toBeCloseTo(18.4, 5);
+    expect(c.w).toBe(40);
+    expect(c.angle).toBeCloseTo(0, 5);
   });
 
   it('clamps size to the minimum for a tiny box', () => {

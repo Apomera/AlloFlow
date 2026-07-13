@@ -81,7 +81,7 @@ function detectIconsAndComponents() {
     'TChartSortGame', 'ConceptMapSortGame', 'OutlineSortGame',
     'FishboneSortGame', 'ProblemSolutionSortGame',
     'FrayerSortGame', 'SeeThinkWonderSortGame', 'StoryMapSortGame',
-    'GameButtonHint',
+    'GameButtonHint', 'ConceptSpace3DView', 'MemoryPalaceView',
   ]);
 
   for (const ref of [...jsxRefs].sort()) {
@@ -165,7 +165,7 @@ var _lazyIcon = function (name) {
 ${iconAliases}
 ${compiled}
 window.AlloModules.ViewRenderersModule = true;
-console.log('[ViewRenderers] 3 renderers registered (renderFormattedText, renderOutlineContent, renderInteractiveMap)');
+console.log('[ViewRenderers] Registered (renderFormattedText, renderOutlineContent, renderInteractiveMap, openConceptMap3D)');
 })();
 `;
 

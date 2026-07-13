@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
+<title>PDFBox STRUCTURAL repair recipes — content-marking + struct-tree (veraPDF-verified)</title>
+<!--
+  Builds the structural repair recipes pdf-lib CANNOT do, on the proven PDFBox+veraPDF
+  co-load. Fixture = a 1-page doc with catalog/metadata already correct (Title, Lang,
+  DisplayDocTitle, XMP+UA-claim) but NO structure and UNMARKED content — so veraPDF fails
+  ONLY structural rules, isolating the recipes under test:
+
+    R-A  content marking : wrap each page's content as /Artifact via PDFBox
+                           PDPageContentStream PREPEND beginMarkedContent(Artifact) +
+                           APPEND endMarkedContent()  (orphan/decorative content → conformant)
+    R-B  struct skeleton : PDStructureTreeRoot + a /Document PDStructureElement + an empty
+                           ParentTree (Nums []) + MarkInfo<</Marked true>>  (COS for MarkInfo)
+
+  Then veraPDF re-validates → expect compliant. Same PDFBox API runs in the Canvas
+  companion window (co-load proven). NOTE: marking content /Artifact is correct only for
+  genuinely non-semantic content; the live loop applies it to flagged orphan/decorative
+  residue, never to real text (that's the tagger's job).
+-->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+</head><body><pre id="out">starting…</pre><script>
+  const out = document.getElementById('out');
+  function log(m) { out.textContent += '\n' + m; console.log('[struct] ' + m); }
+
+  (async () => {
+    window.__done = null;
+    try {
+      await cheerpjInit();
+      log('cheerpjInit done');
+      const lib = await cheerpjRunLibrary('/app/verapdf-cli.jar:/app/pdfbox-app.jar');
+      log('co-loaded veraPDF + PDFBox');
+
+      // ── veraPDF ──
+      const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
+      await Provider.initialise();
+      const foundry = await (await lib.org.verapdf.pdfa.Foundries).defaultInstance();
+      const ua1 = await (await lib.org.verapdf.pdfa.flavours.PDFAFlavour).fromString('ua1');
+      const FileInputStream = await lib.java.io.FileInputStream;
+      async function validate(path) {
+        const fis = await new FileInputStream(path);
+        const parser = await foundry.createParser(fis, ua1);
+        const validator = await foundry.createValidator(ua1, false);
+        const result = await validator.validate(parser);
+        const compliant = await result.isCompliant();
+        const seen = new Set();
+        try {
+          const it = await (await result.getTestAssertions()).iterator();
+          while (await it.hasNext()) { const a = await it.next(); const r = await a.getRuleId(); seen.add((await r.getClause()) + 't' + (await r.getTestNumber())); }
+        } catch (e) {}
+        try { await parser.close(); } catch (e) {}
+        return { compliant: !!compliant, rules: [...seen] };
+      }
+
+      // ── PDFBox handles ──
+      const Loader = await lib.org.apache.pdfbox.Loader;
+      const File = await lib.java.io.File;
+      const COSName = await lib.org.apache.pdfbox.cos.COSName;
+      const COSArray = await lib.org.apache.pdfbox.cos.COSArray;
+      const COSBoolean = await lib.org.apache.pdfbox.cos.COSBoolean;
+      const COSDictionary = await lib.org.apache.pdfbox.cos.COSDictionary;
+      const PDPageContentStream = await lib.org.apache.pdfbox.pdmodel.PDPageContentStream;
+      const AppendMode = await lib.org.apache.pdfbox.pdmodel['PDPageContentStream$AppendMode']; // nested enum → $ binary name
+      const PREPEND = await AppendMode.PREPEND, APPEND = await AppendMode.APPEND;
+      const PDStructureTreeRoot = await lib.org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
+      const PDStructureElement = await lib.org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+      const TRUE = await COSBoolean.getBoolean(true);
+      const ARTIFACT = await COSName.getPDFName('Artifact');
+
+      // ── fixture: catalog/metadata correct, NO structure + UNMARKED content ──
+      const { PDFDocument, PDFName, PDFString, PDFBool, rgb } = window.PDFLib;
+      const src = await PDFDocument.create();
+      src.setTitle('Decorative Test Document');
+      const pg = src.addPage([612, 792]);
+      pg.drawRectangle({ x: 100, y: 600, width: 400, height: 100, color: rgb(0.8, 0.8, 0.92) });
+      const cat0 = src.catalog;
+      cat0.set(PDFName.of('Lang'), PDFString.of('en'));
+      const vp0 = src.context.obj({}); vp0.set(PDFName.of('DisplayDocTitle'), PDFBool.True); cat0.set(PDFName.of('ViewerPreferences'), vp0);
+      const xmp = '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"><dc:title><rdf:Alt><rdf:li xml:lang="x-default">Decorative Test Document</rdf:li></rdf:Alt></dc:title><pdfuaid:part>1</pdfuaid:part></rdf:Description></rdf:RDF></x:xmpmeta>\n<?xpacket end="w"?>';
+      const ms = src.context.stream(xmp, { Type: PDFName.of('Metadata'), Subtype: PDFName.of('XML') });
+      cat0.set(PDFName.of('Metadata'), src.context.register(ms));
+      cheerpOSAddStringFile('/str/untagged.pdf', await src.save());
+      const before = await validate('/str/untagged.pdf');
+      log('fixture → veraPDF: compliant=' + before.compliant + ' | failing rules: ' + before.rules.join(', '));
+
+      // ── PDFBox STRUCTURAL repair ──
+      const doc = await Loader.loadPDF(await new File('/str/untagged.pdf'));
+      const n = await doc.getNumberOfPages();
+
+      // R-A: mark every page's content as /Artifact (PREPEND BMC, APPEND EMC)
+      for (let i = 0; i < n; i++) {
+        const page = await doc.getPage(i);
+        const csA = await new PDPageContentStream(doc, page, PREPEND, false, false);
+        await csA.beginMarkedContent(ARTIFACT);
+        await csA.close();
+        const csB = await new PDPageContentStream(doc, page, APPEND, false, false);
+        await csB.endMarkedContent();
+        await csB.close();
+      }
+      log('R-A: marked ' + n + ' page(s) content as /Artifact');
+
+      // R-B: struct skeleton — StructTreeRoot + /Document elem + empty ParentTree + MarkInfo
+      const cat = await doc.getDocumentCatalog();
+      const str = await new PDStructureTreeRoot();
+      const docEl = await new PDStructureElement('Document', null);
+      await str.appendKid(docEl);
+      await docEl.setParent(str);
+      const strCos = await str.getCOSObject();
+      const pt = await new COSDictionary();
+      await pt.setItem(await COSName.getPDFName('Nums'), await new COSArray());
+      await strCos.setItem(await COSName.getPDFName('ParentTree'), pt);
+      await cat.setStructureTreeRoot(str);
+      // MarkInfo via COS (reliable)
+      const mk = await new COSDictionary();
+      await mk.setItem(await COSName.getPDFName('Marked'), TRUE);
+      await (await cat.getCOSObject()).setItem(await COSName.getPDFName('MarkInfo'), mk);
+      log('R-B: added StructTreeRoot + /Document element + ParentTree + MarkInfo');
+
+      await doc.save('/files/structural_repaired.pdf');
+      await doc.close();
+      log('PDFBox saved structurally-repaired doc');
+
+      // prove FS→JS readback (production needs the repaired bytes back in JS to hand to AlloFlow):
+      // read /files via Java + Base64-encode to a String — marshals cleanly, no slow byte bridging
+      const Files = await lib.java.nio.file.Files;
+      const Base64 = await lib.java.util.Base64;
+      const rbytes = await Files.readAllBytes(await (await new File('/files/structural_repaired.pdf')).toPath());
+      const rb64 = await (await Base64.getEncoder()).encodeToString(rbytes);
+      log('FS→JS readback OK: ' + rb64.length + ' b64 chars, header=' + atob(rb64.slice(0, 8)).slice(0, 5));
+
+      const after = await validate('/files/structural_repaired.pdf');
+      log('after structural repair → veraPDF: compliant=' + after.compliant + ' | remaining: ' + (after.rules.join(', ') || 'none'));
+
+      const ok = after.compliant === true;
+      log(ok ? '\n✅ STRUCTURAL RECIPES PROVEN — PDFBox content-marking + struct-tree drove the doc to PDF/UA-1 PASS in-browser.'
+            : '\n⚠ structural repair ran; remaining rules: ' + after.rules.join(', '));
+      window.__done = { ok, before, after };
+    } catch (e) {
+      log('ERROR: ' + (e && (e.stack || e.message) || e));
+      window.__done = { ok: false, err: String(e && (e.message || e)) };
+    }
+  })();
+</script></body></html>

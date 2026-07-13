@@ -120,6 +120,10 @@ const _signalingCollectionRef = (sessionCode) => {
 };
 const STUN_SERVERS = [{ urls: "stun:stun.l.google.com:19302" }];
 const RTC_CONFIG = { iceServers: STUN_SERVERS };
+const _getRtcConfig = () => {
+  const cfg = typeof window !== "undefined" && window.__alloRtcConfig;
+  return cfg && Array.isArray(cfg.iceServers) && cfg.iceServers.length > 0 ? cfg : RTC_CONFIG;
+};
 class PictionaryHost {
   constructor(config) {
     this.sessionCode = config.sessionCode;
@@ -141,6 +145,10 @@ class PictionaryHost {
     this.strokeHistory = [];
     this._timeoutHandle = null;
     this._stopped = false;
+    this._allowedUids = config.allowedUids ? new Set(config.allowedUids) : null;
+  }
+  setAllowedUids(uids) {
+    this._allowedUids = uids ? new Set(uids) : null;
   }
   async start() {
     const fb = _getFb();
@@ -153,14 +161,18 @@ class PictionaryHost {
       snap.docChanges().forEach((change) => {
         if (change.type === "removed") return;
         const uid = change.doc.id;
+        if (this._allowedUids && !this._allowedUids.has(uid)) return;
         const data = change.doc.data() || {};
-        if (data.offer && !this.peers.has(uid)) {
+        const existing = this.peers.get(uid);
+        if (data.offer && !existing) {
           this._acceptPeer(uid, data, change.doc.ref);
-        } else if (data.iceFromGuest && this.peers.has(uid)) {
-          const peer = this.peers.get(uid);
+        } else if (data.offer && existing && existing.offerSdp && data.offer.sdp !== existing.offerSdp) {
+          this._cleanupPeer(uid);
+          this._acceptPeer(uid, data, change.doc.ref);
+        } else if (data.iceFromGuest && existing) {
           (data.iceFromGuest || []).forEach((c) => {
             try {
-              peer.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
+              existing.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
               });
             } catch (_) {
             }
@@ -174,9 +186,9 @@ class PictionaryHost {
   async _acceptPeer(uid, offerData, signalingRef) {
     const fb = _getFb();
     if (!fb) return;
-    const pc = new RTCPeerConnection(RTC_CONFIG);
+    const pc = new RTCPeerConnection(_getRtcConfig());
     const codename = typeof offerData.codename === "string" && offerData.codename.slice(0, 64) || "Guest";
-    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [] };
+    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: offerData.offer && offerData.offer.sdp || null };
     this.peers.set(uid, peerRecord);
     pc.onicecandidate = (e) => {
       if (!e.candidate) return;
@@ -204,10 +216,18 @@ class PictionaryHost {
             concept: isDrawer ? this.activeRound.concept : null,
             drawerUids: Array.from(this.activeRound.drawerUids),
             startedAt: this.activeRound.startedAt,
-            durationMs: this.activeRound.durationMs
+            durationMs: this.activeRound.durationMs,
+            // Host clock at send time: guests anchor their countdown to the
+            // host's clock (device clocks skew by minutes in real classrooms).
+            hostNow: Date.now()
           };
           try {
             dc.send(JSON.stringify({ type: "roundStart", payload }));
+          } catch (_) {
+          }
+        } else {
+          try {
+            dc.send(JSON.stringify({ type: "roundSync", payload: { active: false } }));
           } catch (_) {
           }
         }
@@ -328,7 +348,8 @@ class PictionaryHost {
         concept: isDrawer ? this.activeRound.concept : null,
         drawerUids: Array.from(drawerSet),
         startedAt,
-        durationMs
+        durationMs,
+        hostNow: Date.now()
       };
       try {
         peer.dc.send(JSON.stringify({ type: "roundStart", payload }));
@@ -380,15 +401,11 @@ class PictionaryHost {
       if (peer.pc) peer.pc.close();
     } catch (_) {
     }
-    if (peer.signalingRef) {
-      const fb = _getFb();
-      if (fb) fb.deleteDoc(peer.signalingRef).catch(() => {
-      });
-    }
     this.peers.delete(uid);
     this.onGuestLeft(uid);
   }
   stop() {
+    if (this._stopped) return;
     this._stopped = true;
     if (this._timeoutHandle) {
       clearTimeout(this._timeoutHandle);
@@ -401,9 +418,24 @@ class PictionaryHost {
       }
       this.collectionUnsub = null;
     }
-    Array.from(this.peers.keys()).forEach((uid) => this._cleanupPeer(uid));
+    const terminal = JSON.stringify({ type: "hostClosed", payload: {} });
+    let notified = false;
+    this.peers.forEach((peer) => {
+      if (peer.dc && peer.dc.readyState === "open") {
+        try {
+          peer.dc.send(terminal);
+          notified = true;
+        } catch (_) {
+        }
+      }
+    });
     this.activeRound = null;
     this.strokeHistory = [];
+    const teardown = () => {
+      Array.from(this.peers.keys()).forEach((uid) => this._cleanupPeer(uid));
+    };
+    if (notified) setTimeout(teardown, 300);
+    else teardown();
   }
 }
 class PictionaryGuest {
@@ -420,6 +452,10 @@ class PictionaryGuest {
     this.onRoundStart = config.onRoundStart || (() => {
     });
     this.onRoundResolved = config.onRoundResolved || (() => {
+    });
+    this.onRoundSync = config.onRoundSync || (() => {
+    });
+    this.onHostClosed = config.onHostClosed || (() => {
     });
     this.onStroke = config.onStroke || (() => {
     });
@@ -442,7 +478,7 @@ class PictionaryGuest {
     if (!fb) throw new Error("Pictionary: Firebase not available");
     if (!this.sessionCode || !this.userUid) throw new Error("Pictionary: sessionCode + userUid required");
     this.signalingRef = _signalingDocRef(this.sessionCode, this.userUid);
-    this.pc = new RTCPeerConnection(RTC_CONFIG);
+    this.pc = new RTCPeerConnection(_getRtcConfig());
     this.dc = this.pc.createDataChannel("pictionary", { ordered: true });
     this.pc.onicecandidate = (e) => {
       if (!e.candidate) return;
@@ -467,6 +503,8 @@ class PictionaryGuest {
         if (!parsed || !parsed.type) return;
         if (parsed.type === "roundStart") this.onRoundStart(parsed.payload);
         else if (parsed.type === "roundResolved") this.onRoundResolved(parsed.payload);
+        else if (parsed.type === "roundSync") this.onRoundSync(parsed.payload || {});
+        else if (parsed.type === "hostClosed") this.onHostClosed(parsed.payload || {});
         else if (parsed.type === "stroke") this.onStroke(parsed.payload);
         else if (parsed.type === "strokeUndo" && parsed.payload && parsed.payload.strokeId) this.onStrokeUndo(parsed.payload.strokeId);
         else if (parsed.type === "strokeHistory") this.onStrokeHistory(parsed.payload && parsed.payload.strokes || []);
@@ -730,6 +768,7 @@ const PictionaryCanvas = React.memo((props) => {
 const RoundCountdown = React.memo((props) => {
   const startedAt = props.startedAt;
   const durationMs = props.durationMs;
+  const clockOffsetMs = props.clockOffsetMs || 0;
   const [now, setNow] = React.useState(Date.now());
   React.useEffect(() => {
     if (!startedAt || !durationMs) return;
@@ -737,7 +776,7 @@ const RoundCountdown = React.memo((props) => {
     return () => clearInterval(id);
   }, [startedAt, durationMs]);
   if (!startedAt || !durationMs) return null;
-  const elapsed = now - startedAt;
+  const elapsed = now - clockOffsetMs - startedAt;
   const remaining = Math.max(0, durationMs - elapsed);
   const secs = Math.ceil(remaining / 1e3);
   const pct = Math.max(0, Math.min(100, remaining / durationMs * 100));
@@ -821,6 +860,17 @@ const PictionaryHostView = React.memo((props) => {
   const [connectedGuests, setConnectedGuests] = React.useState({});
   const [strokes, setStrokes] = React.useState([]);
   const [guessFeed, setGuessFeed] = React.useState([]);
+  const [mutedGuessers, setMutedGuessers] = React.useState({});
+  const mutedGuessersRef = React.useRef({});
+  React.useEffect(() => {
+    mutedGuessersRef.current = mutedGuessers;
+  }, [mutedGuessers]);
+  const toggleMuteGuesser = (uid) => setMutedGuessers((prev) => {
+    const next = { ...prev };
+    if (next[uid]) delete next[uid];
+    else next[uid] = true;
+    return next;
+  });
   const [concept, setConcept] = React.useState("");
   const [conceptIdeas, setConceptIdeas] = React.useState([]);
   const [drawerUids, setDrawerUids] = React.useState([]);
@@ -886,14 +936,17 @@ const PictionaryHostView = React.memo((props) => {
         drawerActivityRef.current.set(uid, Date.now());
       },
       onStrokeUndo: (uid, strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
-      onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
-        id: _pic_genId("guess"),
-        uid,
-        codename,
-        text: payload.text,
-        ts: payload.timestamp || Date.now(),
-        marked: null
-      }])),
+      onGuess: (uid, codename, payload) => {
+        if (mutedGuessersRef.current[uid]) return;
+        setGuessFeed((prev) => prev.concat([{
+          id: _pic_genId("guess"),
+          uid,
+          codename,
+          text: payload.text,
+          ts: payload.timestamp || Date.now(),
+          marked: null
+        }]));
+      },
       onRoundAutoResolved: (info) => {
         const resolvedConcept = info && info.concept || "";
         setRoundResolved({ concept: resolvedConcept, winnerUid: null, reason: "timeout" });
@@ -903,6 +956,7 @@ const PictionaryHostView = React.memo((props) => {
         _clearRolesAndRound();
       }
     });
+    host.setAllowedUids(Object.keys(roster));
     host.start().catch((err) => console.warn("[Pictionary host] start failed:", err && err.message));
     hostRef.current = host;
     return () => {
@@ -913,6 +967,11 @@ const PictionaryHostView = React.memo((props) => {
       hostRef.current = null;
     };
   }, [isOpen, sessionCode]);
+  React.useEffect(() => {
+    if (hostRef.current && typeof hostRef.current.setAllowedUids === "function") {
+      hostRef.current.setAllowedUids(Object.keys(roster));
+    }
+  }, [roster]);
   const handleAISuggestConcepts = async () => {
     if (!callGemini || isLoadingIdeas) return;
     setIsLoadingIdeas(true);
@@ -1035,7 +1094,16 @@ const PictionaryHostView = React.memo((props) => {
       },
       isFullscreen ? "\u2199" : "\u26F6"
     ), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": "Close" }, "\u2715"))),
-    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, "\u25CF Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive ? /* @__PURE__ */ React.createElement("button", { onClick: handleEndRound, className: "px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800" }, "End round") : null)), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes, drawingEnabled: false, fullscreenMode: isFullscreen }), roundResolved ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", roundResolved.concept || "(none)", " ", roundResolved.winnerUid && roster[roundResolved.winnerUid] ? /* @__PURE__ */ React.createElement("span", null, "\u2014 first correct: ", /* @__PURE__ */ React.createElement("strong", null, roster[roundResolved.winnerUid].name)) : roundResolved.reason === "timeout" ? /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 \u23F1 time's up") : /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 ended without a winner"), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { onClick: handleResetForNextRound, className: "px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700" }, "Set up next round \u2192"))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "Guesses (", guessFeed.length, ")"), guessFeed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No guesses yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, guessFeed.slice().reverse().map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: `flex items-center gap-2 p-2 rounded ${g.marked === "correct" ? "bg-emerald-50 border border-emerald-200" : "hover:bg-slate-50"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 text-xs flex-shrink-0" }, g.codename, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 text-sm text-slate-800" }, g.text), roundActive && g.marked == null ? /* @__PURE__ */ React.createElement("button", { onClick: () => handleMarkCorrect(g.id), className: "px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2713 correct") : g.marked === "correct" ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\u2713") : null))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, !roundActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "1. Concept to draw"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, "\u25CF Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive ? /* @__PURE__ */ React.createElement("button", { onClick: handleEndRound, className: "px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800" }, "End round") : null)), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes, drawingEnabled: false, fullscreenMode: isFullscreen }), roundResolved ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", roundResolved.concept || "(none)", " ", roundResolved.winnerUid && roster[roundResolved.winnerUid] ? /* @__PURE__ */ React.createElement("span", null, "\u2014 first correct: ", /* @__PURE__ */ React.createElement("strong", null, roster[roundResolved.winnerUid].name)) : roundResolved.reason === "timeout" ? /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 \u23F1 time's up") : /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 ended without a winner"), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { onClick: handleResetForNextRound, className: "px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700" }, "Set up next round \u2192"))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "Guesses (", guessFeed.length, ")"), guessFeed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No guesses yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, guessFeed.slice().reverse().map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: `flex items-center gap-2 p-2 rounded ${g.marked === "correct" ? "bg-emerald-50 border border-emerald-200" : "hover:bg-slate-50"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 text-xs flex-shrink-0" }, g.codename, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 text-sm text-slate-800" }, g.text), roundActive && g.marked == null ? /* @__PURE__ */ React.createElement("button", { onClick: () => handleMarkCorrect(g.id), className: "px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2713 correct") : g.marked === "correct" ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\u2713") : null, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => toggleMuteGuesser(g.uid),
+        title: mutedGuessers[g.uid] ? "Unmute this guesser" : "Mute this guesser (their guesses stop appearing here)",
+        "aria-label": (mutedGuessers[g.uid] ? "Unmute " : "Mute ") + g.codename,
+        className: `px-1.5 py-0.5 text-[10px] rounded border ${mutedGuessers[g.uid] ? "bg-slate-700 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-100"}`
+      },
+      mutedGuessers[g.uid] ? "\u{1F507}" : "\u{1F50A}"
+    )))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, !roundActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "1. Concept to draw"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: concept,
@@ -1090,7 +1158,7 @@ const PictionaryHostView = React.memo((props) => {
           "aria-hidden": "true",
           title: active ? `${name} is drawing` : name
         }
-      ), /* @__PURE__ */ React.createElement("span", null, name));
+      ), /* @__PURE__ */ React.createElement("span", null, name), !connectedGuests[uid] && /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-bold text-red-700 bg-red-50 border border-red-200 rounded-full px-1.5", title: `${name} lost their connection \u2014 their strokes aren't arriving` }, "offline"));
     })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 italic mt-2 leading-snug" }, "Mark a guess correct on the left when someone gets it. Activity dots glow while a drawer is actively streaming strokes.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 mb-1" }, "Connected: ", Object.keys(connectedGuests).length), Object.keys(connectedGuests).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(connectedGuests).map(([uid, codename]) => /* @__PURE__ */ React.createElement("span", { key: uid, className: "px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px]" }, codename))) : null), roundLog.length > 0 ? (() => {
       const total = roundLog.length;
       const correct = roundLog.filter((r) => r.resolution === "correct").length;
@@ -1124,7 +1192,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const guestRef = React.useRef(null);
   const guestContainerRef = React.useRef(null);
   const [isGuestFullscreen, toggleGuestFullscreen] = useFullscreen(guestContainerRef);
-  const [connected, setConnected] = React.useState(false);
+  const [connState, setConnState] = React.useState("connecting");
   const [strokes, setStrokes] = React.useState([]);
   const [activeRound, setActiveRound] = React.useState(null);
   const [resolved, setResolved] = React.useState(null);
@@ -1132,18 +1200,68 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const [mode, setMode] = React.useState("pen");
   const [myStrokeIds, setMyStrokeIds] = React.useState([]);
   const [guessText, setGuessText] = React.useState("");
+  const [joinNonce, setJoinNonce] = React.useState(0);
+  const retryCountRef = React.useRef(0);
+  const retryTimerRef = React.useRef(null);
+  const resolvedRef = React.useRef(null);
+  React.useEffect(() => {
+    resolvedRef.current = resolved;
+  }, [resolved]);
+  const onCloseRef = React.useRef(onClose);
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
   React.useEffect(() => {
     if (!sessionCode || !userUid) return;
-    if (guestRef.current) return;
+    let disposed = false;
+    const REJOIN_DELAYS_MS = [2e3, 5e3, 1e4, 2e4, 3e4];
+    const MAX_AUTO_REJOINS = 8;
+    const scheduleRejoin = () => {
+      if (disposed) return;
+      if (retryCountRef.current >= MAX_AUTO_REJOINS) return;
+      const delay = REJOIN_DELAYS_MS[Math.min(retryCountRef.current, REJOIN_DELAYS_MS.length - 1)];
+      retryCountRef.current += 1;
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = setTimeout(() => {
+        retryTimerRef.current = null;
+        setJoinNonce((n) => n + 1);
+      }, delay);
+    };
+    setConnState((prev) => prev === "connected" ? prev : "connecting");
     const guest = new PictionaryGuest({
       sessionCode,
       userUid,
       codename,
-      onConnected: () => setConnected(true),
-      onDisconnected: () => setConnected(false),
-      onFailed: () => setConnected(false),
+      onConnected: () => {
+        retryCountRef.current = 0;
+        setConnState("connected");
+      },
+      onDisconnected: () => {
+        setConnState("reconnecting");
+        scheduleRejoin();
+      },
+      onFailed: () => {
+        setConnState((prev) => prev === "connected" ? prev : "failed");
+        scheduleRejoin();
+      },
+      onRoundSync: (payload) => {
+        if (payload && payload.active === false) {
+          setActiveRound(null);
+          setStrokes([]);
+          setMyStrokeIds([]);
+        }
+      },
+      onHostClosed: () => {
+        setActiveRound(null);
+        setStrokes([]);
+        setMyStrokeIds([]);
+        if (!resolvedRef.current && typeof onCloseRef.current === "function") {
+          onCloseRef.current();
+        }
+      },
       onRoundStart: (round) => {
-        setActiveRound(round);
+        const clockOffsetMs = round && typeof round.hostNow === "number" ? Date.now() - round.hostNow : 0;
+        setActiveRound(round ? { ...round, clockOffsetMs } : round);
         setStrokes([]);
         setMyStrokeIds([]);
         setResolved(null);
@@ -1170,16 +1288,33 @@ const PictionaryGuestOverlay = React.memo((props) => {
       },
       onStrokeUndo: (strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId))
     });
-    guest.join().catch((err) => console.warn("[Pictionary guest] join failed:", err && err.message));
+    guest.join().catch((err) => {
+      console.warn("[Pictionary guest] join failed:", err && err.message);
+      setConnState("failed");
+      scheduleRejoin();
+    });
     guestRef.current = guest;
     return () => {
+      disposed = true;
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
       try {
         guestRef.current && guestRef.current.leave();
       } catch (_) {
       }
       guestRef.current = null;
     };
-  }, [sessionCode, userUid, codename]);
+  }, [sessionCode, userUid, codename, joinNonce]);
+  const handleManualRetry = () => {
+    retryCountRef.current = 0;
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    setJoinNonce((n) => n + 1);
+  };
   const isDrawer = !!(activeRound && activeRound.isDrawer);
   const handleStrokeBatch = (stroke) => {
     setStrokes((prev) => prev.concat([{ ...stroke, uid: userUid }]));
@@ -1193,10 +1328,23 @@ const PictionaryGuestOverlay = React.memo((props) => {
     setStrokes((prev) => prev.filter((s) => s.strokeId !== lastId));
     if (guestRef.current) guestRef.current.sendStrokeUndo(lastId);
   };
+  const GUESS_COOLDOWN_MS = 3e3;
+  const lastGuessAtRef = React.useRef(0);
+  const [guessNotice, setGuessNotice] = React.useState(null);
   const handleSubmitGuess = () => {
     const t = guessText.trim();
     if (!t || !guestRef.current) return;
-    if (guestRef.current.sendGuess(t)) setGuessText("");
+    const now = Date.now();
+    const waitMs = lastGuessAtRef.current + GUESS_COOLDOWN_MS - now;
+    if (waitMs > 0) {
+      setGuessNotice(`One guess at a time \u2014 try again in ${Math.ceil(waitMs / 1e3)}s.`);
+      return;
+    }
+    if (guestRef.current.sendGuess(t)) {
+      lastGuessAtRef.current = now;
+      setGuessText("");
+      setGuessNotice(null);
+    }
   };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-label": "Concept Pictionary" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
     "div",
@@ -1205,7 +1353,14 @@ const PictionaryGuestOverlay = React.memo((props) => {
       className: "relative bg-white shadow-2xl w-full max-w-3xl overflow-y-auto border border-slate-200",
       style: isGuestFullscreen ? { width: "100vw", height: "100vh", maxWidth: "none", margin: 0, borderRadius: 0 } : { borderRadius: "1rem", marginTop: "2rem", marginBottom: "2rem" }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-wider" }, isDrawer ? "\u{1F3A8} You are a drawer" : "\u{1F440} You are a guesser"), /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black text-slate-800 mt-0.5" }, "Concept Pictionary"), !connected ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1" }, "Connecting\u2026") : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs }) : null, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-wider" }, isDrawer ? "\u{1F3A8} You are a drawer" : "\u{1F440} You are a guesser"), /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black text-slate-800 mt-0.5" }, "Concept Pictionary"), connState === "connecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1" }, "Connecting\u2026") : null, connState === "reconnecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1", role: "status" }, "Connection lost \u2014 reconnecting\u2026") : null, connState === "failed" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-red-700 mt-1 flex items-center gap-2", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "Can't reach the teacher's device."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: handleManualRetry,
+        className: "px-2 py-0.5 text-[10px] font-bold rounded border border-red-300 bg-white text-red-700 hover:bg-red-50"
+      },
+      "Retry"
+    )) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs, clockOffsetMs: activeRound.clockOffsetMs || 0 }) : null, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: toggleGuestFullscreen,
@@ -1243,7 +1398,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
         onKeyDown: (e) => {
           if (e.key === "Enter") handleSubmitGuess();
         },
-        placeholder: "Type your guess and press Enter\u2026",
+        placeholder: typeof window !== "undefined" && window.__alloT && window.__alloT("placeholders.type_guess") || "Type your guess\u2026",
         className: "flex-1 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300",
         "aria-label": "Your guess"
       }
@@ -1255,7 +1410,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
         className: "px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
       },
       "Send"
-    )) : null)
+    )) : null, activeRound && !isDrawer && guessNotice ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 mt-1", role: "status" }, guessNotice) : null)
   ));
 });
 

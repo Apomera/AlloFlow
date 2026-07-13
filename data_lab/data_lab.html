@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Data Lab</title>
+<!--
+  AlloFlow Data Lab — CODAP + Socratic tutor (companion window).
+
+  Opened by stem_tool_datalab.js with window.open (the Video-Studio /
+  Access-Lens / Immersive-Geometry escape-hatch pattern): a TOP-LEVEL browsing
+  context, so the embedded CODAP workspace is unaffected by Gemini Canvas's
+  sandboxed iframe.
+
+  CODAP (Common Online Data Analysis Platform) is the Concord Consortium's
+  MIT-licensed data-science workspace — codap.concord.org — one of the most
+  evidence-based open tools in data literacy. Credit and thanks to the
+  Concord Consortium. This page embeds the hosted CODAP release and loads a
+  tiny AlloFlow "tutor link" plugin into it (?di=), which can answer ONE
+  question: "what is the SHAPE of the student's work right now?" (dataset /
+  collection / column names, case counts, which graphs exist) — never case
+  values. See tutor_plugin.html.
+
+  The Socratic tutor:
+  - AI path: questions go to the OPENER AlloFlow window over postMessage
+    (allodatalab-ai-request/-response, the Video Studio bridge pattern); the
+    app relays to Gemini ONLY when the teacher has AI hints enabled. The
+    prompt is ask-don't-tell: the tutor nudges with questions, it does not
+    pronounce conclusions.
+  - No-AI path (AI off, opener closed, or standalone): a built-in bank of
+    Socratic data-thinking prompts, so the panel is useful with zero AI.
+  - Nothing here is persisted: the conversation lives in this window only.
+
+  NOTE: CODAP itself loads from codap.concord.org (internet required).
+  Roadmap: vendor a CODAP build into School Box for offline classrooms (MIT
+  license permits it; the desktop runtime is the natural host).
+-->
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #6366f1; --ok: #4ade80; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 11.5px; }
+  .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
+  .tutor { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; }
+  .tutor h2 { font-size: 12px; margin: 0; padding: 10px 12px 6px; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.06em; }
+  .ai-state { padding: 0 12px 8px; font-size: 11.5px; color: var(--dim); }
+  .ai-state .on { color: var(--ok); font-weight: 700; }
+  .ai-state .off { color: var(--warn); font-weight: 700; }
+  .log { flex: 1 1 auto; overflow-y: auto; padding: 6px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .msg { border-radius: 10px; padding: 8px 10px; font-size: 13px; line-height: 1.45; max-width: 95%; white-space: pre-wrap; }
+  .msg.tutor-msg { background: var(--panel2); border: 1px solid var(--line); align-self: flex-start; }
+  .msg.student-msg { background: #3730a3; align-self: flex-end; }
+  .msg.meta { background: transparent; color: var(--dim); font-size: 11.5px; padding: 0 2px; align-self: center; text-align: center; }
+  form { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line); flex: 0 0 auto; }
+  input[type=text] { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+  button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
+  button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; flex: 0 0 auto; }
+  .codap { flex: 1 1 auto; min-width: 0; background: #fff; }
+  .codap iframe { width: 100%; height: 100%; border: 0; display: block; }
+  @media (max-width: 760px) { .wrap { flex-direction: column; } .tutor { flex: 0 0 45%; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 Data Lab</h1>
+  <span class="sub">CODAP workspace (Concord Consortium, MIT) + AlloFlow Socratic tutor</span>
+</header>
+<div class="wrap">
+  <aside class="tutor" aria-label="Socratic data tutor">
+    <h2>Thinking partner</h2>
+    <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <form id="askForm">
+      <input type="text" id="askInput" maxlength="400" placeholder="Ask, or describe what you notice…" aria-label="Ask the tutor">
+      <button type="submit" id="askBtn">Ask</button>
+    </form>
+    <div style="padding: 0 12px 10px;"><button type="button" class="quiet" id="nudgeBtn">🤔 Give me something to think about</button></div>
+    <div class="privacy">Privacy: the tutor can see your <b>column names, dataset names, and counts</b> — never the values in your table. The conversation is not saved. AI answers only flow when your teacher has AI hints on.</div>
+  </aside>
+  <main class="codap" aria-label="CODAP data workspace">
+    <iframe id="codapFrame" title="CODAP — Common Online Data Analysis Platform" allow="clipboard-read; clipboard-write"></iframe>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── CODAP embed (hosted release + our tutor plugin injected via ?di=) ──
+  var CODAP_BASE = 'https://codap.concord.org/releases/latest/static/dg/en/cert/index.html';
+  var pluginUrl = new URL('tutor_plugin.html', window.location.href).href;
+  document.getElementById('codapFrame').src = CODAP_BASE + '?standalone=true&di=' + encodeURIComponent(pluginUrl);
+
+  var logEl = document.getElementById('log');
+  var aiStateEl = document.getElementById('aiState');
+  var askForm = document.getElementById('askForm');
+  var askInput = document.getElementById('askInput');
+  var askBtn = document.getElementById('askBtn');
+
+  var aiAvailable = false;
+  var openerOk = false;
+  var pluginAlive = false;
+  var pluginWin = null; // the tutor plugin's window (nested inside CODAP) — captured from its alive ping
+  var history = [];   // {role:'student'|'tutor', text} — in-memory only
+  var pending = {};   // id → {resolve, timer}
+
+  function addMsg(cls, text) {
+    var div = document.createElement('div');
+    div.className = 'msg ' + cls;
+    div.textContent = text;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function renderAiState() {
+    aiStateEl.innerHTML = openerOk
+      ? (aiAvailable
+        ? 'AlloFlow connected · AI tutor <span class="on">on</span>' + (pluginAlive ? ' · sees your workspace shape' : '')
+        : 'AlloFlow connected · AI hints are <span class="off">off</span> — using built-in thinking prompts')
+      : 'Running standalone — using built-in thinking prompts (open from AlloFlow for the AI tutor)';
+  }
+
+  // ── Built-in Socratic bank (the zero-AI path is still a real tutor) ──
+  var SOCRATIC_BANK = [
+    'Before graphing anything: what do you EXPECT this data will show? Write your guess down — then check.',
+    'Look at your graph. What surprises you about it? What would NOT have surprised you?',
+    'Which case is the most unusual one in your data? What makes it unusual — and is it a mistake or a discovery?',
+    'If you could add one more column of data, what would it be? What question would it let you answer?',
+    'What would this graph look like if there were NO relationship between the two things? How different is yours?',
+    'Who collected this data, and what might they have missed? What is NOT in this dataset?',
+    'Try describing the shape of your data in three words. Would a friend draw the same graph from your words?',
+    'If you split your data into two groups, which split would be most interesting? Why that one?',
+    'What claim could you defend with this data — and what claim would be TOO strong to make?',
+    'Averages hide things. What does the average in your data hide?'
+  ];
+  var bankIndex = Math.floor(Math.random() * SOCRATIC_BANK.length);
+  function nextNudge() {
+    bankIndex = (bankIndex + 1) % SOCRATIC_BANK.length;
+    return SOCRATIC_BANK[bankIndex];
+  }
+
+  // ── Opener handshake (AI bridge, Video Studio pattern) ──────────────
+  function toOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; }
+    } catch (_) {}
+    return false;
+  }
+
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || typeof data.type !== 'string') return;
+    if (data.type === 'allodatalab-ready') {
+      openerOk = true;
+      aiAvailable = Boolean(data.ai);
+      renderAiState();
+      return;
+    }
+    if (data.type === 'allodatalab-plugin-alive') {
+      pluginAlive = true;
+      pluginWin = event.source || pluginWin; // direct line to the plugin, through CODAP's iframe boundary
+      renderAiState();
+      return;
+    }
+    if ((data.type === 'allodatalab-ai-response' || data.type === 'allodatalab-snapshot') && data.id && pending[data.id]) {
+      var entry = pending[data.id];
+      delete pending[data.id];
+      clearTimeout(entry.timer);
+      entry.resolve(data);
+    }
+  });
+
+  function requestWithTimeout(sendFn, id, ms) {
+    return new Promise(function (resolve) {
+      pending[id] = { resolve: resolve, timer: setTimeout(function () { delete pending[id]; resolve(null); }, ms) };
+      if (!sendFn()) { var e = pending[id]; delete pending[id]; if (e) { clearTimeout(e.timer); } resolve(null); }
+    });
+  }
+
+  function getSnapshot() {
+    if (!pluginAlive || !pluginWin) return Promise.resolve(null);
+    var id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return requestWithTimeout(function () {
+      try { pluginWin.postMessage({ type: 'allodatalab-snapshot-request', id: id }, '*'); return true; } catch (_) { return false; }
+    }, id, 3500).then(function (res) { return (res && res.ok && res.snapshot) ? res.snapshot : null; });
+  }
+
+  function askAi(question, snapshot) {
+    var id = 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return requestWithTimeout(function () {
+      return toOpener({
+        type: 'allodatalab-ai-request',
+        id: id,
+        question: question,
+        snapshot: snapshot,
+        history: history.slice(-6)
+      });
+    }, id, 25000);
+  }
+
+  // ── Ask flow ─────────────────────────────────────────────────────────
+  var busy = false;
+  askForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (busy) return;
+    var question = askInput.value.trim();
+    if (!question) return;
+    askInput.value = '';
+    addMsg('student-msg', question);
+    history.push({ role: 'student', text: question });
+    if (!(openerOk && aiAvailable)) {
+      var fallback = 'I can’t reach the AI tutor right now — but here’s something to chew on: ' + nextNudge();
+      addMsg('tutor-msg', fallback);
+      history.push({ role: 'tutor', text: fallback });
+      return;
+    }
+    busy = true;
+    askBtn.disabled = true;
+    addMsg('meta', 'thinking…');
+    getSnapshot().then(function (snapshot) {
+      return askAi(question, snapshot);
+    }).then(function (res) {
+      var metas = logEl.querySelectorAll('.msg.meta');
+      if (metas.length) metas[metas.length - 1].remove();
+      var reply = res && !res.error && res.text ? String(res.text).trim() : '';
+      if (!reply) reply = 'The AI tutor didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextNudge();
+      addMsg('tutor-msg', reply);
+      history.push({ role: 'tutor', text: reply });
+    }).finally(function () {
+      busy = false;
+      askBtn.disabled = false;
+    });
+  });
+
+  document.getElementById('nudgeBtn').addEventListener('click', function () {
+    var nudge = nextNudge();
+    addMsg('tutor-msg', nudge);
+    history.push({ role: 'tutor', text: nudge });
+  });
+
+  // ── Boot ─────────────────────────────────────────────────────────────
+  addMsg('tutor-msg', 'Welcome to the Data Lab! Build a table or drag in a dataset on the right — I’ll ask questions, not give answers. What are you curious about?');
+  var hello = function () { toOpener({ type: 'allodatalab-hello' }); };
+  hello();
+  setTimeout(hello, 900);
+  setTimeout(function () { renderAiState(); }, 2600);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'allodatalab-closed' }); });
+})();
+</script>
+</body>
+</html>

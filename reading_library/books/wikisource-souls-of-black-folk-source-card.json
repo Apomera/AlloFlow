@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-souls-of-black-folk-source-card",
+  "title": "The Souls of Black Folk",
+  "description": "A Wikisource source card for The Souls of Black Folk by W. E. B. Du Bois.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "African American history",
+    "Sociology",
+    "Essays",
+    "Primary sources"
+  ],
+  "authors": [
+    "W. E. B. Du Bois"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/The_Souls_of_Black_Folk",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/The_Souls_of_Black_Folk"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Souls of Black Folk is a public-domain collection of essays for studying race, history, education, sociology, and literary nonfiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source in carefully selected excerpts with historical context, vocabulary support, and discussion protocols for complex themes."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "The original text is public domain in the United States. Check the Wikisource work page for edition notes and license details before mirroring excerpts."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 62
+  }
+}

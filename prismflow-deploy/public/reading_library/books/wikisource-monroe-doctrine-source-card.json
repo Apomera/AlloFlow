@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-monroe-doctrine-source-card",
+  "title": "Monroe Doctrine",
+  "description": "A Wikisource source card for the Monroe Doctrine and U.S. foreign policy history.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Foreign policy",
+    "Primary sources",
+    "U.S. history",
+    "World history"
+  ],
+  "authors": [
+    "James Monroe"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Monroe_Doctrine",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Monroe_Doctrine"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Monroe Doctrine is a primary source for studying U.S. foreign policy, empire, the Americas, and nineteenth-century geopolitics."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source with maps and context so students can analyze policy language, power, and long-term interpretations."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Wikisource hosts public-domain and freely licensed texts. Check the linked work page for its specific license and source notes before assigning or mirroring."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

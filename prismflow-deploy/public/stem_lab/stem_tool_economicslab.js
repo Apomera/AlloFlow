@@ -43,6 +43,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
     document.head.appendChild(st);
   })();
 
+  // Economics Lab visual shell: scoped theme and accessibility refinements.
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-economicslab-refine-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-economicslab-refine-css';
+    st.textContent = [
+      '.economicslab-tool-shell{--eco-surface:var(--allo-stem-canvas,#ffffff);--eco-panel:var(--allo-stem-panel,#f8fafc);--eco-deeper:var(--allo-stem-deeper,#e2e8f0);--eco-text:var(--allo-stem-text,#0f172a);--eco-muted:var(--allo-stem-text-soft,#475569);--eco-border:var(--allo-stem-border,#cbd5e1);--eco-button:var(--allo-stem-button-bg,#f1f5f9);--eco-button-text:var(--allo-stem-button-text,#0f172a);--eco-button-border:var(--allo-stem-button-border,#cbd5e1);color:var(--eco-text);}',
+      '.economicslab-tool-shell .bg-white{background:var(--eco-surface)!important;color:var(--eco-text)!important;}',
+      '.economicslab-tool-shell .bg-gradient-to-r,.economicslab-tool-shell .bg-slate-50,.economicslab-tool-shell .bg-blue-50,.economicslab-tool-shell .bg-indigo-50,.economicslab-tool-shell .bg-emerald-50,.economicslab-tool-shell .bg-green-50,.economicslab-tool-shell .bg-amber-50,.economicslab-tool-shell .bg-yellow-50,.economicslab-tool-shell .bg-orange-50,.economicslab-tool-shell .bg-red-50,.economicslab-tool-shell .bg-rose-50,.economicslab-tool-shell .bg-pink-50,.economicslab-tool-shell .bg-violet-50,.economicslab-tool-shell .bg-purple-50,.economicslab-tool-shell .bg-cyan-50,.economicslab-tool-shell .bg-sky-50,.economicslab-tool-shell .bg-zinc-50{background:var(--eco-panel)!important;color:var(--eco-text)!important;}',
+      '.economicslab-tool-shell .bg-slate-100,.economicslab-tool-shell .bg-blue-100,.economicslab-tool-shell .bg-indigo-100,.economicslab-tool-shell .bg-emerald-100,.economicslab-tool-shell .bg-green-100,.economicslab-tool-shell .bg-amber-100,.economicslab-tool-shell .bg-red-100,.economicslab-tool-shell .bg-rose-100,.economicslab-tool-shell .bg-violet-100,.economicslab-tool-shell .bg-purple-100,.economicslab-tool-shell .bg-sky-100{background:var(--eco-deeper)!important;}',
+      '.economicslab-tool-shell .text-slate-800,.economicslab-tool-shell .text-slate-700{color:var(--eco-text)!important;}',
+      '.economicslab-tool-shell .text-slate-600,.economicslab-tool-shell .text-slate-500,.economicslab-tool-shell .text-slate-400{color:var(--eco-muted)!important;}',
+      '.economicslab-tool-shell input,.economicslab-tool-shell textarea,.economicslab-tool-shell select{background:var(--eco-surface)!important;color:var(--eco-text)!important;border-color:var(--eco-border)!important;}',
+      '.economicslab-topic-card{background:linear-gradient(135deg,var(--eco-panel) 0%,var(--eco-surface) 100%)!important;color:var(--eco-text);border-radius:8px!important;}',
+      '.economicslab-tabbar{background:var(--eco-panel)!important;border:1px solid var(--eco-border);overflow-x:auto;scrollbar-width:thin;}',
+      '.economicslab-tool-shell [role="tab"]{border:1px solid transparent;min-width:112px;white-space:normal;line-height:1.15;}',
+      '.economicslab-tool-shell [role="tab"][aria-selected="true"]{background:var(--eco-surface)!important;color:var(--eco-text)!important;border:1px solid var(--eco-border);}',
+      '.economicslab-reference-shelf{border:1px solid var(--eco-border);border-radius:8px;background:var(--eco-panel);padding:10px 12px;margin:0 0 12px;color:var(--eco-text);}',
+      '.economicslab-reference-shelf-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}',
+      '.economicslab-reference-shelf-title{font-size:11px;font-weight:900;text-transform:uppercase;color:var(--eco-text);}',
+      '.economicslab-reference-shelf-count{font-size:11px;color:var(--eco-muted);}',
+      '.economicslab-reference-actions{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin;}',
+      '.economicslab-reference-chip{flex:0 0 auto;border:1px solid var(--eco-border);border-radius:999px;background:var(--eco-surface);color:var(--eco-muted);font-size:11px;font-weight:800;padding:4px 9px;white-space:nowrap;cursor:pointer;}',
+      '.economicslab-reference-chip[aria-pressed="true"]{background:var(--eco-text);color:var(--eco-surface);border-color:var(--eco-text);}',
+      '.economicslab-canvas-shell{border:1px solid var(--eco-border);border-radius:8px;background:var(--eco-surface);overflow:hidden;margin-bottom:12px;}',
+      '.economicslab-canvas-shell canvas{border:0!important;border-radius:0!important;display:block;}',
+      '.economicslab-canvas-summary{border-top:1px solid var(--eco-border);background:var(--eco-surface);padding:10px 12px;color:var(--eco-muted);font-size:11px;line-height:1.55;}',
+      '.economicslab-canvas-summary strong{display:block;color:var(--eco-text);font-size:11px;margin-bottom:2px;}',
+      '.economicslab-teacher-prompt{border-top:1px solid var(--eco-border);background:var(--eco-panel);padding:10px 12px;color:var(--eco-muted);font-size:11px;line-height:1.5;}',
+      '.economicslab-teacher-prompt strong{display:block;color:var(--eco-text);font-size:11px;text-transform:uppercase;margin-bottom:2px;}',
+      '.theme-dark .economicslab-tool-shell .text-blue-800,.theme-dark .economicslab-tool-shell .text-blue-700,.theme-dark .economicslab-tool-shell .text-blue-600,.theme-dark .economicslab-tool-shell .text-sky-800,.theme-dark .economicslab-tool-shell .text-sky-700,.theme-dark .economicslab-tool-shell .text-sky-600,.theme-dark .economicslab-tool-shell .text-cyan-800,.theme-dark .economicslab-tool-shell .text-cyan-700,.theme-dark .economicslab-tool-shell .text-cyan-600{color:#7dd3fc!important;}',
+      '.theme-dark .economicslab-tool-shell .text-green-800,.theme-dark .economicslab-tool-shell .text-green-700,.theme-dark .economicslab-tool-shell .text-green-600,.theme-dark .economicslab-tool-shell .text-emerald-800,.theme-dark .economicslab-tool-shell .text-emerald-700,.theme-dark .economicslab-tool-shell .text-emerald-600{color:#86efac!important;}',
+      '.theme-dark .economicslab-tool-shell .text-amber-800,.theme-dark .economicslab-tool-shell .text-amber-700,.theme-dark .economicslab-tool-shell .text-amber-600,.theme-dark .economicslab-tool-shell .text-orange-800,.theme-dark .economicslab-tool-shell .text-orange-700,.theme-dark .economicslab-tool-shell .text-orange-600{color:#fcd34d!important;}',
+      '.theme-dark .economicslab-tool-shell .text-red-800,.theme-dark .economicslab-tool-shell .text-red-700,.theme-dark .economicslab-tool-shell .text-red-600,.theme-dark .economicslab-tool-shell .text-rose-800,.theme-dark .economicslab-tool-shell .text-rose-700,.theme-dark .economicslab-tool-shell .text-rose-600{color:#fda4af!important;}',
+      '.theme-dark .economicslab-tool-shell .text-purple-800,.theme-dark .economicslab-tool-shell .text-purple-700,.theme-dark .economicslab-tool-shell .text-purple-600,.theme-dark .economicslab-tool-shell .text-violet-800,.theme-dark .economicslab-tool-shell .text-violet-700,.theme-dark .economicslab-tool-shell .text-violet-600,.theme-dark .economicslab-tool-shell .text-indigo-800,.theme-dark .economicslab-tool-shell .text-indigo-700,.theme-dark .economicslab-tool-shell .text-indigo-600{color:#c4b5fd!important;}',
+      '.theme-contrast .economicslab-tool-shell *{box-shadow:none!important;text-shadow:none!important;}',
+      '.theme-contrast .economicslab-tool-shell button:not([aria-pressed="true"]):not([aria-selected="true"]){background:var(--eco-button)!important;color:var(--eco-button-text)!important;border-color:var(--eco-button-border)!important;}',
+      '.theme-contrast .economicslab-tool-shell [role="tab"][aria-selected="true"]{outline:2px solid var(--eco-text);outline-offset:-2px;}',
+      '.theme-contrast .economicslab-tool-shell .text-blue-800,.theme-contrast .economicslab-tool-shell .text-blue-700,.theme-contrast .economicslab-tool-shell .text-blue-600,.theme-contrast .economicslab-tool-shell .text-sky-800,.theme-contrast .economicslab-tool-shell .text-sky-700,.theme-contrast .economicslab-tool-shell .text-sky-600,.theme-contrast .economicslab-tool-shell .text-cyan-800,.theme-contrast .economicslab-tool-shell .text-cyan-700,.theme-contrast .economicslab-tool-shell .text-cyan-600,.theme-contrast .economicslab-tool-shell .text-green-800,.theme-contrast .economicslab-tool-shell .text-green-700,.theme-contrast .economicslab-tool-shell .text-green-600,.theme-contrast .economicslab-tool-shell .text-emerald-800,.theme-contrast .economicslab-tool-shell .text-emerald-700,.theme-contrast .economicslab-tool-shell .text-emerald-600,.theme-contrast .economicslab-tool-shell .text-amber-800,.theme-contrast .economicslab-tool-shell .text-amber-700,.theme-contrast .economicslab-tool-shell .text-amber-600,.theme-contrast .economicslab-tool-shell .text-red-800,.theme-contrast .economicslab-tool-shell .text-red-700,.theme-contrast .economicslab-tool-shell .text-red-600,.theme-contrast .economicslab-tool-shell .text-rose-800,.theme-contrast .economicslab-tool-shell .text-rose-700,.theme-contrast .economicslab-tool-shell .text-rose-600,.theme-contrast .economicslab-tool-shell .text-purple-800,.theme-contrast .economicslab-tool-shell .text-purple-700,.theme-contrast .economicslab-tool-shell .text-purple-600,.theme-contrast .economicslab-tool-shell .text-violet-800,.theme-contrast .economicslab-tool-shell .text-violet-700,.theme-contrast .economicslab-tool-shell .text-violet-600,.theme-contrast .economicslab-tool-shell .text-indigo-800,.theme-contrast .economicslab-tool-shell .text-indigo-700,.theme-contrast .economicslab-tool-shell .text-indigo-600{color:var(--eco-text)!important;}',
+      '.theme-contrast .economicslab-tool-shell .border-blue-200,.theme-contrast .economicslab-tool-shell .border-indigo-200,.theme-contrast .economicslab-tool-shell .border-emerald-200,.theme-contrast .economicslab-tool-shell .border-green-200,.theme-contrast .economicslab-tool-shell .border-amber-200,.theme-contrast .economicslab-tool-shell .border-red-200,.theme-contrast .economicslab-tool-shell .border-rose-200,.theme-contrast .economicslab-tool-shell .border-violet-200,.theme-contrast .economicslab-tool-shell .border-purple-200,.theme-contrast .economicslab-tool-shell .border-cyan-200,.theme-contrast .economicslab-tool-shell .border-sky-200{border-color:var(--eco-border)!important;}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _ecoAC = null;
@@ -66,9 +111,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
 
   window.StemLab.registerTool('economicsLab', {
-    icon: '\uD83D\uDCB9',
-    label: 'economicsLab',
-    desc: '',
+    icon: "💹",
+    label: "Economics Lab",
+    desc: "Explore economics through supply & demand curves, personal finance, stock-market, business, and macro-policy simulations.",
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -89,7 +134,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -97,6 +143,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       var GripVertical = ctx.icons.GripVertical;
       var announceToSR = ctx.announceToSR;
       var awardStemXP = ctx.awardXP;
+      // The quiz / question / Life-Sim handlers call addXP(amount, reason), but
+      // addXP was never defined → `typeof addXP === 'function'` was always false
+      // → XP was never awarded anywhere. Define it against the host signature
+      // awardStemXP(toolId, points, reason).
+      var addXP = function(amount, reason) { if (typeof awardStemXP === 'function') awardStemXP('economicsLab', amount, reason); };
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
@@ -145,6 +196,15 @@ var d = labToolData || {};
           var sdPriceCeiling = d.sdPriceCeiling || 0;
 
           var sdTax = d.sdTax || 0;
+
+          // Curve slopes = elasticity levers. Flat (0.3) = elastic, steep (1.5)
+          // = inelastic. Every S&D formula below (equilibrium, floor/ceiling
+          // markers, tax wedge, probe, canvas summary) derives from these two —
+          // change them TOGETHER or the graph and its annotations disagree.
+
+          var sdDemSlope = d.sdDemSlope !== undefined ? d.sdDemSlope : 0.8;
+
+          var sdSupSlope = d.sdSupSlope !== undefined ? d.sdSupSlope : 0.8;
 
 
 
@@ -201,19 +261,8 @@ var d = labToolData || {};
 
           // â”€â”€ Entrepreneur State â”€â”€
 
-          var enDay = d.enDay || 1;
-
-          var enCash = d.enCash !== undefined ? d.enCash : 20;
-
-          var enPrice = d.enPrice || 1.00;
-
-          var enCups = d.enCups || 30;
-
-          var enAdBudget = d.enAdBudget || 0;
-
-          var enWeather = d.enWeather || 'sunny';
-
-          var enHistory = d.enHistory || [];
+          // Legacy lemonade-stand state (enDay/enCash/enPrice/enCups/enAdBudget/
+          // enWeather/enHistory) removed — the live sim is d.enBusiness + enBiz*.
 
 
 
@@ -237,41 +286,50 @@ var d = labToolData || {};
 
           // â”€â”€ Achievement Tracking â”€â”€
 
+          // Net worth = liquid cash + home equity + investment portfolio \u2212 debt.
+          // The "Net worth" achievements check this, not raw cash, so investing
+          // and homeownership count toward them (they are assets, not losses).
+          var pfNetWorth = (d.pfCash || 2000) + (d.pfEquity || 0) + (d.pfInvested || 0) - (d.pfDebt || 0);
+
           var econAchievements = [];
 
-          if ((d.pfCash || 0) >= 100000) econAchievements.push({ icon: '\uD83D\uDCB0', title: 'Six Figures', desc: 'Saved $100K+' });
+          if ((d.pfCash || 0) >= 100000) econAchievements.push({ icon: '\uD83D\uDCB0', title: t('stem.economicslab.six_figures', 'Six Figures'), desc: t('stem.economicslab.saved_100k', 'Saved $100K+') });
 
-          if ((d.pfCash || 0) >= 1000000) econAchievements.push({ icon: '\uD83D\uDC8E', title: 'Millionaire', desc: 'Net worth $1M+' });
+          if (pfNetWorth >= 1000000) econAchievements.push({ icon: '\uD83D\uDC8E', title: t('stem.economicslab.millionaire', 'Millionaire'), desc: t('stem.economicslab.net_worth_1m', 'Net worth $1M+') });
 
-          if ((d.pfAge || 22) >= 65 && (d.pfCash || 0) > 500000) econAchievements.push({ icon: '\uD83C\uDFD6\uFE0F', title: 'Comfortable Retirement', desc: 'Retired with $500K+' });
+          if ((d.pfAge || 22) >= 65 && pfNetWorth > 500000) econAchievements.push({ icon: '\uD83C\uDFD6\uFE0F', title: t('stem.economicslab.comfortable_retirement', 'Comfortable Retirement'), desc: t('stem.economicslab.retired_with_500k', 'Retired with $500K+') });
 
-          if ((d.pfCredit || 650) >= 800) econAchievements.push({ icon: '\u2B50', title: 'Excellent Credit', desc: 'Credit score 800+' });
+          if ((d.pfCredit || 650) >= 800) econAchievements.push({ icon: '\u2B50', title: t('stem.economicslab.excellent_credit', 'Excellent Credit'), desc: t('stem.economicslab.credit_score_800', 'Credit score 800+') });
 
-          if ((d.pfHappiness || 70) >= 95) econAchievements.push({ icon: '\uD83C\uDF1F', title: 'Living the Dream', desc: '95%+ happiness' });
+          if ((d.pfHappiness || 70) >= 95) econAchievements.push({ icon: '\uD83C\uDF1F', title: t('stem.economicslab.living_the_dream', 'Living the Dream'), desc: t('stem.economicslab.95_happiness', '95%+ happiness') });
 
-          if ((d.pfDebt || 0) === 0 && (d.pfAge || 22) > 25) econAchievements.push({ icon: '\u2705', title: 'Debt Free', desc: 'Eliminated all debt' });
+          if ((d.pfDebt || 0) === 0 && (d.pfAge || 22) > 25) econAchievements.push({ icon: '\u2705', title: t('stem.economicslab.debt_free', 'Debt Free'), desc: t('stem.economicslab.eliminated_all_debt', 'Eliminated all debt') });
 
           var smTotalVal = (d.smCash || 10000) + (d.smCompanies || []).reduce(function (s, c) { return s + ((d.smPortfolio || {})[c.ticker] || 0) * c.price; }, 0);
 
-          if (smTotalVal >= 15000) econAchievements.push({ icon: '\uD83D\uDCC8', title: 'Market Gains', desc: 'Portfolio grew 50%+' });
+          if (smTotalVal >= 15000) econAchievements.push({ icon: '\uD83D\uDCC8', title: t('stem.economicslab.market_gains', 'Market Gains'), desc: t('stem.economicslab.portfolio_grew_50', 'Portfolio grew 50%+') });
 
-          if (smTotalVal >= 25000) econAchievements.push({ icon: '\uD83D\uDE80', title: 'Wall Street Wolf', desc: 'Portfolio hit $25K' });
+          if (smTotalVal >= 25000) econAchievements.push({ icon: '\uD83D\uDE80', title: t('stem.economicslab.wall_street_wolf', 'Wall Street Wolf'), desc: t('stem.economicslab.portfolio_hit_25k', 'Portfolio hit $25K') });
 
-          if ((d.smDay || 0) >= 30) econAchievements.push({ icon: '\uD83D\uDCC5', title: 'Seasoned Trader', desc: '30+ trading days' });
+          if ((d.smDay || 0) >= 30) econAchievements.push({ icon: '\uD83D\uDCC5', title: t('stem.economicslab.seasoned_trader', 'Seasoned Trader'), desc: t('stem.economicslab.30_trading_days', '30+ trading days') });
 
-          if ((d.enBizDay || 0) >= 20) econAchievements.push({ icon: '\uD83C\uDFC6', title: 'Business Survivor', desc: '20+ days in business' });
+          if ((d.enBizDay || 0) >= 20) econAchievements.push({ icon: '\uD83C\uDFC6', title: t('stem.economicslab.business_survivor', 'Business Survivor'), desc: t('stem.economicslab.20_days_in_business', '20+ days in business') });
 
-          if ((d.enBizCash || 0) >= 50000) econAchievements.push({ icon: '\uD83D\uDCBC', title: 'Tycoon', desc: 'Business cash $50K+' });
+          if ((d.enBizCash || 0) >= 50000) econAchievements.push({ icon: '\uD83D\uDCBC', title: t('stem.economicslab.tycoon', 'Tycoon'), desc: t('stem.economicslab.business_cash_50k', 'Business cash $50K+') });
 
-          if ((d.enBizRep || 0) >= 90) econAchievements.push({ icon: '\uD83C\uDF1F', title: '5-Star Business', desc: 'Reputation 90+' });
+          if ((d.enBizRep || 0) >= 90) econAchievements.push({ icon: '\uD83C\uDF1F', title: t('stem.economicslab.5_star_business', '5-Star Business'), desc: t('stem.economicslab.reputation_90', 'Reputation 90+') });
 
-          if ((d.enBizEmployees || 0) >= 5) econAchievements.push({ icon: '\uD83D\uDC65', title: 'Job Creator', desc: 'Hired 5+ employees' });
+          if ((d.enBizEmployees || 0) >= 5) econAchievements.push({ icon: '\uD83D\uDC65', title: t('stem.economicslab.job_creator', 'Job Creator'), desc: t('stem.economicslab.hired_5_employees', 'Hired 5+ employees') });
 
-          if ((d.macroHistory || []).length >= 10) econAchievements.push({ icon: '\uD83C\uDFDB\uFE0F', title: 'Policy Veteran', desc: '10+ years of policy' });
+          if ((d.macroHistory || []).length >= 10) econAchievements.push({ icon: '\uD83C\uDFDB\uFE0F', title: t('stem.economicslab.policy_veteran', 'Policy Veteran'), desc: t('stem.economicslab.10_years_of_policy', '10+ years of policy') });
 
-          if (macroGDP >= 5) econAchievements.push({ icon: '\uD83D\uDCC8', title: 'Economic Boom', desc: 'GDP growth 5%+' });
+          if (macroGDP >= 5) econAchievements.push({ icon: '\uD83D\uDCC8', title: t('stem.economicslab.economic_boom', 'Economic Boom'), desc: t('stem.economicslab.gdp_growth_5', 'GDP growth 5%+') });
 
-          if (macroUnemployment <= 2) econAchievements.push({ icon: '\uD83D\uDCAA', title: 'Full Employment', desc: 'Unemployment <2%' });
+          if (macroUnemployment <= 2) econAchievements.push({ icon: '\uD83D\uDCAA', title: t('stem.economicslab.full_employment', 'Full Employment'), desc: t('stem.economicslab.unemployment_2', 'Unemployment <2%') });
+
+          var lastMacroYr = (d.macroHistory || [])[(d.macroHistory || []).length - 1];
+
+          if ((d.macroHistory || []).length >= 3 && lastMacroYr && lastMacroYr.gdp >= 2 && lastMacroYr.gdp <= 4 && lastMacroYr.inflation >= 1 && lastMacroYr.inflation <= 3 && lastMacroYr.unemployment < 5) econAchievements.push({ icon: '\uD83D\uDEEC', title: t('stem.economicslab.soft_landing', 'Soft Landing'), desc: t('stem.economicslab.soft_landing_desc', '3+ years in: growth 2\u20134%, inflation 1\u20133%, unemployment <5%') });
 
           var conceptsLearned = (d.econGlossary || []).length;
 
@@ -295,89 +353,91 @@ var d = labToolData || {};
 
           ));
 
-          if (conceptsLearned >= 5) econAchievements.push({ icon: '\uD83D\uDCDA', title: 'Student', desc: '5+ concepts learned' });
+          if (conceptsLearned >= 5) econAchievements.push({ icon: '\uD83D\uDCDA', title: t('stem.economicslab.student', 'Student'), desc: t('stem.economicslab.5_concepts_learned', '5+ concepts learned') });
 
-          if (conceptsLearned >= 15) econAchievements.push({ icon: '\uD83C\uDF93', title: 'Economics Major', desc: '15+ concepts learned' });
+          if (conceptsLearned >= 15) econAchievements.push({ icon: '\uD83C\uDF93', title: t('stem.economicslab.economics_major', 'Economics Major'), desc: t('stem.economicslab.15_concepts_learned', '15+ concepts learned') });
 
-          if (conceptsLearned >= 30) econAchievements.push({ icon: '\uD83E\uDDD1\u200D\uD83C\uDF93', title: 'PhD Economist', desc: '30+ concepts learned' });
+          if (conceptsLearned >= 30) econAchievements.push({ icon: '\uD83E\uDDD1\u200D\uD83C\uDF93', title: t('stem.economicslab.phd_economist', 'PhD Economist'), desc: t('stem.economicslab.30_concepts_learned', '30+ concepts learned') });
+
+          if (((d.policyIQ || {}).log || []).length >= 3) econAchievements.push({ icon: '\uD83D\uDD2C', title: t('stem.economicslab.macro_researcher', 'Macro Researcher'), desc: t('stem.economicslab.logged_3_policy_mixes', 'Logged 3+ policy mixes in Policy Inquiry') });
 
           // === Wave 1: ECON_CONCEPTS ===
           var ECON_CONCEPTS = [
-            { id: 'scarcity', name: 'Scarcity', icon: '\u26A0\uFE0F', def: 'Limited resources vs unlimited wants. The fundamental economic problem.', example: 'There are only 24 hours in a day \u2014 you can\'t do everything.', category: 'fundamentals' },
-            { id: 'oppCost', name: 'Opportunity Cost', icon: '\uD83D\uDD04', def: 'The value of the next best alternative you give up when making a choice.', example: 'Going to college costs tuition PLUS the salary you could have earned working.', category: 'fundamentals' },
-            { id: 'supplyDemand', name: 'Supply & Demand', icon: '\u2696\uFE0F', def: 'Prices are determined by the interaction of buyers (demand) and sellers (supply).', example: 'When a new iPhone launches, high demand + limited supply = high price.', category: 'micro' },
-            { id: 'marginal', name: 'Marginal Analysis', icon: '\uD83D\uDCC8', def: 'Decisions should be made by comparing the additional (marginal) benefit to the additional cost.', example: 'Is one more hour of study worth giving up one more hour of sleep?', category: 'fundamentals' },
-            { id: 'incentives', name: 'Incentives', icon: '\uD83C\uDFAF', def: 'People respond to rewards and penalties. Change the incentives, change the behavior.', example: 'Tax credits for electric cars increase EV purchases.', category: 'fundamentals' },
+            { id: 'scarcity', name: t('stem.economicslab.scarcity', 'Scarcity'), icon: '\u26A0\uFE0F', def: 'Limited resources vs unlimited wants. The fundamental economic problem.', example: 'There are only 24 hours in a day \u2014 you can\'t do everything.', category: 'fundamentals' },
+            { id: 'oppCost', name: t('stem.economicslab.opportunity_cost', 'Opportunity Cost'), icon: '\uD83D\uDD04', def: 'The value of the next best alternative you give up when making a choice.', example: 'Going to college costs tuition PLUS the salary you could have earned working.', category: 'fundamentals' },
+            { id: 'supplyDemand', name: t('stem.economicslab.supply_demand', 'Supply & Demand'), icon: '\u2696\uFE0F', def: 'Prices are determined by the interaction of buyers (demand) and sellers (supply).', example: 'When a new iPhone launches, high demand + limited supply = high price.', category: 'micro' },
+            { id: 'marginal', name: t('stem.economicslab.marginal_analysis', 'Marginal Analysis'), icon: '\uD83D\uDCC8', def: 'Decisions should be made by comparing the additional (marginal) benefit to the additional cost.', example: 'Is one more hour of study worth giving up one more hour of sleep?', category: 'fundamentals' },
+            { id: 'incentives', name: t('stem.economicslab.incentives', 'Incentives'), icon: '\uD83C\uDFAF', def: 'People respond to rewards and penalties. Change the incentives, change the behavior.', example: 'Tax credits for electric cars increase EV purchases.', category: 'fundamentals' },
             { id: 'gdp', name: 'GDP', icon: '\uD83C\uDFDB\uFE0F', def: 'Gross Domestic Product: total value of all goods and services produced in a country in a year.', example: 'US GDP is ~$27 trillion (2024). GDP = C + I + G + (X - M).', category: 'macro' },
-            { id: 'inflation', name: 'Inflation', icon: '\uD83D\uDCC8', def: 'A general increase in prices over time, reducing purchasing power.', example: 'If inflation is 3%, something that cost $100 last year costs $103 now.', category: 'macro' },
-            { id: 'unemployment', name: 'Unemployment', icon: '\uD83D\uDCBC', def: 'The percentage of the labor force that is jobless and actively seeking work.', example: 'Frictional (between jobs), structural (skills mismatch), cyclical (recession).', category: 'macro' },
-            { id: 'compAdv', name: 'Comparative Advantage', icon: '\uD83C\uDF0D', def: 'Countries should specialize in producing goods where they have the lowest opportunity cost.', example: 'Even if Country A is better at everything, both benefit by specializing.', category: 'trade' },
-            { id: 'elasticity', name: 'Elasticity', icon: '\uD83C\uDFF9', def: 'How much quantity demanded/supplied changes in response to a price change.', example: 'Gasoline is inelastic (need it regardless), luxury goods are elastic.', category: 'micro' },
-            { id: 'externality', name: 'Externalities', icon: '\u2601\uFE0F', def: 'Costs or benefits that affect third parties not involved in the transaction.', example: 'Pollution (negative externality), education (positive externality).', category: 'micro' },
-            { id: 'publicGood', name: 'Public Goods', icon: '\uD83D\uDEE3\uFE0F', def: 'Non-rival and non-excludable goods that markets underprovide.', example: 'National defense, street lights, public parks.', category: 'micro' },
-            { id: 'moneySupply', name: 'Money Supply', icon: '\uD83D\uDCB5', def: 'The total amount of money circulating in the economy, controlled by the central bank.', example: 'The Fed controls M1 (cash + checking) and M2 (M1 + savings + CDs).', category: 'macro' },
-            { id: 'fiscalPolicy', name: 'Fiscal Policy', icon: '\uD83C\uDFDB\uFE0F', def: 'Government use of taxation and spending to influence the economy.', example: 'Stimulus checks during COVID = expansionary fiscal policy.', category: 'macro' },
-            { id: 'monetaryPolicy', name: 'Monetary Policy', icon: '\uD83C\uDFE6', def: 'Central bank actions (interest rates, money supply) to manage the economy.', example: 'The Fed raising interest rates to fight inflation.', category: 'macro' },
+            { id: 'inflation', name: t('stem.economicslab.inflation', 'Inflation'), icon: '\uD83D\uDCC8', def: 'A general increase in prices over time, reducing purchasing power.', example: 'If inflation is 3%, something that cost $100 last year costs $103 now.', category: 'macro' },
+            { id: 'unemployment', name: t('stem.economicslab.unemployment', 'Unemployment'), icon: '\uD83D\uDCBC', def: 'The percentage of the labor force that is jobless and actively seeking work.', example: 'Frictional (between jobs), structural (skills mismatch), cyclical (recession).', category: 'macro' },
+            { id: 'compAdv', name: t('stem.economicslab.comparative_advantage', 'Comparative Advantage'), icon: '\uD83C\uDF0D', def: 'Countries should specialize in producing goods where they have the lowest opportunity cost.', example: 'Even if Country A is better at everything, both benefit by specializing.', category: 'trade' },
+            { id: 'elasticity', name: t('stem.economicslab.elasticity', 'Elasticity'), icon: '\uD83C\uDFF9', def: 'How much quantity demanded/supplied changes in response to a price change.', example: 'Gasoline is inelastic (need it regardless), luxury goods are elastic.', category: 'micro' },
+            { id: 'externality', name: t('stem.economicslab.externalities', 'Externalities'), icon: '\u2601\uFE0F', def: 'Costs or benefits that affect third parties not involved in the transaction.', example: 'Pollution (negative externality), education (positive externality).', category: 'micro' },
+            { id: 'publicGood', name: t('stem.economicslab.public_goods', 'Public Goods'), icon: '\uD83D\uDEE3\uFE0F', def: 'Non-rival and non-excludable goods that markets underprovide.', example: 'National defense, street lights, public parks.', category: 'micro' },
+            { id: 'moneySupply', name: t('stem.economicslab.money_supply', 'Money Supply'), icon: '\uD83D\uDCB5', def: 'The total amount of money circulating in the economy, controlled by the central bank.', example: 'The Fed controls M1 (cash + checking) and M2 (M1 + savings + CDs).', category: 'macro' },
+            { id: 'fiscalPolicy', name: t('stem.economicslab.fiscal_policy', 'Fiscal Policy'), icon: '\uD83C\uDFDB\uFE0F', def: 'Government use of taxation and spending to influence the economy.', example: 'Stimulus checks during COVID = expansionary fiscal policy.', category: 'macro' },
+            { id: 'monetaryPolicy', name: t('stem.economicslab.monetary_policy', 'Monetary Policy'), icon: '\uD83C\uDFE6', def: 'Central bank actions (interest rates, money supply) to manage the economy.', example: 'The Fed raising interest rates to fight inflation.', category: 'macro' },
             { id: 'tradeoff', name: 'Trade-offs', icon: '\u2194\uFE0F', def: 'Every choice involves giving something up. There is no free lunch.', example: 'More military spending = less education funding (government budget).', category: 'fundamentals' },
-            { id: 'marketFailure', name: 'Market Failure', icon: '\u274C', def: 'When free markets fail to allocate resources efficiently.', example: 'Monopolies, externalities, public goods, information asymmetry.', category: 'micro' },
-            { id: 'compoundInterest', name: 'Compound Interest', icon: '\uD83D\uDCCA', def: 'Interest earned on interest. The most powerful force in finance.', example: '$1,000 at 7% for 30 years = $7,612. Time is your greatest asset!', category: 'finance' },
-            { id: 'riskReturn', name: 'Risk vs Return', icon: '\u2696\uFE0F', def: 'Higher potential returns require accepting higher risk.', example: 'Stocks: ~10% return, high risk. Bonds: ~4% return, low risk.', category: 'finance' },
-            { id: 'diversification', name: 'Diversification', icon: '\uD83E\uDDE9', def: 'Spreading investments across many assets to reduce risk.', example: '"Don\'t put all your eggs in one basket." Index funds diversify automatically.', category: 'finance' }
+            { id: 'marketFailure', name: t('stem.economicslab.market_failure', 'Market Failure'), icon: '\u274C', def: 'When free markets fail to allocate resources efficiently.', example: 'Monopolies, externalities, public goods, information asymmetry.', category: 'micro' },
+            { id: 'compoundInterest', name: t('stem.economicslab.compound_interest', 'Compound Interest'), icon: '\uD83D\uDCCA', def: 'Interest earned on interest. The most powerful force in finance.', example: '$1,000 at 7% for 30 years = $7,612. Time is your greatest asset!', category: 'finance' },
+            { id: 'riskReturn', name: t('stem.economicslab.risk_vs_return', 'Risk vs Return'), icon: '\u2696\uFE0F', def: 'Higher potential returns require accepting higher risk.', example: 'Stocks: ~10% return, high risk. Bonds: ~4% return, low risk.', category: 'finance' },
+            { id: 'diversification', name: t('stem.economicslab.diversification', 'Diversification'), icon: '\uD83E\uDDE9', def: 'Spreading investments across many assets to reduce risk.', example: '"Don\'t put all your eggs in one basket." Index funds diversify automatically.', category: 'finance' }
           ];
 
           // === Wave 1: FAMOUS_ECONOMISTS ===
           var FAMOUS_ECONOMISTS = [
-            { name: 'Adam Smith', years: '1723\u20131790', icon: '\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F', contribution: 'Father of Economics', work: 'The Wealth of Nations (1776)', idea: 'The "invisible hand" of the market: individuals pursuing self-interest unintentionally benefit society. Division of labor increases productivity.', school: 'Classical' },
-            { name: 'Karl Marx', years: '1818\u20131883', icon: '\uD83C\uDDE9\uD83C\uDDEA', contribution: 'Class Struggle Theory', work: 'Das Kapital (1867)', idea: 'Capitalism exploits workers. Class conflict between bourgeoisie (owners) and proletariat (workers) drives history.', school: 'Marxian' },
-            { name: 'John Maynard Keynes', years: '1883\u20131946', icon: '\uD83C\uDDEC\uD83C\uDDE7', contribution: 'Macroeconomics Pioneer', work: 'General Theory (1936)', idea: 'Government spending can stimulate the economy during recessions. "In the long run, we are all dead."', school: 'Keynesian' },
-            { name: 'Milton Friedman', years: '1912\u20132006', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'Monetarism', work: 'Capitalism and Freedom (1962)', idea: 'Inflation is always a monetary phenomenon. Free markets work better than government intervention.', school: 'Chicago/Monetarist' },
-            { name: 'Friedrich Hayek', years: '1899\u20131992', icon: '\uD83C\uDDE6\uD83C\uDDF9', contribution: 'Austrian Economics', work: 'The Road to Serfdom (1944)', idea: 'Central planning leads to tyranny. Market prices contain information no planner can replicate.', school: 'Austrian' },
-            { name: 'Paul Samuelson', years: '1915\u20132009', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'Mathematical Economics', work: 'Economics Textbook (1948)', idea: 'Made economics rigorous with math. His textbook taught economics to millions of students worldwide.', school: 'Neo-Keynesian' },
-            { name: 'Janet Yellen', years: '1946\u2013', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'First Female Fed Chair & Treasury Sec', work: 'Labor economics research', idea: 'Focused on unemployment and labor markets. Advocated for data-driven monetary policy.', school: 'New Keynesian' },
-            { name: 'Thomas Sowell', years: '1930\u2013', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'Economics & Social Policy', work: 'Basic Economics (2000)', idea: 'Economics is about trade-offs, not solutions. Price controls create shortages. Incentives matter more than intentions.', school: 'Chicago' },
-            { name: 'Elinor Ostrom', years: '1933\u20132012', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'First Female Economics Nobel', work: 'Governing the Commons (1990)', idea: 'Communities can manage shared resources without government or privatization through self-governance.', school: 'Institutional' },
-            { name: 'Daniel Kahneman', years: '1934\u20132024', icon: '\uD83C\uDDEE\uD83C\uDDF1', contribution: 'Behavioral Economics', work: 'Thinking, Fast and Slow (2011)', idea: 'Humans are NOT rational. Cognitive biases (loss aversion, anchoring, framing) affect all economic decisions.', school: 'Behavioral' }
+            { name: t('stem.economicslab.adam_smith', 'Adam Smith'), years: '1723\u20131790', icon: '\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F', contribution: 'Father of Economics', work: 'The Wealth of Nations (1776)', idea: 'The "invisible hand" of the market: individuals pursuing self-interest unintentionally benefit society. Division of labor increases productivity.', school: 'Classical' },
+            { name: t('stem.economicslab.karl_marx', 'Karl Marx'), years: '1818\u20131883', icon: '\uD83C\uDDE9\uD83C\uDDEA', contribution: 'Class Struggle Theory', work: 'Das Kapital (1867)', idea: 'Capitalism exploits workers. Class conflict between bourgeoisie (owners) and proletariat (workers) drives history.', school: 'Marxian' },
+            { name: t('stem.economicslab.john_maynard_keynes', 'John Maynard Keynes'), years: '1883\u20131946', icon: '\uD83C\uDDEC\uD83C\uDDE7', contribution: 'Macroeconomics Pioneer', work: 'General Theory (1936)', idea: 'Government spending can stimulate the economy during recessions. "In the long run, we are all dead."', school: 'Keynesian' },
+            { name: t('stem.economicslab.milton_friedman', 'Milton Friedman'), years: '1912\u20132006', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'Monetarism', work: 'Capitalism and Freedom (1962)', idea: 'Inflation is always a monetary phenomenon. Free markets work better than government intervention.', school: 'Chicago/Monetarist' },
+            { name: t('stem.economicslab.friedrich_hayek', 'Friedrich Hayek'), years: '1899\u20131992', icon: '\uD83C\uDDE6\uD83C\uDDF9', contribution: 'Austrian Economics', work: 'The Road to Serfdom (1944)', idea: 'Central planning leads to tyranny. Market prices contain information no planner can replicate.', school: 'Austrian' },
+            { name: t('stem.economicslab.paul_samuelson', 'Paul Samuelson'), years: '1915\u20132009', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'Mathematical Economics', work: 'Economics Textbook (1948)', idea: 'Made economics rigorous with math. His textbook taught economics to millions of students worldwide.', school: 'Neo-Keynesian' },
+            { name: t('stem.economicslab.janet_yellen', 'Janet Yellen'), years: '1946\u2013', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'First Female Fed Chair & Treasury Sec', work: 'Labor economics research', idea: 'Focused on unemployment and labor markets. Advocated for data-driven monetary policy.', school: 'New Keynesian' },
+            { name: t('stem.economicslab.thomas_sowell', 'Thomas Sowell'), years: '1930\u2013', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'Economics & Social Policy', work: 'Basic Economics (2000)', idea: 'Economics is about trade-offs, not solutions. Price controls create shortages. Incentives matter more than intentions.', school: 'Chicago' },
+            { name: t('stem.economicslab.elinor_ostrom', 'Elinor Ostrom'), years: '1933\u20132012', icon: '\uD83C\uDDFA\uD83C\uDDF8', contribution: 'First Female Economics Nobel', work: 'Governing the Commons (1990)', idea: 'Communities can manage shared resources without government or privatization through self-governance.', school: 'Institutional' },
+            { name: t('stem.economicslab.daniel_kahneman', 'Daniel Kahneman'), years: '1934\u20132024', icon: '\uD83C\uDDEE\uD83C\uDDF1', contribution: 'Behavioral Economics', work: 'Thinking, Fast and Slow (2011)', idea: 'Humans are NOT rational. Cognitive biases (loss aversion, anchoring, framing) affect all economic decisions.', school: 'Behavioral' }
           ];
 
           // === Wave 1: MARKET_STRUCTURES ===
           var MARKET_STRUCTURES = [
-            { id: 'perfect', name: 'Perfect Competition', sellers: 'Many', product: 'Identical', barriers: 'None', pricing: 'Price taker', profit: 'Normal (long run)', examples: 'Farming, commodities', color: '#22c55e', icon: '\uD83C\uDF3E' },
-            { id: 'monopolistic', name: 'Monopolistic Competition', sellers: 'Many', product: 'Differentiated', barriers: 'Low', pricing: 'Some power', profit: 'Normal (long run)', examples: 'Restaurants, clothing', color: '#3b82f6', icon: '\uD83D\uDC54' },
-            { id: 'oligopoly', name: 'Oligopoly', sellers: 'Few', product: 'Similar/Identical', barriers: 'High', pricing: 'Interdependent', profit: 'Above normal', examples: 'Airlines, cell carriers, cars', color: '#f59e0b', icon: '\u2708\uFE0F' },
-            { id: 'monopoly', name: 'Monopoly', sellers: 'One', product: 'Unique', barriers: 'Very high', pricing: 'Price maker', profit: 'Above normal', examples: 'Utilities, patents, De Beers', color: '#ef4444', icon: '\uD83D\uDC51' }
+            { id: 'perfect', name: t('stem.economicslab.perfect_competition', 'Perfect Competition'), sellers: 'Many', product: 'Identical', barriers: 'None', pricing: 'Price taker', profit: 'Normal (long run)', examples: 'Farming, commodities', color: '#22c55e', icon: '\uD83C\uDF3E' },
+            { id: 'monopolistic', name: t('stem.economicslab.monopolistic_competition', 'Monopolistic Competition'), sellers: 'Many', product: 'Differentiated', barriers: 'Low', pricing: 'Some power', profit: 'Normal (long run)', examples: 'Restaurants, clothing', color: '#3b82f6', icon: '\uD83D\uDC54' },
+            { id: 'oligopoly', name: t('stem.economicslab.oligopoly', 'Oligopoly'), sellers: 'Few', product: 'Similar/Identical', barriers: 'High', pricing: 'Interdependent', profit: 'Above normal', examples: 'Airlines, cell carriers, cars', color: '#f59e0b', icon: '\u2708\uFE0F' },
+            { id: 'monopoly', name: t('stem.economicslab.monopoly', 'Monopoly'), sellers: 'One', product: 'Unique', barriers: 'Very high', pricing: 'Price maker', profit: 'Above normal', examples: 'Utilities, patents, De Beers', color: '#ef4444', icon: '\uD83D\uDC51' }
           ];
 
           // === Wave 1: GDP_COMPONENTS ===
           var GDP_COMPONENTS = [
-            { id: 'C', name: 'Consumption', pct: 68, color: '#3b82f6', icon: '\uD83D\uDED2', desc: 'Household spending on goods and services. The largest component of GDP.', examples: 'Food, clothing, healthcare, entertainment, housing' },
-            { id: 'I', name: 'Investment', pct: 18, color: '#22c55e', icon: '\uD83C\uDFED', desc: 'Business spending on capital goods, new construction, and inventory changes.', examples: 'Factories, equipment, new homes, software' },
-            { id: 'G', name: 'Government', pct: 17, color: '#f59e0b', icon: '\uD83C\uDFDB\uFE0F', desc: 'Government spending on goods and services (excludes transfer payments like Social Security).', examples: 'Military, roads, schools, public employees' },
-            { id: 'NX', name: 'Net Exports (X-M)', pct: -3, color: '#ef4444', icon: '\uD83D\uDEA2', desc: 'Exports minus imports. Currently negative for the US (trade deficit).', examples: 'US exports tech/agriculture, imports oil/electronics' }
+            { id: 'C', name: t('stem.economicslab.consumption', 'Consumption'), pct: 68, color: '#3b82f6', icon: '\uD83D\uDED2', desc: t('stem.economicslab.household_spending_on_goods_and_servic', 'Household spending on goods and services. The largest component of GDP.'), examples: 'Food, clothing, healthcare, entertainment, housing' },
+            { id: 'I', name: t('stem.economicslab.investment', 'Investment'), pct: 18, color: '#22c55e', icon: '\uD83C\uDFED', desc: t('stem.economicslab.business_spending_on_capital_goods_new', 'Business spending on capital goods, new construction, and inventory changes.'), examples: 'Factories, equipment, new homes, software' },
+            { id: 'G', name: t('stem.economicslab.government', 'Government'), pct: 17, color: '#f59e0b', icon: '\uD83C\uDFDB\uFE0F', desc: t('stem.economicslab.government_spending_on_goods_and_servi', 'Government spending on goods and services (excludes transfer payments like Social Security).'), examples: 'Military, roads, schools, public employees' },
+            { id: 'NX', name: t('stem.economicslab.net_exports_x_m', 'Net Exports (X-M)'), pct: -3, color: '#ef4444', icon: '\uD83D\uDEA2', desc: t('stem.economicslab.exports_minus_imports_currently_negati', 'Exports minus imports. Currently negative for the US (trade deficit).'), examples: 'US exports tech/agriculture, imports oil/electronics' }
           ];
 
           // === Wave 1: ECONOMIC_INDICATORS ===
           var ECONOMIC_INDICATORS = [
-            { name: 'GDP Growth Rate', desc: 'Percentage change in real GDP. 2-3% is healthy.', good: '>2%', bad: '<0% (recession)', icon: '\uD83D\uDCC8' },
-            { name: 'CPI (Consumer Price Index)', desc: 'Measures average price changes. The main inflation gauge.', good: '2% target', bad: '>5% (high inflation)', icon: '\uD83D\uDCB2' },
-            { name: 'Unemployment Rate', desc: 'Percent of labor force without jobs. Natural rate is ~4%.', good: '<5%', bad: '>7%', icon: '\uD83D\uDCBC' },
-            { name: 'Federal Funds Rate', desc: 'Interest rate banks charge each other. The Fed\'s main tool.', good: 'Depends on inflation', bad: 'Too high or too low', icon: '\uD83C\uDFE6' },
-            { name: 'S&P 500', desc: 'Index of 500 large US companies. Proxy for the stock market.', good: 'Upward trend', bad: '>20% drop (bear market)', icon: '\uD83D\uDCC9' },
-            { name: 'Consumer Confidence', desc: 'Survey of how optimistic consumers feel about the economy.', good: 'Rising', bad: 'Sharp decline', icon: '\uD83D\uDE04' },
-            { name: 'Housing Starts', desc: 'Number of new residential construction projects begun.', good: 'Steady growth', bad: 'Sharp decline', icon: '\uD83C\uDFE0' },
-            { name: 'Trade Balance', desc: 'Exports minus imports. Surplus = positive, deficit = negative.', good: 'Balance/surplus', bad: 'Large persistent deficit', icon: '\uD83D\uDEA2' },
-            { name: 'National Debt', desc: 'Total government borrowing. US debt is ~$34 trillion (2024).', good: 'Stable debt-to-GDP', bad: 'Rising faster than GDP', icon: '\uD83D\uDCB3' },
-            { name: 'Yield Curve', desc: 'Plots interest rates vs bond maturity. Inverted = recession signal.', good: 'Normal (upward)', bad: 'Inverted (downward)', icon: '\uD83D\uDCC9' },
-            { name: 'PMI (Purchasing Managers)', desc: 'Survey of manufacturing activity. >50 = expanding, <50 = contracting.', good: '>50', bad: '<45', icon: '\uD83C\uDFED' },
-            { name: 'Gini Coefficient', desc: 'Measures income inequality. 0 = perfect equality, 1 = maximum inequality.', good: '<0.3 (low inequality)', bad: '>0.5 (high inequality)', icon: '\u2696\uFE0F' }
+            { name: t('stem.economicslab.gdp_growth_rate', 'GDP Growth Rate'), desc: t('stem.economicslab.percentage_change_in_real_gdp_2_3_is_h', 'Percentage change in real GDP. 2-3% is healthy.'), good: '>2%', bad: '<0% (recession)', icon: '\uD83D\uDCC8' },
+            { name: t('stem.economicslab.cpi_consumer_price_index', 'CPI (Consumer Price Index)'), desc: t('stem.economicslab.measures_average_price_changes_the_mai', 'Measures average price changes. The main inflation gauge.'), good: '2% target', bad: '>5% (high inflation)', icon: '\uD83D\uDCB2' },
+            { name: t('stem.economicslab.unemployment_rate', 'Unemployment Rate'), desc: t('stem.economicslab.percent_of_labor_force_without_jobs_na', 'Percent of labor force without jobs. Natural rate is ~4%.'), good: '<5%', bad: '>7%', icon: '\uD83D\uDCBC' },
+            { name: t('stem.economicslab.federal_funds_rate', 'Federal Funds Rate'), desc: t('stem.economicslab.interest_rate_banks_charge_each_other_', 'Interest rate banks charge each other. The Fed\'s main tool.'), good: 'Depends on inflation', bad: 'Too high or too low', icon: '\uD83C\uDFE6' },
+            { name: t('stem.economicslab.s_p_500', 'S&P 500'), desc: t('stem.economicslab.index_of_500_large_us_companies_proxy_', 'Index of 500 large US companies. Proxy for the stock market.'), good: 'Upward trend', bad: '>20% drop (bear market)', icon: '\uD83D\uDCC9' },
+            { name: t('stem.economicslab.consumer_confidence', 'Consumer Confidence'), desc: t('stem.economicslab.survey_of_how_optimistic_consumers_fee', 'Survey of how optimistic consumers feel about the economy.'), good: 'Rising', bad: 'Sharp decline', icon: '\uD83D\uDE04' },
+            { name: t('stem.economicslab.housing_starts', 'Housing Starts'), desc: t('stem.economicslab.number_of_new_residential_construction', 'Number of new residential construction projects begun.'), good: 'Steady growth', bad: 'Sharp decline', icon: '\uD83C\uDFE0' },
+            { name: t('stem.economicslab.trade_balance', 'Trade Balance'), desc: t('stem.economicslab.exports_minus_imports_surplus_positive', 'Exports minus imports. Surplus = positive, deficit = negative.'), good: 'Balance/surplus', bad: 'Large persistent deficit', icon: '\uD83D\uDEA2' },
+            { name: t('stem.economicslab.national_debt', 'National Debt'), desc: t('stem.economicslab.total_government_borrowing_us_debt_is_', 'Total government borrowing. US debt is ~$34 trillion (2024).'), good: 'Stable debt-to-GDP', bad: 'Rising faster than GDP', icon: '\uD83D\uDCB3' },
+            { name: t('stem.economicslab.yield_curve', 'Yield Curve'), desc: t('stem.economicslab.plots_interest_rates_vs_bond_maturity_', 'Plots interest rates vs bond maturity. Inverted = recession signal.'), good: 'Normal (upward)', bad: 'Inverted (downward)', icon: '\uD83D\uDCC9' },
+            { name: t('stem.economicslab.pmi_purchasing_managers', 'PMI (Purchasing Managers)'), desc: t('stem.economicslab.survey_of_manufacturing_activity_50_ex', 'Survey of manufacturing activity. >50 = expanding, <50 = contracting.'), good: '>50', bad: '<45', icon: '\uD83C\uDFED' },
+            { name: t('stem.economicslab.gini_coefficient', 'Gini Coefficient'), desc: t('stem.economicslab.measures_income_inequality_0_perfect_e', 'Measures income inequality. 0 = perfect equality, 1 = maximum inequality.'), good: '<0.3 (low inequality)', bad: '>0.5 (high inequality)', icon: '\u2696\uFE0F' }
           ];
 
           // === Wave 2: BUSINESS_CYCLE_PHASES ===
           var BUSINESS_CYCLE_PHASES = [
-            { id: 'expansion', name: 'Expansion', icon: '\uD83D\uDCC8', color: '#22c55e', duration: '3-10 years',
+            { id: 'expansion', name: t('stem.economicslab.expansion', 'Expansion'), icon: '\uD83D\uDCC8', color: '#22c55e', duration: '3-10 years',
               characteristics: ['GDP rising', 'Unemployment falling', 'Business investment increasing', 'Consumer confidence high', 'Stock market rising'],
               policy: 'Central bank may raise interest rates to prevent overheating. Government may reduce stimulus spending.',
               indicators: 'PMI > 50, unemployment < 5%, GDP growth > 2%' },
-            { id: 'peak', name: 'Peak', icon: '\u26A0\uFE0F', color: '#f59e0b', duration: 'Brief turning point',
+            { id: 'peak', name: t('stem.economicslab.peak', 'Peak'), icon: '\u26A0\uFE0F', color: '#f59e0b', duration: 'Brief turning point',
               characteristics: ['GDP at maximum', 'Inflation accelerating', 'Asset bubbles forming', 'Labor shortage', 'Over-optimism'],
               policy: 'Warning signs appear. Wise investors start being cautious. "Be fearful when others are greedy."',
               indicators: 'Inflation > 4%, yield curve flattening, very low unemployment' },
@@ -385,7 +445,7 @@ var d = labToolData || {};
               characteristics: ['GDP declining (2+ consecutive quarters)', 'Unemployment rising rapidly', 'Business failures increasing', 'Consumer spending drops', 'Stock market declining'],
               policy: 'Fed cuts interest rates. Government increases spending (stimulus, unemployment benefits). "Buy when there\'s blood in the streets."',
               indicators: 'GDP < 0%, unemployment rising, consumer confidence collapsing' },
-            { id: 'trough', name: 'Trough', icon: '\uD83D\uDCA1', color: '#3b82f6', duration: 'Brief turning point',
+            { id: 'trough', name: t('stem.economicslab.trough', 'Trough'), icon: '\uD83D\uDCA1', color: '#3b82f6', duration: 'Brief turning point',
               characteristics: ['GDP at minimum', 'Unemployment at maximum', 'Bargain prices on assets', 'New opportunities emerge', 'Recovery begins'],
               policy: 'Stimulus spending continues. Interest rates at floor. Smart investors buy undervalued assets.',
               indicators: 'GDP stabilizing, layoffs slowing, leading indicators turning up' }
@@ -393,75 +453,75 @@ var d = labToolData || {};
 
           // === Wave 2: ECON_SCHOOLS ===
           var ECON_SCHOOLS = [
-            { name: 'Classical', era: '1776-1930s', icon: '\uD83C\uDFDB\uFE0F', color: '#8b5cf6', key: 'Markets self-correct. Government should stay out.', famous: 'Adam Smith, David Ricardo', govRole: 'Minimal', onRecession: 'Wait it out \u2014 markets adjust', onInflation: 'Reduce money supply' },
-            { name: 'Keynesian', era: '1936-present', icon: '\uD83D\uDCB5', color: '#3b82f6', key: 'Government spending can fix recessions. Demand drives the economy.', famous: 'John Maynard Keynes', govRole: 'Active fiscal policy', onRecession: 'Government spends MORE', onInflation: 'Government spends LESS' },
-            { name: 'Monetarist', era: '1960s-present', icon: '\uD83C\uDFE6', color: '#f59e0b', key: 'Control the money supply. Inflation is always monetary.', famous: 'Milton Friedman', govRole: 'Stable money growth rules', onRecession: 'Expand money supply steadily', onInflation: 'Restrict money supply' },
-            { name: 'Austrian', era: '1870s-present', icon: '\u26A1', color: '#ef4444', key: 'Free markets, no central planning. Government causes more problems than it solves.', famous: 'Hayek, Mises, Rothbard', govRole: 'None/minimal', onRecession: 'Let bad businesses fail', onInflation: 'End central banking' },
-            { name: 'Behavioral', era: '2000s-present', icon: '\uD83E\uDDE0', color: '#10b981', key: 'People are irrational. Psychology drives economic decisions.', famous: 'Kahneman, Thaler, Ariely', govRole: '"Nudge" better decisions', onRecession: 'Address panic/confidence', onInflation: 'Anchor expectations' },
-            { name: 'MMT (Modern Monetary)', era: '2010s-present', icon: '\uD83D\uDDA8\uFE0F', color: '#ec4899', key: 'Governments that print their own currency can\'t go broke. Deficits don\'t matter (much).', famous: 'Stephanie Kelton', govRole: 'Spend freely, tax to control inflation', onRecession: 'Print and spend', onInflation: 'Raise taxes to remove money' }
+            { name: t('stem.economicslab.classical', 'Classical'), era: '1776-1930s', icon: '\uD83C\uDFDB\uFE0F', color: '#8b5cf6', key: 'Markets self-correct. Government should stay out.', famous: 'Adam Smith, David Ricardo', govRole: 'Minimal', onRecession: 'Wait it out \u2014 markets adjust', onInflation: 'Reduce money supply' },
+            { name: t('stem.economicslab.keynesian', 'Keynesian'), era: '1936-present', icon: '\uD83D\uDCB5', color: '#3b82f6', key: 'Government spending can fix recessions. Demand drives the economy.', famous: 'John Maynard Keynes', govRole: 'Active fiscal policy', onRecession: 'Government spends MORE', onInflation: 'Government spends LESS' },
+            { name: t('stem.economicslab.monetarist', 'Monetarist'), era: '1960s-present', icon: '\uD83C\uDFE6', color: '#f59e0b', key: 'Control the money supply. Inflation is always monetary.', famous: 'Milton Friedman', govRole: 'Stable money growth rules', onRecession: 'Expand money supply steadily', onInflation: 'Restrict money supply' },
+            { name: t('stem.economicslab.austrian', 'Austrian'), era: '1870s-present', icon: '\u26A1', color: '#ef4444', key: 'Free markets, no central planning. Government causes more problems than it solves.', famous: 'Hayek, Mises, Rothbard', govRole: 'None/minimal', onRecession: 'Let bad businesses fail', onInflation: 'End central banking' },
+            { name: t('stem.economicslab.behavioral', 'Behavioral'), era: '2000s-present', icon: '\uD83E\uDDE0', color: '#10b981', key: 'People are irrational. Psychology drives economic decisions.', famous: 'Kahneman, Thaler, Ariely', govRole: '"Nudge" better decisions', onRecession: 'Address panic/confidence', onInflation: 'Anchor expectations' },
+            { name: t('stem.economicslab.mmt_modern_monetary', 'MMT (Modern Monetary)'), era: '2010s-present', icon: '\uD83D\uDDA8\uFE0F', color: '#ec4899', key: 'Governments that print their own currency can\'t go broke. Deficits don\'t matter (much).', famous: 'Stephanie Kelton', govRole: 'Spend freely, tax to control inflation', onRecession: 'Print and spend', onInflation: 'Raise taxes to remove money' }
           ];
 
           // === Wave 2: BUDGET_RULES ===
           var BUDGET_RULES = [
-            { name: '50/30/20 Rule', icon: '\uD83D\uDCB0', desc: 'The most popular simple budgeting framework.',
+            { name: t('stem.economicslab.50_30_20_rule', '50/30/20 Rule'), icon: '\uD83D\uDCB0', desc: t('stem.economicslab.the_most_popular_simple_budgeting_fram', 'The most popular simple budgeting framework.'),
               parts: [
-                { label: 'Needs', pct: 50, color: '#ef4444', items: 'Rent, food, utilities, insurance, minimum debt payments, transportation' },
-                { label: 'Wants', pct: 30, color: '#3b82f6', items: 'Dining out, entertainment, hobbies, subscriptions, vacations' },
-                { label: 'Savings', pct: 20, color: '#22c55e', items: 'Emergency fund, retirement, investments, extra debt payments' }
+                { label: t('stem.economicslab.needs', 'Needs'), pct: 50, color: '#ef4444', items: 'Rent, food, utilities, insurance, minimum debt payments, transportation' },
+                { label: t('stem.economicslab.wants', 'Wants'), pct: 30, color: '#3b82f6', items: 'Dining out, entertainment, hobbies, subscriptions, vacations' },
+                { label: t('stem.economicslab.savings', 'Savings'), pct: 20, color: '#22c55e', items: 'Emergency fund, retirement, investments, extra debt payments' }
               ] },
-            { name: 'Pay Yourself First', icon: '\uD83C\uDFE6', desc: 'Save a fixed percentage BEFORE spending on anything else.',
+            { name: t('stem.economicslab.pay_yourself_first', 'Pay Yourself First'), icon: '\uD83C\uDFE6', desc: t('stem.economicslab.save_a_fixed_percentage_before_spendin', 'Save a fixed percentage BEFORE spending on anything else.'),
               parts: [
-                { label: 'Savings First', pct: 20, color: '#22c55e', items: 'Automatically transfer to savings/investments on payday' },
-                { label: 'Bills', pct: 50, color: '#f59e0b', items: 'Fixed expenses after savings are set aside' },
-                { label: 'Flexible', pct: 30, color: '#3b82f6', items: 'Whatever remains for discretionary spending' }
+                { label: t('stem.economicslab.savings_first', 'Savings First'), pct: 20, color: '#22c55e', items: 'Automatically transfer to savings/investments on payday' },
+                { label: t('stem.economicslab.bills', 'Bills'), pct: 50, color: '#f59e0b', items: 'Fixed expenses after savings are set aside' },
+                { label: t('stem.economicslab.flexible', 'Flexible'), pct: 30, color: '#3b82f6', items: 'Whatever remains for discretionary spending' }
               ] },
-            { name: 'Zero-Based Budget', icon: '\uD83D\uDCDD', desc: 'Every dollar gets assigned a job. Income minus expenses = exactly zero.',
+            { name: t('stem.economicslab.zero_based_budget', 'Zero-Based Budget'), icon: '\uD83D\uDCDD', desc: t('stem.economicslab.every_dollar_gets_assigned_a_job_incom', 'Every dollar gets assigned a job. Income minus expenses = exactly zero.'),
               parts: [
-                { label: 'Essential', pct: 55, color: '#ef4444', items: 'Housing, food, transport, utilities' },
-                { label: 'Goals', pct: 25, color: '#22c55e', items: 'Savings, debt payoff, investments' },
-                { label: 'Lifestyle', pct: 20, color: '#3b82f6', items: 'Fun, dining, hobbies — every dollar planned' }
+                { label: t('stem.economicslab.essential', 'Essential'), pct: 55, color: '#ef4444', items: 'Housing, food, transport, utilities' },
+                { label: t('stem.economicslab.goals', 'Goals'), pct: 25, color: '#22c55e', items: 'Savings, debt payoff, investments' },
+                { label: t('stem.economicslab.lifestyle', 'Lifestyle'), pct: 20, color: '#3b82f6', items: 'Fun, dining, hobbies — every dollar planned' }
               ] }
           ];
 
           // === Wave 3: ECON_SCENARIOS ===
           var ECON_SCENARIOS = [
-            { id: 1, scenario: 'You just got a $5,000 tax refund. You have $3,000 in credit card debt at 22% APR and no emergency fund.', question: 'What should you do FIRST?',
+            { id: 1, scenario: 'You just got a $5,000 tax refund. You have $3,000 in credit card debt at 22% APR and no emergency fund.', question: t('stem.economicslab.what_should_you_do_first', 'What should you do FIRST?'),
               options: ['Invest in stocks', 'Pay off credit card debt', 'Buy something nice', 'Put it all in savings'], correct: 1,
               explain: 'Pay off the 22% APR credit card first! No investment reliably returns 22%. Paying off high-interest debt is the best guaranteed "return" you can get. After that, build your emergency fund.',
               concept: 'Opportunity Cost & Guaranteed Returns' },
-            { id: 2, scenario: 'Gas prices jumped from $3 to $5 per gallon. Your commute is 30 miles each way.', question: 'Why doesn\'t gas demand drop as much as you\'d expect?',
+            { id: 2, scenario: 'Gas prices jumped from $3 to $5 per gallon. Your commute is 30 miles each way.', question: t('stem.economicslab.why_doesn_t_gas_demand_drop_as_much_as', 'Why doesn\'t gas demand drop as much as you\'d expect?'),
               options: ['People like expensive gas', 'Gas is price inelastic', 'Supply increased', 'Government subsidies'], correct: 1,
               explain: 'Gasoline has few substitutes for most commuters \u2014 you need it to get to work. This makes it price INELASTIC: even large price changes produce small quantity changes. That\'s why gas taxes raise a lot of revenue.',
               concept: 'Price Elasticity of Demand' },
-            { id: 3, scenario: 'The Federal Reserve just raised interest rates by 0.75%. The stock market dropped 3% the same day.', question: 'Why does raising rates hurt stocks?',
+            { id: 3, scenario: 'The Federal Reserve just raised interest rates by 0.75%. The stock market dropped 3% the same day.', question: t('stem.economicslab.why_does_raising_rates_hurt_stocks', 'Why does raising rates hurt stocks?'),
               options: ['The Fed hates stocks', 'Higher rates make borrowing expensive, slowing growth', 'It\'s random coincidence', 'Taxes went up'], correct: 1,
               explain: 'Higher interest rates increase borrowing costs for businesses (less investment, less growth) and make bonds more attractive relative to stocks. Future corporate profits are also "discounted" at a higher rate, reducing stock valuations.',
               concept: 'Monetary Policy & Interest Rates' },
-            { id: 4, scenario: 'Country A can make 100 cars OR 50 computers per year. Country B can make 80 cars OR 80 computers.', question: 'Which country has comparative advantage in computers?',
+            { id: 4, scenario: 'Country A can make 100 cars OR 50 computers per year. Country B can make 80 cars OR 80 computers.', question: t('stem.economicslab.which_country_has_comparative_advantag', 'Which country has comparative advantage in computers?'),
               options: ['Country A', 'Country B', 'Neither', 'Both'], correct: 1,
               explain: 'Country B! For Country A, 1 computer costs 2 cars (100/50). For Country B, 1 computer costs 1 car (80/80). Country B gives up fewer cars per computer, so it has the LOWER opportunity cost for computers.',
               concept: 'Comparative Advantage & Trade' },
-            { id: 5, scenario: 'A city passes a rent control law capping apartment rent at $800/month. Market rate is $1,200.', question: 'What is the most likely long-term effect?',
+            { id: 5, scenario: 'A city passes a rent control law capping apartment rent at $800/month. Market rate is $1,200.', question: t('stem.economicslab.what_is_the_most_likely_long_term_effe', 'What is the most likely long-term effect?'),
               options: ['More affordable housing', 'Housing shortage', 'Landlords build more apartments', 'No effect'], correct: 1,
               explain: 'Price ceilings below equilibrium create SHORTAGES. At $800, more people want apartments (high Qd) but landlords supply fewer (low Qs). Long-term: less maintenance, fewer new apartments built, black markets, discrimination in tenant selection.',
               concept: 'Price Ceilings & Shortages' },
-            { id: 6, scenario: 'You can earn $50,000/year at your current job, or go to grad school for 2 years (tuition: $30,000/year).', question: 'What is the TRUE cost of grad school?',
+            { id: 6, scenario: 'You can earn $50,000/year at your current job, or go to grad school for 2 years (tuition: $30,000/year).', question: t('stem.economicslab.what_is_the_true_cost_of_grad_school', 'What is the TRUE cost of grad school?'),
               options: ['$60,000 (tuition only)', '$100,000 (tuition + lost wages)', '$160,000 (tuition + lost wages)', '$30,000 (one year tuition)'], correct: 2,
               explain: '$160,000! Tuition: $30K \u00D7 2 = $60K. Plus opportunity cost: $50K salary \u00D7 2 = $100K in wages you gave up. Total: $160K. Opportunity cost is the most important concept in economics!',
               concept: 'Opportunity Cost' },
-            { id: 7, scenario: 'During COVID, the government sent $1,200 stimulus checks to most Americans and the Fed printed trillions.', question: 'What economic consequence followed in 2021-2022?',
+            { id: 7, scenario: 'During COVID, the government sent $1,200 stimulus checks to most Americans and the Fed printed trillions.', question: t('stem.economicslab.what_economic_consequence_followed_in_', 'What economic consequence followed in 2021-2022?'),
               options: ['Deflation', 'High inflation', 'Lower unemployment', 'Trade surplus'], correct: 1,
               explain: 'Too much money chasing too few goods = INFLATION. Supply chains were disrupted (less supply) while stimulus increased spending power (more demand). Inflation hit 9.1% in June 2022 \u2014 the highest in 40 years.',
               concept: 'Money Supply & Inflation' },
-            { id: 8, scenario: 'Two gas stations are across the street from each other. One drops its price by $0.05.', question: 'What will the other station likely do?',
+            { id: 8, scenario: 'Two gas stations are across the street from each other. One drops its price by $0.05.', question: t('stem.economicslab.what_will_the_other_station_likely_do', 'What will the other station likely do?'),
               options: ['Raise its price', 'Keep the same price', 'Match or beat the price drop', 'Close permanently'], correct: 2,
               explain: 'This is oligopoly behavior! With few sellers of an identical product, firms are interdependent. They tend to match competitors\' price cuts (kinked demand curve) but NOT price increases. This is why gas stations cluster and have similar prices.',
               concept: 'Oligopoly & Game Theory' },
-            { id: 9, scenario: 'A factory pollutes a river, causing $2 million in damage to downstream fisheries. The factory pays nothing.', question: 'What type of market failure is this?',
+            { id: 9, scenario: 'A factory pollutes a river, causing $2 million in damage to downstream fisheries. The factory pays nothing.', question: t('stem.economicslab.what_type_of_market_failure_is_this', 'What type of market failure is this?'),
               options: ['Monopoly', 'Public good', 'Negative externality', 'Information asymmetry'], correct: 2,
               explain: 'Negative externality! The factory imposes costs on third parties (fisheries) who aren\'t part of the transaction. The market price doesn\'t reflect the true social cost. Solutions: Pigouvian tax, cap-and-trade, regulation, or Coase bargaining.',
               concept: 'Externalities & Market Failure' },
-            { id: 10, scenario: 'You\'re 25 years old. Your employer offers a 401(k) match: they\'ll match your contribution up to 6% of your salary.', question: 'How much should you contribute at minimum?',
+            { id: 10, scenario: 'You\'re 25 years old. Your employer offers a 401(k) match: they\'ll match your contribution up to 6% of your salary.', question: t('stem.economicslab.how_much_should_you_contribute_at_mini', 'How much should you contribute at minimum?'),
               options: ['Nothing \u2014 wait until older', '3% \u2014 save some', '6% \u2014 get the full match', '50% \u2014 maximize savings'], correct: 2,
               explain: 'Always get the full employer match \u2014 it\'s a 100% INSTANT return on your money! If you earn $50K and contribute 6% ($3,000), your employer adds $3,000 FREE. Not contributing is literally turning down free money.',
               concept: 'Employer Match & Free Money' }
@@ -485,14 +545,14 @@ var d = labToolData || {};
 
           // === Wave 3: ECON_QUICK_REF ===
           var ECON_QUICK_REF = [
-            { title: 'Supply & Demand', content: 'Price rises \u2192 less demanded, more supplied. Price falls \u2192 more demanded, less supplied. Equilibrium: where S meets D.', icon: '\u2696\uFE0F', color: '#3b82f6' },
-            { title: 'GDP Formula', content: 'GDP = C + I + G + (X-M). Consumption + Investment + Government + Net Exports. Measures total economic output.', icon: '\uD83C\uDFDB\uFE0F', color: '#f59e0b' },
-            { title: 'Inflation Types', content: 'Demand-pull: too much money chasing goods. Cost-push: rising production costs. Built-in: wage-price spiral expectations.', icon: '\uD83D\uDCC8', color: '#ef4444' },
-            { title: 'Fed Tools', content: 'Interest rates (FFR) \u2022 Open market operations (buy/sell bonds) \u2022 Reserve requirements \u2022 Discount window \u2022 Forward guidance', icon: '\uD83C\uDFE6', color: '#8b5cf6' },
-            { title: 'Fiscal vs Monetary', content: 'Fiscal = Congress (tax/spend). Monetary = Fed (interest rates/money supply). Both affect the economy differently.', icon: '\uD83D\uDCCA', color: '#22c55e' },
-            { title: 'Rule of 72', content: 'Divide 72 by the interest rate to find how many years it takes to double your money. 72 \u00F7 8% = 9 years to double.', icon: '\u2728', color: '#ec4899' },
-            { title: 'Elasticity Rules', content: 'Elastic (>1): luxury, has substitutes. Inelastic (<1): necessity, no substitutes. Unit elastic (=1): % change in P = % change in Q.', icon: '\uD83C\uDFF9', color: '#10b981' },
-            { title: '4 Market Structures', content: 'Perfect Competition \u2192 Monopolistic Competition \u2192 Oligopoly \u2192 Monopoly. More market power = higher prices, less efficiency.', icon: '\uD83C\uDFEA', color: '#f97316' }
+            { title: t('stem.economicslab.supply_demand_2', 'Supply & Demand'), content: t('stem.economicslab.price_rises_less_demanded_more_supplie', 'Price rises \u2192 less demanded, more supplied. Price falls \u2192 more demanded, less supplied. Equilibrium: where S meets D.'), icon: '\u2696\uFE0F', color: '#3b82f6' },
+            { title: t('stem.economicslab.gdp_formula', 'GDP Formula'), content: t('stem.economicslab.gdp_c_i_g_x_m_consumption_investment_g', 'GDP = C + I + G + (X-M). Consumption + Investment + Government + Net Exports. Measures total economic output.'), icon: '\uD83C\uDFDB\uFE0F', color: '#f59e0b' },
+            { title: t('stem.economicslab.inflation_types', 'Inflation Types'), content: t('stem.economicslab.demand_pull_too_much_money_chasing_goo', 'Demand-pull: too much money chasing goods. Cost-push: rising production costs. Built-in: wage-price spiral expectations.'), icon: '\uD83D\uDCC8', color: '#ef4444' },
+            { title: t('stem.economicslab.fed_tools', 'Fed Tools'), content: t('stem.economicslab.interest_rates_ffr_open_market_operati', 'Interest rates (FFR) \u2022 Open market operations (buy/sell bonds) \u2022 Reserve requirements \u2022 Discount window \u2022 Forward guidance'), icon: '\uD83C\uDFE6', color: '#8b5cf6' },
+            { title: t('stem.economicslab.fiscal_vs_monetary', 'Fiscal vs Monetary'), content: t('stem.economicslab.fiscal_congress_tax_spend_monetary_fed', 'Fiscal = Congress (tax/spend). Monetary = Fed (interest rates/money supply). Both affect the economy differently.'), icon: '\uD83D\uDCCA', color: '#22c55e' },
+            { title: t('stem.economicslab.rule_of_72', 'Rule of 72'), content: t('stem.economicslab.divide_72_by_the_interest_rate_to_find', 'Divide 72 by the interest rate to find how many years it takes to double your money. 72 \u00F7 8% = 9 years to double.'), icon: '\u2728', color: '#ec4899' },
+            { title: t('stem.economicslab.elasticity_rules', 'Elasticity Rules'), content: t('stem.economicslab.elastic_1_luxury_has_substitutes_inela', 'Elastic (>1): luxury, has substitutes. Inelastic (<1): necessity, no substitutes. Unit elastic (=1): % change in P = % change in Q.'), icon: '\uD83C\uDFF9', color: '#10b981' },
+            { title: t('stem.economicslab.4_market_structures', '4 Market Structures'), content: t('stem.economicslab.perfect_competition_monopolistic_compe', 'Perfect Competition \u2192 Monopolistic Competition \u2192 Oligopoly \u2192 Monopoly. More market power = higher prices, less efficiency.'), icon: '\uD83C\uDFEA', color: '#f97316' }
           ];
 
           // Wave 3 state
@@ -529,7 +589,11 @@ var d = labToolData || {};
 
               // â”€â”€ Supply & Demand Graph â”€â”€
 
-              var gx = 60, gy = 30, gw = W - 120, gh = H - 80;
+              // NB: the canvas is a 2x supersample (drawn at offsetWidth*2 / 500,
+              // displayed at offsetWidth / 250), so font px here render at HALF
+              // size on screen — all text in this draw pass uses ~2x sizes.
+
+              var gx = 76, gy = 44, gw = W - 140, gh = H - 110;
 
               // Background
 
@@ -553,21 +617,21 @@ var d = labToolData || {};
 
               ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
 
-              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('Price ($)', gx - 50, gy + gh / 2);
+              ctx.fillText('Price ($)', 8, 26);
 
-              ctx.fillText('Quantity', gx + gw / 2 - 25, gy + gh + 35);
+              ctx.fillText('Quantity', gx + gw / 2 - 50, gy + gh + 46);
 
               // Labels
 
-              ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.font = '18px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
               for (var li = 0; li <= 10; li++) {
 
-                ctx.fillText((100 - li * 10).toString(), gx - 30, gy + li * gh / 10 + 4);
+                ctx.fillText((100 - li * 10).toString(), gx - 46, gy + li * gh / 10 + 6);
 
-                ctx.fillText((li * 10).toString(), gx + li * gw / 10 - 5, gy + gh + 18);
+                ctx.fillText((li * 10).toString(), gx + li * gw / 10 - 10, gy + gh + 24);
 
               }
 
@@ -575,61 +639,95 @@ var d = labToolData || {};
 
               // Demand curve (downward sloping, shifted)
 
-              ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.beginPath();
+              ctx.save(); ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 8; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.beginPath();
+
+              var dStarted = false;
 
               for (var dx = 0; dx <= 100; dx++) {
 
-                var dp = 90 - dx * 0.8 + sdDemandShift * 5;
+                var dp = 90 - dx * sdDemSlope + sdDemandShift * 5;
+
+                if (dp < 0 || dp > 100) continue;
 
                 var px = gx + dx / 100 * gw;
 
                 var py = gy + (100 - dp) / 100 * gh;
 
-                dx === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                if (!dStarted) { ctx.moveTo(px, py); dStarted = true; } else { ctx.lineTo(px, py); }
 
               }
 
               ctx.stroke();
 
-              ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Inter, system-ui';
+              ctx.restore(); ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 24px Inter, system-ui';
 
-              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 30, gy + 30 - sdDemandShift * 25);
+              // Label sits at the demand curve's VISIBLE right end. With steep
+              // slopes the curve is clipped where price hits 0 mid-chart, so the
+              // anchor follows that exit point instead of floating at q=100.
+
+              var dExitQ = Math.max(2, Math.min(100, (90 + sdDemandShift * 5) / sdDemSlope));
+
+              var dEndP = 90 - dExitQ * sdDemSlope + sdDemandShift * 5;
+
+              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), Math.max(gx + 8, gx + dExitQ / 100 * gw - 34), Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - dEndP) / 100 * gh - 12)));
 
 
 
               // Supply curve (upward sloping, shifted)
 
-              ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath();
+              ctx.save(); ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8; ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath();
+
+              var sStarted = false;
 
               for (var sx = 0; sx <= 100; sx++) {
 
-                var sp = 10 + sx * 0.8 + sdSupplyShift * 5;
+                var sp = 10 + sx * sdSupSlope + sdSupplyShift * 5;
+
+                if (sp < 0 || sp > 100) continue;
 
                 var spx = gx + sx / 100 * gw;
 
                 var spy = gy + (100 - sp) / 100 * gh;
 
-                sx === 0 ? ctx.moveTo(spx, spy) : ctx.lineTo(spx, spy);
+                if (!sStarted) { ctx.moveTo(spx, spy); sStarted = true; } else { ctx.lineTo(spx, spy); }
 
               }
 
               ctx.stroke();
 
-              ctx.fillStyle = '#ef4444';
+              ctx.restore(); ctx.fillStyle = '#ef4444';
 
-              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 30, gy + gh - 30 - sdSupplyShift * 25);
+              var sExitQ = Math.max(2, Math.min(100, (90 - sdSupplyShift * 5) / sdSupSlope));
+
+              var sEndP = 10 + sExitQ * sdSupSlope + sdSupplyShift * 5;
+
+              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), Math.max(gx + 8, gx + sExitQ / 100 * gw - 34), Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - sEndP) / 100 * gh - 12)));
 
 
 
               // Equilibrium point
 
-              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / 1.6;
+              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / (sdDemSlope + sdSupSlope);
 
-              var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
+              var eqP = 10 + eqQ * sdSupSlope + sdSupplyShift * 5;
 
-              var eqPx = gx + eqQ / 100 * gw;
+              var eqInRange = eqQ >= 0 && eqQ <= 100 && eqP >= 0 && eqP <= 100;
 
-              var eqPy = gy + (100 - eqP) / 100 * gh;
+              // Shade consumer (blue) & producer (red) surplus — the headline pedagogy that the text below
+              // describes but the graph never actually drew. Exact triangles since both curves are linear.
+              if (eqInRange) {
+                var _pxQ = function(q) { return gx + q / 100 * gw; };
+                var _pyP = function(p) { return gy + (100 - p) / 100 * gh; };
+                ctx.fillStyle = 'rgba(59,130,246,0.18)';
+                ctx.beginPath(); ctx.moveTo(_pxQ(0), _pyP(90 + sdDemandShift * 5)); ctx.lineTo(_pxQ(0), _pyP(eqP)); ctx.lineTo(_pxQ(eqQ), _pyP(eqP)); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = 'rgba(239,68,68,0.18)';
+                ctx.beginPath(); ctx.moveTo(_pxQ(0), _pyP(10 + sdSupplyShift * 5)); ctx.lineTo(_pxQ(0), _pyP(eqP)); ctx.lineTo(_pxQ(eqQ), _pyP(eqP)); ctx.closePath(); ctx.fill();
+              }
+
+              // Clamp the marker/labels to the plot box so extreme slider shifts don't draw them off-canvas
+              var eqPx = gx + Math.max(0, Math.min(100, eqQ)) / 100 * gw;
+
+              var eqPy = gy + (100 - Math.max(0, Math.min(100, eqP))) / 100 * gh;
 
               // Dashed lines to axes
 
@@ -649,27 +747,34 @@ var d = labToolData || {};
 
               ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
 
-              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 22px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-              ctx.fillText('E', eqPx + 12, eqPy - 8);
+              ctx.fillText('E', eqPx + 14, eqPy - 10);
 
-              ctx.font = '11px Inter, system-ui';
+              ctx.font = '19px Inter, system-ui';
 
-              ctx.fillText('P* = $' + eqP.toFixed(0), gx + 5, eqPy - 5);
+              ctx.fillText('P* = $' + eqP.toFixed(0), gx + 8, Math.max(gy + 20, eqPy - 8));
 
-              ctx.fillText('Q* = ' + eqQ.toFixed(0), eqPx - 10, gy + gh + 30);
+              ctx.fillText('Q* = ' + eqQ.toFixed(0), Math.min(gx + gw - 100, eqPx + 12), gy + gh - 12);
 
-              // Concept summary
+              if (!eqInRange) { ctx.fillStyle = '#fbbf24'; ctx.font = '18px Inter, system-ui'; ctx.fillText('Equilibrium is off the chart — reduce the shift sliders', gx + 10, gy + 24); }
 
-              ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              // Label the shaded surplus triangles right on the chart (the old
+              // bullet-list version of this drew at y >= H, below the visible canvas).
 
-              var csY = gy + gh + 50;
+              if (eqInRange && eqQ > 18) {
 
-              ctx.fillText('\u2022 Consumer Surplus = area ABOVE equilibrium price, BELOW demand curve', gx, csY);
+                ctx.font = 'bold 20px Inter, system-ui';
 
-              ctx.fillText('\u2022 Producer Surplus = area BELOW equilibrium price, ABOVE supply curve', gx, csY + 14);
+                ctx.fillStyle = 'rgba(147,197,253,0.95)';
 
-              ctx.fillText('\u2022 Total Surplus = Consumer + Producer surplus (maximized at equilibrium)', gx, csY + 28);
+                ctx.fillText('CS', gx + eqQ / 100 * gw * 0.2, gy + (100 - (eqP + (90 + sdDemandShift * 5 - eqP) * 0.4)) / 100 * gh);
+
+                ctx.fillStyle = 'rgba(252,165,165,0.95)';
+
+                ctx.fillText('PS', gx + eqQ / 100 * gw * 0.2, gy + (100 - (eqP - (eqP - (10 + sdSupplyShift * 5)) * 0.4)) / 100 * gh);
+
+              }
 
 
 
@@ -683,15 +788,34 @@ var d = labToolData || {};
 
                 ctx.beginPath(); ctx.moveTo(gx, pfY); ctx.lineTo(gx + gw, pfY); ctx.stroke();
 
-                ctx.setLineDash([]); ctx.fillStyle = '#22c55e'; ctx.font = 'bold 11px Inter, system-ui';
+                ctx.setLineDash([]); ctx.fillStyle = '#22c55e'; ctx.font = 'bold 19px Inter, system-ui';
 
-                ctx.fillText('Price Floor $' + sdPriceFloor, gx + gw - 120, pfY - 8);
+                ctx.fillText('Price Floor $' + sdPriceFloor, gx + gw - 240, pfY - 10);
 
                 if (sdPriceFloor > eqP) {
 
-                  ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  // Mark Qd and Qs at the floor price (curves are linear, so these
+                  // are exact) and quantify the unsold surplus between them.
 
-                  ctx.fillText('\u26A0 SURPLUS (above equilibrium)', gx + 10, pfY - 20);
+                  var fQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / sdDemSlope));
+
+                  var fQs = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / sdSupSlope));
+
+                  var fXd = gx + fQd / 100 * gw, fXs = gx + fQs / 100 * gw;
+
+                  ctx.fillStyle = '#22c55e';
+
+                  ctx.beginPath(); ctx.arc(fXd, pfY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.beginPath(); ctx.arc(fXs, pfY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
+
+                  ctx.beginPath(); ctx.moveTo(fXd, pfY); ctx.lineTo(fXs, pfY); ctx.stroke();
+
+                  ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+
+                  ctx.fillText('\u26A0 SURPLUS \u2248 ' + Math.max(0, fQs - fQd).toFixed(0) + ' units unsold (Qs > Qd)', gx + 10, Math.max(gy + 22, pfY - 34));
 
                 }
 
@@ -707,15 +831,33 @@ var d = labToolData || {};
 
                 ctx.beginPath(); ctx.moveTo(gx, pcY); ctx.lineTo(gx + gw, pcY); ctx.stroke();
 
-                ctx.setLineDash([]); ctx.fillStyle = '#f97316'; ctx.font = 'bold 11px Inter, system-ui';
+                ctx.setLineDash([]); ctx.fillStyle = '#f97316'; ctx.font = 'bold 19px Inter, system-ui';
 
-                ctx.fillText('Price Ceiling $' + sdPriceCeiling, gx + gw - 130, pcY + 18);
+                ctx.fillText('Price Ceiling $' + sdPriceCeiling, gx + gw - 260, pcY + 26);
 
                 if (sdPriceCeiling < eqP) {
 
-                  ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  // Mark Qs and Qd at the ceiling price and quantify the unmet demand.
 
-                  ctx.fillText('\u26A0 SHORTAGE (below equilibrium)', gx + 10, pcY + 30);
+                  var cQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / sdDemSlope));
+
+                  var cQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / sdSupSlope));
+
+                  var cXd = gx + cQd / 100 * gw, cXs = gx + cQs / 100 * gw;
+
+                  ctx.fillStyle = '#f97316';
+
+                  ctx.beginPath(); ctx.arc(cXd, pcY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.beginPath(); ctx.arc(cXs, pcY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
+
+                  ctx.beginPath(); ctx.moveTo(cXs, pcY); ctx.lineTo(cXd, pcY); ctx.stroke();
+
+                  ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+
+                  ctx.fillText('\u26A0 SHORTAGE \u2248 ' + Math.max(0, cQd - cQs).toFixed(0) + ' units unmet (Qd > Qs)', gx + 10, Math.min(gy + gh - 12, pcY + 52));
 
                 }
 
@@ -725,13 +867,76 @@ var d = labToolData || {};
 
               if (sdTax > 0) {
 
-                ctx.fillStyle = 'rgba(168,85,247,0.15)';
+                // Real tax geometry (linear curves make this exact): trades fall to
+                // Qt where the curves are $tax apart; buyers pay Pd(Qt), sellers
+                // keep Ps(Qt); the triangle from Qt to Q* is the deadweight loss.
+                // (The old drawing was a decorative rectangle centered on E.)
 
-                ctx.fillRect(eqPx - 20, eqPy - sdTax / 100 * gh / 2, 40, sdTax / 100 * gh);
+                var txQ = Math.max(0, eqQ - sdTax / (sdDemSlope + sdSupSlope));
 
-                ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#a855f7';
+                var txPd = 90 + sdDemandShift * 5 - sdDemSlope * txQ;
 
-                ctx.fillText('Tax: $' + sdTax, eqPx + 25, eqPy);
+                var txPs = 10 + sdSupSlope * txQ + sdSupplyShift * 5;
+
+                var txX = gx + Math.min(100, txQ) / 100 * gw;
+
+                var txPy = function (p) { return gy + (100 - Math.max(0, Math.min(100, p))) / 100 * gh; };
+
+                if (eqInRange && txQ > 0) {
+
+                  ctx.fillStyle = 'rgba(168,85,247,0.25)';
+
+                  ctx.beginPath(); ctx.moveTo(txX, txPy(txPd)); ctx.lineTo(txX, txPy(txPs)); ctx.lineTo(eqPx, eqPy); ctx.closePath(); ctx.fill();
+
+                  ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 4;
+
+                  ctx.beginPath(); ctx.moveTo(txX, txPy(txPd)); ctx.lineTo(txX, txPy(txPs)); ctx.stroke();
+
+                  ctx.fillStyle = '#c084fc'; ctx.font = 'bold 19px Inter, system-ui';
+
+                  ctx.fillText('Buyers pay $' + txPd.toFixed(0), Math.max(gx + 8, txX - 220), txPy(txPd) - 10);
+
+                  ctx.fillText('Sellers get $' + txPs.toFixed(0), Math.max(gx + 8, txX - 220), txPy(txPs) + 26);
+
+                  if (eqQ - txQ > 8) ctx.fillText('DWL', (txX + eqPx) / 2 - 22, (txPy(txPd) + txPy(txPs)) / 2 + 7);
+
+                  ctx.font = '18px Inter, system-ui';
+
+                  ctx.fillText('Tax $' + sdTax + ': trades fall ' + eqQ.toFixed(0) + ' → ' + txQ.toFixed(0), txX + 14, gy + 46);
+
+                }
+
+              }
+
+              // Curve probe: click the canvas (or focus it and use arrow keys)
+              // to read marginal value vs marginal cost at any quantity — the
+              // "should society produce this unit?" question made tangible.
+
+              if (d.sdProbe !== null && d.sdProbe !== undefined) {
+
+                var prQ = Math.max(0, Math.min(100, d.sdProbe));
+
+                var prPd = 90 - prQ * sdDemSlope + sdDemandShift * 5;
+
+                var prPs = 10 + prQ * sdSupSlope + sdSupplyShift * 5;
+
+                var prX = gx + prQ / 100 * gw;
+
+                var prPy = function (p) { return gy + (100 - Math.max(0, Math.min(100, p))) / 100 * gh; };
+
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+
+                ctx.beginPath(); ctx.moveTo(prX, gy); ctx.lineTo(prX, gy + gh); ctx.stroke(); ctx.setLineDash([]);
+
+                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(prX, prPy(prPd), 7, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(prX, prPy(prPs), 7, 0, Math.PI * 2); ctx.fill();
+
+                ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+
+                var prVerdict = prPd > prPs ? 'worth producing (value > cost)' : 'NOT worth producing (cost > value)';
+
+                ctx.fillText('Q=' + prQ + ': buyers value $' + Math.max(0, prPd).toFixed(0) + ', producer cost $' + Math.max(0, prPs).toFixed(0) + ' — ' + prVerdict, gx + 10, gy + gh - 44);
 
               }
 
@@ -751,13 +956,13 @@ var d = labToolData || {};
 
                 { name: 'Rent/Housing', val: pfRent, color: '#ef4444' },
 
-                { name: 'Food', val: pfFood, color: '#f59e0b' },
+                { name: t('stem.economicslab.food', 'Food'), val: pfFood, color: '#f59e0b' },
 
-                { name: 'Transport', val: pfTransport, color: '#3b82f6' },
+                { name: t('stem.economicslab.transport', 'Transport'), val: pfTransport, color: '#3b82f6' },
 
-                { name: 'Entertainment', val: pfEntertain, color: '#8b5cf6' },
+                { name: t('stem.economicslab.entertainment', 'Entertainment'), val: pfEntertain, color: '#8b5cf6' },
 
-                { name: 'Savings', val: pfSavings, color: '#22c55e' }
+                { name: t('stem.economicslab.savings_2', 'Savings'), val: pfSavings, color: '#22c55e' }
 
               ];
 
@@ -765,7 +970,12 @@ var d = labToolData || {};
 
               var remaining = Math.max(0, pfIncome - totalExp);
 
-              if (remaining > 0) expenses.push({ name: 'Remaining', val: remaining, color: 'var(--allo-stem-text-soft, #94a3b8)' });
+              // Literal color — canvas fillStyle can't resolve CSS var(); the
+              // var() string was silently ignored, leaving the previous fill
+              // (the white slice-label color) so this slice painted WHITE and
+              // its white label disappeared into it.
+
+              if (remaining > 0) expenses.push({ name: t('stem.economicslab.remaining', 'Remaining'), val: remaining, color: '#64748b' });
 
               var total = expenses.reduce(function (s, e) { return s + e.val; }, 0);
 
@@ -793,13 +1003,13 @@ var d = labToolData || {};
 
                 if (e.val / total > 0.05) {
 
-                  ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#fff';
+                  ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#fff';
 
                   ctx.textAlign = 'center';
 
                   ctx.fillText(Math.round(e.val / total * 100) + '%', lx, ly);
 
-                  ctx.fillText(e.name, lx, ly + 14);
+                  ctx.fillText(e.name, lx, ly + 22);
 
                 }
 
@@ -811,27 +1021,27 @@ var d = labToolData || {};
 
               // Income display
 
-              ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 28px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W * 0.55, 40);
+              ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W * 0.55, 44);
 
-              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = totalExp > pfIncome ? '#ef4444' : '#22c55e';
+              ctx.font = '22px Inter, system-ui'; ctx.fillStyle = totalExp > pfIncome ? '#ef4444' : '#22c55e';
 
-              ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 Within Budget'), W * 0.55, 65);
+              ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 Within Budget'), W * 0.55, 82);
 
               ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText('Savings Rate: ' + (pfSavings / pfIncome * 100).toFixed(1) + '%', W * 0.55, 85);
+              ctx.fillText('Savings Rate: ' + (pfSavings / pfIncome * 100).toFixed(1) + '%', W * 0.55, 116);
 
 
 
               // Compound Interest Chart (right side)
 
-              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('\uD83D\uDCC8 Compound Interest Growth', W * 0.55, 130);
+              ctx.fillText('\uD83D\uDCC8 Compound Interest Growth', W * 0.55, 160);
 
-              var ciX = W * 0.55, ciY = 150, ciW = W * 0.4, ciH = H - 200;
+              var ciX = W * 0.55, ciY = 176, ciW = W * 0.4, ciH = H - 240;
 
               ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
 
@@ -865,17 +1075,17 @@ var d = labToolData || {};
 
               // End value label
 
-              ctx.font = 'bold 13px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#22c55e';
 
-              ctx.fillText('$' + Math.round(maxVal).toLocaleString(), ciX + ciW - 80, ciY + 20);
+              ctx.fillText('$' + Math.round(maxVal).toLocaleString(), ciX + ciW - 170, ciY + 30);
 
-              ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.font = '18px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText('Year 0', ciX, ciY + ciH + 15);
+              ctx.fillText('Year 0', ciX, ciY + ciH + 24);
 
-              ctx.fillText('Year ' + pfYears, ciX + ciW - 40, ciY + ciH + 15);
+              ctx.fillText('Year ' + pfYears, ciX + ciW - 90, ciY + ciH + 24);
 
-              ctx.fillText('$' + pfPrincipal.toLocaleString() + ' @ ' + pfRate + '% for ' + pfYears + ' years', ciX, ciY + ciH + 30);
+              ctx.fillText('$' + pfPrincipal.toLocaleString() + ' @ ' + pfRate + '% for ' + pfYears + ' years', ciX, ciY + ciH + 50);
 
             }
 
@@ -981,9 +1191,9 @@ var d = labToolData || {};
 
                   ctx.stroke(); ctx.setLineDash([]);
 
-                  ctx.font = '9px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  ctx.font = '16px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-                  ctx.fillText('MA(5)', chX + chW - 40, chY + 15);
+                  ctx.fillText('MA(5)', chX + chW - 80, chY + 24);
 
                 }
 
@@ -999,31 +1209,31 @@ var d = labToolData || {};
 
                 // Price labels
 
-                ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+                ctx.font = '18px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-                ctx.fillText('$' + maxP.toFixed(0), chX - 35, chY + 12);
+                ctx.fillText('$' + maxP.toFixed(0), chX - 56, chY + 16);
 
-                ctx.fillText('$' + minP.toFixed(0), chX - 35, chY + chH);
+                ctx.fillText('$' + minP.toFixed(0), chX - 56, chY + chH);
 
               }
 
               // Company header
 
-              ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = co.color;
+              ctx.font = 'bold 30px Inter, system-ui'; ctx.fillStyle = co.color;
 
-              ctx.fillText(co.ticker, chX, 30);
+              ctx.fillText(co.ticker, chX, 36);
 
-              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText(co.name + ' | ' + co.sector, chX + 80, 30);
+              ctx.fillText(co.name + ' | ' + co.sector, chX + 150, 34);
 
-              ctx.font = 'bold 16px Inter, system-ui';
+              ctx.font = 'bold 26px Inter, system-ui';
 
               var priceChange = hist.length > 1 ? hist[hist.length - 1] - hist[hist.length - 2] : 0;
 
               ctx.fillStyle = priceChange >= 0 ? '#22c55e' : '#ef4444';
 
-              ctx.fillText('$' + co.price.toFixed(2) + ' ' + (priceChange >= 0 ? '\u25B2' : '\u25BC') + Math.abs(priceChange).toFixed(2), chX + chW - 150, 30);
+              ctx.fillText('$' + co.price.toFixed(2) + ' ' + (priceChange >= 0 ? '\u25B2' : '\u25BC') + Math.abs(priceChange).toFixed(2), chX + chW - 280, 36);
 
 
 
@@ -1031,13 +1241,13 @@ var d = labToolData || {};
 
               var portY = chY + chH + 30;
 
-              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
               ctx.fillText('\uD83D\uDCBC Portfolio', chX, portY);
 
-              ctx.font = '12px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+              ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#22c55e';
 
-              ctx.fillText('Cash: $' + smCash.toFixed(2), chX + 120, portY);
+              ctx.fillText('Cash: $' + smCash.toFixed(2), chX + 210, portY);
 
               // Holdings
 
@@ -1053,31 +1263,36 @@ var d = labToolData || {};
 
                   portVal += shares * c.price;
 
-                  ctx.fillStyle = c.color; ctx.font = '11px Inter, system-ui';
+                  ctx.fillStyle = c.color; ctx.font = '19px Inter, system-ui';
 
-                  ctx.fillText(c.ticker + ': ' + shares + ' ($' + (shares * c.price).toFixed(0) + ')', holdX, portY + 25);
+                  ctx.fillText(c.ticker + ': ' + shares + ' ($' + (shares * c.price).toFixed(0) + ')', holdX, portY + 34);
 
-                  holdX += 140;
+                  holdX += 260;
 
                 }
 
               });
 
-              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 22px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-              ctx.fillText('Total Value: $' + (smCash + portVal).toFixed(2), chX + chW - 180, portY);
+              ctx.fillText('Total Value: $' + (smCash + portVal).toFixed(2), chX + chW - 320, portY);
 
               // News banner
 
-              if (smNews) {
+              // News banner reads the live smNewsEvent (legacy smNews was never
+              // written by the AI day-sim, so the banner never appeared).
+
+              var newsHeadline = (d.smNewsEvent && d.smNewsEvent.headline) || smNews;
+
+              if (newsHeadline) {
 
                 ctx.fillStyle = 'rgba(251,191,36,0.15)';
 
-                ctx.fillRect(chX, portY + 45, chW, 30);
+                ctx.fillRect(chX, portY + 48, chW, 46);
 
-                ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 20px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-                ctx.fillText('\uD83D\uDCF0 ' + smNews, chX + 10, portY + 65);
+                ctx.fillText('\uD83D\uDCF0 ' + newsHeadline, chX + 12, portY + 79);
 
               }
 
@@ -1091,23 +1306,23 @@ var d = labToolData || {};
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
-              ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 28px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('\uD83C\uDFDB\uFE0F National Economy â€” Year ' + macroYear, 30, 35);
+              ctx.fillText('\uD83C\uDFDB\uFE0F National Economy — Year ' + macroYear, 30, 35);
 
               // Indicator gauges
 
               var indicators = [
 
-                { label: 'GDP Growth', val: macroGDP, unit: '%', good: macroGDP > 0, color: macroGDP > 2 ? '#22c55e' : macroGDP > 0 ? '#fbbf24' : '#ef4444' },
+                { label: t('stem.economicslab.gdp_growth', 'GDP Growth'), val: macroGDP, unit: '%', good: macroGDP > 0, color: macroGDP > 2 ? '#22c55e' : macroGDP > 0 ? '#fbbf24' : '#ef4444' },
 
-                { label: 'Inflation', val: macroInflation, unit: '%', good: macroInflation < 3, color: macroInflation > 5 ? '#ef4444' : macroInflation > 3 ? '#fbbf24' : '#22c55e' },
+                { label: t('stem.economicslab.inflation_2', 'Inflation'), val: macroInflation, unit: '%', good: macroInflation < 3, color: macroInflation > 5 ? '#ef4444' : macroInflation > 3 ? '#fbbf24' : '#22c55e' },
 
-                { label: 'Interest Rate', val: macroInterest, unit: '%', good: macroInterest < 5, color: macroInterest > 7 ? '#ef4444' : macroInterest > 4 ? '#fbbf24' : '#22c55e' },
+                { label: t('stem.economicslab.interest_rate', 'Interest Rate'), val: macroInterest, unit: '%', good: macroInterest < 5, color: macroInterest > 7 ? '#ef4444' : macroInterest > 4 ? '#fbbf24' : '#22c55e' },
 
-                { label: 'Unemployment', val: macroUnemployment, unit: '%', good: macroUnemployment < 5, color: macroUnemployment > 7 ? '#ef4444' : macroUnemployment > 4 ? '#fbbf24' : '#22c55e' },
+                { label: t('stem.economicslab.unemployment_3', 'Unemployment'), val: macroUnemployment, unit: '%', good: macroUnemployment < 5, color: macroUnemployment > 7 ? '#ef4444' : macroUnemployment > 4 ? '#fbbf24' : '#22c55e' },
 
-                { label: 'Trade Balance', val: macroTrade, unit: '%', good: macroTrade > 0, color: macroTrade > 0 ? '#22c55e' : macroTrade > -2 ? '#fbbf24' : '#ef4444' }
+                { label: t('stem.economicslab.trade_balance_2', 'Trade Balance'), val: macroTrade, unit: '%', good: macroTrade > 0, color: macroTrade > 0 ? '#22c55e' : macroTrade > -2 ? '#fbbf24' : '#ef4444' }
 
               ];
 
@@ -1133,13 +1348,16 @@ var d = labToolData || {};
 
                 // Labels
 
-                ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-                ctx.fillText(ind.label, gx2 + 5, 80);
+                ctx.fillText(ind.label, gx2 + 6, 82);
 
-                ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = ind.color;
+                // White, not ind.color — the value text starts INSIDE the value
+                // bar, so color-matched text (green on green) was invisible.
 
-                ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 5, 100);
+                ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+
+                ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 6, 106);
 
               });
 
@@ -1197,29 +1415,58 @@ var d = labToolData || {};
 
                 ctx.stroke(); ctx.setLineDash([]);
 
+                // Plot unemployment line (entries created before this feature
+                // existed lack the field \u2014 skip the line rather than plot NaN)
+
+                var unVals = macroHistory.map(function (h) { return h.unemployment; });
+
+                if (unVals.every(function (v) { return typeof v === 'number'; })) {
+
+                  var unMin = Math.min.apply(null, unVals) - 1;
+
+                  var unRange = (Math.max.apply(null, unVals) + 1) - unMin || 1;
+
+                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.setLineDash([2, 4]); ctx.beginPath();
+
+                  unVals.forEach(function (v, vi) {
+
+                    var x = mhX + (vi / Math.max(1, unVals.length - 1)) * mhW;
+
+                    var y = mhY + mhH - ((v - unMin) / unRange) * mhH;
+
+                    vi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+
+                  });
+
+                  ctx.stroke(); ctx.setLineDash([]);
+
+                }
+
                 // Legend
 
-                ctx.font = '10px Inter, system-ui';
+                ctx.font = '18px Inter, system-ui';
 
-                ctx.fillStyle = '#22c55e'; ctx.fillText('\u2014 GDP Growth', mhX + 10, mhY + 15);
+                ctx.fillStyle = '#22c55e'; ctx.fillText('\u2014 GDP Growth', mhX + 12, mhY + 26);
 
-                ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 110, mhY + 15);
+                ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 200, mhY + 26);
+
+                ctx.fillStyle = '#fbbf24'; ctx.fillText('\u00b7\u00b7\u00b7 Unemployment', mhX + 360, mhY + 26);
 
                 ctx.fillStyle = '#94a3b8';
 
-                ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 15);
+                ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 24);
 
-                ctx.fillText('Year ' + (macroHistory[macroHistory.length - 1].year || macroYear), mhX + mhW - 60, mhY + mhH + 15);
+                ctx.fillText('Year ' + (macroHistory[macroHistory.length - 1].year || macroYear), mhX + mhW - 110, mhY + mhH + 24);
 
               } else {
 
-                ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                ctx.font = '24px Inter, system-ui'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
 
-                ctx.fillText('Click "Next Year" to simulate national economic policy changes', W / 2, H / 2);
+                ctx.fillText('Set your policy levers below, then press "Advance One Year"', W / 2, H / 2);
 
-                ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#475569';
+                ctx.font = '19px Inter, system-ui'; ctx.fillStyle = '#64748b';
 
-                ctx.fillText('AI will generate policy events that cascade to all other simulators', W / 2, H / 2 + 25);
+                ctx.fillText('Each simulated year plots GDP growth and inflation here', W / 2, H / 2 + 36);
 
                 ctx.textAlign = 'left';
 
@@ -1231,157 +1478,270 @@ var d = labToolData || {};
 
             else if (econTab === 'entrepreneur') {
 
-              // â”€â”€ Lemonade Stand â”€â”€
+              // -- Business Sim dashboard: draws the LIVE enBiz* state --
+              // (The old lemonade-stand drawing read enDay/enCash/enHistory,
+              // which the AI business sim never writes, so the canvas showed a
+              // frozen Day 1 / $20.00 forever regardless of play.)
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
-              // Weather display
+              var bz = d.enBusiness;
 
-              var weatherEmoji = enWeather === 'sunny' ? '\u2600\uFE0F' : enWeather === 'cloudy' ? '\u2601\uFE0F' : enWeather === 'rainy' ? '\uD83C\uDF27\uFE0F' : '\uD83C\uDF24\uFE0F';
+              if (!bz) {
 
-              ctx.font = 'bold 40px Inter, system-ui'; ctx.fillText(weatherEmoji, W / 2 - 25, 60);
+                ctx.textAlign = 'center';
 
-              ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 60px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('Day ' + enDay + ' | ' + enWeather.charAt(0).toUpperCase() + enWeather.slice(1), W / 2 - 60, 90);
+                ctx.fillText('🚀', W / 2, H / 2 - 50);
 
+                ctx.font = 'bold 26px Inter, system-ui';
 
+                ctx.fillText('No business yet', W / 2, H / 2 + 4);
 
-              // Lemonade stand illustration
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillStyle = '#fbbf24';
+                ctx.fillText('Describe a business idea below and launch it to see your dashboard here.', W / 2, H / 2 + 42);
 
-              ctx.fillRect(W / 2 - 60, 110, 120, 80);
+                ctx.textAlign = 'left';
 
-              ctx.fillStyle = '#f59e0b';
+              }
 
-              ctx.beginPath(); ctx.moveTo(W / 2 - 80, 110); ctx.lineTo(W / 2, 85); ctx.lineTo(W / 2 + 80, 110); ctx.closePath(); ctx.fill();
+              if (bz) {
 
-              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#7c2d12';
+                var bzPrice = d.enBizPrice || bz.suggestedPrice || 10;
 
-              ctx.fillText('LEMONADE', W / 2 - 35, 155);
+                var bzUnitCost = bz.unitCost || 5;
 
-              ctx.fillText('$' + enPrice.toFixed(2), W / 2 - 15, 175);
+                var bzFixed = bz.dailyFixedCosts || 50;
 
+                ctx.font = 'bold 40px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
+                ctx.fillText(bz.emoji || '🏪', 40, 64);
 
-              // Cash register
+                ctx.font = 'bold 28px Inter, system-ui';
 
-              ctx.font = 'bold 20px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+                ctx.fillText(bz.businessName || 'My Business', 104, 54);
 
-              ctx.fillText('\uD83D\uDCB5 $' + enCash.toFixed(2), W / 2 - 50, 230);
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
+                ctx.fillText('Day ' + (d.enBizDay || 1) + '  |  ' + (d.enBizEmployees || 0) + ' staff', 104, 84);
 
+                ctx.font = 'bold 32px Inter, system-ui'; ctx.fillStyle = (d.enBizCash || 0) >= 0 ? '#22c55e' : '#ef4444';
 
-              // Daily stats
+                ctx.fillText('💵 $' + (d.enBizCash || 0).toLocaleString(), 40, 134);
 
-              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText('Price per cup: $' + enPrice.toFixed(2), 40, 270);
+                ctx.fillText('Reputation', 40, 176);
 
-              ctx.fillText('Cups prepared: ' + enCups, 40, 290);
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(170, 158, 300, 22);
 
-              ctx.fillText('Ad budget: $' + enAdBudget.toFixed(2), 40, 310);
+                var bzRep = Math.min(100, Math.max(0, d.enBizRep || 50));
 
-              // Cost breakdown
+                ctx.fillStyle = bzRep >= 70 ? '#22c55e' : bzRep >= 40 ? '#fbbf24' : '#ef4444';
 
-              var cupCost = 0.25; var lemonCost = 0.15; var sugarCost = 0.05;
+                ctx.fillRect(170, 158, 300 * bzRep / 100, 22);
 
-              var totalCostPerCup = cupCost + lemonCost + sugarCost;
+                ctx.fillStyle = '#e2e8f0'; ctx.fillText(bzRep + '/100', 484, 176);
 
-              var dailyFixedCost = enCups * totalCostPerCup + enAdBudget;
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillStyle = '#ef4444';
+                ctx.fillText('Price: $' + bzPrice.toFixed(2) + ' per ' + (bz.unitName || 'unit') + '   Unit cost: $' + bzUnitCost.toFixed(2) + '   Fixed: $' + bzFixed.toFixed(0) + '/day', 40, 222);
 
-              ctx.fillText('Cost/cup: $' + totalCostPerCup.toFixed(2) + ' (cup $0.25 + lemon $0.15 + sugar $0.05)', 40, 340);
+                var bzBreakEven = Math.ceil(bzFixed / Math.max(0.01, bzPrice - bzUnitCost));
 
-              ctx.fillText('Daily costs: $' + dailyFixedCost.toFixed(2), 40, 360);
+                ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 22px Inter, system-ui';
 
-              // Break-even
+                ctx.fillText('Break-even: ' + bzBreakEven + ' ' + (bz.unitName || 'unit') + 's/day to cover fixed costs', 40, 258);
 
-              var breakEven = dailyFixedCost / Math.max(0.01, enPrice - totalCostPerCup);
+                var bzHist = d.enBizHistory || [];
 
-              ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 12px Inter, system-ui';
+                if (bzHist.length > 0) {
 
-              ctx.fillText('Break-even: ' + Math.ceil(breakEven) + ' cups', 40, 390);
+                  var phX = W * 0.55, phY = 120, phW = W * 0.4, phH = H - 250;
 
+                  ctx.fillStyle = '#1e293b'; ctx.fillRect(phX, phY, phW, phH);
 
+                  ctx.font = 'bold 22px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              // Profit history chart
+                  ctx.fillText('Daily Profit', phX, phY - 12);
 
-              if (enHistory.length > 0) {
+                  var maxProfit = Math.max.apply(null, bzHist.map(function (h) { return Math.abs(h.profit || 0); })) || 1;
 
-                var phX = W * 0.55, phY = 260, phW = W * 0.4, phH = 170;
+                  var zeroY = phY + phH / 2;
 
-                ctx.fillStyle = '#1e293b'; ctx.fillRect(phX, phY, phW, phH);
+                  ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
 
-                ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                  ctx.beginPath(); ctx.moveTo(phX, zeroY); ctx.lineTo(phX + phW, zeroY); ctx.stroke();
 
-                ctx.fillText('Profit History', phX, phY - 8);
+                  ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
 
-                var maxProfit = Math.max.apply(null, enHistory.map(function (h) { return Math.abs(h.profit); })) || 1;
+                  bzHist.forEach(function (h, hi) {
 
-                var zeroY = phY + phH / 2;
+                    var hx3 = phX + (hi / (Math.max(1, bzHist.length - 1))) * phW;
 
-                ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
+                    var hy3 = zeroY - ((h.profit || 0) / maxProfit) * phH / 2;
 
-                ctx.beginPath(); ctx.moveTo(phX, zeroY); ctx.lineTo(phX + phW, zeroY); ctx.stroke();
+                    hi === 0 ? ctx.moveTo(hx3, hy3) : ctx.lineTo(hx3, hy3);
 
-                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
+                  });
 
-                enHistory.forEach(function (h, hi) {
+                  ctx.stroke();
 
-                  var hx3 = phX + (hi / (Math.max(1, enHistory.length - 1))) * phW;
+                  bzHist.forEach(function (h, hi) {
 
-                  var hy3 = zeroY - (h.profit / maxProfit) * phH / 2;
+                    var hx4 = phX + (hi / (Math.max(1, bzHist.length - 1))) * phW;
 
-                  hi === 0 ? ctx.moveTo(hx3, hy3) : ctx.lineTo(hx3, hy3);
+                    var hy4 = zeroY - ((h.profit || 0) / maxProfit) * phH / 2;
 
-                });
+                    ctx.beginPath(); ctx.arc(hx4, hy4, 5, 0, Math.PI * 2);
 
-                ctx.stroke();
+                    ctx.fillStyle = (h.profit || 0) >= 0 ? '#22c55e' : '#ef4444'; ctx.fill();
 
-                // Dots
+                  });
 
-                enHistory.forEach(function (h, hi) {
+                  var bzLast = bzHist[bzHist.length - 1];
 
-                  var hx4 = phX + (hi / (Math.max(1, enHistory.length - 1))) * phW;
+                  ctx.font = '18px Inter, system-ui'; ctx.fillStyle = (bzLast.profit || 0) >= 0 ? '#22c55e' : '#ef4444';
 
-                  var hy4 = zeroY - (h.profit / maxProfit) * phH / 2;
+                  ctx.fillText('Yesterday: ' + ((bzLast.profit || 0) >= 0 ? '+' : '') + '$' + (bzLast.profit || 0).toFixed(0) + ' (' + (bzLast.customers || 0) + ' customers)', phX, phY + phH + 30);
 
-                  ctx.beginPath(); ctx.arc(hx4, hy4, 3, 0, Math.PI * 2);
+                } else {
 
-                  ctx.fillStyle = h.profit >= 0 ? '#22c55e' : '#ef4444'; ctx.fill();
+                  ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-                });
+                  ctx.fillText('Run your first day to chart daily profit here.', W * 0.55, H / 2);
+
+                }
 
               }
 
             }
-
           }, 0);
 
+          function economicsCanvasSummary() {
+            if (econTab === 'supplyDemand') {
+              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / (sdDemSlope + sdSupSlope);
+              var eqP = 10 + eqQ * sdSupSlope + sdSupplyShift * 5;
+              var sdSummary = t('stem.economicslab.canvas_summary_supply_demand', 'Supply and demand graph showing demand, supply, equilibrium price, equilibrium quantity, surplus, shortage, and tax effects.') + ' P* $' + eqP.toFixed(0) + ', Q* ' + eqQ.toFixed(0) + '.';
+              if (sdPriceCeiling > 0 && sdPriceCeiling < eqP) {
+                var sumQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / sdDemSlope));
+                var sumQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / sdSupSlope));
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_shortage', 'Binding price ceiling: shortage of about') + ' ' + Math.max(0, sumQd - sumQs).toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + '.';
+              }
+              if (sdPriceFloor > 0 && sdPriceFloor > eqP) {
+                var sumQd2 = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / sdDemSlope));
+                var sumQs2 = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / sdSupSlope));
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_surplus', 'Binding price floor: surplus of about') + ' ' + Math.max(0, sumQs2 - sumQd2).toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + '.';
+              }
+              if (sdTax > 0) {
+                var sumQt = Math.max(0, eqQ - sdTax / (sdDemSlope + sdSupSlope));
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_tax', 'Per-unit tax of') + ' $' + sdTax + ' ' + t('stem.economicslab.canvas_summary_tax_2', 'cuts trades to about') + ' ' + sumQt.toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + ' (' + t('stem.economicslab.deadweight_loss', 'deadweight loss') + ').';
+              }
+              if (d.sdProbe !== null && d.sdProbe !== undefined) {
+                var sumPd = 90 - d.sdProbe * sdDemSlope + sdDemandShift * 5;
+                var sumPs = 10 + d.sdProbe * sdSupSlope + sdSupplyShift * 5;
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_probe', 'Probe at quantity') + ' ' + d.sdProbe + ': $' + Math.max(0, sumPd).toFixed(0) + ' / $' + Math.max(0, sumPs).toFixed(0) + '.';
+              }
+              sdSummary += ' ' + t('stem.economicslab.canvas_probe_hint', 'Click the graph — or focus it and use arrow keys — to probe buyer value vs producer cost at any quantity.');
+              return sdSummary;
+            }
+            if (econTab === 'personalFinance') {
+              var expensesTotal = pfRent + pfFood + pfTransport + pfEntertain + pfSavings;
+              return t('stem.economicslab.canvas_summary_personal_finance', 'Personal finance chart showing a monthly budget pie chart and compound-interest growth projection.') + ' Income $' + pfIncome.toLocaleString() + ', expenses $' + expensesTotal.toLocaleString() + '.';
+            }
+            if (econTab === 'stockMarket') {
+              var co = smCompanies[smSelected];
+              return co
+                ? t('stem.economicslab.canvas_summary_stock_market', 'Stock market chart showing selected company price history, portfolio cash, holdings, and current value.') + ' Selected: ' + co.ticker + ' at $' + co.price.toFixed(2) + '.'
+                : t('stem.economicslab.canvas_summary_stock_market_empty', 'Stock market chart area ready for a generated market. Start a market simulation to see price history and holdings.');
+            }
+            if (econTab === 'entrepreneur') {
+              return d.enBusiness
+                ? t('stem.economicslab.canvas_summary_business', 'Business dashboard showing cash, reputation, unit economics, break-even point, and daily profit history.') + ' ' + (d.enBusiness.businessName || '') + ', ' + t('stem.economicslab.day', 'day') + ' ' + (d.enBizDay || 1) + ', $' + (d.enBizCash || 0).toLocaleString() + '.'
+                : t('stem.economicslab.canvas_summary_business_empty', 'Business dashboard placeholder. Launch a business below to see cash, reputation, and daily profit here.');
+            }
+            if (econTab === 'macro') {
+              return t('stem.economicslab.canvas_summary_macro', 'National economy dashboard showing GDP growth, inflation, interest rate, unemployment, trade balance, and policy history.') + ' GDP ' + macroGDP.toFixed(1) + '%, inflation ' + macroInflation.toFixed(1) + '%, unemployment ' + macroUnemployment.toFixed(1) + '%.';
+            }
+            return t('stem.economicslab.canvas_summary_inquiry', 'Policy inquiry mode uses four policy levers to model a toy macro outcome. Use the policy bars below to compare GDP, inflation, and unemployment changes.');
+          }
+
+          function economicsTeacherPrompt() {
+            if (econTab === 'supplyDemand') return t('stem.economicslab.teacher_prompt_supply_demand', 'Ask students to predict whether price, quantity, surplus, or shortage changes before moving a slider.');
+            if (econTab === 'personalFinance') return t('stem.economicslab.teacher_prompt_personal_finance', 'Ask students to name one trade-off in the budget and one reason compound interest rewards starting early.');
+            if (econTab === 'stockMarket') return t('stem.economicslab.teacher_prompt_stock_market', 'Ask students to separate price movement, business fundamentals, and portfolio risk in one explanation.');
+            if (econTab === 'entrepreneur') return t('stem.economicslab.teacher_prompt_entrepreneur', 'Ask students to estimate break-even cups before opening the business for the day.');
+            if (econTab === 'macro') return t('stem.economicslab.teacher_prompt_macro', 'Ask students to choose one policy goal and identify the metric that would show progress or harm.');
+            return t('stem.economicslab.teacher_prompt_inquiry', 'Ask students which policy lever economists would most disagree about, then explain why the model is only a heuristic.');
+          }
+
+          var econCanvasSummary = economicsCanvasSummary();
+          var econTeacherPrompt = economicsTeacherPrompt();
+          var econReferenceItems = [
+            { key: 'showScenarioChallenge', label: t('stem.economicslab.reference_challenge', 'Challenge') },
+            { key: 'showEconQuickRef', label: t('stem.economicslab.reference_quick_ref', 'Quick ref') },
+            { key: 'showEconTimeline', label: t('stem.economicslab.reference_timeline', 'Timeline') },
+            { key: 'showConceptLib', label: t('stem.economicslab.reference_concepts', 'Concepts') },
+            { key: 'showEconSchools', label: t('stem.economicslab.reference_schools', 'Schools') },
+            { key: 'showMarketStructures', label: t('stem.economicslab.reference_markets', 'Markets') },
+            { key: 'showBudgetRules', label: t('stem.economicslab.reference_budget', 'Budget') },
+            { key: 'showCompoundCalc', label: t('stem.economicslab.reference_compound', 'Compound') },
+            { key: 'showInflationCalc', label: t('stem.economicslab.reference_inflation', 'Inflation') },
+            { key: 'showBizCycle', label: t('stem.economicslab.reference_cycle', 'Cycle') },
+            { key: 'showGdpBreakdown', label: t('stem.economicslab.reference_gdp', 'GDP') },
+            { key: 'showEconomists', label: t('stem.economicslab.reference_people', 'People') },
+            { key: 'showIndicators', label: t('stem.economicslab.reference_indicators', 'Indicators') }
+          ];
+          var econOpenReferenceCount = econReferenceItems.reduce(function(total, item) {
+            return total + (d[item.key] ? 1 : 0);
+          }, 0);
+
+          var ECON_TABS = [
+            { id: 'supplyDemand', label: t('stem.economicslab.supply_demand_3', '📉 Supply & Demand') },
+            { id: 'personalFinance', label: t('stem.economicslab.personal_finance', '🏦 Personal Finance') },
+            { id: 'stockMarket', label: t('stem.economicslab.stock_market', '📈 Stock Market') },
+            { id: 'entrepreneur', label: t('stem.economicslab.business_sim', '🏪 Business Sim') },
+            { id: 'macro', label: t('stem.economicslab.national_economy', '🏛️ National Economy') },
+            { id: 'inquiry', label: t('stem.economicslab.policy_inquiry', '🔬 Policy Inquiry') }
+          ];
+
+          var econSelectTab = function (tabId, focusAfter) {
+            var viewed = Object.assign({}, d.tabsViewed || {});
+            viewed[tabId] = true;
+            upd('tabsViewed', viewed);
+            upd('econTab', tabId);
+            if (focusAfter) setTimeout(function () { var el = document.getElementById('economicslab-tab-' + tabId); if (el) el.focus(); }, 0);
+          };
 
 
-          return React.createElement('div', { className: 'max-w-4xl mx-auto' },
+
+          return React.createElement('div', { className: 'economicslab-tool-shell max-w-4xl mx-auto', "data-economicslab-tool": "true" },
 
             // Header
 
-            React.createElement('div', { className: 'flex items-center gap-3 mb-4' },
+            React.createElement('div', { className: 'flex items-center gap-3 mb-4 flex-wrap' },
 
               React.createElement('button', {
 
+                "aria-label": t('stem.economicslab.back_to_stem_tools', 'Back to STEM tools'),
+
+                title: t('stem.economicslab.back', 'Back'),
+
                 onClick: function () { setStemLabTool(null); },
 
-                className: 'text-slate-200 hover:text-white transition-colors text-lg'
+                className: 'text-slate-500 hover:text-slate-700 transition-colors text-lg'
 
               }, '\u2190'),
 
-              React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, '\uD83D\uDCB0 Economics Lab'),
+              React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, t('stem.economicslab.economics_lab', '\uD83D\uDCB0 Economics Lab')),
 
-              React.createElement('span', { className: 'text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full' }, '5 simulators'),
+              React.createElement('span', { className: 'text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full' }, t('stem.economicslab.5_simulators', '5 simulators')),
 
               React.createElement('span', {
+
+                title: t('stem.economicslab.literacy_tooltip', 'Economic literacy grows with concepts learned, years simulated across the sims, quiz accuracy, and achievements earned'),
 
                 className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' +
 
@@ -1395,18 +1755,22 @@ var d = labToolData || {};
 
               }, '\uD83C\uDF93 Literacy: ' + econLiteracyScore + '%'),
 
-              React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
+              React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, t('stem.economicslab.ai_powered_learning', '\uD83D\uDCDA AI-Powered Learning')),
 
-              econAchievements.length > 0 && React.createElement('span', { 
+              econAchievements.length > 0 && React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showAchievements ? 'true' : 'false',
                 className: 'text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
 
                 onClick: function () { upd('showAchievements', !(d.showAchievements)); }
 
               }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
 
-              React.createElement('span', { 
+              React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showGlossary ? 'true' : 'false',
                 className: 'text-[11px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
 
                 onClick: function () { upd('showGlossary', !(d.showGlossary)); }
@@ -1415,21 +1779,27 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showQuiz ? 'true' : 'false',
                 onClick: function () { upd('showQuiz', !(d.showQuiz)); },
 
                 className: 'text-[11px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
 
-              }, '\u270D\uFE0F Quiz Me'),
+              }, t('stem.economicslab.quiz_me', '\u270D\uFE0F Quiz Me')),
 
               React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showAdvisor ? 'true' : 'false',
                 onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
 
                 className: 'text-[11px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
 
-              }, '\uD83E\uDDD1\u200D\uD83C\uDFEB Ask Tutor'),
+              }, t('stem.economicslab.ask_tutor', '\uD83E\uDDD1\u200D\uD83C\uDFEB Ask Tutor')),
 
               React.createElement('select', {
+
+                'aria-label': t('stem.economicslab.difficulty', 'Difficulty'),
 
                 value: d.econDifficulty || 'medium',
 
@@ -1439,11 +1809,11 @@ var d = labToolData || {};
 
               },
 
-                React.createElement('option', { value: 'easy' }, '\uD83C\uDF31 Easy'),
+                React.createElement('option', { value: 'easy' }, t('stem.economicslab.easy', '\uD83C\uDF31 Easy')),
 
-                React.createElement('option', { value: 'medium' }, '\u2699\uFE0F Medium'),
+                React.createElement('option', { value: 'medium' }, t('stem.economicslab.medium', '\u2699\uFE0F Medium')),
 
-                React.createElement('option', { value: 'hard' }, '\uD83D\uDD25 Hard')
+                React.createElement('option', { value: 'hard' }, t('stem.economicslab.hard', '\uD83D\uDD25 Hard'))
 
               )
 
@@ -1451,29 +1821,37 @@ var d = labToolData || {};
 
             // Tab bar
 
-            React.createElement('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1' },
+            React.createElement('div', {
+              className: 'economicslab-tabbar flex gap-1 mb-4 bg-slate-100 rounded-xl p-1',
+              role: 'tablist',
+              'aria-label': t('stem.economicslab.topic_tabs', 'Economics Lab topics')
+            },
 
-              [
-
-                { id: 'supplyDemand', label: '\uD83D\uDCC9 Supply & Demand' },
-
-                { id: 'personalFinance', label: '\uD83C\uDFE6 Personal Finance' },
-
-                { id: 'stockMarket', label: '\uD83D\uDCC8 Stock Market' },
-
-                { id: 'entrepreneur', label: '\uD83C\uDFEA Business Sim' },
-
-                { id: 'macro', label: '\uD83C\uDFDB\uFE0F National Economy' },
-
-                { id: 'inquiry', label: '\uD83D\uDD2C Policy Inquiry' }
-
-              ].map(function (tab) {
+              ECON_TABS.map(function (tab) {
 
                 return React.createElement('button', {
 
                   key: tab.id,
 
-                  onClick: function () { upd('econTab', tab.id); },
+                  role: 'tab',
+                  id: 'economicslab-tab-' + tab.id,
+                  'aria-selected': econTab === tab.id ? 'true' : 'false',
+                  'aria-controls': 'economicslab-panel-' + tab.id,
+                  // Roving tabindex + arrow keys (WAI-ARIA tabs pattern)
+                  tabIndex: econTab === tab.id ? 0 : -1,
+                  onKeyDown: function (e) {
+                    var ids = ECON_TABS.map(function (x) { return x.id; });
+                    var idx = ids.indexOf(tab.id);
+                    var next = null;
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = ids[(idx + 1) % ids.length];
+                    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = ids[(idx - 1 + ids.length) % ids.length];
+                    else if (e.key === 'Home') next = ids[0];
+                    else if (e.key === 'End') next = ids[ids.length - 1];
+                    if (next) { e.preventDefault(); econSelectTab(next, true); }
+                  },
+                  onClick: function () {
+                    econSelectTab(tab.id, false);
+                  },
 
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
 
@@ -1488,19 +1866,35 @@ var d = labToolData || {};
             // ── Topic-accent hero band per tab ──
             (function() {
               var TAB_META = {
-                supplyDemand:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCC9', title: 'Supply & Demand \u2014 the price-discovery engine',     hint: 'Demand slopes down (cheap = buy more); supply slopes up (expensive = produce more). Equilibrium price + quantity is where they cross. Adam Smith\u2019s 1776 Wealth of Nations is still the foundation.' },
-                personalFinance: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDFE6', title: 'Personal Finance \u2014 budgeting, saving, credit',     hint: '50/30/20: needs / wants / save. Compound interest is the eighth wonder; a 30-year head start at 7% turns $1 into $7.61. Pay credit cards in full \u2014 19% APR is mafia rates.' },
-                stockMarket:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDCC8', title: 'Stock Market \u2014 ownership at fractional scale',     hint: 'Buy a share = own a slice of the company. S&P 500 has averaged ~10% annual returns over 100 years. Diversify (don\u2019t bet on one ticker), hold long (time in market beats timing it).' },
-                entrepreneur:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFEA', title: 'Business Sim \u2014 you\u2019re the founder',           hint: 'Revenue \u2212 costs = profit. Break-even point is when fixed costs are covered. Most small businesses fail in year 5; the survivors found product-market fit. Customer acquisition cost (CAC) vs lifetime value (LTV) is the founder\u2019s daily math.' },
-                macro:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFDB', title: 'National Economy \u2014 GDP, inflation, unemployment',  hint: 'GDP measures total output; CPI measures inflation; unemployment U-3 is the headline rate. The Fed sets interest rates to balance growth vs inflation \u2014 the dual mandate Congress gave it in 1977.' }
+                supplyDemand:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCC9', title: t('stem.economicslab.supply_demand_the_price_discovery_engi', 'Supply & Demand \u2014 the price-discovery engine'),     hint: t('stem.economicslab.demand_slopes_down_cheap_buy_more_supp', 'Demand slopes down (cheap = buy more); supply slopes up (expensive = produce more). Equilibrium price + quantity is where they cross. Adam Smith\u2019s 1776 Wealth of Nations is still the foundation.') },
+                personalFinance: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDFE6', title: t('stem.economicslab.personal_finance_budgeting_saving_cred', 'Personal Finance \u2014 budgeting, saving, credit'),     hint: t('stem.economicslab.50_30_20_needs_wants_save_compound_int', '50/30/20: needs / wants / save. Compound interest is the eighth wonder; a 30-year head start at 7% turns $1 into $7.61. Pay credit cards in full \u2014 19% APR is mafia rates.') },
+                stockMarket:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDCC8', title: t('stem.economicslab.stock_market_ownership_at_fractional_s', 'Stock Market \u2014 ownership at fractional scale'),     hint: t('stem.economicslab.buy_a_share_own_a_slice_of_the_company', 'Buy a share = own a slice of the company. S&P 500 has averaged ~10% annual returns over 100 years. Diversify (don\u2019t bet on one ticker), hold long (time in market beats timing it).') },
+                entrepreneur:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFEA', title: t('stem.economicslab.business_sim_you_re_the_founder', 'Business Sim \u2014 you\u2019re the founder'),           hint: t('stem.economicslab.revenue_costs_profit_break_even_point_', 'Revenue \u2212 costs = profit. Break-even point is when fixed costs are covered. Most small businesses fail in year 5; the survivors found product-market fit. Customer acquisition cost (CAC) vs lifetime value (LTV) is the founder\u2019s daily math.') },
+                macro:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFDB', title: t('stem.economicslab.national_economy_gdp_inflation_unemplo', 'National Economy \u2014 GDP, inflation, unemployment'),  hint: t('stem.economicslab.gdp_measures_total_output_cpi_measures', 'GDP measures total output; CPI measures inflation; unemployment U-3 is the headline rate. The Fed sets interest rates to balance growth vs inflation \u2014 the dual mandate Congress gave it in 1977.') }
+              };
+              // The inquiry tab used to fall back to the Supply & Demand hero.
+              TAB_META.inquiry = { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '🔬', title: t('stem.economicslab.policy_inquiry_hero', 'Policy Inquiry — no answer key'), hint: t('stem.economicslab.policy_inquiry_hero_hint', 'Move the levers, predict the macro state BEFORE reading it, and defend your reasoning. Real economists genuinely disagree about these signs and magnitudes.') };
+              // One concrete predict-then-test task per tab.
+              var TAB_TRY = {
+                supplyDemand: t('stem.economicslab.try_supply_demand', 'Try: set a Price Ceiling of $30 (rent control). Predict first — how many units short will the market run?'),
+                personalFinance: t('stem.economicslab.try_personal_finance', 'Try: invest 15% in Balanced and choose the Roommate housing. Watch net worth vs cash over 5 years.'),
+                stockMarket: t('stem.economicslab.try_stock_market', 'Try: trade for 5 days, then compare your return to the buy-and-hold Index tile. Who is winning?'),
+                entrepreneur: t('stem.economicslab.try_entrepreneur', 'Try: find your break-even before opening, then test a price 50% higher for one day. What happened to profit?'),
+                macro: t('stem.economicslab.try_macro', 'Try: pick "Cool inflation" as your goal, raise the interest rate 2 points, and advance one year.'),
+                inquiry: t('stem.economicslab.try_inquiry', 'Try: produce stagflation (high inflation + falling GDP) with the fewest lever moves you can.')
               };
               var meta = TAB_META[econTab] || TAB_META.supplyDemand;
               return React.createElement('div', {
+                className: 'economicslab-topic-card',
+                'data-economicslab-topic-card': 'true',
+                id: 'economicslab-panel-' + econTab,
+                role: 'tabpanel',
+                'aria-labelledby': 'economicslab-tab-' + econTab,
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, var(--allo-stem-canvas, #ffffff) 100%)',
                   border: '1px solid ' + meta.accent + '55',
                   borderLeft: '4px solid ' + meta.accent,
                   display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
@@ -1509,10 +1903,42 @@ var d = labToolData || {};
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint),
+                  TAB_TRY[econTab] && React.createElement('p', { style: { margin: '5px 0 0', color: meta.accent, fontSize: 11, lineHeight: 1.4, fontWeight: 700 } }, '🧪 ' + TAB_TRY[econTab])
                 )
               );
             })(),
+
+            React.createElement('div', {
+              className: 'economicslab-reference-shelf',
+              'data-economicslab-reference-shelf': 'true'
+            },
+              React.createElement('div', { className: 'economicslab-reference-shelf-head' },
+                React.createElement('span', { className: 'economicslab-reference-shelf-title' }, t('stem.economicslab.reference_tools', 'Reference tools')),
+                React.createElement('span', { className: 'economicslab-reference-shelf-count' },
+                  econOpenReferenceCount > 0
+                    ? t('stem.economicslab.reference_open_count', 'Open: ') + econOpenReferenceCount
+                    : t('stem.economicslab.reference_closed_hint', 'Optional support')
+                )
+              ),
+              React.createElement('div', {
+                className: 'economicslab-reference-actions',
+                role: 'group',
+                'aria-label': t('stem.economicslab.reference_tool_group', 'Economics reference tools')
+              },
+                econReferenceItems.map(function(item) {
+                  var isOpen = !!d[item.key];
+                  return React.createElement('button', {
+                    key: item.key,
+                    type: 'button',
+                    className: 'economicslab-reference-chip',
+                    'aria-pressed': isOpen ? 'true' : 'false',
+                    'aria-expanded': isOpen ? 'true' : 'false',
+                    onClick: function() { upd(item.key, !isOpen); }
+                  }, item.label);
+                })
+              )
+            ),
 
             // Achievement panel
 
@@ -1520,7 +1946,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
 
-                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC6 Achievements (' + econAchievements.length + '/20)'),
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC6 Achievements (' + econAchievements.length + '/21)'),
 
                 React.createElement('button', { onClick: function () { upd('showAchievements', false); }, className: 'text-amber-400 hover:text-amber-600 text-xs' }, '\u2715')
 
@@ -1554,11 +1980,23 @@ var d = labToolData || {};
 
                 React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, '\uD83D\uDCD6 Economics Glossary (' + (d.econGlossary || []).length + ' concepts learned)'),
 
-                React.createElement('button', { onClick: function () { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs' }, '\u2715')
+                React.createElement('div', { className: 'flex items-center gap-2' },
+
+                  (d.econGlossary || []).length > 0 && React.createElement('button', {
+                    onClick: function () {
+                      var glossaryText = (d.econGlossary || []).map(function (g) { return g.concept + ' \u2014 ' + g.explanation; }).join('\n');
+                      try { navigator.clipboard.writeText(glossaryText); if (addToast) addToast(t('stem.economicslab.glossary_copied', 'Glossary copied \u2014 paste it into your notes'), 'success'); } catch (e) { if (addToast) addToast('Copy failed', 'error'); }
+                    },
+                    className: 'text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-bold'
+                  }, t('stem.economicslab.copy_glossary', '\uD83D\uDCCB Copy')),
+
+                  React.createElement('button', { onClick: function () { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs', 'aria-label': t('stem.economicslab.close_glossary', 'Close glossary') }, '\u2715')
+
+                )
 
               ),
 
-              (d.econGlossary || []).length === 0 ? React.createElement('p', { className: 'text-xs text-violet-500 text-center py-4' }, 'Play the simulations to discover economics concepts! Each event teaches a new concept that gets added here.') :
+              (d.econGlossary || []).length === 0 ? React.createElement('p', { className: 'text-xs text-violet-500 text-center py-4' }, t('stem.economicslab.play_the_simulations_to_discover_econo', 'Play the simulations to discover economics concepts! Each event teaches a new concept that gets added here.')) :
 
                 React.createElement('div', { className: 'space-y-2' },
 
@@ -1590,7 +2028,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
 
-                React.createElement('h4', { className: 'text-sm font-bold text-rose-800' }, '\u270D\uFE0F Economics Quiz'),
+                React.createElement('h4', { className: 'text-sm font-bold text-rose-800' }, t('stem.economicslab.economics_quiz', '\u270D\uFE0F Economics Quiz')),
 
                 React.createElement('button', { onClick: function () { upd('showQuiz', false); upd('quizQuestion', null); }, className: 'text-rose-400 hover:text-rose-600 text-xs' }, '\u2715')
 
@@ -1634,7 +2072,7 @@ var d = labToolData || {};
 
                           isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
 
-                            isAnswered ? 'border-slate-200 bg-white text-slate-200' :
+                            isAnswered ? 'border-slate-200 bg-white text-slate-400 opacity-70' :
 
                               'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
 
@@ -1648,7 +2086,7 @@ var d = labToolData || {};
 
                   React.createElement('p', { className: 'text-xs text-slate-600' },
 
-                    React.createElement('span', { className: 'font-bold text-rose-700' }, '\uD83D\uDCDA Explanation: '),
+                    React.createElement('span', { className: 'font-bold text-rose-700' }, t('stem.economicslab.explanation', '\uD83D\uDCDA Explanation: ')),
 
                     d.quizQuestion.explanation
 
@@ -1662,7 +2100,7 @@ var d = labToolData || {};
 
                   className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200'
 
-                }, '\u27A1\uFE0F Next Question')
+                }, t('stem.economicslab.next_question', '\u27A1\uFE0F Next Question'))
 
               ) :
 
@@ -1678,7 +2116,7 @@ var d = labToolData || {};
 
                       var topics = (d.econGlossary || []).map(function (g) { return g.concept; }).join(', ') || 'supply and demand, inflation, GDP, interest rates, opportunity cost';
 
-                      var prompt = 'You are an economics teacher creating a quiz. The student has studied these topics: ' + topics + '.\n\nGenerate 1 multiple-choice question. Return ONLY valid JSON:\n{"question":"<question text>","options":["<option A>","<option B>","<option C>","<option D>"],"correctIndex":<0-3>,"explanation":"<2-3 sentence explanation of the correct answer and the underlying economic concept>"}\n\nMake questions that test UNDERSTANDING, not just definitions. Include real-world application questions, cause-and-effect reasoning, and scenario-based problems. Vary difficulty.';
+                      var prompt = 'You are an economics teacher creating a quiz (difficulty: ' + (d.econDifficulty || 'medium') + '). The student has studied these topics: ' + topics + '.\n\nGenerate 1 multiple-choice question. Return ONLY valid JSON:\n{"question":"<question text>","options":["<option A>","<option B>","<option C>","<option D>"],"correctIndex":<0-3>,"explanation":"<2-3 sentence explanation of the correct answer and the underlying economic concept>"}\n\nMake questions that test UNDERSTANDING, not just definitions. Include real-world application questions, cause-and-effect reasoning, and scenario-based problems. Vary difficulty.';
 
                       callGemini(prompt, true).then(function (result) {
 
@@ -1696,15 +2134,15 @@ var d = labToolData || {};
 
                           upd('quizLoading', false);
 
-                        } catch (err) { upd('quizLoading', false); if (addToast) addToast('Quiz generation failed', 'error'); }
+                        } catch (err) { upd('quizLoading', false); if (addToast) addToast(t('stem.economicslab.quiz_failed_offline_hint', 'Quiz generation failed — try the Challenge scenarios in the reference shelf (they work offline)'), 'error'); }
 
-                      }).catch(function () { upd('quizLoading', false); });
+                      }).catch(function () { upd('quizLoading', false); if (addToast) addToast(t('stem.economicslab.quiz_failed_offline_hint', 'Quiz generation failed — try the Challenge scenarios in the reference shelf (they work offline)'), 'error'); });
 
                     },
 
                     disabled: d.quizLoading,
 
-                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
+                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
 
                   }, d.quizLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Quiz Question')
 
@@ -1718,7 +2156,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
 
-                React.createElement('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDDD1\u200D\uD83C\uDFEB AI Economics Tutor'),
+                React.createElement('h4', { className: 'text-sm font-bold text-sky-800' }, t('stem.economicslab.ai_economics_tutor', '\uD83E\uDDD1\u200D\uD83C\uDFEB AI Economics Tutor')),
 
                 React.createElement('button', { onClick: function () { upd('showAdvisor', false); }, className: 'text-sky-400 hover:text-sky-600 text-xs' }, '\u2715')
 
@@ -1742,7 +2180,7 @@ var d = labToolData || {};
 
                   onKeyDown: function (e) { if (e.key === 'Enter' && (d.advisorInput || '').trim()) { document.getElementById('econ-advisor-ask').click(); } },
 
-                  placeholder: 'Ask any economics question...',
+                  placeholder: t('stem.economicslab.ask_any_economics_question', 'Ask any economics question...'),
 
                   className: 'flex-1 px-3 py-2 border-2 border-sky-200 rounded-xl text-xs focus:border-sky-400'
 
@@ -1786,7 +2224,7 @@ var d = labToolData || {};
 
                   disabled: d.advisorLoading || !(d.advisorInput || '').trim(),
 
-                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-200' : 'bg-sky-500 text-white')
+                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-600' : 'bg-sky-500 text-white')
 
                 }, d.advisorLoading ? '\u23F3' : '\uD83D\uDCAC Ask')
 
@@ -1796,7 +2234,16 @@ var d = labToolData || {};
 
               !d.advisorAnswer && React.createElement('div', { className: 'flex flex-wrap gap-1 mt-2' },
 
-                ['What is inflation?', 'How do interest rates work?', 'What causes a recession?', 'Why diversify investments?', 'What is GDP?', 'How do taxes work?'].map(function (q) {
+                // Suggestions follow the active tab so the tutor meets students
+                // where they are instead of offering the same six generic asks.
+                (({
+                  supplyDemand: ['Why do price ceilings cause shortages?', 'What shifts a demand curve?', 'What is deadweight loss?', 'Why do buyers AND sellers pay part of a tax?'],
+                  personalFinance: ['Why does compound interest matter more when young?', 'Good debt vs bad debt?', 'How does a credit score work?', 'How big should an emergency fund be?'],
+                  stockMarket: ['What is an index fund?', 'Why diversify investments?', 'What makes stock prices move?', 'Is timing the market a good idea?'],
+                  entrepreneur: ['What is break-even analysis?', 'How do I price a product?', 'Why do most small businesses fail?', 'Fixed vs variable costs?'],
+                  macro: ['How do interest rates fight inflation?', 'What causes a recession?', 'What is the Fed\'s dual mandate?', 'Why is some unemployment normal?'],
+                  inquiry: ['Why do economists disagree so much?', 'What is stagflation?', 'Do tax cuts pay for themselves?', 'What would flip this model\'s signs?']
+                })[econTab] || ['What is inflation?', 'How do interest rates work?', 'What causes a recession?', 'What is GDP?']).map(function (q) {
 
                   return React.createElement('button', {
 
@@ -1818,7 +2265,7 @@ var d = labToolData || {};
             
             
             // === ECONOMICS SCENARIO CHALLENGES ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 mb-4' },
+            d.showScenarioChallenge && React.createElement('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 mb-4' },
               React.createElement('h4', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\uD83C\uDFAF Economics Scenarios (' + (econScenarioIdx + 1) + '/' + ECON_SCENARIOS.length + ')'),
               // Streak + score
               React.createElement('div', { className: 'flex justify-between items-center mb-2' },
@@ -1826,6 +2273,8 @@ var d = labToolData || {};
                   '\uD83D\uDD25 ' + econStreak + ' streak!' + (econStreak >= 5 ? ' AMAZING!' : econStreak >= 3 ? ' On fire!' : '')) : null,
                 React.createElement('span', { className: 'text-[11px] text-slate-600' }, 'Score: ' + econScenarioScore + '/' + econScenarioTotal + ' | Best: ' + econBestStreak)
               ),
+              econScenarioTotal >= ECON_SCENARIOS.length && React.createElement('div', { className: 'text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5 mb-2 text-center' },
+                t('stem.economicslab.scenario_complete', '🏁 Full deck answered! ') + econScenarioScore + '/' + econScenarioTotal + t('stem.economicslab.scenario_complete_2', ' correct, best streak ') + econBestStreak + t('stem.economicslab.scenario_complete_3', '. Scenarios repeat — can you beat your streak?')),
               (function() {
                 var sc = ECON_SCENARIOS[econScenarioIdx];
                 if (!sc) return null;
@@ -1864,7 +2313,7 @@ var d = labToolData || {};
                         className: 'w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all ' + cls,
                         disabled: answered
                       },
-                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-200') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-400') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement('span', { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })
@@ -1882,16 +2331,16 @@ var d = labToolData || {};
                         upd('econScenarioAnswer', -1);
                       },
                       className: 'w-full py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-rose-500 to-pink-500 text-white'
-                    }, 'Next Scenario \u2192')
+                    }, t('stem.economicslab.next_scenario', 'Next Scenario \u2192'))
                   )
                 );
               })()
             ),
 
             // === HISTORIC ECONOMIC EVENTS TIMELINE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-4' },
+            d.showEconTimeline && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, '\uD83D\uDCC5 Economic History Timeline'),
+                React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, t('stem.economicslab.economic_history_timeline', '\uD83D\uDCC5 Economic History Timeline')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconTimeline', !(d.showEconTimeline)); },
                   className: 'text-[11px] text-slate-600 hover:text-slate-700 font-bold'
@@ -1915,11 +2364,11 @@ var d = labToolData || {};
                         ),
                         isActive && React.createElement('div', { className: 'mt-2 space-y-1.5 pl-7' },
                           React.createElement('div', { className: 'text-[11px] text-slate-600' },
-                            React.createElement('span', { className: 'font-bold text-red-600' }, '\uD83D\uDCA5 Impact: '),
+                            React.createElement('span', { className: 'font-bold text-red-600' }, t('stem.economicslab.impact', '\uD83D\uDCA5 Impact: ')),
                             ev.impact
                           ),
                           React.createElement('div', { className: 'text-[11px] text-indigo-600 bg-indigo-50 rounded-lg p-1.5 border border-indigo-100' },
-                            React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Lesson: '),
+                            React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.lesson', '\uD83D\uDCDA Lesson: ')),
                             ev.lesson
                           )
                         )
@@ -1931,9 +2380,9 @@ var d = labToolData || {};
             ),
 
             // === QUICK REFERENCE CARDS ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200 mb-4' },
+            d.showEconQuickRef && React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83D\uDCCB Quick Reference Cards'),
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.economicslab.quick_reference_cards', '\uD83D\uDCCB Quick Reference Cards')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconQuickRef', !(d.showEconQuickRef)); },
                   className: 'text-[11px] text-amber-500 hover:text-amber-700 font-bold'
@@ -1957,35 +2406,35 @@ var d = labToolData || {};
 
 
             // === INFLATION CALCULATOR ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border border-red-200 mb-4' },
+            d.showInflationCalc && React.createElement('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border border-red-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-red-800' }, '\uD83D\uDCB2 Inflation Calculator'),
+                React.createElement('h4', { className: 'text-sm font-bold text-red-800' }, t('stem.economicslab.inflation_calculator', '\uD83D\uDCB2 Inflation Calculator')),
                 React.createElement('button', {
                   onClick: function() { upd('showInflationCalc', !(d.showInflationCalc)); },
                   className: 'text-[11px] text-red-500 hover:text-red-700 font-bold'
                 }, d.showInflationCalc ? 'Hide' : 'Calculate \u2192')
               ),
               d.showInflationCalc && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'See how inflation erodes purchasing power over time. A dollar today is worth more than a dollar tomorrow!'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.see_how_inflation_erodes_purchasing_po', 'See how inflation erodes purchasing power over time. A dollar today is worth more than a dollar tomorrow!')),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Amount ($)'),
+                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.amount', 'Amount ($)')),
                     React.createElement('input', { type: 'number', value: d.inflationAmt || 100,
                       onChange: function(e) { upd('inflationAmt', parseFloat(e.target.value) || 100); },
                       className: 'w-full px-2 py-1.5 border border-red-200 rounded-lg text-xs focus:border-red-400'
                     })
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Inflation Rate (%)'),
-                    React.createElement('input', { type: 'range', 'aria-label': 'Inflation rate, percent', min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
+                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.inflation_rate', 'Inflation Rate (%)')),
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.inflationRate || 3) + '%', 'aria-label': t('stem.economicslab.inflation_rate_percent', 'Inflation rate, percent'), min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
                       onChange: function(e) { upd('inflationRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
                     React.createElement('div', { className: 'text-[11px] text-center text-red-600 font-bold' }, (d.inflationRate || 3) + '%')
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Years'),
-                    React.createElement('input', { type: 'range', 'aria-label': 'Years', min: 1, max: 50, value: d.inflationYears || 20,
+                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.years', 'Years')),
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.inflationYears || 20) + ' years', 'aria-label': t('stem.economicslab.years_2', 'Years'), min: 1, max: 50, value: d.inflationYears || 20,
                       onChange: function(e) { upd('inflationYears', parseInt(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
@@ -2009,16 +2458,16 @@ var d = labToolData || {};
             ),
 
             // === BUSINESS CYCLE DIAGRAM ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4' },
+            d.showBizCycle && React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-green-800' }, '\uD83D\uDD04 Business Cycle'),
+                React.createElement('h4', { className: 'text-sm font-bold text-green-800' }, t('stem.economicslab.business_cycle', '\uD83D\uDD04 Business Cycle')),
                 React.createElement('button', {
                   onClick: function() { upd('showBizCycle', !(d.showBizCycle)); },
                   className: 'text-[11px] text-green-500 hover:text-green-700 font-bold'
                 }, d.showBizCycle ? 'Hide' : 'Explore \u2192')
               ),
               d.showBizCycle && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'The economy moves through repeating cycles of expansion and contraction. Understanding where we are in the cycle helps predict what comes next.'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.the_economy_moves_through_repeating_cy', 'The economy moves through repeating cycles of expansion and contraction. Understanding where we are in the cycle helps predict what comes next.')),
                 // Visual cycle
                 React.createElement('div', { className: 'flex items-center justify-center gap-1 mb-3' },
                   BUSINESS_CYCLE_PHASES.map(function(phase, pi) {
@@ -2032,7 +2481,7 @@ var d = labToolData || {};
                         React.createElement('span', { className: 'text-xl' }, phase.icon),
                         React.createElement('span', { className: 'text-[11px] font-black', style: { color: phase.color } }, phase.name)
                       ),
-                      pi < 3 && React.createElement('span', { className: 'text-slate-200 text-lg mx-0.5' }, '\u2192')
+                      pi < 3 && React.createElement('span', { className: 'text-slate-400 text-lg mx-0.5', 'aria-hidden': 'true' }, '\u2192')
                     );
                   })
                 ),
@@ -2053,11 +2502,11 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, 'Characteristics:'),
                     React.createElement('ul', { className: 'space-y-0.5 ml-3 mb-2' },
                       phase.characteristics.map(function(ch, chi) {
-                        return React.createElement('li', { key: chi, className: 'text-[11px] text-slate-200 list-disc' }, ch);
+                        return React.createElement('li', { key: chi, className: 'text-[11px] text-slate-600 list-disc' }, ch);
                       })
                     ),
                     React.createElement('div', { className: 'text-[11px] text-blue-600 bg-blue-50 rounded-lg p-2 border border-blue-100 mb-1' },
-                      React.createElement('span', { className: 'font-bold' }, '\uD83C\uDFDB\uFE0F Policy Response: '),
+                      React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.policy_response', '\uD83C\uDFDB\uFE0F Policy Response: ')),
                       phase.policy
                     ),
                     React.createElement('div', { className: 'text-[11px] text-amber-600 italic' }, '\uD83D\uDCCA Indicators: ' + phase.indicators)
@@ -2067,9 +2516,9 @@ var d = labToolData || {};
             ),
 
             // === COMPOUND INTEREST CALCULATOR CONTROLS ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200 mb-4' },
+            d.showCompoundCalc && React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, '\uD83D\uDCCA Compound Interest Calculator'),
+                React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, t('stem.economicslab.compound_interest_calculator', '\uD83D\uDCCA Compound Interest Calculator')),
                 React.createElement('button', {
                   onClick: function() { upd('showCompoundCalc', !(d.showCompoundCalc)); },
                   className: 'text-[11px] text-emerald-500 hover:text-emerald-700 font-bold'
@@ -2079,21 +2528,21 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Starting Amount: $' + (d.pfPrincipal || 1000).toLocaleString()),
-                    React.createElement('input', { type: 'range', 'aria-label': 'Starting amount in dollars', min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': '$' + (d.pfPrincipal || 1000).toLocaleString(), 'aria-label': t('stem.economicslab.starting_amount_in_dollars', 'Starting amount in dollars'), min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
                       onChange: function(e) { upd('pfPrincipal', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Annual Return: ' + (d.pfRate || 7) + '%'),
-                    React.createElement('input', { type: 'range', 'aria-label': 'Annual return, percent', min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.pfRate || 7) + '%', 'aria-label': t('stem.economicslab.annual_return_percent', 'Annual return, percent'), min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
                       onChange: function(e) { upd('pfRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Years: ' + (d.pfYears || 30)),
-                    React.createElement('input', { type: 'range', 'aria-label': 'Years', min: 1, max: 50, value: d.pfYears || 30,
+                    React.createElement('input', { type: 'range', 'aria-valuetext': (d.pfYears || 30) + ' years', 'aria-label': t('stem.economicslab.years_3', 'Years'), min: 1, max: 50, value: d.pfYears || 30,
                       onChange: function(e) { upd('pfYears', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
@@ -2109,16 +2558,16 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'text-2xl font-black text-emerald-600' }, '$' + Math.round(fv).toLocaleString()),
                     React.createElement('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'From $' + p.toLocaleString() + ' invested at ' + (d.pfRate || 7) + '% for ' + y + ' years'),
                     React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 mt-1' }, '\uD83D\uDCC8 $' + Math.round(earned).toLocaleString() + ' earned through compound interest!'),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 italic' }, '"Compound interest is the eighth wonder of the world." \u2014 Albert Einstein (attributed)')
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 italic' }, t('stem.economicslab.compound_interest_is_the_eighth_wonder', '"Compound interest is the eighth wonder of the world." \u2014 Albert Einstein (attributed)'))
                   );
                 })()
               )
             ),
 
             // === BUDGET RULES ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 mb-4' },
+            d.showBudgetRules && React.createElement('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-blue-800' }, '\uD83D\uDCB0 Budget Rules'),
+                React.createElement('h4', { className: 'text-sm font-bold text-blue-800' }, t('stem.economicslab.budget_rules', '\uD83D\uDCB0 Budget Rules')),
                 React.createElement('button', {
                   onClick: function() { upd('showBudgetRules', !(d.showBudgetRules)); },
                   className: 'text-[11px] text-blue-500 hover:text-blue-700 font-bold'
@@ -2170,24 +2619,24 @@ var d = labToolData || {};
             ),
 
             // === SCHOOLS OF ECONOMIC THOUGHT ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl p-4 border border-purple-200 mb-4' },
+            d.showEconSchools && React.createElement('div', { className: 'bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl p-4 border border-purple-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-purple-800' }, '\uD83C\uDFDB\uFE0F Schools of Economic Thought'),
+                React.createElement('h4', { className: 'text-sm font-bold text-purple-800' }, t('stem.economicslab.schools_of_economic_thought', '\uD83C\uDFDB\uFE0F Schools of Economic Thought')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconSchools', !(d.showEconSchools)); },
                   className: 'text-[11px] text-purple-500 hover:text-purple-700 font-bold'
                 }, d.showEconSchools ? 'Hide' : 'Compare \u2192')
               ),
               d.showEconSchools && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'Economists disagree! Different schools of thought offer different answers to the same questions. Understanding these perspectives helps you think critically about economic policy.'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.economists_disagree_different_schools_', 'Economists disagree! Different schools of thought offer different answers to the same questions. Understanding these perspectives helps you think critically about economic policy.')),
                 // Comparison table
                 React.createElement('div', { className: 'rounded-xl overflow-hidden border border-purple-200' },
                   // Header
                   React.createElement('div', { className: 'grid grid-cols-4 bg-purple-100 text-[11px] font-bold text-purple-800 uppercase' },
-                    React.createElement('div', { className: 'p-1.5' }, 'School'),
-                    React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, 'Gov\'t Role'),
-                    React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, 'On Recession'),
-                    React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, 'On Inflation')
+                    React.createElement('div', { className: 'p-1.5' }, t('stem.economicslab.school', 'School')),
+                    React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, t('stem.economicslab.gov_t_role', 'Gov\'t Role')),
+                    React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, t('stem.economicslab.on_recession', 'On Recession')),
+                    React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, t('stem.economicslab.on_inflation', 'On Inflation'))
                   ),
                   ECON_SCHOOLS.map(function(school, si) {
                     var isActive = d.econSchoolIdx === si;
@@ -2209,11 +2658,11 @@ var d = labToolData || {};
                       ),
                       isActive && React.createElement('div', { className: 'px-3 py-2 border-t border-slate-100', style: { background: school.color + '08', borderLeft: '3px solid ' + school.color } },
                         React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' },
-                          React.createElement('span', { className: 'font-bold', style: { color: school.color } }, '\uD83D\uDCA1 Key Idea: '),
+                          React.createElement('span', { className: 'font-bold', style: { color: school.color } }, t('stem.economicslab.key_idea', '\uD83D\uDCA1 Key Idea: ')),
                           school.key
                         ),
                         React.createElement('div', { className: 'text-[11px] text-slate-600' },
-                          React.createElement('span', { className: 'font-bold' }, '\uD83C\uDF93 Famous: '),
+                          React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.famous', '\uD83C\uDF93 Famous: ')),
                           school.famous
                         )
                       )
@@ -2225,7 +2674,7 @@ var d = labToolData || {};
 
 
             // === ECONOMICS CONCEPT LIBRARY ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4 border border-indigo-200 mb-4' },
+            d.showConceptLib && React.createElement('div', { className: 'bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4 border border-indigo-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-indigo-800' }, '\uD83D\uDCDA Economics Concept Library (' + ECON_CONCEPTS.length + ')'),
                 React.createElement('button', {
@@ -2260,7 +2709,7 @@ var d = labToolData || {};
                       ),
                       React.createElement('div', { className: 'text-[11px] text-slate-600' }, concept.def),
                       isActive && React.createElement('div', { className: 'mt-1.5 text-[11px] text-indigo-600 bg-indigo-50 rounded-lg p-1.5 border border-indigo-100' },
-                        React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCA1 Example: '),
+                        React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.example', '\uD83D\uDCA1 Example: ')),
                         concept.example
                       )
                     );
@@ -2270,16 +2719,16 @@ var d = labToolData || {};
             ),
 
             // === MARKET STRUCTURES ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200 mb-4' },
+            d.showMarketStructures && React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, '\uD83C\uDFEA Market Structures'),
+                React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, t('stem.economicslab.market_structures', '\uD83C\uDFEA Market Structures')),
                 React.createElement('button', {
                   onClick: function() { upd('showMarketStructures', !(d.showMarketStructures)); },
                   className: 'text-[11px] text-emerald-500 hover:text-emerald-700 font-bold'
                 }, d.showMarketStructures ? 'Hide' : 'Compare \u2192')
               ),
               d.showMarketStructures && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-2' }, 'Markets range from perfect competition (many sellers, identical products) to monopoly (one seller, unique product). Click each to learn more:'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-2' }, t('stem.economicslab.markets_range_from_perfect_competition', 'Markets range from perfect competition (many sellers, identical products) to monopoly (one seller, unique product). Click each to learn more:')),
                 // Spectrum bar
                 React.createElement('div', { className: 'flex mb-3 rounded-full overflow-hidden h-4' },
                   MARKET_STRUCTURES.map(function(ms) {
@@ -2291,8 +2740,8 @@ var d = labToolData || {};
                   })
                 ),
                 React.createElement('div', { className: 'flex items-center justify-between text-[11px] text-slate-600 mb-3' },
-                  React.createElement('span', null, '\u2190 More Competition'),
-                  React.createElement('span', null, 'More Market Power \u2192')
+                  React.createElement('span', null, t('stem.economicslab.more_competition', '\u2190 More Competition')),
+                  React.createElement('span', null, t('stem.economicslab.more_market_power', 'More Market Power \u2192'))
                 ),
                 // Cards
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
@@ -2319,7 +2768,7 @@ var d = labToolData || {};
                           React.createElement('span', { className: 'text-slate-700' }, ms.barriers),
                           React.createElement('span', { className: 'text-slate-600 font-bold' }, 'Pricing:'),
                           React.createElement('span', { className: 'text-slate-700' }, ms.pricing),
-                          React.createElement('span', { className: 'text-slate-600 font-bold' }, 'Long-run Profit:'),
+                          React.createElement('span', { className: 'text-slate-600 font-bold' }, t('stem.economicslab.long_run_profit', 'Long-run Profit:')),
                           React.createElement('span', { className: 'text-slate-700' }, ms.profit)
                         ),
                         React.createElement('div', { className: 'text-[11px] text-amber-600 font-medium mt-1' }, '\uD83D\uDCA1 Examples: ' + ms.examples)
@@ -2331,16 +2780,16 @@ var d = labToolData || {};
             ),
 
             // === GDP COMPONENTS ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-4' },
+            d.showGdpBreakdown && React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFDB\uFE0F GDP = C + I + G + (X\u2212M)'),
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.economicslab.gdp_c_i_g_x_m', '\uD83C\uDFDB\uFE0F GDP = C + I + G + (X\u2212M)')),
                 React.createElement('button', {
                   onClick: function() { upd('showGdpBreakdown', !(d.showGdpBreakdown)); },
                   className: 'text-[11px] text-amber-500 hover:text-amber-700 font-bold'
                 }, d.showGdpBreakdown ? 'Hide' : 'Explore \u2192')
               ),
               d.showGdpBreakdown && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, 'Gross Domestic Product measures the total value of all final goods and services produced within a country\'s borders in a given year. Here\'s how it breaks down for the United States:'),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.gross_domestic_product_measures_the_to', 'Gross Domestic Product measures the total value of all final goods and services produced within a country\'s borders in a given year. Here\'s how it breaks down for the United States:')),
                 // Bar chart visualization
                 React.createElement('div', { className: 'flex items-end gap-1 h-24 mb-2 px-4' },
                   GDP_COMPONENTS.map(function(comp) {
@@ -2377,9 +2826,9 @@ var d = labToolData || {};
             ),
 
             // === FAMOUS ECONOMISTS TIMELINE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200 mb-4' },
+            d.showEconomists && React.createElement('div', { className: 'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, '\uD83C\uDF93 Famous Economists'),
+                React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, t('stem.economicslab.famous_economists', '\uD83C\uDF93 Famous Economists')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconomists', !(d.showEconomists)); },
                   className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold'
@@ -2407,11 +2856,11 @@ var d = labToolData || {};
                     ),
                     isActive && React.createElement('div', { className: 'mt-2 space-y-1 pl-8' },
                       React.createElement('div', { className: 'text-[11px] text-slate-600' },
-                        React.createElement('span', { className: 'font-bold text-violet-700' }, '\uD83D\uDCDA Key Work: '),
+                        React.createElement('span', { className: 'font-bold text-violet-700' }, t('stem.economicslab.key_work', '\uD83D\uDCDA Key Work: ')),
                         econ.work
                       ),
                       React.createElement('div', { className: 'text-[11px] text-slate-600 leading-relaxed' },
-                        React.createElement('span', { className: 'font-bold text-amber-600' }, '\uD83D\uDCA1 Big Idea: '),
+                        React.createElement('span', { className: 'font-bold text-amber-600' }, t('stem.economicslab.big_idea', '\uD83D\uDCA1 Big Idea: ')),
                         econ.idea
                       )
                     )
@@ -2421,7 +2870,7 @@ var d = labToolData || {};
             ),
 
             // === ECONOMIC INDICATORS REFERENCE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200 mb-4' },
+            d.showIndicators && React.createElement('div', { className: 'bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-cyan-800' }, '\uD83D\uDCCA Key Economic Indicators (' + ECONOMIC_INDICATORS.length + ')'),
                 React.createElement('button', {
@@ -2451,7 +2900,7 @@ var d = labToolData || {};
 
             (d.macroHistory || []).length > 0 && React.createElement('div', { className: 'flex gap-2 mb-2 bg-slate-800 rounded-lg px-3 py-1.5 text-[11px] font-mono text-slate-300 overflow-x-auto' },
 
-              React.createElement('span', { className: 'text-slate-600' }, '\uD83C\uDFDB\uFE0F MACRO |'),
+              React.createElement('span', { className: 'text-slate-600' }, t('stem.economicslab.macro', '\uD83C\uDFDB\uFE0F MACRO |')),
 
               React.createElement('span', { className: macroGDP >= 0 ? 'text-green-400' : 'text-red-400' }, 'GDP ' + (macroGDP >= 0 ? '+' : '') + macroGDP.toFixed(1) + '%'),
 
@@ -2467,17 +2916,76 @@ var d = labToolData || {};
 
             // Canvas
 
-            React.createElement('canvas', {
+            React.createElement('div', {
+              className: 'economicslab-canvas-shell',
+              'data-economicslab-canvas-shell': 'true'
+            },
 
-              ref: canvasRef,
+              // The inquiry tab has its own SVG visualization — don't render a
+              // large permanently-empty canvas above it.
+              econTab !== 'inquiry' && React.createElement('canvas', {
 
-              'aria-label': 'Interactive economics lab supply and demand visualization', tabIndex: 0,
+                ref: canvasRef,
 
-              className: 'w-full rounded-xl border border-slate-400',
+                role: 'img',
+                'aria-label': econCanvasSummary,
+                'aria-describedby': 'economicslab-canvas-summary',
+                tabIndex: 0,
 
-              style: { height: '250px', background: 'var(--allo-stem-canvas, #0f172a)' }
+                // Supply & Demand curve probe: click a quantity, or focus the
+                // canvas and use arrow keys (Escape clears). Announced to SR.
+                onClick: function (e) {
+                  if (econTab !== 'supplyDemand') return;
+                  var el = e.currentTarget;
+                  var rect = el.getBoundingClientRect();
+                  var xInternal = (e.clientX - rect.left) * 2;
+                  var q = Math.round((xInternal - 76) / (el.offsetWidth * 2 - 140) * 100);
+                  if (q < 0 || q > 100) { upd('sdProbe', null); return; }
+                  upd('sdProbe', q);
+                  var pd0 = 90 - q * sdDemSlope + sdDemandShift * 5;
+                  var ps0 = 10 + q * sdSupSlope + sdSupplyShift * 5;
+                  if (announceToSR) announceToSR('Quantity ' + q + ': buyers value $' + Math.max(0, pd0).toFixed(0) + ', producer cost $' + Math.max(0, ps0).toFixed(0) + (pd0 > ps0 ? '. Worth producing.' : '. Not worth producing.'));
+                },
+                onKeyDown: function (e) {
+                  if (econTab !== 'supplyDemand') return;
+                  var cur = (d.sdProbe === null || d.sdProbe === undefined) ? 50 : d.sdProbe;
+                  var np = null;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') np = Math.min(100, cur + 2);
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') np = Math.max(0, cur - 2);
+                  else if (e.key === 'Escape') { e.preventDefault(); upd('sdProbe', null); return; }
+                  else return;
+                  e.preventDefault();
+                  upd('sdProbe', np);
+                  var pd1 = 90 - np * sdDemSlope + sdDemandShift * 5;
+                  var ps1 = 10 + np * sdSupSlope + sdSupplyShift * 5;
+                  if (announceToSR) announceToSR('Quantity ' + np + ': buyers value $' + Math.max(0, pd1).toFixed(0) + ', producer cost $' + Math.max(0, ps1).toFixed(0) + (pd1 > ps1 ? '. Worth producing.' : '. Not worth producing.'));
+                },
 
-            }),
+                className: 'w-full rounded-xl border border-slate-400',
+
+                style: { height: '250px', background: 'var(--allo-stem-canvas, #0f172a)', cursor: econTab === 'supplyDemand' ? 'crosshair' : 'default' }
+
+              }),
+
+              React.createElement('div', {
+                id: 'economicslab-canvas-summary',
+                className: 'economicslab-canvas-summary',
+                'data-economicslab-canvas-summary': 'true',
+                'aria-live': 'polite'
+              },
+                React.createElement('strong', null, t('stem.economicslab.canvas_summary_label', 'Canvas summary')),
+                econCanvasSummary
+              ),
+
+              React.createElement('div', {
+                className: 'economicslab-teacher-prompt',
+                'data-economicslab-teacher-prompt': 'true'
+              },
+                React.createElement('strong', null, t('stem.economicslab.teacher_move_label', 'Teacher move')),
+                econTeacherPrompt
+              )
+
+            ),
 
             // Controls (below canvas, based on active tab)
 
@@ -2487,23 +2995,23 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 mb-4' },
 
-                React.createElement('h4', { className: 'text-sm font-bold text-blue-800 mb-2' }, '\uD83D\uDCDA Key Concepts'),
+                React.createElement('h4', { className: 'text-sm font-bold text-blue-800 mb-2' }, t('stem.economicslab.key_concepts', '\uD83D\uDCDA Key Concepts')),
 
                 React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-[11px] text-slate-600 leading-relaxed' },
 
                   React.createElement('div', null,
 
-                    React.createElement('span', { className: 'font-bold text-blue-700' }, 'Law of Demand: '),
+                    React.createElement('span', { className: 'font-bold text-blue-700' }, t('stem.economicslab.law_of_demand', 'Law of Demand: ')),
 
-                    'As price \u2191, quantity demanded \u2193. Consumers buy less when prices rise. The demand curve slopes downward.'
+                    t('stem.economicslab.as_price_quantity_demanded_consumers_b', 'As price \u2191, quantity demanded \u2193. Consumers buy less when prices rise. The demand curve slopes downward.')
 
                   ),
 
                   React.createElement('div', null,
 
-                    React.createElement('span', { className: 'font-bold text-red-600' }, 'Law of Supply: '),
+                    React.createElement('span', { className: 'font-bold text-red-600' }, t('stem.economicslab.law_of_supply', 'Law of Supply: ')),
 
-                    'As price \u2191, quantity supplied \u2191. Producers make more when prices are high. The supply curve slopes upward.'
+                    t('stem.economicslab.as_price_quantity_supplied_producers_m', 'As price \u2191, quantity supplied \u2191. Producers make more when prices are high. The supply curve slopes upward.')
 
                   ),
 
@@ -2511,15 +3019,15 @@ var d = labToolData || {};
 
                     React.createElement('span', { className: 'font-bold text-amber-600' }, 'Equilibrium: '),
 
-                    'Where supply meets demand. This "E" point sets the market price (P*) and quantity (Q*) automatically.'
+                    t('stem.economicslab.where_supply_meets_demand_this_e_point', 'Where supply meets demand. This "E" point sets the market price (P*) and quantity (Q*) automatically.')
 
                   ),
 
                   React.createElement('div', null,
 
-                    React.createElement('span', { className: 'font-bold text-emerald-600' }, 'Shifts vs. Movements: '),
+                    React.createElement('span', { className: 'font-bold text-emerald-600' }, t('stem.economicslab.shifts_vs_movements', 'Shifts vs. Movements: ')),
 
-                    'Changing the price moves ALONG a curve. External factors (technology, income, preferences) SHIFT the entire curve.'
+                    t('stem.economicslab.changing_the_price_moves_along_a_curve', 'Changing the price moves ALONG a curve. External factors (technology, income, preferences) SHIFT the entire curve.')
 
                   )
 
@@ -2527,25 +3035,34 @@ var d = labToolData || {};
 
                 // Dynamic educational feedback based on current slider values
 
-                (sdPriceFloor > 0 || sdPriceCeiling > 0 || sdTax > 0 || sdDemandShift !== 0 || sdSupplyShift !== 0) && React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-blue-100' },
+                (sdPriceFloor > 0 || sdPriceCeiling > 0 || sdTax > 0 || sdDemandShift !== 0 || sdSupplyShift !== 0 || sdDemSlope !== 0.8 || sdSupSlope !== 0.8) && React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-blue-100' },
 
-                  React.createElement('h5', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, '\uD83D\uDCA1 What\'s Happening Right Now:'),
+                  React.createElement('h5', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, t('stem.economicslab.what_s_happening_right_now', '\uD83D\uDCA1 What\'s Happening Right Now:')),
 
                   React.createElement('div', { className: 'text-[11px] text-slate-600 space-y-1' },
 
-                    sdDemandShift > 0 && React.createElement('p', null, '\u25B6 Demand shifted RIGHT \u2014 More people want this product (maybe income rose, or a trend made it popular). This raises both equilibrium price AND quantity.'),
+                    sdDemandShift > 0 && React.createElement('p', null, t('stem.economicslab.demand_shifted_right_more_people_want_', '\u25B6 Demand shifted RIGHT \u2014 More people want this product (maybe income rose, or a trend made it popular). This raises both equilibrium price AND quantity.')),
 
-                    sdDemandShift < 0 && React.createElement('p', null, '\u25B6 Demand shifted LEFT \u2014 Fewer people want this product (substitute became cheaper, or preferences changed). Both price AND quantity fall.'),
+                    sdDemandShift < 0 && React.createElement('p', null, t('stem.economicslab.demand_shifted_left_fewer_people_want_', '\u25B6 Demand shifted LEFT \u2014 Fewer people want this product (substitute became cheaper, or preferences changed). Both price AND quantity fall.')),
 
-                    sdSupplyShift > 0 && React.createElement('p', null, '\u25B6 Supply shifted RIGHT \u2014 Producers can make more cheaply (new technology, lower input costs). Price falls, but quantity rises.'),
+                    sdSupplyShift > 0 && React.createElement('p', null, t('stem.economicslab.supply_shifted_right_producers_can_mak', '\u25B6 Supply shifted RIGHT \u2014 Producers can make more cheaply (new technology, lower input costs). Price falls, but quantity rises.')),
 
-                    sdSupplyShift < 0 && React.createElement('p', null, '\u25B6 Supply shifted LEFT \u2014 Production became harder (natural disaster, regulations). Price rises, but quantity falls.'),
+                    sdSupplyShift < 0 && React.createElement('p', null, t('stem.economicslab.supply_shifted_left_production_became_', '\u25B6 Supply shifted LEFT \u2014 Production became harder (natural disaster, regulations). Price rises, but quantity falls.')),
+
+                    sdDemSlope !== 0.8 && React.createElement('p', null, '\u25B6 Demand slope ' + sdDemSlope.toFixed(1) + (sdDemSlope < 0.8 ? t('stem.economicslab.demand_flatter', ' \u2014 flatter, more ELASTIC: buyers respond sharply to price (luxuries, goods with substitutes).') : t('stem.economicslab.demand_steeper', ' \u2014 steeper, more INELASTIC: buyers barely change quantity when price moves (necessities like gasoline or medicine).'))),
+
+                    sdSupSlope !== 0.8 && React.createElement('p', null, '\u25B6 Supply slope ' + sdSupSlope.toFixed(1) + (sdSupSlope < 0.8 ? t('stem.economicslab.supply_flatter', ' \u2014 flatter, more ELASTIC: producers can easily ramp output up or down (manufactured goods).') : t('stem.economicslab.supply_steeper', ' \u2014 steeper, more INELASTIC: output is hard to change quickly (housing, farmland, concert seats).'))),
 
                     sdPriceFloor > 0 && React.createElement('p', null, '\u25B6 Price Floor at $' + sdPriceFloor + ' \u2014 Government sets a MINIMUM price (e.g., minimum wage). If above equilibrium: creates SURPLUS (quantity supplied > quantity demanded). Workers want jobs, but firms hire fewer.'),
 
                     sdPriceCeiling > 0 && React.createElement('p', null, '\u25B6 Price Ceiling at $' + sdPriceCeiling + ' \u2014 Government sets a MAXIMUM price (e.g., rent control). If below equilibrium: creates SHORTAGE (quantity demanded > quantity supplied). Everyone wants it, but not enough is produced.'),
 
-                    sdTax > 0 && React.createElement('p', null, '\u25B6 Tax of $' + sdTax + ' \u2014 Government adds a per-unit tax. This creates a "tax wedge" between what buyers pay and sellers receive. Both sides bear some of the tax burden. This creates DEADWEIGHT LOSS \u2014 transactions that would have benefited both parties no longer happen.')
+                    sdTax > 0 && (function () {
+                      // Tax incidence, computed live: buyers bear Dm/(Dm+Sm) of the
+                      // wedge \u2014 the steeper (more inelastic) side always bears more.
+                      var buyerShare = Math.max(0, Math.min(100, sdDemSlope / (sdDemSlope + sdSupSlope) * 100));
+                      return React.createElement('p', null, '\u25B6 Tax of $' + sdTax + t('stem.economicslab.tax_incidence_1', ' \u2014 a "tax wedge" opens between what buyers pay and sellers keep, and some mutually beneficial trades stop happening (DEADWEIGHT LOSS). Right now buyers bear ~') + buyerShare.toFixed(0) + t('stem.economicslab.tax_incidence_2', '% of it and sellers ~') + (100 - buyerShare).toFixed(0) + t('stem.economicslab.tax_incidence_3', '% \u2014 the more INELASTIC (steeper) side always bears more. Tilt the elasticity sliders and watch the split move.'));
+                    })()
 
                   )
 
@@ -2557,13 +3074,13 @@ var d = labToolData || {};
 
                 React.createElement('div', { className: 'space-y-3 bg-blue-50 rounded-xl p-4 border border-blue-200' },
 
-                  React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, '\uD83D\uDCC9 Curve Shifts'),
+                  React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, t('stem.economicslab.curve_shifts', '\uD83D\uDCC9 Curve Shifts')),
 
                   React.createElement('label', { className: 'block text-xs text-blue-600' }, 'Demand Shift: ' + sdDemandShift),
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'sd demand shift', min: -5, max: 5, value: sdDemandShift,
+                    type: 'range', 'aria-valuetext': (sdDemandShift === 0 ? 'no shift' : sdDemandShift > 0 ? ('shifted right ' + sdDemandShift) : ('shifted left ' + Math.abs(sdDemandShift))), 'aria-label': t('stem.economicslab.sd_demand_shift', 'sd demand shift'), min: -5, max: 5, value: sdDemandShift,
 
                     onChange: function (e) { upd('sdDemandShift', parseInt(e.target.value)); },
 
@@ -2575,25 +3092,49 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'sd supply shift', min: -5, max: 5, value: sdSupplyShift,
+                    type: 'range', 'aria-valuetext': (sdSupplyShift === 0 ? 'no shift' : sdSupplyShift > 0 ? ('shifted right ' + sdSupplyShift) : ('shifted left ' + Math.abs(sdSupplyShift))), 'aria-label': t('stem.economicslab.sd_supply_shift', 'sd supply shift'), min: -5, max: 5, value: sdSupplyShift,
 
                     onChange: function (e) { upd('sdSupplyShift', parseInt(e.target.value)); },
 
                     className: 'w-full accent-red-500'
 
-                  })
+                  }),
+
+                  (function () {
+                    var slopeTag = function (m) { return m <= 0.5 ? t('stem.economicslab.elastic_flat', 'elastic (flat)') : m >= 1.1 ? t('stem.economicslab.inelastic_steep', 'inelastic (steep)') : t('stem.economicslab.moderate', 'moderate'); };
+                    return React.createElement(React.Fragment, null,
+                      React.createElement('label', { className: 'block text-xs text-blue-600' }, t('stem.economicslab.demand_elasticity', 'Demand elasticity — slope ') + sdDemSlope.toFixed(1) + ': ' + slopeTag(sdDemSlope)),
+                      React.createElement('input', {
+                        type: 'range', min: 0.3, max: 1.5, step: 0.1, value: sdDemSlope,
+                        'aria-label': t('stem.economicslab.demand_elasticity_2', 'Demand curve slope (elasticity)'),
+                        'aria-valuetext': sdDemSlope.toFixed(1) + ', ' + slopeTag(sdDemSlope),
+                        onChange: function (e) { upd('sdDemSlope', parseFloat(e.target.value)); },
+                        className: 'w-full accent-blue-500'
+                      }),
+                      React.createElement('label', { className: 'block text-xs text-red-600' }, t('stem.economicslab.supply_elasticity', 'Supply elasticity — slope ') + sdSupSlope.toFixed(1) + ': ' + slopeTag(sdSupSlope)),
+                      React.createElement('input', {
+                        type: 'range', min: 0.3, max: 1.5, step: 0.1, value: sdSupSlope,
+                        'aria-label': t('stem.economicslab.supply_elasticity_2', 'Supply curve slope (elasticity)'),
+                        'aria-valuetext': sdSupSlope.toFixed(1) + ', ' + slopeTag(sdSupSlope),
+                        onChange: function (e) { upd('sdSupSlope', parseFloat(e.target.value)); },
+                        className: 'w-full accent-red-500'
+                      }),
+                      React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
+                        t('stem.economicslab.slope_note', '📚 Flat = elastic: people react strongly to price (luxuries, substitutes). Steep = inelastic: they can\'t easily change behavior (gasoline, medicine). Watch who bears a tax as you tilt the curves.'))
+                    );
+                  })()
 
                 ),
 
                 React.createElement('div', { className: 'space-y-3 bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
 
-                  React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, '\u2696\uFE0F Government Controls'),
+                  React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, t('stem.economicslab.government_controls', '\u2696\uFE0F Government Controls')),
 
                   React.createElement('label', { className: 'block text-xs text-emerald-600' }, 'Price Floor: $' + sdPriceFloor),
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'sd price floor', min: 0, max: 90, value: sdPriceFloor,
+                    type: 'range', 'aria-valuetext': (sdPriceFloor === 0 ? 'no price floor' : '$' + sdPriceFloor + ' price floor'), 'aria-label': t('stem.economicslab.sd_price_floor', 'sd price floor'), min: 0, max: 90, value: sdPriceFloor,
 
                     onChange: function (e) { upd('sdPriceFloor', parseInt(e.target.value)); },
 
@@ -2605,7 +3146,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'sd price ceiling', min: 0, max: 90, value: sdPriceCeiling,
+                    type: 'range', 'aria-valuetext': (sdPriceCeiling === 0 ? 'no price ceiling' : '$' + sdPriceCeiling + ' price ceiling'), 'aria-label': t('stem.economicslab.sd_price_ceiling', 'sd price ceiling'), min: 0, max: 90, value: sdPriceCeiling,
 
                     onChange: function (e) { upd('sdPriceCeiling', parseInt(e.target.value)); },
 
@@ -2617,7 +3158,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'sd tax', min: 0, max: 30, value: sdTax,
+                    type: 'range', 'aria-valuetext': (sdTax === 0 ? 'no tax' : '$' + sdTax + ' per-unit tax'), 'aria-label': t('stem.economicslab.sd_tax', 'sd tax'), min: 0, max: 30, value: sdTax,
 
                     onChange: function (e) { upd('sdTax', parseInt(e.target.value)); },
 
@@ -2629,21 +3170,26 @@ var d = labToolData || {};
 
               ),
 
+              React.createElement('button', {
+                onClick: function () { upd('sdDemandShift', 0); upd('sdSupplyShift', 0); upd('sdPriceFloor', 0); upd('sdPriceCeiling', 0); upd('sdTax', 0); upd('sdProbe', null); upd('sdDemSlope', 0.8); upd('sdSupSlope', 0.8); if (announceToSR) announceToSR('Supply and demand graph reset to defaults.'); },
+                className: 'mt-3 mb-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
+              }, t('stem.economicslab.reset_graph', '♻ Reset Graph')),
+
               // Elasticity Education
 
               React.createElement('div', { className: 'col-span-2 bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 mb-2' },
 
-                React.createElement('h4', { className: 'text-[11px] font-bold text-cyan-700 mb-1' }, '\uD83D\uDCCF Price Elasticity of Demand'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-cyan-700 mb-1' }, t('stem.economicslab.price_elasticity_of_demand', '\uD83D\uDCCF Price Elasticity of Demand')),
 
                 React.createElement('div', { className: 'text-[11px] text-slate-600 leading-relaxed' },
 
                   React.createElement('p', null, '\uD83D\uDCDA ',
 
-                    React.createElement('strong', null, 'Elasticity'), ' measures how much quantity demanded changes when price changes. ',
+                    React.createElement('strong', null, t('stem.economicslab.elasticity_2', 'Elasticity')), t('stem.economicslab.measures_how_much_quantity_demanded_ch', ' measures how much quantity demanded changes when price changes. '),
 
-                    React.createElement('strong', null, 'Elastic'), ' goods (luxury items, products with substitutes) see big demand drops from small price increases. ',
+                    React.createElement('strong', null, t('stem.economicslab.elastic', 'Elastic')), t('stem.economicslab.goods_luxury_items_products_with_subst', ' goods (luxury items, products with substitutes) see big demand drops from small price increases. '),
 
-                    React.createElement('strong', null, 'Inelastic'), ' goods (necessities like medicine, gasoline) have stable demand regardless of price.'
+                    React.createElement('strong', null, t('stem.economicslab.inelastic', 'Inelastic')), t('stem.economicslab.goods_necessities_like_medicine_gasoli', ' goods (necessities like medicine, gasoline) have stable demand regardless of price.')
 
                   ),
 
@@ -2653,9 +3199,9 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg' }, '\uD83D\uDC8E'),
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, 'Elastic (>1)'),
+                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, t('stem.economicslab.elastic_1', 'Elastic (>1)')),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Luxury goods, restaurants, vacations')
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.luxury_goods_restaurants_vacations', 'Luxury goods, restaurants, vacations'))
 
                     ),
 
@@ -2663,9 +3209,9 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg' }, '\u2696\uFE0F'),
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, 'Unit Elastic (=1)'),
+                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, t('stem.economicslab.unit_elastic_1', 'Unit Elastic (=1)')),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Revenue unchanged by price')
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.revenue_unchanged_by_price', 'Revenue unchanged by price'))
 
                     ),
 
@@ -2673,9 +3219,9 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg' }, '\uD83D\uDC8A'),
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, 'Inelastic (<1)'),
+                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, t('stem.economicslab.inelastic_1', 'Inelastic (<1)')),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Medicine, gasoline, utilities')
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.medicine_gasoline_utilities', 'Medicine, gasoline, utilities'))
 
                     )
 
@@ -2689,7 +3235,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'col-span-2 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200' },
 
-                React.createElement('h4', { className: 'text-sm font-bold text-violet-700 mb-2' }, '\u2728 AI Scenario Generator'),
+                React.createElement('h4', { className: 'text-sm font-bold text-violet-700 mb-2' }, t('stem.economicslab.ai_scenario_generator', '\u2728 AI Scenario Generator')),
 
                 d.sdScenario ? React.createElement('div', null,
 
@@ -2709,7 +3255,7 @@ var d = labToolData || {};
 
                     d.sdScenario.lesson && React.createElement('div', { className: 'mt-2 bg-violet-100 rounded-lg px-3 py-2 text-[11px] text-violet-800 border border-violet-200' },
 
-                      React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Concept: '),
+                      React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.concept', '\uD83D\uDCDA Concept: ')),
 
                       d.sdScenario.lesson
 
@@ -2748,15 +3294,15 @@ var d = labToolData || {};
 
                     className: 'w-full py-2 rounded-lg text-xs font-bold bg-violet-700 text-white mb-1'
 
-                  }, '\u2705 Apply Scenario to Graph'),
+                  }, t('stem.economicslab.apply_scenario_to_graph', '\u2705 Apply Scenario to Graph')),
 
                   React.createElement('button', {
 
                     onClick: function () { upd('sdScenario', null); },
 
-                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-200'
+                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600'
 
-                  }, 'Dismiss')
+                  }, t('stem.economicslab.dismiss', 'Dismiss'))
 
                 ) : React.createElement('button', {
 
@@ -2764,7 +3310,7 @@ var d = labToolData || {};
 
                     upd('sdLoading', true);
 
-                    var prompt = 'You are an economics teacher. Generate a real-world supply and demand scenario for students.\n\nReturn ONLY valid JSON:\n{"title":"<short scenario title>","explanation":"<2-3 sentences explaining what happened and why it shifts supply/demand>","demandShift":<integer -5 to 5>,"supplyShift":<integer -5 to 5>,"priceFloor":<0 or number if relevant>,"priceCeiling":<0 or number if relevant>,"tax":<0 or number if relevant>}\n\nExamples: new iPhone launch (demand +3), oil embargo (supply -4), minimum wage law (price floor 40), rent control (price ceiling 30), sugar tax (tax 5). Be creative.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence economics concept (e.g., elasticity, substitute goods, complement goods, deadweight loss, consumer surplus, producer surplus, market failure, externalities, public goods).';
+                    var prompt = 'You are an economics teacher. Generate a real-world supply and demand scenario for students (difficulty: ' + (d.econDifficulty || 'medium') + ').\n\nReturn ONLY valid JSON:\n{"title":"<short scenario title>","explanation":"<2-3 sentences explaining what happened and why it shifts supply/demand>","demandShift":<integer -5 to 5>,"supplyShift":<integer -5 to 5>,"priceFloor":<0 or number if relevant>,"priceCeiling":<0 or number if relevant>,"tax":<0 or number if relevant>}\n\nExamples: new iPhone launch (demand +3), oil embargo (supply -4), minimum wage law (price floor 40), rent control (price ceiling 30), sugar tax (tax 5). Be creative.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence economics concept (e.g., elasticity, substitute goods, complement goods, deadweight loss, consumer surplus, producer surplus, market failure, externalities, public goods).';
 
                     callGemini(prompt, true).then(function (result) {
 
@@ -2788,7 +3334,7 @@ var d = labToolData || {};
 
                   disabled: d.sdLoading,
 
-                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
+                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
 
                 }, d.sdLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Random Scenario')
 
@@ -2816,7 +3362,7 @@ var d = labToolData || {};
 
                     d.lifeEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-100 rounded-lg px-3 py-2 text-[11px] text-indigo-800 border border-indigo-200' },
 
-                      React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Economics Concept: '),
+                      React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.economics_concept', '\uD83D\uDCDA Economics Concept: ')),
 
                       d.lifeEvent.lesson
 
@@ -2838,9 +3384,15 @@ var d = labToolData || {};
 
                         var eff = choice.effect || {};
 
-                        upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0));
+                        // Debt accrues 10% APR each simulated year — carrying a
+                        // balance has to visibly cost something, or "pay it off"
+                        // choices never look better than spending.
 
-                        upd('pfDebt', Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)));
+                        var newDebt = Math.max(0, (d.pfDebt || 0) + (eff.debt || 0));
+
+                        var debtInterest = Math.round(newDebt * 0.10);
+
+                        upd('pfDebt', newDebt + debtInterest);
 
                         upd('pfSalary', Math.max(0, (d.pfSalary || 35000) + (eff.salary || 0)));
 
@@ -2852,13 +3404,11 @@ var d = labToolData || {};
 
                         if (eff.insurance !== undefined && eff.insurance !== null) upd('pfInsurance', eff.insurance);
 
-                        var h = (d.pfHistory || []).slice(-29);
+                        // Cash flows for the year are computed ONCE and applied in a single
+                        // upd('pfCash', ...) — sequential upds each read stale `d`, so the last
+                        // write silently dropped the housing cost whenever investing was on.
 
-                        h.push({ age: d.pfAge || 22, cash: (d.pfCash || 2000) + (eff.cash || 0), debt: Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)), event: d.lifeEvent.title, choice: choice.label });
-
-                        upd('pfHistory', h);
-
-                        // Apply housing costs
+                        var startCash = d.pfCash || 2000;
 
                         var housingCost = { renting: 12000, owning: 21600, frugal: 6000 };
 
@@ -2872,23 +3422,37 @@ var d = labToolData || {};
 
                         }
 
-                        upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0) - hCost);
+                        // Investing moves cash INTO a tracked portfolio (pfInvested) that
+                        // compounds at the chosen risk profile's rate — it is an asset, not
+                        // an expense, so students see compounding instead of vanishing money.
 
-                        // Apply investment returns
+                        var investAmt = 0;
+
+                        var investGrowth = 0;
 
                         if ((d.pfInvestPct || 0) > 0 && d.pfInvestType) {
 
-                          var investAmt = (d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100;
+                          investAmt = Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100);
 
                           var returns = { Conservative: 0.04, Balanced: 0.07, Aggressive: 0.10, Speculative: (Math.random() - 0.3) * 0.5 };
 
                           var returnRate = returns[d.pfInvestType] || 0;
 
-                          var gain = Math.round(investAmt * returnRate);
+                          investGrowth = Math.round((d.pfInvested || 0) * returnRate);
 
-                          upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0) + gain - investAmt);
+                          upd('pfInvested', Math.max(0, (d.pfInvested || 0) + investGrowth + investAmt));
 
                         }
+
+                        var finalCash = startCash + (eff.cash || 0) - hCost - investAmt;
+
+                        upd('pfCash', finalCash);
+
+                        var h = (d.pfHistory || []).slice(-29);
+
+                        h.push({ age: d.pfAge || 22, cash: finalCash, debt: newDebt + debtInterest, event: d.lifeEvent.title, choice: choice.label });
+
+                        upd('pfHistory', h);
 
                         upd('pfAge', (d.pfAge || 22) + 1);
 
@@ -2898,7 +3462,14 @@ var d = labToolData || {};
 
                         if (typeof addXP === 'function') addXP(15, 'Life Sim: Made a financial decision');
 
-                        if (addToast) addToast((eff.cash >= 0 ? '\uD83D\uDCB0 +$' : '\uD83D\uDCC9 -$') + Math.abs(eff.cash || 0).toLocaleString() + ' | ' + choice.label, eff.cash >= 0 ? 'success' : 'warning');
+                        var netChange = finalCash - startCash;
+
+                        // Itemized flows for the "Last year's money flow" card \u2014
+                        // students should SEE where every dollar went.
+
+                        upd('pfLastYear', { event: d.lifeEvent.title || 'Life event', choice: choice.label || '', eventCash: (eff.cash || 0), housing: hCost, invested: investAmt, growth: investGrowth, debtInterest: debtInterest, net: netChange });
+
+                        if (addToast) addToast((netChange >= 0 ? '\uD83D\uDCB0 +$' : '\uD83D\uDCC9 -$') + Math.abs(netChange).toLocaleString() + ' net this year (after housing' + (investAmt > 0 ? ' + investing' : '') + ') | ' + choice.label, netChange >= 0 ? 'success' : 'warning');
 
                         // Auto-add lesson to glossary
 
@@ -2920,7 +3491,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'font-bold text-slate-700 group-hover:text-indigo-700' }, choice.label),
 
-                      React.createElement('div', { className: 'text-slate-200 mt-0.5 flex gap-3 flex-wrap' },
+                      React.createElement('div', { className: 'text-slate-500 mt-0.5 flex gap-3 flex-wrap' },
 
                         choice.effect && choice.effect.cash ? React.createElement('span', { className: choice.effect.cash >= 0 ? 'text-green-600' : 'text-red-500' }, (choice.effect.cash >= 0 ? '+' : '') + '$' + choice.effect.cash.toLocaleString()) : null,
 
@@ -2950,13 +3521,13 @@ var d = labToolData || {};
 
                   { label: 'Age', val: (d.pfAge || 22), icon: '\uD83C\uDF82', color: 'indigo' },
 
-                  { label: 'Cash', val: '$' + (d.pfCash || 2000).toLocaleString(), icon: '\uD83D\uDCB5', color: (d.pfCash || 2000) >= 0 ? 'green' : 'red' },
+                  { label: t('stem.economicslab.cash', 'Cash'), val: '$' + (d.pfCash || 2000).toLocaleString(), icon: '\uD83D\uDCB5', color: (d.pfCash || 2000) >= 0 ? 'green' : 'red' },
 
-                  { label: 'Debt', val: '$' + (d.pfDebt || 0).toLocaleString(), icon: '\uD83D\uDCB3', color: (d.pfDebt || 0) > 0 ? 'red' : 'green' },
+                  { label: t('stem.economicslab.debt', 'Debt'), val: '$' + (d.pfDebt || 0).toLocaleString(), icon: '\uD83D\uDCB3', color: (d.pfDebt || 0) > 0 ? 'red' : 'green' },
 
-                  { label: 'Happiness', val: (d.pfHappiness || 70) + '%', icon: '\u2764\uFE0F', color: (d.pfHappiness || 70) > 50 ? 'pink' : 'slate' },
+                  { label: t('stem.economicslab.happiness', 'Happiness'), val: (d.pfHappiness || 70) + '%', icon: '\u2764\uFE0F', color: (d.pfHappiness || 70) > 50 ? 'pink' : 'slate' },
 
-                  { label: 'Credit', val: (d.pfCredit || 650), icon: '\uD83D\uDCB3', color: (d.pfCredit || 650) > 700 ? 'green' : (d.pfCredit || 650) > 580 ? 'amber' : 'red' }
+                  { label: t('stem.economicslab.credit', 'Credit'), val: (d.pfCredit || 650), icon: '\uD83D\uDCB3', color: (d.pfCredit || 650) > 700 ? 'green' : (d.pfCredit || 650) > 580 ? 'amber' : 'red' }
 
                 ].map(function (s) {
 
@@ -2974,7 +3545,39 @@ var d = labToolData || {};
 
               ),
 
-              React.createElement('div', { className: 'text-xs text-slate-600 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + ((d.pfCash || 2000) - (d.pfDebt || 0)).toLocaleString() + ' | Credit: ' + (d.pfCredit || 650) + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance')),
+              React.createElement('div', { className: 'text-xs text-slate-600 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + pfNetWorth.toLocaleString() + ((d.pfInvested || 0) > 0 ? ' | \uD83D\uDCC8 Invested: $' + (d.pfInvested || 0).toLocaleString() : '') + ((d.pfEquity || 0) > 0 ? ' | \uD83C\uDFE0 Equity: $' + (d.pfEquity || 0).toLocaleString() : '') + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance') + ((d.pfDebt || 0) > 0 ? ' | \uD83D\uDCB3 Debt +10%/yr APR' : '')),
+
+              (d.pfCash || 2000) < 0 && React.createElement('div', { className: 'text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center mb-2', role: 'alert' },
+                t('stem.economicslab.cash_flow_warning', '\u26A0\uFE0F Your cash is negative \u2014 you are spending more than you earn. Try cheaper housing, a lower investment %, or paying down debt before it compounds.')),
+
+              (function () {
+                var pfMonthlyExp = pfRent + pfFood + pfTransport + pfEntertain;
+                var runway = Math.max(0, (d.pfCash || 2000)) / Math.max(1, pfMonthlyExp);
+                var runwayCls = runway >= 6 ? 'text-green-700 bg-green-50 border-green-200' : runway >= 3 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200';
+                return React.createElement('div', { className: 'text-[11px] text-center rounded-lg border px-3 py-1.5 mb-2 ' + runwayCls },
+                  t('stem.economicslab.emergency_fund', '\uD83D\uDEDF Emergency fund: ') + runway.toFixed(1) + ' ' + t('stem.economicslab.months_of_expenses', 'months of expenses in cash') + ' \u2014 ' + t('stem.economicslab.emergency_fund_target', 'advisors suggest keeping 3\u20136 months'));
+              })(),
+
+              // Itemized "where did the money go" card for the last simulated year
+              d.pfLastYear && (function () {
+                var ly = d.pfLastYear;
+                var rows = [[ly.event + ' \u2192 ' + ly.choice, ly.eventCash, false]];
+                rows.push([t('stem.economicslab.flow_housing', 'Housing'), -ly.housing, false]);
+                if (ly.invested > 0) rows.push([t('stem.economicslab.flow_invested', 'Moved into investments (still yours!)'), -ly.invested, false]);
+                if (ly.growth > 0) rows.push([t('stem.economicslab.flow_growth', 'Portfolio growth (inside investments)'), ly.growth, true]);
+                if (ly.debtInterest > 0) rows.push([t('stem.economicslab.flow_debt_interest', 'Debt interest added (10% APR)'), -ly.debtInterest, true]);
+                return React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 mb-2' },
+                  React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1' }, t('stem.economicslab.last_year_flow', '\uD83E\uDDFE Last year\'s money flow')),
+                  rows.map(function (r, ri) {
+                    return React.createElement('div', { key: ri, className: 'flex justify-between text-[11px] py-0.5 border-b border-slate-50' },
+                      React.createElement('span', { className: 'text-slate-600 flex-1 pr-2' }, r[0] + (r[2] ? ' *' : '')),
+                      React.createElement('span', { className: (r[1] >= 0 ? 'text-green-600' : 'text-red-500') + ' font-bold' }, (r[1] >= 0 ? '+' : '\u2212') + '$' + Math.abs(r[1]).toLocaleString()));
+                  }),
+                  React.createElement('div', { className: 'flex justify-between text-[11px] pt-1 font-bold' },
+                    React.createElement('span', { className: 'text-slate-700' }, t('stem.economicslab.flow_net', 'Net cash change')),
+                    React.createElement('span', { className: ly.net >= 0 ? 'text-green-700' : 'text-red-600' }, (ly.net >= 0 ? '+' : '\u2212') + '$' + Math.abs(ly.net).toLocaleString())),
+                  React.createElement('p', { className: 'text-[10px] text-slate-500 italic mt-1 m-0' }, t('stem.economicslab.flow_footnote', '* not part of cash \u2014 growth compounds inside your portfolio; interest compounds inside your debt.')));
+              })(),
 
               // Next Year / Generate Event button
 
@@ -3022,7 +3625,7 @@ var d = labToolData || {};
 
                 disabled: d.pfLoading,
 
-                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
+                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
 
               }, d.pfLoading ? '\u23F3 Generating life event...' : '\u2728 Next Year (Age ' + ((d.pfAge || 22) + 1) + ')'),
 
@@ -3030,17 +3633,17 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200 mt-3 mb-1' },
 
-                React.createElement('h4', { className: 'text-[11px] font-bold text-orange-700 mb-2' }, '\uD83C\uDFE0 Housing Strategy'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-orange-700 mb-2' }, t('stem.economicslab.housing_strategy', '\uD83C\uDFE0 Housing Strategy')),
 
                 React.createElement('div', { className: 'flex gap-2' },
 
                   [
 
-                    { id: 'renting', label: '\uD83C\uDFE2 Rent', desc: 'Lower monthly cost, flexibility', cost: '-$1,000/mo' },
+                    { id: 'renting', label: t('stem.economicslab.rent', '\uD83C\uDFE2 Rent'), desc: t('stem.economicslab.lower_monthly_cost_flexibility', 'Lower monthly cost, flexibility'), cost: '-$1,000/mo' },
 
-                    { id: 'owning', label: '\uD83C\uDFE0 Own', desc: 'Build equity, but mortgage + maintenance', cost: '-$1,800/mo' },
+                    { id: 'owning', label: t('stem.economicslab.own', '\uD83C\uDFE0 Own'), desc: t('stem.economicslab.build_equity_but_mortgage_maintenance', 'Build equity, but mortgage + maintenance'), cost: '-$1,800/mo' },
 
-                    { id: 'frugal', label: '\uD83D\uDECB\uFE0F Roommate', desc: 'Cheapest option, save more', cost: '-$500/mo' }
+                    { id: 'frugal', label: t('stem.economicslab.roommate', '\uD83D\uDECB\uFE0F Roommate'), desc: t('stem.economicslab.cheapest_option_save_more', 'Cheapest option, save more'), cost: '-$500/mo' }
 
                   ].map(function (h) {
 
@@ -3084,13 +3687,13 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200 mt-3 mb-3' },
 
-                React.createElement('h4', { className: 'text-[11px] font-bold text-green-700 mb-2' }, '\uD83D\uDCCA Investment Allocation (% of annual salary invested)'),
+                React.createElement('h4', { className: 'text-[11px] font-bold text-green-700 mb-2' }, t('stem.economicslab.investment_allocation_of_annual_salary', '\uD83D\uDCCA Investment Allocation (% of annual salary invested)')),
 
                 React.createElement('div', { className: 'flex items-center gap-3' },
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'Investment percent of salary', min: 0, max: 50, value: d.pfInvestPct || 0,
+                    type: 'range', 'aria-valuetext': (d.pfInvestPct || 0) + '% of salary', 'aria-label': t('stem.economicslab.investment_percent_of_salary', 'Investment percent of salary'), min: 0, max: 50, value: d.pfInvestPct || 0,
 
                     onChange: function (e) { upd('pfInvestPct', parseInt(e.target.value)); },
 
@@ -3144,7 +3747,7 @@ var d = labToolData || {};
 
               (d.pfHistory || []).length > 0 && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border border-slate-400 p-3 max-h-40 overflow-y-auto' },
 
-                React.createElement('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\uD83D\uDCDC Life History'),
+                React.createElement('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, t('stem.economicslab.life_history', '\uD83D\uDCDC Life History')),
 
                 (d.pfHistory || []).slice().reverse().map(function (h, hi) {
 
@@ -3166,11 +3769,11 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
-                onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
+                onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); upd('pfEquity', 0); upd('pfInvested', 0); upd('pfHousing', 'renting'); upd('pfInvestPct', 0); upd('pfInvestType', null); upd('pfLastYear', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
 
                 className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
-              }, '\u267B New Life')
+              }, t('stem.economicslab.new_life', '\u267B New Life'))
 
             ),
 
@@ -3184,9 +3787,9 @@ var d = labToolData || {};
 
                 React.createElement('div', { className: 'text-5xl mb-4' }, '\uD83D\uDCC8'),
 
-                React.createElement('h3', { className: 'text-lg font-bold text-slate-800 mb-2' }, 'Create Your Market'),
+                React.createElement('h3', { className: 'text-lg font-bold text-slate-800 mb-2' }, t('stem.economicslab.create_your_market', 'Create Your Market')),
 
-                React.createElement('p', { className: 'text-xs text-slate-600 mb-4 max-w-sm mx-auto' }, 'Describe what kind of market you want to trade in. AI will generate 5 fictional companies with realistic financials.'),
+                React.createElement('p', { className: 'text-xs text-slate-600 mb-4 max-w-sm mx-auto' }, t('stem.economicslab.describe_what_kind_of_market_you_want_', 'Describe what kind of market you want to trade in. AI will generate 5 fictional companies with realistic financials.')),
 
                 React.createElement('input', {
 
@@ -3196,7 +3799,7 @@ var d = labToolData || {};
 
                   onChange: function (e) { upd('smInput', e.target.value); },
 
-                  placeholder: 'e.g. "renewable energy startups", "gaming companies", "space industry", or leave blank for mixed...',
+                  placeholder: t('stem.economicslab.e_g_renewable_energy_startups_gaming_c', 'e.g. "renewable energy startups", "gaming companies", "space industry", or leave blank for mixed...'),
 
                   className: 'w-full max-w-md px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all mb-3'
 
@@ -3234,6 +3837,15 @@ var d = labToolData || {};
 
                         upd('smCompanies', companies);
 
+                        // Day-0 prices, kept forever so the buy-and-hold index
+                        // benchmark survives the history arrays' 30-entry cap.
+
+                        var basePrices = {};
+
+                        companies.forEach(function (c) { basePrices[c.ticker] = c.price; });
+
+                        upd('smBaseline', basePrices);
+
                         upd('smCash', 10000);
 
                         upd('smPortfolio', {});
@@ -3253,7 +3865,7 @@ var d = labToolData || {};
 
                   disabled: d.smLoading,
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
 
                 }, d.smLoading ? '\u23F3 AI generating companies...' : '\uD83D\uDE80 Open Market')
 
@@ -3331,7 +3943,7 @@ var d = labToolData || {};
 
                     d.smNewsEvent.lesson && React.createElement('div', { className: 'mt-2 bg-amber-100 rounded-lg px-3 py-2 text-[11px] text-amber-800 border border-amber-200' },
 
-                      React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Investing Concept: '),
+                      React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.investing_concept', '\uD83D\uDCDA Investing Concept: ')),
 
                       d.smNewsEvent.lesson
 
@@ -3397,7 +4009,7 @@ var d = labToolData || {};
 
                       className: 'py-3 px-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white'
 
-                    }, '\u25B2\u25B2 Buy 10'),
+                    }, t('stem.economicslab.buy_10', '\u25B2\u25B2 Buy 10')),
 
                     React.createElement('button', {
 
@@ -3425,7 +4037,7 @@ var d = labToolData || {};
 
                       className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-red-500 to-rose-500 text-white'
 
-                    }, '\u25BC Sell 1'),
+                    }, t('stem.economicslab.sell_1', '\u25BC Sell 1')),
 
                     React.createElement('button', {
 
@@ -3551,7 +4163,7 @@ var d = labToolData || {};
 
                       disabled: d.smLoading,
 
-                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
+                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
 
                     }, d.smLoading ? '\u23F3...' : '\u23ED Day ' + (smDay + 1))
 
@@ -3585,55 +4197,96 @@ var d = labToolData || {};
 
                     // Portfolio Analytics
 
-                    smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400' },
+                    smDay > 0 && (function () {
 
-                      React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Portfolio Analytics'),
+                      // Buy-and-hold benchmark: equal-weight index of every ticker
+                      // from its day-0 price. "Did your trading beat just holding?"
+                      // is the core index-fund lesson this sim can teach.
 
-                      React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                      var idxRatios = smCompanies.map(function (c) {
+                        var base = (d.smBaseline || {})[c.ticker] || (c.history && c.history[0]) || c.price;
+                        return base > 0 ? c.price / base : 1;
+                      });
 
-                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+                      var idxReturn = idxRatios.length ? (idxRatios.reduce(function (s, r) { return s + r; }, 0) / idxRatios.length - 1) * 100 : 0;
 
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Total P&L'),
+                      var myReturn = (smTotalVal / 10000 - 1) * 100;
 
-                          React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-600' : 'text-red-500') },
+                      var stockVal = smCompanies.reduce(function (s, c) { return s + (smPortfolio[c.ticker] || 0) * c.price; }, 0);
 
-                            (smTotalVal - 10000 >= 0 ? '+' : '') + '$' + (smTotalVal - 10000).toFixed(0))
+                      var topShare = 0;
+
+                      smCompanies.forEach(function (c) { var v = (smPortfolio[c.ticker] || 0) * c.price; if (stockVal > 0 && v / stockVal > topShare) topShare = v / stockVal; });
+
+                      return React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400' },
+
+                        React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.economicslab.portfolio_analytics', '\uD83D\uDCC8 Portfolio Analytics')),
+
+                        React.createElement('div', { className: 'grid grid-cols-4 gap-2 text-center' },
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.total_p_l', 'Total P&L')),
+
+                            React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-600' : 'text-red-500') },
+
+                              (smTotalVal - 10000 >= 0 ? '+' : '') + '$' + (smTotalVal - 10000).toFixed(0))
+
+                          ),
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.return', 'Return %')),
+
+                            React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-600' : 'text-red-500') },
+
+                              (smTotalVal >= 10000 ? '+' : '') + myReturn.toFixed(1) + '%')
+
+                          ),
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.index_hold', 'Index (hold)')),
+
+                            React.createElement('div', { className: 'text-sm font-bold ' + (idxReturn >= 0 ? 'text-green-600' : 'text-red-500') },
+
+                              (idxReturn >= 0 ? '+' : '') + idxReturn.toFixed(1) + '%')
+
+                          ),
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.holdings', 'Holdings')),
+
+                            React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
+
+                              Object.keys(smPortfolio).filter(function (t) { return smPortfolio[t] > 0; }).length + ' stocks')
+
+                          )
 
                         ),
 
-                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+                        myReturn < idxReturn - 0.5 && React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
 
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Return %'),
+                          t('stem.economicslab.index_lesson', '\uD83D\uDCDA The buy-and-hold index is beating your trading. Most active traders underperform simply holding everything \u2014 this is why index funds are the default advice.')),
 
-                          React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-600' : 'text-red-500') },
+                        topShare > 0.7 && stockVal > 0 && React.createElement('div', { className: 'mt-2 text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 border border-amber-100' },
 
-                            (smTotalVal >= 10000 ? '+' : '') + ((smTotalVal / 10000 - 1) * 100).toFixed(1) + '%')
+                          t('stem.economicslab.concentration_warning', '\u26A0\uFE0F Over 70% of your stock value is in one company. Diversification cushions single-company shocks \u2014 spread your bets.'))
 
-                        ),
+                      );
 
-                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
-
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Holdings'),
-
-                          React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
-
-                            Object.keys(smPortfolio).filter(function (t) { return smPortfolio[t] > 0; }).length + ' stocks')
-
-                        )
-
-                      )
-
-                    ),
+                    })(),
 
                     // Reset Market button
 
                     React.createElement('button', {
 
-                      onClick: function () { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
+                      onClick: function () { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); upd('smBaseline', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
 
                       className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
-                    }, '\u267B Reset Market & Generate New Companies')
+                    }, t('stem.economicslab.reset_market_generate_new_companies', '\u267B Reset Market & Generate New Companies'))
 
                   )
 
@@ -3651,9 +4304,9 @@ var d = labToolData || {};
 
                 React.createElement('div', { className: 'text-5xl mb-4' }, '\uD83D\uDE80'),
 
-                React.createElement('h3', { className: 'text-lg font-bold text-slate-800 mb-2' }, 'Start Your Business'),
+                React.createElement('h3', { className: 'text-lg font-bold text-slate-800 mb-2' }, t('stem.economicslab.start_your_business', 'Start Your Business')),
 
-                React.createElement('p', { className: 'text-xs text-slate-600 mb-4 max-w-sm mx-auto' }, 'Type any business idea and AI will generate your startup costs, daily expenses, and pricing. Then run it day by day!'),
+                React.createElement('p', { className: 'text-xs text-slate-600 mb-4 max-w-sm mx-auto' }, t('stem.economicslab.type_any_business_idea_and_ai_will_gen', 'Type any business idea and AI will generate your startup costs, daily expenses, and pricing. Then run it day by day!')),
 
                 React.createElement('input', {
 
@@ -3663,7 +4316,7 @@ var d = labToolData || {};
 
                   onChange: function (e) { upd('enInput', e.target.value); },
 
-                  placeholder: 'e.g. food truck, dog walking, tutoring, bakery, app development...',
+                  placeholder: t('stem.economicslab.e_g_food_truck_dog_walking_tutoring_ba', 'e.g. food truck, dog walking, tutoring, bakery, app development...'),
 
                   className: 'w-full max-w-md px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all mb-3',
 
@@ -3721,7 +4374,7 @@ var d = labToolData || {};
 
                   disabled: d.enLoading || !(d.enInput || '').trim(),
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
 
                 }, d.enLoading ? '\u23F3 AI is building your business...' : '\uD83D\uDE80 Launch Business')
 
@@ -3755,7 +4408,10 @@ var d = labToolData || {};
 
                   ),
 
-                  // Price adjustment + stats
+                  d.enBusiness && (d.enBizCash || 0) < 0 && React.createElement('div', { className: 'text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3', role: 'alert' },
+                t('stem.economicslab.biz_cash_warning', '⚠️ Your business is losing money — cash is negative. Check your unit economics: does price cover unit cost AND your share of fixed costs? Raising price, cutting costs, or building reputation are your levers.')),
+
+              // Price adjustment + stats
 
                   React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
 
@@ -3765,7 +4421,7 @@ var d = labToolData || {};
 
                       React.createElement('input', {
 
-                        type: 'range', 'aria-label': 'Economicslab slider', min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
+                        type: 'range', 'aria-valuetext': '$' + (d.enBizPrice || (d.enBusiness && d.enBusiness.suggestedPrice) || 10) + ' per unit', 'aria-label': t('stem.economicslab.price_per_unit', 'Price per unit, dollars'), min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
 
                         value: d.enBizPrice || d.enBusiness.suggestedPrice || 10,
 
@@ -3775,13 +4431,17 @@ var d = labToolData || {};
 
                       }),
 
-                      React.createElement('div', { className: 'text-[11px] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10))
+                      React.createElement('div', { className: 'text-[11px] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10)),
+
+                      (d.enBizPrice || d.enBusiness.suggestedPrice || 10) < (d.enBusiness.unitCost || 0) && React.createElement('div', { className: 'text-[11px] text-red-700 font-bold mt-1', role: 'alert' }, t('stem.economicslab.below_cost_warning', '⚠️ Price is below unit cost — you lose money on EVERY sale.')),
+
+                      (d.enBizPrice || 0) > (d.enBusiness.suggestedPrice || 10) * 2 && React.createElement('div', { className: 'text-[11px] text-amber-700 mt-1' }, t('stem.economicslab.high_price_hint', '📚 Price is far above suggested — expect demand to fall (price elasticity).'))
 
                     ),
 
                     React.createElement('div', { className: 'bg-blue-50 rounded-xl p-3 border border-blue-200 text-center' },
 
-                      React.createElement('div', { className: 'text-[11px] text-blue-500 font-bold' }, 'Profit Margin'),
+                      React.createElement('div', { className: 'text-[11px] text-blue-500 font-bold' }, t('stem.economicslab.profit_margin', 'Profit Margin')),
 
                       React.createElement('div', { className: 'text-lg font-bold ' + (((d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)) / (d.enBizPrice || d.enBusiness.suggestedPrice || 10) * 100 > 30 ? 'text-green-600' : 'text-amber-600') },
 
@@ -3823,7 +4483,7 @@ var d = labToolData || {};
 
                     d.enBizEvent.lesson && React.createElement('div', { className: 'mt-2 bg-purple-100 rounded-lg px-3 py-2 text-[11px] text-purple-800 border border-purple-200' },
 
-                      React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Business Concept: '),
+                      React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.business_concept', '\uD83D\uDCDA Business Concept: ')),
 
                       d.enBizEvent.lesson
 
@@ -3863,7 +4523,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'font-bold text-slate-700' }, ch.label),
 
-                      React.createElement('div', { className: 'text-slate-200 mt-0.5 flex gap-3' },
+                      React.createElement('div', { className: 'text-slate-500 mt-0.5 flex gap-3' },
 
                         ch.effect && ch.effect.cash ? React.createElement('span', { className: ch.effect.cash >= 0 ? 'text-green-500' : 'text-red-500' }, (ch.effect.cash >= 0 ? '+' : '') + '$' + ch.effect.cash) : null,
 
@@ -3941,7 +4601,7 @@ var d = labToolData || {};
 
                 disabled: d.enBizLoading,
 
-                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
+                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
 
               }, d.enBizLoading ? '\u23F3 Simulating day...' : '\u2600\uFE0F Open for Business! (Day ' + (d.enBizDay || 1) + ')'),
 
@@ -3949,7 +4609,7 @@ var d = labToolData || {};
 
               (d.enBizHistory || []).length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
 
-                React.createElement('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\uD83D\uDCC8 Business History'),
+                React.createElement('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, t('stem.economicslab.business_history', '\uD83D\uDCC8 Business History')),
 
                 (d.enBizHistory || []).slice(-7).reverse().map(function (dh, dhi) {
 
@@ -3977,9 +4637,149 @@ var d = labToolData || {};
 
                 className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
-              }, '\u267B Close Business & Start New')
+              }, t('stem.economicslab.close_business_start_new', '\u267B Close Business & Start New'))
 
             ),
+
+            // \u2550\u2550 NATIONAL ECONOMY controls \u2550\u2550
+            // The macro canvas told students to "Click Next Year" but no such
+            // control ever existed \u2014 the whole simulator was unreachable (and
+            // with it the Policy Veteran / Economic Boom / Full Employment
+            // achievements and the macro ticker). This panel runs a LOCAL toy
+            // model (no AI call) so it works offline: textbook-Keynesian
+            // demand impulse, expectations-weighted inflation, Okun's-law
+            // unemployment, plus a small random shock table. Same epistemic
+            // framing as the Policy Inquiry widget: heuristic, contested.
+            econTab === 'macro' && (function () {
+              var mClamp = function (v, lo, hi) { return Math.min(hi, Math.max(lo, v)); };
+              var mRate = d.macroInterest !== undefined ? d.macroInterest : 5.25;
+              var mSpend = d.macroSpend || 0;
+              var mTax = d.macroTax || 0;
+              var mNeutral = 3;
+              var mRealRate = mRate - macroInflation;
+              // Predict-then-check: pick a goal BEFORE advancing the year; the
+              // year report grades the outcome against it.
+              var mGoal = d.macroGoal || null;
+              var MACRO_GOALS = [
+                { id: 'cool_inflation', label: t('stem.economicslab.goal_cool_inflation', '❄️ Cool inflation') },
+                { id: 'boost_growth', label: t('stem.economicslab.goal_boost_growth', '📈 Boost growth') },
+                { id: 'cut_unemployment', label: t('stem.economicslab.goal_cut_unemployment', '💼 Cut unemployment') }
+              ];
+              var MACRO_SHOCKS = [
+                { name: t('stem.economicslab.shock_oil', 'Oil price shock'), icon: '\u26FD', gdp: -1.2, inf: 2.0, unemp: 0.6, trade: -0.5, lesson: t('stem.economicslab.shock_oil_lesson', 'Supply shocks raise prices AND cut output at the same time \u2014 stagflation pressure, like the 1973 OPEC embargo.') },
+                { name: t('stem.economicslab.shock_tech', 'Tech productivity boom'), icon: '\uD83D\uDCBB', gdp: 1.5, inf: -0.5, unemp: -0.4, trade: 0.3, lesson: t('stem.economicslab.shock_tech_lesson', 'Productivity growth is the rare free lunch: more output per worker lifts GDP without stoking inflation.') },
+                { name: t('stem.economicslab.shock_financial', 'Financial crisis'), icon: '\uD83C\uDFE6', gdp: -2.5, inf: -1.0, unemp: 1.8, trade: 0.2, lesson: t('stem.economicslab.shock_financial_lesson', 'Credit crunches destroy demand: GDP, prices, and employment all fall together, like 2008.') },
+                { name: t('stem.economicslab.shock_trade_war', 'Trade war escalation'), icon: '\uD83D\uDEA2', gdp: -0.6, inf: 0.7, unemp: 0.3, trade: -0.8, lesson: t('stem.economicslab.shock_trade_war_lesson', 'Tariffs raise import prices at home and invite retaliation against your exporters abroad.') },
+                { name: t('stem.economicslab.shock_consumer_boom', 'Consumer confidence surge'), icon: '\uD83D\uDECD\uFE0F', gdp: 0.9, inf: 0.5, unemp: -0.3, trade: -0.3, lesson: t('stem.economicslab.shock_consumer_boom_lesson', 'Expectations move economies: when households feel secure they spend, and spending is someone else\'s income.') }
+              ];
+              var advanceYear = function () {
+                var demandImpulse = mSpend * 0.8 - mTax * 0.5 - (mRate - mNeutral) * 0.4;
+                var shock = Math.random() < 0.4 ? MACRO_SHOCKS[Math.floor(Math.random() * MACRO_SHOCKS.length)] : null;
+                var gdpNew = mClamp(0.55 * macroGDP + 1.0 + demandImpulse + (shock ? shock.gdp : 0) + (Math.random() - 0.5) * 0.6, -8, 10);
+                var infNew = mClamp(0.65 * macroInflation + 0.8 + 0.3 * demandImpulse - 0.25 * (mRate - mNeutral) + (shock ? shock.inf : 0) + (Math.random() - 0.5) * 0.4, -2, 15);
+                var unempNew = mClamp(macroUnemployment - 0.35 * (gdpNew - 2) + (shock ? shock.unemp : 0), 2, 15);
+                var tradeNew = mClamp(macroTrade + (shock ? shock.trade : 0) - 0.05 * demandImpulse + (Math.random() - 0.5) * 0.4, -5, 5);
+                gdpNew = Math.round(gdpNew * 10) / 10; infNew = Math.round(infNew * 10) / 10;
+                unempNew = Math.round(unempNew * 10) / 10; tradeNew = Math.round(tradeNew * 10) / 10;
+                var lines = [];
+                if (mSpend > 0) lines.push(t('stem.economicslab.report_spend_up', '\uD83C\uDFDB\uFE0F Government spending ') + '+' + mSpend + t('stem.economicslab.report_spend_up_2', '% of GDP added demand (Keynesian multiplier) \u2014 but deficits must eventually be financed.'));
+                if (mSpend < 0) lines.push(t('stem.economicslab.report_spend_down', '\uD83C\uDFDB\uFE0F Austerity: spending cut ') + mSpend + t('stem.economicslab.report_spend_down_2', '% of GDP removed demand from the economy.'));
+                if (mTax > 0) lines.push(t('stem.economicslab.report_tax_up', '\uD83D\uDCB8 Tax increase of ') + mTax + t('stem.economicslab.report_tax_up_2', '% left households less to spend, cooling demand.'));
+                if (mTax < 0) lines.push(t('stem.economicslab.report_tax_down', '\uD83D\uDCB8 Tax cut of ') + Math.abs(mTax) + t('stem.economicslab.report_tax_down_2', '% left households more to spend, boosting demand.'));
+                if (mRate - mNeutral > 0.5) lines.push(t('stem.economicslab.report_rate_high', '\uD83C\uDFE6 Interest rates above the ~3% neutral rate made borrowing expensive \u2014 investment and hiring slowed (monetary brake).'));
+                if (mRate - mNeutral < -0.5) lines.push(t('stem.economicslab.report_rate_low', '\uD83C\uDFE6 Interest rates below neutral made borrowing cheap \u2014 credit-fueled demand rose (monetary gas pedal).'));
+                lines.push(t('stem.economicslab.report_okun', '\uD83D\uDCCA Okun\'s law: growth of ') + gdpNew.toFixed(1) + t('stem.economicslab.report_okun_2', '% vs the ~2% trend moved unemployment to ') + unempNew.toFixed(1) + '%.');
+                if (mGoal === 'cool_inflation') lines.push((infNew < macroInflation ? '\uD83C\uDFAF ' : '\u26A0\uFE0F ') + t('stem.economicslab.goal_check_inflation', 'Goal check \u2014 inflation: ') + macroInflation.toFixed(1) + '% \u2192 ' + infNew.toFixed(1) + '%' + (infNew < macroInflation ? ' \u2713' : ' ' + t('stem.economicslab.goal_missed_inflation', '(moved the wrong way \u2014 which lever raises the cost of borrowing?)')));
+                if (mGoal === 'boost_growth') lines.push((gdpNew > macroGDP ? '\uD83C\uDFAF ' : '\u26A0\uFE0F ') + t('stem.economicslab.goal_check_growth', 'Goal check \u2014 GDP growth: ') + macroGDP.toFixed(1) + '% \u2192 ' + gdpNew.toFixed(1) + '%' + (gdpNew > macroGDP ? ' \u2713' : ' ' + t('stem.economicslab.goal_missed_growth', '(what adds demand \u2014 spending, tax cuts, or cheaper credit?)')));
+                if (mGoal === 'cut_unemployment') lines.push((unempNew < macroUnemployment ? '\uD83C\uDFAF ' : '\u26A0\uFE0F ') + t('stem.economicslab.goal_check_unemployment', 'Goal check \u2014 unemployment: ') + macroUnemployment.toFixed(1) + '% \u2192 ' + unempNew.toFixed(1) + '%' + (unempNew < macroUnemployment ? ' \u2713' : ' ' + t('stem.economicslab.goal_missed_unemployment', "(Okun's law: unemployment falls when growth beats the ~2% trend)")));
+                var hist = (d.macroHistory || []).slice(-29);
+                hist.push({ year: macroYear, gdp: gdpNew, inflation: infNew, unemployment: unempNew, interest: mRate });
+                upd('macroGDP', gdpNew); upd('macroInflation', infNew);
+                upd('macroUnemployment', unempNew); upd('macroTrade', tradeNew);
+                upd('macroYear', macroYear + 1); upd('macroHistory', hist);
+                upd('macroReport', { year: macroYear, shock: shock, lines: lines });
+                if (shock && shock.lesson) {
+                  var glM = (d.econGlossary || []).slice();
+                  if (!glM.some(function (g) { return g.concept === shock.name; })) { glM.push({ tab: 'Macro', concept: shock.name, explanation: shock.lesson }); upd('econGlossary', glM); }
+                }
+                if (typeof addXP === 'function') addXP(15, 'Macro: simulated a policy year');
+                if (addToast) addToast('\uD83C\uDFDB\uFE0F Year ' + macroYear + (shock ? ': ' + shock.icon + ' ' + shock.name : ' complete'), shock && shock.gdp < 0 ? 'warning' : 'success');
+                if (announceToSR) announceToSR('Year ' + macroYear + ' simulated. GDP growth ' + gdpNew.toFixed(1) + ' percent, inflation ' + infNew.toFixed(1) + ' percent, unemployment ' + unempNew.toFixed(1) + ' percent.' + (shock ? ' Shock: ' + shock.name + '.' : ''));
+              };
+              return React.createElement('div', { className: 'mt-4', 'data-economicslab-macro-controls': 'true' },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
+                  React.createElement('span', { className: 'text-[11px] font-bold text-slate-600' }, t('stem.economicslab.policy_goal_label', '🎯 Policy goal (pick one, predict, then advance):')),
+                  MACRO_GOALS.map(function (g) {
+                    var isOn = mGoal === g.id;
+                    return React.createElement('button', {
+                      key: g.id, type: 'button', 'aria-pressed': isOn ? 'true' : 'false',
+                      onClick: function () { upd('macroGoal', isOn ? null : g.id); },
+                      className: 'text-[11px] px-2 py-1 rounded-full border font-bold ' + (isOn ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-600 border-slate-300 hover:border-red-400')
+                    }, g.label);
+                  })
+                ),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-4 mb-3' },
+                  React.createElement('div', { className: 'space-y-2 bg-blue-50 rounded-xl p-4 border border-blue-200' },
+                    React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, t('stem.economicslab.central_bank', '\uD83C\uDFE6 Central Bank (Monetary Policy)')),
+                    React.createElement('label', { className: 'block text-xs text-blue-600' }, t('stem.economicslab.policy_interest_rate', 'Policy Interest Rate: ') + mRate.toFixed(2) + '%'),
+                    React.createElement('input', {
+                      type: 'range', min: 0, max: 12, step: 0.25, value: mRate,
+                      'aria-label': t('stem.economicslab.policy_interest_rate_2', 'Policy interest rate, percent'),
+                      'aria-valuetext': mRate.toFixed(2) + '%',
+                      onChange: function (e) { upd('macroInterest', parseFloat(e.target.value)); },
+                      className: 'w-full accent-blue-500'
+                    }),
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
+                      t('stem.economicslab.real_rate_note', '\uD83D\uDCDA Real rate = nominal \u2212 inflation = ') + mRealRate.toFixed(1) + '%. ' +
+                      (mRealRate < 0
+                        ? t('stem.economicslab.real_rate_negative', 'Negative real rates mean borrowers win and savers lose \u2014 very stimulative.')
+                        : t('stem.economicslab.real_rate_positive', 'Positive real rates reward saving and slow borrowing \u2014 restrictive.')))
+                  ),
+                  React.createElement('div', { className: 'space-y-2 bg-amber-50 rounded-xl p-4 border border-amber-200' },
+                    React.createElement('h4', { className: 'text-sm font-bold text-amber-700' }, t('stem.economicslab.congress_fiscal', '\uD83C\uDFDB\uFE0F Congress (Fiscal Policy)')),
+                    React.createElement('label', { className: 'block text-xs text-amber-700' }, t('stem.economicslab.spending_change', 'Spending change: ') + (mSpend > 0 ? '+' : '') + mSpend + t('stem.economicslab.pct_of_gdp', '% of GDP')),
+                    React.createElement('input', {
+                      type: 'range', min: -3, max: 3, step: 0.5, value: mSpend,
+                      'aria-label': t('stem.economicslab.spending_change_2', 'Government spending change, percent of GDP'),
+                      'aria-valuetext': (mSpend > 0 ? 'plus ' : '') + mSpend + ' percent of GDP',
+                      onChange: function (e) { upd('macroSpend', parseFloat(e.target.value)); },
+                      className: 'w-full accent-amber-500'
+                    }),
+                    React.createElement('label', { className: 'block text-xs text-amber-700' }, t('stem.economicslab.tax_change', 'Tax change: ') + (mTax > 0 ? '+' : '') + mTax + '%'),
+                    React.createElement('input', {
+                      type: 'range', min: -3, max: 3, step: 0.5, value: mTax,
+                      'aria-label': t('stem.economicslab.tax_change_2', 'Tax change, percent'),
+                      'aria-valuetext': (mTax > 0 ? 'plus ' : '') + mTax + ' percent',
+                      onChange: function (e) { upd('macroTax', parseFloat(e.target.value)); },
+                      className: 'w-full accent-amber-500'
+                    }),
+                    (mSpend > 0 || mTax < 0) && React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-amber-100' },
+                      t('stem.economicslab.deficit_note', '\uD83D\uDCDA Spending more while taxing less = deficit spending. It stimulates now, but the debt is a claim on future taxpayers.'))
+                  )
+                ),
+                React.createElement('button', {
+                  onClick: advanceYear,
+                  className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all bg-gradient-to-r from-red-600 to-rose-600 text-white hover:shadow-xl hover:scale-[1.02]'
+                }, t('stem.economicslab.advance_year', '\uD83D\uDCC5 Advance One Year (') + macroYear + ' \u2192 ' + (macroYear + 1) + ')'),
+                d.macroReport && React.createElement('div', { className: 'bg-gradient-to-br from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-3' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, t('stem.economicslab.year_report', '\uD83D\uDCCB Year ') + d.macroReport.year + t('stem.economicslab.year_report_2', ' in Review')),
+                  d.macroReport.shock && React.createElement('div', { className: 'flex items-center gap-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg p-2' },
+                    React.createElement('span', { className: 'text-xl', 'aria-hidden': 'true' }, d.macroReport.shock.icon),
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-[11px] font-bold text-amber-800' }, t('stem.economicslab.shock_label', 'Shock: ') + d.macroReport.shock.name),
+                      React.createElement('div', { className: 'text-[11px] text-amber-700' }, d.macroReport.shock.lesson))),
+                  React.createElement('div', { className: 'space-y-1' },
+                    (d.macroReport.lines || []).map(function (ln, li2) {
+                      return React.createElement('p', { key: li2, className: 'text-[11px] text-slate-600 leading-relaxed m-0' }, ln);
+                    }))
+                ),
+                React.createElement('button', {
+                  onClick: function () { upd('macroGDP', 2.1); upd('macroInflation', 3.2); upd('macroInterest', 5.25); upd('macroUnemployment', 3.8); upd('macroTrade', -0.5); upd('macroYear', 2025); upd('macroHistory', []); upd('macroReport', null); upd('macroSpend', 0); upd('macroTax', 0); if (addToast) addToast(t('stem.economicslab.economy_reset', '\u267B Economy reset to 2025 baseline'), 'info'); },
+                  className: 'w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400 mb-2'
+                }, t('stem.economicslab.reset_economy', '\u267B Reset Economy')),
+                React.createElement('p', { className: 'm-0 text-[10px] italic text-slate-500' }, t('stem.economicslab.macro_model_disclaimer', 'Toy model with textbook-Keynesian signs plus Okun\'s-law unemployment \u2014 NOT a forecast. Real economies depend on expectations, credibility, and global conditions, and economists genuinely disagree about these coefficients (see Schools of Thought in the reference shelf).'))
+              );
+            })(),
 
             // \u2550\u2550 POLICY INQUIRY widget (H7b'') \u2550\u2550
             econTab === 'inquiry' && (function() {
@@ -3999,15 +4799,15 @@ var d = labToolData || {};
               var overheat = dInflation > 2 && dGDP > 1;
               var state = recession ? 'recession' : stagflation ? 'stagflation' : overheat ? 'overheat' : dGDP > 0.5 && dInflation < 1.5 ? 'expansion' : 'mild';
               var sm = ({
-                recession: { label: 'Recession', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'GDP contracting. Unemployment climbing. Aggregate demand insufficient.' },
-                stagflation: { label: 'Stagflation', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Rare and ugly: high inflation + low growth. 1970s OPEC shock pattern. Hard to fix.' },
-                overheat: { label: 'Overheating', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Growth strong but inflation spiking. Central bank likely to brake hard.' },
-                expansion: { label: 'Healthy expansion', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'GDP up, inflation contained. Goldilocks zone \u2014 sustainable for now.' },
-                mild: { label: 'Mild / mixed', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Small net effect. Policy levers roughly cancel out.' }
+                recession: { label: t('stem.economicslab.recession', 'Recession'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.economicslab.gdp_contracting_unemployment_climbing_', 'GDP contracting. Unemployment climbing. Aggregate demand insufficient.') },
+                stagflation: { label: t('stem.economicslab.stagflation', 'Stagflation'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.economicslab.rare_and_ugly_high_inflation_low_growt', 'Rare and ugly: high inflation + low growth. 1970s OPEC shock pattern. Hard to fix.') },
+                overheat: { label: t('stem.economicslab.overheating', 'Overheating'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.economicslab.growth_strong_but_inflation_spiking_ce', 'Growth strong but inflation spiking. Central bank likely to brake hard.') },
+                expansion: { label: t('stem.economicslab.healthy_expansion', 'Healthy expansion'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.economicslab.gdp_up_inflation_contained_goldilocks_', 'GDP up, inflation contained. Goldilocks zone \u2014 sustainable for now.') },
+                mild: { label: t('stem.economicslab.mild_mixed', 'Mild / mixed'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.economicslab.small_net_effect_policy_levers_roughly', 'Small net effect. Policy levers roughly cancel out.') }
               })[state];
               return React.createElement('div', { className: 'mt-4 p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '\uD83D\uDD2C Policy Inquiry \u2014 Predict the Macro Outcome'),
-                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Move four policy levers (tax, govt spending, interest rate, tariffs). Predict the macro state before reading it. No score, no reveal.'),
+                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.economicslab.policy_inquiry_predict_the_macro_outco', '\uD83D\uDD2C Policy Inquiry \u2014 Predict the Macro Outcome')),
+                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.economicslab.move_four_policy_levers_tax_govt_spend', 'Move four policy levers (tax, govt spending, interest rate, tariffs). Predict the macro state before reading it. No score, no reveal.')),
                 React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
                 React.createElement('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
@@ -4032,15 +4832,15 @@ var d = labToolData || {};
                     // Clamp bar heights to 50 (the room available above/below the
                     // baseline) so policy extremes (e.g. tariff=25 driving dInflation
                     // past 12.5pp ⇒ untouched height = 12.5*15 = 187px) can't overflow.
-                    function bar(x, val, posFill, negFill) {
+                    function bar(key, x, val, posFill, negFill) {
                       var h = Math.min(50, Math.abs(val) * 15);
                       var y = val > 0 ? 60 - h : 60;
-                      return React.createElement('rect', { x: x, y: y, width: 40, height: h, fill: val > 0 ? posFill : negFill });
+                      return React.createElement('rect', { key: 'policy-bar-' + key, x: x, y: y, width: 40, height: h, fill: val > 0 ? posFill : negFill });
                     }
                     return [
-                      bar(50, dGDP, '#4ade80', '#f87171'),
-                      bar(150, dInflation, '#facc15', '#22d3ee'),
-                      bar(250, dUnemployment, '#f87171', '#4ade80')
+                      bar('gdp', 50, dGDP, '#4ade80', '#f87171'),
+                      bar('inflation', 150, dInflation, '#facc15', '#22d3ee'),
+                      bar('unemployment', 250, dUnemployment, '#f87171', '#4ade80')
                     ];
                   })(),
                   React.createElement('text', { x: 4, y: 8, fill: '#475569', fontSize: 8 }, 'up'),
@@ -4048,51 +4848,51 @@ var d = labToolData || {};
                 ),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
                   React.createElement('label', { className: 'text-[10px]' },
-                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Tax cut (%)'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.taxCut.toFixed(1))),
-                    React.createElement('input', { type: 'range', min: -5, max: 5, step: 0.5, value: iq.taxCut, onChange: function(e) { setKey('taxCut', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.tax_cut', 'Tax cut (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.taxCut.toFixed(1))),
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.tax_cut_lever', 'Tax cut, percent'), 'aria-valuetext': iq.taxCut.toFixed(1) + '%', min: -5, max: 5, step: 0.5, value: iq.taxCut, onChange: function(e) { setKey('taxCut', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
                   React.createElement('label', { className: 'text-[10px]' },
-                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Govt spending (%)'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.govSpend.toFixed(1))),
-                    React.createElement('input', { type: 'range', min: -5, max: 5, step: 0.5, value: iq.govSpend, onChange: function(e) { setKey('govSpend', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.govt_spending', 'Govt spending (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.govSpend.toFixed(1))),
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.govt_spending_lever', 'Government spending, percent'), 'aria-valuetext': iq.govSpend.toFixed(1) + '%', min: -5, max: 5, step: 0.5, value: iq.govSpend, onChange: function(e) { setKey('govSpend', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
                   React.createElement('label', { className: 'text-[10px]' },
-                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Interest rate \u0394'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.rateChange.toFixed(1) + 'pp')),
-                    React.createElement('input', { type: 'range', min: -3, max: 3, step: 0.25, value: iq.rateChange, onChange: function(e) { setKey('rateChange', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.interest_rate_2', 'Interest rate \u0394')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.rateChange.toFixed(1) + 'pp')),
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.interest_rate_lever', 'Interest rate change'), 'aria-valuetext': iq.rateChange.toFixed(2) + ' percentage points', min: -3, max: 3, step: 0.25, value: iq.rateChange, onChange: function(e) { setKey('rateChange', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
                   React.createElement('label', { className: 'text-[10px]' },
-                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, 'Tariff (%)'), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.tariff.toFixed(1))),
-                    React.createElement('input', { type: 'range', min: 0, max: 25, step: 1, value: iq.tariff, onChange: function(e) { setKey('tariff', parseFloat(e.target.value)); }, className: 'w-full' })
+                    React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.tariff', 'Tariff (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.tariff.toFixed(1))),
+                    React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.tariff_lever', 'Tariff, percent'), 'aria-valuetext': iq.tariff.toFixed(1) + '%', min: 0, max: 25, step: 1, value: iq.tariff, onChange: function(e) { setKey('tariff', parseFloat(e.target.value)); }, className: 'w-full' })
                   )
                 ),
                 React.createElement('div', { className: 'flex gap-2 mb-2' },
                   React.createElement('button', { onClick: function() {
                     var t = new Date().toISOString().slice(11, 19);
                     setIQ({ log: iq.log.concat([{ t: t, tx: iq.taxCut, sp: iq.govSpend, r: iq.rateChange, tr: iq.tariff, gdp: dGDP.toFixed(2), inf: dInflation.toFixed(2), state: sm.label }]) });
-                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this policy mix'),
-                  React.createElement('button', { onClick: function() { setIQ({ taxCut: 0, govSpend: 0, rateChange: 0, tariff: 0 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.economicslab.log_this_policy_mix', '\uD83D\uDCCB Log this policy mix')),
+                  React.createElement('button', { onClick: function() { setIQ({ taxCut: 0, govSpend: 0, rateChange: 0, tariff: 0 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.economicslab.reset', 'Reset'))
                 ),
                 iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return React.createElement('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 tx' + e.tx + ' sp' + e.sp + ' r' + e.r + ' tar' + e.tr + ' \u2192 gdp' + e.gdp + ' inf' + e.inf); })
                 ),
-                React.createElement('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (which lever has the most disagreement among economists in real life? Why?)'),
-                React.createElement('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., tariffs hit prices fast but the GDP effect depends on retaliation...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+                React.createElement('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.economicslab.your_hypothesis_which_lever_has_the_mo', 'Your hypothesis (which lever has the most disagreement among economists in real life? Why?)')),
+                React.createElement('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.e_g_tariffs_hit_prices_fast_but_the_gd', 'e.g., tariffs hit prices fast but the GDP effect depends on retaliation...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.economicslab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
                 iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
-                  React.createElement('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  React.createElement('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.economicslab.open_questions_no_answer_key', 'Open questions (no answer key)')),
                   React.createElement('ul', { className: 'pl-4 m-0' },
-                    React.createElement('li', null, 'What combination produces "stagflation"? Why was it so politically painful in the 1970s?'),
-                    React.createElement('li', null, 'Tax cuts and govt spending both stimulate GDP. Which generates more inflation per dollar of stimulus? Why?'),
-                    React.createElement('li', null, 'When would a central bank deliberately CAUSE a recession? (Volcker 1979\u201382.)'),
-                    React.createElement('li', null, 'Do tariffs help domestic workers in the long run, or do they raise prices for everyone? Both? Trade-off where?'),
-                    React.createElement('li', null, 'This widget hard-codes textbook Keynesian signs. Which signs would FLIP under supply-side economics? Under MMT? Under new-classical (rational expectations)? Where does the Keynesian model give the wrong sign in real-world data?')
+                    React.createElement('li', null, t('stem.economicslab.what_combination_produces_stagflation_', 'What combination produces "stagflation"? Why was it so politically painful in the 1970s?')),
+                    React.createElement('li', null, t('stem.economicslab.tax_cuts_and_govt_spending_both_stimul', 'Tax cuts and govt spending both stimulate GDP. Which generates more inflation per dollar of stimulus? Why?')),
+                    React.createElement('li', null, t('stem.economicslab.when_would_a_central_bank_deliberately', 'When would a central bank deliberately CAUSE a recession? (Volcker 1979\u201382.)')),
+                    React.createElement('li', null, t('stem.economicslab.do_tariffs_help_domestic_workers_in_th', 'Do tariffs help domestic workers in the long run, or do they raise prices for everyone? Both? Trade-off where?')),
+                    React.createElement('li', null, t('stem.economicslab.this_widget_hard_codes_textbook_keynes', 'This widget hard-codes textbook Keynesian signs. Which signs would FLIP under supply-side economics? Under MMT? Under new-classical (rational expectations)? Where does the Keynesian model give the wrong sign in real-world data?'))
                   )
                 ),
                 React.createElement('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
                   React.createElement('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                  React.createElement('span', null, 'I can explain why this policy mix yields this macroeconomic state.')
+                  React.createElement('span', null, t('stem.economicslab.i_can_explain_why_this_policy_mix_yiel', 'I can explain why this policy mix yields this macroeconomic state.'))
                 ),
-                iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.')
+                iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.economicslab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.'))
               );
             })()
 

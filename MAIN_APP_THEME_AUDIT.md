@@ -1,5 +1,7 @@
 # Main App Dark/Contrast Mode Audit
 
+> **Historical audit snapshot, not current theme status (2026-07-09):** This May 2026 audit records the main-app dark/contrast issues found at that time. Use current visual QA/a11y audit outputs and live theme testing before treating any issue count or line reference below as open.
+
 **Generated**: 2026-05-19 (Claude Opus 4.7)
 **Trigger**: Aaron noticed some buttons in main-app chrome aren't responsive to dark theme. Audit covers everything outside `stem_lab/` and `sel_hub/` subdirectories.
 **Companion**: [STEM_LAB_THEME_AUDIT.md](STEM_LAB_THEME_AUDIT.md) for STEM tools; [DA_AUDIT.md](DA_AUDIT.md) for dynamic_assessment.

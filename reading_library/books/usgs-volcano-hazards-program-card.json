@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-volcano-hazards-program-card",
+  "title": "USGS Volcano Hazards Program",
+  "description": "A USGS source card about volcano monitoring, hazards, eruptions, and risk communication.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Volcanoes",
+    "Hazards",
+    "Geology",
+    "Monitoring"
+  ],
+  "authors": [
+    "USGS Volcano Hazards Program"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/programs/VHP",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/VHP"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS Volcano Hazards Program resources explain eruption hazards, monitoring instruments, alerts, observatories, maps, and how scientists communicate risk."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students comparing evidence types: seismic data, gas measurements, satellite images, ground deformation, and field observations."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked media may have separate credit or rights requirements. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

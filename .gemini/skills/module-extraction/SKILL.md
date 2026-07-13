@@ -18,14 +18,11 @@ AlloFlow dynamically loads heavy modules as standalone scripts via `<script>` ta
 ## Step-by-Step Extraction Process
 
 ### Step 1: Extract the Component Code
-Identify the `// @section` comment boundaries in `AlloFlowANTI.txt`. Extract everything between the section start and end into a new file.
-
-```javascript
-// Example section markers in AlloFlowANTI.txt:
-// @section STUDENT_ANALYTICS — RTI probes and student analytics
-// ... component code ...
-// @endsection STUDENT_ANALYTICS
-```
+Locate the component by its `const <Name> = (...) => {` (or `function <Name>`)
+declaration and its matching close in `AlloFlowANTI.txt`, then extract that range
+into a new file. (The old `// @section ... // @endsection` boundary markers are
+essentially gone — only one `@section` comment remains — so navigate by symbol
+name, not section markers.)
 
 ### Step 2: Wrap in IIFE + React Bootstrap
 The extracted code must be wrapped in an IIFE that reads React from `window`:
@@ -206,7 +203,7 @@ The host app (`App.jsx`) loads modules with `loadModule()` which:
 
 | Module | File | Registration Key |
 |--------|------|------------------|
-| STEM Lab | `stem_lab_module.js` | `window.AlloModules.STEMLab` |
+| STEM Lab | `stem_lab/stem_lab_module.js` | `window.AlloModules.StemLab` |
 | Word Sounds | `word_sounds_module.js` | `window.AlloModules.WordSounds` |
 | BehaviorLens | `behavior_lens_module.js` | `window.AlloModules.BehaviorLens` |
 | Report Writer | `report_writer_module.js` | `window.AlloModules.ReportWriter` |

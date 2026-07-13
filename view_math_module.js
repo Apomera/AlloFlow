@@ -37,7 +37,14 @@
   var Sparkles = _lazyIcon('Sparkles');
   var ChevronDown = _lazyIcon('ChevronDown');
 
-  function MathView(props) {
+  // ── Inline parametric diagram renderer — DELEGATE (canonical impl in utils_pure / UtilsPure) ──
+function _renderDiagramSvg(tool, state, titleText) {
+  // Canonical impl lives in utils_pure (window.AlloModules.UtilsPure) — shared with QuizView so
+  // math + quiz never drift. Delegate to it; null if not loaded (caller falls back to the button).
+  var _U = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UtilsPure;
+  return _U && _U._renderDiagramSvg ? _U._renderDiagramSvg(tool, state, titleText) : null;
+}
+function MathView(props) {
   // State reads
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -144,6 +151,8 @@
     size: 14
   }), " ", t('math.display.visual_header')), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-hidden svg-container",
+    role: "img",
+    "aria-label": generatedContent?.data?.graphAlt || 'Visual diagram for this problem',
     dangerouslySetInnerHTML: {
       __html: sanitizeHtml(generatedContent?.data.graphData)
     },
@@ -189,13 +198,39 @@
     size: 14
   }))), isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && /*#__PURE__*/React.createElement("div", {
     className: "ml-4 sm:ml-12 mt-4 mb-4 space-y-3"
-  }, problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
+  }, problem.manipulativeSupport && (() => {
+    // Inline accessible diagram (step 2): show the parametric scaffold inline +
+    // screen-readable for supported types; the Open-in-Lab button below stays for full editing.
+    var _suppSvg = _renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, generatedContent && generatedContent.data && generatedContent.data.title);
+    return _suppSvg ? /*#__PURE__*/React.createElement("div", {
+      className: "mb-2 flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-3 overflow-hidden",
+      dangerouslySetInnerHTML: {
+        __html: _suppSvg
+      }
+    }) : null;
+  })(), problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setStemLabTool(problem.manipulativeSupport.tool);
+      // Scaffold seeding: support is a worked example (NOT the student's answer),
+      // so seed the FULL target state — unlike manipulativeResponse below, which
+      // seeds NEUTRAL so the student must configure it themselves.
       if (problem.manipulativeSupport.tool === 'coordinate' && problem.manipulativeSupport.state?.points) {
         setGridPoints(problem.manipulativeSupport.state.points);
       } else if (problem.manipulativeSupport.tool === 'base10' && problem.manipulativeSupport.state) {
         setBase10Value(problem.manipulativeSupport.state);
+      } else if (problem.manipulativeSupport.tool === 'numberline' && problem.manipulativeSupport.state?.range) {
+        setNumberLineRange(problem.manipulativeSupport.state.range);
+      } else if (problem.manipulativeSupport.tool === 'fractions' && problem.manipulativeSupport.state) {
+        setFractionPieces({
+          numerator: problem.manipulativeSupport.state.numerator || 0,
+          denominator: problem.manipulativeSupport.state.denominator || 8
+        });
+      } else if (problem.manipulativeSupport.tool === 'volume' && problem.manipulativeSupport.state?.dims) {
+        setCubeDims({
+          l: problem.manipulativeSupport.state.dims.l || 1,
+          w: problem.manipulativeSupport.state.dims.w || 1,
+          h: problem.manipulativeSupport.state.dims.h || 1
+        });
       }
       setShowStemLab(true);
       setStemLabTab('explore');
@@ -281,14 +316,6 @@
         const lm = labToolData.molecule;
         isCorrect = lm.formula.replace(/\s/g, '').toLowerCase() === (target.formula || '').replace(/\s/g, '').toLowerCase();
       } else if (problem.manipulativeResponse.tool === 'calculus') {
-        const lcl = labToolData.calculus;
-        isCorrect = lcl.mode === (target.mode || 'riemann') && Math.abs(lcl.xMin - (target.xMin || 0)) < 0.1 && Math.abs(lcl.xMax - (target.xMax || 4)) < 0.1 && lcl.n === (target.n || 8);
-      } else if (problem.manipulativeResponse.tool === 'wave') {
-        const lw = labToolData.wave;
-        isCorrect = Math.abs(lw.amplitude - (target.amplitude || 1)) < 0.1 && Math.abs(lw.frequency - (target.frequency || 1)) < 0.1;
-      } else if (problem.manipulativeResponse.tool === 'cell') {
-        const lce = labToolData.cell;
-        isCorrect = lce.selectedOrganelle === (target.selectedOrganelle || null);
         const lcl = labToolData.calculus;
         isCorrect = lcl.mode === (target.mode || 'riemann') && Math.abs(lcl.xMin - (target.xMin || 0)) < 0.1 && Math.abs(lcl.xMax - (target.xMax || 4)) < 0.1 && lcl.n === (target.n || 8);
       } else if (problem.manipulativeResponse.tool === 'wave') {

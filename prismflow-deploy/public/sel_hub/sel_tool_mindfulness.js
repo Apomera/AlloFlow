@@ -95,7 +95,7 @@ window.SelHub = window.SelHub || {
     },
     {
       id: 'belly', name: 'Belly Breathing', emoji: '\uD83C\uDF08', color: '#22c55e',
-      desc: { elementary: 'Fill your belly like a balloon, then let it slowly go flat!', middle: 'Deep diaphragmatic breathing — your belly moves, not your chest.', high: 'Diaphragmatic breathing increases tidal volume and stimulates the vagus nerve.' },
+      desc: { elementary: 'Fill your belly like a balloon, then let it slowly go flat!', middle: 'Deep diaphragmatic breathing — your belly moves, not your chest.', high: 'Diaphragmatic breathing increases tidal volume and is thought to stimulate the vagus nerve.' },
       inhale: 4, hold: 1, exhale: 6, holdOut: 1, cycles: 5
     },
     {
@@ -543,7 +543,7 @@ window.SelHub = window.SelHub || {
         { id: 'lying', name: 'Lying Down', change: 'Place a small stuffed animal on the belly and watch it rise and fall.' },
         { id: 'partner', name: 'Partner Practice', change: 'Sit back-to-back with a friend and feel each other breathe.' }
       ],
-      whyItWorks: 'Diaphragmatic breathing activates the vagus nerve and shifts the body into parasympathetic rest mode. It is the foundation of every other breath practice.',
+      whyItWorks: 'Slow diaphragmatic breathing is thought to increase vagal tone and support a parasympathetic (rest) shift. It is the foundation of every other breath practice.',
       research: 'Mindful Schools curriculum; Greater Good Science Center K-5 modules.'
     },
     {
@@ -577,7 +577,7 @@ window.SelHub = window.SelHub || {
         { id: 'shorter', name: '3-3-3-3', change: 'Reduce to three seconds per side if four feels long.' },
         { id: 'longer', name: '5-5-5-5', change: 'Extend to five seconds when comfortable.' }
       ],
-      whyItWorks: 'Equal-ratio breathing with breath-holds raises CO2 tolerance and activates vagal tone, reducing cortisol and steadying heart-rate variability.',
+      whyItWorks: 'Equal-ratio breathing with breath-holds raises CO2 tolerance and is thought to support vagal tone, steadying heart-rate variability.',
       research: 'Used in US military tactical breathing protocols; Jerath et al. 2015 on slow breathing and ANS regulation.'
     },
     {
@@ -702,14 +702,14 @@ window.SelHub = window.SelHub || {
         { type: 'invitation', text: 'Continue for six more rounds at your own pace.' },
         { type: 'pause', durationSec: 90 },
         { type: 'instruction', text: 'Let your hands rest in your lap. Stay still for a moment.', pauseSec: 5 },
-        { type: 'reflection', text: 'The vibration stimulates the vagus nerve through your inner ear. Many feel calm spread quickly.' },
+        { type: 'reflection', text: 'The vibration is thought to stimulate the vagus nerve through your inner ear. Many feel calm spread quickly.' },
         { type: 'close', text: 'Open your eyes when ready. The hum is portable. You can do it silently in your throat anywhere.' }
       ],
       variations: [
         { id: 'silent', name: 'Silent Bee', change: 'Hum internally without sound, useful in classrooms.' },
         { id: 'eyes_closed', name: 'Eyes-Closed Deep Bee', change: 'Add eye covering with palms for deeper sensory rest.' }
       ],
-      whyItWorks: 'The humming vibration produces nitric oxide in the nasal sinuses, which improves blood flow, and stimulates the auricular branch of the vagus nerve.',
+      whyItWorks: 'The humming vibration produces nitric oxide in the nasal sinuses, which improves blood flow, and is thought to stimulate the auricular branch of the vagus nerve.',
       research: 'Kuppusamy et al. 2018; traditional pranayama in Hatha Yoga Pradipika.'
     },
     {
@@ -1259,7 +1259,7 @@ window.SelHub = window.SelHub || {
         { id: 'wheelchair', name: 'Wheelchair', change: 'Adjust by lengthening through the spine; the principles are the same.' },
         { id: 'standing', name: 'Standing', change: 'Adapt while standing in line or waiting.' }
       ],
-      whyItWorks: 'Upright posture increases vagal tone and confidence-related hormones; slumping is associated with lower mood and recall.',
+      whyItWorks: 'Upright, open posture may help you feel more alert and confident; slumped posture has been associated with lower mood and recall in some studies.',
       research: 'Wilkes et al. 2017 posture and depression; Amy Cuddy power posture critiques and replications.'
     },
     {
@@ -2517,7 +2517,7 @@ window.SelHub = window.SelHub || {
       variations: [
         { id: 'silent', name: 'Silent Toning', change: 'Imagine the sound inside if you cannot make it out loud.' }
       ],
-      whyItWorks: 'Vocalization activates the vagus nerve through the larynx and pharynx, stimulating parasympathetic response.',
+      whyItWorks: 'Vocalization is thought to stimulate the vagus nerve through the larynx and pharynx, stimulating parasympathetic response.',
       research: 'Polyvagal theory (Porges); vocal toning research in music therapy.'
     },
     {
@@ -3451,7 +3451,7 @@ window.SelHub = window.SelHub || {
       variations: [
         { id: 'silent_bee', name: 'Silent Bee', change: 'Hum silently in your throat for quiet classrooms.' }
       ],
-      whyItWorks: 'Humming on the exhale stimulates the vagus nerve via auditory canal vibration, calming young learners quickly.',
+      whyItWorks: 'Humming on the exhale is thought to stimulate the vagus nerve via auditory canal vibration, calming young learners quickly.',
       research: 'Bhramari pranayama; Kuppusamy et al. 2018.'
     },
     {
@@ -3890,7 +3890,7 @@ window.SelHub = window.SelHub || {
       variations: [
         { id: 'with_massage', name: 'Massage', change: 'Add small circles with fingertips on the jaw muscles.' }
       ],
-      whyItWorks: 'Jaw relaxation supports vagal tone via the trigeminal nerve and reduces tension headaches.',
+      whyItWorks: 'Jaw relaxation may support vagal tone via the trigeminal nerve and reduces tension headaches.',
       research: 'TMJ self-care literature; somatic relaxation traditions.'
     },
     {
@@ -4341,7 +4341,7 @@ window.SelHub = window.SelHub || {
         'Singing in the shower habit — keep singing; mindful singing counts too.'
       ],
       pairsWithScripts: ['body_scan_full', 'sensory_awareness_5_4_3_2_1', 'water_meditation'],
-      research: 'Warm water immersion activates vagal tone (heart-rate variability) and reduces cortisol (Norup et al., 2018).'
+      research: 'Warm water immersion may support vagal tone (heart-rate variability) and reduces cortisol (Norup et al., 2018).'
     },
     {
       id: 'morning_getting_dressed',
@@ -4921,7 +4921,7 @@ window.SelHub = window.SelHub || {
         'Wanting to apologize for nerves — do not; just begin.'
       ],
       pairsWithScripts: ['box_breathing_4_4_4_4', 'social_anxiety_reset', 'grounding_5_senses'],
-      research: 'Power-pose and arrival rituals reduce cortisol and improve presentation performance (Cuddy et al., 2012; Brooks, 2014).'
+      research: 'Arrival rituals and confident posture may help some people feel more prepared before speaking; any benefit is likely psychological. The original "power pose" hormone claims (lower cortisol) did not replicate (Ranehill et al., 2015), and reappraising nerves as excitement has some support (Brooks, 2014).'
     },
     {
       id: 'school_homework_start',
@@ -5560,7 +5560,7 @@ window.SelHub = window.SelHub || {
         'The warmth descending through your chest.',
         'How a hot drink slows you down naturally.'
       ],
-      whyItHelps: 'Warm beverages activate vagal tone and parasympathetic response. The slow sipping pace forces a built-in pause.',
+      whyItHelps: 'Warm beverages may support vagal tone and a parasympathetic response. The slow sipping pace forces a built-in pause.',
       whenItHelpsMost: 'After a stressful day, on cold mornings, or when you want a calming break.',
       obstacles: [
         'Microwaving in a rush — still works; sip slowly.',
@@ -12828,7 +12828,7 @@ window.SelHub = window.SelHub || {
         'End in silence for thirty seconds.'
       ],
       whatItDoes: 'Engages the voice and breath in gratitude, which amplifies the felt sense beyond silent thought.',
-      whyItWorks: 'Vocal expression engages the vagus nerve via the laryngeal pathway, which has measurable parasympathetic effects (Porges, 2011).',
+      whyItWorks: 'Vocal expression is thought to engage the vagus nerve via the laryngeal pathway, which has measurable parasympathetic effects (Porges, 2011).',
       bestFrequency: 'weekly',
       variations: [
         'Sung version with a simple two-note melody.',
@@ -22030,6 +22030,15 @@ window.SelHub = window.SelHub || {
     category: 'inner-work',
     cleanup: function() { stopBreathTimer(); stopScanTimer(); },
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _minT = (ctx && ctx.theme) || {};
+      var _minHC = !!_minT.isContrast, _minL = !_minHC && !_minT.isDark;
+      var _min_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#451a03':'#fff7ed','#7f1d1d':'#fee2e2'}, _min_BGH = {'#334155':'#000000','#1e293b':'#000000','#8b5cf6':'#000000','#0f172a':'#000000','#3b82f6':'#000000','#15803d':'#000000','#5eead4':'#000000','#fbbf24':'#000000','#042f2e':'#000000','#fde047':'#000000','#451a03':'#000000','#7c2d12':'#000000','#7f1d1d':'#000000'};
+      var _min_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#a78bfa':'#6d28d9','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#fde68a':'#92400e','#5eead4':'#0f766e','#a7f3d0':'#047857','#fecaca':'#b91c1c','#fbcfe8':'#9d174d'}, _min_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#a78bfa':'#ffff00','#f1f5f9':'#ffff00','#8b5cf6':'#ffff00','#22c55e':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#475569':'#ffff00','#3b82f6':'#ffff00','#06b6d4':'#ffff00','#f97316':'#ffff00','#10b981':'#ffff00','#fbbf24':'#ffff00','#a855f7':'#ffff00','#ef4444':'#ffff00','#fde68a':'#ffff00','#64748b':'#ffff00','#5eead4':'#ffff00','#0f172a':'#ffff00','#a7f3d0':'#ffff00','#fb923c':'#ffff00','#fed7aa':'#ffff00','#fecaca':'#ffff00','#fbcfe8':'#ffff00'};
+      var _min_BGD = {'#8b5cf6':'#6d28d9','#3b82f6':'#1d4ed8'}, _min_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1'}, _min_BDH = {'#334155':'#ffff00','#8b5cf6':'#ffff00','#475569':'#ffff00','#3b82f6':'#ffff00','#fbbf24':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#22c55e':'#ffff00','#ea580c':'#ffff00'};
+      var _minBg = function(h){ return _minHC ? (_min_BGH[h]||h) : (_minL ? (_min_BGL[h]||h) : (_min_BGD[h]||h)); };
+      var _minFg = function(h){ return _minHC ? (_min_FGH[h]||h) : (_minL ? (_min_FGL[h]||h) : h); };
+      var _minBd = function(h){ return _minHC ? (_min_BDH[h]||h) : (_minL ? (_min_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;
@@ -22131,6 +22140,7 @@ window.SelHub = window.SelHub || {
           upd('showBadgePopup', badgeId);
           if (soundEnabled) sfxBadge();
           addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
+          if (announceToSR) announceToSR('Badge earned: ' + badge.name);
           awardXP(25);
           setTimeout(function() { upd('showBadgePopup', null); }, 3000);
         }
@@ -22210,8 +22220,8 @@ window.SelHub = window.SelHub || {
             },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? '#8b5cf6' : 'transparent',
-              color: isActive ? '#fff' : '#94a3b8',
+              background: isActive ? _minBg('#8b5cf6') : 'transparent',
+              color: isActive ? _minFg('#fff') : _minFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
           }, tab.label);
@@ -22219,11 +22229,11 @@ window.SelHub = window.SelHub || {
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#8b5cf633' : 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#8b5cf633' : 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
       );
 
@@ -22234,33 +22244,33 @@ window.SelHub = window.SelHub || {
         var TAB_META = {
           breathe:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF2C', title: 'Breathe \u2014 the slowest lever you have',                  hint: 'Slow + diaphragmatic breathing flips the parasympathetic switch in seconds. Box breathing (4-4-4-4) is what Navy SEALs use under fire. The ratio matters more than the count: longer exhale than inhale tells the vagus nerve \u201Csafe.\u201D' },
           meditate:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDDD8', title: 'Meditate \u2014 attention training, not emptying',         hint: 'The skill isn\u2019t a quiet mind \u2014 it\u2019s noticing when you\u2019ve drifted and returning gently. 10-12 minutes/day for 8 weeks shows measurable structural changes (Hölzel 2011 fMRI of MBSR participants).' },
-          scan:       { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83E\uDEC0', title: 'Body Scan \u2014 sweep attention head-to-toe',             hint: 'Noticing without changing. Tension you didn\u2019t know was there comes up first; just observing it often releases it. Foundational practice in MBSR (Kabat-Zinn 1979) and now in trauma-informed therapy.' },
+          scan:       { accent: _minFg('#ec4899'), soft: 'rgba(236,72,153,0.14)', icon: '\uD83E\uDEC0', title: 'Body Scan \u2014 sweep attention head-to-toe',             hint: 'Noticing without changing. Tension you didn\u2019t know was there comes up first; just observing it often releases it. Foundational practice in MBSR (Kabat-Zinn 1979) and now in trauma-informed therapy.' },
           ground:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF0D', title: 'Grounding \u2014 5-4-3-2-1 senses',                          hint: '5 things you see, 4 hear, 3 touch, 2 smell, 1 taste. Pulls anxious attention out of the future + past and into the present sensory reality. The fastest research-backed way to shorten a panic spiral.' },
           techniques: { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\u2693',         title: 'Techniques \u2014 the toolkit beyond breathing',         hint: 'Loving-kindness (metta), open monitoring, focused attention, walking meditation, RAIN (recognize / allow / investigate / nurture). Different practices target different states; matching technique to need is the skill.' },
-          movement:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDEB6', title: 'Movement \u2014 mindfulness for non-sitters',              hint: 'Walking meditation, gentle yoga, qigong, simple stretches \u2014 same brain effects, less still. ADHD + anxious bodies often regulate BETTER while moving than seated. \u201CYou don\u2019t have to sit cross-legged\u201D is liberating to many.' },
+          movement:   { accent: _minFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDEB6', title: 'Movement \u2014 mindfulness for non-sitters',              hint: 'Walking meditation, gentle yoga, qigong, simple stretches \u2014 same brain effects, less still. ADHD + anxious bodies often regulate BETTER while moving than seated. \u201CYou don\u2019t have to sit cross-legged\u201D is liberating to many.' },
           gratitude:  { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDE4F', title: 'Gratitude \u2014 attention training with a twist',         hint: 'Emmons + McCullough 2003: 3-times-a-week gratitude journaling \u2192 measurable mood + sleep + relationship gains in 10 weeks. Specifics work better than \u201CI\u2019m grateful for my family\u201D \u2014 name the moment, the gesture, the why.' },
           moments:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.14)', icon: '\uD83C\uDF3F', title: 'Moments \u2014 micro-mindfulness in the day',              hint: 'Bell rings? Breathe. Door opens? Notice the air. STOP technique: Stop / Take a breath / Observe / Proceed. 30-second resets, ten times a day, beat one 30-minute session most weeks. Frequency wins.' },
-          log:        { accent: '#475569', soft: 'rgba(71,85,105,0.14)',  icon: '\uD83D\uDCCA', title: 'Log \u2014 streaks + what worked',                          hint: 'What you measured shows up; what you didn\u2019t fades. Track which practices actually helped, on which days, in which moods. Builds your personalized toolkit \u2014 not the one a book or app prescribed.' },
+          log:        { accent: _minFg('#475569'), soft: 'rgba(71,85,105,0.14)',  icon: '\uD83D\uDCCA', title: 'Log \u2014 streaks + what worked',                          hint: 'What you measured shows up; what you didn\u2019t fades. Track which practices actually helped, on which days, in which moods. Builds your personalized toolkit \u2014 not the one a book or app prescribed.' },
           breath_studio:    { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83C\uDFB5', title: 'Breath Studio \u2014 9 patterns with live visual',     hint: 'Box, 4-7-8, coherent 5-5, physiological sigh (Huberman), 1:2 ratio, bee breath, sleep breath, and more. The circle expands on inhale and contracts on exhale \u2014 match your breath to the visual. Cycle counter for daily streak.' },
           scripts_lib:      { accent: '#5eead4', soft: 'rgba(94,234,212,0.14)',  icon: '\uD83D\uDCDA', title: 'Scripts Library \u2014 119 guided practices',          hint: 'Line-by-line scripts across breath, body, focus, loving-kindness, visualization, sound, walking, eating, sleep, crisis-grounding, self-compassion, kid-friendly, trauma-informed. Each has paced steps, real pauses, contraindications.' },
-          body_scan_studio: { accent: '#fb923c', soft: 'rgba(251,146,60,0.14)',  icon: '\uD83E\uDEC1', title: 'Body Scan Studio \u2014 clickable silhouette + timer',hint: '17-region guided body scan with click-to-jump. Each region has a specific instruction, body cue, and ~30 seconds of dwell time. Based on MBSR + trauma-informed adaptations.' },
-          ground5421:       { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',   icon: '5\uFE0F\u20E3',title: '5-4-3-2-1 Interactive \u2014 type each sense',          hint: 'Pull attention out of anxious spirals by anchoring in the 5 senses. Therapists use this for PTSD, panic, dissociation. Naming things out loud is even more grounding than thinking them silently.' },
-          movements_lib:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83E\uDDD8\u200D\u2640\uFE0F', title: 'Movement Library \u2014 82 mindful movements',         hint: 'Standing / seated / kneeling / supine / balance / twist / walking / chair / hand mudras / breath-paired. Filter by classroom-friendly for desk-friendly options. Each has Sanskrit name, contraindications, and band-appropriate steps.' },
+          body_scan_studio: { accent: _minFg('#fb923c'), soft: 'rgba(251,146,60,0.14)',  icon: '\uD83E\uDEC1', title: 'Body Scan Studio \u2014 clickable silhouette + timer',hint: '17-region guided body scan with click-to-jump. Each region has a specific instruction, body cue, and ~30 seconds of dwell time. Based on MBSR + trauma-informed adaptations.' },
+          ground5421:       { accent: _minFg('#22c55e'), soft: 'rgba(34,197,94,0.14)',   icon: '5\uFE0F\u20E3',title: '5-4-3-2-1 Interactive \u2014 type each sense',          hint: 'Pull attention out of anxious spirals by anchoring in the 5 senses. Therapists use this for PTSD, panic, dissociation. Naming things out loud is even more grounding than thinking them silently.' },
+          movements_lib:    { accent: _minFg('#a855f7'), soft: 'rgba(168,85,247,0.14)',  icon: '\uD83E\uDDD8\u200D\u2640\uFE0F', title: 'Movement Library \u2014 82 mindful movements',         hint: 'Standing / seated / kneeling / supine / balance / twist / walking / chair / hand mudras / breath-paired. Filter by classroom-friendly for desk-friendly options. Each has Sanskrit name, contraindications, and band-appropriate steps.' },
           walking:          { accent: '#5eead4', soft: 'rgba(94,234,212,0.14)',  icon: '\uD83D\uDC63', title: 'Walking Meditation \u2014 step counter + bell',         hint: 'Three paces (slow / normal / brisk) with optional mindfulness bell every N steps. Best outdoors, but works in a hallway too. Slow pace = traditional formal practice (Thich Nhat Hanh, Theravada).' },
-          gratitude_lib:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\u2728', title: 'Gratitude Library \u2014 84 practices + 390 prompts',  hint: 'Seligman Three Good Things, Emmons journal, gratitude letter + visit, Naikan, mental subtraction, awe walks. Cautions about toxic positivity and grief bypass built in.' },
+          gratitude_lib:    { accent: _minFg('#ec4899'), soft: 'rgba(236,72,153,0.14)',  icon: '\u2728', title: 'Gratitude Library \u2014 84 practices + 390 prompts',  hint: 'Seligman Three Good Things, Emmons journal, gratitude letter + visit, Naikan, mental subtraction, awe walks. Cautions about toxic positivity and grief bypass built in.' },
           living:           { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83D\uDCCD', title: 'Mindful Living \u2014 85 everyday scenarios',           hint: 'Mindful tooth-brushing. Mindful walking-to-class. Mindful goodbye hug. Specific real-life moments where presence becomes a way of being, not a separate practice. Filter by setting.' },
-          mandala:          { accent: '#fde047', soft: 'rgba(253,224,71,0.14)',  icon: '\uD83C\uDF38', title: 'Mandala Focus \u2014 6 patterns, adjustable spin speed',hint: 'Lotus, geometric mandala, Sri Yantra, Flower of Life, spiral, rosette. Soft gaze on the center. Trataka-style single-point attention. Reduced-motion respected.' },
+          mandala:          { accent: _minBg('#fde047'), soft: 'rgba(253,224,71,0.14)',  icon: '\uD83C\uDF38', title: 'Mandala Focus \u2014 6 patterns, adjustable spin speed',hint: 'Lotus, geometric mandala, Sri Yantra, Flower of Life, spiral, rosette. Soft gaze on the center. Trataka-style single-point attention. Reduced-motion respected.' },
           trataka:          { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83D\uDD6F\uFE0F',title: 'Trataka \u2014 candle gazing',                          hint: 'Traditional yogic single-pointed focus. Soft gaze on the flame; blink when needed. After a minute, close your eyes and watch the after-image. Skip if epilepsy / sensory-sensitive / dissociation-prone.' },
-          soundbath:        { accent: '#a78bfa', soft: 'rgba(167,139,250,0.14)', icon: '\uD83C\uDFBC', title: 'Soundbath Mixer \u2014 6 synthesized layers',           hint: 'Tibetan bowl, drone, rain (pink noise), ocean (modulated noise), wind, occasional bell. Mix your own ambient soundscape with sliders. All audio generated locally \u2014 no streaming, no privacy concern.' },
-          bell_timer:       { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83D\uDD14', title: 'Bell Timer \u2014 custom intervals + 4 tones',          hint: 'Set total minutes, optional interval bell every N minutes, choose from bowl / chime / gong / single bird. Set it and put the phone face down.' },
+          soundbath:        { accent: _minFg('#a78bfa'), soft: 'rgba(167,139,250,0.14)', icon: '\uD83C\uDFBC', title: 'Soundbath Mixer \u2014 6 synthesized layers',           hint: 'Tibetan bowl, drone, rain (pink noise), ocean (modulated noise), wind, occasional bell. Mix your own ambient soundscape with sliders. All audio generated locally \u2014 no streaming, no privacy concern.' },
+          bell_timer:       { accent: _minFg('#f97316'), soft: 'rgba(249,115,22,0.14)',  icon: '\uD83D\uDD14', title: 'Bell Timer \u2014 custom intervals + 4 tones',          hint: 'Set total minutes, optional interval bell every N minutes, choose from bowl / chime / gong / single bird. Set it and put the phone face down.' },
           lovingkindness:   { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83D\uDC97', title: 'Loving-Kindness Wheel \u2014 6 recipients \u00D7 4 phrases', hint: 'Cycle through self, benefactor, friend, neutral person, difficult person, all beings. Each phrase rests for 8 seconds. ~3 minutes total. If self-directed brings up shame, skip and start with benefactor.' },
           eating:           { accent: '#fdba74', soft: 'rgba(253,186,116,0.14)', icon: '\uD83C\uDF47', title: 'Mindful Eating \u2014 8-step guided flow',              hint: 'Classic MBSR raisin practice \u2014 but with any small food. Settle, look, smell, touch, taste, chew, swallow, pause. ~5 minutes. If you have a history of disordered eating, please consult a therapist before practicing.' },
           clouds:           { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\u2601\uFE0F', title: 'Cloud Watching \u2014 ACT defusion practice',           hint: 'Your thoughts are like clouds passing across the sky of awareness. Watch the clouds drift. A new mindful prompt appears every 15 seconds. You are the sky, not the cloud.' },
           color_breath:     { accent: '#22d3ee', soft: 'rgba(34,211,238,0.14)',  icon: '\uD83C\uDFA8', title: 'Color Breathing \u2014 8 color pair palettes',          hint: 'Sunrise, forest, ocean, rose, moonlight, fire, mint, lavender. Inhale: warm color fills your chest. Exhale: cool color flows out. Visualization paired with breath engages multiple regulation pathways.' },
           mudra:            { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83E\uDD32', title: 'Mudra Studio \u2014 8 hand positions illustrated',      hint: 'Anjali (prayer), Dhyana (meditation), Jnana (wisdom), Chin (consciousness), Prana (life force), Surya (sun), Open Palms, Hand-on-Heart. The hand position influences the felt experience of practice.' },
           microbreak:       { accent: '#84cc16', soft: 'rgba(132,204,22,0.14)',  icon: '\u23F1\uFE0F', title: 'Microbreak Generator \u2014 24 quick practices',         hint: 'Filtered by context (desk / transition / social / overstim / before-test / after-conflict). Tap "Give me one" \u2014 get a random fit. 30 seconds to 3 minutes. Small repeated practices build a baseline of presence.' },
-          beforeafter:      { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',   icon: '\uD83D\uDCCA', title: 'Before/After \u2014 rate your state pre + post practice',hint: 'Rate mood + stress before practice, do practice, rate again. The shift becomes concrete \u2014 and helps you learn which practices work best for YOU. Stack the data over time in the log.' },
-          streak:           { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',   icon: '\uD83D\uDD25', title: 'Practice Streak \u2014 8-week heatmap',                 hint: 'Last 8 weeks as a calendar heatmap. Darker squares = more sessions. Current streak, longest streak, total sessions. Daily small practice beats occasional long sessions for habit-building.' },
+          beforeafter:      { accent: _minFg('#22c55e'), soft: 'rgba(34,197,94,0.14)',   icon: '\uD83D\uDCCA', title: 'Before/After \u2014 rate your state pre + post practice',hint: 'Rate mood + stress before practice, do practice, rate again. The shift becomes concrete \u2014 and helps you learn which practices work best for YOU. Stack the data over time in the log.' },
+          streak:           { accent: _minFg('#ef4444'), soft: 'rgba(239,68,68,0.14)',   icon: '\uD83D\uDD25', title: 'Practice Streak \u2014 8-week heatmap',                 hint: 'Last 8 weeks as a calendar heatmap. Darker squares = more sessions. Current streak, longest streak, total sessions. Daily small practice beats occasional long sessions for habit-building.' },
           research:         { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83D\uDD2C', title: 'Research Library \u2014 53 study summaries',            hint: 'Honest summaries with limitations included (Van Dam Mind the Hype, Britton on adverse effects, mixed MYRIAD results). Per-band explanations and practice takeaways. The science as it actually is.' },
           safety:           { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',   icon: '\u26A0\uFE0F', title: 'Safety \u2014 adverse experiences + trauma adaptations',hint: 'Meditation is not always pleasant. 25 adverse experiences (Lindahl 2017, Britton 2019) with how to respond + 25 trauma-informed adaptations (Treleaven 2018). When to stop, when to seek help. 988 if crisis.' }
         };
@@ -22279,7 +22289,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('p', { style: { margin: '3px 0 0', color: _minFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -22287,6 +22297,89 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
+      function mindfulnessRouteCard(label, detail, target, color) {
+        var isHere = activeTab === target;
+        return h('button', {
+          key: target,
+          onClick: function() {
+            stopBreathTimer(); stopScanTimer();
+            upd({ activeTab: target, breathActive: false, breathPhase: null, scanActive: false });
+            if (soundEnabled) sfxClick();
+          },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 88,
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px solid ' + (isHere ? color : _minBg('#334155')),
+            borderLeft: '4px solid ' + color,
+            background: isHere ? color + '18' : _minBg('#1e293b'),
+            color: _minFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: _minFg('#94a3b8'), lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function mindfulnessStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 12,
+            background: _minBg('#0f172a'),
+            border: '1px solid ' + color + '44',
+            minHeight: 62
+          }
+        },
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: _minFg('#94a3b8'), lineHeight: 1.35 } }, label)
+        );
+      }
+
+      var mindfulnessLaunchPanel = h('section', {
+        role: 'region',
+        'aria-label': 'Mindfulness launch panel',
+        style: {
+          marginBottom: 18,
+          padding: 16,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(14,165,233,0.08)), ' + _minBg('#1e293b'),
+          border: '1px solid ' + _minBg('#334155')
+        }
+      },
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+          h('div', { style: { flex: '1 1 260px' } },
+            h('div', { style: { fontSize: 11, color: _minFg('#a78bfa'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Mindfulness launch mat'),
+            h('h3', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Pick a practice that matches your body right now.'),
+            h('p', { style: { margin: '6px 0 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
+              'Start with breath, body, senses, a small microbreak, a timed sit, or safety guidance if practice feels too intense.'
+            )
+          ),
+          h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
+            mindfulnessStat('breath sessions', breathSessions, '#0ea5e9'),
+            mindfulnessStat('body scans', scanSessions, '#ec4899'),
+            mindfulnessStat('grounding rounds', groundCompleted, '#22c55e'),
+            mindfulnessStat('practice log', practiceLog.length, '#a855f7')
+          )
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+          mindfulnessRouteCard('Breathe', 'Use the simplest pacer when you need quick regulation.', 'breathe', '#0ea5e9'),
+          mindfulnessRouteCard('Body scan', 'Sweep attention through the body with a timer.', 'scan', '#ec4899'),
+          mindfulnessRouteCard('Ground senses', 'Use 5-4-3-2-1 to return to the room.', 'ground', '#22c55e'),
+          mindfulnessRouteCard('Take a microbreak', 'Find a 30 second to 3 minute reset.', 'microbreak', '#84cc16'),
+          mindfulnessRouteCard('Set a bell timer', 'Use a quiet timed practice with intervals.', 'bell_timer', '#f97316'),
+          mindfulnessRouteCard('Check safety', 'Adapt or stop practice when it is not helping.', 'safety', '#ea580c')
+        )
+      );
+
       var badgePopup = null;
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -22298,10 +22391,10 @@ window.SelHub = window.SelHub || {
               onClick: function(e) { e.stopPropagation(); }
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
-              h('p', { style: { fontSize: 11, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
-              h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
-              h('p', { style: { margin: '12px 0 0 0', color: '#8b5cf6', fontSize: 12, fontWeight: 700 } }, '+25 XP')
+              h('p', { style: { fontSize: 11, color: _minFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
+              h('h3', { style: { margin: '0 0 8px 0', color: _minFg('#f1f5f9'), fontSize: 20 } }, popBadge.name),
+              h('p', { style: { margin: 0, color: _minFg('#94a3b8'), fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { margin: '12px 0 0 0', color: _minFg('#8b5cf6'), fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
         }
@@ -22314,22 +22407,22 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { minHeight: '100%' } },
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _minFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
               BADGES.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
-                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : '#1e293b', border: '1px solid ' + (earned ? '#8b5cf6' : '#334155'), opacity: earned ? 1 : 0.4 }
+                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _minBg('#1e293b'), border: '1px solid ' + (earned ? '#8b5cf6' : _minBg('#334155')), opacity: earned ? 1 : 0.4 }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#94a3b8' } }, badge.name),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _minFg('#e2e8f0') : _minFg('#94a3b8') } }, badge.name),
+                  h('div', { style: { fontSize: 11, color: _minFg('#94a3b8'), marginTop: 2 } }, badge.desc)
                 );
               })
             ),
             h('button', { 'aria-label': 'Close',
               onClick: function() { upd('showBadgesPanel', false); },
-              style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
+              style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
             }, 'Close')
           )
         );
@@ -22342,11 +22435,12 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'breathe') {
         var bp = BREATH_PATTERNS[breathPatternIdx];
 
-        breatheContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+        breatheContent = h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
+          mindfulnessLaunchPanel,
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDF2C\uFE0F Let\'s Breathe Together!' : '\uD83C\uDF2C\uFE0F Guided Breathing'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             band === 'elementary' ? 'Pick a breathing pattern and follow the circle!' :
             band === 'middle' ? 'Choose a pattern and sync your breath to the visual guide.' :
             'Select a respiratory entrainment pattern. Follow the visual pacer.'
@@ -22357,25 +22451,25 @@ window.SelHub = window.SelHub || {
             BREATH_PATTERNS.map(function(pat, i) {
               var isSel = breathPatternIdx === i;
               var used = breathPatternsUsed[pat.id];
-              return h('button', { 'aria-label': pat.emoji,
+              return h('button', { 
                 key: pat.id,
                 onClick: function() { upd('breathPatternIdx', i); if (soundEnabled) sfxClick(); },
                 style: {
                   padding: '12px 8px', borderRadius: 12, border: isSel ? '2px solid ' + pat.color : '1px solid #334155',
-                  background: isSel ? pat.color + '18' : '#1e293b', cursor: 'pointer', textAlign: 'center'
+                  background: isSel ? pat.color + '18' : _minBg('#1e293b'), cursor: 'pointer', textAlign: 'center'
                 }
               },
                 h('div', { style: { fontSize: 22, marginBottom: 2 } }, pat.emoji),
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: isSel ? pat.color : '#e2e8f0' } }, pat.name),
-                used && h('div', { style: { fontSize: 8, color: '#22c55e', marginTop: 2 } }, '\u2713 tried')
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: isSel ? pat.color : _minFg('#e2e8f0') } }, pat.name),
+                used && h('div', { style: { fontSize: 8, color: _minFg('#22c55e'), marginTop: 2 } }, '\u2713 tried')
               );
             })
           ),
 
           // Pattern description
           !breathActive && h('div', { style: { padding: 14, borderRadius: 12, background: bp.color + '12', border: '1px solid ' + bp.color + '33', marginBottom: 16, textAlign: 'center' } },
-            h('p', { style: { fontSize: 13, color: '#e2e8f0', margin: 0, lineHeight: 1.5 } }, bp.desc[band]),
-            h('p', { style: { fontSize: 10, color: '#94a3b8', margin: '6px 0 0' } },
+            h('p', { style: { fontSize: 13, color: _minFg('#e2e8f0'), margin: 0, lineHeight: 1.5 } }, bp.desc[band]),
+            h('p', { style: { fontSize: 10, color: _minFg('#94a3b8'), margin: '6px 0 0' } },
               'In ' + bp.inhale + 's' + (bp.hold ? ' \u2022 Hold ' + bp.hold + 's' : '') + ' \u2022 Out ' + bp.exhale + 's' + (bp.holdOut ? ' \u2022 Rest ' + bp.holdOut + 's' : '') + ' \u2022 ' + bp.cycles + ' cycles'
             )
           ),
@@ -22425,7 +22519,7 @@ window.SelHub = window.SelHub || {
                 }
               }, 1000);
             },
-            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: bp.color, color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: _minBg(bp.color), color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
           }, '\uD83C\uDF2C\uFE0F Begin Breathing'),
 
           // Active breathing display
@@ -22445,7 +22539,7 @@ window.SelHub = window.SelHub || {
                 }
               },
                 h('div', { style: { fontSize: 24, fontWeight: 800, color: bp.color } }, breathTimeLeft),
-                h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 600, marginTop: 2 } },
+                h('div', { style: { fontSize: 12, color: _minFg('#e2e8f0'), fontWeight: 600, marginTop: 2 } },
                   breathPhase === 'inhale' ? (band === 'elementary' ? 'Breathe In...' : 'Inhale') :
                   breathPhase === 'hold' ? (band === 'elementary' ? 'Hold it...' : 'Hold') :
                   breathPhase === 'exhale' ? (band === 'elementary' ? 'Breathe Out...' : 'Exhale') :
@@ -22455,7 +22549,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Cycle indicator
-            h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 16 } },
+            h('p', { style: { fontSize: 11, color: _minFg('#94a3b8'), marginBottom: 16 } },
               'Cycle ' + breathCycle + ' of ' + bp.cycles + ' \u2022 ' + bp.name
             ),
 
@@ -22465,12 +22559,12 @@ window.SelHub = window.SelHub || {
                 stopBreathTimer();
                 upd({ breathActive: false, breathPhase: null });
               },
-              style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, '\u25A0 Stop')
           ),
 
           // Sessions counter
-          breathSessions > 0 && !breathActive && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 12 } },
+          breathSessions > 0 && !breathActive && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
             '\uD83C\uDF2C\uFE0F ' + breathSessions + ' session' + (breathSessions !== 1 ? 's' : '') + ' completed'
           )
         );
@@ -22485,10 +22579,10 @@ window.SelHub = window.SelHub || {
         var currentScanStep = scanStep >= 0 && scanStep < scanSteps.length ? scanSteps[scanStep] : null;
 
         scanContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83E\uDEC0 Body Check-Up!' : '\uD83E\uDEC0 Body Scan'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'We\'ll check in with each part of your body, from toes to head!' :
             band === 'middle' ? 'Progressive body scan — notice tension and release it, one area at a time.' :
             'Progressive muscle relaxation meets interoceptive awareness. Scan systematically.'
@@ -22497,15 +22591,15 @@ window.SelHub = window.SelHub || {
           // Not started yet
           scanStep === -1 && h('div', { style: { textAlign: 'center' } },
             h('div', { style: { fontSize: 64, marginBottom: 16 } }, '\uD83E\uDDD8'),
-            h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 16, lineHeight: 1.5 } },
+            h('p', { style: { color: _minFg('#94a3b8'), fontSize: 13, marginBottom: 16, lineHeight: 1.5 } },
               band === 'elementary'
                 ? 'Find a comfortable seat. You can close your eyes if you want to. Ready?'
                 : 'Find a comfortable position. Close your eyes when ready. You\'ll spend about ' + scanSteps.reduce(function(s,st) { return s + st.seconds; }, 0) + ' seconds total.'
             ),
-            h('p', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 20 } },
+            h('p', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginBottom: 20 } },
               scanSteps.length + ' body areas \u2022 ~' + Math.round(scanSteps.reduce(function(s,st) { return s + st.seconds; }, 0) / 60) + ' minutes'
             ),
-            h('button', { 'aria-label': 'Toggle sound',
+            h('button', {
               onClick: function() {
                 upd({ scanStep: 0, scanTimeLeft: scanSteps[0].seconds, scanActive: true });
                 if (soundEnabled) sfxBowl();
@@ -22540,7 +22634,7 @@ window.SelHub = window.SelHub || {
                   }
                 }, 1000);
               },
-              style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+              style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: _minBg('#8b5cf6'), color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
             }, '\uD83E\uDEC0 Start Body Scan')
           ),
 
@@ -22551,7 +22645,7 @@ window.SelHub = window.SelHub || {
               scanSteps.map(function(_, i) {
                 return h('div', {
                   key: i,
-                  style: { flex: 1, height: 6, borderRadius: 3, background: i < scanStep ? '#8b5cf6' : i === scanStep ? '#a78bfa' : '#334155', transition: 'background 0.3s' }
+                  style: { flex: 1, height: 6, borderRadius: 3, background: i < scanStep ? '#8b5cf6' : i === scanStep ? _minFg('#a78bfa') : _minBg('#334155'), transition: 'background 0.3s' }
                 });
               })
             ),
@@ -22559,15 +22653,15 @@ window.SelHub = window.SelHub || {
             // Current area
             h('div', { style: { textAlign: 'center', padding: 24, borderRadius: 16, background: '#8b5cf612', border: '1px solid #8b5cf644', marginBottom: 16 } },
               h('div', { style: { fontSize: 48, marginBottom: 8 } }, currentScanStep.emoji),
-              h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4 } },
+              h('p', { style: { fontSize: 10, color: _minFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4 } },
                 'Area ' + (scanStep + 1) + ' of ' + scanSteps.length
               ),
-              h('h4', { style: { margin: '0 0 12px', color: '#f1f5f9', fontSize: 18 } }, currentScanStep.area),
-              h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6, margin: '0 0 16px' } }, currentScanStep.instruction),
+              h('h4', { style: { margin: '0 0 12px', color: _minFg('#f1f5f9'), fontSize: 18 } }, currentScanStep.area),
+              h('p', { style: { fontSize: 14, color: _minFg('#e2e8f0'), lineHeight: 1.6, margin: '0 0 16px' } }, currentScanStep.instruction),
 
               // Timer circle
-              h('div', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 60, height: 60, borderRadius: '50%', background: '#0f172a', border: '2px solid #8b5cf6' } },
-                h('span', { style: { fontSize: 20, fontWeight: 800, color: '#a78bfa' } }, scanTimeLeft)
+              h('div', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 60, height: 60, borderRadius: '50%', background: _minBg('#0f172a'), border: '2px solid #8b5cf6' } },
+                h('span', { style: { fontSize: 20, fontWeight: 800, color: _minFg('#a78bfa') } }, scanTimeLeft)
               )
             ),
 
@@ -22578,13 +22672,13 @@ window.SelHub = window.SelHub || {
                   stopScanTimer();
                   upd({ scanStep: -1, scanActive: false });
                 },
-                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\u25A0 Stop Scan')
             )
           ),
 
           // Sessions counter
-          scanSessions > 0 && scanStep === -1 && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 12 } },
+          scanSessions > 0 && scanStep === -1 && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
             '\uD83E\uDEC0 ' + scanSessions + ' scan' + (scanSessions !== 1 ? 's' : '') + ' completed'
           )
         );
@@ -22596,10 +22690,10 @@ window.SelHub = window.SelHub || {
       var groundContent = null;
       if (activeTab === 'ground') {
         groundContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDF0D Use Your Senses!' : '\uD83C\uDF0D 5-4-3-2-1 Grounding'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'When you feel worried, use your senses to come back to right here, right now!' :
             band === 'middle' ? 'Anchor yourself to the present using your five senses \u2014 a powerful anxiety reduction technique.' :
             'Sensory grounding disrupts anxious rumination by redirecting attentional resources to the present moment.'
@@ -22618,8 +22712,8 @@ window.SelHub = window.SelHub || {
                     key: i,
                     style: {
                       width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: isDone ? s.color + '33' : isCurrent ? s.color + '22' : '#1e293b',
-                      border: '2px solid ' + (isDone ? s.color : isCurrent ? s.color : '#334155'),
+                      background: isDone ? s.color + '33' : isCurrent ? s.color + '22' : _minBg('#1e293b'),
+                      border: '2px solid ' + (isDone ? s.color : isCurrent ? s.color : _minBg('#334155')),
                       fontSize: 16, transition: 'all 0.3s'
                     }
                   }, isDone ? '\u2713' : s.emoji);
@@ -22632,7 +22726,7 @@ window.SelHub = window.SelHub || {
                 h('h4', { style: { margin: '0 0 4px', color: sense.color, fontSize: 20 } },
                   sense.count + ' things you can ' + sense.sense
                 ),
-                h('p', { style: { fontSize: 13, color: '#94a3b8', margin: '0 0 16px' } }, sense.prompt[band])
+                h('p', { style: { fontSize: 13, color: _minFg('#94a3b8'), margin: '0 0 16px' } }, sense.prompt[band])
               ),
 
               // Input area
@@ -22655,7 +22749,7 @@ window.SelHub = window.SelHub || {
                         newInputs[groundStep] = stepInputs;
                         upd('groundInputs', newInputs);
                       },
-                      style: { flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit' }
+                      style: { flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#f1f5f9'), fontSize: 13, fontFamily: 'inherit' }
                     })
                   );
                 })
@@ -22681,7 +22775,7 @@ window.SelHub = window.SelHub || {
                     logPractice('grounding', '54321');
                   }
                 },
-                style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: sense.color, color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+                style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: sense.color, color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
               }, groundStep < 4 ? 'Next Sense \u2192' : '\u2705 Complete Grounding!')
             );
           })(),
@@ -22689,18 +22783,18 @@ window.SelHub = window.SelHub || {
           // Completion screen
           groundStep >= 5 && h('div', { style: { textAlign: 'center', padding: 20 } },
             h('div', { style: { fontSize: 64, marginBottom: 12 } }, '\uD83C\uDF0D'),
-            h('h4', { style: { color: '#22c55e', fontSize: 20, marginBottom: 8 } },
+            h('h4', { style: { color: _minFg('#22c55e'), fontSize: 20, marginBottom: 8 } },
               band === 'elementary' ? 'You Did It!' : 'Grounding Complete'
             ),
-            h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 20, lineHeight: 1.5 } },
+            h('p', { style: { color: _minFg('#94a3b8'), fontSize: 13, marginBottom: 20, lineHeight: 1.5 } },
               band === 'elementary' ? 'You used all 5 senses to come back to the present moment. You\'re a grounding superstar!'
               : 'You\'ve re-anchored yourself to the present moment through sensory awareness. Notice how you feel compared to before.'
             ),
             h('button', { 'aria-label': 'Do Another Round',
               onClick: function() { upd({ groundStep: 0, groundInputs: ['','','','',''] }); if (soundEnabled) sfxClick(); },
-              style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: _minBg('#3b82f6'), color: _minFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, '\uD83D\uDD04 Do Another Round'),
-            groundCompleted > 0 && h('p', { style: { color: '#94a3b8', fontSize: 11, marginTop: 12 } },
+            groundCompleted > 0 && h('p', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
               '\uD83C\uDF0D ' + groundCompleted + ' grounding exercise' + (groundCompleted !== 1 ? 's' : '') + ' completed'
             )
           )
@@ -22715,10 +22809,10 @@ window.SelHub = window.SelHub || {
         var prompts = GRATITUDE_PROMPTS[band] || GRATITUDE_PROMPTS.elementary;
 
         gratitudeContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDE4F What Are You Thankful For?' : '\uD83D\uDE4F Gratitude Journal'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Write down things that make you feel thankful. Even small things count!' :
             band === 'middle' ? 'Regular gratitude practice is scientifically proven to increase happiness.' :
             'Gratitude interventions show robust effects on subjective well-being (Emmons & McCullough, 2003).'
@@ -22732,15 +22826,15 @@ window.SelHub = window.SelHub || {
                 upd('gratPrompt', prompts[idx]);
                 if (soundEnabled) sfxClick();
               },
-              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', cursor: 'pointer', fontSize: 12, margin: '0 auto' }
+              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, margin: '0 auto' }
             }, '\uD83D\uDCA1 Give Me a Prompt'),
             gratPrompt && h('div', { style: { marginTop: 10, padding: 14, borderRadius: 12, background: '#22c55e12', border: '1px solid #22c55e33', textAlign: 'center' } },
-              h('p', { style: { fontSize: 14, color: '#e2e8f0', fontStyle: 'italic', margin: 0 } }, '"' + gratPrompt + '"')
+              h('p', { style: { fontSize: 14, color: _minFg('#e2e8f0'), fontStyle: 'italic', margin: 0 } }, '"' + gratPrompt + '"')
             )
           ),
 
           // Writing area
-          h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _minBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
             h('textarea', {
               value: gratDraft,
               'aria-label': 'Gratitude journal entry',
@@ -22749,7 +22843,7 @@ window.SelHub = window.SelHub || {
                 ? 'I am thankful for...'
                 : 'What are you grateful for today? Be specific — details matter.',
               rows: 4,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),
 
             h('div', { style: { display: 'flex', gap: 8 } },
@@ -22766,10 +22860,10 @@ window.SelHub = window.SelHub || {
                   if (newEntries.length >= 15) tryAwardBadge('gratitude_15');
                   logPractice('gratitude', 'journal');
                 },
-                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: _minBg('#15803d'), color: _minFg('#fff'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
-              callGemini && gratDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
+              callGemini && gratDraft.trim().length > 10 && h('button', {
                 onClick: function() {
                   // Safety pre-check on free-write gratitude draft. Block on
                   // critical content (gratitude entries CAN contain dark thoughts).
@@ -22796,7 +22890,7 @@ window.SelHub = window.SelHub || {
                   });
                 },
                 disabled: gratAiLoading,
-                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: gratAiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }
+                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: _minBg('#8b5cf6'), color: _minFg('#fff'), fontWeight: 700, fontSize: 13, cursor: gratAiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }
               },
                 Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                 gratAiLoading ? 'Reflecting...' : 'AI Reflection'
@@ -22807,26 +22901,26 @@ window.SelHub = window.SelHub || {
             (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
             // AI response
             gratAiResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 12, background: '#8b5cf618', border: '1px solid #8b5cf644' } },
-              h('p', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 700, marginBottom: 6 } }, '\u2728 Mindfulness Coach'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, gratAiResp)
+              h('p', { style: { fontSize: 10, color: _minFg('#a78bfa'), fontWeight: 700, marginBottom: 6 } }, '\u2728 Mindfulness Coach'),
+              h('p', { style: { fontSize: 13, color: _minFg('#e2e8f0'), lineHeight: 1.6 } }, gratAiResp)
             )
           ),
 
           // Past entries
           gratEntries.length > 0 && h('div', null,
-            h('p', { style: { fontSize: 13, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } },
+            h('p', { style: { fontSize: 13, fontWeight: 700, color: _minFg('#94a3b8'), marginBottom: 10 } },
               '\uD83D\uDE4F Past Gratitude (' + gratEntries.length + ')'
             ),
             gratEntries.slice().reverse().slice(0, 5).map(function(entry, i) {
-              return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
+              return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                  h('span', { style: { fontSize: 12, fontWeight: 600, color: '#22c55e' } }, '\uD83D\uDE4F Gratitude'),
-                  h('span', { style: { fontSize: 10, color: '#94a3b8' } }, new Date(entry.timestamp).toLocaleDateString())
+                  h('span', { style: { fontSize: 12, fontWeight: 600, color: _minFg('#22c55e') } }, '\uD83D\uDE4F Gratitude'),
+                  h('span', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, new Date(entry.timestamp).toLocaleDateString())
                 ),
-                h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, margin: 0 } },
+                h('p', { style: { fontSize: 12, color: _minFg('#cbd5e1'), lineHeight: 1.5, margin: 0 } },
                   entry.text.length > 150 ? entry.text.substring(0, 150) + '...' : entry.text
                 ),
-                entry.aiResp && h('p', { style: { fontSize: 11, color: '#a78bfa', marginTop: 6, fontStyle: 'italic' } },
+                entry.aiResp && h('p', { style: { fontSize: 11, color: _minFg('#a78bfa'), marginTop: 6, fontStyle: 'italic' } },
                   '\u2728 ' + (entry.aiResp.length > 100 ? entry.aiResp.substring(0, 100) + '...' : entry.aiResp)
                 )
               );
@@ -22841,10 +22935,10 @@ window.SelHub = window.SelHub || {
       var momentsContent = null;
       if (activeTab === 'moments') {
         momentsContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDF3F Mindful Activities' : '\uD83C\uDF3F Mindful Moments'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Quick activities to help you feel calm and present!' :
             'Short mindfulness exercises you can do anywhere, anytime.'
           ),
@@ -22858,14 +22952,14 @@ window.SelHub = window.SelHub || {
             return h('div', null,
               h('button', { 'aria-label': 'All Activities',
                 onClick: function() { upd({ activeActivity: null, activityStep: 0 }); if (soundEnabled) sfxClick(); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Activities'),
 
               h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                 h('span', { style: { fontSize: 48 } }, act.emoji),
                 h('h4', { style: { margin: '8px 0 4px', color: act.color, fontSize: 20 } }, act.name),
-                h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } }, act.desc[band]),
-                h('span', { style: { fontSize: 10, color: '#94a3b8' } }, act.duration)
+                h('p', { style: { color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 4 } }, act.desc[band]),
+                h('span', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, act.duration)
               ),
 
               // Steps
@@ -22874,6 +22968,10 @@ window.SelHub = window.SelHub || {
                   var isDone = i < activityStep;
                   var isCurrent = i === activityStep;
                   return h('div', {                     key: i,
+                    role: isCurrent ? 'button' : undefined,
+                    tabIndex: isCurrent ? 0 : undefined,
+                    'aria-disabled': isCurrent ? undefined : true,
+                    onKeyDown: isCurrent ? function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } } : undefined,
                     onClick: function() {
                       if (i === activityStep) {
                         upd('activityStep', activityStep + 1);
@@ -22897,8 +22995,8 @@ window.SelHub = window.SelHub || {
                     },
                     style: {
                       display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 14px', borderRadius: 12,
-                      background: isCurrent ? act.color + '12' : isDone ? '#22c55e08' : '#1e293b',
-                      border: '1px solid ' + (isCurrent ? act.color + '44' : isDone ? '#22c55e33' : '#334155'),
+                      background: isCurrent ? act.color + '12' : isDone ? '#22c55e08' : _minBg('#1e293b'),
+                      border: '1px solid ' + (isCurrent ? act.color + '44' : isDone ? '#22c55e33' : _minBg('#334155')),
                       cursor: isCurrent ? 'pointer' : 'default', opacity: !isDone && !isCurrent ? 0.5 : 1,
                       transition: 'all 0.2s'
                     }
@@ -22906,16 +23004,16 @@ window.SelHub = window.SelHub || {
                     h('div', {
                       style: {
                         width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: isDone ? '#22c55e' : isCurrent ? act.color : '#334155',
-                        color: '#fff', fontSize: 12, fontWeight: 700
+                        background: isDone ? _minFg('#22c55e') : isCurrent ? act.color : _minBg('#334155'),
+                        color: _minFg('#fff'), fontSize: 12, fontWeight: 700
                       }
                     }, isDone ? '\u2713' : (i + 1)),
-                    h('p', { style: { fontSize: 13, color: isDone ? '#94a3b8' : '#e2e8f0', margin: 0, lineHeight: 1.5, textDecoration: isDone ? 'line-through' : 'none' } }, step)
+                    h('p', { style: { fontSize: 13, color: isDone ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: 0, lineHeight: 1.5, textDecoration: isDone ? 'line-through' : 'none' } }, step)
                   );
                 })
               ),
 
-              activityStep < steps.length && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 12 } },
+              activityStep < steps.length && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
                 band === 'elementary' ? 'Tap each step when you\'re done with it!' : 'Click the current step to mark it complete.'
               )
             );
@@ -22925,31 +23023,31 @@ window.SelHub = window.SelHub || {
           !activeActivity && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_ACTIVITIES.map(function(act) {
               var done = activityDone[act.id];
-              return h('button', { 'aria-label': act.emoji,
+              return h('button', { 
                 key: act.id,
                 onClick: function() { upd({ activeActivity: act.id, activityStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
-                  padding: 16, borderRadius: 14, border: '1px solid ' + (done ? '#22c55e44' : '#334155'),
-                  background: done ? '#22c55e08' : '#1e293b', cursor: 'pointer', textAlign: 'left'
+                  padding: 16, borderRadius: 14, border: '1px solid ' + (done ? '#22c55e44' : _minBg('#334155')),
+                  background: done ? '#22c55e08' : _minBg('#1e293b'), cursor: 'pointer', textAlign: 'left'
                 },
                 onMouseEnter: function(e) { e.currentTarget.style.borderColor = act.color + '66'; },
-                onMouseLeave: function(e) { e.currentTarget.style.borderColor = done ? '#22c55e44' : '#334155'; }
+                onMouseLeave: function(e) { e.currentTarget.style.borderColor = done ? '#22c55e44' : _minBg('#334155'); }
               },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
                   h('span', { style: { fontSize: 28 } }, act.emoji),
-                  done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
+                  done && h('span', { style: { fontSize: 10, color: _minFg('#22c55e'), fontWeight: 700 } }, '\u2713 Done')
                 ),
-                h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, act.name),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.3, marginBottom: 4 } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: _minFg('#f1f5f9'), marginBottom: 2 } }, act.name),
+                h('div', { style: { fontSize: 11, color: _minFg('#94a3b8'), lineHeight: 1.3, marginBottom: 4 } },
                   act.desc[band].length > 60 ? act.desc[band].substring(0, 60) + '...' : act.desc[band]
                 ),
-                h('span', { style: { fontSize: 10, color: '#94a3b8', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, act.duration)
+                h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), padding: '2px 6px', borderRadius: 4, background: _minBg('#0f172a') } }, act.duration)
               );
             })
           ),
 
           // Progress
-          !activeActivity && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 16 } },
+          !activeActivity && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 16 } },
             Object.keys(activityDone).length + '/' + MINDFUL_ACTIVITIES.length + ' activities completed'
           )
         );
@@ -22999,10 +23097,10 @@ window.SelHub = window.SelHub || {
         var dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
         logContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Mindfulness Practice Log'),
+          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _minFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Mindfulness Practice Log'),
 
           totalPractices === 0
-            ? h('div', { style: { textAlign: 'center', padding: 40, color: '#94a3b8' } },
+            ? h('div', { style: { textAlign: 'center', padding: 40, color: _minFg('#94a3b8') } },
                 h('p', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83E\uDDD8'),
                 h('p', { style: { fontWeight: 600 } }, 'No practices yet'),
                 h('p', { style: { fontSize: 12 } }, 'Try a breathing exercise, body scan, or grounding activity to get started!')
@@ -23010,35 +23108,35 @@ window.SelHub = window.SelHub || {
             : h('div', null,
                 // Stats row (4 columns now)
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 } },
-                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#8b5cf6' } }, streak),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak')
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: _minFg('#8b5cf6') } }, streak),
+                    h('div', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, 'Day Streak')
                   ),
-                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#22c55e' } }, totalPractices),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Total Practices')
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: _minFg('#22c55e') } }, totalPractices),
+                    h('div', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, 'Total Practices')
                   ),
-                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#f59e0b' } }, totalMinutes),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Est. Minutes')
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: _minFg('#f59e0b') } }, totalMinutes),
+                    h('div', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, 'Est. Minutes')
                   ),
-                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#ec4899' } }, Object.keys(daySet).length),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Days Active')
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: _minFg('#ec4899') } }, Object.keys(daySet).length),
+                    h('div', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, 'Days Active')
                   )
                 ),
 
                 // Weekly Goal Tracker
-                h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+                h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
-                    h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: 0 } }, '\uD83C\uDFAF Weekly Goal'),
+                    h('p', { style: { fontSize: 11, fontWeight: 700, color: _minFg('#94a3b8'), margin: 0 } }, '\uD83C\uDFAF Weekly Goal'),
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                      h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Goal:'),
+                      h('span', { style: { fontSize: 11, color: _minFg('#94a3b8') } }, 'Goal:'),
                       h('select', {
                         value: weeklyGoal,
                         'aria-label': 'Weekly mindfulness goal in minutes',
                         onChange: function(e) { upd('weeklyGoal', parseInt(e.target.value) || 3); },
-                        style: { padding: '2px 6px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 11 }
+                        style: { padding: '2px 6px', borderRadius: 6, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#f1f5f9'), fontSize: 11 }
                       },
                         [1,2,3,4,5,6,7].map(function(n) {
                           return h('option', { key: n, value: n }, n + ' day' + (n > 1 ? 's' : ''));
@@ -23047,28 +23145,28 @@ window.SelHub = window.SelHub || {
                     )
                   ),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                    h('div', { style: { flex: 1, height: 16, borderRadius: 8, background: '#0f172a', overflow: 'hidden' } },
+                    h('div', { style: { flex: 1, height: 16, borderRadius: 8, background: _minBg('#0f172a'), overflow: 'hidden' } },
                       h('div', { style: {
                         height: '100%', width: Math.min(100, (weekDays / weeklyGoal * 100)) + '%',
-                        background: weekDays >= weeklyGoal ? '#22c55e' : '#8b5cf6',
+                        background: weekDays >= weeklyGoal ? _minFg('#22c55e') : '#8b5cf6',
                         borderRadius: 8, transition: 'width 0.3s'
                       } })
                     ),
-                    h('span', { style: { fontSize: 12, fontWeight: 700, color: weekDays >= weeklyGoal ? '#22c55e' : '#94a3b8', flexShrink: 0 } },
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: weekDays >= weeklyGoal ? _minFg('#22c55e') : _minFg('#94a3b8'), flexShrink: 0 } },
                       weekDays + '/' + weeklyGoal
                     )
                   ),
-                  weekDays >= weeklyGoal && h('p', { style: { fontSize: 11, color: '#22c55e', marginTop: 6, textAlign: 'center', fontWeight: 600 } },
+                  weekDays >= weeklyGoal && h('p', { style: { fontSize: 11, color: _minFg('#22c55e'), marginTop: 6, textAlign: 'center', fontWeight: 600 } },
                     '\u2705 Weekly goal reached! Great job staying consistent.'
                   )
                 ),
 
                 // Practice calendar (28 days with day labels)
-                h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Last 28 Days'),
+                h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: _minFg('#94a3b8'), marginBottom: 10 } }, '\uD83D\uDCC5 Last 28 Days'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(28px, 1fr))', gap: 3, marginBottom: 4, overflowX: 'auto' } },
                     dayLabels.map(function(lbl, i) {
-                      return h('div', { key: 'lbl' + i, style: { textAlign: 'center', fontSize: 11, color: '#475569', fontWeight: 700, padding: '2px 0' } }, lbl);
+                      return h('div', { key: 'lbl' + i, style: { textAlign: 'center', fontSize: 11, color: _minFg('#475569'), fontWeight: 700, padding: '2px 0' } }, lbl);
                     })
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(28px, 1fr))', gap: 3, overflowX: 'auto' } },
@@ -23078,8 +23176,8 @@ window.SelHub = window.SelHub || {
                         style: {
                           textAlign: 'center', padding: '5px 0', borderRadius: 6,
                           background: day.practiced ? '#8b5cf633' : '#0f172a',
-                          border: day.isToday ? '2px solid #8b5cf6' : '1px solid ' + (day.practiced ? '#8b5cf644' : '#1e293b'),
-                          fontSize: 10, color: day.practiced ? '#e2e8f0' : '#475569', fontWeight: day.isToday ? 800 : 500
+                          border: day.isToday ? '2px solid #8b5cf6' : '1px solid ' + (day.practiced ? '#8b5cf644' : _minBg('#1e293b')),
+                          fontSize: 10, color: day.practiced ? _minFg('#e2e8f0') : _minFg('#475569'), fontWeight: day.isToday ? 800 : 500
                         }
                       }, day.dayNum);
                     })
@@ -23087,41 +23185,41 @@ window.SelHub = window.SelHub || {
                 ),
 
                 // Type breakdown (expanded)
-                h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, 'Practice Types'),
+                h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: _minFg('#94a3b8'), marginBottom: 10 } }, 'Practice Types'),
                   [
-                    { key: 'breathe', label: 'Breathing', emoji: '\uD83C\uDF2C\uFE0F', color: '#3b82f6' },
-                    { key: 'meditation', label: 'Meditation', emoji: '\uD83E\uDDD8', color: '#a78bfa' },
-                    { key: 'scan', label: 'Body Scan', emoji: '\uD83E\uDEC0', color: '#8b5cf6' },
-                    { key: 'grounding', label: 'Grounding', emoji: '\uD83C\uDF0D', color: '#22c55e' },
-                    { key: 'technique', label: 'Techniques', emoji: '\u2693', color: '#06b6d4' },
-                    { key: 'movement', label: 'Movement', emoji: '\uD83D\uDEB6', color: '#f97316' },
-                    { key: 'gratitude', label: 'Gratitude', emoji: '\uD83D\uDE4F', color: '#f59e0b' },
-                    { key: 'activity', label: 'Activities', emoji: '\uD83C\uDF3F', color: '#ec4899' }
+                    { key: 'breathe', label: 'Breathing', emoji: '\uD83C\uDF2C\uFE0F', color: _minFg('#3b82f6') },
+                    { key: 'meditation', label: 'Meditation', emoji: '\uD83E\uDDD8', color: _minFg('#a78bfa') },
+                    { key: 'scan', label: 'Body Scan', emoji: '\uD83E\uDEC0', color: _minFg('#8b5cf6') },
+                    { key: 'grounding', label: 'Grounding', emoji: '\uD83C\uDF0D', color: _minFg('#22c55e') },
+                    { key: 'technique', label: 'Techniques', emoji: '\u2693', color: _minFg('#06b6d4') },
+                    { key: 'movement', label: 'Movement', emoji: '\uD83D\uDEB6', color: _minFg('#f97316') },
+                    { key: 'gratitude', label: 'Gratitude', emoji: '\uD83D\uDE4F', color: _minFg('#f59e0b') },
+                    { key: 'activity', label: 'Activities', emoji: '\uD83C\uDF3F', color: _minFg('#ec4899') }
                   ].map(function(typ) {
                     var count = typeCounts[typ.key] || 0;
                     var pct = totalPractices > 0 ? (count / totalPractices * 100) : 0;
                     return h('div', { key: typ.key, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                       h('span', { style: { fontSize: 14, width: 22, textAlign: 'center', flexShrink: 0 } }, typ.emoji),
-                      h('span', { style: { fontSize: 10, color: '#94a3b8', width: 68, flexShrink: 0 } }, typ.label),
-                      h('div', { style: { flex: 1, height: 10, borderRadius: 5, background: '#0f172a', overflow: 'hidden' } },
+                      h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), width: 68, flexShrink: 0 } }, typ.label),
+                      h('div', { style: { flex: 1, height: 10, borderRadius: 5, background: _minBg('#0f172a'), overflow: 'hidden' } },
                         h('div', { style: { height: '100%', width: pct + '%', background: typ.color, borderRadius: 5, transition: 'width 0.3s', minWidth: count > 0 ? 4 : 0 } })
                       ),
-                      h('span', { style: { fontSize: 10, color: '#94a3b8', width: 20, textAlign: 'right', flexShrink: 0 } }, count)
+                      h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), width: 20, textAlign: 'right', flexShrink: 0 } }, count)
                     );
                   })
                 ),
 
                 // Recent practices
                 h('div', null,
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Recent Practices'),
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: _minFg('#94a3b8'), marginBottom: 8 } }, 'Recent Practices'),
                   practiceLog.slice().reverse().slice(0, 10).map(function(entry, i) {
                     var typeLabels = { breathe: '\uD83C\uDF2C\uFE0F Breathing', scan: '\uD83E\uDEC0 Body Scan', grounding: '\uD83C\uDF0D Grounding', gratitude: '\uD83D\uDE4F Gratitude', activity: '\uD83C\uDF3F Activity', meditation: '\uD83E\uDDD8 Meditation', movement: '\uD83D\uDEB6 Movement', technique: '\u2693 Technique' };
                     var time = new Date(entry.timestamp);
-                    return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: '#0f172a', marginBottom: 4 } },
-                      h('span', { style: { flex: 1, fontSize: 12, color: '#e2e8f0', fontWeight: 600 } }, typeLabels[entry.type] || entry.type),
-                      h('span', { style: { fontSize: 11, color: '#94a3b8', flexShrink: 0 } }, entry.id),
-                      h('span', { style: { fontSize: 10, color: '#475569', flexShrink: 0 } }, time.toLocaleDateString())
+                    return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: _minBg('#0f172a'), marginBottom: 4 } },
+                      h('span', { style: { flex: 1, fontSize: 12, color: _minFg('#e2e8f0'), fontWeight: 600 } }, typeLabels[entry.type] || entry.type),
+                      h('span', { style: { fontSize: 11, color: _minFg('#94a3b8'), flexShrink: 0 } }, entry.id),
+                      h('span', { style: { fontSize: 10, color: _minFg('#475569'), flexShrink: 0 } }, time.toLocaleDateString())
                     );
                   })
                 )
@@ -23155,7 +23253,7 @@ window.SelHub = window.SelHub || {
                   ]
                 });
               },
-              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
             }, '🖨 Print my practice log')
           ) : null
         );
@@ -23169,10 +23267,10 @@ window.SelHub = window.SelHub || {
         var scripts = MEDITATION_SCRIPTS[band] || MEDITATION_SCRIPTS.elementary;
 
         meditateContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83E\uDDD8 Guided Meditations' : '\uD83E\uDDD8 Meditation Scripts'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Choose a meditation and listen to the story. Close your eyes and relax!' :
             band === 'middle' ? 'Select a guided meditation. Follow along with the text or use the read-aloud button.' :
             'Evidence-based guided meditation scripts. Use TTS read-aloud or follow the text at your own pace.'
@@ -23185,20 +23283,20 @@ window.SelHub = window.SelHub || {
               return h('div', Object.assign({
                 key: script.id,
                 'aria-label': 'Open meditation: ' + script.name,
-                style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' }
+                style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' }
               }, a11yClick(function() { upd('meditationIdx', i); if (soundEnabled) sfxClick(); })),
                 h('div', { style: { fontSize: 32, flexShrink: 0 } }, script.emoji),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, script.name),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, script.desc),
+                  h('div', { style: { fontSize: 14, fontWeight: 700, color: _minFg('#f1f5f9'), marginBottom: 2 } }, script.name),
+                  h('div', { style: { fontSize: 11, color: _minFg('#94a3b8'), lineHeight: 1.4 } }, script.desc),
                   h('div', { style: { display: 'flex', gap: 8, marginTop: 6 } },
-                    h('span', { style: { fontSize: 10, color: '#94a3b8', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + script.duration),
-                    h('span', { style: { fontSize: 10, color: '#94a3b8', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } },
+                    h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), padding: '2px 6px', borderRadius: 4, background: _minBg('#0f172a') } }, '\u23F1 ' + script.duration),
+                    h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), padding: '2px 6px', borderRadius: 4, background: _minBg('#0f172a') } },
                       'Difficulty: ' + Array.from({ length: script.difficulty }, function() { return '\u2B50'; }).join('')
                     )
                   )
                 ),
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', { 'aria-label': (isFav ? 'Remove ' : 'Add ') + script.name + (isFav ? ' from favorites' : ' to favorites'),
                   onClick: function(e) {
                     e.stopPropagation();
                     var newFavs = Object.assign({}, meditationFavs);
@@ -23214,16 +23312,16 @@ window.SelHub = window.SelHub || {
 
             // Show favorites section
             Object.keys(meditationFavs).length > 0 && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, background: '#8b5cf612', border: '1px solid #8b5cf633' } },
-              h('p', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 6 } }, '\u2764\uFE0F Favorites'),
+              h('p', { style: { fontSize: 11, fontWeight: 700, color: _minFg('#a78bfa'), marginBottom: 6 } }, '\u2764\uFE0F Favorites'),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 scripts.filter(function(s) { return meditationFavs[s.id]; }).map(function(s) {
-                  return h('span', { key: s.id, style: { fontSize: 11, padding: '4px 10px', borderRadius: 6, background: '#8b5cf622', color: '#e2e8f0', border: '1px solid #8b5cf644' } }, s.emoji + ' ' + s.name);
+                  return h('span', { key: s.id, style: { fontSize: 11, padding: '4px 10px', borderRadius: 6, background: '#8b5cf622', color: _minFg('#e2e8f0'), border: '1px solid #8b5cf644' } }, s.emoji + ' ' + s.name);
                 })
               )
             ),
 
             // Stats
-            meditationsDone > 0 && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 12 } },
+            meditationsDone > 0 && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
               '\uD83E\uDDD8 ' + meditationsDone + ' meditation' + (meditationsDone !== 1 ? 's' : '') + ' completed'
             )
           ),
@@ -23234,23 +23332,23 @@ window.SelHub = window.SelHub || {
             return h('div', null,
               h('button', { 'aria-label': 'All Scripts',
                 onClick: function() { upd({ meditationIdx: -1, meditationPlaying: false }); if (soundEnabled) sfxClick(); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Scripts'),
 
               h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                 h('div', { style: { fontSize: 48 } }, sc.emoji),
-                h('h4', { style: { margin: '8px 0 4px', color: '#f1f5f9', fontSize: 20 } }, sc.name),
+                h('h4', { style: { margin: '8px 0 4px', color: _minFg('#f1f5f9'), fontSize: 20 } }, sc.name),
                 h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 8 } },
-                  h('span', { style: { fontSize: 10, color: '#94a3b8', padding: '2px 8px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + sc.duration),
-                  h('span', { style: { fontSize: 10, color: '#94a3b8', padding: '2px 8px', borderRadius: 4, background: '#0f172a' } },
+                  h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), padding: '2px 8px', borderRadius: 4, background: _minBg('#0f172a') } }, '\u23F1 ' + sc.duration),
+                  h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), padding: '2px 8px', borderRadius: 4, background: _minBg('#0f172a') } },
                     'Difficulty: ' + Array.from({ length: sc.difficulty }, function() { return '\u2B50'; }).join('')
                   )
                 )
               ),
 
               // Script text
-              h('div', { style: { padding: 20, borderRadius: 16, background: '#0f172a', border: '1px solid #334155', marginBottom: 16, lineHeight: 1.8 } },
-                h('p', { style: { fontSize: 14, color: '#e2e8f0', margin: 0, whiteSpace: 'pre-wrap' } }, sc.script)
+              h('div', { style: { padding: 20, borderRadius: 16, background: _minBg('#0f172a'), border: '1px solid #334155', marginBottom: 16, lineHeight: 1.8 } },
+                h('p', { style: { fontSize: 14, color: _minFg('#e2e8f0'), margin: 0, whiteSpace: 'pre-wrap' } }, sc.script)
               ),
 
               // Action buttons
@@ -23261,7 +23359,7 @@ window.SelHub = window.SelHub || {
                     callTTS(sc.script);
                     setTimeout(function() { upd('meditationPlaying', false); }, 5000);
                   },
-                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
+                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: _minBg('#8b5cf6'), color: _minFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
                 }, meditationPlaying ? '\uD83D\uDD0A Reading...' : '\uD83D\uDD0A Read Aloud'),
 
                 h('button', { 'aria-label': 'Mark Complete',
@@ -23284,20 +23382,20 @@ window.SelHub = window.SelHub || {
                       tryAwardBadge('zen_master');
                     }
                   },
-                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: _minBg('#15803d'), color: _minFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                 }, '\u2705 Mark Complete')
               ),
 
               // Favorite toggle
               h('div', { style: { textAlign: 'center', marginTop: 12 } },
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', {
                   onClick: function() {
                     var newFavs = Object.assign({}, meditationFavs);
                     if (newFavs[sc.id]) { delete newFavs[sc.id]; } else { newFavs[sc.id] = true; }
                     upd('meditationFavs', newFavs);
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: meditationFavs[sc.id] ? '#ef4444' : '#94a3b8', cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: meditationFavs[sc.id] ? _minFg('#ef4444') : _minFg('#94a3b8'), cursor: 'pointer', fontSize: 13 }
                 }, meditationFavs[sc.id] ? '\u2764\uFE0F Favorited' : '\uD83E\uDD0D Add to Favorites')
               )
             );
@@ -23311,10 +23409,10 @@ window.SelHub = window.SelHub || {
       var movementContent = null;
       if (activeTab === 'movement') {
         movementContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83D\uDEB6 Move Your Body Mindfully!' : '\uD83D\uDEB6 Mindful Movement'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Gentle exercises that combine moving with breathing. Fun and calming!' :
             band === 'middle' ? 'Simple exercises that combine physical movement with mindful breathing.' :
             'Somatic mindfulness \u2014 integrating kinesthetic awareness with respiratory entrainment.'
@@ -23330,14 +23428,14 @@ window.SelHub = window.SelHub || {
             return h('div', null,
               h('button', { 'aria-label': 'All Exercises',
                 onClick: function() { upd({ movementActiveId: null, movementStep: 0 }); if (soundEnabled) sfxClick(); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Exercises'),
 
               h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                 h('div', { style: { fontSize: 48 } }, ex.emoji),
                 h('h4', { style: { margin: '8px 0 4px', color: ex.color, fontSize: 20 } }, ex.name),
-                h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, ex.desc[band]),
-                h('span', { style: { fontSize: 10, color: '#94a3b8' } }, '\u23F1 ' + ex.duration)
+                h('p', { style: { fontSize: 12, color: _minFg('#94a3b8'), marginBottom: 4 } }, ex.desc[band]),
+                h('span', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, '\u23F1 ' + ex.duration)
               ),
 
               // Steps with breathing cues
@@ -23346,6 +23444,10 @@ window.SelHub = window.SelHub || {
                   var isStepDone = i < movementStep;
                   var isCurrent = i === movementStep;
                   return h('div', {                     key: i,
+                    role: isCurrent ? 'button' : undefined,
+                    tabIndex: isCurrent ? 0 : undefined,
+                    'aria-disabled': isCurrent ? undefined : true,
+                    onKeyDown: isCurrent ? function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } } : undefined,
                     onClick: function() {
                       if (i === movementStep) {
                         var nextStep = movementStep + 1;
@@ -23371,8 +23473,8 @@ window.SelHub = window.SelHub || {
                     },
                     style: {
                       padding: 14, borderRadius: 12,
-                      background: isCurrent ? ex.color + '12' : isStepDone ? '#22c55e08' : '#1e293b',
-                      border: '1px solid ' + (isCurrent ? ex.color + '44' : isStepDone ? '#22c55e33' : '#334155'),
+                      background: isCurrent ? ex.color + '12' : isStepDone ? '#22c55e08' : _minBg('#1e293b'),
+                      border: '1px solid ' + (isCurrent ? ex.color + '44' : isStepDone ? '#22c55e33' : _minBg('#334155')),
                       cursor: isCurrent ? 'pointer' : 'default', opacity: !isStepDone && !isCurrent ? 0.5 : 1
                     }
                   },
@@ -23380,12 +23482,12 @@ window.SelHub = window.SelHub || {
                       h('div', {
                         style: {
                           width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: isStepDone ? '#22c55e' : isCurrent ? ex.color : '#334155',
-                          color: '#fff', fontSize: 11, fontWeight: 700
+                          background: isStepDone ? _minFg('#22c55e') : isCurrent ? ex.color : _minBg('#334155'),
+                          color: _minFg('#fff'), fontSize: 11, fontWeight: 700
                         }
                       }, isStepDone ? '\u2713' : (i + 1)),
                       h('div', { style: { flex: 1 } },
-                        h('p', { style: { fontSize: 13, color: isStepDone ? '#94a3b8' : '#e2e8f0', margin: '0 0 4px', lineHeight: 1.5 } }, step.instruction),
+                        h('p', { style: { fontSize: 13, color: isStepDone ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: '0 0 4px', lineHeight: 1.5 } }, step.instruction),
                         h('p', { style: { fontSize: 11, color: ex.color, margin: 0, fontStyle: 'italic' } }, '\uD83C\uDF2C\uFE0F ' + step.breath)
                       )
                     )
@@ -23393,7 +23495,7 @@ window.SelHub = window.SelHub || {
                 })
               ),
 
-              movementStep < steps.length && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 12 } },
+              movementStep < steps.length && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
                 'Tap the current step when you have completed it.'
               )
             );
@@ -23403,28 +23505,28 @@ window.SelHub = window.SelHub || {
           !movementActiveId && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_MOVEMENTS.map(function(ex) {
               var done = movementsDone[ex.id];
-              return h('button', { 'aria-label': ex.emoji,
+              return h('button', { 
                 key: ex.id,
                 onClick: function() { upd({ movementActiveId: ex.id, movementStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
-                  padding: 16, borderRadius: 14, border: '1px solid ' + (done ? '#22c55e44' : '#334155'),
-                  background: done ? '#22c55e08' : '#1e293b', cursor: 'pointer', textAlign: 'left'
+                  padding: 16, borderRadius: 14, border: '1px solid ' + (done ? '#22c55e44' : _minBg('#334155')),
+                  background: done ? '#22c55e08' : _minBg('#1e293b'), cursor: 'pointer', textAlign: 'left'
                 }
               },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
                   h('span', { style: { fontSize: 28 } }, ex.emoji),
-                  done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
+                  done && h('span', { style: { fontSize: 10, color: _minFg('#22c55e'), fontWeight: 700 } }, '\u2713 Done')
                 ),
-                h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, ex.name),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.3, marginBottom: 4 } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: _minFg('#f1f5f9'), marginBottom: 2 } }, ex.name),
+                h('div', { style: { fontSize: 11, color: _minFg('#94a3b8'), lineHeight: 1.3, marginBottom: 4 } },
                   ex.desc[band].length > 55 ? ex.desc[band].substring(0, 55) + '...' : ex.desc[band]
                 ),
-                h('span', { style: { fontSize: 10, color: '#94a3b8', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + ex.duration)
+                h('span', { style: { fontSize: 10, color: _minFg('#94a3b8'), padding: '2px 6px', borderRadius: 4, background: _minBg('#0f172a') } }, '\u23F1 ' + ex.duration)
               );
             })
           ),
 
-          !movementActiveId && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 16 } },
+          !movementActiveId && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 16 } },
             Object.keys(movementsDone).length + '/' + MINDFUL_MOVEMENTS.length + ' exercises completed'
           )
         );
@@ -23436,10 +23538,10 @@ window.SelHub = window.SelHub || {
       var techniquesContent = null;
       if (activeTab === 'techniques') {
         techniquesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\u2693 Grounding Toolkit' : '\u2693 Grounding Techniques'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Extra tools to help you feel calm and safe when big feelings come!' :
             band === 'middle' ? 'Advanced grounding techniques for managing stress and anxiety.' :
             'Empirically-supported grounding interventions for acute stress and emotional dysregulation.'
@@ -23452,7 +23554,7 @@ window.SelHub = window.SelHub || {
 
             var backBtn = h('button', { 'aria-label': 'All Techniques',
               onClick: function() { upd({ techActiveId: null, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false }); if (soundEnabled) sfxClick(); },
-              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
             }, '\u2190 All Techniques');
 
             // ── Box Breathing Technique ──
@@ -23468,21 +23570,21 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: _minFg('#94a3b8') } }, tech.desc[band])
                 ),
 
                 // Box visual
                 !techBoxActive && h('div', { style: { textAlign: 'center', marginBottom: 16 } },
-                  h('div', { style: { display: 'inline-block', width: 160, height: 160, border: '3px solid #3b82f6', borderRadius: 8, position: 'relative', background: '#0f172a' } },
-                    h('div', { style: { position: 'absolute', top: 8, left: 12, fontSize: 10, color: '#3b82f6', fontWeight: 700 } }, '\u2B06\uFE0F Inhale 4s'),
-                    h('div', { style: { position: 'absolute', top: 8, right: 12, fontSize: 10, color: '#8b5cf6', fontWeight: 700 } }, '\u23F8\uFE0F Hold 4s'),
-                    h('div', { style: { position: 'absolute', bottom: 8, right: 12, fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2B07\uFE0F Exhale 4s'),
-                    h('div', { style: { position: 'absolute', bottom: 8, left: 12, fontSize: 10, color: '#f59e0b', fontWeight: 700 } }, '\u23F8\uFE0F Hold 4s'),
+                  h('div', { style: { display: 'inline-block', width: 160, height: 160, border: '3px solid #3b82f6', borderRadius: 8, position: 'relative', background: _minBg('#0f172a') } },
+                    h('div', { style: { position: 'absolute', top: 8, left: 12, fontSize: 10, color: _minFg('#3b82f6'), fontWeight: 700 } }, '\u2B06\uFE0F Inhale 4s'),
+                    h('div', { style: { position: 'absolute', top: 8, right: 12, fontSize: 10, color: _minFg('#8b5cf6'), fontWeight: 700 } }, '\u23F8\uFE0F Hold 4s'),
+                    h('div', { style: { position: 'absolute', bottom: 8, right: 12, fontSize: 10, color: _minFg('#22c55e'), fontWeight: 700 } }, '\u2B07\uFE0F Exhale 4s'),
+                    h('div', { style: { position: 'absolute', bottom: 8, left: 12, fontSize: 10, color: _minFg('#f59e0b'), fontWeight: 700 } }, '\u23F8\uFE0F Hold 4s'),
                     h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
                       h('span', { style: { fontSize: 28 } }, '\u2B1C')
                     )
                   ),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 8 } }, tech.rounds + ' rounds \u2022 4 seconds each phase')
+                  h('p', { style: { fontSize: 11, color: _minFg('#94a3b8'), marginTop: 8 } }, tech.rounds + ' rounds \u2022 4 seconds each phase')
                 ),
 
                 // Active animation
@@ -23497,9 +23599,9 @@ window.SelHub = window.SelHub || {
                     }
                   },
                     h('div', { style: { fontSize: 28, fontWeight: 800, color: tech.color } }, techBoxTimer),
-                    h('div', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginTop: 4 } }, phaseLabels[boxSide])
+                    h('div', { style: { fontSize: 14, fontWeight: 700, color: _minFg('#e2e8f0'), marginTop: 4 } }, phaseLabels[boxSide])
                   ),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 8 } },
+                  h('p', { style: { fontSize: 11, color: _minFg('#94a3b8'), marginTop: 8 } },
                     'Round ' + (techBoxRound + 1) + ' of ' + tech.rounds
                   )
                 ),
@@ -23542,11 +23644,11 @@ window.SelHub = window.SelHub || {
                         }
                       }, 1000);
                     },
-                    style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: tech.color, color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+                    style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: tech.color, color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
                   }, '\u25B6 Start Box Breathing'),
                   techBoxActive && h('button', { 'aria-label': 'Stop',
                     onClick: function() { upd({ techBoxActive: false }); },
-                    style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                    style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                   }, '\u25A0 Stop')
                 )
               );
@@ -23562,7 +23664,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: _minFg('#94a3b8') } }, tech.desc[band])
                 ),
 
                 // RAIN letter progress
@@ -23574,9 +23676,9 @@ window.SelHub = window.SelHub || {
                       key: i,
                       style: {
                         width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: isDone ? tech.color + '33' : isCurrent ? tech.color + '22' : '#1e293b',
-                        border: '2px solid ' + (isDone ? tech.color : isCurrent ? tech.color : '#334155'),
-                        color: isDone || isCurrent ? '#e2e8f0' : '#94a3b8', fontSize: 20, fontWeight: 800
+                        background: isDone ? tech.color + '33' : isCurrent ? tech.color + '22' : _minBg('#1e293b'),
+                        border: '2px solid ' + (isDone ? tech.color : isCurrent ? tech.color : _minBg('#334155')),
+                        color: isDone || isCurrent ? _minFg('#e2e8f0') : _minFg('#94a3b8'), fontSize: 20, fontWeight: 800
                       }
                     }, isDone ? '\u2713' : rs.letter);
                   })
@@ -23585,8 +23687,8 @@ window.SelHub = window.SelHub || {
                 // Current step
                 techRainStep < 4 && h('div', { style: { padding: 20, borderRadius: 16, background: tech.color + '10', border: '1px solid ' + tech.color + '33', marginBottom: 16 } },
                   h('h4', { style: { margin: '0 0 4px', color: tech.color, fontSize: 18 } }, currentRainStep.letter + ' \u2014 ' + currentRainStep.title),
-                  h('p', { style: { fontSize: 14, color: '#e2e8f0', marginBottom: 12 } }, currentRainStep.prompt[band]),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } }, currentRainStep.guidance[band]),
+                  h('p', { style: { fontSize: 14, color: _minFg('#e2e8f0'), marginBottom: 12 } }, currentRainStep.prompt[band]),
+                  h('p', { style: { fontSize: 12, color: _minFg('#94a3b8'), lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } }, currentRainStep.guidance[band]),
                   h('textarea', {
                     value: techRainInputs[techRainStep] || '',
                     'aria-label': 'RAIN technique response',
@@ -23597,9 +23699,9 @@ window.SelHub = window.SelHub || {
                     },
                     placeholder: band === 'elementary' ? 'Write your thoughts here...' : 'Reflect and respond...',
                     rows: 3,
-                    style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
+                    style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
                   }),
-                  h('button', { 'aria-label': 'Toggle sound',
+                  h('button', {
                     onClick: function() {
                       var next = techRainStep + 1;
                       upd('techRainStep', next);
@@ -23617,21 +23719,21 @@ window.SelHub = window.SelHub || {
                         if (Object.keys(newTechs).length >= GROUNDING_TECHNIQUES.length) tryAwardBadge('grounding_expert');
                       }
                     },
-                    style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: tech.color, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                    style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: tech.color, color: _minFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, techRainStep < 3 ? 'Next: ' + rainSteps[techRainStep + 1].letter + ' \u2014 ' + rainSteps[techRainStep + 1].title + ' \u2192' : '\u2705 Complete RAIN')
                 ),
 
                 // Completion
                 techRainStep >= 4 && h('div', { style: { textAlign: 'center', padding: 24 } },
                   h('div', { style: { fontSize: 56, marginBottom: 8 } }, '\uD83C\uDF27\uFE0F'),
-                  h('h4', { style: { color: '#22c55e', fontSize: 18, marginBottom: 8 } }, 'RAIN Complete'),
-                  h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.6, marginBottom: 16 } },
+                  h('h4', { style: { color: _minFg('#22c55e'), fontSize: 18, marginBottom: 8 } }, 'RAIN Complete'),
+                  h('p', { style: { color: _minFg('#94a3b8'), fontSize: 13, lineHeight: 1.6, marginBottom: 16 } },
                     band === 'elementary' ? 'Great job! You used all four steps to work through a big feeling.' :
                     'You have processed an emotional experience using the RAIN framework. This skill strengthens with practice.'
                   ),
                   h('button', { 'aria-label': 'Back to Techniques',
                     onClick: function() { upd({ techRainStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
-                    style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
+                    style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
                   }, '\u2190 Back to Techniques')
                 )
               );
@@ -23645,7 +23747,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: _minFg('#94a3b8') } }, tech.desc[band])
                 ),
 
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -23653,6 +23755,10 @@ window.SelHub = window.SelHub || {
                     var isStepDone = i < techStep;
                     var isCurrent = i === techStep;
                     return h('div', {                       key: i,
+                      role: isCurrent ? 'button' : undefined,
+                      tabIndex: isCurrent ? 0 : undefined,
+                      'aria-disabled': isCurrent ? undefined : true,
+                      onKeyDown: isCurrent ? function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } } : undefined,
                       onClick: function() {
                         if (i === techStep) {
                           var next = techStep + 1;
@@ -23675,8 +23781,8 @@ window.SelHub = window.SelHub || {
                       },
                       style: {
                         padding: 14, borderRadius: 12,
-                        background: isCurrent ? tech.color + '12' : isStepDone ? '#22c55e08' : '#1e293b',
-                        border: '1px solid ' + (isCurrent ? tech.color + '44' : isStepDone ? '#22c55e33' : '#334155'),
+                        background: isCurrent ? tech.color + '12' : isStepDone ? '#22c55e08' : _minBg('#1e293b'),
+                        border: '1px solid ' + (isCurrent ? tech.color + '44' : isStepDone ? '#22c55e33' : _minBg('#334155')),
                         cursor: isCurrent ? 'pointer' : 'default', opacity: !isStepDone && !isCurrent ? 0.5 : 1
                       }
                     },
@@ -23684,20 +23790,20 @@ window.SelHub = window.SelHub || {
                         h('div', {
                           style: {
                             width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: isStepDone ? '#22c55e' : isCurrent ? tech.color : '#334155',
-                            color: '#fff', fontSize: 11, fontWeight: 700
+                            background: isStepDone ? _minFg('#22c55e') : isCurrent ? tech.color : _minBg('#334155'),
+                            color: _minFg('#fff'), fontSize: 11, fontWeight: 700
                           }
                         }, isStepDone ? '\u2713' : step.step),
                         h('div', { style: { flex: 1 } },
-                          h('p', { style: { fontSize: 13, color: isStepDone ? '#94a3b8' : '#e2e8f0', margin: '0 0 4px', lineHeight: 1.5 } }, step.text),
-                          h('p', { style: { fontSize: 11, color: '#94a3b8', margin: 0, fontStyle: 'italic' } }, step.detail)
+                          h('p', { style: { fontSize: 13, color: isStepDone ? _minFg('#94a3b8') : _minFg('#e2e8f0'), margin: '0 0 4px', lineHeight: 1.5 } }, step.text),
+                          h('p', { style: { fontSize: 11, color: _minFg('#94a3b8'), margin: 0, fontStyle: 'italic' } }, step.detail)
                         )
                       )
                     );
                   })
                 ),
 
-                techStep < bfSteps.length && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 12 } },
+                techStep < bfSteps.length && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
                   'Tap each step as you complete it.'
                 )
               );
@@ -23711,7 +23817,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                   h('div', { style: { fontSize: 48 } }, tech.emoji),
                   h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                  h('p', { style: { fontSize: 12, color: _minFg('#94a3b8') } }, tech.desc[band])
                 ),
 
                 techStep < 5 && (function() {
@@ -23726,8 +23832,8 @@ window.SelHub = window.SelHub || {
                           key: i,
                           style: {
                             width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: isDone ? s.color + '33' : isCurrent ? s.color + '22' : '#1e293b',
-                            border: '2px solid ' + (isDone ? s.color : isCurrent ? s.color : '#334155'),
+                            background: isDone ? s.color + '33' : isCurrent ? s.color + '22' : _minBg('#1e293b'),
+                            border: '2px solid ' + (isDone ? s.color : isCurrent ? s.color : _minBg('#334155')),
                             fontSize: 16
                           }
                         }, isDone ? '\u2713' : s.emoji);
@@ -23760,13 +23866,13 @@ window.SelHub = window.SelHub || {
                               newInputs[techStep] = stepInputs;
                               upd('techRainInputs', newInputs);
                             },
-                            style: { flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit' }
+                            style: { flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#f1f5f9'), fontSize: 13, fontFamily: 'inherit' }
                           })
                         );
                       })
                     ),
 
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         var next = techStep + 1;
                         upd('techStep', next);
@@ -23784,20 +23890,20 @@ window.SelHub = window.SelHub || {
                           if (Object.keys(newTechs).length >= GROUNDING_TECHNIQUES.length) tryAwardBadge('grounding_expert');
                         }
                       },
-                      style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: sense.color, color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+                      style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: sense.color, color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
                     }, techStep < 4 ? 'Next Sense \u2192' : '\u2705 Complete!')
                   );
                 })(),
 
                 techStep >= 5 && h('div', { style: { textAlign: 'center', padding: 24 } },
                   h('div', { style: { fontSize: 56, marginBottom: 8 } }, '\uD83C\uDF0D'),
-                  h('h4', { style: { color: '#22c55e', fontSize: 18, marginBottom: 8 } }, 'Senses Grounding Complete!'),
-                  h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.6 } },
+                  h('h4', { style: { color: _minFg('#22c55e'), fontSize: 18, marginBottom: 8 } }, 'Senses Grounding Complete!'),
+                  h('p', { style: { color: _minFg('#94a3b8'), fontSize: 13, lineHeight: 1.6 } },
                     'You brought yourself back to the present moment using all five senses.'
                   ),
                   h('button', { 'aria-label': 'Back to Techniques',
                     onClick: function() { upd({ techStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
-                    style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
+                    style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
                   }, '\u2190 Back to Techniques')
                 )
               );
@@ -23810,7 +23916,7 @@ window.SelHub = window.SelHub || {
           !techActiveId && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             GROUNDING_TECHNIQUES.map(function(tech) {
               var done = techsDone[tech.id];
-              return h('button', { 'aria-label': tech.emoji,
+              return h('button', { 
                 key: tech.id,
                 onClick: function() {
                   upd({ techActiveId: tech.id, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false });
@@ -23818,24 +23924,24 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   display: 'flex', alignItems: 'center', gap: 14, padding: 16, borderRadius: 14,
-                  border: '1px solid ' + (done ? '#22c55e44' : '#334155'),
-                  background: done ? '#22c55e08' : '#1e293b', cursor: 'pointer', textAlign: 'left'
+                  border: '1px solid ' + (done ? '#22c55e44' : _minBg('#334155')),
+                  background: done ? '#22c55e08' : _minBg('#1e293b'), cursor: 'pointer', textAlign: 'left'
                 }
               },
                 h('div', { style: { fontSize: 32, flexShrink: 0 } }, tech.emoji),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                    h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, tech.name),
-                    done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
+                    h('span', { style: { fontSize: 14, fontWeight: 700, color: _minFg('#f1f5f9') } }, tech.name),
+                    done && h('span', { style: { fontSize: 10, color: _minFg('#22c55e'), fontWeight: 700 } }, '\u2713 Done')
                   ),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4, marginTop: 2 } }, tech.desc[band])
+                  h('div', { style: { fontSize: 11, color: _minFg('#94a3b8'), lineHeight: 1.4, marginTop: 2 } }, tech.desc[band])
                 ),
-                h('span', { style: { fontSize: 16, color: '#94a3b8', flexShrink: 0 } }, '\u2192')
+                h('span', { style: { fontSize: 16, color: _minFg('#94a3b8'), flexShrink: 0 } }, '\u2192')
               );
             })
           ),
 
-          !techActiveId && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginTop: 16 } },
+          !techActiveId && h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, marginTop: 16 } },
             Object.keys(techsDone).length + '/' + GROUNDING_TECHNIQUES.length + ' techniques completed'
           )
         );
@@ -23857,15 +23963,15 @@ if (activeTab === 'breath_studio') {
   var bsRunning = !!d.bsRunning;
   var bsCycles  = d.bsCycles || 0;
   var BREATH_PATTERN_BANK = [
-    { id: 'box',           name: 'Box 4-4-4-4',          phases: [{name:'Inhale',sec:4},{name:'Hold',sec:4},{name:'Exhale',sec:4},{name:'Hold',sec:4}], color: '#3b82f6', desc: 'Used by Navy SEALs for acute stress. Even rhythm grounds the nervous system.', best: 'pre-test, before performance, after activation' },
-    { id: '478',           name: '4-7-8 sleep breath',   phases: [{name:'Inhale',sec:4},{name:'Hold',sec:7},{name:'Exhale',sec:8}],                       color: '#8b5cf6', desc: 'Andrew Weil. Long held inhale + extended exhale activates parasympathetic.', best: 'before sleep, after panic, evening wind-down' },
-    { id: 'coherent',      name: 'Coherent 5-5',         phases: [{name:'Inhale',sec:5},{name:'Exhale',sec:5}],                                            color: '#22c55e', desc: 'Lehrer & Gevirtz HRV research. ~6 breaths/min maximizes heart rate variability.', best: 'sustained calm focus, anxiety baseline reduction' },
-    { id: 'sigh',          name: 'Physiological sigh',   phases: [{name:'Quick inhale',sec:2},{name:'Top-up inhale',sec:1},{name:'Long exhale',sec:6}],   color: '#06b6d4', desc: 'Huberman / Balban 2023. Double inhale + extended exhale reduces stress fastest of any single-breath intervention.', best: 'in-the-moment stress, quick reset' },
-    { id: 'long_exhale',   name: '1:2 ratio',            phases: [{name:'Inhale',sec:4},{name:'Exhale',sec:8}],                                            color: '#10b981', desc: 'Longer exhale than inhale activates the vagal brake.', best: 'general anxiety, calming down' },
-    { id: 'three_three',   name: '3-3-3 starter',        phases: [{name:'Inhale',sec:3},{name:'Hold',sec:3},{name:'Exhale',sec:3}],                       color: '#fbbf24', desc: 'Gentle starter pattern for beginners.', best: 'first time trying breath practice' },
-    { id: 'bee',           name: 'Bee breath (humming)', phases: [{name:'Inhale',sec:4},{name:'Hum exhale',sec:8}],                                        color: '#f59e0b', desc: 'Bhramari pranayama. Hum on exhale lengthens it and adds vagal nerve stimulation.', best: 'tension headache, racing thoughts' },
-    { id: 'six_two_six',   name: '6-2-6 sleep',          phases: [{name:'Inhale',sec:6},{name:'Hold',sec:2},{name:'Exhale',sec:6}],                       color: '#a855f7', desc: 'Even-breath variant tuned for sleep.', best: 'falling asleep, middle-of-the-night wakefulness' },
-    { id: 'energize',      name: 'Energy 2-1',           phases: [{name:'Inhale',sec:6},{name:'Exhale',sec:3}],                                            color: '#ef4444', desc: 'Inverse of calming — longer inhale than exhale activates sympathetic GENTLY.', best: 'morning groggy, low energy (NOT for anxiety)' }
+    { id: 'box',           name: 'Box 4-4-4-4',          phases: [{name:'Inhale',sec:4},{name:'Hold',sec:4},{name:'Exhale',sec:4},{name:'Hold',sec:4}], color: _minFg('#3b82f6'), desc: 'Used by Navy SEALs for acute stress. Even rhythm grounds the nervous system.', best: 'pre-test, before performance, after activation' },
+    { id: '478',           name: '4-7-8 sleep breath',   phases: [{name:'Inhale',sec:4},{name:'Hold',sec:7},{name:'Exhale',sec:8}],                       color: _minFg('#8b5cf6'), desc: 'Andrew Weil. Long held inhale + extended exhale activates parasympathetic.', best: 'before sleep, after panic, evening wind-down' },
+    { id: 'coherent',      name: 'Coherent 5-5',         phases: [{name:'Inhale',sec:5},{name:'Exhale',sec:5}],                                            color: _minFg('#22c55e'), desc: 'Lehrer & Gevirtz HRV research. ~6 breaths/min maximizes heart rate variability.', best: 'sustained calm focus, anxiety baseline reduction' },
+    { id: 'sigh',          name: 'Physiological sigh',   phases: [{name:'Quick inhale',sec:2},{name:'Top-up inhale',sec:1},{name:'Long exhale',sec:6}],   color: _minFg('#06b6d4'), desc: 'Huberman / Balban 2023. Double inhale + extended exhale reduces stress fastest of any single-breath intervention.', best: 'in-the-moment stress, quick reset' },
+    { id: 'long_exhale',   name: '1:2 ratio',            phases: [{name:'Inhale',sec:4},{name:'Exhale',sec:8}],                                            color: _minFg('#10b981'), desc: 'Longer exhale than inhale activates the vagal brake.', best: 'general anxiety, calming down' },
+    { id: 'three_three',   name: '3-3-3 starter',        phases: [{name:'Inhale',sec:3},{name:'Hold',sec:3},{name:'Exhale',sec:3}],                       color: _minFg('#fbbf24'), desc: 'Gentle starter pattern for beginners.', best: 'first time trying breath practice' },
+    { id: 'bee',           name: 'Bee breath (humming)', phases: [{name:'Inhale',sec:4},{name:'Hum exhale',sec:8}],                                        color: _minFg('#f59e0b'), desc: 'Bhramari pranayama. Hum on exhale lengthens it and adds vagal nerve stimulation.', best: 'tension headache, racing thoughts' },
+    { id: 'six_two_six',   name: '6-2-6 sleep',          phases: [{name:'Inhale',sec:6},{name:'Hold',sec:2},{name:'Exhale',sec:6}],                       color: _minFg('#a855f7'), desc: 'Even-breath variant tuned for sleep.', best: 'falling asleep, middle-of-the-night wakefulness' },
+    { id: 'energize',      name: 'Energy 2-1',           phases: [{name:'Inhale',sec:6},{name:'Exhale',sec:3}],                                            color: _minFg('#ef4444'), desc: 'Inverse of calming — longer inhale than exhale activates sympathetic GENTLY.', best: 'morning groggy, low energy (NOT for anxiety)' }
   ];
   var pattern = BREATH_PATTERN_BANK.find(function(p) { return p.id === bsPattern; }) || BREATH_PATTERN_BANK[0];
   var currentPhase = pattern.phases[bsPhase % pattern.phases.length];
@@ -23901,9 +24007,9 @@ if (activeTab === 'breath_studio') {
   }, [bsRunning, bsPhase, bsPattern, d.bsCount]);
   // Layout
   breathStudioContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Breath Studio: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Breath Studio: '),
         '9 patterns from box-breathing to physiological sigh. The circle expands on inhale and contracts on exhale — match your breath to the visual. Each cycle counts; build a daily streak.'
       )
     ),
@@ -23912,12 +24018,12 @@ if (activeTab === 'breath_studio') {
         var sel = bsPattern === p.id;
         return h('button', { key: p.id,
           onClick: function() { upd({ bsPattern: p.id, bsPhase: 0, bsCount: 0, bsRunning: false, bsCycles: 0 }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? p.color : '#475569'), background: sel ? p.color + '33' : '#1e293b', color: sel ? p.color : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? p.color : _minFg('#475569')), background: sel ? p.color + '33' : _minBg('#1e293b'), color: sel ? p.color : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, p.name);
       })
     ),
     // SVG breath circle
-    h('svg', { width: '100%', height: 320, viewBox: '0 0 320 320', style: { display: 'block', background: '#0f172a', borderRadius: 12 } },
+    h('svg', { width: '100%', height: 320, viewBox: '0 0 320 320', style: { display: 'block', background: _minBg('#0f172a'), borderRadius: 12 } },
       h('defs', null,
         h('radialGradient', { id: 'breath-grad' },
           h('stop', { offset: '0%', stopColor: pattern.color, stopOpacity: 0.8 }),
@@ -23931,21 +24037,21 @@ if (activeTab === 'breath_studio') {
       h('circle', { cx: 160, cy: 160, r: circleR, fill: 'url(#breath-grad)', stroke: pattern.color, strokeWidth: 2, style: { transition: 'r 0.1s linear' } }),
       // center phase text
       h('text', { x: 160, y: 155, textAnchor: 'middle', fontSize: 24, fontWeight: 800, fill: pattern.color }, currentPhase ? currentPhase.name : ''),
-      h('text', { x: 160, y: 180, textAnchor: 'middle', fontSize: 14, fill: '#94a3b8' }, currentPhase ? Math.max(0, Math.ceil(currentPhase.sec - bsCount)) + 's' : '')
+      h('text', { x: 160, y: 180, textAnchor: 'middle', fontSize: 14, fill: _minFg('#94a3b8') }, currentPhase ? Math.max(0, Math.ceil(currentPhase.sec - bsCount)) + 's' : '')
     ),
     h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: pattern.color + '15', border: '1px solid ' + pattern.color + '55' } },
       h('div', { style: { color: pattern.color, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, pattern.name),
-      h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, pattern.desc),
-      h('p', { style: { margin: '6px 0 0', color: '#94a3b8', fontSize: 12, fontStyle: 'italic' } }, 'Best for: ' + pattern.best)
+      h('p', { style: { margin: 0, color: _minFg('#e2e8f0'), fontSize: 13, lineHeight: 1.55 } }, pattern.desc),
+      h('p', { style: { margin: '6px 0 0', color: _minFg('#94a3b8'), fontSize: 12, fontStyle: 'italic' } }, 'Best for: ' + pattern.best)
     ),
     h('div', { style: { marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ bsRunning: !bsRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: bsRunning ? '#ef4444' : pattern.color, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: bsRunning ? _minFg('#ef4444') : pattern.color, color: _minFg('#fff'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, bsRunning ? '⏸  Pause' : '▶  Start'),
       h('button', { onClick: function() { upd({ bsPhase: 0, bsCount: 0, bsRunning: false, bsCycles: 0 }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#94a3b8', fontSize: 13, cursor: 'pointer' }
+        style: { padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
       }, 'Reset'),
-      h('div', { style: { padding: '8px 14px', borderRadius: 6, background: '#0f172a', color: '#fbbf24', fontSize: 13, fontWeight: 700 } },
+      h('div', { style: { padding: '8px 14px', borderRadius: 6, background: _minBg('#0f172a'), color: _minFg('#fbbf24'), fontSize: 13, fontWeight: 700 } },
         bsCycles + ' cycles'
       )
     )
@@ -24000,18 +24106,18 @@ if (activeTab === 'body_scan_studio') {
     return function() { clearTimeout(t); };
   }, [bssRunning, bssStep]);
   bodyScanContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Body Scan Studio: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Body Scan Studio: '),
         '17-region guided body scan (~8 minutes). Click any region to jump there, or press Play for the full sequence. Based on Jon Kabat-Zinn\'s MBSR body scan + trauma-informed adaptations (no closed eyes required).'
       )
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) 2fr', gap: 16 } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a' } },
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#0f172a') } },
         h('svg', { width: 220, height: 380, viewBox: '0 0 200 360', style: { display: 'block', margin: '0 auto' } },
           // body outline
           h('path', { d: 'M 100 30 Q 80 30 80 50 Q 80 70 95 80 L 95 90 L 70 95 Q 50 100 45 130 L 50 200 Q 55 230 65 235 L 60 320 Q 60 340 75 345 L 90 345 Q 95 345 95 340 L 95 250 Q 100 245 105 250 L 105 340 Q 105 345 110 345 L 125 345 Q 140 340 140 320 L 135 235 Q 145 230 150 200 L 155 130 Q 150 100 130 95 L 105 90 L 105 80 Q 120 70 120 50 Q 120 30 100 30 Z',
-            fill: '#1e293b', stroke: '#475569', strokeWidth: 1.5 }),
+            fill: _minBg('#1e293b'), stroke: _minFg('#475569'), strokeWidth: 1.5 }),
           // glow on current region
           BODY_SCAN_REGIONS.map(function(r, i) {
             var isCurrent = bssStep === i;
@@ -24019,7 +24125,7 @@ if (activeTab === 'body_scan_studio') {
             return h('circle', { key: r.id,
               cx: r.x, cy: r.y, r: r.r,
               fill: isCurrent ? 'rgba(251,191,36,0.6)' : (isPast ? 'rgba(94,234,212,0.3)' : 'rgba(94,234,212,0.1)'),
-              stroke: isCurrent ? '#fbbf24' : (isPast ? '#5eead4' : '#475569'),
+              stroke: isCurrent ? '#fbbf24' : (isPast ? '#5eead4' : _minFg('#475569')),
               strokeWidth: isCurrent ? 3 : 1,
               style: { cursor: 'pointer', transition: 'all 0.4s' },
               onClick: function() { upd({ bssStep: i, bssRunning: false }); if (soundEnabled) sfxClick(); }
@@ -24028,12 +24134,12 @@ if (activeTab === 'body_scan_studio') {
         )
       ),
       h('div', null,
-        current ? h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '2px solid #fbbf24' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'Step ' + (bssStep + 1) + ' of ' + totalSteps),
-          h('h3', { style: { margin: '0 0 8px', color: '#fde68a', fontSize: 20, fontWeight: 800 } }, current.label),
-          h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.65 } }, current.instruction),
-          h('div', { style: { marginTop: 10, padding: 6, borderRadius: 6, background: '#0f172a', textAlign: 'center', color: '#94a3b8', fontSize: 11 } }, '⏱  ' + current.perRegionSec + 's at this region')
-        ) : h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', color: '#94a3b8', fontSize: 13, lineHeight: 1.55 } },
+        current ? h('div', { style: { padding: 16, borderRadius: 12, background: _minBg('#1e293b'), border: '2px solid #fbbf24' } },
+          h('div', { style: { color: _minFg('#fbbf24'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'Step ' + (bssStep + 1) + ' of ' + totalSteps),
+          h('h3', { style: { margin: '0 0 8px', color: _minFg('#fde68a'), fontSize: 20, fontWeight: 800 } }, current.label),
+          h('p', { style: { margin: 0, color: _minFg('#e2e8f0'), fontSize: 14, lineHeight: 1.65 } }, current.instruction),
+          h('div', { style: { marginTop: 10, padding: 6, borderRadius: 6, background: _minBg('#0f172a'), textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11 } }, '⏱  ' + current.perRegionSec + 's at this region')
+        ) : h('div', { style: { padding: 16, borderRadius: 12, background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, lineHeight: 1.55 } },
           'Click any body region to jump to it, or press Play below to begin the full sequence.'
         ),
         h('div', { style: { marginTop: 14, display: 'flex', gap: 10 } },
@@ -24042,16 +24148,16 @@ if (activeTab === 'body_scan_studio') {
               else upd({ bssRunning: !bssRunning });
               if (soundEnabled) sfxClick();
             },
-            style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: bssRunning ? '#ef4444' : '#5eead4', color: bssRunning ? '#fff' : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: bssRunning ? _minFg('#ef4444') : '#5eead4', color: bssRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, bssStep < 0 ? '▶ Start full scan' : (bssRunning ? '⏸ Pause' : '▶ Resume')),
           bssStep >= 0 ? h('button', { onClick: function() { if (bssStep > 0) upd({ bssStep: bssStep - 1 }); },
-            style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 13, cursor: 'pointer' }
+            style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#cbd5e1'), fontSize: 13, cursor: 'pointer' }
           }, '← Previous') : null,
           bssStep >= 0 ? h('button', { onClick: function() { if (bssStep < totalSteps - 1) upd({ bssStep: bssStep + 1 }); else upd({ bssStep: -1, bssRunning: false }); },
-            style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 13, cursor: 'pointer' }
+            style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#cbd5e1'), fontSize: 13, cursor: 'pointer' }
           }, 'Next →') : null,
           h('button', { onClick: function() { upd({ bssStep: -1, bssRunning: false }); if (soundEnabled) sfxClick(); },
-            style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+            style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
           }, 'Reset')
         )
       )
@@ -24077,7 +24183,7 @@ if (activeTab === 'mandala') {
     { id: 'spiral',    name: 'Spiral',         desc: 'Fibonacci-style spiral' },
     { id: 'rosette',   name: 'Rosette',        desc: 'Rose-window-style pattern' }
   ];
-  var palette = ['#fbbf24', '#5eead4', '#a78bfa', '#f472b6', '#fb923c', '#60a5fa'];
+  var palette = ['#fbbf24', '#5eead4', _minFg('#a78bfa'), '#f472b6', _minFg('#fb923c'), '#60a5fa'];
   React.useEffect && React.useEffect(function() {
     if (!mdRunning) return;
     var t = setInterval(function() { upd({ mdElapsed: (d.mdElapsed || 0) + 1 }); }, 1000);
@@ -24091,8 +24197,8 @@ if (activeTab === 'mandala') {
           var ang = i * 45;
           return h('ellipse', { key: i, cx: 200, cy: 130, rx: 36, ry: 70, fill: palette[i % palette.length], opacity: 0.65, transform: 'rotate(' + ang + ' 200 200)' });
         }),
-        h('circle', { cx: 200, cy: 200, r: 30, fill: '#fde047' }),
-        h('circle', { cx: 200, cy: 200, r: 10, fill: '#7c2d12' })
+        h('circle', { cx: 200, cy: 200, r: 30, fill: _minBg('#fde047') }),
+        h('circle', { cx: 200, cy: 200, r: 10, fill: _minBg('#7c2d12') })
       );
     }
     if (mdStyle === 'mandala') {
@@ -24104,7 +24210,7 @@ if (activeTab === 'mandala') {
           var ang = i * 30 * Math.PI / 180;
           return h('line', { key: 'ln' + i, x1: 200, y1: 200, x2: 200 + 150 * Math.cos(ang), y2: 200 + 150 * Math.sin(ang), stroke: palette[i % palette.length], strokeWidth: 1, opacity: 0.5 });
         }),
-        h('circle', { cx: 200, cy: 200, r: 8, fill: '#fde047' })
+        h('circle', { cx: 200, cy: 200, r: 8, fill: _minBg('#fde047') })
       );
     }
     if (mdStyle === 'sri') {
@@ -24145,7 +24251,7 @@ if (activeTab === 'mandala') {
       }
       return h('g', null,
         h('path', { d: pathD, stroke: '#fbbf24', strokeWidth: 3, fill: 'none' }),
-        h('circle', { cx: 200, cy: 200, r: 6, fill: '#fde047' })
+        h('circle', { cx: 200, cy: 200, r: 6, fill: _minBg('#fde047') })
       );
     }
     if (mdStyle === 'rosette') {
@@ -24154,17 +24260,17 @@ if (activeTab === 'mandala') {
           var ang = i * 22.5;
           return h('ellipse', { key: i, cx: 200, cy: 100, rx: 18, ry: 80, fill: palette[i % palette.length], opacity: 0.45, transform: 'rotate(' + ang + ' 200 200)' });
         }),
-        h('circle', { cx: 200, cy: 200, r: 30, fill: '#fde047' }),
-        h('circle', { cx: 200, cy: 200, r: 12, fill: '#7c2d12' })
+        h('circle', { cx: 200, cy: 200, r: 30, fill: _minBg('#fde047') }),
+        h('circle', { cx: 200, cy: 200, r: 12, fill: _minBg('#7c2d12') })
       );
     }
     return null;
   }
   var spinDuration = Math.max(10, mdSpeed);
   mandalaContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Mandala Focus: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Mandala Focus: '),
         'Soft gaze on the center while the pattern rotates. Trataka-style single-point attention. Blink whenever you need to. If your eyes water or get tired, look away and rest — you cannot do this wrong.'
       )
     ),
@@ -24172,11 +24278,11 @@ if (activeTab === 'mandala') {
       MANDALA_STYLES.map(function(s) {
         var sel = mdStyle === s.id;
         return h('button', { key: s.id, onClick: function() { upd({ mdStyle: s.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, s.name);
       })
     ),
-    h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, textAlign: 'center' } },
+    h('div', { style: { background: _minBg('#0f172a'), borderRadius: 12, padding: 12, textAlign: 'center' } },
       h('svg', { width: 400, height: 400, viewBox: '0 0 400 400',
         className: mdRunning ? 'sel-mind-spin' : '',
         style: { maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto', animation: mdRunning ? 'sel-mind-spin ' + spinDuration + 's linear infinite' : 'none' }
@@ -24184,10 +24290,10 @@ if (activeTab === 'mandala') {
         _renderMandala()
       )
     ),
-    h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: '#1e293b' } },
+    h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: _minBg('#1e293b') } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
-        h('label', { htmlFor: 'md-speed', style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600 } }, 'Rotation speed (slower → slower)'),
-        h('span', { style: { color: '#fbbf24', fontSize: 11, fontFamily: 'monospace' } }, mdSpeed + 's per turn')
+        h('label', { htmlFor: 'md-speed', style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600 } }, 'Rotation speed (slower → slower)'),
+        h('span', { style: { color: _minFg('#fbbf24'), fontSize: 11, fontFamily: 'monospace' } }, mdSpeed + 's per turn')
       ),
       h('input', { id: 'md-speed', type: 'range', min: 10, max: 90, value: mdSpeed,
         onChange: function(e) { upd({ mdSpeed: parseInt(e.target.value, 10) }); },
@@ -24196,7 +24302,7 @@ if (activeTab === 'mandala') {
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ mdRunning: !mdRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: mdRunning ? '#ef4444' : '#5eead4', color: mdRunning ? '#fff' : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: mdRunning ? _minFg('#ef4444') : '#5eead4', color: mdRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, mdRunning ? '⏸ Pause' : '▶ Begin')
     ),
     h('style', null,
@@ -24331,40 +24437,40 @@ if (activeTab === 'soundbath') {
   }, [sbPlaying, JSON.stringify(sbLayers)]);
   function _layerSlider(key, label, color, desc) {
     var val = sbLayers[key] || 0;
-    return h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 8 } },
+    return h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 8 } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
         h('label', { htmlFor: 'sb-' + key, style: { color: color, fontSize: 13, fontWeight: 700 } }, label),
-        h('span', { style: { color: '#94a3b8', fontSize: 11, fontFamily: 'monospace' } }, Math.round(val * 100) + '%')
+        h('span', { style: { color: _minFg('#94a3b8'), fontSize: 11, fontFamily: 'monospace' } }, Math.round(val * 100) + '%')
       ),
       h('input', { id: 'sb-' + key, type: 'range', min: 0, max: 100, value: Math.round(val * 100),
         onChange: function(e) { var n = Object.assign({}, sbLayers); n[key] = parseInt(e.target.value, 10) / 100; upd({ sbLayers: n }); },
         style: { width: '100%' }
       }),
-      h('div', { style: { color: '#64748b', fontSize: 10, marginTop: 2 } }, desc)
+      h('div', { style: { color: _minFg('#64748b'), fontSize: 10, marginTop: 2 } }, desc)
     );
   }
   soundbathContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Soundbath Mixer: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Soundbath Mixer: '),
         '6 synthesized layers — Tibetan bowl, drone, rain, ocean, wind, occasional bell. Mix your own ambient soundscape. Use headphones if you can. All audio generated locally (no streaming, no privacy concern).'
       )
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 6 } },
       _layerSlider('bowl',  '🎵 Tibetan singing bowl', '#fbbf24', 'Pure sine tones at 264/396/528 Hz — Solfeggio frequencies.'),
-      _layerSlider('drone', '🎼 Sustained drone',      '#a78bfa', 'Low 110 Hz saw wave. Steady, grounding.'),
+      _layerSlider('drone', '🎼 Sustained drone',      _minFg('#a78bfa'), 'Low 110 Hz saw wave. Steady, grounding.'),
       _layerSlider('rain',  '🌧 Rain (pink noise)',    '#60a5fa', 'Synthesized pink noise mimics rainfall. Soothing white-noise alternative.'),
       _layerSlider('ocean', '🌊 Ocean waves',          '#22d3ee', 'Slowly modulated noise envelope evokes breaking waves.'),
       _layerSlider('wind',  '🍃 Wind',                 '#86efac', 'High-frequency modulated noise — soft breeze sound.'),
       _layerSlider('bell',  '🔔 Mindfulness bell',     '#f472b6', 'Occasional bell every ~15 seconds — gentle attention cue.')
     ),
-    h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: '#0f172a', textAlign: 'center' } },
+    h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: _minBg('#0f172a'), textAlign: 'center' } },
       h('button', { onClick: function() { upd({ sbPlaying: !sbPlaying }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: sbPlaying ? '#ef4444' : '#5eead4', color: sbPlaying ? '#fff' : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: sbPlaying ? _minFg('#ef4444') : '#5eead4', color: sbPlaying ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, sbPlaying ? '⏸  Stop soundbath' : '▶  Play soundbath')
     ),
-    h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-      h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Preset recipes'),
+    h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+      h('div', { style: { color: _minFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Preset recipes'),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
         [
           { name: 'Forest rain',     mix: { bowl: 0,   drone: 0.2, rain: 0.6, ocean: 0,   wind: 0.3, bell: 0 } },
@@ -24377,7 +24483,7 @@ if (activeTab === 'soundbath') {
           { name: 'Silence',         mix: { bowl: 0,   drone: 0,   rain: 0,   ocean: 0,   wind: 0,   bell: 0 } }
         ].map(function(preset) {
           return h('button', { key: preset.name, onClick: function() { upd({ sbLayers: preset.mix }); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 12px', borderRadius: 16, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', fontSize: 11, cursor: 'pointer' }
+            style: { padding: '6px 12px', borderRadius: 16, border: '1px solid #475569', background: _minBg('#0f172a'), color: _minFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, preset.name);
         })
       )
@@ -24453,44 +24559,44 @@ if (activeTab === 'bell_timer') {
   var minLeft = Math.floor(remainingSec / 60);
   var secLeft = remainingSec % 60;
   bellTimerContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Bell Timer: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Bell Timer: '),
         'Set a meditation timer with start bell, optional interval bells (every N minutes), and end bell. Best when you set it and put the phone face down.'
       )
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 14 } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b' } },
-        h('label', { htmlFor: 'bt-dur', style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Total minutes: ' + btDuration),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b') } },
+        h('label', { htmlFor: 'bt-dur', style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Total minutes: ' + btDuration),
         h('input', { id: 'bt-dur', type: 'range', min: 1, max: 60, value: btDuration,
           onChange: function(e) { upd({ btDuration: parseInt(e.target.value, 10) }); },
           style: { width: '100%' }
         })
       ),
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b' } },
-        h('label', { htmlFor: 'bt-int', style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Interval bell: ' + (btInterval === 0 ? 'off (start+end only)' : 'every ' + btInterval + ' min')),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b') } },
+        h('label', { htmlFor: 'bt-int', style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Interval bell: ' + (btInterval === 0 ? 'off (start+end only)' : 'every ' + btInterval + ' min')),
         h('input', { id: 'bt-int', type: 'range', min: 0, max: 15, value: btInterval,
           onChange: function(e) { upd({ btInterval: parseInt(e.target.value, 10) }); },
           style: { width: '100%' }
         })
       ),
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b' } },
-        h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, marginBottom: 6 } }, 'Bell tone'),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b') } },
+        h('div', { style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, marginBottom: 6 } }, 'Bell tone'),
         h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
           TONES.map(function(t) {
             var sel = btTone === t.id;
             return h('button', { key: t.id, onClick: function() { upd({ btTone: t.id }); _playToneByName(t.id); },
-              style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+              style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
             }, t.name);
           })
         )
       )
     ),
     // big countdown
-    h('div', { style: { padding: 24, borderRadius: 12, background: '#0f172a', textAlign: 'center' } },
-      h('div', { style: { color: '#fbbf24', fontSize: 56, fontWeight: 800, fontFamily: 'monospace', letterSpacing: '-2px' } }, minLeft + ':' + (secLeft < 10 ? '0' : '') + secLeft),
-      h('div', { style: { color: '#94a3b8', fontSize: 12, marginTop: 4 } }, btRunning ? 'remaining' : 'set'),
-      h('div', { style: { marginTop: 16, height: 12, borderRadius: 6, background: '#1e293b', overflow: 'hidden' } },
+    h('div', { style: { padding: 24, borderRadius: 12, background: _minBg('#0f172a'), textAlign: 'center' } },
+      h('div', { style: { color: _minFg('#fbbf24'), fontSize: 56, fontWeight: 800, fontFamily: 'monospace', letterSpacing: '-2px' } }, minLeft + ':' + (secLeft < 10 ? '0' : '') + secLeft),
+      h('div', { style: { color: _minFg('#94a3b8'), fontSize: 12, marginTop: 4 } }, btRunning ? 'remaining' : 'set'),
+      h('div', { style: { marginTop: 16, height: 12, borderRadius: 6, background: _minBg('#1e293b'), overflow: 'hidden' } },
         h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #5eead4, #fbbf24)', transition: 'width 0.5s' } })
       ),
       h('button', { onClick: function() {
@@ -24498,7 +24604,7 @@ if (activeTab === 'bell_timer') {
           else { upd({ btRunning: false }); }
           if (soundEnabled) sfxClick();
         },
-        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: btRunning ? '#ef4444' : '#5eead4', color: btRunning ? '#fff' : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: btRunning ? _minFg('#ef4444') : '#5eead4', color: btRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, btRunning ? '⏸ Stop' : '▶ Begin')
     )
   );
@@ -24514,22 +24620,22 @@ if (activeTab === 'trataka') {
   var trRunning = !!d.trRunning;
   // Flame uses CSS keyframes for flicker
   tratakaContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Trataka — candle gazing: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Trataka — candle gazing: '),
         'Traditional yogic single-pointed focus practice. Soft gaze on the flame; blink when needed. After a minute, close your eyes — the after-image will appear. Open eyes and return to gazing. Practice 5-15 minutes.'
       ),
-      h('p', { style: { margin: '8px 0 0', color: '#fbbf24', fontSize: 11 } }, '⚠️ If you have epilepsy, sensory sensitivities, or dissociative tendencies, use the still background and short sessions.')
+      h('p', { style: { margin: '8px 0 0', color: _minFg('#fbbf24'), fontSize: 11 } }, '⚠️ If you have epilepsy, sensory sensitivities, or dissociative tendencies, use the still background and short sessions.')
     ),
     h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
       ['dark','dawn','dusk'].map(function(bg) {
         var sel = trBg === bg;
         return h('button', { key: bg, onClick: function() { upd({ trBg: bg }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+          style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
         }, bg);
       })
     ),
-    h('div', { style: { padding: 0, borderRadius: 12, background: trBg === 'dark' ? '#000' : (trBg === 'dawn' ? '#3b0764' : '#7c2d12'), textAlign: 'center', minHeight: 360, position: 'relative', overflow: 'hidden' } },
+    h('div', { style: { padding: 0, borderRadius: 12, background: trBg === 'dark' ? '#000' : (trBg === 'dawn' ? '#3b0764' : _minBg('#7c2d12')), textAlign: 'center', minHeight: 360, position: 'relative', overflow: 'hidden' } },
       // candle
       h('svg', { width: 200, height: 360, viewBox: '0 0 200 360', style: { margin: '0 auto', display: 'block' } },
         // wax body
@@ -24540,7 +24646,7 @@ if (activeTab === 'trataka') {
         // flame — using SVG path with CSS animation
         h('g', { className: trRunning ? 'sel-mind-flame' : '', style: { transformOrigin: '100px 180px' } },
           // outer flame
-          h('ellipse', { cx: 100, cy: 150, rx: 16, ry: 35, fill: '#fb923c', opacity: 0.6 }),
+          h('ellipse', { cx: 100, cy: 150, rx: 16, ry: 35, fill: _minFg('#fb923c'), opacity: 0.6 }),
           // mid flame
           h('ellipse', { cx: 100, cy: 155, rx: 11, ry: 28, fill: '#fbbf24' }),
           // inner core
@@ -24558,7 +24664,7 @@ if (activeTab === 'trataka') {
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ trRunning: !trRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: trRunning ? '#ef4444' : '#fbbf24', color: trRunning ? '#fff' : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: trRunning ? _minFg('#ef4444') : '#fbbf24', color: trRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, trRunning ? '⏸ Steady flame' : '▶ Flicker (recommended)')
     ),
     h('style', null,
@@ -24599,9 +24705,9 @@ if (activeTab === 'walking') {
     return function() { clearInterval(t); };
   }, [wkRunning, wkPace, wkBellEvery]);
   walkingContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Walking Meditation: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Walking Meditation: '),
         'Sync your steps to the rhythm. Slow pace is the traditional formal practice (Thich Nhat Hanh, Theravada). Bell every N steps brings you back to presence. Best outdoors barefoot if safe; great in a quiet hallway or yard.'
       )
     ),
@@ -24609,29 +24715,29 @@ if (activeTab === 'walking') {
       PACES.map(function(p) {
         var sel = wkPace === p.id;
         return h('button', { key: p.id, onClick: function() { upd({ wkPace: p.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#1e293b', color: sel ? '#5eead4' : '#cbd5e1', fontSize: 13, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 13, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, p.name);
       })
     ),
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 14 } },
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 14 } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
-        h('label', { htmlFor: 'wk-bell', style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600 } }, 'Mindfulness bell every'),
-        h('span', { style: { color: '#fbbf24', fontSize: 13, fontWeight: 700 } }, wkBellEvery === 0 ? 'off' : (wkBellEvery + ' steps'))
+        h('label', { htmlFor: 'wk-bell', style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600 } }, 'Mindfulness bell every'),
+        h('span', { style: { color: _minFg('#fbbf24'), fontSize: 13, fontWeight: 700 } }, wkBellEvery === 0 ? 'off' : (wkBellEvery + ' steps'))
       ),
       h('input', { id: 'wk-bell', type: 'range', min: 0, max: 50, value: wkBellEvery,
         onChange: function(e) { upd({ wkBellEvery: parseInt(e.target.value, 10) }); },
         style: { width: '100%' }
       })
     ),
-    h('div', { style: { padding: 24, borderRadius: 12, background: '#0f172a', textAlign: 'center' } },
-      h('div', { style: { color: '#5eead4', fontSize: 72, fontWeight: 800, fontFamily: 'monospace', lineHeight: 1 } }, wkSteps),
-      h('div', { style: { color: '#94a3b8', fontSize: 13, marginTop: 4 } }, 'steps'),
-      h('p', { style: { margin: '12px auto 0', maxWidth: 400, color: '#fde68a', fontSize: 12, fontStyle: 'italic', lineHeight: 1.5 } }, pace.desc),
+    h('div', { style: { padding: 24, borderRadius: 12, background: _minBg('#0f172a'), textAlign: 'center' } },
+      h('div', { style: { color: _minFg('#5eead4'), fontSize: 72, fontWeight: 800, fontFamily: 'monospace', lineHeight: 1 } }, wkSteps),
+      h('div', { style: { color: _minFg('#94a3b8'), fontSize: 13, marginTop: 4 } }, 'steps'),
+      h('p', { style: { margin: '12px auto 0', maxWidth: 400, color: _minFg('#fde68a'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.5 } }, pace.desc),
       h('button', { onClick: function() { upd({ wkRunning: !wkRunning }); if (soundEnabled) sfxClick(); },
-        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: wkRunning ? '#ef4444' : '#5eead4', color: wkRunning ? '#fff' : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: wkRunning ? _minFg('#ef4444') : '#5eead4', color: wkRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, wkRunning ? '⏸ Pause' : '▶ Begin walking'),
       h('button', { onClick: function() { upd({ wkSteps: 0, wkRunning: false }); if (soundEnabled) sfxClick(); },
-        style: { marginLeft: 8, padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#94a3b8', fontSize: 13, cursor: 'pointer' }
+        style: { marginLeft: 8, padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
       }, 'Reset')
     )
   );
@@ -24657,36 +24763,36 @@ if (activeTab === 'eating') {
   var currentStep = EATING_STEPS[meStep] || EATING_STEPS[0];
   var isLast = meStep >= EATING_STEPS.length - 1;
   eatingContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Mindful Eating: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Mindful Eating: '),
         'Classic MBSR raisin practice — but with any small food (raisin, almond, square of chocolate, slice of apple). 8 steps, about 5 minutes total. ',
         h('em', null, 'If you have a history of disordered eating, please consult a therapist before practicing — mindful eating can be intensely activating in those contexts.')
       )
     ),
-    h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '2px solid #fbbf24' } },
+    h('div', { style: { padding: 20, borderRadius: 12, background: _minBg('#0f172a'), border: '2px solid #fbbf24' } },
       h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
-        h('div', { style: { color: '#fbbf24', fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'Step ' + (meStep + 1) + ' of ' + EATING_STEPS.length),
-        h('div', { style: { color: '#94a3b8', fontSize: 11 } }, '~' + currentStep.durationSec + 's')
+        h('div', { style: { color: _minFg('#fbbf24'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'Step ' + (meStep + 1) + ' of ' + EATING_STEPS.length),
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11 } }, '~' + currentStep.durationSec + 's')
       ),
       h('div', { style: { fontSize: 56, textAlign: 'center', marginBottom: 8 } }, currentStep.icon),
-      h('h3', { style: { margin: 0, color: '#fde68a', fontSize: 22, fontWeight: 800, textAlign: 'center' } }, currentStep.title),
-      h('p', { style: { margin: '16px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.7 } }, currentStep.body),
-      h('div', { style: { marginTop: 16, height: 8, borderRadius: 4, background: '#1e293b', overflow: 'hidden' } },
+      h('h3', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 22, fontWeight: 800, textAlign: 'center' } }, currentStep.title),
+      h('p', { style: { margin: '16px 0 0', color: _minFg('#e2e8f0'), fontSize: 14, lineHeight: 1.7 } }, currentStep.body),
+      h('div', { style: { marginTop: 16, height: 8, borderRadius: 4, background: _minBg('#1e293b'), overflow: 'hidden' } },
         h('div', { style: { height: '100%', width: ((meStep + 1) / EATING_STEPS.length * 100) + '%', background: 'linear-gradient(90deg, #fbbf24, #f97316)', transition: 'width 0.4s' } })
       )
     ),
     h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
       h('button', { onClick: function() { if (meStep > 0) upd({ meStep: meStep - 1 }); if (soundEnabled) sfxClick(); },
         disabled: meStep === 0,
-        style: { padding: '8px 16px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: meStep === 0 ? '#475569' : '#94a3b8', fontSize: 13, cursor: meStep === 0 ? 'not-allowed' : 'pointer' }
+        style: { padding: '8px 16px', borderRadius: 6, border: '1px solid #475569', background: _minBg('#0f172a'), color: meStep === 0 ? _minFg('#475569') : _minFg('#94a3b8'), fontSize: 13, cursor: meStep === 0 ? 'not-allowed' : 'pointer' }
       }, '← Back'),
       isLast ?
         h('button', { onClick: function() { upd({ meStep: 0 }); if (soundEnabled) sfxComplete(); addToast && addToast('Mindful eating complete. Notice the difference.', 'success'); },
-          style: { padding: '10px 22px', borderRadius: 6, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '10px 22px', borderRadius: 6, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, '✓ Finish & reset') :
         h('button', { onClick: function() { upd({ meStep: meStep + 1 }); if (soundEnabled) sfxClick(); },
-          style: { padding: '10px 22px', borderRadius: 6, border: 'none', background: '#fbbf24', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '10px 22px', borderRadius: 6, border: 'none', background: _minBg('#fbbf24'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'Next step →')
     )
   );
@@ -24701,11 +24807,11 @@ if (activeTab === 'ground5421') {
   var g54Step = d.g54Step != null ? d.g54Step : 0;
   var g54Answers = d.g54Answers || { see: [], hear: [], touch: [], smell: [], taste: [] };
   var GROUND_PROMPTS = [
-    { sense: 'see',   icon: '👁️', count: 5, label: 'See',   prompt: 'Name 5 things you can see right now', color: '#22c55e' },
-    { sense: 'hear',  icon: '👂', count: 4, label: 'Hear',  prompt: 'Name 4 things you can hear (faint sounds count)', color: '#3b82f6' },
-    { sense: 'touch', icon: '✋', count: 3, label: 'Touch', prompt: 'Name 3 things you can feel (clothing, chair, air)', color: '#a855f7' },
-    { sense: 'smell', icon: '👃', count: 2, label: 'Smell', prompt: 'Name 2 things you can smell (or imagine if nothing)', color: '#f59e0b' },
-    { sense: 'taste', icon: '👅', count: 1, label: 'Taste', prompt: 'Name 1 thing you can taste right now', color: '#ef4444' }
+    { sense: 'see',   icon: '👁️', count: 5, label: 'See',   prompt: 'Name 5 things you can see right now', color: _minFg('#22c55e') },
+    { sense: 'hear',  icon: '👂', count: 4, label: 'Hear',  prompt: 'Name 4 things you can hear (faint sounds count)', color: _minFg('#3b82f6') },
+    { sense: 'touch', icon: '✋', count: 3, label: 'Touch', prompt: 'Name 3 things you can feel (clothing, chair, air)', color: _minFg('#a855f7') },
+    { sense: 'smell', icon: '👃', count: 2, label: 'Smell', prompt: 'Name 2 things you can smell (or imagine if nothing)', color: _minFg('#f59e0b') },
+    { sense: 'taste', icon: '👅', count: 1, label: 'Taste', prompt: 'Name 1 thing you can taste right now', color: _minFg('#ef4444') }
   ];
   var currentGround = GROUND_PROMPTS[g54Step];
   var isAllDone = g54Step >= GROUND_PROMPTS.length;
@@ -24723,22 +24829,22 @@ if (activeTab === 'ground5421') {
     }
   }
   groundingInteractiveContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, '5-4-3-2-1 Grounding: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, '5-4-3-2-1 Grounding: '),
         'Pull attention out of anxious spirals by anchoring in the 5 senses. Used by therapists for PTSD, panic, and dissociation. Naming things out loud is even more grounding than thinking them silently.'
       )
     ),
-    !isAllDone ? h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '2px solid ' + currentGround.color } },
+    !isAllDone ? h('div', { style: { padding: 20, borderRadius: 12, background: _minBg('#0f172a'), border: '2px solid ' + currentGround.color } },
       h('div', { style: { textAlign: 'center', marginBottom: 12 } },
         h('div', { style: { fontSize: 56 } }, currentGround.icon),
         h('h3', { style: { margin: '8px 0 0', color: currentGround.color, fontSize: 24, fontWeight: 800 } }, currentGround.count + ' ' + currentGround.label),
-        h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.5 } }, currentGround.prompt)
+        h('p', { style: { margin: '6px 0 0', color: _minFg('#e2e8f0'), fontSize: 14, lineHeight: 1.5 } }, currentGround.prompt)
       ),
       // already-named items
       g54Answers[currentGround.sense] && g54Answers[currentGround.sense].length > 0 ? h('div', { style: { marginBottom: 12 } },
         g54Answers[currentGround.sense].map(function(item, i) {
-          return h('div', { key: i, style: { padding: '6px 10px', borderRadius: 6, background: currentGround.color + '22', color: '#f1f5f9', fontSize: 13, marginBottom: 4 } },
+          return h('div', { key: i, style: { padding: '6px 10px', borderRadius: 6, background: currentGround.color + '22', color: _minFg('#f1f5f9'), fontSize: 13, marginBottom: 4 } },
             '✓ ' + item
           );
         })
@@ -24747,33 +24853,33 @@ if (activeTab === 'ground5421') {
       h('form', { onSubmit: function(e) { e.preventDefault(); var t = e.target.querySelector('input').value; _addItem(t); e.target.reset(); } },
         h('div', { style: { display: 'flex', gap: 6 } },
           h('input', { type: 'text', autoFocus: true, placeholder: 'Type and press Enter...',
-            style: { flex: 1, padding: 10, borderRadius: 6, border: '1px solid ' + currentGround.color, background: '#1e293b', color: '#e2e8f0', fontSize: 14 }
+            style: { flex: 1, padding: 10, borderRadius: 6, border: '1px solid ' + currentGround.color, background: _minBg('#1e293b'), color: _minFg('#e2e8f0'), fontSize: 14 }
           }),
           h('button', { type: 'submit',
-            style: { padding: '10px 16px', borderRadius: 6, border: 'none', background: currentGround.color, color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '10px 16px', borderRadius: 6, border: 'none', background: currentGround.color, color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, 'Add')
         )
       ),
-      h('div', { style: { marginTop: 8, color: '#94a3b8', fontSize: 11 } },
+      h('div', { style: { marginTop: 8, color: _minFg('#94a3b8'), fontSize: 11 } },
         (g54Answers[currentGround.sense] || []).length + ' / ' + currentGround.count + ' named'
       )
     ) :
-    h('div', { style: { padding: 24, borderRadius: 12, background: '#042f2e', border: '2px solid #5eead4' } },
+    h('div', { style: { padding: 24, borderRadius: 12, background: _minBg('#042f2e'), border: '2px solid #5eead4' } },
       h('div', { style: { textAlign: 'center', marginBottom: 14 } },
         h('div', { style: { fontSize: 56 } }, '✨'),
-        h('h3', { style: { margin: '8px 0 0', color: '#5eead4', fontSize: 22, fontWeight: 800 } }, 'You are here. Right now.'),
-        h('p', { style: { margin: '6px 0 0', color: '#a7f3d0', fontSize: 13 } }, 'You just named 15 things present in your senses. That is what "right now" feels like.')
+        h('h3', { style: { margin: '8px 0 0', color: _minFg('#5eead4'), fontSize: 22, fontWeight: 800 } }, 'You are here. Right now.'),
+        h('p', { style: { margin: '6px 0 0', color: _minFg('#a7f3d0'), fontSize: 13 } }, 'You just named 15 things present in your senses. That is what "right now" feels like.')
       ),
       GROUND_PROMPTS.map(function(p) {
         var items = g54Answers[p.sense] || [];
         if (!items.length) return null;
         return h('div', { key: p.sense, style: { marginBottom: 10 } },
           h('div', { style: { color: p.color, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' } }, p.label),
-          h('div', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, items.join(' · '))
+          h('div', { style: { color: _minFg('#e2e8f0'), fontSize: 12, lineHeight: 1.55 } }, items.join(' · '))
         );
       }),
       h('button', { onClick: function() { upd({ g54Step: 0, g54Answers: { see: [], hear: [], touch: [], smell: [], taste: [] } }); if (soundEnabled) sfxClick(); },
-        style: { display: 'block', margin: '14px auto 0', padding: '10px 22px', borderRadius: 6, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { display: 'block', margin: '14px auto 0', padding: '10px 22px', borderRadius: 6, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Practice again')
     )
   );
@@ -24789,12 +24895,12 @@ if (activeTab === 'lovingkindness') {
   var lkPhrase = d.lkPhrase != null ? d.lkPhrase : 0;
   var lkRunning = !!d.lkRunning;
   var LK_RECIPIENTS = [
-    { id: 'self',      label: 'Yourself',                                  color: '#fbbf24', framing: 'Bring yourself to mind. Picture yourself as you are right now.' },
-    { id: 'benefactor',label: 'Someone who has been kind to you',          color: '#22c55e', framing: 'Bring to mind someone who has loved you well — a grandparent, teacher, friend, pet.' },
-    { id: 'friend',    label: 'A friend or family member',                  color: '#5eead4', framing: 'Bring to mind someone you care about — a close friend, sibling, or family member.' },
-    { id: 'neutral',   label: 'Someone neutral (a stranger you\'ve seen)', color: '#a78bfa', framing: 'Bring to mind someone you barely know — a cashier, classmate you don\'t talk to, neighbor you\'ve only nodded at.' },
-    { id: 'difficult', label: 'Someone difficult (not the worst — start small)', color: '#fb923c', framing: 'Bring to mind someone mildly difficult — not your worst conflict, but a person who frustrates you. Start with the smallest difficulty.' },
-    { id: 'all',       label: 'All beings everywhere',                      color: '#ec4899', framing: 'Open the heart wide. Include all beings — humans, animals, the suffering, the joyful, near and far.' }
+    { id: 'self',      label: 'Yourself',                                  color: _minFg('#fbbf24'), framing: 'Bring yourself to mind. Picture yourself as you are right now.' },
+    { id: 'benefactor',label: 'Someone who has been kind to you',          color: _minFg('#22c55e'), framing: 'Bring to mind someone who has loved you well — a grandparent, teacher, friend, pet.' },
+    { id: 'friend',    label: 'A friend or family member',                  color: _minFg('#5eead4'), framing: 'Bring to mind someone you care about — a close friend, sibling, or family member.' },
+    { id: 'neutral',   label: 'Someone neutral (a stranger you\'ve seen)', color: _minFg('#a78bfa'), framing: 'Bring to mind someone you barely know — a cashier, classmate you don\'t talk to, neighbor you\'ve only nodded at.' },
+    { id: 'difficult', label: 'Someone difficult (not the worst — start small)', color: _minFg('#fb923c'), framing: 'Bring to mind someone mildly difficult — not your worst conflict, but a person who frustrates you. Start with the smallest difficulty.' },
+    { id: 'all',       label: 'All beings everywhere',                      color: _minFg('#ec4899'), framing: 'Open the heart wide. Include all beings — humans, animals, the suffering, the joyful, near and far.' }
   ];
   var LK_PHRASES = [
     'May you be safe.',
@@ -24824,39 +24930,39 @@ if (activeTab === 'lovingkindness') {
     return function() { clearTimeout(t); };
   }, [lkRunning, lkRecipient, lkPhrase]);
   lkContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Loving-Kindness (Metta): '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Loving-Kindness (Metta): '),
         'Cycle through 6 recipients (yourself, a benefactor, friend, stranger, difficult person, all beings) with 4 phrases each. Each phrase rests for 8 seconds. About 3 minutes total. Hutcherson et al. (2008) showed even 7 minutes increased felt connection to strangers.'
       ),
-      h('p', { style: { margin: '6px 0 0', color: '#fbbf24', fontSize: 11 } }, '⚠️ If self-directed metta brings up shame, skip yourself this time and start with the benefactor.')
+      h('p', { style: { margin: '6px 0 0', color: _minFg('#fbbf24'), fontSize: 11 } }, '⚠️ If self-directed metta brings up shame, skip yourself this time and start with the benefactor.')
     ),
     h('div', { style: { padding: 24, borderRadius: 12, background: 'linear-gradient(135deg, ' + recipient.color + '22 0%, #0f172a 100%)', border: '2px solid ' + recipient.color } },
       h('div', { style: { textAlign: 'center' } },
         h('div', { style: { color: recipient.color, fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'Recipient ' + (lkRecipient + 1) + ' of ' + LK_RECIPIENTS.length),
         h('h3', { style: { margin: '6px 0 12px', color: recipient.color, fontSize: 20, fontWeight: 800 } }, recipient.label),
-        h('p', { style: { margin: '0 auto 18px', maxWidth: 400, color: '#cbd5e1', fontSize: 13, fontStyle: 'italic', lineHeight: 1.55 } }, recipient.framing),
-        h('div', { style: { padding: '20px 14px', borderRadius: 12, background: '#0f172a', marginBottom: 8 } },
-          h('p', { style: { margin: 0, color: '#fde68a', fontSize: 26, fontWeight: 700, lineHeight: 1.4, letterSpacing: '0.02em' } }, phrase)
+        h('p', { style: { margin: '0 auto 18px', maxWidth: 400, color: _minFg('#cbd5e1'), fontSize: 13, fontStyle: 'italic', lineHeight: 1.55 } }, recipient.framing),
+        h('div', { style: { padding: '20px 14px', borderRadius: 12, background: _minBg('#0f172a'), marginBottom: 8 } },
+          h('p', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 26, fontWeight: 700, lineHeight: 1.4, letterSpacing: '0.02em' } }, phrase)
         ),
-        h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'Phrase ' + (lkPhrase + 1) + ' of ' + LK_PHRASES.length)
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11 } }, 'Phrase ' + (lkPhrase + 1) + ' of ' + LK_PHRASES.length)
       )
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ lkRunning: !lkRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: lkRunning ? '#ef4444' : recipient.color, color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: lkRunning ? _minFg('#ef4444') : recipient.color, color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, lkRunning ? '⏸ Pause' : '▶ Begin'),
       h('button', { onClick: function() { upd({ lkRunning: false, lkRecipient: 0, lkPhrase: 0 }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 16px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#94a3b8', fontSize: 13, cursor: 'pointer' }
+        style: { padding: '12px 16px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
       }, 'Reset')
     ),
-    h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#1e293b' } },
-      h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Skip to recipient'),
+    h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _minBg('#1e293b') } },
+      h('div', { style: { color: _minFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Skip to recipient'),
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
         LK_RECIPIENTS.map(function(r, i) {
           var sel = lkRecipient === i;
           return h('button', { key: r.id, onClick: function() { upd({ lkRecipient: i, lkPhrase: 0 }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? r.color : '#475569'), background: sel ? r.color + '22' : '#0f172a', color: sel ? r.color : '#cbd5e1', fontSize: 11, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? r.color : _minFg('#475569')), background: sel ? r.color + '22' : '#0f172a', color: sel ? r.color : _minFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, r.label.length > 20 ? r.label.substring(0, 20) + '…' : r.label);
         })
       )
@@ -24894,35 +25000,35 @@ if (activeTab === 'clouds') {
     return function() { clearInterval(t); };
   }, [clRunning]);
   cloudContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Cloud Watching: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Cloud Watching: '),
         'Classic ACT defusion practice — your thoughts are like clouds passing across the sky of awareness. Watch the clouds drift. A new mindful prompt appears every 15 seconds.'
       )
     ),
     h('div', { style: { position: 'relative', minHeight: 280, background: 'linear-gradient(180deg, #0ea5e9 0%, #93c5fd 60%, #fef3c7 100%)', borderRadius: 12, overflow: 'hidden' } },
       // sun
-      h('div', { style: { position: 'absolute', top: 20, right: 30, width: 60, height: 60, borderRadius: '50%', background: '#fde047', boxShadow: '0 0 40px #fbbf24' } }),
+      h('div', { style: { position: 'absolute', top: 20, right: 30, width: 60, height: 60, borderRadius: '50%', background: _minBg('#fde047'), boxShadow: '0 0 40px #fbbf24' } }),
       // clouds drifting
       h('svg', { width: '100%', height: 280, viewBox: '0 0 800 280', style: { display: 'block' } },
         Array.from({ length: 5 }, function(_, i) {
           var dur = 30 + i * 8;
           var topY = 40 + i * 30;
           return h('g', { key: 'c' + i, className: clRunning ? 'sel-mind-cloud' : '', style: { animation: clRunning ? 'sel-mind-cloud ' + dur + 's linear infinite' : 'none', animationDelay: (-i * 6) + 's' } },
-            h('ellipse', { cx: 60, cy: topY, rx: 36, ry: 16, fill: '#fff', opacity: 0.85 }),
-            h('ellipse', { cx: 30, cy: topY + 8, rx: 24, ry: 13, fill: '#fff', opacity: 0.75 }),
-            h('ellipse', { cx: 95, cy: topY + 8, rx: 28, ry: 14, fill: '#fff', opacity: 0.75 })
+            h('ellipse', { cx: 60, cy: topY, rx: 36, ry: 16, fill: _minFg('#fff'), opacity: 0.85 }),
+            h('ellipse', { cx: 30, cy: topY + 8, rx: 24, ry: 13, fill: _minFg('#fff'), opacity: 0.75 }),
+            h('ellipse', { cx: 95, cy: topY + 8, rx: 28, ry: 14, fill: _minFg('#fff'), opacity: 0.75 })
           );
         })
       ),
       // bottom card with prompt
       h('div', { style: { position: 'absolute', bottom: 16, left: 16, right: 16, padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)' } },
-        h('p', { style: { margin: 0, color: '#fde68a', fontSize: 15, fontWeight: 600, lineHeight: 1.55, fontStyle: 'italic' } }, '✨ ' + CLOUD_PROMPTS[clPromptIdx % CLOUD_PROMPTS.length])
+        h('p', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 15, fontWeight: 600, lineHeight: 1.55, fontStyle: 'italic' } }, '✨ ' + CLOUD_PROMPTS[clPromptIdx % CLOUD_PROMPTS.length])
       )
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
       h('button', { onClick: function() { upd({ clRunning: !clRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: clRunning ? '#ef4444' : '#5eead4', color: clRunning ? '#fff' : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: clRunning ? _minFg('#ef4444') : '#5eead4', color: clRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, clRunning ? '⏸ Pause' : '▶ Begin cloud watching')
     ),
     h('style', null,
@@ -24972,37 +25078,37 @@ if (activeTab === 'streak') {
     else run = 0;
   }
   function _cellColor(count) {
-    if (count === 0) return '#1e293b';
+    if (count === 0) return _minBg('#1e293b');
     if (count === 1) return '#0d9488';
     if (count === 2) return '#14b8a6';
     return '#5eead4';
   }
   streakContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Practice Streak: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Practice Streak: '),
         'Your last 8 weeks of practice as a heat map. Each darker square = more sessions that day. Daily small practice (even 2 minutes) beats occasional long sessions for building presence as a habit.'
       )
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 14 } },
-      h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #5eead4' } },
-        h('div', { style: { color: '#94a3b8', fontSize: 10, textTransform: 'uppercase', fontWeight: 700 } }, 'Current streak'),
-        h('div', { style: { color: '#5eead4', fontSize: 32, fontWeight: 800 } }, currentStreak),
-        h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'days')
+      h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#0f172a'), border: '1px solid #5eead4' } },
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, textTransform: 'uppercase', fontWeight: 700 } }, 'Current streak'),
+        h('div', { style: { color: _minFg('#5eead4'), fontSize: 32, fontWeight: 800 } }, currentStreak),
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11 } }, 'days')
       ),
-      h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #fbbf24' } },
-        h('div', { style: { color: '#94a3b8', fontSize: 10, textTransform: 'uppercase', fontWeight: 700 } }, 'Longest streak'),
-        h('div', { style: { color: '#fbbf24', fontSize: 32, fontWeight: 800 } }, longestStreak),
-        h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'days')
+      h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#0f172a'), border: '1px solid #fbbf24' } },
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, textTransform: 'uppercase', fontWeight: 700 } }, 'Longest streak'),
+        h('div', { style: { color: _minFg('#fbbf24'), fontSize: 32, fontWeight: 800 } }, longestStreak),
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11 } }, 'days')
       ),
-      h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #a78bfa' } },
-        h('div', { style: { color: '#94a3b8', fontSize: 10, textTransform: 'uppercase', fontWeight: 700 } }, 'Total sessions'),
-        h('div', { style: { color: '#a78bfa', fontSize: 32, fontWeight: 800 } }, totalSessions),
-        h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'all time')
+      h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#0f172a'), border: '1px solid #a78bfa' } },
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, textTransform: 'uppercase', fontWeight: 700 } }, 'Total sessions'),
+        h('div', { style: { color: _minFg('#a78bfa'), fontSize: 32, fontWeight: 800 } }, totalSessions),
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11 } }, 'all time')
       )
     ),
-    h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a' } },
-      h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 10 } }, '8-week practice heatmap'),
+    h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#0f172a') } },
+      h('div', { style: { color: _minFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 10 } }, '8-week practice heatmap'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(28px, 1fr))', gap: 4 } },
         days.map(function(day) {
           return h('div', { key: day.date, title: day.date + ': ' + day.count + ' sessions',
@@ -25011,13 +25117,13 @@ if (activeTab === 'streak') {
         })
       ),
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 } },
-        h('div', { style: { color: '#64748b', fontSize: 10 } }, '8 weeks ago'),
+        h('div', { style: { color: _minFg('#64748b'), fontSize: 10 } }, '8 weeks ago'),
         h('div', { style: { display: 'flex', gap: 4, alignItems: 'center' } },
-          h('span', { style: { color: '#64748b', fontSize: 10 } }, 'Less'),
+          h('span', { style: { color: _minFg('#64748b'), fontSize: 10 } }, 'Less'),
           [0, 1, 2, 3].map(function(c) { return h('div', { key: c, style: { width: 12, height: 12, borderRadius: 3, background: _cellColor(c) } }); }),
-          h('span', { style: { color: '#64748b', fontSize: 10 } }, 'More')
+          h('span', { style: { color: _minFg('#64748b'), fontSize: 10 } }, 'More')
         ),
-        h('div', { style: { color: '#fbbf24', fontSize: 10 } }, 'Today')
+        h('div', { style: { color: _minFg('#fbbf24'), fontSize: 10 } }, 'Today')
       )
     )
   );
@@ -25036,81 +25142,81 @@ if (activeTab === 'beforeafter') {
   var baAfterStress = d.baAfterStress != null ? d.baAfterStress : 5;
   var baLabel = d.baLabel || '';
   ba_content = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Before & After: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Before & After: '),
         'Rate your state, do a practice (anywhere), then rate again. Tracking the difference makes the effect concrete — and helps you learn which practices work best for YOU.'
       )
     ),
-    baStage === 'before' ? h('div', { style: { padding: 18, borderRadius: 12, background: '#1e293b', border: '2px solid #fbbf24' } },
-      h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 18, fontWeight: 800 } }, 'Before — how are you right now?'),
+    baStage === 'before' ? h('div', { style: { padding: 18, borderRadius: 12, background: _minBg('#1e293b'), border: '2px solid #fbbf24' } },
+      h('h3', { style: { margin: 0, color: _minFg('#fbbf24'), fontSize: 18, fontWeight: 800 } }, 'Before — how are you right now?'),
       h('div', { style: { marginTop: 14 } },
-        h('label', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Mood (1 = low / heavy → 10 = bright / light): ' + baBeforeMood),
+        h('label', { style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Mood (1 = low / heavy → 10 = bright / light): ' + baBeforeMood),
         h('input', { type: 'range', min: 1, max: 10, value: baBeforeMood,
           onChange: function(e) { upd({ baBeforeMood: parseInt(e.target.value, 10) }); },
           style: { width: '100%' }
         })
       ),
       h('div', { style: { marginTop: 14 } },
-        h('label', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Stress / tension (1 = none → 10 = max): ' + baBeforeStress),
+        h('label', { style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Stress / tension (1 = none → 10 = max): ' + baBeforeStress),
         h('input', { type: 'range', min: 1, max: 10, value: baBeforeStress,
           onChange: function(e) { upd({ baBeforeStress: parseInt(e.target.value, 10) }); },
           style: { width: '100%' }
         })
       ),
       h('div', { style: { marginTop: 14 } },
-        h('label', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Practice name (optional)'),
+        h('label', { style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Practice name (optional)'),
         h('input', { type: 'text', value: baLabel, placeholder: 'e.g., "Box breath 5 min"',
           onChange: function(e) { upd({ baLabel: e.target.value }); },
-          style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 13 }
+          style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #475569', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13 }
         })
       ),
       h('button', { onClick: function() { upd({ baStage: 'practice' }); if (soundEnabled) sfxClick(); },
-        style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: '#fbbf24', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: _minBg('#fbbf24'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, 'Logged → go practice')
-    ) : baStage === 'practice' ? h('div', { style: { padding: 24, borderRadius: 12, background: '#1e293b', border: '2px solid #5eead4', textAlign: 'center' } },
+    ) : baStage === 'practice' ? h('div', { style: { padding: 24, borderRadius: 12, background: _minBg('#1e293b'), border: '2px solid #5eead4', textAlign: 'center' } },
       h('div', { style: { fontSize: 48, marginBottom: 12 } }, '🧘'),
-      h('h3', { style: { color: '#5eead4', fontSize: 20, fontWeight: 800, margin: 0 } }, 'Now do your practice.'),
-      h('p', { style: { color: '#a7f3d0', fontSize: 14, lineHeight: 1.6, margin: '12px 0' } }, 'Take 2-15 minutes — breathing, body scan, walking meditation, whatever fits. Come back here when done.'),
+      h('h3', { style: { color: _minFg('#5eead4'), fontSize: 20, fontWeight: 800, margin: 0 } }, 'Now do your practice.'),
+      h('p', { style: { color: _minFg('#a7f3d0'), fontSize: 14, lineHeight: 1.6, margin: '12px 0' } }, 'Take 2-15 minutes — breathing, body scan, walking meditation, whatever fits. Come back here when done.'),
       h('button', { onClick: function() { upd({ baStage: 'after', baAfterMood: baBeforeMood, baAfterStress: baBeforeStress }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, '✓ Done — rate after')
-    ) : baStage === 'after' ? h('div', { style: { padding: 18, borderRadius: 12, background: '#1e293b', border: '2px solid #22c55e' } },
-      h('h3', { style: { margin: 0, color: '#22c55e', fontSize: 18, fontWeight: 800 } }, 'After — how are you now?'),
+    ) : baStage === 'after' ? h('div', { style: { padding: 18, borderRadius: 12, background: _minBg('#1e293b'), border: '2px solid #22c55e' } },
+      h('h3', { style: { margin: 0, color: _minFg('#22c55e'), fontSize: 18, fontWeight: 800 } }, 'After — how are you now?'),
       h('div', { style: { marginTop: 14 } },
-        h('label', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Mood (1-10): ' + baAfterMood),
+        h('label', { style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Mood (1-10): ' + baAfterMood),
         h('input', { type: 'range', min: 1, max: 10, value: baAfterMood,
           onChange: function(e) { upd({ baAfterMood: parseInt(e.target.value, 10) }); },
           style: { width: '100%' }
         })
       ),
       h('div', { style: { marginTop: 14 } },
-        h('label', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Stress / tension (1-10): ' + baAfterStress),
+        h('label', { style: { color: _minFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Stress / tension (1-10): ' + baAfterStress),
         h('input', { type: 'range', min: 1, max: 10, value: baAfterStress,
           onChange: function(e) { upd({ baAfterStress: parseInt(e.target.value, 10) }); },
           style: { width: '100%' }
         })
       ),
       h('button', { onClick: function() { upd({ baStage: 'review' }); if (soundEnabled) sfxComplete(); },
-        style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: _minBg('#15803d'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, 'See the difference')
-    ) : h('div', { style: { padding: 18, borderRadius: 12, background: '#042f2e', border: '2px solid #5eead4' } },
-      h('h3', { style: { margin: 0, color: '#5eead4', fontSize: 22, fontWeight: 800, textAlign: 'center' } }, 'Your shift'),
-      baLabel ? h('p', { style: { color: '#a7f3d0', fontSize: 12, textAlign: 'center', margin: '4px 0' } }, baLabel) : null,
+    ) : h('div', { style: { padding: 18, borderRadius: 12, background: _minBg('#042f2e'), border: '2px solid #5eead4' } },
+      h('h3', { style: { margin: 0, color: _minFg('#5eead4'), fontSize: 22, fontWeight: 800, textAlign: 'center' } }, 'Your shift'),
+      baLabel ? h('p', { style: { color: _minFg('#a7f3d0'), fontSize: 12, textAlign: 'center', margin: '4px 0' } }, baLabel) : null,
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 } },
-        h('div', { style: { padding: 14, borderRadius: 10, background: '#1e293b', textAlign: 'center' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' } }, 'Mood'),
-          h('div', { style: { fontSize: 26, fontWeight: 700, color: '#cbd5e1', marginTop: 4 } }, baBeforeMood + ' → ' + baAfterMood),
-          h('div', { style: { color: baAfterMood > baBeforeMood ? '#5eead4' : (baAfterMood < baBeforeMood ? '#fb7185' : '#94a3b8'), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterMood - baBeforeMood >= 0 ? '+' : '') + (baAfterMood - baBeforeMood))
+        h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#1e293b'), textAlign: 'center' } },
+          h('div', { style: { color: _minFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase' } }, 'Mood'),
+          h('div', { style: { fontSize: 26, fontWeight: 700, color: _minFg('#cbd5e1'), marginTop: 4 } }, baBeforeMood + ' → ' + baAfterMood),
+          h('div', { style: { color: baAfterMood > baBeforeMood ? '#5eead4' : (baAfterMood < baBeforeMood ? '#fb7185' : _minFg('#94a3b8')), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterMood - baBeforeMood >= 0 ? '+' : '') + (baAfterMood - baBeforeMood))
         ),
-        h('div', { style: { padding: 14, borderRadius: 10, background: '#1e293b', textAlign: 'center' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' } }, 'Stress'),
-          h('div', { style: { fontSize: 26, fontWeight: 700, color: '#cbd5e1', marginTop: 4 } }, baBeforeStress + ' → ' + baAfterStress),
-          h('div', { style: { color: baAfterStress < baBeforeStress ? '#5eead4' : (baAfterStress > baBeforeStress ? '#fb7185' : '#94a3b8'), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterStress - baBeforeStress >= 0 ? '+' : '') + (baAfterStress - baBeforeStress))
+        h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#1e293b'), textAlign: 'center' } },
+          h('div', { style: { color: _minFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase' } }, 'Stress'),
+          h('div', { style: { fontSize: 26, fontWeight: 700, color: _minFg('#cbd5e1'), marginTop: 4 } }, baBeforeStress + ' → ' + baAfterStress),
+          h('div', { style: { color: baAfterStress < baBeforeStress ? '#5eead4' : (baAfterStress > baBeforeStress ? '#fb7185' : _minFg('#94a3b8')), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterStress - baBeforeStress >= 0 ? '+' : '') + (baAfterStress - baBeforeStress))
         )
       ),
       h('button', { onClick: function() { upd({ baStage: 'before', baBeforeMood: 5, baBeforeStress: 5, baAfterMood: 5, baAfterStress: 5, baLabel: '' }); if (soundEnabled) sfxClick(); },
-        style: { display: 'block', margin: '18px auto 0', padding: '10px 24px', borderRadius: 8, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { display: 'block', margin: '18px auto 0', padding: '10px 24px', borderRadius: 8, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Practice again')
     )
   );
@@ -25202,9 +25308,9 @@ if (activeTab === 'mudra') {
     if (id === 'heart') {
       return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         // body torso outline (simplified)
-        h('rect', { x: 60, y: 60, width: 80, height: 120, rx: 30, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
+        h('rect', { x: 60, y: 60, width: 80, height: 120, rx: 30, fill: _minBg('#1e293b'), stroke: _minFg('#475569'), strokeWidth: 1 }),
         // heart
-        h('path', { d: 'M 100 90 C 90 75, 70 75, 70 95 C 70 115, 100 130, 100 130 C 100 130, 130 115, 130 95 C 130 75, 110 75, 100 90 Z', fill: '#ef4444', opacity: 0.7 }),
+        h('path', { d: 'M 100 90 C 90 75, 70 75, 70 95 C 70 115, 100 130, 100 130 C 100 130, 130 115, 130 95 C 130 75, 110 75, 100 90 Z', fill: _minFg('#ef4444'), opacity: 0.7 }),
         // hand over heart
         h('path', Object.assign({}, common, { d: 'M 75 100 Q 65 105 70 130 L 75 145 Q 80 155 95 155 L 130 155 Q 145 155 145 140 L 140 110 Q 138 100 125 100 Z' }))
       );
@@ -25212,9 +25318,9 @@ if (activeTab === 'mudra') {
     return null;
   }
   mudraContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Mudra Studio: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Mudra Studio: '),
         '8 hand positions from yoga, Buddhism, and modern self-compassion practice. The hand position influences the felt experience of practice. Try each — see which one your body recognizes.'
       )
     ),
@@ -25222,21 +25328,21 @@ if (activeTab === 'mudra') {
       MUDRAS.map(function(m) {
         var sel = mrSelected === m.id;
         return h('button', { key: m.id, onClick: function() { upd({ mrSelected: m.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, m.name.split('(')[0].trim());
       })
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) 2fr', gap: 16 } },
-      h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', textAlign: 'center' } },
+      h('div', { style: { padding: 16, borderRadius: 12, background: _minBg('#0f172a'), textAlign: 'center' } },
         _mudraSvg(selected.id)
       ),
-      h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-        h('h3', { style: { margin: 0, color: '#fde68a', fontSize: 17, fontWeight: 800 } }, selected.name),
-        h('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, 'Sanskrit: ' + selected.sanskrit + ' · ' + selected.tradition),
-        h('p', { style: { margin: '10px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.65 } }, selected.desc),
-        h('div', { style: { marginTop: 10, padding: '6px 10px', borderRadius: 6, background: '#042f2e' } },
-          h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Best for'),
-          h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 12, lineHeight: 1.5 } }, selected.forWhat)
+      h('div', { style: { padding: 14, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+        h('h3', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 17, fontWeight: 800 } }, selected.name),
+        h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, 'Sanskrit: ' + selected.sanskrit + ' · ' + selected.tradition),
+        h('p', { style: { margin: '10px 0 0', color: _minFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65 } }, selected.desc),
+        h('div', { style: { marginTop: 10, padding: '6px 10px', borderRadius: 6, background: _minBg('#042f2e') } },
+          h('div', { style: { color: _minFg('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Best for'),
+          h('p', { style: { margin: 0, color: _minFg('#a7f3d0'), fontSize: 12, lineHeight: 1.5 } }, selected.forWhat)
         )
       )
     )
@@ -25251,7 +25357,7 @@ if (activeTab === 'mudra') {
 var scriptsBrowserContent = null;
 if (activeTab === 'scripts_lib') {
   if (typeof EXT_MEDITATION_SCRIPTS === 'undefined' || !EXT_MEDITATION_SCRIPTS.length) {
-    scriptsBrowserContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Scripts library loading...');
+    scriptsBrowserContent = h('div', { style: { padding: 40, textAlign: 'center', color: _minFg('#94a3b8') } }, 'Scripts library loading...');
   } else {
     var slCategory = d.slCategory || 'all';
     var slSearch = (d.slSearch || '').toLowerCase();
@@ -25265,9 +25371,9 @@ if (activeTab === 'scripts_lib') {
              (s.category || '').toLowerCase().indexOf(slSearch) !== -1;
     });
     scriptsBrowserContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Scripts Library: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _minFg('#fbbf24') } }, 'Scripts Library: '),
           EXT_MEDITATION_SCRIPTS.length + ' guided meditation scripts spanning breath, body, focus, loving-kindness, visualization, sound, walking, eating, sleep, crisis-grounding, self-compassion, kid-friendly, and trauma-informed practices. Click any script to expand. Each has voice tone guidance, paced steps, real pauses, and contraindications.'
         )
       ),
@@ -25275,37 +25381,37 @@ if (activeTab === 'scripts_lib') {
         slCats.map(function(c) {
           var sel = slCategory === c;
           return h('button', { key: c, onClick: function() { upd({ slCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),
       h('input', { type: 'search', placeholder: '🔎 Search scripts...', value: d.slSearch || '',
         onChange: function(e) { upd({ slSearch: e.target.value }); },
-        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, marginBottom: 14 }
+        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
-      h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } }, filtered.length + ' scripts match'),
+      h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginBottom: 8 } }, filtered.length + ' scripts match'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
         filtered.map(function(s) {
           var isOpen = slOpen === s.id;
-          return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
+          return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('span', { style: { fontSize: 22 } }, s.icon || '🧘'),
               h('div', { style: { flex: 1 } },
-                h('h5', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700 } }, s.name),
-                h('div', { style: { color: '#94a3b8', fontSize: 10 } }, (s.category || '') + ' · ~' + (s.durationMin || '?') + ' min · ' + (s.forBand || 'all'))
+                h('h5', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, s.name),
+                h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10 } }, (s.category || '') + ' · ~' + (s.durationMin || '?') + ' min · ' + (s.forBand || 'all'))
               ),
               h('button', { onClick: function() { upd({ slOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#5eead4', color: isOpen ? '#94a3b8' : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '5px 10px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#5eead4', color: isOpen ? _minFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, isOpen ? 'Close' : 'Open')
             ),
-            s.contraindications && s.contraindications.length ? h('div', { style: { marginTop: 6, color: '#fbbf24', fontSize: 10, lineHeight: 1.4 } }, '⚠️ ' + s.contraindications.join(' · ')) : null,
-            isOpen && s.script && s.script.length ? h('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', maxHeight: 380, overflowY: 'auto' } },
+            s.contraindications && s.contraindications.length ? h('div', { style: { marginTop: 6, color: _minFg('#fbbf24'), fontSize: 10, lineHeight: 1.4 } }, '⚠️ ' + s.contraindications.join(' · ')) : null,
+            isOpen && s.script && s.script.length ? h('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: _minBg('#0f172a'), border: '1px solid #334155', maxHeight: 380, overflowY: 'auto' } },
               s.script.map(function(line, i) {
-                if (line.type === 'pause') return h('div', { key: i, style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', padding: '4px 0' } }, '⏸️  pause ~' + (line.durationSec || '?') + 's');
-                return h('p', { key: i, style: { margin: '6px 0', color: line.type === 'close' ? '#5eead4' : '#cbd5e1', fontSize: 12, lineHeight: 1.65, fontStyle: line.type === 'invitation' ? 'italic' : 'normal' } }, line.text);
+                if (line.type === 'pause') return h('div', { key: i, style: { color: _minFg('#64748b'), fontSize: 11, fontStyle: 'italic', padding: '4px 0' } }, '⏸️  pause ~' + (line.durationSec || '?') + 's');
+                return h('p', { key: i, style: { margin: '6px 0', color: line.type === 'close' ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.65, fontStyle: line.type === 'invitation' ? 'italic' : 'normal' } }, line.text);
               })
             ) : null,
-            isOpen && s.whyItWorks ? h('p', { style: { margin: '10px 0 0', color: '#94a3b8', fontSize: 11, lineHeight: 1.5 } }, h('strong', { style: { color: '#fbbf24' } }, 'Why it works: '), s.whyItWorks) : null
+            isOpen && s.whyItWorks ? h('p', { style: { margin: '10px 0 0', color: _minFg('#94a3b8'), fontSize: 11, lineHeight: 1.5 } }, h('strong', { style: { color: _minFg('#fbbf24') } }, 'Why it works: '), s.whyItWorks) : null
           );
         })
       )
@@ -25320,7 +25426,7 @@ if (activeTab === 'scripts_lib') {
 var mantrasContent = null;
 if (activeTab === 'mantras') {
   if (typeof MANTRAS_PHRASES === 'undefined' || !MANTRAS_PHRASES.length) {
-    mantrasContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Mantras library loading...');
+    mantrasContent = h('div', { style: { padding: 40, textAlign: 'center', color: _minFg('#94a3b8') } }, 'Mantras library loading...');
   } else {
     var mtCategory = d.mtCategory || 'all';
     var mtSearch = (d.mtSearch || '').toLowerCase();
@@ -25335,9 +25441,9 @@ if (activeTab === 'mantras') {
              (m.tradition || '').toLowerCase().indexOf(mtSearch) !== -1;
     });
     mantrasContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Mantras & Focal Phrases: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _minFg('#fbbf24') } }, 'Mantras & Focal Phrases: '),
           MANTRAS_PHRASES.length + ' phrases for silent or spoken practice. From breath-anchoring (Thich Nhat Hanh "Breathing in, I am here") to multi-tradition mantras (Om Mani Padme Hum, Shema, Jesus Prayer). Filter by category or tradition.'
         )
       ),
@@ -25345,34 +25451,34 @@ if (activeTab === 'mantras') {
         mtCats.map(function(c) {
           var sel = mtCategory === c;
           return h('button', { key: c, onClick: function() { upd({ mtCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#a78bfa' : '#475569'), background: sel ? '#1e1b4b' : '#1e293b', color: sel ? '#c4b5fd' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#a78bfa') : _minFg('#475569')), background: sel ? '#1e1b4b' : _minBg('#1e293b'), color: sel ? '#c4b5fd' : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
       ),
       h('input', { type: 'search', placeholder: '🔎 Search...', value: d.mtSearch || '',
         onChange: function(e) { upd({ mtSearch: e.target.value }); },
-        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, marginBottom: 14 }
+        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
-      h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } }, filtered.length + ' phrases match'),
+      h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginBottom: 8 } }, filtered.length + ' phrases match'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 8 } },
         filtered.slice(0, 80).map(function(m) {
           var isOpen = mtOpen === m.id;
-          return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' },
+          return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
             onClick: function() { upd({ mtOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
           },
-            h('p', { style: { margin: 0, color: '#fde68a', fontSize: 14, fontWeight: 600, fontStyle: 'italic', lineHeight: 1.5 } }, '"' + m.phrase + '"'),
-            m.pronunciation ? h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, '[' + m.pronunciation + ']') : null,
-            h('div', { style: { color: '#a78bfa', fontSize: 10, marginTop: 4 } }, (m.tradition || 'Universal') + (m.category ? ' · ' + m.category : '')),
+            h('p', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 14, fontWeight: 600, fontStyle: 'italic', lineHeight: 1.5 } }, '"' + m.phrase + '"'),
+            m.pronunciation ? h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, '[' + m.pronunciation + ']') : null,
+            h('div', { style: { color: _minFg('#a78bfa'), fontSize: 10, marginTop: 4 } }, (m.tradition || 'Universal') + (m.category ? ' · ' + m.category : '')),
             isOpen ? h('div', null,
-              m.literalTranslation ? h('div', { style: { marginTop: 6, color: '#5eead4', fontSize: 11 } }, 'Literally: ' + m.literalTranslation) : null,
-              m.howToUse ? h('p', { style: { margin: '6px 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } }, h('strong', { style: { color: '#fbbf24' } }, 'How: '), m.howToUse) : null,
-              m.whatItDoes ? h('p', { style: { margin: '4px 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } }, h('strong', { style: { color: '#fbbf24' } }, 'What it does: '), m.whatItDoes) : null,
-              m.cautions ? h('p', { style: { margin: '4px 0', color: '#fbbf24', fontSize: 10, lineHeight: 1.5 } }, '⚠️ ' + m.cautions) : null
+              m.literalTranslation ? h('div', { style: { marginTop: 6, color: _minFg('#5eead4'), fontSize: 11 } }, 'Literally: ' + m.literalTranslation) : null,
+              m.howToUse ? h('p', { style: { margin: '6px 0', color: _minFg('#cbd5e1'), fontSize: 11, lineHeight: 1.55 } }, h('strong', { style: { color: _minFg('#fbbf24') } }, 'How: '), m.howToUse) : null,
+              m.whatItDoes ? h('p', { style: { margin: '4px 0', color: _minFg('#cbd5e1'), fontSize: 11, lineHeight: 1.55 } }, h('strong', { style: { color: _minFg('#fbbf24') } }, 'What it does: '), m.whatItDoes) : null,
+              m.cautions ? h('p', { style: { margin: '4px 0', color: _minFg('#fbbf24'), fontSize: 10, lineHeight: 1.5 } }, '⚠️ ' + m.cautions) : null
             ) : null
           );
         })
       ),
-      filtered.length > 80 ? h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, padding: 12 } }, 'Showing first 80 of ' + filtered.length + '. Refine to see more.') : null
+      filtered.length > 80 ? h('div', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 11, padding: 12 } }, 'Showing first 80 of ' + filtered.length + '. Refine to see more.') : null
     );
   }
 }
@@ -25383,7 +25489,7 @@ if (activeTab === 'mantras') {
 var scenariosContent = null;
 if (activeTab === 'living') {
   if (typeof MINDFUL_SCENARIOS === 'undefined' || !MINDFUL_SCENARIOS.length) {
-    scenariosContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Scenarios library loading...');
+    scenariosContent = h('div', { style: { padding: 40, textAlign: 'center', color: _minFg('#94a3b8') } }, 'Scenarios library loading...');
   } else {
     var lvSetting = d.lvSetting || 'all';
     var lvSearch = (d.lvSearch || '').toLowerCase();
@@ -25396,9 +25502,9 @@ if (activeTab === 'living') {
       return (s.scenario || '').toLowerCase().indexOf(lvSearch) !== -1;
     });
     scenariosContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Mindful Living: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _minFg('#fbbf24') } }, 'Mindful Living: '),
           MINDFUL_SCENARIOS.length + ' everyday moments where mindfulness becomes a way of being, not a separate practice. From mindful tooth-brushing to mindful walking-between-classes to mindful goodbye-hugs.'
         )
       ),
@@ -25406,36 +25512,36 @@ if (activeTab === 'living') {
         settings.map(function(s) {
           var sel = lvSetting === s;
           return h('button', { key: s, onClick: function() { upd({ lvSetting: s }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#1e293b', color: sel ? '#5eead4' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, s);
         })
       ),
       h('input', { type: 'search', placeholder: '🔎 Search scenarios...', value: d.lvSearch || '',
         onChange: function(e) { upd({ lvSearch: e.target.value }); },
-        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, marginBottom: 14 }
+        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
         filtered.map(function(s) {
           var isOpen = lvOpen === s.id;
-          return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' },
+          return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
             onClick: function() { upd({ lvOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); }
           },
-            h('h5', { style: { margin: 0, color: '#f1f5f9', fontSize: 14, fontWeight: 700 } }, s.scenario),
-            h('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, (s.setting || '') + ' · ' + (s.durationOptions ? s.durationOptions.join(', ') : '?')),
-            s.trigger ? h('p', { style: { margin: '6px 0 4px', color: '#fde68a', fontSize: 12, fontStyle: 'italic' } }, 'When: ' + s.trigger) : null,
+            h('h5', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, s.scenario),
+            h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, (s.setting || '') + ' · ' + (s.durationOptions ? s.durationOptions.join(', ') : '?')),
+            s.trigger ? h('p', { style: { margin: '6px 0 4px', color: _minFg('#fde68a'), fontSize: 12, fontStyle: 'italic' } }, 'When: ' + s.trigger) : null,
             isOpen ? h('div', null,
-              h('p', { style: { margin: '6px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, (s.practice || {})[band]),
-              s.steps && s.steps.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#0f172a' } },
-                h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Steps'),
-                h('ol', { style: { margin: '0 0 0 18px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+              h('p', { style: { margin: '6px 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, (s.practice || {})[band]),
+              s.steps && s.steps.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: _minBg('#0f172a') } },
+                h('div', { style: { color: _minFg('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Steps'),
+                h('ol', { style: { margin: '0 0 0 18px', color: _minFg('#cbd5e1'), fontSize: 11, lineHeight: 1.55 } },
                   s.steps.map(function(stp, i) { return h('li', { key: i, style: { marginBottom: 2 } }, stp); })
                 )
               ) : null,
-              s.whatToNotice && s.whatToNotice.length ? h('div', { style: { marginTop: 6, color: '#a78bfa', fontSize: 11 } }, 'Notice: ' + s.whatToNotice.join(' · ')) : null,
-              s.whyItHelps ? h('div', { style: { marginTop: 6, padding: '6px 8px', borderRadius: 6, background: '#042f2e', color: '#a7f3d0', fontSize: 11, lineHeight: 1.5 } }, '✨ ' + s.whyItHelps) : null,
+              s.whatToNotice && s.whatToNotice.length ? h('div', { style: { marginTop: 6, color: _minFg('#a78bfa'), fontSize: 11 } }, 'Notice: ' + s.whatToNotice.join(' · ')) : null,
+              s.whyItHelps ? h('div', { style: { marginTop: 6, padding: '6px 8px', borderRadius: 6, background: _minBg('#042f2e'), color: _minFg('#a7f3d0'), fontSize: 11, lineHeight: 1.5 } }, '✨ ' + s.whyItHelps) : null,
               s.obstacles && s.obstacles.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: '#fbbf24', fontSize: 11 } }, 'Common obstacles'),
-                h('ul', { style: { margin: '4px 0 0 18px', color: '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                h('summary', { style: { cursor: 'pointer', color: _minFg('#fbbf24'), fontSize: 11 } }, 'Common obstacles'),
+                h('ul', { style: { margin: '4px 0 0 18px', color: _minFg('#fde68a'), fontSize: 11, lineHeight: 1.5 } },
                   s.obstacles.map(function(o, i) { return h('li', { key: i }, o); })
                 )
               ) : null
@@ -25453,7 +25559,7 @@ if (activeTab === 'living') {
 var researchContent = null;
 if (activeTab === 'research') {
   if (typeof RESEARCH_SUMMARIES === 'undefined' || !RESEARCH_SUMMARIES.length) {
-    researchContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Research library loading...');
+    researchContent = h('div', { style: { padding: 40, textAlign: 'center', color: _minFg('#94a3b8') } }, 'Research library loading...');
   } else {
     var rsField = d.rsField || 'all';
     var rsSearch = (d.rsSearch || '').toLowerCase();
@@ -25466,9 +25572,9 @@ if (activeTab === 'research') {
              (r.primaryAuthor || '').toLowerCase().indexOf(rsSearch) !== -1;
     });
     researchContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Research Library: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _minFg('#fbbf24') } }, 'Research Library: '),
           RESEARCH_SUMMARIES.length + ' studies — what they found, what they didn\'t, and how it applies. Includes the limitations and critiques (Van Dam "Mind the Hype", Britton on adverse effects, mixed MYRIAD trial). Honest science.'
         )
       ),
@@ -25476,30 +25582,30 @@ if (activeTab === 'research') {
         fields.map(function(f) {
           var sel = rsField === f;
           return h('button', { key: f, onClick: function() { upd({ rsField: f }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, f);
         })
       ),
       h('input', { type: 'search', placeholder: '🔎 Search...', value: d.rsSearch || '',
         onChange: function(e) { upd({ rsSearch: e.target.value }); },
-        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, marginBottom: 14 }
+        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 10 } },
         filtered.map(function(r) {
           var isOpen = rsOpen === r.id;
-          return h('div', { key: r.id, style: { padding: 14, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-            h('h4', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700 } }, r.title),
-            h('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, (r.primaryAuthor || '') + (r.studyYear ? ', ' + r.studyYear : '') + ' · ' + r.field),
-            r.thePicture && r.thePicture[band] ? h('p', { style: { margin: '6px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, r.thePicture[band]) : null,
+          return h('div', { key: r.id, style: { padding: 14, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+            h('h4', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, r.title),
+            h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, (r.primaryAuthor || '') + (r.studyYear ? ', ' + r.studyYear : '') + ' · ' + r.field),
+            r.thePicture && r.thePicture[band] ? h('p', { style: { margin: '6px 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, r.thePicture[band]) : null,
             h('button', { onClick: function() { upd({ rsOpen: isOpen ? null : r.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#3b82f6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#3b82f6', color: _minFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Read more'),
             isOpen ? h('div', { style: { marginTop: 10 } },
-              r.whatTheyDid ? h('p', { style: { margin: '4px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, h('strong', { style: { color: '#5eead4' } }, 'What they did: '), r.whatTheyDid) : null,
-              r.whatTheyFound ? h('p', { style: { margin: '4px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, h('strong', { style: { color: '#5eead4' } }, 'What they found: '), r.whatTheyFound) : null,
-              r.whyItMatters ? h('p', { style: { margin: '4px 0', color: '#a7f3d0', fontSize: 12, lineHeight: 1.55, padding: '6px 8px', borderRadius: 6, background: '#042f2e' } }, '✨ ' + r.whyItMatters) : null,
-              r.caveat ? h('p', { style: { margin: '4px 0', color: '#fbbf24', fontSize: 11, lineHeight: 1.55, padding: '6px 8px', borderRadius: 6, background: '#451a03' } }, '⚠️ Caveat: ' + r.caveat) : null,
-              r.practiceTakeaway ? h('p', { style: { margin: '6px 0 0', color: '#fde68a', fontSize: 12, fontWeight: 700 } }, '→ Try: ' + r.practiceTakeaway) : null
+              r.whatTheyDid ? h('p', { style: { margin: '4px 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, h('strong', { style: { color: _minFg('#5eead4') } }, 'What they did: '), r.whatTheyDid) : null,
+              r.whatTheyFound ? h('p', { style: { margin: '4px 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, h('strong', { style: { color: _minFg('#5eead4') } }, 'What they found: '), r.whatTheyFound) : null,
+              r.whyItMatters ? h('p', { style: { margin: '4px 0', color: _minFg('#a7f3d0'), fontSize: 12, lineHeight: 1.55, padding: '6px 8px', borderRadius: 6, background: _minBg('#042f2e') } }, '✨ ' + r.whyItMatters) : null,
+              r.caveat ? h('p', { style: { margin: '4px 0', color: _minFg('#fbbf24'), fontSize: 11, lineHeight: 1.55, padding: '6px 8px', borderRadius: 6, background: _minBg('#451a03') } }, '⚠️ Caveat: ' + r.caveat) : null,
+              r.practiceTakeaway ? h('p', { style: { margin: '6px 0 0', color: _minFg('#fde68a'), fontSize: 12, fontWeight: 700 } }, '→ Try: ' + r.practiceTakeaway) : null
             ) : null
           );
         })
@@ -25514,12 +25620,12 @@ if (activeTab === 'research') {
 var safetyContent = null;
 if (activeTab === 'safety') {
   if (typeof ADVERSE_EXPERIENCES === 'undefined' || !ADVERSE_EXPERIENCES.length) {
-    safetyContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Safety library loading...');
+    safetyContent = h('div', { style: { padding: 40, textAlign: 'center', color: _minFg('#94a3b8') } }, 'Safety library loading...');
   } else {
     var sfOpen = d.sfOpen || null;
     safetyContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#fed7aa', fontSize: 12, lineHeight: 1.5 } },
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#7c2d12'), border: '1px solid #ea580c', marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _minFg('#fed7aa'), fontSize: 12, lineHeight: 1.5 } },
           h('strong', null, 'Important: '),
           'Meditation is not always pleasant. Difficult experiences during practice do NOT mean you\'re doing it wrong. Based on Lindahl et al. 2017 (Varieties of Contemplative Experience), Britton 2019, Treleaven 2018. If something feels off, stop. ',
           h('strong', null, 'Crisis: 988 (call/text) Suicide & Crisis Lifeline · Text HOME to 741741 Crisis Text Line.')
@@ -25528,28 +25634,28 @@ if (activeTab === 'safety') {
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
         ADVERSE_EXPERIENCES.map(function(e) {
           var isOpen = sfOpen === e.id;
-          return h('div', { key: e.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #475569' } },
-            h('h5', { style: { margin: 0, color: '#fde68a', fontSize: 13, fontWeight: 700 } }, e.experience),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, (e.category || '') + (e.prevalence ? ' · ' + e.prevalence : '')),
+          return h('div', { key: e.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #475569' } },
+            h('h5', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 13, fontWeight: 700 } }, e.experience),
+            h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (e.category || '') + (e.prevalence ? ' · ' + e.prevalence : '')),
             h('button', { onClick: function() { upd({ sfOpen: isOpen ? null : e.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#fbbf24', color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#fbbf24', color: _minFg('#0f172a'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Learn'),
             isOpen ? h('div', { style: { marginTop: 10 } },
-              e.description && e.description[band] ? h('p', { style: { margin: '4px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, e.description[band]) : null,
-              e.normalizingMessage ? h('p', { style: { margin: '6px 0', padding: '6px 10px', borderRadius: 6, background: '#042f2e', color: '#5eead4', fontSize: 12, fontStyle: 'italic' } }, e.normalizingMessage) : null,
+              e.description && e.description[band] ? h('p', { style: { margin: '4px 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, e.description[band]) : null,
+              e.normalizingMessage ? h('p', { style: { margin: '6px 0', padding: '6px 10px', borderRadius: 6, background: _minBg('#042f2e'), color: _minFg('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, e.normalizingMessage) : null,
               e.whatToDo && e.whatToDo.length ? h('div', { style: { marginTop: 6 } },
-                h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What to do'),
-                h('ol', { style: { margin: '0 0 0 18px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
+                h('div', { style: { color: _minFg('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What to do'),
+                h('ol', { style: { margin: '0 0 0 18px', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
                   e.whatToDo.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 2 } }, s); })
                 )
               ) : null,
-              e.whatNotToDo && e.whatNotToDo.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#7f1d1d' } },
-                h('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What NOT to do'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#fed7aa', fontSize: 12, lineHeight: 1.55 } },
+              e.whatNotToDo && e.whatNotToDo.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: _minBg('#7f1d1d') } },
+                h('div', { style: { color: _minFg('#fecaca'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'What NOT to do'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _minFg('#fed7aa'), fontSize: 12, lineHeight: 1.55 } },
                   e.whatNotToDo.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ) : null,
-              e.whenToSeekHelp ? h('p', { style: { margin: '6px 0', padding: '6px 10px', borderRadius: 6, background: '#451a03', color: '#fde68a', fontSize: 11, lineHeight: 1.55 } }, '⚠️ ' + e.whenToSeekHelp) : null
+              e.whenToSeekHelp ? h('p', { style: { margin: '6px 0', padding: '6px 10px', borderRadius: 6, background: _minBg('#451a03'), color: _minFg('#fde68a'), fontSize: 11, lineHeight: 1.55 } }, '⚠️ ' + e.whenToSeekHelp) : null
             ) : null
           );
         })
@@ -25569,17 +25675,17 @@ if (activeTab === 'color_breath') {
   var cbPhase = d.cbPhase || 'in';
   var cbCount = d.cbCount || 0;
   var cbInColor = d.cbInColor || '#fbbf24';
-  var cbOutColor = d.cbOutColor || '#06b6d4';
+  var cbOutColor = d.cbOutColor || _minFg('#06b6d4');
   var cbPair = d.cbPair || 'sunrise';
   var PAIRS = [
-    { id: 'sunrise',   name: 'Sunrise',     inC: '#fbbf24', outC: '#06b6d4', meaning: 'Inhale warm golden light. Exhale cool sky blue. Mood: gentle awakening.' },
-    { id: 'forest',    name: 'Forest',      inC: '#22c55e', outC: '#a3e635', meaning: 'Inhale rich green. Exhale lighter leaf-green. Mood: grounded, alive.' },
-    { id: 'ocean',     name: 'Ocean',       inC: '#06b6d4', outC: '#0c4a6e', meaning: 'Inhale teal. Exhale deep navy. Mood: sinking, vast, calm.' },
+    { id: 'sunrise',   name: 'Sunrise',     inC: '#fbbf24', outC: _minFg('#06b6d4'), meaning: 'Inhale warm golden light. Exhale cool sky blue. Mood: gentle awakening.' },
+    { id: 'forest',    name: 'Forest',      inC: _minFg('#22c55e'), outC: '#a3e635', meaning: 'Inhale rich green. Exhale lighter leaf-green. Mood: grounded, alive.' },
+    { id: 'ocean',     name: 'Ocean',       inC: _minFg('#06b6d4'), outC: '#0c4a6e', meaning: 'Inhale teal. Exhale deep navy. Mood: sinking, vast, calm.' },
     { id: 'rose',      name: 'Rose',        inC: '#f472b6', outC: '#fda4af', meaning: 'Inhale warm pink. Exhale soft blush. Mood: tender, loving.' },
     { id: 'moonlight', name: 'Moonlight',   inC: '#e0e7ff', outC: '#1e1b4b', meaning: 'Inhale pale silver. Exhale deep indigo. Mood: night quiet.' },
-    { id: 'fire',      name: 'Fire',        inC: '#ef4444', outC: '#fbbf24', meaning: 'Inhale red. Exhale gold. Mood: energizing (not for anxiety).' },
+    { id: 'fire',      name: 'Fire',        inC: _minFg('#ef4444'), outC: '#fbbf24', meaning: 'Inhale red. Exhale gold. Mood: energizing (not for anxiety).' },
     { id: 'mint',      name: 'Mint',        inC: '#5eead4', outC: '#86efac', meaning: 'Inhale teal. Exhale spring green. Mood: refreshing, clear.' },
-    { id: 'lavender',  name: 'Lavender',    inC: '#c4b5fd', outC: '#a78bfa', meaning: 'Inhale soft lilac. Exhale violet. Mood: dreamy, soothing.' }
+    { id: 'lavender',  name: 'Lavender',    inC: '#c4b5fd', outC: _minFg('#a78bfa'), meaning: 'Inhale soft lilac. Exhale violet. Mood: dreamy, soothing.' }
   ];
   var pair = PAIRS.find(function(p) { return p.id === cbPair; }) || PAIRS[0];
   React.useEffect && React.useEffect(function() {
@@ -25598,9 +25704,9 @@ if (activeTab === 'color_breath') {
   var alpha = Math.min(1, cbCount / 4);
   var displayColor = cbPhase === 'in' ? pair.inC : pair.outC;
   colorBreathContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Color Breathing: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Color Breathing: '),
         'Inhale: imagine the warm color filling your chest. Exhale: imagine the cool color flowing out. Visualization paired with breath engages multiple brain regions for stronger regulation effect.'
       )
     ),
@@ -25608,21 +25714,21 @@ if (activeTab === 'color_breath') {
       PAIRS.map(function(p) {
         var sel = cbPair === p.id;
         return h('button', { key: p.id, onClick: function() { upd({ cbPair: p.id }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' },
+          style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' },
           title: p.meaning
         }, p.name + ' ' + h('span', { style: { background: 'linear-gradient(90deg, ' + p.inC + ', ' + p.outC + ')', display: 'inline-block', width: 30, height: 8, borderRadius: 4, verticalAlign: 'middle', marginLeft: 4 } }));
       })
     ),
     h('div', { style: { minHeight: 320, borderRadius: 12, background: 'radial-gradient(circle at center, ' + displayColor + ' 0%, transparent 70%), #0f172a', transition: 'background 1s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' } },
-      h('div', { style: { fontSize: 56, fontWeight: 800, color: '#fff', textShadow: '0 2px 12px rgba(0,0,0,0.4)' } }, cbPhase === 'in' ? 'Breathe IN' : 'Breathe OUT'),
-      h('div', { style: { color: '#fde68a', fontSize: 14, marginTop: 8 } }, Math.max(0, Math.ceil(4 - cbCount)) + 's')
+      h('div', { style: { fontSize: 56, fontWeight: 800, color: _minFg('#fff'), textShadow: '0 2px 12px rgba(0,0,0,0.4)' } }, cbPhase === 'in' ? 'Breathe IN' : 'Breathe OUT'),
+      h('div', { style: { color: _minFg('#fde68a'), fontSize: 14, marginTop: 8 } }, Math.max(0, Math.ceil(4 - cbCount)) + 's')
     ),
-    h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: '#1e293b' } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55 } }, pair.meaning)
+    h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: _minBg('#1e293b') } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.55 } }, pair.meaning)
     ),
     h('div', { style: { marginTop: 14, textAlign: 'center' } },
       h('button', { onClick: function() { upd({ cbRunning: !cbRunning, cbPhase: 'in', cbCount: 0 }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: cbRunning ? '#ef4444' : '#5eead4', color: cbRunning ? '#fff' : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: cbRunning ? _minFg('#ef4444') : '#5eead4', color: cbRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, cbRunning ? '⏸ Pause' : '▶ Begin')
     )
   );
@@ -25671,9 +25777,9 @@ if (activeTab === 'microbreak') {
     if (soundEnabled) sfxBowl();
   }
   microbreakContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Microbreak Generator: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _minFg('#fbbf24') } }, 'Microbreak Generator: '),
         '24 quick practices (30 sec to 3 min) filtered by your current context. Tap "Give me one" — get a random fit. Small repeated practices build a baseline of presence.'
       )
     ),
@@ -25681,19 +25787,19 @@ if (activeTab === 'microbreak') {
       contexts.map(function(c) {
         var sel = mbContext === c;
         return h('button', { key: c, onClick: function() { upd({ mbContext: c }); if (soundEnabled) sfxClick(); },
-          style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#1e293b', color: sel ? '#5eead4' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+          style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, c);
       })
     ),
-    h('div', { style: { padding: 24, borderRadius: 12, background: '#0f172a', textAlign: 'center', minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+    h('div', { style: { padding: 24, borderRadius: 12, background: _minBg('#0f172a'), textAlign: 'center', minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
       mbCurrent ? h('div', null,
-        h('div', { style: { color: '#fbbf24', fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 } }, mbCurrent.duration + ' · ' + mbCurrent.context),
-        h('p', { style: { margin: '0 auto', maxWidth: 500, color: '#fde68a', fontSize: 18, fontWeight: 600, lineHeight: 1.65 } }, mbCurrent.text)
-      ) : h('p', { style: { margin: '0 auto', color: '#94a3b8', fontSize: 14 } }, 'Tap below to get a microbreak suited to your context.')
+        h('div', { style: { color: _minFg('#fbbf24'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 } }, mbCurrent.duration + ' · ' + mbCurrent.context),
+        h('p', { style: { margin: '0 auto', maxWidth: 500, color: _minFg('#fde68a'), fontSize: 18, fontWeight: 600, lineHeight: 1.65 } }, mbCurrent.text)
+      ) : h('p', { style: { margin: '0 auto', color: _minFg('#94a3b8'), fontSize: 14 } }, 'Tap below to get a microbreak suited to your context.')
     ),
     h('div', { style: { marginTop: 14, textAlign: 'center' } },
       h('button', { onClick: _pickRandom,
-        style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: '#fbbf24', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: _minBg('#fbbf24'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, '✨ Give me a microbreak')
     )
   );
@@ -25706,7 +25812,7 @@ if (activeTab === 'microbreak') {
 var movementsLibContent = null;
 if (activeTab === 'movements_lib') {
   if (typeof EXT_MOVEMENTS === 'undefined' || !EXT_MOVEMENTS.length) {
-    movementsLibContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Movements library loading...');
+    movementsLibContent = h('div', { style: { padding: 40, textAlign: 'center', color: _minFg('#94a3b8') } }, 'Movements library loading...');
   } else {
     var mvCategory = d.mvCategory || 'all';
     var mvOpen = d.mvOpen || null;
@@ -25719,9 +25825,9 @@ if (activeTab === 'movements_lib') {
       return true;
     });
     movementsLibContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Movement Library: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _minFg('#fbbf24') } }, 'Movement Library: '),
           EXT_MOVEMENTS.length + ' mindful movements — standing, seated, kneeling, supine, balance, twist, walking, chair yoga, hand mudras, breath-paired sequences. Filter by category. Check "classroom only" for moves you can do at a desk without drawing attention.'
         )
       ),
@@ -25729,42 +25835,42 @@ if (activeTab === 'movements_lib') {
         cats.map(function(c) {
           var sel = mvCategory === c;
           return h('button', { key: c, onClick: function() { upd({ mvCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
       ),
-      h('label', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14, cursor: 'pointer', color: '#cbd5e1', fontSize: 12 } },
+      h('label', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14, cursor: 'pointer', color: _minFg('#cbd5e1'), fontSize: 12 } },
         h('input', { type: 'checkbox', checked: mvClassroomOnly,
           onChange: function(e) { upd({ mvClassroomOnly: e.target.checked }); }
         }),
         'Classroom-friendly only (no floor work, no big moves)'
       ),
-      h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } }, filtered.length + ' movements match'),
+      h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginBottom: 8 } }, filtered.length + ' movements match'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
         filtered.map(function(m) {
           var isOpen = mvOpen === m.id;
-          return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' },
+          return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
             onClick: function() { upd({ mvOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
               h('span', { style: { fontSize: 18 } }, m.icon || '🧘'),
-              h('h5', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700 } }, m.name),
-              m.sanskritName ? h('span', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } }, '(' + m.sanskritName + ')') : null
+              h('h5', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, m.name),
+              m.sanskritName ? h('span', { style: { color: _minFg('#94a3b8'), fontSize: 10, fontStyle: 'italic' } }, '(' + m.sanskritName + ')') : null
             ),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, (m.category || '') + ' · ' + (m.durationSec || '?') + 's' + (m.classroomFriendly ? ' · 🏫 classroom-friendly' : '')),
+            h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (m.category || '') + ' · ' + (m.durationSec || '?') + 's' + (m.classroomFriendly ? ' · 🏫 classroom-friendly' : '')),
             isOpen ? h('div', { style: { marginTop: 8 } },
-              m.steps && m.steps[band] ? h('ol', { style: { margin: '0 0 0 18px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
+              m.steps && m.steps[band] ? h('ol', { style: { margin: '0 0 0 18px', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
                 m.steps[band].map(function(s, i) { return h('li', { key: i, style: { marginBottom: 2 } }, s); })
               ) : null,
-              m.breathPattern ? h('div', { style: { marginTop: 6, color: '#fde68a', fontSize: 11, fontStyle: 'italic' } }, '🫁 ' + m.breathPattern) : null,
-              m.whatToNotice && m.whatToNotice.length ? h('div', { style: { marginTop: 6, color: '#5eead4', fontSize: 11 } }, 'Notice: ' + m.whatToNotice.join(', ')) : null,
+              m.breathPattern ? h('div', { style: { marginTop: 6, color: _minFg('#fde68a'), fontSize: 11, fontStyle: 'italic' } }, '🫁 ' + m.breathPattern) : null,
+              m.whatToNotice && m.whatToNotice.length ? h('div', { style: { marginTop: 6, color: _minFg('#5eead4'), fontSize: 11 } }, 'Notice: ' + m.whatToNotice.join(', ')) : null,
               m.benefits && m.benefits.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: '#a78bfa', fontSize: 11 } }, 'Benefits'),
-                h('ul', { style: { margin: '4px 0 0 18px', color: '#cbd5e1', fontSize: 11 } },
+                h('summary', { style: { cursor: 'pointer', color: _minFg('#a78bfa'), fontSize: 11 } }, 'Benefits'),
+                h('ul', { style: { margin: '4px 0 0 18px', color: _minFg('#cbd5e1'), fontSize: 11 } },
                   m.benefits.map(function(b, i) { return h('li', { key: i }, b); })
                 )
               ) : null,
-              m.cautions && m.cautions.length ? h('div', { style: { marginTop: 6, color: '#fbbf24', fontSize: 11 } }, '⚠️ ' + m.cautions.join(' · ')) : null
+              m.cautions && m.cautions.length ? h('div', { style: { marginTop: 6, color: _minFg('#fbbf24'), fontSize: 11 } }, '⚠️ ' + m.cautions.join(' · ')) : null
             ) : null
           );
         })
@@ -25779,7 +25885,7 @@ if (activeTab === 'movements_lib') {
 var gratitudeLibContent = null;
 if (activeTab === 'gratitude_lib') {
   if (typeof GRATITUDE_PRACTICES === 'undefined' || !GRATITUDE_PRACTICES.length) {
-    gratitudeLibContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Gratitude library loading...');
+    gratitudeLibContent = h('div', { style: { padding: 40, textAlign: 'center', color: _minFg('#94a3b8') } }, 'Gratitude library loading...');
   } else {
     var grCategory = d.grCategory || 'all';
     var grOpen = d.grOpen || null;
@@ -25790,9 +25896,9 @@ if (activeTab === 'gratitude_lib') {
       return true;
     });
     gratitudeLibContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Gratitude Library: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _minFg('#fbbf24') } }, 'Gratitude Library: '),
           GRATITUDE_PRACTICES.length + ' specific practices — Seligman\'s Three Good Things, Emmons gratitude journal, gratitude letter + visit, Naikan reflection, mental subtraction, awe walks. Real research, real practices. ',
           h('em', null, 'Note: gratitude can co-exist with grief or hardship — never use it to bypass real pain.')
         )
@@ -25801,26 +25907,26 @@ if (activeTab === 'gratitude_lib') {
         cats.map(function(c) {
           var sel = grCategory === c;
           return h('button', { key: c, onClick: function() { upd({ grCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#ec4899' : '#475569'), background: sel ? '#ec489933' : '#1e293b', color: sel ? '#fbcfe8' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#ec4899') : _minFg('#475569')), background: sel ? '#ec489933' : _minBg('#1e293b'), color: sel ? _minFg('#fbcfe8') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
         filtered.map(function(p) {
           var isOpen = grOpen === p.id;
-          return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-            h('h5', { style: { margin: 0, color: '#fbcfe8', fontSize: 13, fontWeight: 700 } }, p.name),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, (p.category || '') + ' · ' + (p.durationMin || '?') + ' min · ' + (p.bestFrequency || '')),
+          return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155' } },
+            h('h5', { style: { margin: 0, color: _minFg('#fbcfe8'), fontSize: 13, fontWeight: 700 } }, p.name),
+            h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (p.category || '') + ' · ' + (p.durationMin || '?') + ' min · ' + (p.bestFrequency || '')),
             h('button', { onClick: function() { upd({ grOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#ec4899', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : _minFg('#ec4899'), color: _minFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Open'),
             isOpen ? h('div', { style: { marginTop: 8 } },
-              p.steps && p.steps.length ? h('ol', { style: { margin: '6px 0 0 18px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
+              p.steps && p.steps.length ? h('ol', { style: { margin: '6px 0 0 18px', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
                 p.steps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 2 } }, s); })
               ) : null,
-              p.whyItWorks ? h('p', { style: { margin: '8px 0', color: '#fde68a', fontSize: 11, fontStyle: 'italic' } }, 'Why: ' + p.whyItWorks) : null,
-              p.example ? h('div', { style: { padding: '6px 8px', borderRadius: 6, background: '#0f172a', color: '#cbd5e1', fontSize: 11, fontStyle: 'italic' } }, '"' + p.example + '"') : null,
-              p.cautions ? h('div', { style: { marginTop: 6, color: '#fbbf24', fontSize: 11 } }, '⚠️ ' + p.cautions) : null
+              p.whyItWorks ? h('p', { style: { margin: '8px 0', color: _minFg('#fde68a'), fontSize: 11, fontStyle: 'italic' } }, 'Why: ' + p.whyItWorks) : null,
+              p.example ? h('div', { style: { padding: '6px 8px', borderRadius: 6, background: _minBg('#0f172a'), color: _minFg('#cbd5e1'), fontSize: 11, fontStyle: 'italic' } }, '"' + p.example + '"') : null,
+              p.cautions ? h('div', { style: { marginTop: 6, color: _minFg('#fbbf24'), fontSize: 11 } }, '⚠️ ' + p.cautions) : null
             ) : null
           );
         })

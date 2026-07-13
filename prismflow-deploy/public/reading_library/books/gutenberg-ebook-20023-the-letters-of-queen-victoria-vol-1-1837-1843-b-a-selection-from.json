@@ -1,0 +1,56 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-20023-the-letters-of-queen-victoria-vol-1-1837-1843-b-a-selection-from",
+  "title": "The letters of Queen Victoria, vol. 1, 1837-1843: A selection from Her Majesty's correspondence between the years 1837 and 1861.",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Europe -- Politics and government -- 1848-1871",
+    "Great Britain -- History -- Victoria, 1837-1901",
+    "Great Britain -- History -- Victoria, 1837-1901 -- Sources",
+    "Great Britain -- Politics and government -- 1837-1901",
+    "Victoria, Queen of Great Britain, 1819-1901 -- Correspondence"
+  ],
+  "authors": [
+    "Victoria, Queen of Great Britain"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/20023"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/20023/pg20023.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The letters of Queen Victoria, vol. 1, 1837-1843: A selection from Her Majesty's correspondence between the years 1837 and 1861.\" by Victoria, Queen of Great Britain. Metadata tags include: Europe -- Politics and government -- 1848-1871; Great Britain -- History -- Victoria, 1837-1901; Great Britain -- History -- Victoria, 1837-1901 -- Sources; Great Britain -- Politics and government -- 1837-1901."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 110
+  }
+}

@@ -110,6 +110,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     if (document.head) document.head.appendChild(st);
   })();
 
+  if (typeof document !== 'undefined' && !document.getElementById('petslab-workspace-css')) {
+    var petsWorkspaceStyle = document.createElement('style');
+    petsWorkspaceStyle.id = 'petslab-workspace-css';
+    petsWorkspaceStyle.textContent = [
+      '.petslab-menu-shell{max-width:1120px!important;margin:0 auto;padding:6px!important;color:#fef3e2;}',
+      '.petslab-menu-shell *{box-sizing:border-box;}',
+      '.petslab-command{padding:18px!important;border:1px solid rgba(245,158,11,.42);border-radius:18px!important;background:radial-gradient(circle at 88% 12%,rgba(245,158,11,.2),transparent 34%),linear-gradient(135deg,rgba(69,26,3,.96),rgba(24,18,16,.98));box-shadow:0 18px 42px rgba(0,0,0,.24);}',
+      '.petslab-command h2{color:#fff;font-size:clamp(20px,3vw,29px)!important;}',
+      '.petslab-command-stats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:7px!important;margin-top:12px;}',
+      '.petslab-command-stat{min-width:0;padding:8px 10px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(24,18,16,.62);}',
+      '.petslab-command-stat-label{display:block;color:#d6b88f;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.petslab-command-stat-value{display:block;margin-top:2px;color:#fff;font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.petslab-start-card{border-radius:14px!important;box-shadow:0 10px 26px rgba(0,0,0,.14);}',
+      '.petslab-featured-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:4px 0 10px;}',
+      '.petslab-featured-heading h3{margin:0;color:#fef3e2;font-size:15px;}',
+      '.petslab-featured-heading p{margin:3px 0 0;color:#e8d5b7;font-size:11px;line-height:1.4;}',
+      '.petslab-featured-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}',
+      '.petslab-tile-wrap{min-width:0;}',
+      '.petslab-menu-tile{width:100%;height:100%;min-height:132px!important;transition:transform .18s,border-color .18s,box-shadow .18s;}',
+      '.petslab-menu-tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.2);}',
+      '.petslab-menu-tile--compact{min-height:104px!important;}',
+      '.petslab-catalog,.petslab-inquiry-disclosure{border:1px solid #5c4536;border-radius:14px;background:#181210;overflow:hidden;}',
+      '.petslab-catalog summary,.petslab-inquiry-disclosure summary{min-height:46px;padding:12px 14px;cursor:pointer;color:#fef3e2;font-size:12px;font-weight:900;}',
+      '.petslab-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:0 12px 12px;}',
+      '.petslab-inquiry-body{padding:0 12px 12px;}',
+      '@media (max-width:920px){.petslab-featured-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.petslab-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:680px){.petslab-command-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.petslab-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:480px){.petslab-menu-shell{padding:0!important;}.petslab-command{padding:13px!important;border-radius:14px!important;}.petslab-featured-grid,.petslab-catalog-grid{grid-template-columns:1fr;}.petslab-menu-tile{min-height:96px!important;}.petslab-featured-heading{align-items:flex-start;}.petslab-inquiry-body [style*="flex:0 0 160px"]{flex:1 1 100%!important;}}',
+      '@media (prefers-reduced-motion:reduce){.petslab-menu-tile{transition:none!important;}.petslab-menu-tile:hover{transform:none;}}',
+      '.theme-contrast .petslab-command,.theme-contrast .petslab-start-card,.theme-contrast .petslab-menu-tile{box-shadow:none;}'
+    ].join('\n');
+    document.head.appendChild(petsWorkspaceStyle);
+  }
+
   var _petsTimer = null;
   function petsAnnounce(text) {
     if (typeof document === 'undefined') return;
@@ -1173,23 +1207,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           s = { header: '🏁 You\'ve gone broad — capstone moves:',
                 body: '📝 the 15-Q quiz, 🎓 Teacher Guide, and the 🧐 Myths page if you haven\'t.' };
         }
-        return h('div', { role: 'region', 'aria-label': 'Recommended path through the lab',
+        return h('div', { className: 'petslab-start-card', role: 'region', 'aria-label': 'Recommended path through the lab',
           style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, s.header),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, s.body));
       }
+      function renderMenuTile(tile, compact) {
+        var visited = !!modulesVisited[tile.id];
+        return h('div', { key: tile.id, role: 'listitem', className: 'petslab-tile-wrap' },
+          h('button', {
+            type: 'button', 'data-pets-focusable': true,
+            className: 'petslab-menu-tile' + (compact ? ' petslab-menu-tile--compact' : ''),
+            'aria-label': tile.label + (visited ? ' (visited)' : ''),
+            onClick: function() { upd('view', tile.id); markVisited(tile.id); petsAnnounce('Opening ' + tile.label); },
+            style: btn({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, padding: 14, background: T.card, cursor: 'pointer', borderColor: visited ? T.accent : T.border })
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
+              h('span', { style: { fontWeight: 700, fontSize: 14, flex: 1 } }, tile.label),
+              visited && h('span', { 'aria-hidden': 'true', style: { color: T.accent, fontSize: 14 } }, '\u2713')
+            ),
+            h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, tile.desc)
+          )
+        );
+      }
+      var featuredIds = ['careSim', 'picker', 'bodyLang', 'training', 'quiz'];
+      var featuredTiles = featuredIds.map(function(id) { return MENU_TILES.filter(function(tile) { return tile.id === id; })[0]; }).filter(Boolean);
+      var catalogTiles = MENU_TILES.filter(function(tile) { return featuredIds.indexOf(tile.id) < 0; });
       var _decoderUnique = Object.keys(decoderMastery || {}).length;
-      return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+      return h('main', { className: 'petslab-menu-shell', 'data-petslab-tool': 'true' },
         decoderCelebOverlay(),
-        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
+        h('header', { className: 'petslab-command', 'data-petslab-mission': 'true', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
           h('h2', { style: { margin: 0, fontSize: 22 } }, '🐾 Science of Pets Lab'),
-          h('div', { style: { display: 'flex', gap: 14, fontSize: 12, color: T.dim, flexWrap: 'wrap' } },
-            h('span', null, 'Modules: ', h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 2))),
-            h('span', { 'aria-label': 'Decoder mastery: ' + _decoderUnique + ' of 27 signals decoded' },
+          h('div', { className: 'petslab-command-stats' },
+            h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Modules explored'), h('strong', { className: 'petslab-command-stat-value' }, visitedCount + ' / ' + (MENU_TILES.length - 2))),
+            h('div', { className: 'petslab-command-stat', 'aria-label': 'Decoder mastery: ' + _decoderUnique + ' of 27 signals decoded' }, h('span', { className: 'petslab-command-stat-label' }, 'Decoder mastery'),
               h('span', { 'aria-hidden': 'true' }, '🏅 '),
-              'Mastery: ',
-              h('strong', { style: { color: _decoderUnique > 0 ? T.accentHi : T.text } }, _decoderUnique + ' / 27')
-            )
+              h('strong', { className: 'petslab-command-stat-value', style: { color: _decoderUnique > 0 ? T.accentHi : T.text } }, _decoderUnique + ' / 27')
+            ),
+            h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Badges'), h('strong', { className: 'petslab-command-stat-value' }, String(Object.keys(badges).length))),
+            h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Recommended next'), h('strong', { className: 'petslab-command-stat-value' }, visitedCount < 5 ? 'Learn essentials' : visitedCount < 12 ? 'Apply the science' : 'Capstone'))
           )
         ),
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
@@ -1197,33 +1254,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('strong', { style: { color: T.text } }, 'BehaviorLab'), ' for operant-conditioning theory and ',
           h('strong', { style: { color: T.text } }, 'EvolutionLab'), ' for natural-selection theory.'),
         startHereCard(),
-        h('div', { role: 'list',
-          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
-          MENU_TILES.map(function(tile) {
-            var visited = !!modulesVisited[tile.id];
-            return h('button', { key: tile.id, role: 'listitem',
-              'data-pets-focusable': true,
-              'aria-label': tile.label + (visited ? ' (visited)' : ''),
-              onClick: function() { upd('view', tile.id); markVisited(tile.id); petsAnnounce('Opening ' + tile.label); },
-              style: btn({
-                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                padding: 14, minHeight: 110, background: T.card, cursor: 'pointer',
-                borderColor: visited ? T.accent : T.border
-              })
-            },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
-                h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
-                h('span', { style: { fontWeight: 700, fontSize: 15, flex: 1 } }, tile.label),
-                visited && h('span', { 'aria-hidden': 'true', style: { color: T.accent, fontSize: 14 } }, '✓')),
-              h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.45 } }, tile.desc));
-          })),
+        h('section', { 'aria-labelledby': 'petslab-featured-heading' },
+          h('div', { className: 'petslab-featured-heading' },
+            h('div', null, h('h3', { id: 'petslab-featured-heading' }, 'Start an investigation'), h('p', null, 'Choose a high-impact activity, then open the full catalog when you are ready.')),
+            h('span', { style: { color: T.accentHi, fontSize: 10, fontWeight: 900 } }, '5 FEATURED')
+          ),
+          h('div', { className: 'petslab-featured-grid', role: 'list' }, featuredTiles.map(function(tile) { return renderMenuTile(tile, false); }))
+        ),
+        h('details', { className: 'petslab-catalog' },
+          h('summary', null, 'Browse all pet-science modules (' + catalogTiles.length + ' more)'),
+          h('div', { className: 'petslab-catalog-grid', role: 'list' }, catalogTiles.map(function(tile) { return renderMenuTile(tile, true); }))
+        ),
         Object.keys(badges).length > 0 && h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
           h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, '🏅 Badges earned'),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
             Object.keys(badges).map(function(bid) {
-              return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: 999, background: T.accent, color: '#1f1612', fontWeight: 700 } }, badges[bid].label || bid);
+              return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: '999rem', background: T.accent, color: '#1f1612', fontWeight: 700 } }, badges[bid].label || bid);
             }))),
         // ═══ CARE TRADEOFF inquiry widget (H7b'') ═══
+        h('details', { className: 'petslab-inquiry-disclosure' },
+          h('summary', null, 'Advanced inquiry: model a care tradeoff'),
+          h('div', { className: 'petslab-inquiry-body' },
         (function() {
           var iq = d.careTradeoff || { food: 50, exercise: 50, social: 50, vet: 50, training: 50, species: 'dog', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
           function setIQ(patch) { upd('careTradeoff', Object.assign({}, iq, patch)); }
@@ -1286,7 +1337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 return h('button', { key: s, onClick: function() { setKey('species', s); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, ({ dog: '🐕', cat: '🐈', rabbit: '🐰', parrot: '🦜', reptile: '🦎' })[s] + ' ' + s);
               })
             ),
-            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sp.label + ' — ' + sm.label),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sp.label + ' — ' + sm.label),
             h('p', { style: { margin: '0 0 10px', fontSize: 10, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' } },
               h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
@@ -1356,7 +1407,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Welfare frameworks: Five Domains (Mellor 2017), Five Freedoms (Brambell 1965).')
           );
-        })(),
+        })()
+          )
+        ),
         footer()
       );
     }
@@ -2620,7 +2673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function radio(name, val, current, label, onChange) {
         var picked = current === val;
         return h('label', { htmlFor: 'pp-' + name + '-' + val,
-          style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: 999,
+          style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: '999rem',
             background: picked ? T.accent : T.cardAlt, color: picked ? '#1f1612' : T.text,
             border: '1px solid ' + (picked ? T.accent : T.border), fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
           h('input', { id: 'pp-' + name + '-' + val, 'data-pets-focusable': true, type: 'radio',
@@ -2631,7 +2684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function checkbox(name, current, label, onChange) {
         return h('label', { htmlFor: 'pp-' + name,
-          style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: 999,
+          style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: '999rem',
             background: current ? T.accent : T.cardAlt, color: current ? '#1f1612' : T.text,
             border: '1px solid ' + (current ? T.accent : T.border), fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
           h('input', { id: 'pp-' + name, 'data-pets-focusable': true, type: 'checkbox',
@@ -3070,7 +3123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function radioCost(val, label) {
         var picked = costSpecies === val;
         return h('label', { htmlFor: 'cs-' + val,
-          style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: 999,
+          style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: '999rem',
             background: picked ? T.accent : T.cardAlt, color: picked ? '#1f1612' : T.text,
             border: '1px solid ' + (picked ? T.accent : T.border), fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
           h('input', { id: 'cs-' + val, 'data-pets-focusable': true, type: 'radio',
@@ -3125,6 +3178,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', null,
               h('div', { style: { fontSize: 11, color: T.dim } }, 'Total time'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.text, fontFamily: 'monospace' } }, Math.round(lifetimeHours).toLocaleString() + ' hr'))),
+          // Lifetime-cost composition — setup vs ongoing vs the emergency reserve people forget.
+          (function() {
+            var setup = p.firstYear, ongoing = p.annual * Math.max(0, costYears - 1), reserve = p.emergencyFund;
+            var total = setup + ongoing + reserve || 1;
+            var segs = [
+              { label: 'First-year setup', v: setup, color: T.warm || '#f59e0b' },
+              { label: 'Ongoing (' + Math.max(0, costYears - 1) + ' yr × $' + p.annual.toLocaleString() + ')', v: ongoing, color: T.accentHi || '#0891b2' },
+              { label: 'Emergency reserve', v: reserve, color: T.danger || '#dc2626' }
+            ];
+            return h('div', { style: { marginTop: 14 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'True total commitment: $' + total.toLocaleString()),
+              h('div', { style: { display: 'flex', height: 18, borderRadius: 5, overflow: 'hidden', border: '1px solid ' + T.border } },
+                segs.map(function(s) { return h('div', { key: s.label, title: s.label + ': $' + s.v.toLocaleString(), style: { width: (s.v / total * 100) + '%', background: s.color } }); })
+              ),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6 } },
+                segs.map(function(s) {
+                  return h('div', { key: s.label, style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: T.muted } },
+                    h('span', { style: { width: 10, height: 10, borderRadius: 2, background: s.color, display: 'inline-block' } }),
+                    h('span', null, s.label + ' — $' + s.v.toLocaleString() + ' (' + Math.round(s.v / total * 100) + '%)'));
+                })
+              ),
+              h('div', { style: { marginTop: 6, fontSize: 11, color: T.muted, fontStyle: 'italic' } }, 'The "lifetime cost" figure above leaves out the emergency reserve — a real cost you should bank before adopting.')
+            );
+          })(),
           h('p', { style: { margin: '12px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } }, p.notes)),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'What\'s NOT in these numbers'),
@@ -3181,7 +3258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     function renderCareers() {
       function tagPill(text) {
         return h('span', { key: text,
-          style: { fontSize: 10, padding: '2px 8px', borderRadius: 999, background: T.bg, color: T.text, border: '1px solid ' + T.border, marginRight: 4, marginBottom: 4, display: 'inline-block' } }, text);
+          style: { fontSize: 10, padding: '2px 8px', borderRadius: '999rem', background: T.bg, color: T.text, border: '1px solid ' + T.border, marginRight: 4, marginBottom: 4, display: 'inline-block' } }, text);
       }
       return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
         backBar('🧰 Career Pathways'),
@@ -3574,7 +3651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           why: '50–80 years. Macaws and large cockatoos genuinely outlive most owners. Estate planning + designated successor caregiver is essential. Most parrot rescues are full because owners died first or could no longer care for them.' },
         { id: 4, species: 'Galápagos tortoise', icon: '🐢', correct: 'b5',
           why: '100+ years. Lonesome George (last Pinta tortoise) lived ~100. Multi-generational commitment — typically passed down or rehomed multiple times. Most US owners cannot legally own one without permits; commonly seen at zoos.' },
-        { id: 5, species: 'Domestic ferret', icon: '🦡', correct: 'b2',
+        { id: 5, species: 'Domestic ferret', icon: '🐾', correct: 'b2',
           why: '6–10 years. Adrenal disease + insulinoma are common late-life problems; budget $300+/year for senior ferret vet bills. Banned in California and Hawaii.' },
         { id: 6, species: 'Average medium-size dog (~50 lb)', icon: '🐕', correct: 'b3',
           why: '10–14 years. Inverse size rule: small dogs (Yorkies, Chihuahuas) live 14–18; large dogs (Mastiffs, Great Danes) often 7–10. Genetics + cancer rates explain most of the gap.' },
@@ -4148,8 +4225,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var welfareVisited = d.welfareVisited || {};
       if (!welfareVisited[welfareSec]) {
         var nv = Object.assign({}, welfareVisited); nv[welfareSec] = true;
-        upd('welfareVisited', nv);
-        if (Object.keys(nv).length >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware');
+        // Deferred out of the render phase — calling upd()/awardBadge() during render risks a
+        // "cannot update while rendering" warning / extra render pass.
+        setTimeout(function() { upd('welfareVisited', nv); if (Object.keys(nv).length >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware'); }, 0);
       }
       var sectionTabs = h('div', { role: 'tablist', 'aria-label': 'Welfare topic',
         style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },

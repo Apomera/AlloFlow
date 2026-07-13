@@ -293,10 +293,12 @@ const pcmToWav = (pcmData, sampleRate = 24000) => {
   return buffer;
 };
 
-const pcmToMp3 = (pcmData, sampleRate = 24000) => {
+// kbps defaults to 128 (full-quality downloads). Karaoke per-sentence storage
+// passes 64 — transparent for 24 kHz mono speech at half the embedded size.
+const pcmToMp3 = (pcmData, sampleRate = 24000, kbps = 128) => {
   if (!window.lamejs) throw new Error("lamejs not loaded");
   const int16Samples = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
-  const mp3Encoder = new window.lamejs.Mp3Encoder(1, sampleRate, 128);
+  const mp3Encoder = new window.lamejs.Mp3Encoder(1, sampleRate, kbps || 128);
   const mp3Data = [];
   const sampleBlockSize = 1152;
   for (let i = 0; i < int16Samples.length; i += sampleBlockSize) {

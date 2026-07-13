@@ -36,9 +36,9 @@ window.StemLab = window.StemLab || {
   // ═══ 🔬 base10 (base10) ═══
   /* base10 tool extracted to standalone file */
   window.StemLab.registerTool('moneyMath', {
-    icon: '🔬',
-    label: 'moneyMath',
-    desc: '',
+    icon: "💰",
+    label: "Money Math",
+    desc: "Financial-literacy manipulatives: count coins and bills, make change, shop, convert currency, plan budgets, and figure tips.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -4696,9 +4696,9 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 coordinate (coordinate) ═══
   window.StemLab.registerTool('coordinate', {
-    icon: '🔬',
-    label: 'coordinate',
-    desc: '',
+    icon: "📈",
+    label: "Coordinate Grid",
+    desc: "Plot points on an interactive coordinate plane, connect them into lines, explore slope, and tackle graphing challenges.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -5359,9 +5359,9 @@ const gridW = 400,
 
   // ═══ 🔬 protractor (protractor) ═══
   window.StemLab.registerTool('protractor', {
-    icon: '🔬',
-    label: 'protractor',
-    desc: '',
+    icon: "📐",
+    label: "Protractor",
+    desc: "Drag a ray to measure angles and classify them as acute, right, obtuse, straight, or reflex on a virtual protractor.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -5875,9 +5875,9 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
   // ═══ 🔬 geometryProver (geometryProver) ═══
   window.StemLab.registerTool('geometryProver', {
-    icon: '🔬',
-    label: 'geometryProver',
-    desc: '',
+    icon: "📐",
+    label: "Geometry Prover",
+    desc: "Construct points and segments to build triangles, parallel lines, and bisectors, measuring angles and proving geometry challenges.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -7481,9 +7481,9 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
   // ═══ 🔬 multtable (multtable) ═══
   window.StemLab.registerTool('multtable', {
-    icon: '🔬',
-    label: 'multtable',
-    desc: '',
+    icon: "✖️",
+    label: "Multiplication Table",
+    desc: "Explore and practice multiplication facts up to 12 with an interactive grid and a timed Speed Run challenge mode.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -7949,9 +7949,9 @@ const maxNum = 12;
 
   // ═══ 🔬 calculus (calculus) ═══
   window.StemLab.registerTool('calculus', {
-    icon: '🔬',
-    label: 'calculus',
-    desc: '',
+    icon: "∫",
+    label: "Calculus Explorer",
+    desc: "Visualize area under a curve with Riemann sums, using left, right, and trapezoid approximations to build intuition for integration.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -8909,9 +8909,9 @@ const d = labToolData.calculus;
   // ═══ 🔬 fractions (fractions) ═══
   /* fractions tool extracted to standalone file */
   window.StemLab.registerTool('unitConvert', {
-    icon: '🔬',
-    label: 'unitConvert',
-    desc: '',
+    icon: "📏",
+    label: "Unit Converter",
+    desc: "Convert values across length, weight, temperature, speed, volume, and time units with side-by-side comparisons.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -9357,9 +9357,9 @@ const d = labToolData.unitConvert;
 
   // ═══ 🔬 probability (probability) ═══
   window.StemLab.registerTool('probability', {
-    icon: '🔬',
-    label: 'probability',
-    desc: '',
+    icon: "🎲",
+    label: "Probability Lab",
+    desc: "Simulate trials of real sports scenarios or custom marble bags and watch experimental results converge on theoretical probability.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {
@@ -10583,9 +10583,9 @@ const d = labToolData.probability;
 
   // ═══ 🔬 logicLab (logicLab) ═══
   window.StemLab.registerTool('logicLab', {
-    icon: '🔬',
-    label: 'logicLab',
-    desc: '',
+    icon: "🧠",
+    label: "Logic Lab",
+    desc: "Build truth tables, construct propositional-logic proofs, and spot logical fallacies through interactive challenges.",
     color: 'slate',
     category: 'math',
     render: function(ctx) {

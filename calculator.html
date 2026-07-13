@@ -6,7 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cost Savings Calculator | AlloFlow</title>
     <meta name="description"
-        content="See how much your school could save by replacing multiple EdTech subscriptions with AlloFlow — the free, open-source AI classroom assistant.">
+        content="Estimate where AlloFlow may reduce overlap with paid EdTech subscriptions using free, open-source classroom software and deployment-dependent AI/runtime options.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://apomera.github.io/AlloFlow/calculator.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AlloFlow">
+    <meta property="og:url" content="https://apomera.github.io/AlloFlow/calculator.html">
+    <meta property="og:title" content="AlloFlow Cost Savings Calculator">
+    <meta property="og:description" content="Estimate how much a school or district could save by comparing paid EdTech subscriptions against overlapping AlloFlow capabilities.">
+    <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/calculator.html">
+    <meta property="twitter:title" content="AlloFlow Cost Savings Calculator">
+    <meta property="twitter:description" content="Compare subscription costs against AlloFlow's free open-source classroom AI platform.">
+    <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
@@ -173,8 +186,8 @@
 
         .product-card {
             background: #fff;
-            border: 2px solid #e2e8f0;
-            border-radius: 20px;
+            border: 1px solid #d7dee8;
+            border-radius: 8px;
             padding: 0;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -183,14 +196,14 @@
         }
 
         .product-card:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            border-color: #aab8c6;
+            box-shadow: 0 8px 26px rgba(15, 23, 42, 0.07);
             transform: translateY(-2px);
         }
 
         .product-card.selected {
-            border-color: var(--indigo);
-            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.15);
+            border-color: var(--teal);
+            box-shadow: 0 8px 26px rgba(15, 118, 110, 0.16);
         }
 
         .product-header {
@@ -413,7 +426,7 @@
         <h1>How Much Could Your<br>School <span
                 style="background:linear-gradient(135deg,#22c55e,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Save</span>?
         </h1>
-        <p>Select the tools your school currently pays for. AlloFlow replaces all of them — for free.</p>
+        <p>Select the tools your school currently pays for. AlloFlow may cover many overlapping classroom use cases with free, open-source software.</p>
     </header>
 
     <!-- Sticky Savings Bar -->
@@ -457,20 +470,21 @@
     <div class="fine-print">
         <strong>Methodology:</strong> Per-student and per-teacher costs are based on publicly available 2026 pricing
         from vendor websites, state procurement documents, and EdTech review sites. District-negotiated rates may vary.
-        AlloFlow is a free, open-source tool (AGPL v3) — the only cost is a Google account for AI access.
+        AlloFlow is free, open-source software (AGPL v3). Cloud AI, API keys, local hardware, and support costs depend on
+        the deployment path a school chooses.
         AlloFlow is not affiliated with any of the products listed above.
     </div>
 
     <!-- CTA Footer -->
     <section class="calc-footer">
-        <h2>Ready to Stop Paying?</h2>
-        <p>AlloFlow gives you all of these capabilities in a single, free, open-source platform — no subscriptions, no
-            student accounts, no PII collected.</p>
+        <h2>Ready to Compare?</h2>
+        <p>AlloFlow brings many overlapping capabilities into one free, open-source platform. Local-first paths do not
+            require student accounts by default, and PII handling should be governed by district configuration.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
             <button onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
                     style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
             <a href="features.html" class="btn-secondary"><i data-lucide="sparkles" style="width:18px;height:18px"></i>
-                See All 280+ Features</a>
+                See All 720+ Features</a>
         </div>
     </section>
 
@@ -520,7 +534,7 @@
                 name: 'Kahoot! Pro (School)',
                 category: 'Interactive Engagement',
                 categoryColor: '#7e22ce',
-                categoryBg: '#faf5ff',
+                categoryBg: '#f0fdfa',
                 perStudent: 0,
                 perTeacher: 300,
                 priceNote: 'per teacher/year ($25/mo billed annually)',

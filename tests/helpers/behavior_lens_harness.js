@@ -173,12 +173,15 @@ export function setupBehaviorLens() {
   return api();
 }
 
-// Translation stub. Returns the explicit fallback if given, otherwise
-// undefined — NOT the key. This matches what the codebase's `t(key) ||
-// 'English'` and `t(key) || []` patterns expect (`|| []` only triggers
-// when the LHS is falsy, so returning the key as a truthy string would
-// poison `t('codenames.adjectives') || []` into a string that can't .map).
-const passthroughT = (key, fallback) => fallback;
+// Translation stub. With no languagePack/UI_STRINGS loaded, the real t()
+// resolves every key to undefined and the codebase's `t(key) || 'English'`
+// and `t(key) || []` patterns supply the value. The real t() signature is
+// t(keyString, params) where the 2nd arg is an OPTIONS object (interpolation
+// vars, { returnObjects: true }, …) — NOT a fallback. So only echo a string
+// 2nd arg (legacy fallback convention); never return an options object, which
+// would poison `t('codenames.adjectives', { returnObjects: true }) || []`
+// (a truthy non-array that can't .map).
+const passthroughT = (key, arg) => (typeof arg === 'string' ? arg : undefined);
 
 /**
  * Default prop set producing a stable, populated Hub render. Matches the prop

@@ -1,3 +1,7 @@
+# Poll resource analysis memo
+
+> **Snapshot note (2026-07-09):** This memo captured the Live Polling / Live Quiz overlap analysis from an earlier code-reading pass. Verify current Live Polling, Live Quiz, Educator Hub, and session-gate behavior before treating the file:line citations or "current implementation" lifecycle below as live.
+
 ## Where polls live now — and whether to build a polls-as-resource library
 
 **TL;DR.** Do not build a polls library. Build a small discoverability + pre-stage compose fix (the `fix-discoverability-only` proposal, with three baked-in safety conditions). Before writing any code, decide one thing: **do you want polling to be its own primitive, or is it a special case of Live Quiz?** The completeness critic surfaced a Live Quiz overlap that none of the three proposals or twelve judge verdicts engaged with, and it is load-bearing for this decision.

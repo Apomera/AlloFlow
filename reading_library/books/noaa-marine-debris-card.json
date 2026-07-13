@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-marine-debris-card",
+  "title": "NOAA Marine Debris",
+  "description": "A NOAA source card about marine debris, pollution, ecosystems, and prevention.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Ocean science",
+    "Pollution",
+    "Marine ecosystems",
+    "Human impacts"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Marine Debris Program",
+    "url": "https://oceanservice.noaa.gov/facts/marinedebris.html"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA Marine Debris resources explain how trash and lost materials enter waterways and oceans, affect wildlife and communities, and can be prevented or removed."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for environmental nonfiction that connects local choices, systems, evidence, and solutions."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 62
+  }
+}

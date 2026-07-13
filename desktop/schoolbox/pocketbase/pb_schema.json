@@ -1,0 +1,70 @@
+[
+  {
+    "name": "sessions",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text", "required": true },
+      { "name": "code", "type": "text", "required": true },
+      { "name": "mode", "type": "text" },
+      { "name": "content", "type": "json" },
+      { "name": "quizState", "type": "json" },
+      { "name": "escapeRoomState", "type": "json" },
+      { "name": "roster", "type": "json" },
+      { "name": "bridgePayload", "type": "json" },
+      { "name": "bridgeChat", "type": "json" },
+      { "name": "metadata", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_sessions_code ON sessions (code)",
+      "CREATE INDEX idx_sessions_app ON sessions (app_id)"
+    ]
+  },
+  {
+    "name": "teacher_history",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text", "required": true },
+      { "name": "user_id", "type": "text", "required": true },
+      { "name": "entries", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX idx_th_user ON teacher_history (app_id, user_id)"
+    ]
+  },
+  {
+    "name": "session_assets",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text", "required": true },
+      { "name": "asset_id", "type": "text", "required": true },
+      { "name": "data", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_sa_app ON session_assets (app_id)"
+    ]
+  },
+  {
+    "name": "student_progress",
+    "type": "base",
+    "schema": [
+      { "name": "session_code", "type": "text", "required": true },
+      { "name": "student_id", "type": "text", "required": true },
+      { "name": "progress_data", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_sp_session ON student_progress (session_code)"
+    ]
+  },
+  {
+    "name": "images",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text" },
+      { "name": "prompt", "type": "text" },
+      { "name": "image_data", "type": "text" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_img_app ON images (app_id)"
+    ]
+  }
+]

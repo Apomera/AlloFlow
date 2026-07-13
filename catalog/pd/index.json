@@ -1,0 +1,52 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_catalog",
+  "generated_at": "2026-06-19T00:00:00.000Z",
+  "entries": [
+    {
+      "slug": "udl-representation-quickstart",
+      "title": "UDL Quick Start: Multiple Means of Representation",
+      "topic": "UDL",
+      "summary": "A ~15-minute primer on the UDL principle of Multiple Means of Representation, with a knowledge check and a classroom-application reflection.",
+      "estMinutes": 15,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/udl-representation-quickstart.json"
+    },
+    {
+      "slug": "retrieval-practice-quickstart",
+      "title": "Retrieval Practice: Quizzing that Builds Memory",
+      "topic": "Learning Science",
+      "summary": "A ~12-minute primer on retrieval practice (the 'testing effect') — why recalling beats re-reading — with a knowledge check and a classroom action plan.",
+      "estMinutes": 12,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/retrieval-practice-quickstart.json"
+    },
+    {
+      "slug": "actionable-feedback-quickstart",
+      "title": "Giving Actionable Feedback to Students",
+      "topic": "Feedback",
+      "summary": "A ~12-minute module on specific, actionable feedback — read the principles, then practice rewriting feedback in a scenario with formative AI coaching.",
+      "estMinutes": 12,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/actionable-feedback-quickstart.json"
+    }
+  ],
+  "paths": [
+    {
+      "slug": "evidence-based-teaching-essentials",
+      "title": "Evidence-Based Teaching Essentials",
+      "summary": "A short curated sequence on practices with strong research support: retrieval practice, actionable feedback, and UDL representation.",
+      "moduleSlugs": [
+        "retrieval-practice-quickstart",
+        "actionable-feedback-quickstart",
+        "udl-representation-quickstart"
+      ]
+    }
+  ]
+}

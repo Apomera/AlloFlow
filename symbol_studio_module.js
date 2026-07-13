@@ -32,6 +32,56 @@
   // breakout but NOT a hostile scheme (javascript:, data:text/html). Permit only http(s),
   // blob:, and data:image/* (legitimate generated/uploaded symbols); blank anything else.
   var safeImgUrl = function (u) { u = String(u == null ? '' : u).trim(); return /^(https?:|blob:|data:image\/)/i.test(u) ? u : ''; };
+
+  // ── Mulberry Symbols (validated AAC set) via the Global Symbols API ──
+  // Symbol Studio's own symbols are AI-generated (see the disclaimer in the
+  // Symbols tab); Mulberry (Open AAC / Global Symbols, CC BY-SA) is a hand-
+  // designed, VALIDATED AAC symbol set — the same open ecosystem as the OBF/
+  // Cboard interop. The Global Symbols API sends CORS `*`, so we search it and
+  // fetch the SVGs directly in the browser (no proxy). Language is ISO 639-3.
+  var MULBERRY_LANG3 = { en: 'eng', es: 'spa', fr: 'fra', de: 'deu', it: 'ita', pt: 'por', nl: 'nld', ar: 'ara', zh: 'zho', hi: 'hin', ru: 'rus', pl: 'pol', uk: 'ukr', ro: 'ron', so: 'som' };
+  var MULBERRY_LANG_NAME = { english: 'eng', spanish: 'spa', french: 'fra', german: 'deu', italian: 'ita', portuguese: 'por', dutch: 'nld', arabic: 'ara', chinese: 'zho', hindi: 'hin' };
+  function mulberryLangCode(lang) {
+    if (!lang) return 'eng';
+    var s = String(lang).toLowerCase().trim();
+    if (MULBERRY_LANG_NAME[s]) return MULBERRY_LANG_NAME[s];
+    if (/^[a-z]{3}$/.test(s)) return s;
+    var two = s.slice(0, 2);
+    return MULBERRY_LANG3[two] || 'eng';
+  }
+  // Search Mulberry by keyword → [{id, label, svgUrl}]. Fallback-safe: [] on any
+  // failure (offline, API change) so the caller degrades to AI generation.
+  function searchMulberrySymbols(query, lang) {
+    var q = String(query == null ? '' : query).trim();
+    if (!q) return Promise.resolve([]);
+    var url = 'https://globalsymbols.com/api/v1/labels/search?query=' + encodeURIComponent(q)
+      + '&symbolset=mulberry&language=' + mulberryLangCode(lang) + '&language_iso_format=639-3&limit=30';
+    return fetch(url).then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+      if (!Array.isArray(rows)) return [];
+      var seen = {};
+      return rows.map(function (row) {
+        var pic = row && row.picto;
+        var img = pic && pic.image_url;
+        if (!img || !/^https:\/\//i.test(img)) return null;
+        if (seen[img]) return null; seen[img] = 1;
+        return { id: (pic && pic.id) || (row && row.id) || img, label: (row && row.text) || q, svgUrl: img };
+      }).filter(Boolean);
+    }).catch(function () { return []; });
+  }
+  // Fetch an SVG (CORS `*`) → data: URI so the board stays portable + offline-
+  // safe and embeds in .obf/.obz exports. Falls back to the URL if fetch fails.
+  function fetchSymbolAsDataUri(url) {
+    if (!/^https:\/\//i.test(String(url || ''))) return Promise.resolve(url);
+    return fetch(url).then(function (r) { return r.ok ? r.blob() : null; }).then(function (blob) {
+      if (!blob || blob.size > 512000) return url; // guard against anything unexpectedly large
+      return new Promise(function (resolve) {
+        var fr = new FileReader();
+        fr.onload = function () { resolve(fr.result || url); };
+        fr.onerror = function () { resolve(url); };
+        fr.readAsDataURL(blob);
+      });
+    }).catch(function () { return url; });
+  }
   // CSV cell: escape quotes AND neutralize spreadsheet formula injection. A field
   // beginning with = + - @ (or tab/CR) becomes a live formula in Excel/Sheets — IEP
   // goal text, notes, and labels are user/AI-authored, so prefix a single quote.
@@ -572,6 +622,48 @@
     var _symCatFilter = useState(''); var symCatFilter = _symCatFilter[0]; var setSymCatFilter = _symCatFilter[1];
     var _symCategory = useState(''); var symCategory = _symCategory[0]; var setSymCategory = _symCategory[1];
     var _symShowFavs = useState(false); var symShowFavs = _symShowFavs[0]; var setSymShowFavs = _symShowFavs[1];
+    // Mulberry validated-symbol picker (Global Symbols API)
+    var _mulOpen = useState(false); var mulberryOpen = _mulOpen[0]; var setMulberryOpen = _mulOpen[1];
+    var _mulQuery = useState(''); var mulberryQuery = _mulQuery[0]; var setMulberryQuery = _mulQuery[1];
+    var _mulResults = useState([]); var mulberryResults = _mulResults[0]; var setMulberryResults = _mulResults[1];
+    var _mulLoading = useState(false); var mulberryLoading = _mulLoading[0]; var setMulberryLoading = _mulLoading[1];
+    var _mulAdding = useState(null); var mulberryAdding = _mulAdding[0]; var setMulberryAdding = _mulAdding[1];
+    var _mulSearched = useState(false); var mulberrySearched = _mulSearched[0]; var setMulberrySearched = _mulSearched[1];
+    var openMulberryPicker = function () {
+      setMulberryQuery(symLabel || '');
+      setMulberryResults([]); setMulberrySearched(false); setMulberryOpen(true);
+    };
+    var runMulberrySearch = function (q) {
+      var query = ((q != null ? q : mulberryQuery) || '').trim();
+      if (!query) return;
+      setMulberryLoading(true); setMulberrySearched(true);
+      searchMulberrySymbols(query, boardLang).then(function (results) {
+        setMulberryResults(results); setMulberryLoading(false);
+      }).catch(function () { setMulberryResults([]); setMulberryLoading(false); });
+    };
+    // Add a picked Mulberry symbol to the gallery — same shape as an AI-generated
+    // entry (so boards/export work identically), tagged source:'mulberry' with
+    // CC BY-SA attribution. The SVG is embedded as a data: URI for portability.
+    var addMulberryToGallery = function (result) {
+      if (!result || mulberryAdding) return;
+      setMulberryAdding(result.id);
+      fetchSymbolAsDataUri(result.svgUrl).then(function (img) {
+        var label = ((mulberryQuery || result.label || '').trim()) || result.label || 'symbol';
+        var entry = {
+          id: uid(), label: label, description: '', image: safeImgUrl(img) || result.svgUrl,
+          style: 'mulberry', category: symCategory || 'other', isFavorite: false, createdAt: Date.now(),
+          source: 'mulberry', validated: true,
+          attribution: { set: 'Mulberry Symbols', license: 'CC BY-SA', via: 'Global Symbols', url: 'https://globalsymbols.com' }
+        };
+        var updated = [entry].concat(gallery);
+        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+        setSelectedId(entry.id); setMulberryAdding(null);
+        addToast && addToast('Added validated symbol "' + label + '" (Mulberry)', 'success');
+      }).catch(function () {
+        setMulberryAdding(null);
+        addToast && addToast('Could not add that symbol — try another.', 'error');
+      });
+    };
 
     // Board Builder state
     var _boardTopic = useState(''); var boardTopic = _boardTopic[0]; var setBoardTopic = _boardTopic[1];
@@ -1826,6 +1918,289 @@
       document.body.removeChild(a); URL.revokeObjectURL(url);
       addToast && addToast('"' + (board.title || 'Board') + '" exported!', 'success');
     }, [addToast]);
+
+    // ── Open Board Format (.obf) export — interop with Cboard & other AAC apps ──
+    // OBF is the open standard (openboardformat.org) that Cboard (UNICEF, GPL-3)
+    // and many AAC apps import. Exporting Symbol Studio boards as .obf lets a
+    // teacher build a personalized board here (real classroom photos, the
+    // student's own vocabulary) and run it as a live speaking board in Cboard.
+    // Single-board .obf; a multi-page board exports its FIRST page (an .obz set
+    // export is a future add). Colors → rgb(); images kept as their data:/URL.
+    var exportBoardOBF = useCallback(function (board) {
+      var _hexToRgb = function (hex) {
+        if (!hex) return null;
+        var h = String(hex).trim().replace(/^#/, '');
+        if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+        if (!/^[0-9a-f]{6}$/i.test(h)) return (/^rgba?\(/i.test(hex) ? hex : null);
+        var n = parseInt(h, 16);
+        return 'rgb(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ')';
+      };
+      var page = (board.pages && board.pages.length) ? board.pages[0] : { title: board.title, words: board.words || [], cols: board.cols || 4 };
+      var cells = (page.words || []).filter(function (w) { return w && (w.label || w.image); });
+      if (!cells.length) { addToast && addToast('This board has no symbols to export yet.', 'info'); return; }
+      var cols = page.cols || board.cols || 4;
+      var rows = Math.max(1, Math.ceil(cells.length / cols));
+      var buttons = [];
+      var images = [];
+      var order = [];
+      var idx = 0;
+      for (var r = 0; r < rows; r++) {
+        var rowArr = [];
+        for (var c = 0; c < cols; c++) {
+          if (idx < cells.length) {
+            var w = cells[idx];
+            var bid = 'btn_' + idx;
+            var label = w.translatedLabel || w.label || '';
+            var btn = {
+              id: bid,
+              label: label,
+              vocalization: w.label || label,
+              border_color: _hexToRgb(CAT_BORDER[w.category]) || 'rgb(229, 231, 235)',
+              background_color: _hexToRgb(CAT_COLORS[w.category]) || 'rgb(249, 250, 251)'
+            };
+            var img = safeImgUrl(w.image);
+            if (img) {
+              var iid = 'img_' + idx;
+              var ctMatch = /^data:([^;,]+)[;,]/.exec(img);
+              var imgObj = { id: iid, width: 300, height: 300, content_type: ctMatch ? ctMatch[1] : 'image/png' };
+              if (/^data:/i.test(img)) imgObj.data = img; else imgObj.url = img;
+              images.push(imgObj);
+              btn.image_id = iid;
+            }
+            buttons.push(btn);
+            rowArr.push(bid);
+            idx++;
+          } else {
+            rowArr.push(null);
+          }
+        }
+        order.push(rowArr);
+      }
+      var obf = {
+        format: 'open-board-0.1',
+        id: 'alloflow_' + Date.now().toString(36),
+        locale: (boardLang || 'en'),
+        name: board.title || 'AlloFlow Board',
+        description_html: 'Created with AlloFlow Symbol Studio.',
+        buttons: buttons,
+        grid: { rows: rows, columns: cols, order: order },
+        images: images,
+        sounds: [],
+        license: { type: 'CC By' }
+      };
+      var json = JSON.stringify(obf, null, 2);
+      var blob = new Blob([json], { type: 'application/obf' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      var safeName = (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = safeName + '.obf';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      var multi = board.pages && board.pages.length > 1;
+      addToast && addToast('Exported "' + (board.title || 'Board') + '" as Open Board Format (.obf)' + (multi ? ' — first page only (use .obz for all pages); import into Cboard or another AAC app.' : ' — import into Cboard or another AAC app.'), 'success');
+    }, [addToast, boardLang]);
+
+    // ── OBF/OBZ helpers: one page → one OBF object (shared by .obz export) ──
+    // Mirrors exportBoardOBF's per-page logic but returns the object instead of
+    // downloading it, so the multi-page .obz export can build one OBF per page.
+    var _hexToRgbShared = function (hex) {
+      if (!hex) return null;
+      var h = String(hex).trim().replace(/^#/, '');
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      if (!/^[0-9a-f]{6}$/i.test(h)) return (/^rgba?\(/i.test(hex) ? hex : null);
+      var n = parseInt(h, 16);
+      return 'rgb(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ')';
+    };
+    var _pageToObf = function (page, board, locale, seq) {
+      var cells = (page.words || []).filter(function (w) { return w && (w.label || w.image); });
+      var cols = page.cols || board.cols || 4;
+      var rows = Math.max(1, Math.ceil((cells.length || 1) / cols));
+      var buttons = [], images = [], order = [], idx = 0;
+      for (var r = 0; r < rows; r++) {
+        var rowArr = [];
+        for (var c = 0; c < cols; c++) {
+          if (idx < cells.length) {
+            var w = cells[idx];
+            var bid = 'btn_' + seq + '_' + idx;
+            var label = w.translatedLabel || w.label || '';
+            var btn = { id: bid, label: label, vocalization: w.label || label,
+              border_color: _hexToRgbShared(CAT_BORDER[w.category]) || 'rgb(229, 231, 235)',
+              background_color: _hexToRgbShared(CAT_COLORS[w.category]) || 'rgb(249, 250, 251)' };
+            var img = safeImgUrl(w.image);
+            if (img) {
+              var iid = 'img_' + seq + '_' + idx;
+              var ctMatch = /^data:([^;,]+)[;,]/.exec(img);
+              var imgObj = { id: iid, width: 300, height: 300, content_type: ctMatch ? ctMatch[1] : 'image/png' };
+              if (/^data:/i.test(img)) imgObj.data = img; else imgObj.url = img;
+              images.push(imgObj); btn.image_id = iid;
+            }
+            buttons.push(btn); rowArr.push(bid); idx++;
+          } else { rowArr.push(null); }
+        }
+        order.push(rowArr);
+      }
+      return { format: 'open-board-0.1', id: 'alloflow_' + seq, locale: (locale || 'en'),
+        name: page.title || board.title || 'AlloFlow Board',
+        description_html: 'Created with AlloFlow Symbol Studio.',
+        buttons: buttons, grid: { rows: rows, columns: cols, order: order },
+        images: images, sounds: [], license: { type: 'CC By' } };
+    };
+
+    var _ensureJSZip = function () {
+      if (window.JSZip) return Promise.resolve(window.JSZip);
+      return new Promise(function (resolve, reject) {
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s.async = true;
+        s.onload = function () { window.JSZip ? resolve(window.JSZip) : reject(new Error('JSZip missing')); };
+        s.onerror = function () { reject(new Error('JSZip load failed')); };
+        document.head.appendChild(s);
+      });
+    };
+
+    // ── .obz export — a multi-page board as an Open Board Format ZIP set ──
+    // .obz is the OBF standard's multi-board package (a zip of .obf files +
+    // a manifest). Single-page boards export fine too; images stay inline as
+    // data URLs (valid OBF), so no per-file image extraction is needed.
+    var exportBoardOBZ = useCallback(function (board) {
+      var pages = (board.pages && board.pages.length) ? board.pages
+        : [{ title: board.title, words: board.words || [], cols: board.cols || 4 }];
+      var hasCells = pages.some(function (p) { return (p.words || []).some(function (w) { return w && (w.label || w.image); }); });
+      if (!hasCells) { addToast && addToast('This board has no symbols to export yet.', 'info'); return; }
+      _ensureJSZip().then(function (JSZip) {
+        var zip = new JSZip();
+        var manifest = { format: 'open-board-0.1', root: 'boards/board_0.obf', paths: { boards: {} } };
+        pages.forEach(function (p, i) {
+          var obf = _pageToObf(p, board, boardLang || 'en', i);
+          var path = 'boards/board_' + i + '.obf';
+          zip.file(path, JSON.stringify(obf, null, 2));
+          manifest.paths.boards[obf.id] = path;
+        });
+        zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+        return zip.generateAsync({ type: 'blob', mimeType: 'application/obz' });
+      }).then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        var safeName = (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        a.download = safeName + '.obz';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        addToast && addToast('Exported "' + (board.title || 'Board') + '" as Open Board Format set (.obz) — ' + pages.length + ' page' + (pages.length === 1 ? '' : 's') + '; import into Cboard or another AAC app.', 'success');
+      }).catch(function () {
+        addToast && addToast('Could not build the .obz file (the zip library did not load). Try the .obf export instead.', 'error');
+      });
+    }, [addToast, boardLang]);
+
+    // ── OBF/OBZ IMPORT (round-trips the export; Cboard authoring → AlloFlow) ──
+    // Maps an Open Board Format button grid back into a native Symbol Studio
+    // board {title, words:[{id,label,description,category,image}], cols}.
+    var _obfToPage = function (obf) {
+      var imagesById = {};
+      (obf.images || []).forEach(function (im) { if (im && im.id) imagesById[im.id] = im.data || im.url || ''; });
+      var buttonsById = {};
+      (obf.buttons || []).forEach(function (b) { if (b && b.id != null) buttonsById[b.id] = b; });
+      var _btnToWord = function (b) {
+        var raw = b.image_id ? (imagesById[b.image_id] || '') : '';
+        return { id: uid(), label: b.label || b.vocalization || '', description: b.label || b.vocalization || '',
+          category: 'other', image: safeImgUrl(raw) };
+      };
+      var words = [];
+      var order = obf.grid && Array.isArray(obf.grid.order) ? obf.grid.order : null;
+      if (order) {
+        order.forEach(function (row) { (row || []).forEach(function (bid) { if (bid != null && buttonsById[bid]) words.push(_btnToWord(buttonsById[bid])); }); });
+      }
+      // Fall back to raw button list if the grid was empty or missing ids.
+      if (!words.length) (obf.buttons || []).forEach(function (b) { words.push(_btnToWord(b)); });
+      var cols = (obf.grid && obf.grid.columns) || 4;
+      return { title: obf.name || 'Imported board', words: words, cols: cols };
+    };
+
+    // Shared save path (extracted from importSingleBoard so OBF/OBZ reuse it).
+    var _ingestImportedBoard = function (board, sourceLabel) {
+      if (!board || !Array.isArray(board.words) || !board.words.length) {
+        addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error');
+        return;
+      }
+      var imported = Object.assign({}, board, { id: uid(), importedAt: Date.now() });
+      setSavedBoards(function (prev) {
+        var updated = [imported].concat(prev);
+        store(scopedKey(STORAGE_BOARDS), updated);
+        return updated;
+      });
+      setShowBoardGallery(true);
+      addToast && addToast((t('toasts.board_imported') || 'Imported board "') + (imported.title || 'Untitled') + '"' + (sourceLabel ? ' (' + sourceLabel + ')' : ''), 'success');
+    };
+
+    var importBoardFile = useCallback(function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!file) return;
+      var name = (file.name || '').toLowerCase();
+      if (/\.obz$/.test(name)) {
+        _ensureJSZip().then(function (JSZip) {
+          return file.arrayBuffer().then(function (buf) { return JSZip.loadAsync(buf); });
+        }).then(function (zip) {
+          var manifestFile = zip.file('manifest.json');
+          var readObf = function (path) {
+            var f = zip.file(path.replace(/^\.\//, '')); if (!f) return Promise.resolve(null);
+            return f.async('string').then(function (s) { try { return JSON.parse(s); } catch (_) { return null; } });
+          };
+          // Resolve image `path` entries (files inside the zip) to data URLs.
+          var resolveImages = function (obf) {
+            var imgs = (obf && obf.images) || [];
+            return Promise.all(imgs.map(function (im) {
+              if (!im || im.data || im.url || !im.path) return Promise.resolve();
+              var f = zip.file(String(im.path).replace(/^\.\//, ''));
+              if (!f) return Promise.resolve();
+              return f.async('base64').then(function (b64) { im.data = 'data:' + (im.content_type || 'image/png') + ';base64,' + b64; });
+            })).then(function () { return obf; });
+          };
+          var order = [];
+          var proceed = manifestFile
+            ? manifestFile.async('string').then(function (s) {
+                var man = {}; try { man = JSON.parse(s); } catch (_) {}
+                var boardsMap = (man.paths && man.paths.boards) || {};
+                var paths = Object.keys(boardsMap).map(function (k) { return boardsMap[k]; });
+                if (man.root && paths.indexOf(man.root) === -1) paths.unshift(man.root);
+                if (man.root) paths.sort(function (a, b) { return (a === man.root) ? -1 : (b === man.root ? 1 : 0); });
+                order = paths;
+              })
+            : Promise.resolve().then(function () {
+                zip.forEach(function (rel) { if (/\.obf$/i.test(rel)) order.push(rel); });
+              });
+          return proceed.then(function () {
+            return Promise.all(order.map(function (p) { return readObf(p).then(function (o) { return o ? resolveImages(o) : null; }); }));
+          });
+        }).then(function (obfs) {
+          var pages = (obfs || []).filter(Boolean).map(_obfToPage).filter(function (pg) { return pg.words.length; });
+          if (!pages.length) { addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error'); return; }
+          var board = pages.length === 1
+            ? { title: pages[0].title, words: pages[0].words, cols: pages[0].cols }
+            : { title: pages[0].title || 'Imported set', words: pages[0].words, cols: pages[0].cols, pages: pages };
+          _ingestImportedBoard(board, 'from .obz');
+        }).catch(function () { addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error'); });
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function (e2) {
+        try {
+          if (/\.obf$/.test(name)) {
+            var obf = JSON.parse(e2.target.result);
+            _ingestImportedBoard(_obfToPage(obf), 'from .obf');
+            return;
+          }
+          var data = JSON.parse(e2.target.result);
+          var board = (data.type === 'alloBoard' && data.board) ? data.board : data;
+          if (!board || !Array.isArray(board.words)) throw new Error('Not a valid board file');
+          _ingestImportedBoard(Object.assign({}, board), null);
+        } catch (err) {
+          addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error');
+        }
+      };
+      reader.readAsText(file);
+    }, [savedBoards, addToast]);
 
     // ── HTML board export (WCAG 2.1 AA accessible) ─────────────────────────
     var exportBoardHTML = useCallback(function (board) {
@@ -4243,8 +4618,8 @@
           ),
           // Clinical note
           e('div', { style: { maxWidth: '420px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px 14px', fontSize: '11px', color: '#1e40af' } },
-            e('strong', null, 'Clinical note: '),
-            'Symbol Search trains receptive auditory-to-visual mapping — the core skill AAC learners need to locate symbols from spoken input. ',
+            e('strong', null, 'Practice note: '),
+            'Symbol Search gives practice with auditory-to-visual matching — a skill that can support locating symbols from spoken input. ',
             'Listen & Build adds sequential symbol construction for multi-word utterances. ',
             'Results feed into Word Garden familiarity tracking and IEP goal recording.'
           )
@@ -4914,7 +5289,7 @@
           filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' } }, gridItems),
           total > 0 && e('div', { style: { display: 'flex', gap: '6px', margin: '8px 0', flexWrap: 'wrap' } },
-            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print clinical report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Clinical Report'),
+            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print practice report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Practice Report'),
             e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': 'Print home note for family', style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'),
             e('button', { onClick: function () { exportGardenCSV(bank, counts, total); }, 'aria-label': 'Export research CSV', style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', false), { fontSize: '11px' }) }, '🔬 Research CSV'))));
     }
@@ -6468,6 +6843,70 @@
     }
 
     // ── Symbol Gallery tab ─────────────────────────────────────────────────
+    // Mulberry validated-symbol picker (modal overlay). Search the Global
+    // Symbols API for the current label, show matching hand-designed SVGs, and
+    // add the chosen one to the gallery. CC BY-SA attribution shown + carried.
+    function renderMulberryPicker() {
+      return e('div', {
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Find a validated Mulberry symbol',
+        onClick: function () { setMulberryOpen(false); },
+        style: { position: 'fixed', inset: 0, zIndex: 2147483000, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }
+      },
+        e('div', {
+          onClick: function (ev) { ev.stopPropagation(); },
+          style: { background: '#fff', borderRadius: '14px', width: 'min(620px, 100%)', maxHeight: '86vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }
+        },
+          // Header
+          e('div', { style: { padding: '14px 16px 8px', display: 'flex', alignItems: 'center', gap: '10px' } },
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontWeight: 800, fontSize: '16px', color: '#0e7490' } }, '🔎 Find a validated symbol'),
+              e('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '2px' } }, 'Mulberry — hand-designed AAC symbols, free to use with credit (CC BY-SA)')
+            ),
+            e('button', { onClick: function () { setMulberryOpen(false); }, 'aria-label': 'Close', style: { border: 'none', background: '#f3f4f6', borderRadius: '8px', width: '30px', height: '30px', cursor: 'pointer', fontSize: '15px', color: '#374151' } }, '✕')
+          ),
+          // Search bar
+          e('div', { style: { padding: '0 16px 10px', display: 'flex', gap: '6px' } },
+            e('input', {
+              type: 'text', value: mulberryQuery, autoFocus: true,
+              onChange: function (ev) { setMulberryQuery(ev.target.value); },
+              onKeyDown: function (ev) { if (ev.key === 'Enter') runMulberrySearch(); },
+              placeholder: 'Search a word, e.g. happy, bathroom, more', 'aria-label': 'Search Mulberry symbols',
+              style: Object.assign({}, S.input, { flex: 1 })
+            }),
+            e('button', { onClick: function () { runMulberrySearch(); }, disabled: !mulberryQuery.trim() || mulberryLoading, 'aria-label': 'Search', style: S.btn('#0e7490', '#fff', !mulberryQuery.trim() || mulberryLoading) }, mulberryLoading ? '…' : 'Search')
+          ),
+          // Results
+          e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 8px', minHeight: '160px' } },
+            mulberryLoading
+              ? e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: '#6b7280' } }, spinner(28))
+              : (mulberryResults.length > 0
+                  ? e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '8px' } },
+                      mulberryResults.map(function (r) {
+                        var adding = mulberryAdding === r.id;
+                        return e('button', {
+                          key: String(r.id), onClick: function () { addMulberryToGallery(r); }, disabled: !!mulberryAdding,
+                          title: 'Add "' + r.label + '"', 'aria-label': 'Add validated symbol ' + r.label,
+                          style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px 6px', border: '1px solid #e5e7eb', borderRadius: '10px', background: adding ? '#ecfeff' : '#fff', cursor: mulberryAdding ? 'default' : 'pointer' }
+                        },
+                          e('img', { src: r.svgUrl, alt: r.label, loading: 'lazy', style: { width: '64px', height: '64px', objectFit: 'contain' } }),
+                          e('span', { style: { fontSize: '10px', color: '#374151', textAlign: 'center', lineHeight: 1.2, maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, r.label),
+                          adding ? e('span', { style: { fontSize: '9px', color: '#0e7490' } }, 'adding…') : null
+                        );
+                      })
+                    )
+                  : (mulberrySearched
+                      ? e('div', { style: { textAlign: 'center', color: '#6b7280', padding: '40px 16px', fontSize: '13px' } }, 'No Mulberry symbols found for that word. Try a simpler or more common word — or generate one with AI.')
+                      : e('div', { style: { textAlign: 'center', color: '#9ca3af', padding: '40px 16px', fontSize: '13px' } }, 'Type a word and press Search to find hand-designed symbols.')))
+          ),
+          // Footer / attribution
+          e('div', { style: { padding: '8px 16px 14px', borderTop: '1px solid #f1f5f9', fontSize: '10px', color: '#9ca3af', lineHeight: 1.4 } },
+            'Symbols: Mulberry Symbols (Open AAC) via Global Symbols, licensed ',
+            e('a', { href: 'https://creativecommons.org/licenses/by-sa/2.0/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#0e7490' } }, 'CC BY-SA'),
+            '. Added symbols carry this credit. Needs an internet connection.'
+          )
+        )
+      );
+    }
     function renderSymbolsTab() {
       var selectedItem = gallery.find(function (i) { return i.id === selectedId; }) || null;
       var filtered = gallery.filter(function (i) {
@@ -6536,6 +6975,10 @@
           e('button', { onClick: symMode === 'single' ? genSingle : genBatch, disabled: isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim()), 'aria-label': isLoading ? 'Generating symbols' : 'Generate symbol' + (symMode === 'batch' ? ' batch' : ''), style: S.btn(PURPLE, '#fff', isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim())) },
             isLoading ? '⏳ Generating...' : '✨ Generate' + (symMode === 'batch' ? ' Batch' : '')
           ),
+          // Validated alternative to AI generation: search the Mulberry set (a
+          // hand-designed, CC BY-SA AAC symbol library) for the current label.
+          e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': 'Find a validated Mulberry symbol', title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: '#0e7490' } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
           gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': 'Clear all symbols from gallery', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
         ),
@@ -6749,8 +7192,8 @@
             e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, 'aria-label': '️ Printu2026', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
           ),
           savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, 'aria-label': 'Toggle saved boards gallery', style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
-          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json file' }, '📥 Import Board'),
-          e('input', { type: 'file', accept: '.json', ref: importBoardRef, style: { display: 'none' }, onChange: importSingleBoard })
+          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file' }, '📥 Import Board'),
+          e('input', { type: 'file', accept: '.json,.obf,.obz', ref: importBoardRef, style: { display: 'none' }, onChange: importBoardFile })
         ),
         // Saved boards panel
         showBoardGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', paddingTop: '6px' } },
@@ -6809,6 +7252,8 @@
                     }, '\u267f Scan'),
                     e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': '⬇️', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', 'aria-label': '🌐', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
+                    b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — single board; import into Cboard or another AAC app', 'aria-label': 'Export as Open Board Format for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
+                    b.pages && b.pages.length > 1 && e('button', { onClick: function () { exportBoardOBZ(b); }, title: 'Export all pages as an Open Board Format set (.obz) — import into Cboard or another AAC app', 'aria-label': 'Export all pages as Open Board Format set for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBZ'),
                     liveSession && liveSession.active && e('button', {
                       title: 'Push board to student screens', 'aria-label': 'Push board to student screens',
                       onClick: function () {
@@ -7236,10 +7681,11 @@
           ),
           e('div', null,
             e('label', { style: S.lbl }, 'Additional context (optional)'),
-            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. Marcus is 7, has autism, loves trains', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) })
+            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. likes trains, gets nervous at drop-off (avoid real names / diagnoses)', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) }),
+            e('p', { style: { fontSize: '10px', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '6px', padding: '4px 8px', margin: '4px 0 0' } }, 'Story and image prompts are sent to a cloud AI (Google Gemini / Imagen). Do not enter real student names, diagnoses, or other identifying details (FERPA).')
           ),
           e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': 'Generate social story', style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
-          e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Uses Carol Gray format — descriptive, perspective, and directive sentences. Illustrations auto-generate for each page.'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.'),
           hasStory && e('div', { style: { borderTop: '1px solid #e5e7eb', paddingTop: '10px' } },
             e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print Story', style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
           )
@@ -7295,8 +7741,8 @@
               e('div', { style: { fontSize: '52px' } }, '📖'),
               e('p', { style: { fontWeight: 600 } }, 'Create an AI-illustrated Social Story'),
               e('div', { style: { maxWidth: '420px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
-                e('p', null, 'Describe a social situation and AlloFlow writes a Carol Gray-format story, then generates a custom illustration for every page.'),
-                e('p', null, 'Add a Student Avatar to make every illustration feature your specific student — no other tool does this.')
+                e('p', null, 'Describe a social situation and AlloFlow drafts a Carol Gray-informed story (review and edit before use), then generates a custom illustration for every page.'),
+                e('p', null, 'Add a Student Avatar to make every illustration feature your specific student.')
               )
             )
       );
@@ -7959,7 +8405,8 @@
             tab === 'search' && renderSearchTab(),
             tab === 'garden' && renderGardenTab()
           )
-        )
+        ),
+        mulberryOpen && renderMulberryPicker()
       )
     );
   });

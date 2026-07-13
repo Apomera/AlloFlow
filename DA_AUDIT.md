@@ -1,5 +1,7 @@
 # Dynamic Assessment Module — Audit
 
+> **Historical architecture snapshot, not current product claims (2026-07-09):** This May 2026 audit records the Dynamic Assessment module state at the time it was reviewed. Keep its issue list as planning context, then verify current module metadata, AI-provider behavior, and privacy wording against the live code before quoting it externally.
+
 **Generated:** 2026-05-19 (Claude Opus 4.7)
 **File:** [dynamic_assessment_module.js](dynamic_assessment_module.js) — 10,400 lines
 **Loaded via:** `window.__alloLazyDynamicAssessment()` from [AlloFlowANTI.txt](AlloFlowANTI.txt#L4054), CDN at `alloflow-cdn.pages.dev/dynamic_assessment_module.js`

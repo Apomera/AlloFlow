@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-microbiology-catalog",
+  "title": "OpenStax Microbiology",
+  "description": "A source card for the OpenStax Microbiology textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Biology",
+    "Microbiology",
+    "Health science",
+    "Textbooks"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/microbiology"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Microbiology introduces microbial cell structure, genetics, metabolism, viruses, immunity, disease, ecology, and laboratory methods."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for older students reading about pathogens, biotechnology, immune systems, ecosystems, and evidence from microscopes and experiments."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters, figures, or ancillary materials."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  }
+}

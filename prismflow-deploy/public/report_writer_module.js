@@ -1186,7 +1186,54 @@ function toMarkdown(result) {
             { name: 'Functional Performance', notes: '', enabled: true },
             { name: 'Summary & Recommendations', notes: '', enabled: true },
         ],
+        'IEP-Ready Packet': [
+            { name: 'Reason for Referral / Eligibility Question', notes: '', enabled: true },
+            { name: 'RTI / CBM Screening & Benchmark Summary', notes: '', enabled: true },
+            { name: 'Progress Monitoring & Goal Progress', notes: '', enabled: true },
+            { name: 'Intervention Summary', notes: '', enabled: true },
+            { name: 'Dynamic Assessment Findings', notes: '', enabled: true },
+            { name: 'Present Levels (AI Narrative)', notes: 'Synthesize the sections above into a present-levels narrative; every claim must trace to a verified fact chunk.', enabled: true },
+            { name: 'Work Samples', notes: 'Clinician to attach or describe representative work samples.', enabled: true },
+            { name: 'Recommendations & Draft Goals', notes: '', enabled: true },
+        ],
     };
+
+    // Inline-SVG progress-monitoring trendline(s) for the IEP packet's print output.
+    // Pure function → HTML string (printReport writes into a new document; inline SVG
+    // survives print/"Save as PDF"). Green points = at/above benchmark, red = below;
+    // dashed blue line = 50th-%ile CBM benchmark. No external chart library.
+    function _rwTrendSvg(series) {
+        if (!Array.isArray(series) || !series.length) return '';
+        const blocks = series.map(s => {
+            const pts = (s.points || []).filter(p => typeof p.value === 'number');
+            if (!pts.length) return '';
+            const W = 380, H = 120, PL = 40, PR = 14, PT = 14, PB = 22;
+            const aim = Array.isArray(s.aimline) ? s.aimline : null;
+            const vals = pts.map(p => p.value);
+            if (typeof s.benchmark === 'number') vals.push(s.benchmark);
+            if (aim) aim.forEach(p => { if (typeof p.value === 'number') vals.push(p.value); });
+            const maxV = Math.max.apply(null, vals) || 1;
+            const minV = Math.min.apply(null, vals.concat([0]));
+            const range = (maxV - minV) || 1;
+            const x = i => PL + (pts.length === 1 ? (W - PL - PR) / 2 : i * (W - PL - PR) / (pts.length - 1));
+            const y = v => H - PB - ((v - minV) / range) * (H - PT - PB);
+            const poly = pts.map((p, i) => x(i).toFixed(1) + ',' + y(p.value).toFixed(1)).join(' ');
+            const circles = pts.map((p, i) => {
+                const above = typeof s.benchmark === 'number' ? p.value >= s.benchmark : true;
+                return `<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="3.5" fill="${above ? '#16a34a' : '#dc2626'}"/>`;
+            }).join('');
+            const bench = typeof s.benchmark === 'number'
+                ? `<line x1="${PL}" y1="${y(s.benchmark).toFixed(1)}" x2="${W - PR}" y2="${y(s.benchmark).toFixed(1)}" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 3"/><text x="${W - PR}" y="${(y(s.benchmark) - 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#2563eb">benchmark ${s.benchmark}</text>`
+                : '';
+            const aimSvg = (aim && aim.length > 1)
+                ? `<polyline points="${aim.map((p, i) => x(i).toFixed(1) + ',' + y(p.value).toFixed(1)).join(' ')}" fill="none" stroke="#d97706" stroke-width="1.5"/><text x="${x(aim.length - 1).toFixed(1)}" y="${(y(aim[aim.length - 1].value) - 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#d97706">aimline</text>`
+                : '';
+            const yAxis = `<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${H - PB}" stroke="#cbd5e1" stroke-width="1"/><text x="${PL - 4}" y="${(y(maxV) + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#64748b">${Math.round(maxV)}</text><text x="${PL - 4}" y="${(y(minV) + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#64748b">${Math.round(minV)}</text>`;
+            return `<div style="margin:8px 0;page-break-inside:avoid"><div style="font-size:11px;font-weight:700;color:#334155;margin-bottom:2px">${s.label}${s.grade != null ? ' — grade ' + s.grade : ''} (${pts.length} point${pts.length === 1 ? '' : 's'})</div><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${s.label} progress trendline versus benchmark${aim ? ' and aimline' : ''}">${yAxis}${bench}${aimSvg}${pts.length > 1 ? `<polyline points="${poly}" fill="none" stroke="#6366f1" stroke-width="2"/>` : ''}${circles}</svg></div>`;
+        }).filter(Boolean);
+        if (!blocks.length) return '';
+        return `<div style="margin-top:10px"><h2>Progress-Monitoring Trendlines</h2><p style="font-size:11px;color:#475569;margin:0 0 4px">Score over time (most recent 12 points). Blue dashed = 50th-percentile CBM benchmark; amber = individualized goal aimline (ORF). Green points = at/above benchmark; red = below.</p>${blocks.join('')}<p style="font-size:9px;color:#94a3b8;margin-top:2px">Screening data — not an eligibility determination.</p></div>`;
+    }
 
     const REFS_STORAGE_KEY = 'allo_rw_refs';
     const STYLE_STORAGE_KEY = 'allo_rw_style';
@@ -1291,6 +1338,10 @@ function toMarkdown(result) {
         // open or just got opened.
         const [daExportPayload, setDaExportPayload] = useState(null);
         const [daIngestDismissed, setDaIngestDismissed] = useState(false);
+        // Assessment Center RTI export (→ IEP-Ready Packet). Mirrors the DA pair.
+        const [rtiExportPayload, setRtiExportPayload] = useState(null);
+        const [rtiIngestDismissed, setRtiIngestDismissed] = useState(false);
+        const [rtiTrendSeries, setRtiTrendSeries] = useState(null); // for the print trendline SVG
         // Phase 3a: Missing state declarations
         const [manualStudentName, setManualStudentName] = useState('');
         const [isDemoLoaded, setIsDemoLoaded] = useState(false);
@@ -1611,6 +1662,24 @@ Return ONLY the adapted text, no commentary.`;
             }
         }, []);
 
+        // ── RTI export detection (Assessment Center → IEP packet; mirrors DA) ──
+        useEffect(() => {
+            const check = () => {
+                if (typeof window !== 'undefined' && window.__alloRTIExport) {
+                    setRtiExportPayload(window.__alloRTIExport);
+                    setRtiIngestDismissed(false);
+                }
+            };
+            check();
+            const handler = () => check();
+            if (typeof window !== 'undefined') {
+                window.addEventListener('alloRTIExportReady', handler);
+                return () => {
+                    try { window.removeEventListener('alloRTIExportReady', handler); } catch (e) { /* ignore */ }
+                };
+            }
+        }, []);
+
         // ── Phase D — Ingest action ──
         // Pulls DA fact chunks into factChunks (auto-verified since they're
         // structured + clinician-controlled), pre-populates the
@@ -1650,6 +1719,50 @@ Return ONLY the adapted text, no commentary.`;
         const dismissDaExport = () => {
             setDaIngestDismissed(true);
             // Don't clear the global — user might want it later
+        };
+
+        // ── RTI ingest → IEP-Ready Packet ──
+        // Unlike DA (whose factChunks are already chunk OBJECTS), the Assessment
+        // Center emits factChunks as plain STRINGS, so map each into the RW chunk
+        // shape. Then switch to the IEP blueprint and pre-draft its data sections
+        // from the deterministic prePopulatedSections map (all editable). Clears the
+        // global afterward so the same payload can't be double-ingested.
+        const ingestRtiExport = () => {
+            if (!rtiExportPayload) return;
+            const incomingChunks = (rtiExportPayload.factChunks || []).map(str => ({
+                id: uid(),
+                type: 'background',
+                source: 'AssessmentCenter (RTI)',
+                field: 'RTI / CBM',
+                value: String(str),
+                verified: true,   // structured screening data — auto-verify
+                immutable: false  // clinician can still edit/reject
+            }));
+            if (rtiExportPayload.caveat) {
+                incomingChunks.push({ id: uid(), type: 'background', source: 'AssessmentCenter (RTI)', field: 'Caveat', value: String(rtiExportPayload.caveat), verified: true, immutable: false });
+            }
+            setFactChunks(prev => [...prev, ...incomingChunks]);
+            setRtiTrendSeries(Array.isArray(rtiExportPayload.trendSeries) ? rtiExportPayload.trendSeries : null);
+            // Switch to the IEP-Ready Packet blueprint (the intent of an RTI hand-off);
+            // reportSections content persists across the swap.
+            const iepTemplate = BLUEPRINT_TEMPLATES['IEP-Ready Packet'];
+            if (iepTemplate) {
+                setReportType('IEP-Ready Packet');
+                setBlueprint(iepTemplate.map(s => ({ ...s, id: uid() })));
+            }
+            const sections = rtiExportPayload.prePopulatedSections || {};
+            setReportSections(prev => {
+                const next = { ...prev };
+                Object.keys(sections).forEach(name => { if (sections[name]) next[name] = sections[name]; });
+                return next;
+            });
+            try { delete window.__alloRTIExport; } catch (e) { window.__alloRTIExport = null; }
+            setRtiExportPayload(null);
+            setRtiIngestDismissed(false);
+            if (addToast) addToast(`✅ Ingested ${incomingChunks.length} RTI fact chunks + ${Object.keys(sections).length} section drafts → IEP-Ready Packet`, 'success');
+        };
+        const dismissRtiExport = () => {
+            setRtiIngestDismissed(true);
         };
 
         // ── Saved Reports helpers ──
@@ -2826,7 +2939,13 @@ Return ONLY valid JSON:
             const w = window.open('', '_blank');
             const draftBanner = `<div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:12px 16px;margin-bottom:20px;text-align:center"><p style="color:#dc2626;font-weight:900;font-size:13px;margin:0 0 4px 0;text-transform:uppercase;letter-spacing:1px">CONFIDENTIAL DRAFT — AI-ASSISTED DOCUMENT</p><p style="color:#991b1b;font-size:10px;margin:0;line-height:1.4">This report was generated with AI assistance and requires review and approval by the licensed school psychologist before use in educational decision-making. All interpretations must be validated against the clinician&rsquo;s independent professional judgment. This document is not a finalized evaluation report until signed by the responsible clinician.</p></div>`;
             const header = `<h1 style="text-align:center;margin-bottom:4px">${reportTitle}</h1><p style="text-align:center;color:#666">Student: ${studentName || '[Student]'} | Age: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'} | Date: ${new Date().toLocaleDateString()}</p><hr>`;
-            const body = Object.entries(reportSections).map(([k, v]) => `<h2>${k}</h2><p>${v.replace(/\[Student\]/g, studentName || '[Student]').replace(/\n/g, '</p><p>')}</p>`).join('');
+            const trendBlock = (rtiTrendSeries && rtiTrendSeries.length) ? _rwTrendSvg(rtiTrendSeries) : '';
+            let trendInjected = false;
+            const body = Object.entries(reportSections).map(([k, v]) => {
+                let sectionHtml = `<h2>${k}</h2><p>${v.replace(/\[Student\]/g, studentName || '[Student]').replace(/\n/g, '</p><p>')}</p>`;
+                if (trendBlock && !trendInjected && (k === 'Progress Monitoring & Goal Progress' || k === 'RTI / CBM Screening & Benchmark Summary')) { sectionHtml += trendBlock; trendInjected = true; }
+                return sectionHtml;
+            }).join('') + ((trendBlock && !trendInjected) ? trendBlock : '');
             const signatureLine = `<div style="margin-top:40px;border-top:2px solid #333;padding-top:12px"><p style="font-size:11px;color:#666;margin-bottom:24px"><strong>Clinician Signature:</strong> _____________________________ &nbsp;&nbsp;&nbsp; <strong>Date:</strong> ______________ &nbsp;&nbsp;&nbsp; <strong>License #:</strong> ______________</p><p style="font-size:9px;color:#999;text-align:center;margin-top:8px">Generated with AlloFlow Report Writer (AI-Assisted Draft) — Requires clinician review, approval, and signature before distribution.</p></div>`;
             const isDemo = reportTitle?.toLowerCase().includes('demo') || studentName?.toLowerCase().includes('demo') || studentName?.toLowerCase().includes('fictional');
             const demoWatermark = isDemo ? `<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-size:120px;color:rgba(220,38,38,0.08);font-weight:900;pointer-events:none;z-index:9999">DEMO</div>` : '';
@@ -2880,6 +2999,38 @@ Return ONLY valid JSON:
                         }, 'Ingest →'),
                         h('button', {
                             onClick: dismissDaExport,
+                            className: 'px-3 py-1 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold transition-colors',
+                            'aria-label': 'Dismiss for now'
+                        }, 'Dismiss')
+                    )
+                )
+            ) : null,
+            // ── RTI / Assessment Center ingest banner (→ IEP-Ready Packet) ──
+            rtiExportPayload && !rtiIngestDismissed ? h('div', {
+                className: 'rounded-2xl p-4 border border-emerald-300 bg-gradient-to-r from-emerald-50 to-teal-50',
+                role: 'region',
+                'aria-label': 'Assessment Center RTI data available'
+            },
+                h('div', { className: 'flex items-start gap-3' },
+                    h('div', { className: 'text-2xl flex-shrink-0' }, '🎯'),
+                    h('div', { className: 'flex-1 min-w-0' },
+                        h('div', { className: 'text-sm font-bold text-emerald-900 mb-1' },
+                            'Assessment Center RTI data ready for an IEP packet'),
+                        h('div', { className: 'text-xs text-emerald-800 leading-relaxed' },
+                            (rtiExportPayload.factChunks ? rtiExportPayload.factChunks.length : 0) + ' fact chunks',
+                            rtiExportPayload.rtiTier ? ' · RTI tier ' + rtiExportPayload.rtiTier.tier : '',
+                            rtiExportPayload.studentNickname ? ' · ' + rtiExportPayload.studentNickname : ''),
+                        h('div', { className: 'text-[11px] text-emerald-700 italic mt-1' },
+                            'Ingest switches this report to the IEP-Ready Packet blueprint and pre-drafts the RTI/CBM, progress-monitoring, intervention, and DA sections (all editable). Screening data — not an eligibility determination.')
+                    ),
+                    h('div', { className: 'flex flex-col gap-2 flex-shrink-0' },
+                        h('button', {
+                            onClick: ingestRtiExport,
+                            className: 'px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors',
+                            'aria-label': 'Ingest RTI data into an IEP packet'
+                        }, 'Ingest →'),
+                        h('button', {
+                            onClick: dismissRtiExport,
                             className: 'px-3 py-1 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold transition-colors',
                             'aria-label': 'Dismiss for now'
                         }, 'Dismiss')
@@ -3733,6 +3884,11 @@ Return ONLY valid JSON:
             // ═══ STEP 10: Export ═══
             currentStep === 10 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📥 Export & Save'),
+                // Progress-monitoring trendline preview (IEP packet) — same SVG the print output embeds.
+                (rtiTrendSeries && rtiTrendSeries.length) ? h('div', { className: 'rounded-lg p-3 border border-emerald-200 bg-emerald-50' },
+                    h('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '📈 Progress-monitoring trendlines (embedded in the printed packet)'),
+                    h('div', { className: 'bg-white rounded overflow-x-auto p-1', dangerouslySetInnerHTML: { __html: _rwTrendSvg(rtiTrendSeries) } })
+                ) : null,
                 // Accuracy summary
                 accuracyResults.length > 0 && h('div', { className: `rounded-lg p-3 border ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}` },
                     h('p', { className: `text-xs font-medium ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'text-red-700' : 'text-green-700'}` },

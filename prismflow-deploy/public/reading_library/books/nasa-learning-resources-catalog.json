@@ -1,0 +1,45 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-learning-resources-catalog",
+  "title": "NASA Learning Resources",
+  "description": "A source card for NASA learning resources in space, Earth science, aeronautics, and engineering.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": ["Space science", "Earth science", "Engineering", "Aeronautics"],
+  "authors": ["NASA"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Learning Resources",
+    "url": "https://www.nasa.gov/learning-resources/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Learning Resources gathers materials for students, educators, colleges, universities, and lifelong learners. It points into space science, Earth science, aeronautics, engineering, missions, multimedia, internships, and STEM activities."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This source works well for older students who are building research questions from real missions and federal science data. Good entry points include climate, Artemis, the solar system, the universe, aircraft, robotics, and careers."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Rights note: NASA says its content is generally not subject to US copyright and may be used for educational or informational purposes. NASA logos, insignia, third-party materials, and identifiable people still need item-level care."
+    }
+  ],
+  "stats": { "pages": 3, "words": 96 }
+}

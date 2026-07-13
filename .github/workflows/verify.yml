@@ -11,6 +11,8 @@ name: verify
 #                    * dead modules: files that don't parse / won't load
 #                      (platetectonics) — check_render_refs parse-gating
 #                    * corrupt lang packs (check_lang_json)
+#                    * Ctrl+K command palette regressing to English-only —
+#                      manifest stale or a pack missing keys (check_cmd_i18n)
 #                    * broken AlloModules registry / view-module props / icons
 #                  Make this a REQUIRED status check in branch protection to
 #                  truly block merges to main.
@@ -36,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       - name: verify:gate (render-refs + lang-json + module contracts)
@@ -54,7 +56,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       # The golden-master harnesses render with REAL React 18 resolved from
@@ -73,11 +75,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       - name: npm run verify (surfaces translation gaps + mirror drift)
         run: npm run verify
+      - name: Translation staleness (reworded English vs existing translations)
+        # Non-blocking visibility: lists packs holding a translation of an English
+        # string that changed since the lang_source_baseline.json snapshot. To make
+        # the signal louder, append `--gate` (still non-blocking here under the job's
+        # continue-on-error). if: always() so it runs even when the verify step above
+        # reports pre-existing debt and exits non-zero.
+        if: always()
+        run: npm run verify:stale
 
   smoke:
     name: Render smoke — deployed demo (non-blocking)
@@ -87,7 +97,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       - name: Install Playwright chromium
@@ -111,7 +121,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       - name: Install Playwright chromium
@@ -132,6 +142,77 @@ jobs:
         run: npx playwright test tests/e2e/typeset_tagged_golden.spec.ts
       - name: Transcript-format golden (audio/video as first-class input)
         run: npx playwright test tests/e2e/transcript_golden.spec.ts
+      # PROMOTED TO BLOCKING 2026-07-10 (ChatGPT-review CI item): the two strongest
+      # whole-pipeline behavioral suites ran only locally. Both are scripted-Gemini
+      # (zero AI network) + the same about:blank/CDN pdf-lib pattern as this job.
+      - name: Fault-injection goldens (scheduled model failures → honest degraded results)
+        run: npx playwright test tests/e2e/remediation_fault_injection_golden.spec.ts
+      - name: Remediation corpus (real bytes end-to-end + tagged structural-invariant sweep)
+        run: npx playwright test tests/e2e/remediation_corpus_golden.spec.ts
+
+  verapdf:
+    name: veraPDF ISO 14289-1 ground-truth gate (independent validator)
+    # WHY THIS EXISTS: the tag-tree job above validates the exported PDFs against AlloFlow's
+    # OWN exported_pdf_validator (a self-check). A reliability reviewer (Garry / Paul at UMaine)
+    # would run the INDEPENDENT, ISO-grade veraPDF CLI instead. This job does exactly that: it
+    # installs real veraPDF, regenerates the source→tagged artifact pairs the tag-tree golden
+    # produces, and runs dev-tools/verapdf_diff.cjs --gate — which FAILS on any ISO 14289-1 rule
+    # that tagging INTRODUCED (the regression class), while excluding the by-design clause-5
+    # declaration withholding. Until now the only veraPDF check auto-SKIPPED when the binary was
+    # absent (i.e. always, in CI) — so CI was effectively self-grading. This makes the
+    # ground-truth gate actually run on every push.
+    #
+    # NON-BLOCKING for its first landings (continue-on-error) because the veraPDF installer
+    # can't be exercised on the dev machine — the install + launcher resolution has to be proven
+    # on a real GitHub runner first. PROMOTE TO BLOCKING by deleting `continue-on-error: true`
+    # once a green run confirms the installer lands the launcher (the job already fails loudly,
+    # not silently, if veraPDF is missing or produces no artifact pairs — so a green run is real).
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - run: npm install --no-audit --no-fund
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      - name: Install veraPDF (official greenfield CLI, headless auto-install)
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/verapdf-installer.zip" https://software.verapdf.org/releases/verapdf-installer.zip
+          unzip -q "$RUNNER_TEMP/verapdf-installer.zip" -d "$RUNNER_TEMP/verapdf-installer"
+          INSTALLER_JAR="$(find "$RUNNER_TEMP/verapdf-installer" -name 'verapdf-izpack-installer-*.jar' | head -1)"
+          test -n "$INSTALLER_JAR" || { echo '::error::veraPDF installer jar not found in download'; exit 1; }
+          sed "s#@@INSTALL_DIR@@#$HOME/verapdf#" dev-tools/verapdf_ci_autoinstall.xml > "$RUNNER_TEMP/verapdf-auto-install.xml"
+          java -jar "$INSTALLER_JAR" "$RUNNER_TEMP/verapdf-auto-install.xml"
+          test -x "$HOME/verapdf/verapdf" || { echo '::error::veraPDF launcher not installed (pack layout changed?)'; ls -la "$HOME/verapdf" 2>/dev/null || true; exit 1; }
+          "$HOME/verapdf/verapdf" --version
+          echo "VERAPDF_PATH=$HOME/verapdf/verapdf" >> "$GITHUB_ENV"
+      - name: Generate source→tagged PDF artifact pairs (tag-tree golden)
+        run: npx playwright test tests/e2e/pdf_tag_tree_golden.spec.ts
+      - name: Assert artifact pairs exist (gate must not be vacuous)
+        run: |
+          set -euo pipefail
+          PAIRS="$(ls tests/e2e/artifacts/*.tagged.pdf 2>/dev/null | wc -l)"
+          echo "tagged artifacts produced: $PAIRS"
+          test "$PAIRS" -gt 0 || { echo '::error::tag-tree golden produced no .tagged.pdf artifacts — the veraPDF gate would be vacuous'; exit 1; }
+      - name: veraPDF gate — tagging must not INTRODUCE an ISO 14289-1 failure
+        run: node dev-tools/verapdf_diff.cjs --gate
+      - name: Upload veraPDF diff record + artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verapdf-diff
+          path: |
+            a11y-audit/verapdf_diff_result.json
+            tests/e2e/artifacts/*.pdf
+          if-no-files-found: ignore
 
   cdn-goldens:
     name: CDN-heavy goldens (non-blocking — network flake tolerated)
@@ -145,7 +226,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       - name: Install Playwright chromium

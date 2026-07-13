@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-common-sense-source-card",
+  "title": "Common Sense",
+  "description": "A Wikisource source card for Common Sense by Thomas Paine.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "American Revolution",
+    "Persuasive writing",
+    "Primary sources",
+    "Political philosophy"
+  ],
+  "authors": [
+    "Thomas Paine"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Common_Sense",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Common_Sense"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Common Sense is a persuasive Revolutionary-era pamphlet that argues for independence and shows how political writing can shape public opinion."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for excerpts on rhetoric, claims, evidence, audience, tone, and comparison with other revolutionary documents."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This older text is public domain, but use the Wikisource page to confirm edition notes and transcription details before mirroring excerpts."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

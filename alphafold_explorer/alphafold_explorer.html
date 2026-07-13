@@ -1,0 +1,3553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow AlphaFold Explorer</title>
+<!--
+  AlloFlow AlphaFold Explorer - companion window.
+
+  Opened by stem_lab/stem_tool_alphafold.js with window.open so it can run as a
+  top-level page even when AlloFlow is embedded in a Canvas/Gemini iframe.
+
+  Scope:
+  - Look up public AlphaFold DB structures by UniProt/accession.
+  - View structures in Mol*.
+  - Import downloaded .cif/.mmcif/.bcif/.pdb files.
+  - Prepare AlphaFold Server JSON or AlphaFold 3 local-code JSON.
+
+  It does NOT automatically submit sequences to AlphaFold Server. The page keeps
+  notes in memory only. AI coaching, when enabled by the opener, receives public
+  structure metadata and student observations, not full sequences.
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.css">
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #172033;
+    --panel2: #202c43;
+    --stage: #05070d;
+    --line: #334155;
+    --line2: #475569;
+    --text: #e5edf7;
+    --muted: #9fb1c7;
+    --soft: #cbd5e1;
+    --teal: #14b8a6;
+    --teal2: #0f766e;
+    --sky: #38bdf8;
+    --amber: #f59e0b;
+    --red: #f87171;
+    --green: #4ade80;
+    --violet: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  header {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    background: #101827;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 220px; }
+  .mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #0f766e;
+    color: white;
+    font-weight: 900;
+    font-size: 18px;
+  }
+  h1 { margin: 0; font-size: 17px; line-height: 1.2; }
+  .subtitle { margin-top: 2px; color: var(--muted); font-size: 12px; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .links a, button.linkbtn {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line2);
+    color: var(--text);
+    background: #111a2c;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .shell {
+    min-height: calc(100vh - 58px);
+    display: grid;
+    grid-template-columns: minmax(330px, 390px) minmax(0, 1fr);
+  }
+  aside {
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    overflow: auto;
+    padding: 12px;
+  }
+  main {
+    min-width: 0;
+    display: grid;
+    grid-template-rows: minmax(360px, 1fr) auto;
+    background: var(--stage);
+  }
+  section {
+    border: 1px solid var(--line);
+    background: rgba(15, 23, 42, 0.58);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  section h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    color: #bdeee7;
+  }
+  .note {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(245, 158, 11, 0.08);
+    color: #fde68a;
+    line-height: 1.45;
+    font-size: 12.5px;
+  }
+  .flowNav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .flowNav button {
+    min-height: 34px;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    background: #111a2c;
+    color: var(--soft);
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .flowNav button[aria-pressed="true"] {
+    color: white;
+    background: var(--teal2);
+    border-color: var(--teal);
+  }
+  .flowHidden { display: none; }
+  .examples { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.example, button.primary, button.secondary {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    background: var(--panel2);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+    text-align: left;
+  }
+  button.example:hover, button.secondary:hover { border-color: var(--sky); }
+  button.primary {
+    background: var(--teal2);
+    border-color: var(--teal);
+    text-align: center;
+    color: white;
+  }
+  button.primary:disabled, button.secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { min-width: 0; }
+  label { display: block; margin: 8px 0 5px; font-size: 12px; color: var(--soft); font-weight: 800; }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    background: #0b1220;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    padding: 9px 10px;
+    outline: none;
+  }
+  select { cursor: pointer; }
+  textarea {
+    min-height: 96px;
+    resize: vertical;
+    line-height: 1.45;
+  }
+  .mini {
+    min-height: 74px;
+  }
+  .field { flex: 1 1 0; }
+  .checkrow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 700;
+  }
+  .checkrow input { margin-top: 2px; }
+  details.advanced {
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px;
+    background: rgba(15, 23, 42, 0.48);
+  }
+  details.advanced summary {
+    cursor: pointer;
+    color: #bdeee7;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  input[type="file"] {
+    width: 100%;
+    color: var(--soft);
+    font-size: 12px;
+  }
+  .help, .status {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .status.ok { color: var(--green); }
+  .status.warn { color: #fcd34d; }
+  .status.err { color: var(--red); }
+  .output {
+    max-height: 150px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px;
+    background: #09111e;
+    color: #dbeafe;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .viewer {
+    position: relative;
+    min-height: 360px;
+    border-bottom: 1px solid var(--line);
+  }
+  #molstar { position: absolute; inset: 0; }
+  .placeholder, .loadmsg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+    background:
+      linear-gradient(90deg, rgba(20, 184, 166, 0.12), transparent 38%),
+      linear-gradient(180deg, rgba(56, 189, 248, 0.10), transparent 45%),
+      #05070d;
+  }
+  .loadmsg { display: none; z-index: 4; }
+  .details {
+    padding: 12px 14px;
+    background: #101827;
+    min-height: 158px;
+    max-height: 38vh;
+    overflow: auto;
+  }
+  .details h2 { margin: 0 0 8px; font-size: 14px; color: var(--text); }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 14px;
+  }
+  .detailActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .detailActions button.secondary {
+    width: auto;
+    min-height: 32px;
+    text-align: center;
+  }
+  .fact { min-width: 0; }
+  .fact b {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    margin-bottom: 2px;
+  }
+  .fact span, .fact a {
+    color: var(--text);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .fact a { color: #7dd3fc; }
+  .coachbox {
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    background: rgba(167, 139, 250, 0.10);
+    border-radius: 8px;
+    padding: 9px;
+    color: #ddd6fe;
+    font-size: 12.5px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .summaryBox {
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    background: rgba(20, 184, 166, 0.09);
+    border-radius: 8px;
+    padding: 9px;
+    color: #ccfbf1;
+    font-size: 12.5px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .glossary {
+    display: grid;
+    gap: 8px;
+  }
+  .glossaryItem {
+    border-left: 3px solid rgba(56, 189, 248, 0.55);
+    padding-left: 9px;
+  }
+  .glossaryItem b {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  .glossaryItem span {
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+  .activityActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .activityActions button.secondary {
+    width: auto;
+    min-height: 32px;
+  }
+  .reviewBox {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .reviewItem {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .reviewItem b {
+    display: block;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .reviewItem.ok {
+    border-color: rgba(74, 222, 128, 0.42);
+    background: rgba(74, 222, 128, 0.08);
+  }
+  .reviewItem.warn {
+    border-color: rgba(251, 191, 36, 0.48);
+    background: rgba(251, 191, 36, 0.09);
+  }
+  .reviewItem.guard {
+    border-color: rgba(248, 113, 113, 0.48);
+    background: rgba(248, 113, 113, 0.09);
+  }
+  .routeSteps {
+    display: grid;
+    gap: 7px;
+    margin-top: 8px;
+  }
+  .routeStep {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .routeStep b {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.18);
+    color: #bae6fd;
+    border: 1px solid rgba(56, 189, 248, 0.32);
+    font-size: 11px;
+  }
+  .readinessBox {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .rubricGrid {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+  }
+  .rubricItem {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .rubricItem.ready {
+    border-color: rgba(74, 222, 128, 0.42);
+    background: rgba(74, 222, 128, 0.08);
+  }
+  .rubricItem.revise {
+    border-color: rgba(251, 191, 36, 0.48);
+    background: rgba(251, 191, 36, 0.09);
+  }
+  .rubricItem.guard {
+    border-color: rgba(248, 113, 113, 0.48);
+    background: rgba(248, 113, 113, 0.09);
+  }
+  .rubricItem b {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .rubricItem em {
+    color: #bae6fd;
+    font-style: normal;
+    white-space: nowrap;
+  }
+  .guideSteps {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .guideStep {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.42);
+  }
+  .guideStep.done {
+    border-color: rgba(74, 222, 128, 0.45);
+    background: rgba(74, 222, 128, 0.08);
+  }
+  .guideDot {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    color: #08111f;
+    background: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .guideStep.done .guideDot { background: var(--green); }
+  .guideStep b {
+    display: block;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .guideStep span {
+    display: block;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(20, 184, 166, 0.14);
+    color: #99f6e4;
+    border: 1px solid rgba(20, 184, 166, 0.34);
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .checklist {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--soft);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .checklist li { margin: 5px 0; }
+  .legendGrid {
+    display: grid;
+    gap: 7px;
+    margin-top: 8px;
+  }
+  .legendItem {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .legendSwatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    margin-top: 1px;
+  }
+  .legendItem b {
+    display: block;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  @media (max-width: 860px) {
+    header { align-items: flex-start; flex-direction: column; }
+    .links { justify-content: flex-start; }
+    .shell { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); max-height: none; }
+    main { min-height: 620px; }
+    .facts { grid-template-columns: 1fr; }
+    .flowNav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="mark" aria-hidden="true">aF</div>
+    <div>
+      <h1>AlphaFold Explorer</h1>
+      <div class="subtitle">Public structure lookup, Mol* viewing, safe complex prep</div>
+    </div>
+  </div>
+  <div class="links">
+    <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="noopener">AlphaFold DB</a>
+    <a href="https://alphafoldserver.com/" target="_blank" rel="noopener">AlphaFold Server</a>
+    <a href="https://molstar.org/" target="_blank" rel="noopener">Mol*</a>
+  </div>
+</header>
+
+<div class="shell">
+  <aside aria-label="AlphaFold Explorer controls">
+    <section class="note" aria-label="Privacy guardrail">
+      Use public, synthetic, or teacher-approved classroom sample sequences only. Do not enter sequences from yourself, classmates, family members, patients, private genetic tests, ancestry services, or medical reports.
+    </section>
+
+    <section aria-labelledby="flowTitle">
+      <h2 id="flowTitle">Workflow view</h2>
+      <div class="flowNav" role="group" aria-label="AlphaFold workflow view">
+        <button type="button" data-flow-mode="all" aria-pressed="true">All</button>
+        <button type="button" data-flow-mode="teach" aria-pressed="false">Teach</button>
+        <button type="button" data-flow-mode="explore" aria-pressed="false">Explore</button>
+        <button type="button" data-flow-mode="submit" aria-pressed="false">Submit</button>
+        <button type="button" data-flow-mode="support" aria-pressed="false">Support</button>
+      </div>
+      <p class="help">Use a focused view when launching in Canvas, or keep All for full planning.</p>
+    </section>
+
+    <section aria-labelledby="tutorialTitle" data-flow="teach explore submit support">
+      <h2 id="tutorialTitle">Start here</h2>
+      <div class="summaryBox">
+        AlphaFold is an AI system that predicts a protein's 3D shape from its amino acid sequence. AlphaFold DB provides public predicted structures; this explorer helps students inspect those predictions, prepare safe classroom inputs, and write cautious claims from evidence.
+      </div>
+      <ul class="checklist">
+        <li>Load a public example or public UniProt/AlphaFold accession.</li>
+        <li>Inspect shape, domains, pockets, surfaces, flexible regions, confidence, and PAE when available.</li>
+        <li>Use "suggests" or "is consistent with" because a prediction is a model, not final proof.</li>
+        <li>Prepare JSON locally only for public, synthetic, or teacher-approved classroom samples.</li>
+      </ul>
+      <div class="activityActions">
+        <button class="secondary" id="copyTutorialBtn" type="button">Copy quick-start</button>
+        <span class="status" id="tutorialStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="presetTitle" data-flow="teach support">
+      <h2 id="presetTitle">Classroom presets</h2>
+      <label for="presetSelect">Preset</label>
+      <select id="presetSelect">
+        <option value="middleModel">Middle school model literacy</option>
+        <option value="highEnzyme">High school enzyme evidence</option>
+        <option value="apValidation">AP validation investigation</option>
+        <option value="textFirst">Text-first accessibility launch</option>
+        <option value="teacherCanvas">Teacher Canvas-ready packet</option>
+      </select>
+      <div id="presetOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="applyPresetBtn" type="button">Apply preset</button>
+        <button class="secondary" id="copyPresetBtn" type="button">Copy preset summary</button>
+        <span class="status" id="presetStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="gradeTutorialTitle" data-flow="teach support">
+      <h2 id="gradeTutorialTitle">Grade-level tutorial</h2>
+      <label for="gradeTutorialSelect">Grade band</label>
+      <select id="gradeTutorialSelect">
+        <option value="elementary">Grades 3-4 model literacy</option>
+        <option value="upper">Grades 5-6 foundations</option>
+        <option value="middle" selected>Grades 7-8 life science</option>
+        <option value="high">High school biology</option>
+        <option value="ap">AP / advanced bioinformatics</option>
+        <option value="teacher">Teacher planning</option>
+      </select>
+      <div id="gradeTutorialOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="applyGradeTutorialBtn" type="button">Apply settings</button>
+        <button class="secondary" id="copyGradeTutorialBtn" type="button">Copy grade tutorial</button>
+        <span class="status" id="gradeTutorialStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="lessonPlanTitle" data-flow="teach submit">
+      <h2 id="lessonPlanTitle">Lesson sequence</h2>
+      <label for="lessonLengthSelect">Class time</label>
+      <select id="lessonLengthSelect">
+        <option value="launch">10-minute launch</option>
+        <option value="guided" selected>25-minute guided activity</option>
+        <option value="investigation">45-minute investigation</option>
+      </select>
+      <div id="lessonPlanOutput" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyLessonPlanBtn" type="button">Copy lesson sequence</button>
+        <button class="secondary" id="copyStudentDirectionsBtn" type="button">Copy student directions</button>
+        <span class="status" id="lessonPlanStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="bioContextTitle" data-flow="teach explore">
+      <h2 id="bioContextTitle">Biology context</h2>
+      <label for="bioContextSelect">Unit or phenomenon</label>
+      <select id="bioContextSelect">
+        <option value="model">Scientific models and uncertainty</option>
+        <option value="homeostasis">Homeostasis and hormones</option>
+        <option value="enzyme">Enzymes and active sites</option>
+        <option value="transport">Membrane transport</option>
+        <option value="cytoskeleton">Cell structure and movement</option>
+        <option value="bioinformatics">Bioinformatics validation</option>
+      </select>
+      <div id="bioContextOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="setBioExampleBtn" type="button">Set suggested accession</button>
+        <button class="secondary" id="copyBioBriefBtn" type="button">Copy investigation brief</button>
+        <span class="status" id="bioContextStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="lmsAssignmentTitle" data-flow="submit teach">
+      <h2 id="lmsAssignmentTitle">Canvas/LMS assignment</h2>
+      <label for="assignmentFormatSelect">Submission format</label>
+      <select id="assignmentFormatSelect">
+        <option value="exit">Exit ticket</option>
+        <option value="lab" selected>Lab note</option>
+        <option value="discussion">Discussion post</option>
+        <option value="project">Mini-investigation</option>
+      </select>
+      <div id="lmsAssignmentOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyLmsAssignmentBtn" type="button">Copy assignment</button>
+        <button class="secondary" id="copyLmsRubricBtn" type="button">Copy rubric</button>
+        <span class="status" id="lmsAssignmentStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="scaffoldTitle" data-flow="support submit">
+      <h2 id="scaffoldTitle">Learner support</h2>
+      <label for="scaffoldSelect">Scaffold level</label>
+      <select id="scaffoldSelect">
+        <option value="guided">Guided scaffold</option>
+        <option value="standard" selected>Standard support</option>
+        <option value="independent">Independent inquiry</option>
+        <option value="extension">Extension challenge</option>
+      </select>
+      <div id="scaffoldOutput" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyScaffoldBtn" type="button">Copy scaffold</button>
+        <span class="status" id="scaffoldStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="studentPacketTitle" data-flow="submit support">
+      <h2 id="studentPacketTitle">Student packet</h2>
+      <div id="studentPacketOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyStudentPacketBtn" type="button">Copy student packet</button>
+        <span class="status" id="studentPacketStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="routeTitle" data-flow="explore teach">
+      <h2 id="routeTitle">Choose your route</h2>
+      <label for="routeSelect">Learning path</label>
+      <select id="routeSelect">
+        <option value="public">Explore a public structure</option>
+        <option value="prepare">Prepare safe classroom input</option>
+        <option value="import">Inspect downloaded result file</option>
+        <option value="text">Text-first accessibility route</option>
+        <option value="teacher">Teacher demo route</option>
+      </select>
+      <div id="routeOutput" class="routeSteps" aria-live="polite"></div>
+      <div class="readinessBox" id="readinessBox">
+        <label class="checkrow" for="readyPredictionInput">
+          <input id="readyPredictionInput" type="checkbox">
+          I know AlphaFold outputs are predictions/models, not final proof.
+        </label>
+        <label class="checkrow" for="readyEvidenceInput">
+          <input id="readyEvidenceInput" type="checkbox">
+          I will use confidence, PAE when available, or another evidence clue before making a claim.
+        </label>
+        <label class="checkrow" for="readyPrivacyInput">
+          <input id="readyPrivacyInput" type="checkbox">
+          I will use public, synthetic, or teacher-approved classroom samples only.
+        </label>
+      </div>
+      <p class="status" id="readinessStatus" role="status"></p>
+    </section>
+
+    <section aria-labelledby="contextTitle" data-flow="support teach">
+      <h2 id="contextTitle">Learning context</h2>
+      <label for="contextSelect">Context lens</label>
+      <select id="contextSelect">
+        <option value="middle">Middle school / plain language</option>
+        <option value="high">High school biology</option>
+        <option value="ap">AP / bioinformatics</option>
+        <option value="ell">ELL / vocabulary support</option>
+        <option value="screen">Screen reader / low vision</option>
+        <option value="teacher">Teacher facilitation</option>
+      </select>
+      <div id="contextOutput" class="summaryBox" aria-live="polite"></div>
+      <div id="activityCard" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyActivityCardBtn" type="button">Copy activity card</button>
+        <span class="status" id="activityStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="examplesTitle" data-flow="explore">
+      <h2 id="examplesTitle">Curated public examples</h2>
+      <div class="examples" id="examples"></div>
+      <p class="help">These examples are public UniProt proteins with AlphaFold DB predictions.</p>
+    </section>
+
+    <section aria-labelledby="lookupTitle" data-flow="explore">
+      <h2 id="lookupTitle">AlphaFold DB lookup</h2>
+      <label for="accessionInput">UniProt or AlphaFold accession</label>
+      <div class="row">
+        <input id="accessionInput" type="text" autocomplete="off" placeholder="Example: P01308">
+        <button class="primary" id="lookupBtn" type="button">Load</button>
+      </div>
+      <p class="help">Accepts UniProt IDs such as P01308 or AlphaFold IDs such as AF-P01308-F1.</p>
+      <p class="status" id="lookupStatus" role="status"></p>
+    </section>
+
+    <section aria-labelledby="importTitle" data-flow="explore">
+      <h2 id="importTitle">Import result file</h2>
+      <input id="fileInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent">
+      <p class="help">Open a downloaded AlphaFold/PDB structure file locally. Files stay in this browser window.</p>
+      <p class="status" id="fileStatus" role="status"></p>
+    </section>
+
+    <section aria-labelledby="sequenceTitle" data-flow="explore">
+      <h2 id="sequenceTitle">Prepare AlphaFold input</h2>
+      <label for="jobNameInput">Job name</label>
+      <input id="jobNameInput" type="text" autocomplete="off" placeholder="Example: class_insulin_model">
+      <label for="formatSelect">JSON format</label>
+      <select id="formatSelect">
+        <option value="server">AlphaFold Server JSON</option>
+        <option value="local">AlphaFold 3 local-code JSON</option>
+      </select>
+      <label for="sequenceInput">Protein sequence or FASTA</label>
+      <textarea id="sequenceInput" spellcheck="false" placeholder="Paste a public or synthetic protein sequence here."></textarea>
+      <div class="row">
+        <div class="field">
+          <label for="proteinCountInput">Protein copies</label>
+          <input id="proteinCountInput" type="number" min="1" max="12" step="1" value="1">
+        </div>
+        <div class="field">
+          <label for="seedInput">Local-code seed</label>
+          <input id="seedInput" type="number" min="1" step="1" value="1">
+        </div>
+      </div>
+      <details class="advanced">
+        <summary>Optional complex components</summary>
+        <label for="dnaInput">DNA single strand</label>
+        <textarea id="dnaInput" class="mini" spellcheck="false" placeholder="Optional public/synthetic DNA strand."></textarea>
+        <label class="checkrow" for="dnaRevCompInput">
+          <input id="dnaRevCompInput" type="checkbox">
+          Add reverse-complement strand for double-stranded DNA
+        </label>
+        <label for="rnaInput">RNA single strand</label>
+        <textarea id="rnaInput" class="mini" spellcheck="false" placeholder="Optional public/synthetic RNA strand."></textarea>
+        <div class="row">
+          <div class="field">
+            <label for="ligandSelect">Allowed ligand</label>
+            <select id="ligandSelect">
+              <option value="">None</option>
+              <option value="CCD_ATP">ATP</option>
+              <option value="CCD_ADP">ADP</option>
+              <option value="CCD_AMP">AMP</option>
+              <option value="CCD_GTP">GTP</option>
+              <option value="CCD_GDP">GDP</option>
+              <option value="CCD_HEM">Heme</option>
+              <option value="CCD_FAD">FAD</option>
+              <option value="CCD_NAD">NAD</option>
+              <option value="CCD_CIT">Citrate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ligandCountInput">Ligand copies</label>
+            <input id="ligandCountInput" type="number" min="1" max="12" step="1" value="1">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="ionSelect">Allowed ion</label>
+            <select id="ionSelect">
+              <option value="">None</option>
+              <option value="MG">Magnesium</option>
+              <option value="ZN">Zinc</option>
+              <option value="CA">Calcium</option>
+              <option value="NA">Sodium</option>
+              <option value="K">Potassium</option>
+              <option value="CL">Chloride</option>
+              <option value="FE">Iron</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ionCountInput">Ion copies</label>
+            <input id="ionCountInput" type="number" min="1" max="12" step="1" value="1">
+          </div>
+        </div>
+        <p class="help">Server JSON uses the AlphaFold Server dialect. Local-code JSON uses the open AlphaFold 3 codebase dialect.</p>
+      </details>
+      <p class="status" id="sequenceStatus" role="status">No sequence entered.</p>
+      <label class="checkrow" for="safetyConfirmInput">
+        <input id="safetyConfirmInput" type="checkbox">
+        I confirm these inputs are public, synthetic, or teacher-approved classroom samples, not personal, family, patient, private genetic-test, ancestry, or medical-report data.
+      </label>
+      <div class="row">
+        <button class="primary" id="prepareBtn" type="button">Prepare JSON</button>
+        <button class="secondary" id="serverBtn" type="button">Open Server</button>
+      </div>
+      <p class="help">The JSON is prepared locally. You choose whether to use it in AlphaFold Server or a local AlphaFold 3 run.</p>
+      <div id="jsonOutput" class="output" hidden></div>
+      <div class="row" style="margin-top:8px">
+        <button class="secondary" id="copyJsonBtn" type="button" disabled>Copy JSON</button>
+        <button class="secondary" id="downloadJsonBtn" type="button" disabled>Download</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="evidenceTitle" data-flow="explore support">
+      <h2 id="evidenceTitle">Evidence checklist</h2>
+      <ul class="checklist">
+        <li>Use pLDDT/confidence to separate stronger regions from uncertain loops or tails.</li>
+        <li>Use PAE when available before making claims about domain positions or interfaces.</li>
+        <li>Treat predicted structures as models until supported by experiments or trusted references.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="confidenceTitle" data-flow="explore support submit">
+      <h2 id="confidenceTitle">Confidence and PAE guide</h2>
+      <div id="confidenceGuideOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="legendGrid" id="confidenceLegend" aria-label="AlphaFold confidence legend"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyConfidenceGuideBtn" type="button">Copy confidence guide</button>
+        <span class="status" id="confidenceGuideStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="vocabTitle" data-flow="support explore">
+      <h2 id="vocabTitle">Vocabulary supports</h2>
+      <div class="glossary" id="glossaryList"></div>
+    </section>
+
+    <section aria-labelledby="guideTitle" data-flow="explore support submit">
+      <h2 id="guideTitle">Guided investigation</h2>
+      <div class="guideSteps" id="guideSteps"></div>
+      <div id="guidePrompt" class="coachbox"></div>
+      <label for="claimInput">Cautious claim</label>
+      <textarea id="claimInput" class="mini" placeholder="Example: The model suggests a compact fold with one flexible region."></textarea>
+      <label for="evidenceInput">Structure evidence</label>
+      <textarea id="evidenceInput" class="mini" placeholder="Example: Most of the folded core is high confidence; the tail is lower confidence."></textarea>
+      <label for="cautionInput">Limit or next test</label>
+      <textarea id="cautionInput" class="mini" placeholder="Example: I would compare with an experiment or reference before claiming function."></textarea>
+      <div id="claimReview" class="reviewBox" aria-live="polite"></div>
+      <div id="rubricOutput" class="rubricGrid" aria-live="polite"></div>
+      <div id="misconceptionOutput" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyRubricBtn" type="button">Copy rubric feedback</button>
+        <span class="status" id="rubricStatus" role="status"></span>
+      </div>
+      <div class="row">
+        <button class="primary" id="guideAiBtn" type="button">Ask AI guide</button>
+        <button class="secondary" id="guidePromptBtn" type="button">Next prompt</button>
+        <button class="secondary" id="guideResetBtn" type="button">Reset guide</button>
+      </div>
+      <div id="guideAiOutput" class="coachbox" hidden></div>
+    </section>
+
+    <section aria-labelledby="coachTitle" data-flow="explore support">
+      <h2 id="coachTitle">Inspection coach</h2>
+      <p class="help" id="aiState">Connecting to AlloFlow...</p>
+      <label for="noteInput">What do you notice or wonder?</label>
+      <textarea id="noteInput" placeholder="Example: I notice one region has lower confidence than the rest."></textarea>
+      <button class="primary" id="coachBtn" type="button">Ask for an inspection question</button>
+      <div id="coachOutput" class="coachbox" hidden></div>
+    </section>
+  </aside>
+
+  <main aria-label="AlphaFold structure viewer">
+    <div class="viewer">
+      <div id="molstar"></div>
+      <div class="placeholder" id="placeholder">
+        Load a public AlphaFold DB structure, import a result file, or prepare safe AlphaFold input from the left panel.
+      </div>
+      <div class="loadmsg" id="loadmsg" role="status"></div>
+    </div>
+    <div class="details" aria-live="polite">
+      <h2 id="detailTitle">No structure loaded</h2>
+      <div class="facts" id="facts">
+        <div class="fact"><b>Status</b><span>Choose a public example or enter an accession.</span></div>
+      </div>
+      <div id="accessibleSummary" class="summaryBox" aria-live="polite"></div>
+      <div class="detailActions">
+        <button class="secondary" id="copyCitationBtn" type="button" disabled>Copy citation</button>
+        <button class="secondary" id="copyLabNoteBtn" type="button" disabled>Copy lab note</button>
+        <button class="secondary" id="copyAccessibleSummaryBtn" type="button">Copy accessible summary</button>
+        <span class="status" id="citationStatus" role="status"></span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var API_ROOT = 'https://alphafold.ebi.ac.uk/api/prediction/';
+  var SERVER_URL = 'https://alphafoldserver.com/';
+  var EXAMPLES = [
+    { label: 'Human insulin', accession: 'P01308', hint: 'hormone, 110 aa precursor' },
+    { label: 'Hemoglobin alpha', accession: 'P69905', hint: 'oxygen transport' },
+    { label: 'Human lysozyme', accession: 'P61626', hint: 'enzyme, immune defense' },
+    { label: 'Human ubiquitin', accession: 'P0CG47', hint: 'protein tagging' },
+    { label: 'Aquaporin 1', accession: 'P29972', hint: 'water channel' },
+    { label: 'Actin beta', accession: 'P60709', hint: 'cytoskeleton' }
+  ];
+  var AA = 'ACDEFGHIKLMNPQRSTVWY';
+  var DNA = 'ACGT';
+  var RNA = 'ACGU';
+  var REFLECT_BANK = [
+    'Look for one region that is less certain or more flexible. How might that affect what you should conclude from the model?',
+    'Find one repeated shape, pocket, or surface groove. What job could that shape make possible?',
+    'Compare the compact parts with any loose-looking parts. Which part would you trust most, and why?',
+    'If you changed the viewer style or color scheme, what new feature became easier to notice?',
+    'What evidence would you want from a lab experiment before treating this prediction as settled?'
+  ];
+  var CLASSROOM_PRESETS = {
+    middleModel: {
+      label: 'Middle school model literacy',
+      grade: 'middle',
+      lesson: 'guided',
+      biology: 'model',
+      assignment: 'exit',
+      scaffold: 'guided',
+      context: 'middle',
+      route: 'public',
+      accession: 'P0CG47',
+      note: 'Short, safe launch focused on model limits, observation, and cautious wording.'
+    },
+    highEnzyme: {
+      label: 'High school enzyme evidence',
+      grade: 'high',
+      lesson: 'investigation',
+      biology: 'enzyme',
+      assignment: 'lab',
+      scaffold: 'standard',
+      context: 'high',
+      route: 'public',
+      accession: 'P61626',
+      note: 'Structure-function investigation using a public enzyme example and explicit evidence limits.'
+    },
+    apValidation: {
+      label: 'AP validation investigation',
+      grade: 'ap',
+      lesson: 'investigation',
+      biology: 'bioinformatics',
+      assignment: 'project',
+      scaffold: 'extension',
+      context: 'ap',
+      route: 'public',
+      accession: 'P69905',
+      note: 'Advanced workflow emphasizing pLDDT, PAE, evidence hierarchy, and validation planning.'
+    },
+    textFirst: {
+      label: 'Text-first accessibility launch',
+      grade: 'upper',
+      lesson: 'launch',
+      biology: 'model',
+      assignment: 'exit',
+      scaffold: 'guided',
+      context: 'screen',
+      route: 'text',
+      accession: 'P0CG47',
+      note: 'Uses the accessible summary, vocabulary, and non-color evidence cues before 3D navigation.'
+    },
+    teacherCanvas: {
+      label: 'Teacher Canvas-ready packet',
+      grade: 'teacher',
+      lesson: 'guided',
+      biology: 'homeostasis',
+      assignment: 'discussion',
+      scaffold: 'standard',
+      context: 'teacher',
+      route: 'teacher',
+      accession: 'P01308',
+      note: 'A ready-to-copy teacher packet with privacy language, discussion directions, and rubric criteria.'
+    }
+  };
+  var CONFIDENCE_BANDS = [
+    {
+      label: 'Very high local confidence',
+      range: 'pLDDT 90-100',
+      color: '#1d4ed8',
+      text: 'Often reasonable for local backbone/side-chain shape claims, while still needing source and validation context.'
+    },
+    {
+      label: 'Confident local model',
+      range: 'pLDDT 70-90',
+      color: '#38bdf8',
+      text: 'Useful for cautious structure observations, especially when the claim stays local and evidence is named.'
+    },
+    {
+      label: 'Low confidence',
+      range: 'pLDDT 50-70',
+      color: '#facc15',
+      text: 'Treat as uncertain or flexible-looking; avoid precise geometry or mechanism claims from this region alone.'
+    },
+    {
+      label: 'Very low confidence',
+      range: 'pLDDT below 50',
+      color: '#f97316',
+      text: 'May represent disorder or unreliable local structure; use mainly as a limit or next-question signal.'
+    },
+    {
+      label: 'PAE relationship check',
+      range: 'PAE lower is better',
+      color: '#a78bfa',
+      text: 'PAE helps judge whether domain positions or chain/interface relationships are reliable; high PAE means be cautious about relative placement.'
+    }
+  ];
+  var GUIDE_STEPS = [
+    { key: 'source', label: 'Source', text: 'Use a public record, local result file, or confirmed classroom input.' },
+    { key: 'inspect', label: 'Inspect', text: 'Look at the fold, domains, surfaces, and flexible-looking regions.' },
+    { key: 'confidence', label: 'Confidence', text: 'Name what confidence or uncertainty means for your claim.' },
+    { key: 'claim', label: 'Claim', text: 'Write one cautious structure claim.' },
+    { key: 'limits', label: 'Limits', text: 'State what evidence would make the claim stronger.' }
+  ];
+  var GUIDE_PROMPTS = [
+    'Start with source: is this public, synthetic, or teacher-approved? What should stay out of the model input?',
+    'Inspect the shape: where is the confident core, and where are the loose or uncertain-looking regions?',
+    'Look for function clues: do you see a pocket, channel, repeated domain, binding surface, or long flexible tail?',
+    'Write a cautious claim: what does the structure suggest, and what wording keeps it from sounding more certain than it is?',
+    'Name the limit: what experiment, database record, or reference would you compare against before treating the prediction as settled?'
+  ];
+  var CONTEXT_LAYERS = {
+    middle: {
+      label: 'Middle school / plain language',
+      focus: 'Use everyday words, one visible shape clue, confidence as a trust signal, and one careful next question.',
+      guide: 'Use a plain-language sentence frame: "The model suggests..., but I still need...".',
+      next: 'Describe one shape you can see and one reason scientists should be careful.'
+    },
+    high: {
+      label: 'High school biology',
+      focus: 'Connect protein shape to possible function, then separate observation from inference.',
+      guide: 'Name the structure feature, the confidence clue, and the biological idea it might support.',
+      next: 'Connect a domain, pocket, surface, or flexible region to a possible protein job.'
+    },
+    ap: {
+      label: 'AP / bioinformatics',
+      focus: 'Use pLDDT, PAE when available, domain layout, interfaces, and validation evidence.',
+      guide: 'Push the claim toward model quality, limitations, and a reference or experiment that could test it.',
+      next: 'Compare confidence across regions and name what evidence would validate the structural claim.'
+    },
+    ell: {
+      label: 'ELL / vocabulary support',
+      focus: 'Use short sentences, repeat key terms, and provide sentence frames without idioms.',
+      guide: 'Offer a sentence frame and define one technical word before asking for more evidence.',
+      next: 'Use the frame: "I notice ___. This may mean ___. I am not sure because ___."'
+    },
+    screen: {
+      label: 'Screen reader / low vision',
+      focus: 'Prioritize linear text summaries, source, confidence, and viewer-independent observations.',
+      guide: 'Summarize the record in text first, then ask for one confidence-based evidence statement.',
+      next: 'Use the accessible summary, then write a claim that does not depend only on color or 3D position.'
+    },
+    teacher: {
+      label: 'Teacher facilitation',
+      focus: 'Support discussion, misconception checks, privacy guardrails, and claim-evidence-limit routines.',
+      guide: 'Ask a facilitation question that surfaces overclaiming, missing evidence, or privacy boundaries.',
+      next: 'Have students compare two claims and decide which one is better supported by confidence evidence.'
+    }
+  };
+  var GLOSSARY_TERMS = [
+    { term: 'Accession', def: 'A public database ID for finding the same protein record again.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Model', def: 'A scientific prediction or representation. It can be useful without being final proof.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Confidence / pLDDT', def: 'A score that helps identify regions the model trusts more or less.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Domain', def: 'A folded part of a protein that can act like a module.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Pocket or surface', def: 'A shape that may help a protein bind another molecule or do a job.', contexts: 'middle high ell teacher' },
+    { term: 'PAE', def: 'Predicted aligned error. It helps judge uncertainty between domains or chains.', contexts: 'ap teacher high screen' },
+    { term: 'Interface', def: 'A region where protein chains or molecules touch and may interact.', contexts: 'ap teacher high' },
+    { term: 'Sentence frame', def: 'A starter structure for writing: "The model suggests..., because..., but...".', contexts: 'ell middle teacher screen' }
+  ];
+  var ACTIVITY_CARDS = {
+    middle: [
+      'Launch: Pick one public example and name one shape you can see.',
+      'Student task: Write "The model suggests..." and one reason to be careful.',
+      'Discussion: Which part of the model would you trust most, and why?',
+      'Accessibility check: Let students answer with a sketch, spoken observation, or one-sentence note.'
+    ],
+    high: [
+      'Launch: Connect one visible structure feature to a possible protein job.',
+      'Student task: Write a claim, then underline the evidence phrase.',
+      'Discussion: What is observation, and what is inference?',
+      'Accessibility check: Offer the vocabulary list before students inspect the 3D viewer.'
+    ],
+    ap: [
+      'Launch: Compare confident and uncertain regions before making a functional claim.',
+      'Student task: Use confidence, PAE when available, and a reference check in the limit.',
+      'Discussion: What evidence would move this from plausible model to supported claim?',
+      'Accessibility check: Pair visual inspection with the accessible summary and a written evidence table.'
+    ],
+    ell: [
+      'Launch: Read one key term aloud, then use it in a sentence frame.',
+      'Student task: Complete "I notice ___. This may mean ___. I am not sure because ___."',
+      'Discussion: Which words show careful science instead of certainty?',
+      'Accessibility check: Use short sentences, repeated terms, and partner rehearsal before writing.'
+    ],
+    screen: [
+      'Launch: Start from the accessible summary before using the 3D viewer.',
+      'Student task: Write a text-only evidence statement using source, confidence, and one observation.',
+      'Discussion: What can be concluded without depending only on color or 3D position?',
+      'Accessibility check: Do not make color the only signal; keep record, confidence, and claim text copyable.'
+    ],
+    teacher: [
+      'Launch: Ask students to rank two claims from overconfident to well-supported.',
+      'Student task: Revise one claim so it includes evidence and a limit.',
+      'Discussion: What misconception might AlphaFold predictions create if students skip confidence?',
+      'Accessibility check: Let students choose visual, text, oral, or paired evidence routines.'
+    ]
+  };
+  var ROUTES = {
+    public: {
+      label: 'Explore a public structure',
+      steps: [
+        'Choose a curated public example or enter a UniProt/AlphaFold accession.',
+        'Inspect the 3D fold, domains, surfaces, pockets, flexible regions, and confidence.',
+        'Write one cautious claim with evidence and a limit.'
+      ]
+    },
+    prepare: {
+      label: 'Prepare safe classroom input',
+      steps: [
+        'Confirm the sequence is public, synthetic, or teacher-approved classroom material.',
+        'Prepare JSON locally for AlphaFold Server or local AlphaFold 3 code.',
+        'Run or submit externally, then import the result file before making structure claims.'
+      ]
+    },
+    import: {
+      label: 'Inspect downloaded result file',
+      steps: [
+        'Open a downloaded CIF, BCIF, or PDB result file in this browser window.',
+        'Record what confidence files or references came with the result.',
+        'Use the claim review to separate observed structure from interpretation.'
+      ]
+    },
+    text: {
+      label: 'Text-first accessibility route',
+      steps: [
+        'Start with the accessible summary and vocabulary supports.',
+        'Use source, confidence, and written observations before relying on 3D position or color.',
+        'Copy the accessible summary or lab note for screen-reader-friendly review.'
+      ]
+    },
+    teacher: {
+      label: 'Teacher demo route',
+      steps: [
+        'Model one public example and think aloud about confidence and uncertainty.',
+        'Ask students to revise an overconfident claim into a cautious claim.',
+        'Use the activity card and readiness checklist before independent exploration.'
+      ]
+    }
+  };
+  var GRADE_TUTORIALS = {
+    elementary: {
+      label: 'Grades 3-4 model literacy',
+      context: 'middle',
+      route: 'text',
+      intro: 'AlphaFold is an AI tool scientists use to make a possible 3D model of a protein. At this level, students treat the picture as a model to observe, not as something to prove a hidden answer.',
+      objective: 'Students notice that scientists use models to describe tiny things they cannot see directly and that models can be helpful while still having limits.',
+      use: 'Use a teacher-chosen public example, keep the viewer mostly teacher-led, and ask students to describe visible shapes before making any explanation.',
+      workflow: [
+        'Look at the public model together and name one visible shape feature.',
+        'Use the accessible summary to connect the picture to words such as model, shape, and evidence.',
+        'Complete one sentence frame that separates what students see from what they wonder.'
+      ],
+      vocabulary: 'protein, model, shape, observe, evidence, wonder',
+      frame: 'I observe ___. The model helps me think about ___. I still wonder ___.',
+      access: 'Prioritize the text summary, read vocabulary aloud, avoid color-only questions, and let students answer by pointing, speaking, typing, or drawing.',
+      misconception: 'A model is a helpful scientific representation, not the actual tiny object and not automatic proof.',
+      exit: 'Draw or write one feature you observed and one question the model cannot answer yet.'
+    },
+    upper: {
+      label: 'Grades 5-6 foundations',
+      context: 'middle',
+      route: 'public',
+      intro: 'AlphaFold predicts a possible protein shape from the order of amino acids. Students should understand that the model can guide questions, but the class still needs evidence and careful words.',
+      objective: 'Students explain that proteins have shapes and that scientists use models to ask careful questions.',
+      use: 'Start with a public AlphaFold DB record, inspect the shape in the viewer, then use the written tutorial and claim frame before discussing function.',
+      workflow: [
+        'Open a public example together.',
+        'Name one visible shape feature such as a bend, pocket, tail, or compact part.',
+        'Use a cautious sentence frame instead of saying the model proves a job.'
+      ],
+      vocabulary: 'protein, model, shape, evidence, careful claim',
+      frame: 'The model suggests ___ because I notice ___. I still wonder ___.',
+      access: 'Offer the vocabulary list first, pair the 3D view with the accessible summary, and accept short claim-evidence-limit responses.',
+      misconception: 'A colorful 3D picture is not automatically proof.',
+      exit: 'One thing I can observe is ___. One thing I cannot know yet is ___.'
+    },
+    middle: {
+      label: 'Grades 7-8 life science',
+      context: 'middle',
+      route: 'public',
+      intro: 'AlphaFold is an AI prediction system that estimates a protein 3D structure from an amino acid sequence. A prediction can support a structure-function discussion, but students must separate observation from inference.',
+      objective: 'Students connect protein shape to possible function while separating observation from inference.',
+      use: 'Have students load a public record, read the source and confidence note, inspect one feature, and write a claim that names both evidence and a limit.',
+      workflow: [
+        'Load a public AlphaFold DB example.',
+        'Compare a confident-looking core with a flexible or uncertain-looking region.',
+        'Write one claim, one evidence line, and one limit.'
+      ],
+      vocabulary: 'protein, structure, function, confidence, evidence, inference',
+      frame: 'The structure is consistent with ___ because ___. I need more evidence from ___.',
+      access: 'Use the checklist as a stop point, keep a shared word bank visible, and let students copy the activity card into a notebook or LMS.',
+      misconception: 'AlphaFold predicts structure; students should not turn that into a final claim about function without evidence.',
+      exit: 'Which part of the model would you trust most, and what evidence supports that choice?'
+    },
+    high: {
+      label: 'High school biology',
+      context: 'high',
+      route: 'public',
+      intro: 'AlphaFold predicts likely protein structures and reports confidence information that helps users judge which regions are more or less reliable. The scientific task is to use the prediction as evidence, not as a shortcut around reasoning.',
+      objective: 'Students use confidence and visible structure features to support a cautious structure-function claim.',
+      use: 'Choose a protein tied to a unit topic, inspect domains or flexible regions, cite confidence evidence, then revise the claim with the rubric.',
+      workflow: [
+        'Choose a public protein connected to a known biological role.',
+        'Inspect domains, pockets, surfaces, loops, tails, and confidence.',
+        'Revise the claim until the evidence and limit are explicit.'
+      ],
+      vocabulary: 'amino acid sequence, protein folding, domain, pLDDT/confidence, structure-function relationship',
+      frame: 'The predicted structure suggests ___; my evidence is ___; a limitation is ___.',
+      access: 'Provide both visual and text-first paths, use sentence starters for claim revision, and prompt students to explain color or confidence cues in words.',
+      misconception: 'High confidence in a region does not automatically identify the protein function or prove a mechanism.',
+      exit: 'Write one claim that uses confidence evidence and one next test or reference check.'
+    },
+    ap: {
+      label: 'AP / advanced bioinformatics',
+      context: 'ap',
+      route: 'public',
+      intro: 'AlphaFold predictions are computational models that can be evaluated using confidence, alignment to known biology, and outside validation. Advanced students should treat model quality, database annotation, and experiment as different evidence streams.',
+      objective: 'Students evaluate model quality, uncertainty, and validation needs before making a structural interpretation.',
+      use: 'Pair a public AlphaFold record with a literature or database check, inspect pLDDT and PAE when available, and require students to identify what the model can and cannot justify.',
+      workflow: [
+        'Select a public record and inspect confidence, PAE when available, domains, and interfaces.',
+        'Decide which parts of the model can support a claim and which parts remain uncertain.',
+        'Name a database comparison, experiment, or literature reference that could validate the claim.'
+      ],
+      vocabulary: 'pLDDT, PAE, domain, interface, validation, homology, model limitation',
+      frame: 'This prediction supports ___ in region ___, but ___ remains uncertain because ___.',
+      access: 'Keep abbreviations expanded in prompts, require plain-language summaries after technical analysis, and offer a text-first rubric for students using assistive technology.',
+      misconception: 'Model confidence, database annotation, and experimental validation are different kinds of evidence.',
+      exit: 'Identify one claim the model supports and one claim it cannot support without additional evidence.'
+    },
+    teacher: {
+      label: 'Teacher planning',
+      context: 'teacher',
+      route: 'teacher',
+      intro: 'AlphaFold can make protein structure work more visible in class, but the strongest lesson is not just the 3D image. It is the evidence routine: source, confidence, observation, cautious claim, limitation, and revision.',
+      objective: 'Teachers launch an AlphaFold activity with clear privacy boundaries, evidence routines, and revision criteria.',
+      use: 'Pick the grade band first, apply the recommended route and support lens, model one public example, then decide what students will copy, submit, or discuss.',
+      workflow: [
+        'Choose a public example and decide the grade-level sentence frame.',
+        'Model one overconfident claim and revise it with the rubric.',
+        'Have students export an accessible summary, lab note, or rubric feedback.'
+      ],
+      vocabulary: 'prediction, evidence, confidence, limitation, accessibility, privacy guardrail',
+      frame: 'Today students will use AlphaFold to ask what a structure suggests, what evidence supports it, and what remains uncertain.',
+      access: 'Offer the public-record route, text-first route, and copied summaries as equivalent participation paths, and avoid grading students on 3D navigation speed.',
+      misconception: 'Students may treat AI output as authority; the activity should make uncertainty and evidence visible.',
+      exit: 'Collect one revised claim plus one student-named limit or next test.'
+    }
+  };
+  var LESSON_LENGTHS = {
+    launch: {
+      label: '10-minute launch',
+      phases: [
+        '0-2 min: Name the privacy boundary and say that AlphaFold predictions are models, not final proof.',
+        '2-5 min: Open one public example and ask students to notice one visible feature or text-summary detail.',
+        '5-8 min: Use the grade-level sentence frame to write one cautious observation.',
+        '8-10 min: Share one limit or question the model cannot answer yet.'
+      ],
+      grouping: 'Whole-class demo, quick pair talk, or individual exit ticket.',
+      artifact: 'One observation plus one wonder or limit.',
+      assessment: 'Listen for students using model, evidence, and cautious wording instead of certainty language.'
+    },
+    guided: {
+      label: '25-minute guided activity',
+      phases: [
+        '0-4 min: Review the grade tutorial, vocabulary, and privacy guardrail.',
+        '4-9 min: Load a public AlphaFold DB example and inspect one shape feature with the accessible summary visible.',
+        '9-16 min: Students write a claim, evidence line, and limit while the local review flags missing evidence or overclaiming.',
+        '16-21 min: Students revise using the rubric and compare observation versus inference.',
+        '21-25 min: Copy the lab note, accessible summary, or exit ticket for discussion or submission.'
+      ],
+      grouping: 'Teacher-guided start, then pairs or independent notes.',
+      artifact: 'Revised claim-evidence-limit note.',
+      assessment: 'Check whether the claim names structure evidence and a meaningful limitation.'
+    },
+    investigation: {
+      label: '45-minute investigation',
+      phases: [
+        '0-5 min: Establish source, privacy, and model-limit expectations.',
+        '5-12 min: Choose or assign a public protein connected to the unit topic.',
+        '12-25 min: Inspect structure, confidence, domains, flexible regions, pockets, surfaces, or PAE when available.',
+        '25-34 min: Draft and revise a claim using the local claim review and rubric feedback.',
+        '34-41 min: Compare with a reference, database note, class reading, or planned validation test.',
+        '41-45 min: Export the lab note and identify one supported claim plus one unsupported claim.'
+      ],
+      grouping: 'Pairs, small groups, or independent investigation with teacher conferences.',
+      artifact: 'Lab note with source, evidence, cautious claim, limitation, and next validation step.',
+      assessment: 'Use the rubric categories: source/privacy, claim language, evidence, limitation, and scientific humility.'
+    }
+  };
+  var BIOLOGY_CONTEXTS = {
+    model: {
+      label: 'Scientific models and uncertainty',
+      example: 'Human ubiquitin',
+      accession: 'P0CG47',
+      unit: 'Nature of science, modeling, and evidence',
+      anchor: 'How can a model be useful even when it is not final proof?',
+      task: 'Compare one confident-looking region with one uncertainty or limitation statement, then decide what the model can and cannot support.',
+      evidence: 'Source, confidence note, compact fold, flexible-looking regions, and careful wording.',
+      caution: 'Do not treat the 3D image as the actual protein or as proof of function by itself.',
+      extension: 'Ask students to revise a claim that uses "proves" into a claim that uses "suggests" or "is consistent with."',
+      access: 'Students can use the accessible summary, a drawing, oral observation, or one written sentence as equivalent evidence routines.'
+    },
+    homeostasis: {
+      label: 'Homeostasis and hormones',
+      example: 'Human insulin',
+      accession: 'P01308',
+      unit: 'Feedback, hormones, and cellular communication',
+      anchor: 'How can a small protein model help us ask questions about signaling without overclaiming?',
+      task: 'Inspect the public insulin record, name one visible structure feature, and connect it cautiously to the idea of signaling or regulation.',
+      evidence: 'Public source, protein size, visible fold, confidence note, and class reading about hormone signaling.',
+      caution: 'Do not use the model for diagnosis, treatment, disease-risk interpretation, or personal medical discussion.',
+      extension: 'Compare a structure-based observation with a textbook or teacher-provided explanation of hormone signaling.',
+      access: 'Offer a two-column note catcher: "What I observe" and "What I still need evidence for."'
+    },
+    enzyme: {
+      label: 'Enzymes and active sites',
+      example: 'Human lysozyme',
+      accession: 'P61626',
+      unit: 'Enzyme structure, substrate interaction, and specificity',
+      anchor: 'What kinds of shape evidence might suggest where an enzyme interacts with another molecule?',
+      task: 'Look for a pocket, groove, surface, or compact domain, then write a cautious claim about possible interaction evidence.',
+      evidence: 'Pocket/surface language, confidence, domain shape, and a reference or class reading about enzyme function.',
+      caution: 'A visible pocket or surface does not prove the active site without reference or experimental evidence.',
+      extension: 'Have students name one experiment, database comparison, or reference image that could strengthen the claim.',
+      access: 'Let students describe the feature in text before rotating the 3D model; avoid making color the only evidence signal.'
+    },
+    transport: {
+      label: 'Membrane transport',
+      example: 'Aquaporin 1',
+      accession: 'P29972',
+      unit: 'Membranes, channels, transport, and structure-function relationships',
+      anchor: 'How might a protein shape support a channel or transport role?',
+      task: 'Inspect the public aquaporin record and look for a repeated, channel-like, or surface pattern that could support a cautious structure-function question.',
+      evidence: 'Visible fold pattern, possible channel-like geometry, confidence, and comparison with class materials on membrane transport.',
+      caution: 'A predicted channel-like shape is not proof of transport rate, selectivity, or mechanism.',
+      extension: 'Ask students what lab data or reference structure would help test a transport claim.',
+      access: 'Pair 3D inspection with a text summary and let students answer with a labeled sketch or written evidence statement.'
+    },
+    cytoskeleton: {
+      label: 'Cell structure and movement',
+      example: 'Actin beta',
+      accession: 'P60709',
+      unit: 'Cytoskeleton, cell shape, and movement',
+      anchor: 'How can protein shape support questions about cell structure and movement?',
+      task: 'Inspect actin beta and identify one structural feature that could support a question about assembly, interaction, or cellular support.',
+      evidence: 'Domain shape, surface features, confidence note, and comparison with class diagrams of cytoskeleton organization.',
+      caution: 'The prediction alone cannot show how proteins assemble in the cell or move over time.',
+      extension: 'Connect the model to a diagram of the cytoskeleton and name what the diagram adds that the model does not show.',
+      access: 'Use a concept map linking structure, evidence, limitation, and next test for students who need organizational support.'
+    },
+    bioinformatics: {
+      label: 'Bioinformatics validation',
+      example: 'Hemoglobin alpha',
+      accession: 'P69905',
+      unit: 'Databases, model quality, and evidence validation',
+      anchor: 'How do computational predictions, database annotations, and experimental evidence work together?',
+      task: 'Inspect the public record, cite confidence or uncertainty, and name a database, literature, or experiment-based validation step.',
+      evidence: 'Accession, source, confidence, domain or interface language, PAE when available, and external reference comparison.',
+      caution: 'Model confidence, annotation, and validation are different kinds of evidence and should not be blended into one certainty claim.',
+      extension: 'Students write one claim the model supports and one claim that needs outside validation.',
+      access: 'Keep acronyms expanded, require a plain-language summary, and let students use the copied accessible summary as their evidence table.'
+    }
+  };
+  var ASSIGNMENT_FORMATS = {
+    exit: {
+      label: 'Exit ticket',
+      title: 'AlphaFold Exit Ticket',
+      submission: 'Submit one cautious sentence, one evidence clue, and one limit or question.',
+      length: '3-5 sentences or one completed sentence frame.',
+      collaboration: 'Individual response after a class demo or short exploration.',
+      rubric: [
+        'Uses cautious language such as "suggests" or "is consistent with."',
+        'Names one structure, confidence, source, or text-summary evidence clue.',
+        'Names one limit, question, reference, or next test.'
+      ]
+    },
+    lab: {
+      label: 'Lab note',
+      title: 'AlphaFold Claim-Evidence-Limit Lab Note',
+      submission: 'Submit the copied lab note or a written claim-evidence-limit response based on a public AlphaFold record.',
+      length: 'One observation, one cautious claim, one evidence line, and one limitation or next test.',
+      collaboration: 'Pairs may discuss evidence, but each student submits their own reasoning.',
+      rubric: [
+        'Cites the public source or teacher-approved sample.',
+        'Connects a structure or confidence clue to the claim.',
+        'Separates observation, inference, and limitation.'
+      ]
+    },
+    discussion: {
+      label: 'Discussion post',
+      title: 'AlphaFold Evidence Discussion',
+      submission: 'Post a cautious claim and respond to a peer by asking for evidence, a limit, or a validation step.',
+      length: 'Initial post plus one peer response.',
+      collaboration: 'Students build on each other without treating any prediction as final proof.',
+      rubric: [
+        'Initial post includes claim, evidence, and caution.',
+        'Peer response improves the science by asking about confidence, source, or validation.',
+        'Discussion avoids personal genetics, medical, diagnosis, treatment, or ancestry claims.'
+      ]
+    },
+    project: {
+      label: 'Mini-investigation',
+      title: 'AlphaFold Mini-Investigation',
+      submission: 'Submit a short investigation note with source, structure evidence, model limitations, and a validation plan.',
+      length: 'One page, slide, or structured note using the copied assignment supports.',
+      collaboration: 'Small groups may investigate one public example and submit shared evidence plus individual reflection.',
+      rubric: [
+        'Uses a public protein record and keeps privacy boundaries clear.',
+        'Explains what the model supports and what it cannot support by itself.',
+        'Names a reference, database comparison, experiment, or follow-up evidence source.'
+      ]
+    }
+  };
+  var SCAFFOLD_LEVELS = {
+    guided: {
+      label: 'Guided scaffold',
+      purpose: 'Reduce cognitive load while keeping the core claim-evidence-limit reasoning intact.',
+      directions: 'Use the sentence frame, inspect one assigned feature, and complete one claim, one evidence line, and one limit with teacher or partner support.',
+      evidence: 'One source or confidence clue plus one visible feature is enough for a first draft.',
+      teacherMove: 'Model the first observation aloud, point students to the accessible summary, and pause before the claim so evidence is named first.',
+      accessibility: 'Offer vocabulary before viewing, read prompts aloud, allow oral or drawn responses, and keep color/3D position from being the only evidence signal.',
+      feedback: 'Ask: "What did you observe? What evidence supports that? What can the model not prove yet?"',
+      extension: 'After the first draft, revise one certainty word into cautious model language.'
+    },
+    standard: {
+      label: 'Standard support',
+      purpose: 'Support grade-level investigation with a clear structure but room for student reasoning.',
+      directions: 'Choose the public example, inspect source and structure evidence, then write and revise a claim-evidence-limit response.',
+      evidence: 'Use source, confidence, one structure feature, and one limit or next test.',
+      teacherMove: 'Use the local claim review and rubric as checkpoints before students submit.',
+      accessibility: 'Keep copied directions, accessible summary, vocabulary, and sentence frames available as optional supports.',
+      feedback: 'Ask: "Which part of your evidence is observation, and which part is inference?"',
+      extension: 'Add a reference comparison or explain why a different claim is not supported.'
+    },
+    independent: {
+      label: 'Independent inquiry',
+      purpose: 'Let students make more decisions while maintaining privacy and evidence standards.',
+      directions: 'Select or confirm a public protein, decide which structure evidence matters, and justify the final claim with a limit or validation plan.',
+      evidence: 'Use multiple evidence types such as source, confidence, domain/surface/pocket clues, PAE when available, and a reference check.',
+      teacherMove: 'Conference with questions instead of step-by-step prompts; ask students to defend why their evidence fits the claim.',
+      accessibility: 'Offer text-first and visual routes as equivalent options and let students choose the artifact format that best shows reasoning.',
+      feedback: 'Ask: "What evidence would change your mind or make this claim stronger?"',
+      extension: 'Compare two possible claims and explain which one the model supports better.'
+    },
+    extension: {
+      label: 'Extension challenge',
+      purpose: 'Push advanced students toward validation, uncertainty, and evidence hierarchy.',
+      directions: 'Use the model as one evidence source, compare it with a database, reference, or class reading, and identify what remains untested.',
+      evidence: 'Distinguish model confidence, database annotation, literature/reference comparison, and experimental validation.',
+      teacherMove: 'Require students to name one claim the model supports, one claim it does not support, and one validation step.',
+      accessibility: 'Require a plain-language summary after technical analysis so reasoning is inspectable by peers using different access paths.',
+      feedback: 'Ask: "Which evidence source is strongest here, and what uncertainty remains?"',
+      extension: 'Create a short peer-review note that flags overclaiming, missing evidence, or unclear validation.'
+    }
+  };
+
+  var viewer = null;
+  var viewerPromise = null;
+  var current = null;
+  var lastJson = '';
+  var openerOk = false;
+  var aiAvailable = false;
+  var busy = false;
+  var pending = {};
+  var reflectIndex = 0;
+  var guideIndex = 0;
+
+  var examplesEl = document.getElementById('examples');
+  var accessionInput = document.getElementById('accessionInput');
+  var lookupBtn = document.getElementById('lookupBtn');
+  var lookupStatus = document.getElementById('lookupStatus');
+  var fileInput = document.getElementById('fileInput');
+  var fileStatus = document.getElementById('fileStatus');
+  var jobNameInput = document.getElementById('jobNameInput');
+  var formatSelect = document.getElementById('formatSelect');
+  var sequenceInput = document.getElementById('sequenceInput');
+  var proteinCountInput = document.getElementById('proteinCountInput');
+  var seedInput = document.getElementById('seedInput');
+  var dnaInput = document.getElementById('dnaInput');
+  var dnaRevCompInput = document.getElementById('dnaRevCompInput');
+  var rnaInput = document.getElementById('rnaInput');
+  var ligandSelect = document.getElementById('ligandSelect');
+  var ligandCountInput = document.getElementById('ligandCountInput');
+  var ionSelect = document.getElementById('ionSelect');
+  var ionCountInput = document.getElementById('ionCountInput');
+  var safetyConfirmInput = document.getElementById('safetyConfirmInput');
+  var sequenceStatus = document.getElementById('sequenceStatus');
+  var prepareBtn = document.getElementById('prepareBtn');
+  var serverBtn = document.getElementById('serverBtn');
+  var jsonOutput = document.getElementById('jsonOutput');
+  var copyJsonBtn = document.getElementById('copyJsonBtn');
+  var downloadJsonBtn = document.getElementById('downloadJsonBtn');
+  var copyCitationBtn = document.getElementById('copyCitationBtn');
+  var copyLabNoteBtn = document.getElementById('copyLabNoteBtn');
+  var copyAccessibleSummaryBtn = document.getElementById('copyAccessibleSummaryBtn');
+  var citationStatus = document.getElementById('citationStatus');
+  var aiState = document.getElementById('aiState');
+  var copyTutorialBtn = document.getElementById('copyTutorialBtn');
+  var tutorialStatus = document.getElementById('tutorialStatus');
+  var gradeTutorialSelect = document.getElementById('gradeTutorialSelect');
+  var gradeTutorialOutput = document.getElementById('gradeTutorialOutput');
+  var applyGradeTutorialBtn = document.getElementById('applyGradeTutorialBtn');
+  var copyGradeTutorialBtn = document.getElementById('copyGradeTutorialBtn');
+  var gradeTutorialStatus = document.getElementById('gradeTutorialStatus');
+  var lessonLengthSelect = document.getElementById('lessonLengthSelect');
+  var lessonPlanOutput = document.getElementById('lessonPlanOutput');
+  var copyLessonPlanBtn = document.getElementById('copyLessonPlanBtn');
+  var copyStudentDirectionsBtn = document.getElementById('copyStudentDirectionsBtn');
+  var lessonPlanStatus = document.getElementById('lessonPlanStatus');
+  var bioContextSelect = document.getElementById('bioContextSelect');
+  var bioContextOutput = document.getElementById('bioContextOutput');
+  var setBioExampleBtn = document.getElementById('setBioExampleBtn');
+  var copyBioBriefBtn = document.getElementById('copyBioBriefBtn');
+  var bioContextStatus = document.getElementById('bioContextStatus');
+  var assignmentFormatSelect = document.getElementById('assignmentFormatSelect');
+  var lmsAssignmentOutput = document.getElementById('lmsAssignmentOutput');
+  var copyLmsAssignmentBtn = document.getElementById('copyLmsAssignmentBtn');
+  var copyLmsRubricBtn = document.getElementById('copyLmsRubricBtn');
+  var lmsAssignmentStatus = document.getElementById('lmsAssignmentStatus');
+  var scaffoldSelect = document.getElementById('scaffoldSelect');
+  var scaffoldOutput = document.getElementById('scaffoldOutput');
+  var copyScaffoldBtn = document.getElementById('copyScaffoldBtn');
+  var scaffoldStatus = document.getElementById('scaffoldStatus');
+  var routeSelect = document.getElementById('routeSelect');
+  var routeOutput = document.getElementById('routeOutput');
+  var readyPredictionInput = document.getElementById('readyPredictionInput');
+  var readyEvidenceInput = document.getElementById('readyEvidenceInput');
+  var readyPrivacyInput = document.getElementById('readyPrivacyInput');
+  var readinessStatus = document.getElementById('readinessStatus');
+  var contextSelect = document.getElementById('contextSelect');
+  var contextOutput = document.getElementById('contextOutput');
+  var activityCard = document.getElementById('activityCard');
+  var copyActivityCardBtn = document.getElementById('copyActivityCardBtn');
+  var activityStatus = document.getElementById('activityStatus');
+  var glossaryList = document.getElementById('glossaryList');
+  var accessibleSummary = document.getElementById('accessibleSummary');
+  var guideSteps = document.getElementById('guideSteps');
+  var guidePrompt = document.getElementById('guidePrompt');
+  var claimInput = document.getElementById('claimInput');
+  var evidenceInput = document.getElementById('evidenceInput');
+  var cautionInput = document.getElementById('cautionInput');
+  var claimReview = document.getElementById('claimReview');
+  var rubricOutput = document.getElementById('rubricOutput');
+  var misconceptionOutput = document.getElementById('misconceptionOutput');
+  var copyRubricBtn = document.getElementById('copyRubricBtn');
+  var rubricStatus = document.getElementById('rubricStatus');
+  var guideAiBtn = document.getElementById('guideAiBtn');
+  var guideAiOutput = document.getElementById('guideAiOutput');
+  var guidePromptBtn = document.getElementById('guidePromptBtn');
+  var guideResetBtn = document.getElementById('guideResetBtn');
+  var noteInput = document.getElementById('noteInput');
+  var coachBtn = document.getElementById('coachBtn');
+  var coachOutput = document.getElementById('coachOutput');
+  var placeholder = document.getElementById('placeholder');
+  var loadmsg = document.getElementById('loadmsg');
+  var detailTitle = document.getElementById('detailTitle');
+  var facts = document.getElementById('facts');
+  var flowButtons = Array.prototype.slice.call(document.querySelectorAll('[data-flow-mode]'));
+  var flowMode = 'all';
+  var presetSelect = document.getElementById('presetSelect');
+  var presetOutput = document.getElementById('presetOutput');
+  var applyPresetBtn = document.getElementById('applyPresetBtn');
+  var copyPresetBtn = document.getElementById('copyPresetBtn');
+  var presetStatus = document.getElementById('presetStatus');
+  var studentPacketOutput = document.getElementById('studentPacketOutput');
+  var copyStudentPacketBtn = document.getElementById('copyStudentPacketBtn');
+  var studentPacketStatus = document.getElementById('studentPacketStatus');
+  var confidenceGuideOutput = document.getElementById('confidenceGuideOutput');
+  var confidenceLegend = document.getElementById('confidenceLegend');
+  var copyConfidenceGuideBtn = document.getElementById('copyConfidenceGuideBtn');
+  var confidenceGuideStatus = document.getElementById('confidenceGuideStatus');
+
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function setStatus(node, text, cls) {
+    node.textContent = text || '';
+    node.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  function hasText(node, min) {
+    return String((node && node.value) || '').trim().length >= (min || 8);
+  }
+
+  function setSelectValue(node, value) {
+    if (!node || value == null) return;
+    var exists = Array.prototype.some.call(node.options || [], function (opt) { return opt.value === value; });
+    if (exists) node.value = value;
+  }
+
+  function renderFlowMode() {
+    flowButtons.forEach(function (btn) {
+      var active = btn.getAttribute('data-flow-mode') === flowMode;
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    Array.prototype.slice.call(document.querySelectorAll('aside section[data-flow]')).forEach(function (section) {
+      var modes = String(section.getAttribute('data-flow') || '').split(/\s+/);
+      var show = flowMode === 'all' || modes.indexOf(flowMode) >= 0;
+      section.classList.toggle('flowHidden', !show);
+    });
+  }
+
+  function setFlowMode(mode) {
+    flowMode = mode || 'all';
+    renderFlowMode();
+  }
+
+  function tutorialText() {
+    return [
+      'AlphaFold Explorer quick-start',
+      'What AlphaFold is: an AI system that predicts a protein 3D structure from its amino acid sequence.',
+      'What AlphaFold DB is: a public database of predicted protein structures developed by Google DeepMind and EMBL-EBI.',
+      'What this explorer does: loads public structures, opens local result files, prepares classroom-safe JSON, and helps students write cautious claim-evidence-limit notes.',
+      'Grade band: ' + currentGradeTutorial().label,
+      'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + currentBiologyContext().label,
+      'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Selected route: ' + currentRoute().label,
+      'Student workflow: load a public record, inspect shape and confidence, write one cautious claim, cite evidence, and name a limit or next test.',
+      'Careful wording: predictions are useful models, not final proof, diagnosis, treatment guidance, ancestry interpretation, or personal genetic analysis.',
+      'Privacy: use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function copyTutorial() {
+    var text = tutorialText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(tutorialStatus, 'Quick-start copied.', 'ok');
+      }).catch(function () {
+        setStatus(tutorialStatus, 'Copy failed. Select the tutorial text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(tutorialStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function currentContext() {
+    var key = contextSelect ? contextSelect.value : 'middle';
+    return CONTEXT_LAYERS[key] || CONTEXT_LAYERS.middle;
+  }
+
+  function currentContextKey() {
+    return contextSelect ? contextSelect.value : 'middle';
+  }
+
+  function currentGradeTutorialKey() {
+    return gradeTutorialSelect ? gradeTutorialSelect.value : 'middle';
+  }
+
+  function currentGradeTutorial() {
+    return GRADE_TUTORIALS[currentGradeTutorialKey()] || GRADE_TUTORIALS.middle;
+  }
+
+  function currentLessonLengthKey() {
+    return lessonLengthSelect ? lessonLengthSelect.value : 'guided';
+  }
+
+  function currentLessonLength() {
+    return LESSON_LENGTHS[currentLessonLengthKey()] || LESSON_LENGTHS.guided;
+  }
+
+  function currentBiologyContextKey() {
+    return bioContextSelect ? bioContextSelect.value : 'model';
+  }
+
+  function currentBiologyContext() {
+    return BIOLOGY_CONTEXTS[currentBiologyContextKey()] || BIOLOGY_CONTEXTS.model;
+  }
+
+  function currentAssignmentFormatKey() {
+    return assignmentFormatSelect ? assignmentFormatSelect.value : 'lab';
+  }
+
+  function currentAssignmentFormat() {
+    return ASSIGNMENT_FORMATS[currentAssignmentFormatKey()] || ASSIGNMENT_FORMATS.lab;
+  }
+
+  function currentScaffoldKey() {
+    return scaffoldSelect ? scaffoldSelect.value : 'standard';
+  }
+
+  function currentScaffold() {
+    return SCAFFOLD_LEVELS[currentScaffoldKey()] || SCAFFOLD_LEVELS.standard;
+  }
+
+  function currentPresetKey() {
+    return presetSelect ? presetSelect.value : 'middleModel';
+  }
+
+  function currentPreset() {
+    return CLASSROOM_PRESETS[currentPresetKey()] || CLASSROOM_PRESETS.middleModel;
+  }
+
+  function presetSummaryText() {
+    var preset = currentPreset();
+    return [
+      'AlphaFold classroom preset',
+      'Preset: ' + preset.label,
+      'Grade band: ' + GRADE_TUTORIALS[preset.grade].label,
+      'Lesson length: ' + LESSON_LENGTHS[preset.lesson].label,
+      'Biology context: ' + BIOLOGY_CONTEXTS[preset.biology].label,
+      'Assignment: ' + ASSIGNMENT_FORMATS[preset.assignment].label,
+      'Learner support: ' + SCAFFOLD_LEVELS[preset.scaffold].label,
+      'Support lens: ' + CONTEXT_LAYERS[preset.context].label,
+      'Learning route: ' + ROUTES[preset.route].label,
+      'Suggested public accession: ' + preset.accession,
+      'Why use it: ' + preset.note,
+      'Privacy: Use only public, synthetic, or teacher-approved classroom samples.'
+    ].join('\n');
+  }
+
+  function renderPresetSummary() {
+    presetOutput.textContent = presetSummaryText();
+    setStatus(presetStatus, '', '');
+  }
+
+  function applyPreset() {
+    var preset = currentPreset();
+    setSelectValue(gradeTutorialSelect, preset.grade);
+    setSelectValue(lessonLengthSelect, preset.lesson);
+    setSelectValue(bioContextSelect, preset.biology);
+    setSelectValue(assignmentFormatSelect, preset.assignment);
+    setSelectValue(scaffoldSelect, preset.scaffold);
+    setSelectValue(contextSelect, preset.context);
+    setSelectValue(routeSelect, preset.route);
+    accessionInput.value = preset.accession;
+    renderRoute();
+    renderContextLayer();
+    renderPresetSummary();
+    renderGradeTutorial();
+    renderConfidenceGuide();
+    renderStudentPacket();
+    renderGuide();
+    setStatus(presetStatus, 'Preset applied. Suggested accession set; press Load when ready.', 'ok');
+  }
+
+  function copyPresetSummary() {
+    var text = presetSummaryText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(presetStatus, 'Preset summary copied.', 'ok');
+      }).catch(function () {
+        setStatus(presetStatus, 'Copy failed. Select the preset text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(presetStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function gradeTutorialText() {
+    var t = currentGradeTutorial();
+    var lines = [
+      'AlphaFold grade-level tutorial',
+      'Grade band: ' + t.label,
+      'Student-friendly explanation: ' + t.intro,
+      'Objective: ' + t.objective,
+      'Recommended route: ' + (ROUTES[t.route] ? ROUTES[t.route].label : currentRoute().label),
+      'Recommended support lens: ' + (CONTEXT_LAYERS[t.context] ? CONTEXT_LAYERS[t.context].label : currentContext().label),
+      'How to use AlphaFold here: ' + t.use,
+      'Workflow:',
+    ];
+    t.workflow.forEach(function (step, idx) {
+      lines.push(String(idx + 1) + '. ' + step);
+    });
+    return lines.concat([
+      'Vocabulary: ' + t.vocabulary,
+      'Sentence frame: ' + t.frame,
+      'Accessibility supports: ' + t.access,
+      'Misconception check: ' + t.misconception,
+      'Exit ticket: ' + t.exit,
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ]).join('\n');
+  }
+
+  function renderGradeTutorial() {
+    gradeTutorialOutput.textContent = gradeTutorialText();
+    setStatus(gradeTutorialStatus, '', '');
+    renderLessonPlan();
+    renderBiologyContext();
+    renderLmsAssignment();
+    renderScaffold();
+    renderConfidenceGuide();
+    renderStudentPacket();
+    renderActivityCard();
+    renderAccessibleSummary();
+  }
+
+  function copyGradeTutorial() {
+    var text = gradeTutorialText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(gradeTutorialStatus, 'Grade tutorial copied.', 'ok');
+      }).catch(function () {
+        setStatus(gradeTutorialStatus, 'Copy failed. Select the tutorial text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(gradeTutorialStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function applyGradeTutorial() {
+    var t = currentGradeTutorial();
+    if (routeSelect && ROUTES[t.route]) routeSelect.value = t.route;
+    if (contextSelect && CONTEXT_LAYERS[t.context]) contextSelect.value = t.context;
+    renderRoute();
+    renderContextLayer();
+    renderGradeTutorial();
+    renderGuide();
+    setStatus(gradeTutorialStatus, 'Recommended route, support lens, and tutorial frame applied.', 'ok');
+  }
+
+  function lessonPlanText() {
+    var tutorial = currentGradeTutorial();
+    var length = currentLessonLength();
+    var bio = currentBiologyContext();
+    var route = ROUTES[tutorial.route] || currentRoute();
+    var ctx = CONTEXT_LAYERS[tutorial.context] || currentContext();
+    var lines = [
+      'AlphaFold grade-level lesson sequence',
+      'Grade band: ' + tutorial.label,
+      'Class time: ' + length.label,
+      'Biology context: ' + bio.label,
+      'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
+      'Learning goal: ' + tutorial.objective,
+      'AlphaFold purpose: ' + tutorial.use,
+      'Anchor question: ' + bio.anchor,
+      'Recommended route: ' + route.label,
+      'Recommended support lens: ' + ctx.label,
+      'Teacher launch language: ' + tutorial.intro,
+      'Sequence:'
+    ];
+    length.phases.forEach(function (phase, idx) {
+      lines.push(String(idx + 1) + '. ' + phase);
+    });
+    return lines.concat([
+      'Grouping: ' + length.grouping,
+      'Student artifact: ' + length.artifact,
+      'Vocabulary: ' + tutorial.vocabulary,
+      'Student sentence frame: ' + tutorial.frame,
+      'Context evidence focus: ' + bio.evidence,
+      'Accessibility and UDL supports: ' + tutorial.access,
+      'Context accessibility move: ' + bio.access,
+      'Scaffold support: ' + currentScaffold().teacherMove,
+      'Misconception to watch for: ' + tutorial.misconception,
+      'Context caution: ' + bio.caution,
+      'Assessment look-for: ' + length.assessment,
+      'Extension: ' + bio.extension,
+      'Exit ticket: ' + tutorial.exit,
+      'Privacy guardrail: Use public, synthetic, or teacher-approved classroom samples only. Do not use personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.'
+    ]).join('\n');
+  }
+
+  function studentDirectionsText() {
+    var tutorial = currentGradeTutorial();
+    var length = currentLessonLength();
+    var bio = currentBiologyContext();
+    return [
+      'AlphaFold student directions',
+      'Grade band: ' + tutorial.label,
+      'Time: ' + length.label,
+      'Biology context: ' + bio.label,
+      'Submission format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Public example: ' + bio.example + ' (' + bio.accession + ')',
+      'Goal: ' + tutorial.objective,
+      'Anchor question: ' + bio.anchor,
+      '1. Use only the public example or teacher-approved classroom sample.',
+      '2. Remember that AlphaFold gives a prediction/model, not final proof.',
+      '3. Inspect the structure, text summary, confidence, or other evidence clue.',
+      '4. Use this frame: ' + tutorial.frame,
+      '5. Add one limit, question, reference, or next test before you finish.',
+      'Evidence focus: ' + bio.evidence,
+      'Support: ' + currentScaffold().directions,
+      'What to turn in: ' + length.artifact,
+      'Exit ticket: ' + tutorial.exit,
+      'Privacy: Do not enter personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.'
+    ].join('\n');
+  }
+
+  function renderLessonPlan() {
+    lessonPlanOutput.textContent = lessonPlanText();
+    setStatus(lessonPlanStatus, '', '');
+  }
+
+  function copyLessonPlan() {
+    var text = lessonPlanText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(lessonPlanStatus, 'Lesson sequence copied.', 'ok');
+      }).catch(function () {
+        setStatus(lessonPlanStatus, 'Copy failed. Select the lesson text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(lessonPlanStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function copyStudentDirections() {
+    var text = studentDirectionsText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(lessonPlanStatus, 'Student directions copied.', 'ok');
+      }).catch(function () {
+        setStatus(lessonPlanStatus, 'Copy failed. Select the student directions manually.', 'warn');
+      });
+    } else {
+      setStatus(lessonPlanStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function biologyBriefText() {
+    var bio = currentBiologyContext();
+    var tutorial = currentGradeTutorial();
+    return [
+      'AlphaFold biology-context investigation brief',
+      'Context: ' + bio.label,
+      'Unit connection: ' + bio.unit,
+      'Grade band: ' + tutorial.label,
+      'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
+      'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Anchor question: ' + bio.anchor,
+      'Student task: ' + bio.task,
+      'Evidence focus: ' + bio.evidence,
+      'Sentence frame: ' + tutorial.frame,
+      'Accessibility support: ' + bio.access,
+      'Scaffold support: ' + currentScaffold().accessibility,
+      'Caution: ' + bio.caution,
+      'Extension: ' + bio.extension,
+      'Lesson sequence: ' + currentLessonLength().label,
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function renderBiologyContext() {
+    bioContextOutput.textContent = biologyBriefText();
+    setStatus(bioContextStatus, '', '');
+  }
+
+  function setBiologyExample() {
+    var bio = currentBiologyContext();
+    accessionInput.value = bio.accession;
+    setStatus(bioContextStatus, bio.example + ' accession set. Press Load when ready.', 'ok');
+  }
+
+  function copyBiologyBrief() {
+    var text = biologyBriefText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(bioContextStatus, 'Investigation brief copied.', 'ok');
+      }).catch(function () {
+        setStatus(bioContextStatus, 'Copy failed. Select the brief text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(bioContextStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function lmsAssignmentText() {
+    var tutorial = currentGradeTutorial();
+    var length = currentLessonLength();
+    var bio = currentBiologyContext();
+    var format = currentAssignmentFormat();
+    var scaffold = currentScaffold();
+    return [
+      format.title,
+      'Grade band: ' + tutorial.label,
+      'Estimated time: ' + length.label,
+      'Biology context: ' + bio.label,
+      'Learner support: ' + scaffold.label,
+      'Public example: ' + bio.example + ' (' + bio.accession + ')',
+      '',
+      'Purpose',
+      tutorial.objective,
+      '',
+      'Anchor question',
+      bio.anchor,
+      '',
+      'Before you begin',
+      'Use only the assigned public protein record or teacher-approved classroom sample.',
+      'Remember that AlphaFold gives a predicted model, not final proof.',
+      'Do not enter personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.',
+      '',
+      'Student directions',
+      '1. Open or load the public example: ' + bio.example + ' (' + bio.accession + ').',
+      '2. Inspect the structure, accessible summary, source, confidence, and any visible feature that fits the context.',
+      '3. Use this sentence frame: ' + tutorial.frame,
+      '4. Add evidence from the model or source: ' + bio.evidence,
+      '5. Add a limitation, question, reference, or next test before submitting.',
+      'Support level: ' + scaffold.directions,
+      '',
+      'Submission',
+      format.submission,
+      'Expected length: ' + format.length,
+      'Collaboration: ' + format.collaboration,
+      'Evidence expectation: ' + scaffold.evidence,
+      '',
+      'Accessibility options',
+      tutorial.access,
+      bio.access,
+      scaffold.accessibility,
+      'You may use a copied accessible summary, typed note, drawing, oral explanation, or teacher-approved equivalent format when that better shows your reasoning.',
+      '',
+      'Confidence and PAE expectation',
+      'Use pLDDT/confidence to decide which local regions can support an observation. Use PAE when available before claiming domain placement or interface relationships.',
+      '',
+      'Success criteria',
+      '1. ' + format.rubric[0],
+      '2. ' + format.rubric[1],
+      '3. ' + format.rubric[2],
+      '',
+      'Caution',
+      bio.caution,
+      '',
+      'Teacher feedback question',
+      scaffold.feedback,
+      '',
+      'Extension',
+      bio.extension
+    ].join('\n');
+  }
+
+  function lmsRubricText() {
+    var format = currentAssignmentFormat();
+    var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
+    var scaffold = currentScaffold();
+    return [
+      'AlphaFold assignment rubric',
+      'Assignment: ' + format.title,
+      'Grade band: ' + tutorial.label,
+      'Biology context: ' + bio.label,
+      'Learner support: ' + scaffold.label,
+      '4 - Strong: The response uses cautious model language, names specific structure/source/confidence evidence, and explains a meaningful limitation or validation step.',
+      '3 - Ready: The response includes a cautious claim, relevant evidence, and a limit, with minor gaps in specificity.',
+      '2 - Revise: The response has a claim but needs clearer evidence, better caution, or a stronger connection to the public record.',
+      '1 - Guardrail or restart: The response overclaims, lacks evidence, or includes personal/medical/genetic information that must be removed.',
+      'Success criteria:',
+      '1. ' + format.rubric[0],
+      '2. ' + format.rubric[1],
+      '3. ' + format.rubric[2],
+      'Scaffold evidence expectation: ' + scaffold.evidence,
+      'Privacy: Public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function renderLmsAssignment() {
+    lmsAssignmentOutput.textContent = lmsAssignmentText();
+    setStatus(lmsAssignmentStatus, '', '');
+  }
+
+  function copyLmsAssignment() {
+    var text = lmsAssignmentText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(lmsAssignmentStatus, 'Assignment copied.', 'ok');
+      }).catch(function () {
+        setStatus(lmsAssignmentStatus, 'Copy failed. Select the assignment text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(lmsAssignmentStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function copyLmsRubric() {
+    var text = lmsRubricText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(lmsAssignmentStatus, 'Rubric copied.', 'ok');
+      }).catch(function () {
+        setStatus(lmsAssignmentStatus, 'Copy failed. Select the rubric text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(lmsAssignmentStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function scaffoldText() {
+    var scaffold = currentScaffold();
+    var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
+    var format = currentAssignmentFormat();
+    return [
+      'AlphaFold learner support scaffold',
+      'Scaffold level: ' + scaffold.label,
+      'Grade band: ' + tutorial.label,
+      'Biology context: ' + bio.label,
+      'Assignment format: ' + format.label,
+      'Purpose: ' + scaffold.purpose,
+      'Student directions: ' + scaffold.directions,
+      'Evidence expectation: ' + scaffold.evidence,
+      'Teacher move: ' + scaffold.teacherMove,
+      'Accessibility support: ' + scaffold.accessibility,
+      'Feedback question: ' + scaffold.feedback,
+      'Stretch option: ' + scaffold.extension,
+      'Sentence frame: ' + tutorial.frame,
+      'Anchor question: ' + bio.anchor,
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function renderScaffold() {
+    scaffoldOutput.textContent = scaffoldText();
+    setStatus(scaffoldStatus, '', '');
+  }
+
+  function copyScaffold() {
+    var text = scaffoldText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(scaffoldStatus, 'Scaffold copied.', 'ok');
+      }).catch(function () {
+        setStatus(scaffoldStatus, 'Copy failed. Select the scaffold text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(scaffoldStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function confidenceGuideText() {
+    var lines = [
+      'AlphaFold confidence and visual-accessibility guide',
+      'Use confidence as evidence about the model, not as proof of biological function.',
+      'pLDDT is a local confidence signal: it helps judge whether a region may support a local structure observation.',
+      'PAE is a relationship/placement uncertainty signal: it helps judge whether domain positions, chains, or interfaces should be trusted.',
+      'Non-color cue: ask students to name the score band, source, and region, not just "blue" or "yellow."',
+      'Text-first cue: a claim should still make sense if the 3D colors are unavailable.',
+      'Bands:'
+    ];
+    CONFIDENCE_BANDS.forEach(function (band) {
+      lines.push('- ' + band.range + ' / ' + band.label + ': ' + band.text);
+    });
+    return lines.concat([
+      'Claim routine: source -> score/region -> observation -> cautious claim -> limitation or validation.',
+      'Limit: high confidence can support local structure reasoning, but it does not prove function, mechanism, diagnosis, treatment, or personal meaning.'
+    ]).join('\n');
+  }
+
+  function renderConfidenceGuide() {
+    confidenceGuideOutput.textContent = confidenceGuideText();
+    confidenceLegend.innerHTML = '';
+    CONFIDENCE_BANDS.forEach(function (band) {
+      var wrap = el('div', { class: 'legendItem' });
+      var swatch = el('span', { class: 'legendSwatch', 'aria-hidden': 'true' });
+      swatch.style.background = band.color;
+      var body = el('div');
+      body.appendChild(el('b', null, band.range + ' - ' + band.label));
+      body.appendChild(el('span', null, band.text));
+      wrap.appendChild(swatch);
+      wrap.appendChild(body);
+      confidenceLegend.appendChild(wrap);
+    });
+    setStatus(confidenceGuideStatus, '', '');
+  }
+
+  function copyConfidenceGuide() {
+    var text = confidenceGuideText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(confidenceGuideStatus, 'Confidence guide copied.', 'ok');
+      }).catch(function () {
+        setStatus(confidenceGuideStatus, 'Copy failed. Select the guide text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(confidenceGuideStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function diagnosticSummaryText() {
+    var review = claimReviewItems();
+    var items = review.items.map(function (item) { return item.label + ': ' + item.text; });
+    var priorities = [];
+    if (review.items.some(function (item) { return item.level === 'guard'; })) priorities.push('Remove privacy/medical/personal-genetics language before continuing.');
+    if (review.items.some(function (item) { return item.label === 'Claim needed' || item.label === 'Overclaim check'; })) priorities.push('Revise the claim into cautious model language.');
+    if (review.items.some(function (item) { return item.label === 'Evidence needed' || item.label === 'Evidence specificity'; })) priorities.push('Add a specific source, confidence, PAE, domain, pocket, surface, interface, or flexible-region evidence clue.');
+    if (review.items.some(function (item) { return item.label === 'Limit needed' || item.label === 'Limit specificity'; })) priorities.push('Name a limit, reference comparison, experiment, validation check, or next test.');
+    if (!priorities.length) priorities.push('Ready for discussion: evidence, limitation, and privacy guardrail are visible.');
+    return [
+      'AlphaFold diagnostic guidance',
+      'Overall: ' + review.rating,
+      'Priority next step: ' + priorities[0],
+      'All checks: ' + items.join(' | ')
+    ].join('\n');
+  }
+
+  function studentPacketText() {
+    return [
+      'AlphaFold student packet',
+      '',
+      studentDirectionsText(),
+      '',
+      scaffoldText(),
+      '',
+      confidenceGuideText(),
+      '',
+      'Claim review checklist',
+      '1. Does the claim use cautious model language?',
+      '2. Does the evidence name source, score/region, structure feature, or PAE when relevant?',
+      '3. Does the response state what the model cannot prove yet?',
+      '4. Does the response avoid personal, family, patient, ancestry, diagnosis, treatment, disease-risk, and private genetic-test information?',
+      '',
+      lmsRubricText()
+    ].join('\n');
+  }
+
+  function renderStudentPacket() {
+    studentPacketOutput.textContent = studentPacketText();
+    setStatus(studentPacketStatus, '', '');
+  }
+
+  function copyStudentPacket() {
+    var text = studentPacketText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(studentPacketStatus, 'Student packet copied.', 'ok');
+      }).catch(function () {
+        setStatus(studentPacketStatus, 'Copy failed. Select the packet text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(studentPacketStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function currentRoute() {
+    var key = routeSelect ? routeSelect.value : 'public';
+    return ROUTES[key] || ROUTES.public;
+  }
+
+  function readinessState() {
+    var checks = [
+      { key: 'prediction', done: !!(readyPredictionInput && readyPredictionInput.checked), label: 'prediction/model' },
+      { key: 'evidence', done: !!(readyEvidenceInput && readyEvidenceInput.checked), label: 'evidence before claim' },
+      { key: 'privacy', done: !!(readyPrivacyInput && readyPrivacyInput.checked), label: 'approved sample only' }
+    ];
+    var done = checks.filter(function (item) { return item.done; });
+    return {
+      count: done.length,
+      total: checks.length,
+      complete: done.length === checks.length,
+      missing: checks.filter(function (item) { return !item.done; }).map(function (item) { return item.label; }).join(', ')
+    };
+  }
+
+  function readinessText() {
+    var state = readinessState();
+    if (state.complete) return 'Ready: route, evidence habit, and privacy guardrail are set.';
+    return 'Readiness: ' + state.count + '/' + state.total + ' checked. Still confirm: ' + state.missing + '.';
+  }
+
+  function renderRoute() {
+    var route = currentRoute();
+    routeOutput.innerHTML = '';
+    route.steps.forEach(function (step, idx) {
+      var wrap = el('div', { class: 'routeStep' });
+      wrap.appendChild(el('b', null, String(idx + 1)));
+      wrap.appendChild(el('span', null, step));
+      routeOutput.appendChild(wrap);
+    });
+    renderReadiness();
+    renderAccessibleSummary();
+  }
+
+  function renderReadiness() {
+    var state = readinessState();
+    setStatus(readinessStatus, readinessText(), state.complete ? 'ok' : 'warn');
+  }
+
+  function lengthLabel(value) {
+    var text = String(value || '').trim();
+    if (!text) return '';
+    return /^\d+$/.test(text) ? text + ' amino acids' : text;
+  }
+
+  function renderContextLayer() {
+    var ctx = currentContext();
+    contextOutput.textContent = [
+      'Focus: ' + ctx.focus,
+      'Classroom move: ' + ctx.next,
+      'AI guidance: ' + ctx.guide
+    ].join('\n');
+    renderActivityCard();
+    renderGlossary();
+    renderAccessibleSummary();
+    renderLmsAssignment();
+    renderScaffold();
+    renderConfidenceGuide();
+    renderStudentPacket();
+    renderGuide();
+  }
+
+  function refreshLearningOutputs() {
+    renderPresetSummary();
+    renderLessonPlan();
+    renderBiologyContext();
+    renderLmsAssignment();
+    renderScaffold();
+    renderConfidenceGuide();
+    renderStudentPacket();
+    renderActivityCard();
+    renderAccessibleSummary();
+    renderGuide();
+  }
+
+  function activityCardText() {
+    var ctx = currentContext();
+    var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
+    var moves = ACTIVITY_CARDS[currentContextKey()] || ACTIVITY_CARDS.middle;
+    return [
+      'AlphaFold classroom activity card',
+      'Grade band: ' + tutorial.label,
+      'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + bio.label,
+      'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
+      'Tutorial focus: ' + tutorial.objective,
+      'Learning context: ' + ctx.label,
+      'Route: ' + currentRoute().label,
+      'Purpose: ' + ctx.focus,
+      'Anchor question: ' + bio.anchor,
+      moves[0],
+      moves[1],
+      moves[2],
+      moves[3],
+      'Grade-level frame: ' + tutorial.frame,
+      'Context evidence focus: ' + bio.evidence,
+      'Confidence/PAE focus: Use pLDDT for local confidence and PAE for domain/interface placement uncertainty when available.',
+      'Accessibility support: ' + tutorial.access,
+      'Scaffold support: ' + currentScaffold().teacherMove,
+      'Claim routine: Students should write one cautious claim, one evidence line, and one limit or next test.',
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function renderActivityCard() {
+    activityCard.textContent = activityCardText();
+    setStatus(activityStatus, '', '');
+  }
+
+  function copyActivityCard() {
+    var text = activityCardText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(activityStatus, 'Activity card copied.', 'ok');
+      }).catch(function () {
+        setStatus(activityStatus, 'Copy failed. Select the card text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(activityStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function renderGlossary() {
+    var key = currentContextKey();
+    glossaryList.innerHTML = '';
+    GLOSSARY_TERMS.filter(function (item) {
+      return (' ' + item.contexts + ' ').indexOf(' ' + key + ' ') >= 0;
+    }).forEach(function (item) {
+      var wrap = el('div', { class: 'glossaryItem' });
+      wrap.appendChild(el('b', null, item.term));
+      wrap.appendChild(el('span', null, item.def));
+      glossaryList.appendChild(wrap);
+    });
+  }
+
+  function accessibleSummaryText() {
+    var ctx = currentContext();
+    var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
+    var record = current || {};
+    var bits = [];
+    if (record.accession) bits.push(record.accession);
+    if (record.entryId && record.entryId !== record.accession) bits.push(record.entryId);
+    if (record.length) bits.push(lengthLabel(record.length));
+    var lines = [
+      'Accessible AlphaFold summary',
+      'Grade band: ' + tutorial.label,
+      'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + bio.label,
+      'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Anchor question: ' + bio.anchor,
+      'Tutorial focus: ' + tutorial.objective,
+      'Learning context: ' + ctx.label,
+      'Status: ' + (current ? 'Structure loaded for inspection.' : 'No structure loaded yet.'),
+      'Record: ' + (record.name || 'Not recorded'),
+      'Source: ' + (record.source || 'Not recorded'),
+      'Accession/components: ' + (bits.join(' | ') || 'Not recorded'),
+      'Organism: ' + (record.organism || 'Not provided'),
+      'Confidence note: ' + (record.confidence || 'Inspect confidence and supporting evidence before making a claim.'),
+      'Learning route: ' + currentRoute().label,
+      'Readiness: ' + readinessText(),
+      'Student observation: ' + (noteInput.value.trim() || 'Not recorded'),
+      'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
+      'Evidence to cite: ' + (evidenceInput.value.trim() || 'Not recorded'),
+      'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
+      'Claim review: ' + claimReviewSummary(),
+      'Rubric feedback: ' + rubricRating(),
+      'Context guidance: ' + ctx.next,
+      'Context evidence focus: ' + bio.evidence,
+      'Confidence/PAE guide: pLDDT supports cautious local structure observations; PAE helps judge domain or interface placement when available.',
+      'Grade-level support: ' + tutorial.access,
+      'Scaffold support: ' + currentScaffold().accessibility,
+      'Privacy: This summary excludes raw sequence text.'
+    ];
+    return lines.join('\n');
+  }
+
+  function renderAccessibleSummary() {
+    accessibleSummary.textContent = accessibleSummaryText();
+  }
+
+  function claimReviewItems() {
+    var claim = claimInput.value.trim();
+    var evidence = evidenceInput.value.trim();
+    var caution = cautionInput.value.trim();
+    var observation = noteInput.value.trim();
+    var items = [];
+    function add(level, label, text) {
+      items.push({ level: level, label: label, text: text });
+    }
+    var combined = [claim, evidence, caution, observation, sequenceInput.value].join(' ');
+    var overclaim = /\b(prove|proves|proved|confirm|confirms|confirmed|definitely|certainly|guarantee|guarantees|always|never|causes)\b|shows that|means that/i.test(claim);
+    var evidenceReady = /\b(confidence|plddt|pae|uncertain|uncertainty|domain|pocket|surface|flexible|loop|tail|interface|chain|reference|experiment|model|fold|core)\b/i.test(evidence + ' ' + observation);
+    var cautionReady = /\b(compare|reference|experiment|test|limit|uncertain|uncertainty|evidence|pae|confidence|not sure|before|validate|support)\b/i.test(caution);
+    var privacyRisk = /\b(my dna|my genome|my sequence|my protein|family genetic|patient|diagnos\w*|medical report|ancestry|23andme|genetic test|private genetic|disease risk|diseases?|treatments?|cures?)\b/i.test(combined);
+
+    if (!claim) {
+      add('warn', 'Claim needed', 'Write one cautious structure claim using "suggests" or "is consistent with."');
+    } else if (overclaim) {
+      add('warn', 'Overclaim check', 'Revise certainty words. AlphaFold predictions support hypotheses; they do not prove function by themselves.');
+    } else {
+      add('ok', 'Claim language', 'The claim avoids obvious certainty language.');
+    }
+
+    if (!evidence) {
+      add('warn', 'Evidence needed', 'Add structure evidence such as confidence, PAE, a domain, pocket, surface, interface, or flexible region.');
+    } else if (!evidenceReady) {
+      add('warn', 'Evidence specificity', 'Name the specific structure or confidence clue that supports the claim.');
+    } else {
+      add('ok', 'Evidence link', 'The evidence names a structure or confidence clue.');
+    }
+
+    if (!caution) {
+      add('warn', 'Limit needed', 'Add a limit, reference comparison, experiment, or next test before treating the prediction as settled.');
+    } else if (!cautionReady) {
+      add('warn', 'Limit specificity', 'Make the limit testable: name a reference, experiment, confidence check, or comparison.');
+    } else {
+      add('ok', 'Limit or next test', 'The note includes a useful caution or next step.');
+    }
+
+    if (privacyRisk) {
+      add('guard', 'Privacy guardrail', 'Remove personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk language.');
+    } else {
+      add('ok', 'Privacy guardrail', 'No obvious personal genetics or medical wording detected in the student text.');
+    }
+
+    var hasGuard = items.some(function (item) { return item.level === 'guard'; });
+    var hasWarn = items.some(function (item) { return item.level === 'warn'; });
+    return {
+      rating: hasGuard ? 'Guardrail needed' : (hasWarn ? 'Needs revision' : 'Ready for discussion'),
+      items: items
+    };
+  }
+
+  function claimReviewSummary() {
+    var review = claimReviewItems();
+    return review.rating + ': ' + review.items.map(function (item) {
+      return item.label + ' - ' + item.text;
+    }).join(' | ');
+  }
+
+  function renderClaimReview() {
+    var review = claimReviewItems();
+    claimReview.innerHTML = '';
+    claimReview.appendChild(el('div', { class: 'badge' }, 'Claim review: ' + review.rating));
+    review.items.forEach(function (item) {
+      var wrap = el('div', { class: 'reviewItem ' + item.level });
+      wrap.appendChild(el('b', null, item.label));
+      wrap.appendChild(el('span', null, item.text));
+      claimReview.appendChild(wrap);
+    });
+  }
+
+  function rubricItems() {
+    var review = claimReviewItems();
+    var hasGuard = review.items.some(function (item) { return item.level === 'guard'; });
+    var claimWarn = review.items.some(function (item) { return item.label === 'Claim needed' || item.label === 'Overclaim check'; });
+    var evidenceWarn = review.items.some(function (item) { return item.label === 'Evidence needed' || item.label === 'Evidence specificity'; });
+    var limitWarn = review.items.some(function (item) { return item.label === 'Limit needed' || item.label === 'Limit specificity'; });
+    var sourceReady = !!current || !!(readyPrivacyInput && readyPrivacyInput.checked) || !!(safetyConfirmInput && safetyConfirmInput.checked);
+    var readiness = readinessState();
+    return [
+      {
+        label: 'Source and privacy',
+        level: hasGuard ? 'guard' : (sourceReady ? 'ready' : 'revise'),
+        score: hasGuard ? 'Guardrail' : (sourceReady ? 'Ready' : 'Revise'),
+        text: hasGuard ? 'Remove personal genetics or medical wording before continuing.' : (sourceReady ? 'The source/privacy expectation is visible.' : 'Name the public source or confirm the approved classroom sample.')
+      },
+      {
+        label: 'Claim language',
+        level: claimWarn ? 'revise' : 'ready',
+        score: claimWarn ? 'Revise' : 'Ready',
+        text: claimWarn ? 'Use cautious wording such as "suggests" or "is consistent with."' : 'The claim language is cautious enough for discussion.'
+      },
+      {
+        label: 'Structure evidence',
+        level: evidenceWarn ? 'revise' : 'ready',
+        score: evidenceWarn ? 'Revise' : 'Ready',
+        text: evidenceWarn ? 'Tie the claim to confidence, PAE, a domain, pocket, surface, interface, or flexible region.' : 'The evidence names a structure or confidence clue.'
+      },
+      {
+        label: 'Limit or next test',
+        level: limitWarn ? 'revise' : 'ready',
+        score: limitWarn ? 'Revise' : 'Ready',
+        text: limitWarn ? 'Add a reference, comparison, experiment, or confidence check that would test the claim.' : 'The note includes a useful limit or next test.'
+      },
+      {
+        label: 'Learning access',
+        level: readiness.complete ? 'ready' : 'revise',
+        score: readiness.complete ? 'Ready' : 'Revise',
+        text: readiness.complete ? 'The route and readiness checks support independent work.' : 'Complete the readiness checklist so the workflow, evidence habit, and privacy guardrail are explicit.'
+      }
+    ];
+  }
+
+  function rubricRating() {
+    var items = rubricItems();
+    if (items.some(function (item) { return item.level === 'guard'; })) return 'Guardrail needed';
+    var ready = items.filter(function (item) { return item.level === 'ready'; }).length;
+    return ready + '/' + items.length + ' ready';
+  }
+
+  function misconceptionPrompt() {
+    var review = claimReviewItems();
+    var labels = review.items.map(function (item) { return item.label; }).join(' | ');
+    if (review.items.some(function (item) { return item.level === 'guard'; })) {
+      return 'Misconception check: AlphaFold is not a personal genetics, diagnosis, treatment, ancestry, or disease-risk tool.';
+    }
+    if (/Overclaim check/.test(labels)) {
+      return 'Misconception check: A predicted structure can support a hypothesis, but it does not prove function by itself.';
+    }
+    if (/Evidence needed|Evidence specificity/.test(labels)) {
+      return 'Misconception check: A nice-looking 3D shape is not enough evidence until the claim points to confidence or a visible structure feature.';
+    }
+    if (/Limit needed|Limit specificity/.test(labels)) {
+      return 'Misconception check: Model confidence is not the same as experimental validation; strong claims still need comparison or testing.';
+    }
+    if (!readinessState().complete) {
+      return 'Misconception check: Starting quickly is tempting, but the route, evidence habit, and privacy guardrail should be set before independent work.';
+    }
+    return 'Extension check: Compare two cautious claims and decide which one uses stronger evidence from confidence, structure, or reference data.';
+  }
+
+  function rubricFeedbackText() {
+    return [
+      'AlphaFold revision rubric',
+      'Overall: ' + rubricRating()
+    ].concat(rubricItems().map(function (item) {
+      return item.label + ' [' + item.score + ']: ' + item.text;
+    }), [
+      misconceptionPrompt()
+    ]).join('\n');
+  }
+
+  function renderRubric() {
+    rubricOutput.innerHTML = '';
+    rubricOutput.appendChild(el('div', { class: 'badge' }, 'Rubric: ' + rubricRating()));
+    rubricItems().forEach(function (item) {
+      var wrap = el('div', { class: 'rubricItem ' + item.level });
+      var title = el('b');
+      title.appendChild(document.createTextNode(item.label));
+      title.appendChild(el('em', null, item.score));
+      wrap.appendChild(title);
+      wrap.appendChild(el('span', null, item.text));
+      rubricOutput.appendChild(wrap);
+    });
+    misconceptionOutput.textContent = misconceptionPrompt();
+    setStatus(rubricStatus, '', '');
+  }
+
+  function copyRubric() {
+    var text = rubricFeedbackText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(rubricStatus, 'Rubric feedback copied.', 'ok');
+      }).catch(function () {
+        setStatus(rubricStatus, 'Copy failed. Select the rubric text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(rubricStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function guideDone(key) {
+    if (key === 'source') return !!current || !!safetyConfirmInput.checked;
+    if (key === 'inspect') return !!current && (hasText(noteInput, 10) || hasText(evidenceInput, 10));
+    if (key === 'confidence') {
+      var text = [noteInput.value, evidenceInput.value, cautionInput.value, (current && current.confidence) || ''].join(' ').toLowerCase();
+      return !!current && /(confidence|plddt|pae|uncertain|uncertainty|low|high|flexible)/.test(text);
+    }
+    if (key === 'claim') return hasText(claimInput, 12);
+    if (key === 'limits') return hasText(cautionInput, 12);
+    return false;
+  }
+
+  function renderGuide() {
+    var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
+    guideSteps.innerHTML = '';
+    GUIDE_STEPS.forEach(function (step, idx) {
+      var done = guideDone(step.key);
+      var wrap = el('div', { class: 'guideStep' + (done ? ' done' : '') });
+      wrap.appendChild(el('div', { class: 'guideDot', 'aria-hidden': 'true' }, done ? '✓' : String(idx + 1)));
+      var body = el('div');
+      body.appendChild(el('b', null, step.label));
+      body.appendChild(el('span', null, step.text));
+      wrap.appendChild(body);
+      guideSteps.appendChild(wrap);
+    });
+    guidePrompt.textContent = [
+      'Grade band: ' + tutorial.label,
+      'Biology context: ' + bio.label,
+      'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Anchor question: ' + bio.anchor,
+      'Tutorial frame: ' + tutorial.frame,
+      GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length],
+      'Context lens: ' + currentContext().guide
+    ].join('\n\n');
+    renderClaimReview();
+    renderRubric();
+    renderAccessibleSummary();
+  }
+
+  function nextGuidePrompt() {
+    guideIndex = (guideIndex + 1) % GUIDE_PROMPTS.length;
+    renderGuide();
+  }
+
+  function resetGuide() {
+    claimInput.value = '';
+    evidenceInput.value = '';
+    cautionInput.value = '';
+    guideIndex = 0;
+    renderGuide();
+  }
+
+  function toOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(payload, '*');
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || typeof data.type !== 'string') return;
+    if (data.type === 'allocaf-ready') {
+      openerOk = true;
+      aiAvailable = Boolean(data.ai);
+      renderAiState();
+      return;
+    }
+    if (data.type === 'allocaf-ai-response' && data.id && pending[data.id]) {
+      var entry = pending[data.id];
+      delete pending[data.id];
+      clearTimeout(entry.timer);
+      entry.resolve(data);
+    }
+  });
+
+  function renderAiState() {
+    if (openerOk && aiAvailable) {
+      aiState.innerHTML = 'AlloFlow connected <span class="badge">AI coach on</span>. Metadata and observations only; no full sequences are sent.';
+    } else if (openerOk) {
+      aiState.innerHTML = 'AlloFlow connected. AI hints are off, so built-in inspection prompts will be used.';
+    } else {
+      aiState.innerHTML = 'Standalone mode. Built-in inspection prompts are available.';
+    }
+  }
+
+  function nextReflect() {
+    reflectIndex = (reflectIndex + 1) % REFLECT_BANK.length;
+    return REFLECT_BANK[reflectIndex];
+  }
+
+  function askAi(meta, note, type, extra) {
+    var id = 'af' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    return new Promise(function (resolve) {
+      pending[id] = {
+        resolve: resolve,
+        timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000)
+      };
+      var payload = Object.assign({ type: type || 'allocaf-ai-request', id: id, meta: meta || {}, note: note || '' }, extra || {});
+      var sent = toOpener(payload);
+      if (!sent) {
+        var entry = pending[id];
+        delete pending[id];
+        if (entry) clearTimeout(entry.timer);
+        resolve(null);
+      }
+    });
+  }
+
+  function guideContext() {
+    var ctx = currentContext();
+    var bio = currentBiologyContext();
+    return {
+      currentPrompt: guidePrompt.textContent || '',
+      gradeBand: currentGradeTutorial().label,
+      gradeTutorial: gradeTutorialText(),
+      lessonLength: currentLessonLength().label,
+      lessonSequence: lessonPlanText(),
+      biologyContext: bio.label,
+      biologyAnchor: bio.anchor,
+      suggestedExample: bio.example + ' (' + bio.accession + ')',
+      investigationBrief: biologyBriefText(),
+      assignmentFormat: currentAssignmentFormat().label,
+      lmsAssignment: lmsAssignmentText(),
+      scaffoldLevel: currentScaffold().label,
+      scaffoldSupport: scaffoldText(),
+      confidenceGuide: confidenceGuideText(),
+      diagnostic: diagnosticSummaryText(),
+      learningContext: ctx.label,
+      accessibilityFocus: ctx.focus,
+      contextGuidance: ctx.guide,
+      route: currentRoute().label,
+      readiness: readinessText(),
+      activityCard: activityCardText(),
+      claimReview: claimReviewSummary(),
+      rubric: rubricFeedbackText(),
+      observation: noteInput.value.trim(),
+      claim: claimInput.value.trim(),
+      evidence: evidenceInput.value.trim(),
+      caution: cautionInput.value.trim(),
+      sourceConfirmed: !!safetyConfirmInput.checked,
+      completed: GUIDE_STEPS.filter(function (step) { return guideDone(step.key); }).map(function (step) { return step.label; }).join(', ')
+    };
+  }
+
+  function normalizeAccession(raw) {
+    var s = String(raw || '').trim();
+    s = s.replace(/^https?:\/\/alphafold\.ebi\.ac\.uk\/entry\//i, '');
+    s = s.replace(/^AF-/i, '');
+    s = s.replace(/-F\d+.*$/i, '');
+    s = s.replace(/[^A-Za-z0-9_]/g, '');
+    return s.toUpperCase();
+  }
+
+  function safeUrl(url) {
+    try {
+      var u = new URL(url);
+      if (u.protocol === 'https:' || u.protocol === 'http:' || u.protocol === 'blob:') return u.toString();
+    } catch (_) {}
+    return '';
+  }
+
+  function fallbackCifUrl(accession) {
+    return 'https://alphafold.ebi.ac.uk/files/AF-' + encodeURIComponent(accession) + '-F1-model_v4.cif';
+  }
+
+  function pickRecord(apiRecord, requested) {
+    var rec = apiRecord || {};
+    var acc = rec.uniprotAccession || rec.accession || requested;
+    var entryId = rec.entryId || ('AF-' + acc + '-F1');
+    var modelUrl = safeUrl(rec.cifUrl || rec.bcifUrl || rec.pdbUrl || fallbackCifUrl(acc));
+    return {
+      source: 'AlphaFold DB',
+      accession: acc,
+      entryId: entryId,
+      name: rec.uniprotDescription || rec.proteinDescription || rec.uniprotId || entryId,
+      organism: rec.organismScientificName || rec.organism || '',
+      gene: rec.gene || '',
+      length: rec.sequenceLength || rec.length || '',
+      modelUrl: modelUrl,
+      pdbUrl: safeUrl(rec.pdbUrl || ''),
+      cifUrl: safeUrl(rec.cifUrl || modelUrl),
+      paeUrl: safeUrl(rec.paeDocUrl || rec.paeImageUrl || ''),
+      plddtUrl: safeUrl(rec.plddtDocUrl || ''),
+      uniprotUrl: acc ? 'https://www.uniprot.org/uniprotkb/' + encodeURIComponent(acc) + '/entry' : '',
+      dbUrl: acc ? 'https://alphafold.ebi.ac.uk/entry/' + encodeURIComponent(acc) : '',
+      confidence: summarizeConfidence(rec),
+      citation: citationFor({
+        source: 'AlphaFold DB',
+        accession: acc,
+        entryId: entryId,
+        name: rec.uniprotDescription || rec.proteinDescription || rec.uniprotId || entryId,
+        organism: rec.organismScientificName || rec.organism || '',
+        url: acc ? 'https://alphafold.ebi.ac.uk/entry/' + encodeURIComponent(acc) : ''
+      })
+    };
+  }
+
+  function citationFor(record) {
+    if (!record) return '';
+    if (record.source === 'AlphaFold DB') {
+      var name = record.name ? record.name + ' ' : '';
+      var org = record.organism ? ' (' + record.organism + ')' : '';
+      var acc = record.accession || record.entryId || 'unknown accession';
+      var url = record.url || record.dbUrl || record.modelUrl || '';
+      return 'AlphaFold Protein Structure Database. ' + name + '[' + acc + ']' + org + '. Google DeepMind and EMBL-EBI. ' + url;
+    }
+    if (record.source === 'Uploaded file') {
+      return 'Local structure file inspected in AlloFlow AlphaFold Explorer: ' + (record.name || 'uploaded structure') + '.';
+    }
+    if (record.source === 'Prepared sequence') {
+      return 'AlphaFold input JSON prepared locally in AlloFlow AlphaFold Explorer for a public, synthetic, or teacher-approved classroom model.';
+    }
+    return '';
+  }
+
+  function summarizeConfidence(rec) {
+    var candidates = [
+      rec && rec.globalMetricValue,
+      rec && rec.avgPlddt,
+      rec && rec.averagePlddt,
+      rec && rec.confidenceScore,
+      rec && rec.plddt
+    ];
+    for (var i = 0; i < candidates.length; i++) {
+      var n = Number(candidates[i]);
+      if (Number.isFinite(n) && n > 0) return 'reported summary score ' + Math.round(n * 10) / 10;
+    }
+    return 'Inspect pLDDT coloring in the viewer; low-confidence regions should be interpreted cautiously.';
+  }
+
+  function ensureViewer() {
+    if (viewerPromise) return viewerPromise;
+    if (typeof window.molstar === 'undefined' || !window.molstar.Viewer) {
+      viewerPromise = Promise.reject(new Error('Mol* library did not load'));
+      return viewerPromise;
+    }
+    viewerPromise = window.molstar.Viewer.create('molstar', {
+      layoutIsExpanded: false,
+      layoutShowControls: true,
+      layoutShowRemoteState: false,
+      layoutShowSequence: true,
+      layoutShowLog: false,
+      viewportShowExpand: true,
+      viewportShowSelectionMode: false,
+      pdbProvider: 'rcsb',
+      emdbProvider: 'rcsb'
+    }).then(function (v) { viewer = v; return v; });
+    return viewerPromise;
+  }
+
+  function showLoading(text) {
+    loadmsg.textContent = text || 'Loading...';
+    loadmsg.style.display = 'flex';
+    placeholder.style.display = 'none';
+  }
+
+  function hideLoading() {
+    loadmsg.style.display = 'none';
+    placeholder.style.display = 'none';
+  }
+
+  function loadStructure(record, format, isBinary) {
+    current = record;
+    renderDetails(record);
+    showLoading('Loading structure into Mol*...');
+    return ensureViewer().then(function (v) {
+      if (typeof v.loadStructureFromUrl === 'function') {
+        return v.loadStructureFromUrl(record.modelUrl, format || 'mmcif', !!isBinary);
+      }
+      if (record.accession && typeof v.loadAlphaFoldDb === 'function') {
+        return v.loadAlphaFoldDb(record.accession);
+      }
+      throw new Error('This Mol* build does not expose URL loading');
+    }).then(function () {
+      hideLoading();
+    }).catch(function (e) {
+      loadmsg.textContent = 'Could not load the structure. ' + String((e && e.message) || e).slice(0, 130);
+      loadmsg.style.display = 'flex';
+      throw e;
+    });
+  }
+
+  function lookup(accession) {
+    var acc = normalizeAccession(accession);
+    if (!acc) {
+      setStatus(lookupStatus, 'Enter a UniProt or AlphaFold accession.', 'warn');
+      return;
+    }
+    accessionInput.value = acc;
+    lookupBtn.disabled = true;
+    setStatus(lookupStatus, 'Looking up ' + acc + ' in AlphaFold DB...', '');
+    fetch(API_ROOT + encodeURIComponent(acc), { method: 'GET' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('AlphaFold DB returned HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        var rec = Array.isArray(data) ? data[0] : data;
+        if (!rec) throw new Error('No public AlphaFold DB prediction was found for ' + acc);
+        var record = pickRecord(rec, acc);
+        setStatus(lookupStatus, 'Loaded public AlphaFold DB record for ' + record.accession + '.', 'ok');
+        toOpener({ type: 'allocaf-db-hit', accession: record.accession });
+        return loadStructure(record, 'mmcif', false);
+      })
+      .catch(function (e) {
+        setStatus(lookupStatus, String((e && e.message) || e), 'err');
+      })
+      .finally(function () {
+        lookupBtn.disabled = false;
+      });
+  }
+
+  function renderDetails(record) {
+    facts.innerHTML = '';
+    detailTitle.textContent = record && record.name ? record.name : 'Structure loaded';
+    addFact('Source', record.source || 'Unknown');
+    addFact('Accession', record.accession || record.entryId || 'Local file');
+    addFact('Organism', record.organism || 'Not provided');
+    addFact('Gene', record.gene || 'Not provided');
+    addFact('Length', lengthLabel(record.length) || 'Not provided');
+    addFact('Confidence', record.confidence || 'Not provided');
+    if (record.dbUrl) addLinkFact('AlphaFold DB', record.dbUrl);
+    if (record.uniprotUrl) addLinkFact('UniProt', record.uniprotUrl);
+    if (record.modelUrl && record.source !== 'Uploaded file') addLinkFact('Model file', record.modelUrl);
+    if (record.paeUrl) addLinkFact('PAE', record.paeUrl);
+    if (record.source === 'AlphaFold DB') addFact('Student claim check', 'Cite the record, inspect confidence, then compare with experimental or reference evidence.');
+    var citation = record.citation || citationFor(record);
+    copyCitationBtn.disabled = !citation;
+    copyCitationBtn.setAttribute('data-citation', citation);
+    copyLabNoteBtn.disabled = !record;
+    setStatus(citationStatus, '', '');
+    renderGuide();
+  }
+
+  function addFact(label, value) {
+    var wrap = el('div', { class: 'fact' });
+    wrap.appendChild(el('b', null, label));
+    wrap.appendChild(el('span', null, value || ''));
+    facts.appendChild(wrap);
+  }
+
+  function addLinkFact(label, href) {
+    var wrap = el('div', { class: 'fact' });
+    wrap.appendChild(el('b', null, label));
+    var a = el('a', { href: href, target: '_blank', rel: 'noopener' }, href);
+    wrap.appendChild(a);
+    facts.appendChild(wrap);
+  }
+
+  function cleanSequence(raw) {
+    return String(raw || '')
+      .split(/\r?\n/)
+      .filter(function (line) { return !/^>/.test(line.trim()); })
+      .join('')
+      .replace(/[^A-Za-z]/g, '')
+      .toUpperCase();
+  }
+
+  function invalidSymbols(seq, alphabet) {
+    var invalid = [];
+    for (var i = 0; i < seq.length; i++) {
+      if (alphabet.indexOf(seq[i]) === -1 && invalid.indexOf(seq[i]) === -1) invalid.push(seq[i]);
+    }
+    return invalid;
+  }
+
+  function validateSequence(raw) {
+    var seq = cleanSequence(raw);
+    var invalid = invalidSymbols(seq, AA);
+    var warnings = [];
+    if (!seq) return { seq: '', valid: true, present: false, warnings: [] };
+    if (seq.length > 30 && /^[ACGTUN]+$/.test(seq)) warnings.push('This looks like DNA/RNA bases, not a protein amino-acid sequence.');
+    if (seq.length && seq.length < 16) warnings.push('AlphaFold DB models usually start at 16 amino acids; this is very short.');
+    if (seq.length > 2700) warnings.push('This is longer than the usual AlphaFold DB single-chain range; server/runtime limits may apply.');
+    if (invalid.length) warnings.push('Non-standard amino-acid symbols found: ' + invalid.join(', ') + '. Use the 20 standard one-letter amino-acid codes.');
+    return { seq: seq, valid: invalid.length === 0 && !(seq.length > 30 && /^[ACGTUN]+$/.test(seq)), present: true, warnings: warnings };
+  }
+
+  function validateNucleic(raw, alphabet, label) {
+    var seq = cleanSequence(raw);
+    var invalid = invalidSymbols(seq, alphabet);
+    var warnings = [];
+    if (!seq) return { seq: '', valid: true, present: false, warnings: [] };
+    if (invalid.length) warnings.push(label + ' contains unsupported symbols: ' + invalid.join(', ') + '.');
+    if (seq.length < 4) warnings.push(label + ' is very short.');
+    if (seq.length > 5000) warnings.push(label + ' is long; server/runtime limits may apply.');
+    return { seq: seq, valid: invalid.length === 0, present: true, warnings: warnings };
+  }
+
+  function readCount(input, fallback, max) {
+    var n = Math.round(Number(input && input.value));
+    if (!Number.isFinite(n) || n < 1) n = fallback || 1;
+    if (max && n > max) n = max;
+    if (input) input.value = String(n);
+    return n;
+  }
+
+  function safeJobName() {
+    var raw = String(jobNameInput.value || '').trim();
+    var name = raw || ('alloflow_classroom_model_' + new Date().toISOString().slice(0, 10));
+    return name.replace(/[^\w .-]+/g, '_').slice(0, 80);
+  }
+
+  function chainId(index) {
+    var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (index < 26) return letters[index];
+    return letters[Math.floor(index / 26) - 1] + letters[index % 26];
+  }
+
+  function chainIds(cursor, count) {
+    var ids = [];
+    for (var i = 0; i < count; i++) ids.push(chainId(cursor.value++));
+    return count === 1 ? ids[0] : ids;
+  }
+
+  function reverseComplementDna(seq) {
+    var comp = { A: 'T', T: 'A', G: 'C', C: 'G' };
+    return String(seq || '').split('').reverse().map(function (ch) { return comp[ch] || ch; }).join('');
+  }
+
+  function stripCcd(code) {
+    return String(code || '').replace(/^CCD_/, '');
+  }
+
+  function collectInput() {
+    var protein = validateSequence(sequenceInput.value);
+    var dna = validateNucleic(dnaInput.value, DNA, 'DNA');
+    var rna = validateNucleic(rnaInput.value, RNA, 'RNA');
+    var warnings = [].concat(protein.warnings, dna.warnings, rna.warnings);
+    var components = [];
+    var proteinCount = readCount(proteinCountInput, 1, 12);
+    var ligand = ligandSelect.value;
+    var ligandCount = readCount(ligandCountInput, 1, 12);
+    var ion = ionSelect.value;
+    var ionCount = readCount(ionCountInput, 1, 12);
+    var seed = readCount(seedInput, 1, 4294967295);
+    var confirmed = !!safetyConfirmInput.checked;
+    if (protein.present) components.push(proteinCount + ' protein chain' + (proteinCount === 1 ? '' : 's'));
+    if (dna.present) components.push(dnaRevCompInput.checked ? 'double-stranded DNA' : 'single-stranded DNA');
+    if (rna.present) components.push('RNA');
+    if (ligand) components.push(ligandCount + ' ligand' + (ligandCount === 1 ? '' : 's'));
+    if (ion) components.push(ionCount + ' ion' + (ionCount === 1 ? '' : 's'));
+    if (!protein.present && !dna.present && !rna.present) warnings.push('Add at least one protein, DNA, or RNA chain before preparing JSON.');
+    if ((ligand || ion) && !protein.present && !dna.present && !rna.present) warnings.push('Ligands and ions need a biomolecule partner for a meaningful classroom model.');
+    if (components.length && !confirmed) warnings.push('Confirm the input source before preparing JSON.');
+    return {
+      protein: protein,
+      dna: dna,
+      rna: rna,
+      proteinCount: proteinCount,
+      ligand: ligand,
+      ligandCount: ligandCount,
+      ion: ion,
+      ionCount: ionCount,
+      seed: seed,
+      format: formatSelect.value === 'local' ? 'local' : 'server',
+      name: safeJobName(),
+      components: components,
+      confirmed: confirmed,
+      valid: confirmed && protein.valid && dna.valid && rna.valid && (protein.present || dna.present || rna.present),
+      warnings: warnings
+    };
+  }
+
+  function buildServerPayload(v) {
+    var sequences = [];
+    if (v.protein.present) sequences.push({ proteinChain: { sequence: v.protein.seq, count: v.proteinCount } });
+    if (v.dna.present) {
+      sequences.push({ dnaSequence: { sequence: v.dna.seq, count: 1 } });
+      if (dnaRevCompInput.checked) sequences.push({ dnaSequence: { sequence: reverseComplementDna(v.dna.seq), count: 1 } });
+    }
+    if (v.rna.present) sequences.push({ rnaSequence: { sequence: v.rna.seq, count: 1 } });
+    if (v.ligand) sequences.push({ ligand: { ligand: v.ligand, count: v.ligandCount } });
+    if (v.ion) sequences.push({ ion: { ion: v.ion, count: v.ionCount } });
+    return [{
+      name: v.name,
+      modelSeeds: [],
+      sequences: sequences,
+      dialect: 'alphafoldserver',
+      version: 1
+    }];
+  }
+
+  function buildLocalPayload(v) {
+    var cursor = { value: 0 };
+    var sequences = [];
+    if (v.protein.present) {
+      sequences.push({ protein: { id: chainIds(cursor, v.proteinCount), sequence: v.protein.seq, description: 'public/synthetic classroom protein' } });
+    }
+    if (v.dna.present) {
+      sequences.push({ dna: { id: chainIds(cursor, 1), sequence: v.dna.seq, description: 'public/synthetic classroom DNA strand' } });
+      if (dnaRevCompInput.checked) {
+        sequences.push({ dna: { id: chainIds(cursor, 1), sequence: reverseComplementDna(v.dna.seq), description: 'reverse complement classroom DNA strand' } });
+      }
+    }
+    if (v.rna.present) {
+      sequences.push({ rna: { id: chainIds(cursor, 1), sequence: v.rna.seq, description: 'public/synthetic classroom RNA strand' } });
+    }
+    if (v.ligand) {
+      sequences.push({ ligand: { id: chainIds(cursor, v.ligandCount), ccdCodes: [stripCcd(v.ligand)], description: 'allowed classroom ligand' } });
+    }
+    if (v.ion) {
+      sequences.push({ ligand: { id: chainIds(cursor, v.ionCount), ccdCodes: [v.ion], description: 'allowed classroom ion' } });
+    }
+    return {
+      name: v.name,
+      modelSeeds: [v.seed],
+      sequences: sequences,
+      dialect: 'alphafold3',
+      version: 4
+    };
+  }
+
+  function updateSequenceStatus() {
+    var v = collectInput();
+    if (!v.components.length) {
+      setStatus(sequenceStatus, 'No protein, DNA, or RNA sequence entered.', '');
+    } else if (v.warnings.length) {
+      setStatus(sequenceStatus, v.components.join(', ') + '. ' + v.warnings.join(' '), v.valid ? 'warn' : 'err');
+    } else {
+      setStatus(sequenceStatus, v.components.join(', ') + '. Ready to prepare ' + (v.format === 'server' ? 'AlphaFold Server' : 'AlphaFold 3 local-code') + ' JSON.', 'ok');
+    }
+    renderGuide();
+    return v;
+  }
+
+  function prepareJson() {
+    var v = updateSequenceStatus();
+    if (!v.valid) return;
+    var payload = v.format === 'local' ? buildLocalPayload(v) : buildServerPayload(v);
+    lastJson = JSON.stringify(payload, null, 2);
+    jsonOutput.textContent = lastJson;
+    jsonOutput.hidden = false;
+    copyJsonBtn.disabled = false;
+    downloadJsonBtn.disabled = false;
+    setStatus(sequenceStatus, 'Prepared ' + (v.format === 'server' ? 'AlphaFold Server' : 'AlphaFold 3 local-code') + ' JSON for ' + v.components.join(', ') + '.', 'ok');
+    toOpener({ type: 'allocaf-sequence-prepared', length: (v.protein.seq || '').length, components: v.components.join(', ') });
+    current = {
+      source: 'Prepared sequence',
+      accession: 'not submitted',
+      name: 'Prepared ' + (v.format === 'server' ? 'AlphaFold Server' : 'AlphaFold 3 local-code') + ' input',
+      organism: 'Not provided',
+      length: v.components.join(', '),
+      confidence: 'No structure yet. Submit/run the JSON externally, then import the result file.',
+      citation: citationFor({ source: 'Prepared sequence' })
+    };
+    renderDetails(current);
+  }
+
+  function loadLocalFile(file) {
+    if (!file) return;
+    var name = file.name || 'local structure';
+    var ext = name.toLowerCase().split('.').pop();
+    var format = (ext === 'pdb' || ext === 'ent') ? 'pdb' : 'mmcif';
+    var isBinary = ext === 'bcif';
+    var url = URL.createObjectURL(file);
+    var record = {
+      source: 'Uploaded file',
+      accession: 'local',
+      name: name,
+      organism: 'Not provided',
+      length: '',
+      confidence: 'Local file loaded. Inspect any confidence coloring or output files that came with your prediction.',
+      modelUrl: url,
+      citation: citationFor({ source: 'Uploaded file', name: name })
+    };
+    setStatus(fileStatus, 'Loading ' + name + ' locally...', '');
+    loadStructure(record, format, isBinary).then(function () {
+      setStatus(fileStatus, 'Loaded ' + name + '.', 'ok');
+      toOpener({ type: 'allocaf-file-imported', name: name });
+    }).catch(function (e) {
+      setStatus(fileStatus, 'Could not load ' + name + '. ' + String((e && e.message) || e).slice(0, 120), 'err');
+    });
+  }
+
+  function copyJson() {
+    if (!lastJson) return;
+    var target = formatSelect.value === 'local' ? 'AlphaFold 3 local-code runs' : 'AlphaFold Server';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(lastJson).then(function () {
+        setStatus(sequenceStatus, 'JSON copied. Use it with ' + target + ' only for public/synthetic classroom sequences.', 'ok');
+      }).catch(function () {
+        setStatus(sequenceStatus, 'Copy failed. Select the JSON text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(sequenceStatus, 'Clipboard is unavailable. Select the JSON text and copy manually.', 'warn');
+    }
+  }
+
+  function downloadJson() {
+    if (!lastJson) return;
+    var blob = new Blob([lastJson], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var suffix = formatSelect.value === 'local' ? 'local_code' : 'server';
+    var a = el('a', { href: url, download: 'alphafold_' + suffix + '_input.json' });
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+  function copyCitation() {
+    var text = copyCitationBtn.getAttribute('data-citation') || '';
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(citationStatus, 'Citation copied.', 'ok');
+      }).catch(function () {
+        setStatus(citationStatus, 'Copy failed. Select and copy from the record links instead.', 'warn');
+      });
+    } else {
+      setStatus(citationStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function labNoteText() {
+    var record = current || {};
+    var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
+    var citation = record.citation || citationFor(record);
+    var observation = noteInput.value.trim();
+    var accessionBits = [];
+    if (record.accession) accessionBits.push(record.accession);
+    if (record.length) accessionBits.push(record.length);
+    var lines = [
+      'AlphaFold Explorer lab note',
+      'Grade band: ' + tutorial.label,
+      'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + bio.label,
+      'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
+      'Anchor question: ' + bio.anchor,
+      'Tutorial focus: ' + tutorial.objective,
+      'Learning context: ' + currentContext().label,
+      'Name: ' + (record.name || 'Not recorded'),
+      'Source: ' + (record.source || 'Not recorded'),
+      'Accession/components: ' + (accessionBits.join(' | ') || 'Not recorded'),
+      'Organism: ' + (record.organism || 'Not provided'),
+      'Confidence/evidence: ' + (record.confidence || 'Inspect confidence and supporting evidence before making a claim.'),
+      'Learning route: ' + currentRoute().label,
+      'Readiness: ' + readinessText(),
+      'Student observation: ' + (observation || 'Not recorded'),
+      'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
+      'Structure evidence: ' + (evidenceInput.value.trim() || 'Not recorded'),
+      'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
+      'Claim review: ' + claimReviewSummary(),
+      'Rubric feedback: ' + rubricRating(),
+      'Grade-level support: ' + tutorial.access,
+      'Scaffold support: ' + currentScaffold().accessibility,
+      'Science interpretation: Use pLDDT/confidence for local region reliability and PAE when available for domain or interface placement uncertainty.',
+      'Diagnostic next step: ' + diagnosticSummaryText().split('\n')[2].replace(/^Priority next step:\s*/, ''),
+      'Misconception check: ' + misconceptionPrompt().replace(/^Misconception check:\s*/, ''),
+      'Context caution: ' + bio.caution,
+      'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
+    ];
+    if (citation) lines.push('Citation: ' + citation);
+    return lines.join('\n');
+  }
+
+  function copyLabNote() {
+    var text = labNoteText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(citationStatus, 'Lab note copied. It does not include sequence text.', 'ok');
+      }).catch(function () {
+        setStatus(citationStatus, 'Copy failed. Try copying citation instead.', 'warn');
+      });
+    } else {
+      setStatus(citationStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function copyAccessibleSummary() {
+    var text = accessibleSummaryText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(citationStatus, 'Accessible summary copied. It does not include sequence text.', 'ok');
+      }).catch(function () {
+        setStatus(citationStatus, 'Copy failed. Select the accessible summary text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(citationStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function guideFallback() {
+    var ctx = guideContext();
+    if (!current) return 'First load a public AlphaFold DB structure, import a result file, or prepare confirmed classroom input. Then inspect confidence before making a claim.';
+    if (!ctx.claim) return 'Write one cautious claim using words like "suggests" or "is consistent with" instead of treating the prediction as settled.';
+    if (!ctx.evidence) return 'Add evidence from the structure: confidence, PAE when available, a folded core, a flexible region, a pocket, a surface, or a domain pattern.';
+    if (!ctx.caution) return 'Name a limit or next test. A strong answer says what experiment, reference, or database comparison would make the claim stronger.';
+    return currentContext().next + ' ' + GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length];
+  }
+
+  function aiGuide() {
+    var meta = current || {
+      source: 'No structure loaded',
+      name: 'No structure loaded',
+      confidence: 'No confidence data yet'
+    };
+    if (!(openerOk && aiAvailable)) {
+      guideAiOutput.textContent = guideFallback();
+      guideAiOutput.hidden = false;
+      return;
+    }
+    if (busy) return;
+    busy = true;
+    guideAiBtn.disabled = true;
+    guideAiBtn.textContent = 'Guiding...';
+    askAi(meta, noteInput.value.trim(), 'allocaf-ai-guide-request', { guide: guideContext() }).then(function (res) {
+      var text = res && !res.error && res.text ? String(res.text).trim() : '';
+      guideAiOutput.textContent = text || ('AI guide was unavailable. ' + guideFallback());
+      guideAiOutput.hidden = false;
+    }).finally(function () {
+      busy = false;
+      guideAiBtn.disabled = false;
+      guideAiBtn.textContent = 'Ask AI guide';
+    });
+  }
+
+  function coach() {
+    var note = noteInput.value.trim();
+    var meta = current || {
+      source: 'No structure loaded',
+      name: 'No structure loaded',
+      confidence: 'No confidence data yet'
+    };
+    if (!(openerOk && aiAvailable)) {
+      coachOutput.textContent = nextReflect();
+      coachOutput.hidden = false;
+      return;
+    }
+    if (busy) return;
+    busy = true;
+    coachBtn.disabled = true;
+    coachBtn.textContent = 'Thinking...';
+    askAi(meta, note, 'allocaf-ai-request', { guide: guideContext() }).then(function (res) {
+      var text = res && !res.error && res.text ? String(res.text).trim() : '';
+      coachOutput.textContent = text || ('AI coach was unavailable. ' + nextReflect());
+      coachOutput.hidden = false;
+    }).finally(function () {
+      busy = false;
+      coachBtn.disabled = false;
+      coachBtn.textContent = 'Ask for an inspection question';
+    });
+  }
+
+  EXAMPLES.forEach(function (item) {
+    var btn = el('button', { class: 'example', type: 'button' });
+    btn.appendChild(el('div', null, item.label));
+    btn.appendChild(el('small', null, item.accession + ' - ' + item.hint));
+    btn.addEventListener('click', function () { lookup(item.accession); });
+    examplesEl.appendChild(btn);
+  });
+
+  lookupBtn.addEventListener('click', function () { lookup(accessionInput.value); });
+  accessionInput.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') lookup(accessionInput.value);
+  });
+  fileInput.addEventListener('change', function () { loadLocalFile(fileInput.files && fileInput.files[0]); });
+  sequenceInput.addEventListener('input', updateSequenceStatus);
+  jobNameInput.addEventListener('input', updateSequenceStatus);
+  formatSelect.addEventListener('change', updateSequenceStatus);
+  proteinCountInput.addEventListener('input', updateSequenceStatus);
+  seedInput.addEventListener('input', updateSequenceStatus);
+  dnaInput.addEventListener('input', updateSequenceStatus);
+  dnaRevCompInput.addEventListener('change', updateSequenceStatus);
+  rnaInput.addEventListener('input', updateSequenceStatus);
+  ligandSelect.addEventListener('change', updateSequenceStatus);
+  ligandCountInput.addEventListener('input', updateSequenceStatus);
+  ionSelect.addEventListener('change', updateSequenceStatus);
+  ionCountInput.addEventListener('input', updateSequenceStatus);
+  safetyConfirmInput.addEventListener('change', updateSequenceStatus);
+  copyTutorialBtn.addEventListener('click', copyTutorial);
+  flowButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () { setFlowMode(btn.getAttribute('data-flow-mode')); });
+  });
+  presetSelect.addEventListener('change', function () { renderPresetSummary(); });
+  applyPresetBtn.addEventListener('click', applyPreset);
+  copyPresetBtn.addEventListener('click', copyPresetSummary);
+  gradeTutorialSelect.addEventListener('change', function () { renderGradeTutorial(); renderGuide(); });
+  applyGradeTutorialBtn.addEventListener('click', applyGradeTutorial);
+  copyGradeTutorialBtn.addEventListener('click', copyGradeTutorial);
+  lessonLengthSelect.addEventListener('change', refreshLearningOutputs);
+  copyLessonPlanBtn.addEventListener('click', copyLessonPlan);
+  copyStudentDirectionsBtn.addEventListener('click', copyStudentDirections);
+  bioContextSelect.addEventListener('change', refreshLearningOutputs);
+  setBioExampleBtn.addEventListener('click', setBiologyExample);
+  copyBioBriefBtn.addEventListener('click', copyBiologyBrief);
+  assignmentFormatSelect.addEventListener('change', refreshLearningOutputs);
+  copyLmsAssignmentBtn.addEventListener('click', copyLmsAssignment);
+  copyLmsRubricBtn.addEventListener('click', copyLmsRubric);
+  scaffoldSelect.addEventListener('change', refreshLearningOutputs);
+  copyScaffoldBtn.addEventListener('click', copyScaffold);
+  copyStudentPacketBtn.addEventListener('click', copyStudentPacket);
+  copyConfidenceGuideBtn.addEventListener('click', copyConfidenceGuide);
+  routeSelect.addEventListener('change', function () { renderRoute(); renderLmsAssignment(); renderGuide(); });
+  readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
+  readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
+  readyPrivacyInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
+  contextSelect.addEventListener('change', renderContextLayer);
+  noteInput.addEventListener('input', renderGuide);
+  claimInput.addEventListener('input', renderGuide);
+  evidenceInput.addEventListener('input', renderGuide);
+  cautionInput.addEventListener('input', renderGuide);
+  guideAiBtn.addEventListener('click', aiGuide);
+  guidePromptBtn.addEventListener('click', nextGuidePrompt);
+  guideResetBtn.addEventListener('click', resetGuide);
+  prepareBtn.addEventListener('click', prepareJson);
+  serverBtn.addEventListener('click', function () { window.open(SERVER_URL, 'alphafold-server'); });
+  copyJsonBtn.addEventListener('click', copyJson);
+  downloadJsonBtn.addEventListener('click', downloadJson);
+  copyCitationBtn.addEventListener('click', copyCitation);
+  copyLabNoteBtn.addEventListener('click', copyLabNote);
+  copyAccessibleSummaryBtn.addEventListener('click', copyAccessibleSummary);
+  copyActivityCardBtn.addEventListener('click', copyActivityCard);
+  copyRubricBtn.addEventListener('click', copyRubric);
+  coachBtn.addEventListener('click', coach);
+
+  var params = new URLSearchParams(window.location.search);
+  var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
+  if (requested) lookup(requested);
+  renderFlowMode();
+  renderPresetSummary();
+  renderGradeTutorial();
+  renderRoute();
+  renderContextLayer();
+  var hello = function () { toOpener({ type: 'allocaf-hello' }); };
+  hello();
+  setTimeout(hello, 900);
+  setTimeout(renderAiState, 2600);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'allocaf-closed' }); });
+})();
+</script>
+</body>
+</html>

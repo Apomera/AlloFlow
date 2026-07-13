@@ -1,5 +1,7 @@
 # Portuguese (Brazil) Language Pack — Handoff
 
+> **Historical language-pack handoff (2026-07-09):** This records the May 19 Portuguese (Brazil) completion pass. The repo's language inventory has grown since then; verify `lang/portuguese_brazil.js`, the mirrored public copy, and current i18n reports before relying on the key counts or "complete" status below.
+
 **Last updated:** 2026-05-19 (Session 4 — 100% COMPLETE)
 **Current state:** 9,513 / 9,307+ keys (100% coverage, exceeds target), 163 sections, ~1029 KB
 **Slug:** `portuguese_brazil`

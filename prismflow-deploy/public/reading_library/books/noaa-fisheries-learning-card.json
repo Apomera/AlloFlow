@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-fisheries-learning-card",
+  "title": "NOAA Fisheries Learning Resources",
+  "description": "A NOAA source card about fisheries science, protected species, habitats, and sustainable seafood.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Marine biology",
+    "Fisheries",
+    "Conservation",
+    "Ecosystems"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Fisheries",
+    "url": "https://www.fisheries.noaa.gov/topic/sustainable-fisheries"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA Fisheries learning resources explain fish populations, protected species, habitats, seafood, management, and the science behind sustainable use."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students evaluating tradeoffs among ecology, food systems, economics, and conservation."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  }
+}

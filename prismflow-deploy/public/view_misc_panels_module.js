@@ -91,6 +91,66 @@ function PdfDiffViewer(props) {
     toggleDiffChunk,
     warnLog
   } = props;
+  const theme = ["light", "dark", "contrast"].includes(props.theme) ? props.theme : "light";
+  const diffDialogRef = React.useRef(null);
+  const diffCloseRef = React.useRef(null);
+  const diffConfirmRef = React.useRef(null);
+  const diffConfirmCancelRef = React.useRef(null);
+  const diffConfirmResolveRef = React.useRef(null);
+  const [diffConfirmation, setDiffConfirmation] = React.useState(null);
+  const requestDiffConfirmation = (options) => new Promise((resolve) => {
+    diffConfirmResolveRef.current = resolve;
+    setDiffConfirmation(options);
+  });
+  const finishDiffConfirmation = (accepted) => {
+    const resolve = diffConfirmResolveRef.current;
+    diffConfirmResolveRef.current = null;
+    setDiffConfirmation(null);
+    if (resolve) resolve(accepted);
+  };
+  const containDiffFocus = (event, container, onEscape) => {
+    if (!event || !container) return;
+    const nestedDialog = event.target?.closest?.('[role="alertdialog"]');
+    if (nestedDialog && nestedDialog !== container) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      if (typeof onEscape === "function") onEscape();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      event.preventDefault();
+      container.focus();
+      return;
+    }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  React.useEffect(() => {
+    if (!(diffViewOpen && pdfFixResult)) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => diffCloseRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [diffViewOpen, !!pdfFixResult]);
+  React.useEffect(() => {
+    if (!diffConfirmation) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => diffConfirmCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [!!diffConfirmation]);
   if (!(diffViewOpen && pdfFixResult)) return null;
   return ReactDOM.createPortal((() => {
     const _ov = pdfFixResult._diffOverride && typeof pdfFixResult._diffOverride.before === "string" ? pdfFixResult._diffOverride : null;
@@ -187,22 +247,29 @@ function PdfDiffViewer(props) {
         }
       });
     }
-    const _onTryGranularityChange = (g) => {
+    const _onTryGranularityChange = async (g) => {
       if (g === "chars") {
         const combined = (_src.length || 0) + (_fin.length || 0);
         const CHARS_GUARD_THRESHOLD = 2e4;
         if (combined > CHARS_GUARD_THRESHOLD) {
           const approxSec = Math.round(combined * combined / 1e9);
-          const warn = `Character-level diff on this document (${combined.toLocaleString()} chars total) is very slow and may freeze the browser for ~${Math.max(5, approxSec)}s or more.
-
-Consider Words or Sentences granularity instead.
-
-Continue with Chars anyway?`;
-          if (!window.confirm(warn)) return;
+          const accepted = await requestDiffConfirmation({
+            title: "Use character-level comparison?",
+            message: `This document contains ${combined.toLocaleString()} characters. Character comparison may freeze the browser for about ${Math.max(5, approxSec)} seconds or longer. Words or Sentences will be faster.`,
+            confirmLabel: "Use characters",
+            cancelLabel: "Keep current view"
+          });
+          if (!accepted) return;
         }
       }
       if (_chunks && _chunks.some((c) => c.rejected)) {
-        if (!window.confirm("Changing granularity will reset your rejections. Continue?")) return;
+        const accepted = await requestDiffConfirmation({
+          title: "Reset rejected changes?",
+          message: "Changing comparison granularity will reset every rejected change in this diff.",
+          confirmLabel: "Change and reset",
+          cancelLabel: "Keep rejections"
+        });
+        if (!accepted) return;
       }
       setDiffGranularity(g);
       setDiffSelection(null);
@@ -451,10 +518,13 @@ ${_effectiveText}`;
     return /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: diffDialogRef,
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "allo-diff-title",
-        className: "fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4",
+        tabIndex: -1,
+        onKeyDown: (event) => containDiffFocus(event, diffDialogRef.current, _closeDiff),
+        className: `fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 theme-${theme}`,
         onClick: (e) => {
           if (e.target === e.currentTarget) _closeDiff();
         }
@@ -462,6 +532,8 @@ ${_effectiveText}`;
       /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, _ov ? "\u{1F916}" : "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-diff-title", className: "text-sm font-black text-slate-800 truncate" }, _ov ? (t("diff_view.cmd_title") || "What your last command changed") + (_ov.label ? " \xB7 \u201C" + _ov.label + "\u201D" : "") : t("diff_view.title") || "Source PDF \u2194 Remediated HTML \xB7 Diff"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, _ov ? t("diff_view.cmd_subtitle") || "Before \u2192 after for your last Expert Workbench command. Reject a span to undo just that part, then Apply." : t("diff_view.subtitle") || "Click any colored span to reject the change. Drag-select across spans to batch-reject. Del\u2192Add paraphrase pairs toggle together.")), /* @__PURE__ */ React.createElement(
         "button",
         {
+          ref: diffCloseRef,
+          type: "button",
           onClick: _closeDiff,
           className: "shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center",
           "aria-label": t("diff_view.close_aria") || "Close diff view"
@@ -618,7 +690,31 @@ ${_effectiveText}`;
           title: t("diff_view.apply_export_tooltip") || "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
         },
         applyingRemarkup ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), " Applying\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2713 Apply & Export (", _rejCount, ")")
-      )))
+      ))),
+      diffConfirmation && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[320] bg-slate-950/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          ref: diffConfirmRef,
+          role: "alertdialog",
+          "aria-modal": "true",
+          "aria-labelledby": "allo-diff-confirm-title",
+          "aria-describedby": "allo-diff-confirm-message",
+          tabIndex: -1,
+          onKeyDown: (event) => {
+            event.stopPropagation();
+            if (event.key === "Escape") {
+              event.preventDefault();
+              finishDiffConfirmation(false);
+              return;
+            }
+            containDiffFocus(event, diffConfirmRef.current, () => finishDiffConfirmation(false));
+          },
+          className: "w-full max-w-md rounded-2xl border-2 border-amber-300 bg-white p-5 shadow-2xl"
+        },
+        /* @__PURE__ */ React.createElement("h3", { id: "allo-diff-confirm-title", className: "text-lg font-black text-slate-900" }, diffConfirmation.title),
+        /* @__PURE__ */ React.createElement("p", { id: "allo-diff-confirm-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, diffConfirmation.message),
+        /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: diffConfirmCancelRef, type: "button", onClick: () => finishDiffConfirmation(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, diffConfirmation.cancelLabel || "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => finishDiffConfirmation(true), className: "rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700" }, diffConfirmation.confirmLabel || "Continue"))
+      ))
     );
   })(), document.body);
 }
@@ -647,7 +743,57 @@ function GroupSessionModal(props) {
     updateDoc,
     warnLog
   } = props;
+  const groupDialogRef = React.useRef(null);
+  const groupCloseRef = React.useRef(null);
+  const containGroupFocus = (event) => {
+    if (!event || !groupDialogRef.current) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      handleSetShowGroupModalToFalse();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      event.preventDefault();
+      groupDialogRef.current.focus();
+      return;
+    }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  React.useEffect(() => {
+    if (!(showGroupModal && activeSessionCode && sessionData)) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => groupCloseRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [showGroupModal, activeSessionCode, !!sessionData]);
   if (!(showGroupModal && activeSessionCode && sessionData)) return null;
+  const moveResourceBy = async (resId, delta) => {
+    const resources = [...sessionData.resources || []];
+    const currentIndex = resources.findIndex((r) => r.id === resId);
+    const targetIndex = currentIndex + delta;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= resources.length) return;
+    const [item] = resources.splice(currentIndex, 1);
+    resources.splice(targetIndex, 0, item);
+    try {
+      const sessionRef = doc(db, "artifacts", appId, "public", "data", "sessions", activeSessionCode);
+      await updateDoc(sessionRef, { resources });
+      addToast((item.title || "Resource") + (delta < 0 ? " moved earlier" : " moved later"), "success");
+    } catch (err) {
+      warnLog("Failed to reorder resource:", err);
+      addToast(t("common.error") || "Could not reorder resource", "error");
+    }
+  };
   const handleDragStart = (e, resId) => {
     setDraggedResourceId(resId);
     e.dataTransfer.effectAllowed = "move";
@@ -749,7 +895,7 @@ function GroupSessionModal(props) {
     simplified: "\u2728",
     default: "\u{1F4C4}"
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowGroupModalToFalse, "data-help-key": "group_modal_container" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("groups.modal_title") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 p-3 rounded-xl shadow-md" }, /* @__PURE__ */ React.createElement(Users, { size: 28, className: "text-white" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800" }, t("groups.modal_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t("groups.modal_subtitle")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none", onClick: handleSetShowGroupModalToFalse, "data-help-key": "group_modal_container" }, /* @__PURE__ */ React.createElement("div", { ref: groupDialogRef, tabIndex: -1, onKeyDown: containGroupFocus, className: "bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "group-session-title", "aria-describedby": "group-session-description" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 p-3 rounded-xl shadow-md" }, /* @__PURE__ */ React.createElement(Users, { size: 28, className: "text-white" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "group-session-title", className: "text-2xl font-black text-slate-800" }, t("groups.modal_title")), /* @__PURE__ */ React.createElement("p", { id: "group-session-description", className: "text-sm text-slate-600" }, t("groups.modal_subtitle")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.groups_new_group_placeholder"),
@@ -772,7 +918,7 @@ function GroupSessionModal(props) {
     /* @__PURE__ */ React.createElement(Plus, { size: 18 }),
     " ",
     t("groups.add_button")
-  )), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, "(", sessionData.resources?.length || 0, " items)"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-700 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t("groups.drag_to_reorder") || "Drag to reorder")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
+  )), /* @__PURE__ */ React.createElement("button", { ref: groupCloseRef, type: "button", onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, "(", sessionData.resources?.length || 0, " items)"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-700 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t("groups.drag_to_reorder") || "Drag or use Move earlier/later")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
     const assignedGroup = sessionData.groups && Object.entries(sessionData.groups).find(([_, g]) => g && g.resourceId === res.id);
     const icon = typeIcons[res.type] || typeIcons.default;
     const description = getResourceDescription(res);
@@ -804,7 +950,8 @@ function GroupSessionModal(props) {
       /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, icon), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-semibold text-slate-700 truncate" }, res.title || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 capitalize" }, res.type?.replace("-", " ")))),
       description && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-purple-500 bg-purple-50 px-2 py-1 rounded-md mb-1", style: { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } }, description),
       (language || dateStr) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1" }, language && (Array.isArray(language) ? language.slice(0, 5).map((lang, li) => /* @__PURE__ */ React.createElement("span", { key: li, className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", lang)) : /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", language)), dateStr && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded" }, /* @__PURE__ */ React.createElement(Clock, { size: 8 }), " ", dateStr)),
-      assignedGroup && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Users, { size: 10 }), " ", assignedGroup[1].name)
+      assignedGroup && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Users, { size: 10 }), " ", assignedGroup[1].name),
+      /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": `Reorder ${res.title || "Untitled"}`, className: "mt-2 grid grid-cols-2 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, -1), disabled: index === 0, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": `Move ${res.title || "resource"} earlier` }, "\xE2\u2020\x90 Earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, 1), disabled: index === sessionData.resources.length - 1, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": `Move ${res.title || "resource"} later` }, "Later \xE2\u2020\u2019"))
     );
   })) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-slate-600 italic" }, t("groups.no_resources") || "No resources in this session"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("groups.active_groups")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1", "data-help-key": "group_active_list" }, sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-red-600 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors", "aria-label": t("common.delete") }, /* @__PURE__ */ React.createElement(X, { size: 16 }))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2" }, t("groups.assign_resource_label"), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement(
     "select",
@@ -1271,8 +1418,56 @@ function TourOverlay(props) {
     tourSteps,
     compactTour = false
   } = props;
+  const tourDialogRef = React.useRef(null);
+  const closeTourOverlay = () => {
+    if (spotlightMessage) {
+      setRunTour(false);
+      setIsSpotlightMode(false);
+      setSpotlightMessage("");
+    } else {
+      handleSetRunTourToFalse();
+    }
+  };
+  const containTourFocus = (event) => {
+    if (!event || !tourDialogRef.current) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeTourOverlay();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      event.preventDefault();
+      tourDialogRef.current.focus();
+      return;
+    }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  React.useEffect(() => {
+    if (!(runTour && tourRect)) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => {
+      const firstAction = tourDialogRef.current?.querySelector("button:not([disabled])");
+      if (firstAction) firstAction.focus();
+      else tourDialogRef.current?.focus();
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [runTour, !!tourRect]);
   if (!(runTour && tourRect)) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && botSpotlightPos && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
+  const tourAccessibleTitle = spotlightMessage ? spotlightMessage.title || t("tour.spotlight_title") : tourSteps[tourStep].title;
+  const tourAccessibleText = spotlightMessage ? spotlightMessage.text || spotlightMessage || "" : tourSteps[tourStep].text || "";
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && botSpotlightPos && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
     "radialGradient",
     {
       id: "beamGradient",
@@ -1298,7 +1493,7 @@ function TourOverlay(props) {
                         `,
       fill: "url(#beamGradient)",
       style: { mixBlendMode: "screen", filter: "url(#glow)" },
-      className: "animate-in fade-in duration-500"
+      className: "animate-in fade-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"
     }
   ), /* @__PURE__ */ React.createElement(
     "rect",
@@ -1311,9 +1506,9 @@ function TourOverlay(props) {
       fill: "none",
       stroke: "rgba(250, 204, 21, 0.4)",
       strokeWidth: "3",
-      className: "animate-pulse"
+      className: "animate-pulse motion-reduce:animate-none"
     }
-  )), !isSpotlightMode && /* @__PURE__ */ React.createElement("div", { className: "animate-pulse", style: {
+  )), !isSpotlightMode && /* @__PURE__ */ React.createElement("div", { className: "animate-pulse motion-reduce:animate-none", style: {
     position: "absolute",
     top: tourRect.top - 4,
     left: tourRect.left - 4,
@@ -1326,15 +1521,22 @@ function TourOverlay(props) {
   } }), /* @__PURE__ */ React.createElement(
     "div",
     {
+      ref: tourDialogRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": tourAccessibleTitle,
+      tabIndex: -1,
+      onKeyDown: containTourFocus,
       className: compactTour ? (
         // Compact placement for modal-context tours (2026-06-10,
         // maintainer feedback): the full-height 500px drawer covered
         // the pipeline modal it was narrating. A centered horizontal
         // strip docks on whichever edge the TARGET is NOT — target in
         // the lower half → card on top, and vice versa.
-        `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 z-[11000] border-4 border-amber-300 rounded-3xl ${tourRect && tourRect.top + tourRect.height / 2 > window.innerHeight / 2 ? "top-3 slide-in-from-top" : "bottom-3 slide-in-from-bottom"}`
-      ) : `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
+        `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 motion-reduce:animate-none motion-reduce:transition-none z-[11000] border-4 border-amber-300 rounded-3xl ${tourRect && tourRect.top + tourRect.height / 2 > window.innerHeight / 2 ? "top-3 slide-in-from-top" : "bottom-3 slide-in-from-bottom"}`
+      ) : `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 motion-reduce:animate-none motion-reduce:transition-none z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
     },
+    /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, tourAccessibleTitle, ". ", tourAccessibleText),
     spotlightMessage ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-yellow-500 fill-current" }), " ", spotlightMessage.title || t("tour.spotlight_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 mt-2" }, (spotlightMessage.text || spotlightMessage || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();
       if (!cleanLine) return /* @__PURE__ */ React.createElement("div", { key: i, className: "h-3" });
@@ -1408,9 +1610,7 @@ function TourOverlay(props) {
         style: { pointerEvents: "all", zIndex: 9999 },
         onClick: (e) => {
           e.stopPropagation();
-          setRunTour(false);
-          setIsSpotlightMode(false);
-          setSpotlightMessage("");
+          closeTourOverlay();
         },
         className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm w-full"
       },
@@ -1572,7 +1772,7 @@ function VolumeBuilderView(props) {
   return /* @__PURE__ */ React.createElement("div", { className: "space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1", "data-help-key": "volume_builder_panel" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-emerald-800 font-bold text-sm" }, "\u{1F4E6} 3D Volume Explorer"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.max(0.4, s - 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t("volume_builder.zoom_out_aria") || "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-emerald-600 font-mono w-10 text-center" }, Math.round(cubeScale * 100), "%"), /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.min(2.5, s + 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t("volume_builder.zoom_in_aria") || "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setCubeRotation({ x: -25, y: -35 });
     setCubeScale(1);
-  }, className: "ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all", "aria-label": t("volume_builder.reset_view_aria") || "Reset view" }, "\u21BA"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700/70" }, t("volume_builder.help_caption") || "Drag to rotate \u2022 Scroll to zoom \u2022 Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center", role: "radiogroup", "aria-label": t("volume_builder.shape_radiogroup_aria") || "Volume Builder shape", "data-help-key": "volume_builder_shape_selector" }, [
+  }, className: "ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all", "aria-label": t("volume_builder.reset_view_aria") || "Reset view" }, "\u21BA"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Rotate 3D volume", className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-emerald-800 mr-1" }, "Rotate:"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, y: prev.y - 15 })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Rotate volume left" }, "Left"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, y: prev.y + 15 })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Rotate volume right" }, "Right"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, x: Math.max(-80, prev.x - 10) })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Tilt volume up" }, "Up"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, x: Math.min(10, prev.x + 10) })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Tilt volume down" }, "Down"), /* @__PURE__ */ React.createElement("output", { className: "ml-auto text-[11px] font-mono text-emerald-700", "aria-live": "polite" }, "Tilt ", Math.round(cubeRotation.x), " degrees, turn ", Math.round(cubeRotation.y), " degrees, zoom ", Math.round(cubeScale * 100), " percent")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700/70" }, t("volume_builder.help_caption") || "Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5)."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center", role: "radiogroup", "aria-label": t("volume_builder.shape_radiogroup_aria") || "Volume Builder shape", "data-help-key": "volume_builder_shape_selector" }, [
     { id: "rect", label: "\u{1F9CA} Rectangular" },
     { id: "lblock", label: "\u{1F4D0} L-Block" }
   ].map((s) => {
@@ -1626,6 +1826,8 @@ function VolumeBuilderView(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "text-center text-xs font-bold text-amber-700 mt-1" }, Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1)))))), /* @__PURE__ */ React.createElement(
     "div",
     {
+      role: "img",
+      "aria-label": `3D ${isLBlock ? "L-block" : "rectangular prism"}, ${cubeDims.l} by ${cubeDims.w} by ${cubeDims.h}, volume ${volume} cubic units`,
       className: "bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none",
       style: { minHeight: "400px", perspective: "900px" },
       onMouseDown: (e) => {
@@ -1671,7 +1873,7 @@ function VolumeBuilderView(props) {
       onChange: (e) => setCubeShowLayers(parseInt(e.target.value)),
       className: "flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
     }
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-500 hover:text-emerald-700 font-bold" }, "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100", "data-help-key": "volume_builder_volume_readout" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1" }, t("stem.volume")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume)) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, volume, " unit cube", volume !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-600 uppercase tracking-wider mb-1" }, t("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-500/70" }, "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-500 hover:text-emerald-700 font-bold" }, "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100", "data-help-key": "volume_builder_volume_readout" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1" }, t("stem.volume_label")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume)) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, volume, " unit cube", volume !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-600 uppercase tracking-wider mb-1" }, t("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-500/70" }, "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     const vdiff = getAdaptiveDifficulty();
     const vmax = vdiff === "easy" ? 4 : vdiff === "hard" ? 10 : 7;
     const l = Math.floor(Math.random() * (vmax - 1)) + 1;

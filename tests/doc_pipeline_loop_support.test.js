@@ -44,6 +44,23 @@ function extractConst(name) {
   return eval('(' + head + '=> ' + bodySrc + ')');
 }
 
+// Harness repair (2026-07-05): reconcileOcrPages now calls two module statics unconditionally —
+// _stripPageEdgeArtifacts (#F) and _collapseAdjacentDupes (#G) — and logs flips via warnLog. The
+// evaled body resolves free variables lexically from THIS module's scope, so provide the real
+// statics (extracted from source — they are self-contained) and a warnLog stub. This suite had
+// been red since the #F commit.
+function extractVarFn(name) {
+  const s = SRC.indexOf('var ' + name + ' = function');
+  if (s === -1) throw new Error('source extraction failed: ' + name);
+  const e = SRC.indexOf('\n};', s) + 2; // include the closing '}' but not the ';'
+  const decl = SRC.slice(s, e);
+  // eslint-disable-next-line no-eval
+  return eval('(' + decl.slice(decl.indexOf('function')) + ')');
+}
+const _stripPageEdgeArtifacts = extractVarFn('_stripPageEdgeArtifacts');
+const _collapseAdjacentDupes = extractVarFn('_collapseAdjacentDupes');
+const warnLog = () => {};
+
 const splitHtmlOnTagBoundary = extractConst('splitHtmlOnTagBoundary');
 const reconcileOcrPages = extractConst('reconcileOcrPages');
 const _docFingerprint = extractConst('_docFingerprint');
@@ -129,6 +146,36 @@ describe('reconcileOcrPages — Tesseract/Vision merge', () => {
   it('joins page text with blank lines, skipping empty pages', () => {
     const r = reconcileOcrPages([{ text: 'one' }, { text: '' }, { text: 'three' }], [{}, {}, {}]);
     expect(r.fullText).toBe('one\n\nthree');
+  });
+
+  // OCR quality override (2026-06-15, posture: avoid garbled output, robust to mixed scan
+  // quality). Length alone no longer lets a garbled-but-longer pass beat a clean one.
+  const src = (t, v) => reconcileOcrPages([t], [v]).pages[0].source;
+  it('prefers the cleaner shorter text over a longer GARBLED one (the reported bug)', () => {
+    expect(src({ text: 'Th3 b##rd ~~ appr@@ved ## bud~~t !! f0r th3 y##r' }, { text: 'The board approved the budget for the year' })).toBe('vision');
+  });
+  it('rejects an EXTREMELY garbled longer pass when the clean alternative is substantial', () => {
+    expect(src({ text: '#####@@@@@~~~~~|||||_____#####@@@@@~~~~~#####@@@@@~~~~~|||||' }, { text: 'real clean text with enough context to trust' })).toBe('vision');
+  });
+  it('does NOT drop a garbled long page to a tiny clean fragment; flags it for review instead', () => {
+    const r = reconcileOcrPages(
+      [{ text: '#####@@@@@~~~~~|||||_____#####@@@@@~~~~~' }],
+      [{ text: 'real clean text' }]
+    );
+    expect(r.pages[0].source).toBe('tesseract');
+    expect(r.lowConfidence[0].pageNum).toBe(1);
+  });
+  it('distrusts a longer Tesseract pass with LOW mean word confidence when a clean alternative exists', () => {
+    expect(src({ text: 'the board approved the budget today right now', words: [{ c: 38 }, { c: 40 }, { c: 35 }, { c: 42 }] }, { text: 'the board approved the budget today' })).toBe('vision');
+  });
+  it('does NOT flip when both texts are clean (no regression; tie → tesseract)', () => {
+    expect(src({ text: 'the board approved the budget' }, { text: 'the board approved the budget' })).toBe('tesseract');
+  });
+  it('does NOT flip a longer Tesseract pass with HIGH confidence', () => {
+    expect(src({ text: 'the board approved the annual operating budget today', words: [{ c: 92 }, { c: 95 }] }, { text: 'the board approved the budget' })).toBe('tesseract');
+  });
+  it('multilingual safety: clean non-Latin text (Arabic) is NOT mistaken for junk', () => {
+    expect(src({ text: 'مرحبا بالعالم هذا نص عربي نظيف وطويل' }, { text: 'مرحبا' })).toBe('tesseract'); // longer clean Arabic wins
   });
 });
 

@@ -1,4 +1,112 @@
 (function () {
+  (function ensureStudentArtifactStore() {
+    if (typeof window === 'undefined') return;
+    window.AlloModules = window.AlloModules || {};
+    if (window.AlloModules.StudentArtifactStore && typeof window.AlloModules.StudentArtifactStore.save === 'function') return;
+    var KEY = 'alloflow_student_artifacts';
+    var LIMIT = 80;
+    function packetOf(artifact) {
+      if (!artifact || typeof artifact !== 'object') return {};
+      if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
+      if (artifact.packet && typeof artifact.packet === 'object') return artifact.packet;
+      if (artifact.data && typeof artifact.data === 'object') return artifact.data;
+      return artifact;
+    }
+    function read() {
+      try {
+        if (Array.isArray(window.__alloflowStudentArtifacts)) return window.__alloflowStudentArtifacts;
+        var raw = localStorage.getItem(KEY);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function sourceLabelFor(source) {
+      source = String(source || '').toLowerCase();
+      if (source.indexOf('sel') >= 0) return 'SEL Hub';
+      if (source.indexOf('storyforge') >= 0 || source.indexOf('story-forge') >= 0) return 'StoryForge';
+      if (source.indexOf('adventure') >= 0) return 'Adventure Mode';
+      if (source.indexOf('poettree') >= 0 || source.indexOf('poet') >= 0) return 'PoetTree';
+      if (source.indexOf('story-stage') >= 0 || source.indexOf('storystage') >= 0 || source.indexOf('litlab') >= 0) return 'Story Stage';
+      if (source.indexOf('allostudio') >= 0 || source.indexOf('allo-studio') >= 0) return 'AlloStudio';
+      return 'Student work';
+    }
+    function kindLabelFor(type) {
+      type = String(type || '').toLowerCase();
+      if (type === 'sel-share-packet') return 'SEL Share Packet';
+      if (type.indexOf('storyforge') >= 0 || type.indexOf('story-forge') >= 0) return 'StoryForge Story';
+      if (type.indexOf('adventure') >= 0) return 'Adventure Storybook';
+      if (type.indexOf('poettree') >= 0 || type.indexOf('poem') >= 0) return 'Poem';
+      if (type.indexOf('story-stage') >= 0 || type.indexOf('storystage') >= 0 || type.indexOf('litlab') >= 0) return 'Performance';
+      if (type.indexOf('allostudio') >= 0 || type.indexOf('allo-studio') >= 0) return 'Accessible Studio Product';
+      return 'Student Product';
+    }
+    function normalize(artifact) {
+      artifact = (artifact && typeof artifact === 'object') ? Object.assign({}, artifact) : {};
+      var packet = packetOf(artifact);
+      var now = new Date().toISOString();
+      var type = artifact.type || packet.type || artifact.kind || packet.kind || 'student-product';
+      var source = artifact.source || packet.source || type;
+      var items = Array.isArray(artifact.items) ? artifact.items : (Array.isArray(packet.items) ? packet.items : null);
+      if (!artifact.id) artifact.id = packet.id || (String(type).replace(/[^a-z0-9_-]+/gi, '-').toLowerCase() + '-' + Date.now());
+      artifact.type = type;
+      artifact.source = source;
+      artifact.sourceLabel = artifact.sourceLabel || packet.sourceLabel || sourceLabelFor(source);
+      artifact.kindLabel = artifact.kindLabel || packet.kindLabel || kindLabelFor(type);
+      artifact.title = artifact.title || packet.title || artifact.kindLabel;
+      artifact.summary = artifact.summary || packet.summary || (items ? items.length + ' saved item' + (items.length === 1 ? '' : 's') : 'Saved product');
+      artifact.privacy = artifact.privacy || packet.privacy || 'student-controlled';
+      artifact.createdAt = artifact.createdAt || packet.createdAt || now;
+      artifact.updatedAt = artifact.updatedAt || packet.updatedAt || artifact.createdAt || now;
+      artifact.itemCount = Number(artifact.itemCount || packet.itemCount || (items ? items.length : 0));
+      return artifact;
+    }
+    function save(artifact, options) {
+      options = options || {};
+      var normalized = normalize(artifact);
+      var matchId = options.matchId || normalized.id || (packetOf(normalized).id);
+      var existing = read().slice();
+      var replaced = false;
+      var next = existing.map(function(candidate) {
+        var packet = packetOf(candidate);
+        if (options.replaceExisting !== false && matchId && (candidate.id === matchId || packet.id === matchId)) {
+          replaced = true;
+          return normalized;
+        }
+        return candidate;
+      });
+      if (!replaced) next.unshift(normalized);
+      next = next.filter(Boolean).sort(function(a, b) {
+        return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
+      }).slice(0, options.limit || LIMIT);
+      var action = replaced ? 'updated' : 'saved';
+      try { window.__alloflowStudentArtifacts = next; } catch (e) {}
+      try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e2) {}
+      try {
+        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
+          detail: {
+            source: options.source || normalized.source || 'student-work',
+            sourceLabel: normalized.sourceLabel || sourceLabelFor(normalized.source),
+            kindLabel: normalized.kindLabel || kindLabelFor(normalized.type),
+            privacy: normalized.privacy || 'student-controlled',
+            title: normalized.title || 'Portfolio item',
+            action: action,
+            artifact: normalized,
+            count: next.length
+          }
+        }));
+      } catch (e3) {}
+      return next;
+    }
+    window.AlloModules.StudentArtifactStore = {
+      read: read,
+      save: save,
+      normalize: normalize
+    };
+  })();
+
   if (window.AlloModules && window.AlloModules.AlloHaven) {
     console.log("[CDN] AlloHaven already loaded, skipping duplicate");
     return;
@@ -211,6 +319,8 @@
   // Single key, JSON-serialized state object. Read once on mount,
   // write on every state change.
   var STORAGE_KEY = 'alloflow_allohaven_v1';
+  var STUDENT_PROGRESS_SUMMARY_KEY = 'alloflow_student_progress_summary';
+  var STUDENT_ARTIFACTS_KEY = 'alloflow_student_artifacts';
   // STEM Lab's shared persistence key — used to read inherited theme from
   // Typing Practice (or any other tool that stamps state.theme there).
   var STEMLAB_STORAGE_KEY = 'alloflow_stemlab_v2';
@@ -237,6 +347,38 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('[AlloHaven] failed to save state:', e);
+    }
+  }
+
+  function readStudentProgressSummary() {
+    try {
+      if (window.__alloflowStudentProgressSummary && typeof window.__alloflowStudentProgressSummary === 'object') {
+        return window.__alloflowStudentProgressSummary;
+      }
+      var raw = localStorage.getItem(STUDENT_PROGRESS_SUMMARY_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      return (parsed && typeof parsed === 'object') ? parsed : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function readStudentArtifacts() {
+    try {
+      var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+      if (store && typeof store.read === 'function') {
+        return store.read();
+      }
+      if (Array.isArray(window.__alloflowStudentArtifacts)) {
+        return window.__alloflowStudentArtifacts;
+      }
+      var raw = localStorage.getItem(STUDENT_ARTIFACTS_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
     }
   }
 
@@ -458,6 +600,13 @@
       generatedAt: null              // ISO timestamp of the cached summary
     },
 
+    // Cross-app student progress summary restored from the student project
+    // file. Counts only; raw SEL reflection text is not rendered here.
+    studentProgressSummary: null,
+    // Cross-app permanent student-authored products. Rendered read-only in
+    // AlloHaven; source modules own authoring and privacy choices.
+    studentArtifacts: [],
+
     // ── Tenure narrative cache (Phase Q) ──
     // AI-generated 2-3 paragraph narrative of the student's full
     // AlloHaven journey, generated on demand from computeTenureStats.
@@ -573,15 +722,15 @@
       wallpaper: 'repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(255,0,168,0.04) 3px, rgba(255,0,168,0.04) 4px), linear-gradient(180deg, #1a0f2a 0%, #0a0514 100%)',
       floor: 'linear-gradient(180deg, #2a1f3a 0%, #1a0f2a 100%)',
       accent: '#ff00a8', accentDim: '#c00080', text: '#e0d8ff', textDim: '#c0b0e8',
-      textMute: '#8070a0', surface: '#1a0f2a', border: '#3d2a5a', success: '#00ffc8',
+      textMute: '#9280b8', surface: '#1a0f2a', border: '#3d2a5a', success: '#00ffc8',
       warn: '#ffd700', onAccent: '#0a0514', bg: '#0a0514'
     },
     'kawaii': {
       wallpaper: 'radial-gradient(circle at 20% 30%, rgba(232,90,138,0.08) 8px, transparent 9px), radial-gradient(circle at 70% 60%, rgba(232,90,138,0.06) 6px, transparent 7px), linear-gradient(180deg, #ffe8f2 0%, #fff5fa 100%)',
       floor: 'linear-gradient(180deg, #ffd6e5 0%, #ffe8f2 100%)',
-      accent: '#e85a8a', accentDim: '#c03868', text: '#4a2838', textDim: '#6a4858',
-      textMute: '#8a7080', surface: '#ffe8f2', border: '#f5c2d7', success: '#4a9a6a',
-      warn: '#d4740a', onAccent: '#ffffff', bg: '#fff5fa'
+      accent: '#c03868', accentDim: '#a02f59', text: '#4a2838', textDim: '#6a4858',
+      textMute: '#725364', surface: '#ffe8f2', border: '#f5c2d7', success: '#047857',
+      warn: '#92400e', onAccent: '#ffffff', bg: '#fff5fa'
     },
     'neutral': {
       wallpaper: 'linear-gradient(180deg, #262626 0%, #1a1a1a 100%)',
@@ -625,7 +774,7 @@
         var sum = 0;
         for (var i = 0; i < s.earnings.length; i++) {
             var e = s.earnings[i];
-            if (e && e.date && e.date.slice(0, 10) === todayStr && e.tokens > 0) sum += e.tokens;
+            if (e && e.date && localDateKey(e.date) === todayStr && e.tokens > 0) sum += e.tokens;
         }
         return sum >= 5;
     } }
@@ -802,9 +951,9 @@
     }
 
     // 6. First Pomodoro of today
-    var todayStr = new Date().toISOString().slice(0, 10);
+    var todayStr = localDateKey();
     var todayPoms = (state.earnings || []).filter(function(e) {
-      return (e.source === 'pomodoro' || e.source === 'cycle-bonus') && e.date && e.date.slice(0, 10) === todayStr;
+      return (e.source === 'pomodoro' || e.source === 'cycle-bonus') && e.date && localDateKey(e.date) === todayStr;
     });
     if (todayPoms.length === 1) {
       return {
@@ -1363,6 +1512,24 @@
   // neutral and the tint only appears morning/evening/night. Strong
   // enough to signal time-of-day, soft enough not to compete with
   // decoration colors. Suppressed in high-contrast mode by the caller.
+  function localDateKey(value) {
+    var d = value instanceof Date ? value : (value ? new Date(value) : new Date());
+    if (!d || isNaN(d.getTime())) d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1);
+    var day = String(d.getDate());
+    if (m.length < 2) m = '0' + m;
+    if (day.length < 2) day = '0' + day;
+    return y + '-' + m + '-' + day;
+  }
+
+  function localDateKeyOffset(days) {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + (days || 0));
+    return localDateKey(d);
+  }
+
   function getTimeOfDayTint() {
     var hour = new Date().getHours();
     if (hour >= 5 && hour < 9)   return { color: 'rgba(255,180,170,0.10)', label: 'dawn' };
@@ -1388,12 +1555,12 @@
     visits.forEach(function(v) { if (v) unique[v] = true; });
     var dates = Object.keys(unique).sort();
     var msPerDay = 24 * 60 * 60 * 1000;
-    var todayStr = new Date().toISOString().slice(0, 10);
+    var todayStr = localDateKey();
     var current = 0;
     if (unique[todayStr]) {
       current = 1;
       for (var i = 1; i < 365; i++) {
-        var prev = new Date(Date.now() - i * msPerDay).toISOString().slice(0, 10);
+        var prev = localDateKeyOffset(-i);
         if (unique[prev]) current++;
         else break;
       }
@@ -1426,7 +1593,7 @@
     var now = new Date();
     var dow = now.getDay();
     var sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
-    return sunday.toISOString().slice(0, 10);
+    return localDateKey(sunday);
   }
 
   function aggregateWeekData(state) {
@@ -1446,8 +1613,8 @@
     });
     // Days active this week (deduped)
     var dayMap = {};
-    earnings.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
-    refls.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
+    earnings.forEach(function(e) { if (e.date) dayMap[localDateKey(e.date)] = true; });
+    refls.forEach(function(e) { if (e.date) dayMap[localDateKey(e.date)] = true; });
     var daysActive = Object.keys(dayMap).length;
     // Mood + subject patterns
     var moodCounts = {}, subjCounts = {};
@@ -3015,6 +3182,289 @@
   function isMemoryDueSoon(decoration) {
     var days = daysUntilDue(decoration);
     return days !== null && days > 0 && days <= 2;
+  }
+
+  function isDecorationMemoryDue(decoration) {
+    if (!decoration || !decoration.linkedContent) return false;
+    var lc = decoration.linkedContent;
+    if (lc.type === 'notes' && !hasClozeMarkers(lc)) return false;
+    if (!lc.lastReviewedAt) return true;
+    return daysUntilDue(decoration) === 0;
+  }
+
+  function normalizeIdeaText(value) {
+    return String(value == null ? '' : value)
+      .replace(/\{([^{}]+)\}/g, '$1')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function trimIdeaText(value, maxLen) {
+    var clean = normalizeIdeaText(value);
+    if (!clean) return '';
+    if (clean.length <= maxLen) return clean;
+    return clean.slice(0, Math.max(0, maxLen - 3)).trim() + '...';
+  }
+
+  function getLinkedContentIdeaText(linkedContent) {
+    var lc = linkedContent || {};
+    var data = lc.data || {};
+    if (lc.type === 'flashcards') {
+      var cards = data.cards || lc.cards || [];
+      var firstCard = cards.filter(function(card) {
+        return card && (normalizeIdeaText(card.front) || normalizeIdeaText(card.back));
+      })[0] || null;
+      if (firstCard) {
+        return normalizeIdeaText([firstCard.front, firstCard.back].filter(Boolean).join(' - '));
+      }
+      return '';
+    }
+    if (lc.type === 'acronym') {
+      return normalizeIdeaText([
+        data.letters || lc.letters || '',
+        (data.meanings || lc.meanings || []).join(' '),
+        data.context || lc.context || ''
+      ].join(' '));
+    }
+    if (lc.type === 'image-link') {
+      return normalizeIdeaText(data.association || lc.association || '');
+    }
+    if (lc.type === 'notes') {
+      return normalizeIdeaText(data.text || lc.text || '');
+    }
+    return normalizeIdeaText(data.text || lc.text || lc.title || '');
+  }
+
+  function buildIdeaSeedTitle(linkedContent, fallbackLabel) {
+    var lc = linkedContent || {};
+    var data = lc.data || {};
+    var raw = '';
+    if (lc.type === 'flashcards') {
+      var cards = data.cards || lc.cards || [];
+      var firstCard = cards.filter(function(card) {
+        return card && (normalizeIdeaText(card.front) || normalizeIdeaText(card.back));
+      })[0] || null;
+      raw = firstCard ? (firstCard.front || firstCard.back || '') : '';
+    } else if (lc.type === 'acronym') {
+      raw = data.context || (data.letters || lc.letters || '');
+    } else if (lc.type === 'image-link') {
+      raw = data.association || lc.association || '';
+    } else if (lc.type === 'notes') {
+      raw = data.text || lc.text || '';
+    }
+    raw = normalizeIdeaText(raw) || getLinkedContentIdeaText(lc) || fallbackLabel || 'memory idea';
+    var words = raw.split(' ').filter(Boolean);
+    var title = words.length > 7 ? words.slice(0, 7).join(' ') + '...' : raw;
+    return trimIdeaText(title, 54) || 'memory idea';
+  }
+
+  function buildIdeaSeedFromMemory(decorationOrContent, nowIso) {
+    var input = decorationOrContent || {};
+    var linkedContent = input.linkedContent || input;
+    var fallbackLabel = input.templateLabel || input.template || linkedContent.type || 'memory idea';
+    var title = buildIdeaSeedTitle(linkedContent, fallbackLabel);
+    return {
+      schemaVersion: 1,
+      title: title,
+      question: 'How does "' + title + '" connect to what I already know?',
+      sourceType: linkedContent.type || 'memory',
+      plantedAt: nowIso || new Date().toISOString(),
+      lastWateredAt: null,
+      waterCount: 0,
+      generatedBy: 'local-memory'
+    };
+  }
+
+  function ensureIdeaSeedForContent(linkedContent, decoration, nowIso) {
+    if (!linkedContent) return linkedContent;
+    if (linkedContent.ideaSeed && linkedContent.ideaSeed.title) return linkedContent;
+    return Object.assign({}, linkedContent, {
+      ideaSeed: buildIdeaSeedFromMemory(Object.assign({}, decoration || {}, {
+        linkedContent: linkedContent
+      }), nowIso)
+    });
+  }
+
+  function waterIdeaSeed(linkedContent, decoration, nowIso) {
+    if (!linkedContent) return linkedContent;
+    var contentWithSeed = ensureIdeaSeedForContent(linkedContent, decoration, nowIso);
+    var seed = contentWithSeed.ideaSeed || buildIdeaSeedFromMemory(linkedContent, nowIso);
+    return Object.assign({}, contentWithSeed, {
+      ideaSeed: Object.assign({}, seed, {
+        lastWateredAt: nowIso || new Date().toISOString(),
+        waterCount: (Number(seed.waterCount) || 0) + 1
+      })
+    });
+  }
+
+  function getIdeaGrowthStage(decorationOrContent) {
+    var input = decorationOrContent || {};
+    var linkedContent = input.linkedContent || input;
+    if (!linkedContent || !linkedContent.ideaSeed) return null;
+    var seed = linkedContent.ideaSeed;
+    var reviews = Math.max(Number(linkedContent.reviewCount) || 0, Number(seed.waterCount) || 0);
+    var best = Number(linkedContent.bestQuizScore) || 0;
+    if (reviews >= 3 && best >= 80) {
+      return { id: 'bloom', label: 'Bloom', pct: 100, hint: 'Strong recall has helped this idea bloom.' };
+    }
+    if (reviews >= 2 && best >= 60) {
+      return { id: 'leaf', label: 'Leafing out', pct: 70, hint: 'This idea is growing steadier.' };
+    }
+    if (reviews >= 1) {
+      return { id: 'sprout', label: 'Sprout', pct: 40, hint: 'A first review helped this idea sprout.' };
+    }
+    return { id: 'seed', label: 'Seed', pct: 15, hint: 'Review this memory to water the idea.' };
+  }
+
+  function getIdeaSeedStatus(decoration) {
+    if (!decoration || !decoration.linkedContent || !decoration.linkedContent.ideaSeed) return null;
+    var stage = getIdeaGrowthStage(decoration);
+    if (!stage) return null;
+    return {
+      seed: decoration.linkedContent.ideaSeed,
+      stage: stage,
+      needsWater: isDecorationMemoryDue(decoration)
+    };
+  }
+
+  function getAlloHavenDailySnapshot(state, todayStr) {
+    state = state || {};
+    var ds = state.dailyState || {};
+    var today = todayStr || localDateKey();
+    var earnings = Array.isArray(state.earnings) ? state.earnings : [];
+    var decorations = Array.isArray(state.decorations) ? state.decorations : [];
+    var rooms = Array.isArray(state.rooms) ? state.rooms : [];
+    var activeRoomId = state.activeRoomId || 'main';
+    var activeRoom = rooms.filter(function(r) { return r.id === activeRoomId; })[0]
+      || rooms.filter(function(r) { return r.id === 'main'; })[0]
+      || { id: activeRoomId, wallSlots: 8, floorSlots: 12, unlocked: true };
+
+    var earnedToday = 0;
+    var spentToday = 0;
+    earnings.forEach(function(e) {
+      if (!e || !e.date || localDateKey(e.date) !== today) return;
+      var n = Number(e.tokens) || 0;
+      if (n > 0) earnedToday += n;
+      else if (n < 0) spentToday += Math.abs(n);
+    });
+
+    var decorationsToday = decorations.filter(function(d) {
+      if (!d || d.isStarter || !d.earnedAt) return false;
+      return localDateKey(d.earnedAt) === today;
+    }).length;
+
+    var filledWall = {};
+    var filledFloor = {};
+    decorations.forEach(function(d) {
+      if (!d || !d.placement) return;
+      var roomId = d.placement.roomId || 'main';
+      if (roomId !== activeRoom.id) return;
+      if (d.placement.surface === 'wall') filledWall[d.placement.cellIndex] = true;
+      if (d.placement.surface === 'floor') filledFloor[d.placement.cellIndex] = true;
+    });
+    var wallSlots = activeRoom.wallSlots || 8;
+    var floorSlots = activeRoom.floorSlots || 12;
+    var openSlots = Math.max(0, wallSlots - Object.keys(filledWall).length)
+      + Math.max(0, floorSlots - Object.keys(filledFloor).length);
+
+    var dueDeckCount = decorations.filter(isDecorationMemoryDue).length;
+    var nowMs = Date.now();
+    var activeGoals = (Array.isArray(state.goals) ? state.goals : []).filter(function(g) {
+      if (!g || g.completedAt) return false;
+      var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+      return isNaN(endMs) || endMs >= nowMs;
+    });
+    activeGoals.sort(function(a, b) {
+      var aMs = a.endDate ? new Date(a.endDate).getTime() : Infinity;
+      var bMs = b.endDate ? new Date(b.endDate).getTime() : Infinity;
+      return aMs - bMs;
+    });
+
+    return {
+      today: today,
+      tokensEarnedToday: earnedToday,
+      tokensSpentToday: spentToday,
+      tokensNetToday: earnedToday - spentToday,
+      tokensAvailable: Number(state.tokens) || 0,
+      decorationsToday: decorationsToday,
+      pomodoros: ds.pomodorosCompleted || 0,
+      reflections: ds.reflectionsSubmitted || 0,
+      quizTokens: ds.quizTokensEarnedToday || 0,
+      walkTokens: ds.storyWalkTokensEarnedToday || 0,
+      dueDeckCount: dueDeckCount,
+      openSlots: openSlots,
+      activeGoalCount: activeGoals.length,
+      topGoal: activeGoals[0] || null,
+      pomodoroActive: !!(state.pomodoroState && state.pomodoroState.active)
+    };
+  }
+
+  function getAlloHavenDailyPlan(state, todayStr) {
+    var s = getAlloHavenDailySnapshot(state, todayStr);
+    var steps = [
+      { id: 'review', label: 'Review', status: s.dueDeckCount === 0 ? 'clear' : (s.quizTokens > 0 ? 'done' : 'todo'), count: s.dueDeckCount },
+      { id: 'focus', label: 'Focus', status: s.pomodoroActive ? 'active' : (s.pomodoros > 0 ? 'done' : 'todo'), count: s.pomodoros },
+      { id: 'reflect', label: 'Reflect', status: s.reflections > 0 ? 'done' : 'todo', count: s.reflections },
+      { id: 'decorate', label: 'Decorate', status: s.decorationsToday > 0 ? 'done' : ((s.tokensAvailable >= DECORATION_COST && s.openSlots > 0) ? 'todo' : 'locked'), count: s.decorationsToday }
+    ];
+
+    var next;
+    if (s.pomodoroActive) {
+      next = { id: 'focus-active', action: null, title: 'Focus timer running', cta: null };
+    } else if (s.dueDeckCount > 0 && s.quizTokens === 0) {
+      next = { id: 'review', action: 'review', title: 'Daily reps', cta: 'Start reps' };
+    } else if (s.pomodoros === 0) {
+      next = { id: 'focus', action: 'pomodoro', title: 'Focus sprint', cta: 'Start' };
+    } else if (s.reflections === 0) {
+      next = { id: 'reflect', action: 'reflection', title: 'Reflection', cta: 'Write' };
+    } else if (s.tokensAvailable >= DECORATION_COST && s.openSlots > 0 && s.decorationsToday === 0) {
+      next = { id: 'decorate', action: 'decorate', title: 'Decorate', cta: 'Place item' };
+    } else if (s.activeGoalCount === 0) {
+      next = { id: 'goal', action: 'goals', title: 'Goal', cta: 'Open goals' };
+    } else {
+      next = { id: 'settle', action: 'breathe', title: 'Reset', cta: 'Breathe' };
+    }
+
+    return { snapshot: s, steps: steps, next: next };
+  }
+
+  function spendAlloHavenTokens(prev, amount, source, metadata, dateIso) {
+    var cost = Math.max(0, Number(amount) || 0);
+    if (cost <= 0) return { ok: true, state: prev, entry: null };
+    if (!prev || (Number(prev.tokens) || 0) < cost) return { ok: false, state: prev, entry: null };
+    var entry = {
+      source: source || 'spend',
+      tokens: -cost,
+      date: dateIso || new Date().toISOString(),
+      metadata: metadata || {}
+    };
+    return {
+      ok: true,
+      entry: entry,
+      state: Object.assign({}, prev, {
+        tokens: (Number(prev.tokens) || 0) - cost,
+        earnings: (prev.earnings || []).concat([entry])
+      })
+    };
+  }
+
+  function refundAlloHavenTokens(prev, amount, reason, metadata, dateIso) {
+    var refund = Math.max(0, Number(amount) || 0);
+    if (refund <= 0) return { ok: true, state: prev, entry: null };
+    var entry = {
+      source: 'refund',
+      tokens: refund,
+      date: dateIso || new Date().toISOString(),
+      metadata: Object.assign({ reason: reason || 'refund' }, metadata || {})
+    };
+    return {
+      ok: true,
+      entry: entry,
+      state: Object.assign({}, prev || {}, {
+        tokens: (Number(prev && prev.tokens) || 0) + refund,
+        earnings: ((prev && prev.earnings) || []).concat([entry])
+      })
+    };
   }
 
   // Surprise me — returns a fully populated slots object for the given
@@ -8169,6 +8619,112 @@
       );
     }
 
+    function renderIdeaSeedPanel() {
+      if (!hasContent || !existing) return null;
+      var status = getIdeaSeedStatus(decoration);
+      if (!status) return null;
+      var seed = status.seed;
+      var stage = status.stage;
+      var quizAvailable = existing.type !== 'notes' || hasClozeMarkers(existing);
+      var accent = status.needsWater ? (palette.warn || palette.accent) : palette.accent;
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Idea seed: ' + seed.title + ', ' + stage.label + (status.needsWater ? ', needs water' : ''),
+        style: {
+          padding: '11px 13px',
+          marginBottom: '12px',
+          background: palette.surface,
+          border: '1px solid ' + accent,
+          borderLeft: '3px solid ' + accent,
+          borderRadius: '10px'
+        }
+      },
+        h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            gap: '8px',
+            marginBottom: '6px'
+          }
+        },
+          h('span', {
+            style: {
+              fontSize: '11px',
+              color: palette.textMute,
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em'
+            }
+          }, 'Idea Garden'),
+          h('span', {
+            style: {
+              fontSize: '11px',
+              color: accent,
+              fontWeight: 800
+            }
+          }, stage.label)
+        ),
+        h('div', { style: { fontSize: '13px', color: palette.text, fontWeight: 800, lineHeight: '1.35', marginBottom: '4px' } },
+          seed.title),
+        h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45', marginBottom: '8px' } },
+          seed.question),
+        h('div', {
+          'aria-hidden': 'true',
+          style: {
+            height: '7px',
+            borderRadius: '999px',
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            overflow: 'hidden',
+            marginBottom: '8px'
+          }
+        },
+          h('div', {
+            style: {
+              width: stage.pct + '%',
+              height: '100%',
+              background: accent,
+              borderRadius: '999px'
+            }
+          })
+        ),
+        h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap'
+          }
+        },
+          h('span', {
+            style: {
+              fontSize: '10px',
+              color: status.needsWater ? accent : palette.textMute,
+              fontWeight: status.needsWater ? 800 : 600
+            }
+          }, status.needsWater ? 'Needs water' : 'Watered'),
+          quizAvailable && mode !== 'quiz' ? h('button', {
+            onClick: startQuiz,
+            style: {
+              background: status.needsWater ? accent : 'transparent',
+              color: status.needsWater ? palette.onAccent : palette.accent,
+              border: '1px solid ' + accent,
+              borderRadius: '8px',
+              padding: '5px 10px',
+              fontSize: '11px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Water with review') : (!quizAvailable ? h('span', {
+            style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' }
+          }, existing.type === 'notes' ? 'Add {braces} to water this note with review.' : stage.hint) : null)
+        )
+      );
+    }
+
     function renderVoiceNotePanel() {
       var savedNote = decoration.voiceNote;
       var hasNote = !!(savedNote && savedNote.base64);
@@ -8592,6 +9148,7 @@
         ) : null,
         renderVoiceNotePanel(),
         renderCardHistory(),
+        renderIdeaSeedPanel(),
         renderTabs(),
         // Wrap body in a tabpanel when the tabs are visible (modes
         // view/edit/quiz). For 'pick-type' there are no tabs so render
@@ -10291,6 +10848,177 @@
   //   addToast         : (msg, type?) => void
   //   selectedVoice    : optional, for TTS voice
   //   disableAnimations: bool — accommodation propagation
+  // ─────────────────────────────────────────────────────────
+  // Ring 0 (docs/allohaven_cozy_world_design.md): the haven as a WALKABLE
+  // 3D space. buildHavenPalaceData is PURE (unit-tested via the Internals
+  // seam): it maps the existing 2D state — unlocked rooms, placed
+  // decorations (wall slots first, then floor, by cell index), portfolio
+  // artifacts — onto the memory-palace {main, branches} format, plus an
+  // images map keyed by the palace's locus ids (b{room}_i{item}) so the
+  // AI-generated decoration art hangs in the 3D frames.
+  // ─────────────────────────────────────────────────────────
+  function buildHavenPalaceData(state, artifacts) {
+    state = state || {};
+    var rooms = (Array.isArray(state.rooms) ? state.rooms : []).filter(function(r) { return r && r.unlocked; });
+    var decs = Array.isArray(state.decorations) ? state.decorations : [];
+    var branches = [];
+    var images = {};
+    var objects = {};
+    var landmarks = {};
+    rooms.forEach(function(room) {
+      var placed = decs.filter(function(d) {
+        return d && d.placement && (d.placement.roomId || 'main') === room.id;
+      }).sort(function(a, b) {
+        var sa = a.placement.surface === 'wall' ? 0 : 1;
+        var sb = b.placement.surface === 'wall' ? 0 : 1;
+        return (sa - sb) || ((a.placement.cellIndex || 0) - (b.placement.cellIndex || 0));
+      });
+      var bi = branches.length;
+      landmarks['b' + bi] = room.id || ('room' + bi);   // deterministic signature landmark per room (docs §4.7)
+      var items = [];
+      var mnemonics = [];
+      placed.forEach(function(d, ii) {
+        items.push(d.templateLabel || d.template || 'Decoration');
+        mnemonics.push(d.studentReflection || d.aiRationale || '');
+        if (d.imageBase64) images['b' + bi + '_i' + ii] = d.imageBase64;
+        if (d.recipe3d) objects['b' + bi + '_i' + ii] = d.recipe3d;   // Prim3D sculpture (v2+ decorations)
+      });
+      branches.push({ title: (room.icon ? room.icon + ' ' : '') + (room.label || room.id), items: items, mnemonics: mnemonics });
+    });
+    var arts = Array.isArray(artifacts) ? artifacts.slice(0, 12) : [];
+    if (arts.length) {
+      branches.push({
+        title: '🖼 Gallery',
+        items: arts.map(function(a) { return (a && (a.title || a.kindLabel)) || 'Artifact'; }),
+        mnemonics: arts.map(function(a) {
+          if (!a) return '';
+          if (a.kindLabel) return a.kindLabel + (a.sourceLabel ? ' — ' + a.sourceLabel : '');
+          return a.sourceLabel || '';
+        })
+      });
+    }
+    return { data: { main: 'My AlloHaven', branches: branches, structureType: 'Memory Palace' }, images: images, objects: objects, landmarks: landmarks };
+  }
+
+  // Lazy-load memory_palace_module.js from wherever this module was served
+  // (CDN fallback); shares the walk renderer with the Memory Palace organizer,
+  // so at most one download of the module AND of three.js.
+  function _havenScriptBase() {
+    var base = 'https://alloflow-cdn.pages.dev/', query = '';
+    try {
+      var scripts = document.querySelectorAll('script[src]');
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].getAttribute('src') || '';
+        var m = src.match(/^(.*\/)allohaven_module\.js(\?.*)?$/);
+        if (m) { base = m[1]; query = m[2] || ''; break; }
+      }
+    } catch (e) {}
+    return { base: base, query: query };
+  }
+  function _havenLoadScript(url) {
+    return new Promise(function(resolve) {
+      try {
+        var s = document.createElement('script');
+        s.src = url; s.async = true;
+        s.onload = function() { resolve(true); };
+        s.onerror = function() { resolve(false); };
+        document.head.appendChild(s);
+      } catch (e) { resolve(false); }
+    });
+  }
+  // Loads the memory-palace walk renderer plus its best-effort sidecars: Prim3D
+  // (locus sculptures) and Landmark (giant per-room structures). Resolves true
+  // iff the palace itself is available; sidecars degrade to nothing.
+  function _havenPalaceEnsure() {
+    var loc = _havenScriptBase();
+    function sidecars() {
+      var jobs = [];
+      if (!(window.AlloModules && window.AlloModules.Prim3D)) jobs.push(_havenLoadScript(loc.base + 'prim3d_module.js' + loc.query));
+      if (!(window.AlloModules && window.AlloModules.Landmark)) jobs.push(_havenLoadScript(loc.base + 'landmark_module.js' + loc.query));
+      return Promise.all(jobs).then(function() { return true; });
+    }
+    if (window.AlloModules && window.AlloModules.MemoryPalace) return sidecars();
+    return _havenLoadScript(loc.base + 'memory_palace_module.js' + loc.query).then(function() {
+      if (!(window.AlloModules && window.AlloModules.MemoryPalace)) return false;
+      return sidecars();
+    });
+  }
+
+  // "🏛 Walk in 3D" — self-contained overlay (the openConceptMap3D pattern):
+  // Escape/✕ closes, walk state is ephemeral, nothing about the 2D haven
+  // changes. A footer strip mirrors the current locus for sighted users; the
+  // palace module owns the aria-live announcements and the route-list fallback.
+  function openHavenWalk3D(state) {
+    var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+    var artifacts = (store && typeof store.read === 'function') ? store.read() : [];
+    var built = buildHavenPalaceData(state, artifacts);
+    var totalLoci = built.data.branches.reduce(function(s, b) { return s + b.items.length; }, 0);
+    var overlay = document.createElement('div');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Walk your haven in 3D');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;';
+    var titleWrap = document.createElement('div'); titleWrap.style.cssText = 'flex:1;min-width:0;';
+    var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '🏛 My AlloHaven';
+    var hint = document.createElement('div'); hint.style.cssText = 'font-size:11px;color:#94a3b8;';
+    hint.textContent = totalLoci
+      ? 'Walk with ◀ ▶ or the arrow keys · O = overview · your decorations hang where you placed them'
+      : 'Your haven is waiting — earn tokens and place decorations, then walk through them here';
+    titleWrap.appendChild(title); titleWrap.appendChild(hint);
+    var closeBtn = document.createElement('button');
+    closeBtn.setAttribute('aria-label', 'Close'); closeBtn.textContent = '✕';
+    closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;';
+    header.appendChild(titleWrap); header.appendChild(closeBtn);
+    var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
+    var status = document.createElement('div');
+    status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
+    status.textContent = '🧭 Loading your haven…';
+    body.appendChild(status);
+    var footer = document.createElement('div');
+    footer.style.cssText = 'padding:8px 16px;background:#0b1020;border-top:1px solid #1e293b;color:#cbd5e1;font-size:12px;min-height:20px;';
+    footer.setAttribute('aria-hidden', 'true');   // the module's live region announces; this is the visual mirror
+    overlay.appendChild(header); overlay.appendChild(body); overlay.appendChild(footer);
+    document.body.appendChild(overlay);
+    var handle = null;
+    function destroy() {
+      try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+      try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
+      try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+    }
+    function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); destroy(); } }
+    document.addEventListener('keydown', onKey, true);
+    closeBtn.onclick = destroy;
+    _havenPalaceEnsure().then(function(ok) {
+      if (!overlay.parentNode) return;
+      var MP = window.AlloModules && window.AlloModules.MemoryPalace;
+      if (!ok || !MP) { status.textContent = '⚠️ The 3D walk could not load here — your haven is unchanged. Try again from the latest Canvas link.'; return; }
+      if (status.parentNode) status.parentNode.removeChild(status);
+      var LM = window.AlloModules && window.AlloModules.Landmark;
+      var resolvedLandmarks = {};
+      if (LM && built.landmarks) {
+        Object.keys(built.landmarks).forEach(function(roomKey) {
+          var key = LM.pickLandmark(built.landmarks[roomKey]);
+          var recipe = key && LM.getLandmark(key);
+          if (recipe) resolvedLandmarks[roomKey] = recipe;
+        });
+      }
+      handle = MP.render(body, built.data, {
+        images: built.images,
+        objects: built.objects,
+        landmarks: resolvedLandmarks,
+        onLocusChange: function(locus) {
+          if (!locus) return;
+          footer.textContent = locus.id === '__entry'
+            ? ''
+            : (locus.label + (locus.mnemonic ? ' — ' + locus.mnemonic : ''));
+        }
+      });
+    });
+    return destroy;
+  }
+
   function AlloHaven(props) {
     var React = window.React;
     if (!React) {
@@ -10342,6 +11070,19 @@
       if (!Array.isArray(merged.goals))          merged.goals          = [];
       if (!Array.isArray(merged.visits))         merged.visits         = [];
       if (!merged.achievements || typeof merged.achievements !== 'object') merged.achievements = {};
+      var restoredProgressSummary = readStudentProgressSummary();
+      if (restoredProgressSummary) {
+        merged.studentProgressSummary = restoredProgressSummary;
+      } else if (!merged.studentProgressSummary || typeof merged.studentProgressSummary !== 'object') {
+        merged.studentProgressSummary = null;
+      }
+      var restoredStudentArtifacts = readStudentArtifacts();
+      if (Array.isArray(restoredStudentArtifacts)) {
+        merged.studentArtifacts = restoredStudentArtifacts;
+      }
+      if (!Array.isArray(merged.studentArtifacts)) {
+        merged.studentArtifacts = [];
+      }
       // Phase 2p.7 defensive normalization: backfill new fields onto
       // older saved state so post-update loads don\'t crash on undefined
       // access. These hits run once per session.
@@ -10466,6 +11207,35 @@
       setState(function(prev) { return Object.assign({}, prev, obj); });
     };
 
+    useEffect(function() {
+      function applyRestoredProgressSummary() {
+        var summary = readStudentProgressSummary();
+        if (!summary) return;
+        setStateField('studentProgressSummary', summary);
+      }
+      applyRestoredProgressSummary();
+      window.addEventListener('alloflow-student-progress-summary-restored', applyRestoredProgressSummary);
+      return function() {
+        window.removeEventListener('alloflow-student-progress-summary-restored', applyRestoredProgressSummary);
+      };
+      // eslint-disable-next-line
+    }, []);
+
+    useEffect(function() {
+      function applyRestoredStudentArtifacts() {
+        var artifacts = readStudentArtifacts();
+        setStateField('studentArtifacts', Array.isArray(artifacts) ? artifacts : []);
+      }
+      applyRestoredStudentArtifacts();
+      window.addEventListener('alloflow-student-artifacts-restored', applyRestoredStudentArtifacts);
+      window.addEventListener('alloflow-student-artifacts-changed', applyRestoredStudentArtifacts);
+      return function() {
+        window.removeEventListener('alloflow-student-artifacts-restored', applyRestoredStudentArtifacts);
+        window.removeEventListener('alloflow-student-artifacts-changed', applyRestoredStudentArtifacts);
+      };
+      // eslint-disable-next-line
+    }, []);
+
     // ── Pomodoro tick state ──
     // Forces a re-render every ~250ms while the timer is active, so the
     // mm:ss display stays current. Date.now() arithmetic is the truth —
@@ -10514,7 +11284,7 @@
     // streak helpers compute current/longest from this list.
     // Phase L1: also bumps companion.ageInDays once per calendar day.
     useEffect(function() {
-      var todayStr = new Date().toISOString().slice(0, 10);
+      var todayStr = localDateKey();
       var isNewDay = !Array.isArray(state.visits) || state.visits.indexOf(todayStr) === -1;
       if (!Array.isArray(state.visits)) {
         setStateField('visits', [todayStr]);
@@ -10622,7 +11392,7 @@
 
     // ── Daily-state rollover ──
     useEffect(function() {
-      var todayStr = new Date().toISOString().slice(0, 10);
+      var todayStr = localDateKey();
       if (state.dailyState.date !== todayStr) {
         setStateField('dailyState', {
           date: todayStr,
@@ -11829,6 +12599,7 @@
         newContent.reviewCount = 0;
         newContent.bestQuizScore = 0;
       }
+      newContent = ensureIdeaSeedForContent(newContent, decoration, nowIso);
       var newDecorations = state.decorations.map(function(d) {
         if (d.id !== decorationId) return d;
         return Object.assign({}, d, { linkedContent: newContent });
@@ -11915,7 +12686,7 @@
         // Phase P: award a one-per-day +2 token bonus for completing a
         // queue of ≥3 decks. Gentle marker, no streaks. Per-deck quiz
         // tokens already accrue inside recordQuizSession independently.
-        var todayStr = new Date().toISOString().slice(0, 10);
+        var todayStr = localDateKey();
         var bonusAlreadyEarned = (state.dailyState && state.dailyState.queueBonusEarnedDate) === todayStr;
         var bonusEligible = newResults.length >= 3 && !bonusAlreadyEarned;
         var bonusAmount = bonusEligible ? 2 : 0;
@@ -11971,6 +12742,7 @@
         reviewCount: (decoration.linkedContent.reviewCount || 0) + 1,
         bestQuizScore: Math.max(decoration.linkedContent.bestQuizScore || 0, scorePct)
       });
+      newContent = waterIdeaSeed(newContent, decoration, nowIso);
       var newDecorations = state.decorations.map(function(d) {
         if (d.id !== decorationId) return d;
         return Object.assign({}, d, { linkedContent: newContent });
@@ -12042,8 +12814,8 @@
         title: template.title,
         metric: template.metric,
         targetCount: template.targetCount,
-        startDate: startDate.toISOString().slice(0, 10),
-        endDate: endDate.toISOString().slice(0, 10),
+        startDate: localDateKey(startDate),
+        endDate: localDateKey(endDate),
         completedAt: null,
         notes: '',
         templateId: template.id
@@ -12581,7 +13353,7 @@
     // + recent feedings + season. Cached in state.companionVignettes
     // keyed by YYYY-MM-DD. claimed=false until the player opens the
     // card and accepts the 2-token career income.
-    function todayKey() { return new Date().toISOString().slice(0, 10); }
+    function todayKey() { return localDateKey(); }
     function currentSeasonLabel() {
       var m = new Date().getMonth();
       if (m === 11 || m <= 1) return 'winter';
@@ -12833,7 +13605,7 @@
       var today = todayKey();
       var newPeers = c.peers.map(function(p) {
         if (p.id !== peerId) return p;
-        var alreadyVisitedToday = (p.lastVisitedAt || '').slice(0, 10) === today;
+        var alreadyVisitedToday = p.lastVisitedAt && localDateKey(p.lastVisitedAt) === today;
         return Object.assign({}, p, {
           lastVisitedAt: new Date().toISOString(),
           relationship: alreadyVisitedToday ? (p.relationship || 0) : (p.relationship || 0) + 1,
@@ -13190,8 +13962,8 @@
       var c = state.companion;
       if (!c || !c.species) return false;
       if (state.roomMode === 'live') return false;
-      var todayStr = new Date().toISOString().slice(0, 10);
-      var lastStr = c.lastTreatAt ? c.lastTreatAt.slice(0, 10) : null;
+      var todayStr = localDateKey();
+      var lastStr = c.lastTreatAt ? localDateKey(c.lastTreatAt) : null;
       return lastStr !== todayStr;
     }
     function giveCompanionTreat() {
@@ -13371,11 +14143,11 @@
         var byDay = {};
         entries.forEach(function(e) {
           if (!e.date) return;
-          byDay[e.date.slice(0, 10)] = true;
+          byDay[localDateKey(e.date)] = true;
         });
         var streakDays = 0;
         for (var i = 0; i < 14; i++) {
-          var dayStr = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+          var dayStr = localDateKeyOffset(-i);
           if (byDay[dayStr]) streakDays++; else break;
         }
         if (streakDays >= 3) {
@@ -13501,10 +14273,10 @@
         ];
         milestones.forEach(function(m) {
           var target = new Date(now.getFullYear(), now.getMonth() - m.months, now.getDate());
-          var targetIso = target.toISOString().slice(0, 10);
+          var targetIso = localDateKey(target);
           var match = (state.decorations || []).filter(function(d) {
             if (d.isStarter || !d.earnedAt) return false;
-            return d.earnedAt.slice(0, 10) === targetIso;
+            return localDateKey(d.earnedAt) === targetIso;
           })[0];
           if (match) {
             var ml = match.templateLabel || match.template || 'decoration';
@@ -14889,16 +15661,13 @@
     }
 
     // Custom upload (Phase 2p.19) — student-uploaded image becomes a
-    // decoration. Charges DECORATION_COST tokens up front (matches AI
-    // path); on success returns true, otherwise false. Placement is
-    // separate so the student can still see + confirm the upload before
-    // it commits to the room.
+    // decoration. Validates affordability during preview, then charges
+    // atomically at final placement so backing out never eats tokens.
     function chargeForCustomUpload() {
       if (state.tokens < DECORATION_COST) {
         addToast('Need ' + DECORATION_COST + ' 🪙 tokens. Currently you have ' + state.tokens + '.');
         return false;
       }
-      setStateField('tokens', state.tokens - DECORATION_COST);
       return true;
     }
 
@@ -14907,8 +15676,13 @@
     // Phase 2p.26: isDrawing flag distinguishes student-drawn from
     // student-uploaded so the badge + achievement differ.
     function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags, isDrawing) {
+      if (state.tokens < DECORATION_COST) {
+        addToast('Need ' + DECORATION_COST + ' ðŸª™ tokens. Currently you have ' + state.tokens + '.');
+        return;
+      }
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       var rotation = (Math.random() * 6) - 3;
+      var nowIso = new Date().toISOString();
       var entry = {
         id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
         template: isDrawing ? 'custom-drawing' : 'custom-upload',
@@ -14921,7 +15695,7 @@
         isCustomDrawing: !!isDrawing, // distinguishes drawn from uploaded
         placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
         rotation: rotation,
-        earnedAt: new Date().toISOString(),
+        earnedAt: nowIso,
         tokensSpent: DECORATION_COST,
         studentReflection: (reflectionText || '').trim(),
         mood: moodTag || null,
@@ -14930,10 +15704,20 @@
         sourceTool: null,
         aiRationale: null
       };
-      setStateMulti({
-        decorations: state.decorations.concat([entry]),
-        activeModal: null,
-        generateContext: null
+      var spendEntry = {
+        source: isDrawing ? 'custom-drawing' : 'custom-upload',
+        tokens: -DECORATION_COST,
+        date: nowIso,
+        metadata: { template: entry.template }
+      };
+      setState(function(prev) {
+        var spent = spendAlloHavenTokens(prev, DECORATION_COST, spendEntry.source, spendEntry.metadata, spendEntry.date);
+        if (!spent.ok) return prev;
+        return Object.assign({}, spent.state, {
+          decorations: (prev.decorations || []).concat([entry]),
+          activeModal: null,
+          generateContext: null
+        });
       });
       addToast(isDrawing ? '🎨 Your drawing is in the room.' : '🌿 Your image is in the room.');
     }
@@ -15079,7 +15863,7 @@
           var a = document.createElement('a');
           var safeLabel = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30) || 'decoration';
           a.href = dataUrl;
-          a.download = 'allohaven-' + safeLabel + '-' + (d.earnedAt ? d.earnedAt.slice(0, 10) : 'card') + '.png';
+          a.download = 'allohaven-' + safeLabel + '-' + (d.earnedAt ? localDateKey(d.earnedAt) : 'card') + '.png';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -15171,7 +15955,7 @@
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         var safeLabel = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30) || 'deck';
-        var stamp = new Date().toISOString().slice(0, 10);
+        var stamp = localDateKey();
         a.href = url;
         a.download = 'allohaven-' + safeLabel + '-' + stamp + '.' + ext;
         document.body.appendChild(a);
@@ -15189,7 +15973,6 @@
     // generation fails, the token IS refunded (separate path from
     // delete-decoration which keeps the token cost).
     function generateDecoration(template, slots, artStyleId, isRegenerate, isFreeRegenerate, onResult) {
-      // Charge tokens
       var cost = 0;
       if (!isRegenerate) cost = DECORATION_COST;
       else if (!isFreeRegenerate) cost = 1;
@@ -15197,28 +15980,32 @@
         if (typeof onResult === 'function') onResult({ error: 'insufficient' });
         return;
       }
-      if (cost > 0) {
-        var earningsEntry = {
-          source: isRegenerate ? 'regenerate' : 'decoration',
-          tokens: -cost,
-          date: new Date().toISOString(),
-          metadata: { template: template.id, isRegenerate: !!isRegenerate }
-        };
-        setStateMulti({
-          tokens: state.tokens - cost,
-          earnings: state.earnings.concat([earningsEntry])
-        });
-      }
-
       var prompt = buildAIPrompt(template, slots, artStyleId);
 
       if (!props.callImagen) {
-        // Refund (this path is only hit if the host didn't wire callImagen)
-        if (cost > 0) {
-          setStateMulti({ tokens: state.tokens, earnings: state.earnings });
-        }
         if (typeof onResult === 'function') onResult({ error: 'callImagen unavailable. Image generation requires the host\'s AI plumbing.' });
         return;
+      }
+
+      var refunded = false;
+      function refundGeneration(reason) {
+        if (cost <= 0 || refunded) return;
+        refunded = true;
+        setState(function(prev) {
+          return refundAlloHavenTokens(prev, cost, reason || 'generation failed', {
+            template: template.id,
+            isRegenerate: !!isRegenerate
+          }).state;
+        });
+      }
+
+      if (cost > 0) {
+        var spendSource = isRegenerate ? 'regenerate' : 'decoration';
+        var spendMetadata = { template: template.id, isRegenerate: !!isRegenerate };
+        var spendDate = new Date().toISOString();
+        setState(function(prev) {
+          return spendAlloHavenTokens(prev, cost, spendSource, spendMetadata, spendDate).state;
+        });
       }
 
       try {
@@ -15234,11 +16021,7 @@
             b64 = result.base64 || result.image || result.data || '';
           }
           if (!b64) {
-            // Refund on empty result
-            setStateMulti({
-              tokens: state.tokens + cost,
-              earnings: state.earnings.concat([{ source: 'refund', tokens: cost, date: new Date().toISOString(), metadata: { reason: 'empty result' } }])
-            });
+            refundGeneration('empty result');
             if (typeof onResult === 'function') onResult({ error: 'AI returned an empty image. Tokens refunded.' });
             return;
           }
@@ -15247,17 +16030,11 @@
             : ('data:image/png;base64,' + b64);
           if (typeof onResult === 'function') onResult({ imageBase64: dataUrl });
         }).catch(function(err) {
-          // Refund on failure
-          setStateMulti({
-            tokens: state.tokens + cost,
-            earnings: state.earnings.concat([{ source: 'refund', tokens: cost, date: new Date().toISOString(), metadata: { reason: 'callImagen error' } }])
-          });
+          refundGeneration('callImagen error');
           if (typeof onResult === 'function') onResult({ error: 'AI generation failed. Tokens refunded. (' + (err && err.message ? err.message : 'unknown error') + ')' });
         });
       } catch (err) {
-        if (cost > 0) {
-          setStateMulti({ tokens: state.tokens + cost });
-        }
+        refundGeneration('callImagen start error');
         if (typeof onResult === 'function') onResult({ error: 'Could not start AI generation: ' + (err.message || err) });
       }
     }
@@ -15373,6 +16150,24 @@
             })
           );
         })(),
+        // Ring 0 (docs/allohaven_cozy_world_design.md): walk the whole haven —
+        // every unlocked room, placed decoration, and portfolio artifact — as
+        // one 3D memory-palace scene. Read-only view; closing changes nothing.
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '2px', marginBottom: '8px' } },
+          h('button', {
+            onClick: function() { openHavenWalk3D(state); },
+            'aria-label': 'Walk your haven in 3D',
+            title: 'See every room, decoration, and portfolio artifact as one walkable 3D palace',
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px',
+              background: palette.surface, color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '999px', fontSize: '12px', fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '🏛 Walk in 3D')
+        ),
         renderQuestPanel(),
         renderTodayCard(),
         // Compute responsive row count based on slot count + columns
@@ -15794,6 +16589,23 @@
           }, '📓 Journal' + (state.journalEntries.length > 0 ? ' · ' + state.journalEntries.length : '')),
           // Breathe (Phase 2p.28) — on-demand box-breathing pacer.
           // No tokens, no streak, no judgment. Always available.
+          state.studentProgressSummary ? (function() {
+            var summary = state.studentProgressSummary || {};
+            var total = summary.overview && summary.overview.totalActivities ? summary.overview.totalActivities : 0;
+            var selCount = summary.sel ? ((summary.sel.toolsUsed || 0) + (summary.sel.reflectionSnapshots || 0)) : 0;
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'student-progress'); },
+              'aria-label': 'Open my saved progress summary' + (total > 0 ? ', ' + total + ' activities' : ''),
+              title: 'My saved progress',
+              style: secondaryBtnStyle(palette)
+            }, 'Progress' + (total > 0 ? ' - ' + total : selCount > 0 ? ' - SEL ' + selCount : ''));
+          })() : null,
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'student-portfolio'); },
+            'aria-label': 'Open my portfolio, ' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? state.studentArtifacts.length + ' saved product' + (state.studentArtifacts.length === 1 ? '' : 's') : 'no saved products yet'),
+            title: 'My saved products',
+            style: secondaryBtnStyle(palette)
+          }, 'Portfolio' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? ' - ' + state.studentArtifacts.length : '')),
           h('button', {
             onClick: function() { setStateField('activeModal', 'breathe'); },
             'aria-label': 'Open breathing pacer for self-care',
@@ -17325,36 +18137,18 @@
       );
     }
 
-    // Today summary card (Phase 2o) — daily-arc complement to the
-    // quest panel. Quests = "what to try today"; today card = "what
-    // you've done + how close to your daily caps". Keeps daily-arc
-    // visibility without forcing students to compute it themselves.
-    // Hidden on first visit of a fresh day (no activity yet) so it
-    // doesn't add visual noise to a clean slate.
+    // Today card (Phase 2o) — daily-arc complement to the quest panel.
+    // Quests = optional bonus; today card = next step + progress through
+    // the core loop. Visible on a fresh day so students always have a
+    // gentle starting point.
     function renderTodayCard() {
-      var ds = state.dailyState || {};
-      var todayStr = new Date().toISOString().slice(0, 10);
-      var tokensToday = (state.earnings || []).reduce(function(sum, e) {
-        if (!e.date) return sum;
-        if (e.date.slice(0, 10) !== todayStr) return sum;
-        return sum + (e.tokens || 0);
-      }, 0);
-      var decorationsToday = (state.decorations || []).filter(function(d) {
-        if (d.isStarter) return false;
-        if (!d.earnedAt) return false;
-        return d.earnedAt.slice(0, 10) === todayStr;
-      }).length;
+      var plan = getAlloHavenDailyPlan(state);
+      var snap = plan.snapshot;
+      var anyActivity = snap.tokensEarnedToday > 0 || snap.tokensSpentToday > 0
+        || snap.pomodoros > 0 || snap.reflections > 0 || snap.quizTokens > 0
+        || snap.walkTokens > 0 || snap.decorationsToday > 0;
 
-      var pomodoros = ds.pomodorosCompleted || 0;
-      var reflections = ds.reflectionsSubmitted || 0;
-      var quizTokens = ds.quizTokensEarnedToday || 0;
-      var walkTokens = ds.storyWalkTokensEarnedToday || 0;
-
-      var anyActivity = tokensToday > 0 || pomodoros > 0 || reflections > 0
-        || quizTokens > 0 || walkTokens > 0 || decorationsToday > 0;
-      if (!anyActivity) return null;
-
-      function chip(emoji, label, current, cap, color) {
+      function chip(marker, label, current, cap, color) {
         var capLabel = cap ? (current + '/' + cap) : current;
         var atCap = cap && current >= cap;
         return h('span', {
@@ -17368,38 +18162,90 @@
             border: '1px solid ' + (atCap ? (color || palette.success || palette.accent) : palette.border),
             borderRadius: '999px',
             fontSize: '11px',
-            color: atCap ? (color || palette.success || palette.accent) : palette.textDim,
+            color: atCap ? (color || palette.success || palette.accent) : (color || palette.textDim),
             fontWeight: 700,
             fontVariantNumeric: 'tabular-nums'
           }
         },
-          h('span', { 'aria-hidden': 'true' }, emoji),
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '9px', letterSpacing: 0 } }, marker),
           h('span', null, capLabel)
         );
       }
 
-      var activeGoals = (state.goals || []).filter(function(g) {
-        if (g.completedAt) return false;
-        var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
-        return endMs >= Date.now();
-      });
-      var topGoal = null;
-      if (activeGoals.length > 0) {
-        activeGoals.sort(function(a, b) {
-          return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
-        });
-        topGoal = activeGoals[0];
+      function stepPill(step) {
+        var active = plan.next && plan.next.id === step.id;
+        var status = step.status;
+        var color = status === 'done' || status === 'clear' ? (palette.success || palette.accent)
+          : status === 'active' ? palette.accent
+          : status === 'locked' ? palette.textMute
+          : palette.textDim;
+        var border = active ? palette.accent
+          : (status === 'done' || status === 'clear') ? (palette.success || palette.accent)
+          : palette.border;
+        var statusLabel = status === 'done' ? 'done'
+          : status === 'clear' ? 'clear'
+          : status === 'active' ? 'running'
+          : status === 'locked' ? 'waiting'
+          : 'next';
+        var countLabel = step.count ? ' - ' + step.count : '';
+        var marker = status === 'done' || status === 'clear' ? 'OK'
+          : status === 'active' ? 'RUN'
+          : status === 'locked' ? '--'
+          : 'GO';
+        return h('span', {
+          key: 'daily-step-' + step.id,
+          'aria-label': step.label + ': ' + statusLabel + (step.count ? ', ' + step.count : ''),
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '5px 10px',
+            background: active ? (palette.accent + '18') : palette.surface,
+            border: '1px solid ' + border,
+            borderRadius: '999px',
+            color: color,
+            fontSize: '11px',
+            fontWeight: active ? 800 : 700,
+            fontVariantNumeric: 'tabular-nums'
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '9px', letterSpacing: 0 } }, marker),
+          h('span', null, step.label + countLabel)
+        );
       }
 
+      function openDecorationStep() {
+        var floorIdx = findFreeSlot('floor');
+        if (floorIdx >= 0) {
+          handleEmptyCellClick('floor', floorIdx);
+          return;
+        }
+        var wallIdx = findFreeSlot('wall');
+        if (wallIdx >= 0) {
+          handleEmptyCellClick('wall', wallIdx);
+          return;
+        }
+        addToast('No open room spots right now.');
+      }
+
+      function runDailyAction(action) {
+        if (action === 'pomodoro') startPomodoro();
+        else if (action === 'reflection') openReflectionModal();
+        else if (action === 'review') startReviewQueue();
+        else if (action === 'decorate') openDecorationStep();
+        else if (action === 'goals') setStateField('activeModal', 'goals');
+        else if (action === 'breathe') setStateField('activeModal', 'breathe');
+      }
+
+      var topGoal = snap.topGoal;
       return h('div', {
         role: 'region',
-        'aria-label': 'Today summary',
+        'aria-label': 'Today plan',
         style: {
           display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '8px 10px',
+          flexDirection: 'column',
+          gap: '8px',
+          padding: '10px 12px',
           background: palette.surface,
           border: '1px solid ' + palette.border,
           borderRadius: '10px',
@@ -17407,46 +18253,48 @@
           marginBottom: '8px'
         }
       },
-        h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase', marginRight: '4px' } },
-          'Today'),
-        tokensToday > 0 ? h('span', {
-          'aria-label': 'Tokens earned today: ' + tokensToday,
+        h('div', {
           style: {
-            display: 'inline-flex', alignItems: 'center', gap: '4px',
-            padding: '4px 10px',
-            background: palette.surface,
-            border: '1px solid ' + palette.accent,
-            borderRadius: '999px',
-            fontSize: '11px', color: palette.accent, fontWeight: 700,
-            fontVariantNumeric: 'tabular-nums'
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px'
           }
-        }, h('span', { 'aria-hidden': 'true' }, '🪙'), '+' + tokensToday) : null,
-        pomodoros > 0 ? chip('🍅', 'Pomodoros', pomodoros, 4) : null,
-        reflections > 0 ? chip('📝', 'Reflections', reflections, 1) : null,
-        quizTokens > 0 ? chip('✓', 'Quizzes passed', quizTokens, 2) : null,
-        walkTokens > 0 ? chip('📜', 'Walks', walkTokens, 1) : null,
-        decorationsToday > 0 ? chip('🌿', 'Decorations placed', decorationsToday) : null,
-        // Visit streak (Phase 2p.11) — only shown when ≥3 days. No
-        // counter when below threshold, no broken-streak shame.
-        (function() {
-          var streak = computeStreak(state.visits);
-          if (streak.current < 3) return null;
-          return h('span', {
-            'aria-label': 'Visit streak: ' + streak.current + ' days in a row',
-            title: 'Quietly proud of you for showing up.',
-            style: {
-              display: 'inline-flex', alignItems: 'center', gap: '4px',
-              padding: '4px 10px',
-              background: palette.surface,
-              border: '1px solid ' + (palette.success || palette.accent),
+        },
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '8px' } },
+            h('span', { style: { fontSize: '11px', fontWeight: 800, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase' } },
+              'Today'),
+            h('span', { style: { fontSize: '14px', fontWeight: 800, color: palette.text } },
+              plan.next.title)
+          ),
+          plan.next && plan.next.cta ? h('button', {
+            onClick: function() { runDailyAction(plan.next.action); },
+            'aria-label': plan.next.cta + ': ' + plan.next.title,
+            style: Object.assign({}, primaryBtnStyle(palette), {
+              padding: '6px 14px',
               borderRadius: '999px',
-              fontSize: '11px',
-              color: palette.success || palette.accent,
-              fontWeight: 700,
-              fontVariantNumeric: 'tabular-nums'
-            }
-          }, h('span', { 'aria-hidden': 'true' }, '🔥'), streak.current + '-day streak');
-        })(),
+              fontSize: '12px'
+            })
+          }, plan.next.cta) : null
+        ),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' } },
+          plan.steps.map(stepPill)
+        ),
+        anyActivity ? h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' } },
+          snap.tokensEarnedToday > 0 ? chip('+', 'Tokens earned today', '+' + snap.tokensEarnedToday, null, palette.accent) : null,
+          snap.tokensSpentToday > 0 ? chip('-', 'Tokens spent today', '-' + snap.tokensSpentToday, null, palette.textDim) : null,
+          snap.pomodoros > 0 ? chip('Focus', 'Pomodoros', snap.pomodoros, 4) : null,
+          snap.reflections > 0 ? chip('Write', 'Reflections', snap.reflections, 1) : null,
+          snap.quizTokens > 0 ? chip('Quiz', 'Quizzes passed', snap.quizTokens, 2) : null,
+          snap.walkTokens > 0 ? chip('Walk', 'Walks', snap.walkTokens, 1) : null,
+          snap.decorationsToday > 0 ? chip('Room', 'Decorations placed', snap.decorationsToday) : null,
+          (function() {
+            var streak = computeStreak(state.visits);
+            if (streak.current < 3) return null;
+            return chip('Streak', 'Visit streak', streak.current + ' days');
+          })()
+        ) : null,
         topGoal ? (function() {
           var prog = computeGoalProgress(topGoal, state);
           var endDate = topGoal.endDate ? new Date(topGoal.endDate) : null;
@@ -17454,21 +18302,25 @@
           return h('button', {
             onClick: function() { setStateField('activeModal', 'goals'); },
             'aria-label': 'Active goal: ' + topGoal.title + ', ' + prog.current + ' of ' + prog.target + ', ' + daysLeft + ' days left',
-            title: topGoal.title + ' · ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left',
+            title: topGoal.title + ' - ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left',
             style: {
-              marginLeft: 'auto',
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              alignSelf: 'flex-start',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
               padding: '4px 10px',
               background: 'transparent',
               border: '1px solid ' + palette.border,
               borderRadius: '999px',
-              fontSize: '11px', color: palette.textDim, fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'inherit'
+              fontSize: '11px',
+              color: palette.textDim,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
             }
           },
-            h('span', { 'aria-hidden': 'true' }, '🎯'),
             h('span', { style: { fontWeight: 700, color: palette.text } }, prog.current + '/' + prog.target),
-            h('span', null, '· ' + (daysLeft === 0 ? 'today' : daysLeft + 'd'))
+            h('span', null, '- ' + (daysLeft === 0 ? 'today' : daysLeft + 'd'))
           );
         })() : null
       );
@@ -20686,7 +21538,7 @@
         if (isNaN(t)) return null;
         if (t < startMs || t > endDay.getTime() + msPerDay) return null;
         var dayKey = new Date(t); dayKey.setHours(0, 0, 0, 0);
-        var iso = dayKey.toISOString().slice(0, 10);
+        var iso = localDateKey(dayKey);
         if (!perDay[iso]) perDay[iso] = { tokens: 0, pomodoros: 0, reflections: 0, decorations: 0, quizzes: 0 };
         return perDay[iso];
       }
@@ -20755,7 +21607,7 @@
         for (var col = 0; col < 13; col++) {
           var dayMs = startMs + (col * 7 + dow) * msPerDay;
           var cellDate = new Date(dayMs);
-          var iso = cellDate.toISOString().slice(0, 10);
+          var iso = localDateKey(cellDate);
           var b = perDay[iso] || null;
           var isFuture = dayMs > todayMs;
           var label = cellDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -22085,6 +22937,7 @@
         else if (daysAgo === 1) reviewedLabel = 'Reviewed yesterday';
         else reviewedLabel = 'Reviewed ' + daysAgo + ' days ago';
       }
+      var ideaStatus = getIdeaSeedStatus(decoration);
 
       var borderColor = isDue
         ? (palette.warn || palette.accent)
@@ -22111,6 +22964,7 @@
         className: 'ah-deck-row',
         'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel
           + (isSoon ? ', due soon' : '')
+          + (ideaStatus ? ', idea seed ' + ideaStatus.stage.label + (ideaStatus.needsWater ? ', needs water' : '') : '')
           + (hasVoiceNote ? ', voice note attached' : ''),
         style: {
           display: 'flex',
@@ -22188,6 +23042,21 @@
             }
           },
             isSoon ? (reviewedLabel + ' · due soon') : reviewedLabel)
+          ,
+          ideaStatus ? h('div', {
+            style: {
+              fontSize: '10px',
+              color: ideaStatus.needsWater ? (palette.warn || palette.accent) : palette.textMute,
+              fontWeight: ideaStatus.needsWater ? 700 : 500,
+              marginTop: '2px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }
+          },
+            'Idea: ' + ideaStatus.seed.title + ' - ' + ideaStatus.stage.label
+            + (ideaStatus.needsWater ? ' - needs water' : '')
+          ) : null
         ),
         // Voice-note inline play toggle (Phase R) — sits between center
         // and Review so the row's primary action stays on the right.
@@ -23210,6 +24079,776 @@
     // window into one celebratory retrospective. Heavy reuse of
     // computeTenureStats; renders nothing for genuinely-empty saves.
     // ─────────────────────────────────────────────────
+    function portfolioArtifactPacket(artifact) {
+      if (!artifact || typeof artifact !== 'object') return {};
+      if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
+      if (artifact.packet && typeof artifact.packet === 'object') return artifact.packet;
+      if (artifact.data && typeof artifact.data === 'object') return artifact.data;
+      return artifact;
+    }
+
+    function portfolioPrivacyLabel(mode) {
+      if (mode === 'full') return 'Full text shared';
+      if (mode === 'followup') return 'Follow-up requested';
+      if (mode === 'private') return 'Kept private';
+      if (mode === 'summary') return 'Summary only';
+      return 'Student selected';
+    }
+
+    function portfolioEscape(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+      });
+    }
+
+    function portfolioPlainText(value, depth) {
+      depth = depth || 0;
+      if (value == null || depth > 3) return '';
+      if (typeof value === 'string') return value.replace(/\s+/g, ' ').trim();
+      if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+      if (Array.isArray(value)) {
+        return value.map(function(part) { return portfolioPlainText(part, depth + 1); }).filter(Boolean).join(' ');
+      }
+      if (typeof value === 'object') {
+        var preferred = ['text', 'content', 'summary', 'reflection', 'response', 'poemText', 'scriptTitle', 'storyTitle', 'title', 'body'];
+        for (var i = 0; i < preferred.length; i++) {
+          if (value[preferred[i]] !== undefined) {
+            var direct = portfolioPlainText(value[preferred[i]], depth + 1);
+            if (direct) return direct;
+          }
+        }
+        var best = '';
+        Object.keys(value).forEach(function(key) {
+          if (/^(id|ts|timestamp|createdAt|updatedAt|savedAt|image|imageUrl|coverArt|portrait|illustration)$/i.test(key)) return;
+          var text = portfolioPlainText(value[key], depth + 1);
+          if (text.length > best.length) best = text;
+        });
+        return best;
+      }
+      return '';
+    }
+
+    function portfolioShortText(value, maxLen) {
+      var text = portfolioPlainText(value, 0);
+      if (!text) return '';
+      if (maxLen && text.length > maxLen) return text.slice(0, maxLen - 1).trim() + '...';
+      return text;
+    }
+
+    function portfolioSourceLabel(artifact, packet) {
+      artifact = artifact || {};
+      packet = packet || {};
+      if (artifact.sourceLabel || packet.sourceLabel) return artifact.sourceLabel || packet.sourceLabel;
+      var source = String(artifact.source || packet.source || artifact.type || packet.type || '').toLowerCase();
+      if (source.indexOf('sel') >= 0) return 'SEL Hub';
+      if (source.indexOf('storyforge') >= 0 || source.indexOf('story-forge') >= 0) return 'StoryForge';
+      if (source.indexOf('adventure') >= 0) return 'Adventure Mode';
+      if (source.indexOf('poettree') >= 0 || source.indexOf('poet') >= 0) return 'PoetTree';
+      if (source.indexOf('litlab') >= 0 || source.indexOf('story-stage') >= 0 || source.indexOf('storystage') >= 0) return 'Story Stage';
+      if (source.indexOf('allostudio') >= 0 || source.indexOf('allo-studio') >= 0) return 'AlloStudio';
+      return 'Student work';
+    }
+
+    function portfolioSourceKey(artifact, packet) {
+      var label = portfolioSourceLabel(artifact, packet);
+      return String(label || 'Student work').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'student-work';
+    }
+
+    function portfolioKindLabel(artifact, packet) {
+      artifact = artifact || {};
+      packet = packet || {};
+      if (artifact.kindLabel || packet.kindLabel) return artifact.kindLabel || packet.kindLabel;
+      var type = String(artifact.type || packet.type || artifact.kind || packet.kind || '').toLowerCase();
+      if (type === 'sel-share-packet') return 'SEL Share Packet';
+      if (type.indexOf('storyforge') >= 0 || type.indexOf('story-forge') >= 0) return 'StoryForge Story';
+      if (type.indexOf('adventure') >= 0) return 'Adventure Storybook';
+      if (type.indexOf('poettree') >= 0 || type.indexOf('poem') >= 0) return 'Poem';
+      if (type.indexOf('litlab') >= 0 || type.indexOf('story-stage') >= 0 || type.indexOf('storystage') >= 0) return 'Performance';
+      if (type.indexOf('allostudio') >= 0 || type.indexOf('allo-studio') >= 0) return 'Accessible Studio Product';
+      return 'Student Product';
+    }
+
+    function portfolioNormalizeItems(items, sourceLabel, fallbackTitle) {
+      if (!Array.isArray(items)) return [];
+      return items.map(function(item, idx) {
+        if (typeof item === 'string') {
+          return {
+            id: 'text-' + idx,
+            title: fallbackTitle || ('Part ' + (idx + 1)),
+            toolLabel: sourceLabel,
+            privacy: 'full',
+            text: item
+          };
+        }
+        item = item || {};
+        var text = item.text || item.content || item.summary || item.body || portfolioShortText(item, 1200);
+        return {
+          id: item.id || ('item-' + idx),
+          title: item.title || item.heading || item.label || item.name || (fallbackTitle ? fallbackTitle + ' ' + (idx + 1) : 'Portfolio entry'),
+          toolLabel: item.toolLabel || item.sourceLabel || sourceLabel,
+          privacy: item.privacy || 'full',
+          privacyLabel: item.privacyLabel,
+          followUpRequested: !!item.followUpRequested,
+          text: text || 'Saved product details are available in the source module.'
+        };
+      }).filter(function(item) { return !!(item && (item.text || item.summary || item.title)); });
+    }
+
+    function portfolioArtifactItems(artifact, packet) {
+      artifact = artifact || {};
+      packet = packet || {};
+      var sourceLabel = portfolioSourceLabel(artifact, packet);
+      var fallbackTitle = artifact.title || packet.title || portfolioKindLabel(artifact, packet);
+      var direct = packet.items || artifact.items;
+      if (Array.isArray(direct) && direct.length) return portfolioNormalizeItems(direct, sourceLabel, fallbackTitle);
+      var sections = packet.sections || artifact.sections || packet.pages || artifact.pages || packet.scenes || artifact.scenes || packet.chapters || artifact.chapters || packet.steps || artifact.steps;
+      if (Array.isArray(sections) && sections.length) return portfolioNormalizeItems(sections, sourceLabel, fallbackTitle);
+      var paragraphs = packet.paragraphs || artifact.paragraphs;
+      if (Array.isArray(paragraphs) && paragraphs.length) {
+        return portfolioNormalizeItems(paragraphs.map(function(p, idx) {
+          return {
+            id: p && p.id ? p.id : 'paragraph-' + idx,
+            title: 'Paragraph ' + (idx + 1),
+            text: (p && (p.text || p.content || p.summary)) || '',
+            toolLabel: sourceLabel
+          };
+        }), sourceLabel, 'Paragraph');
+      }
+      if (packet.poemText || artifact.poemText) {
+        return [{ id: 'poem', title: packet.poemTitle || artifact.poemTitle || fallbackTitle, toolLabel: sourceLabel, privacy: 'full', text: packet.poemText || artifact.poemText }];
+      }
+      var script = packet.script || artifact.script;
+      if (script && Array.isArray(script.lines) && script.lines.length) {
+        return portfolioNormalizeItems(script.lines.map(function(line, idx) {
+          return {
+            id: line.id || ('line-' + idx),
+            title: (line.character || line.speaker || 'Line') + ' ' + (idx + 1),
+            text: line.text || line.line || '',
+            toolLabel: sourceLabel
+          };
+        }), sourceLabel, 'Line');
+      }
+      var text = artifact.text || artifact.content || artifact.summary || packet.text || packet.content || packet.summary;
+      text = portfolioShortText(text, 1800);
+      if (text) {
+        return [{ id: 'summary', title: fallbackTitle, toolLabel: sourceLabel, privacy: artifact.privacy || packet.privacy || 'full', text: text }];
+      }
+      return [];
+    }
+
+    function printPortfolioArtifact(artifact) {
+      var packet = portfolioArtifactPacket(artifact);
+      var sourceLabel = portfolioSourceLabel(artifact, packet);
+      var kindLabel = portfolioKindLabel(artifact, packet);
+      var items = portfolioArtifactItems(artifact, packet);
+      var created = artifact.createdAt || packet.createdAt || new Date().toISOString();
+      var body = items.map(function(item, idx) {
+        var text = item.text || item.summary || 'Saved product details are available in the source module.';
+        return '<section style="border:1px solid #cbd5e1;border-radius:10px;padding:14px;margin:0 0 12px;">'
+          + '<h2 style="font-size:16px;margin:0 0 4px;">' + (idx + 1) + '. ' + portfolioEscape(item.title || 'Portfolio item') + '</h2>'
+          + '<p style="margin:0 0 8px;color:#475569;font-size:12px;">' + portfolioEscape(item.toolLabel || sourceLabel) + ' | ' + portfolioEscape(item.privacyLabel || portfolioPrivacyLabel(item.privacy)) + '</p>'
+          + (item.followUpRequested ? '<p style="font-weight:700;color:#92400e;">Follow-up requested.</p>' : '')
+          + '<p style="white-space:pre-wrap;line-height:1.55;margin:0;">' + portfolioEscape(text) + '</p>'
+          + '</section>';
+      }).join('');
+      var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + portfolioEscape(artifact.title || 'Portfolio') + '</title></head>'
+        + '<body style="font-family:Arial,sans-serif;color:#0f172a;margin:28px;">'
+        + '<h1 style="margin:0 0 4px;">' + portfolioEscape(artifact.title || 'Student Portfolio Artifact') + '</h1>'
+        + '<p style="margin:0 0 16px;color:#475569;">' + portfolioEscape(sourceLabel) + ' | ' + portfolioEscape(kindLabel) + ' | ' + portfolioEscape(new Date(created).toLocaleString()) + '</p>'
+        + body
+        + '<script>window.onload=function(){setTimeout(function(){window.print();},80);};<\/script>'
+        + '</body></html>';
+      var win = null;
+      try { win = window.open('', '_blank'); } catch (e) {}
+      if (!win) return;
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    }
+
+    function portfolioArtifactTextExport(artifact) {
+      artifact = artifact || {};
+      var packet = portfolioArtifactPacket(artifact);
+      var sourceLabel = portfolioSourceLabel(artifact, packet);
+      var kindLabel = portfolioKindLabel(artifact, packet);
+      var items = portfolioArtifactItems(artifact, packet);
+      var created = artifact.createdAt || packet.createdAt || new Date().toISOString();
+      var lines = [
+        artifact.title || packet.title || 'Student Portfolio Artifact',
+        sourceLabel + ' | ' + kindLabel + ' | ' + new Date(created).toLocaleString(),
+        'Privacy: ' + ((artifact.privacy || packet.privacy) === 'student-controlled' ? 'Student controlled' : portfolioPrivacyLabel(artifact.privacy || packet.privacy)),
+        ''
+      ];
+      items.forEach(function(item, idx) {
+        lines.push(String(idx + 1) + '. ' + (item.title || 'Portfolio entry'));
+        lines.push('Source: ' + (item.toolLabel || sourceLabel));
+        lines.push('Sharing: ' + (item.privacyLabel || portfolioPrivacyLabel(item.privacy)));
+        if (item.followUpRequested) lines.push('Follow-up requested.');
+        lines.push(item.text || item.summary || 'Saved product details are available in the source module.');
+        lines.push('');
+      });
+      return lines.join('\n');
+    }
+
+    function downloadPortfolioArtifact(artifact) {
+      try {
+        var text = portfolioArtifactTextExport(artifact);
+        var title = (artifact && artifact.title) || (portfolioArtifactPacket(artifact).title) || 'portfolio-item';
+        var safeTitle = String(title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio-item';
+        var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = safeTitle + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+          try { document.body.removeChild(a); } catch (e) {}
+          try { URL.revokeObjectURL(url); } catch (e2) {}
+        }, 0);
+      } catch (e3) {
+        addToast('Download was not available in this browser.', 'info');
+      }
+    }
+
+    function renderPortfolioShelfModal() {
+      if (state.activeModal !== 'student-portfolio') return null;
+      var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+      var artifacts = (Array.isArray(state.studentArtifacts) ? state.studentArtifacts : readStudentArtifacts()).slice().map(function(artifact) {
+        return store && typeof store.normalize === 'function' ? store.normalize(artifact) : artifact;
+      });
+      artifacts.sort(function(a, b) {
+        return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
+      });
+      var activeFilter = state.portfolioFilter || 'all';
+      var portfolioSearch = String(state.portfolioSearch || '').trim();
+      var portfolioSearchLower = portfolioSearch.toLowerCase();
+      var portfolioSort = state.portfolioSort || 'latest';
+      var sourceCounts = {};
+      var sourceLabels = {};
+      artifacts.forEach(function(artifact) {
+        var packet = portfolioArtifactPacket(artifact);
+        var key = portfolioSourceKey(artifact, packet);
+        sourceCounts[key] = (sourceCounts[key] || 0) + 1;
+        sourceLabels[key] = portfolioSourceLabel(artifact, packet);
+      });
+      var sourceFilters = Object.keys(sourceCounts).sort(function(a, b) {
+        return String(sourceLabels[a] || a).localeCompare(String(sourceLabels[b] || b));
+      });
+      var visibleArtifacts = activeFilter === 'all'
+        ? artifacts
+        : artifacts.filter(function(artifact) {
+          var packet = portfolioArtifactPacket(artifact);
+          return portfolioSourceKey(artifact, packet) === activeFilter;
+        });
+      if (activeFilter !== 'all' && sourceFilters.indexOf(activeFilter) === -1) {
+        activeFilter = 'all';
+        visibleArtifacts = artifacts;
+      }
+      if (portfolioSearchLower) {
+        visibleArtifacts = visibleArtifacts.filter(function(artifact) {
+          var packet = portfolioArtifactPacket(artifact);
+          var items = portfolioArtifactItems(artifact, packet);
+          var haystack = [
+            artifact.title || packet.title,
+            artifact.summary || packet.summary,
+            portfolioSourceLabel(artifact, packet),
+            portfolioKindLabel(artifact, packet),
+            artifact.privacy || packet.privacy
+          ].concat(items.map(function(item) {
+            return [item.title, item.toolLabel, item.text, item.summary].join(' ');
+          })).join(' ').toLowerCase();
+          return haystack.indexOf(portfolioSearchLower) >= 0;
+        });
+      }
+      visibleArtifacts.sort(function(a, b) {
+        var packetA = portfolioArtifactPacket(a);
+        var packetB = portfolioArtifactPacket(b);
+        if (portfolioSort === 'oldest') {
+          return Date.parse((a && (a.updatedAt || a.createdAt)) || 0) - Date.parse((b && (b.updatedAt || b.createdAt)) || 0);
+        }
+        if (portfolioSort === 'source') {
+          return portfolioSourceLabel(a, packetA).localeCompare(portfolioSourceLabel(b, packetB)) || portfolioKindLabel(a, packetA).localeCompare(portfolioKindLabel(b, packetB));
+        }
+        if (portfolioSort === 'kind') {
+          return portfolioKindLabel(a, packetA).localeCompare(portfolioKindLabel(b, packetB)) || portfolioSourceLabel(a, packetA).localeCompare(portfolioSourceLabel(b, packetB));
+        }
+        return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
+      });
+      var formatDate = function(value) {
+        if (!value) return 'Saved product';
+        try { return new Date(value).toLocaleDateString(); } catch (e) { return 'Saved product'; }
+      };
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'My portfolio',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 178,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '760px',
+            width: '100%',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '14px' } },
+            h('div', null,
+              h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800 } }, 'My Portfolio'),
+              h('p', { style: { margin: '4px 0 0 0', color: palette.textDim, fontSize: '12px', lineHeight: '1.45' } },
+                'Read-only products created in other modules. Privacy choices come from the source module.')
+            ),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close portfolio',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, 'x')
+          ),
+          artifacts.length ? h('div', {
+            role: 'group',
+            'aria-label': 'Filter portfolio products by source',
+            style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }
+          },
+            [{ id: 'all', label: 'All', count: artifacts.length }].concat(sourceFilters.map(function(key) {
+              return { id: key, label: sourceLabels[key] || 'Student work', count: sourceCounts[key] || 0 };
+            })).map(function(option) {
+              var active = activeFilter === option.id;
+              return h('button', {
+                key: option.id,
+                type: 'button',
+                onClick: function() { setStateField('portfolioFilter', option.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                'aria-label': 'Show ' + option.label + ' portfolio products, ' + option.count + ' item' + (option.count === 1 ? '' : 's'),
+                style: {
+                  minHeight: '32px',
+                  borderRadius: '8px',
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  background: active ? palette.accent : palette.surface,
+                  color: active ? (palette.onAccent || palette.bg) : palette.text,
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  padding: '6px 10px'
+                }
+              }, option.label + ' - ' + option.count);
+            })
+          ) : null,
+          artifacts.length ? h('div', {
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '14px', alignItems: 'end' }
+          },
+            h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', color: palette.textDim, fontSize: '11px', fontWeight: 800 } },
+              'Search products',
+              h('input', {
+                type: 'search',
+                value: portfolioSearch,
+                onChange: function(e) { setStateField('portfolioSearch', e.target.value); },
+                placeholder: 'Search title, source, or preview text',
+                'aria-label': 'Search portfolio products',
+                style: {
+                  minHeight: '36px',
+                  borderRadius: '8px',
+                  border: '1px solid ' + palette.border,
+                  background: palette.surface,
+                  color: palette.text,
+                  padding: '7px 10px',
+                  fontSize: '12px',
+                  boxSizing: 'border-box'
+                }
+              })
+            ),
+            h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', color: palette.textDim, fontSize: '11px', fontWeight: 800 } },
+              'Sort',
+              h('select', {
+                value: portfolioSort,
+                onChange: function(e) { setStateField('portfolioSort', e.target.value); },
+                'aria-label': 'Sort portfolio products',
+                style: {
+                  minHeight: '36px',
+                  borderRadius: '8px',
+                  border: '1px solid ' + palette.border,
+                  background: palette.surface,
+                  color: palette.text,
+                  padding: '7px 10px',
+                  fontSize: '12px',
+                  boxSizing: 'border-box'
+                }
+              },
+                h('option', { value: 'latest' }, 'Newest first'),
+                h('option', { value: 'oldest' }, 'Oldest first'),
+                h('option', { value: 'source' }, 'Source'),
+                h('option', { value: 'kind' }, 'Product type')
+              )
+            )
+          ) : null,
+          artifacts.length ? h('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            style: { margin: '-4px 0 12px', color: palette.textDim, fontSize: '11px' }
+          }, visibleArtifacts.length + ' of ' + artifacts.length + ' portfolio product' + (artifacts.length === 1 ? '' : 's') + ' shown') : null,
+          visibleArtifacts.length ? h('div', {
+            style: { display: 'flex', flexDirection: 'column', gap: '12px' }
+          },
+            visibleArtifacts.map(function(artifact, idx) {
+              artifact = artifact || {};
+              var packet = portfolioArtifactPacket(artifact);
+              var items = portfolioArtifactItems(artifact, packet);
+              var sourceLabel = portfolioSourceLabel(artifact, packet);
+              var kindLabel = portfolioKindLabel(artifact, packet);
+              var privacyLabel = (artifact.privacy || packet.privacy) === 'student-controlled'
+                ? 'Student controlled'
+                : portfolioPrivacyLabel(artifact.privacy || packet.privacy);
+              var createdAt = artifact.createdAt || packet.createdAt;
+              var updatedAt = artifact.updatedAt || packet.updatedAt;
+              var dateLabel = updatedAt && updatedAt !== createdAt ? 'Updated ' + formatDate(updatedAt) : formatDate(createdAt);
+              var lifecycleLabel = artifact.lifecycleStatus || packet.lifecycleStatus || null;
+              var versionLabel = Number(artifact.version || packet.version || 0) > 1 ? 'v' + Number(artifact.version || packet.version) : null;
+              var itemCount = Number(artifact.itemCount || packet.itemCount || items.length || 0);
+              return h('section', {
+                key: artifact.id || ('portfolio-artifact-' + idx),
+                'aria-label': (artifact.title || 'Portfolio item') + ' from ' + sourceLabel,
+                style: {
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '8px',
+                  padding: '14px',
+                  color: palette.text
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' } },
+                  h('div', { style: { minWidth: 0, flex: '1 1 220px' } },
+                    h('h4', { style: { margin: 0, fontSize: '14px', fontWeight: 800, color: palette.text, overflowWrap: 'anywhere' } }, artifact.title || packet.title || 'Portfolio Item'),
+                    h('div', { style: { marginTop: '3px', fontSize: '11px', color: palette.textDim } }, sourceLabel + ' - ' + dateLabel)
+                  ),
+                  h('div', { style: { flex: '0 1 auto', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                    h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, kindLabel),
+                    h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, privacyLabel)
+                    ,
+                    itemCount ? h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, itemCount + ' item' + (itemCount === 1 ? '' : 's')) : null,
+                    lifecycleLabel ? h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        textTransform: 'capitalize'
+                      }
+                    }, lifecycleLabel) : null,
+                    versionLabel ? h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, versionLabel) : null
+                  )
+                ),
+                h('p', { style: { margin: '0 0 10px', color: palette.textDim, fontSize: '12px', lineHeight: '1.45' } },
+                  artifact.summary || packet.summary || (items.length ? items.length + ' saved items' : 'Saved product')),
+                items.length ? h('details', {
+                  style: { border: '1px solid ' + palette.border, borderRadius: '8px', background: palette.bg, marginBottom: '12px', overflow: 'hidden' }
+                },
+                  h('summary', {
+                    style: { cursor: 'pointer', padding: '9px 10px', color: palette.text, fontSize: '12px', fontWeight: 800 }
+                  }, 'Preview ' + items.length + ' item' + (items.length === 1 ? '' : 's')),
+                  h('ul', {
+                    role: 'list',
+                    style: { listStyle: 'none', padding: '0 10px 10px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }
+                  },
+                    items.map(function(item, itemIdx) {
+                      var label = item.privacyLabel || portfolioPrivacyLabel(item.privacy);
+                      var text = item.text || item.summary || 'Saved product details are available in the source module.';
+                      return h('li', {
+                        key: (item.id || 'item') + '-' + itemIdx,
+                        role: 'listitem',
+                        style: {
+                          border: '1px solid ' + palette.border,
+                          borderRadius: '8px',
+                          padding: '10px',
+                          background: palette.surface
+                        }
+                      },
+                        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline', marginBottom: '4px' } },
+                          h('strong', { style: { fontSize: '12px', color: palette.text, overflowWrap: 'anywhere' } }, item.title || 'Portfolio entry'),
+                          h('span', { style: { fontSize: '10px', color: item.privacy === 'private' ? (palette.warn || palette.textDim) : palette.textDim, fontWeight: 800, textAlign: 'right' } }, label)
+                        ),
+                        item.followUpRequested ? h('div', { style: { color: '#92400e', fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, 'Follow-up requested.') : null,
+                        h('p', { style: { margin: 0, color: palette.textDim, fontSize: '11.5px', lineHeight: '1.45', overflowWrap: 'anywhere' } }, text)
+                      );
+                    })
+                  )
+                ) : null,
+                items.length ? h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function() { printPortfolioArtifact(artifact); },
+                    'aria-label': 'Print ' + (artifact.title || packet.title || 'portfolio item'),
+                    style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+                  }, 'Print'),
+                  h('button', {
+                    onClick: function() { downloadPortfolioArtifact(artifact); },
+                    'aria-label': 'Download text for ' + (artifact.title || packet.title || 'portfolio item'),
+                    style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+                  }, 'Download text')
+                ) : null
+              );
+            })
+          ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
+            artifacts.length
+              ? 'No portfolio products match this source filter or search.'
+              : 'No portfolio products are loaded yet. Create one in SEL Hub, AlloStudio, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' } },
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+            }, 'Done')
+          )
+        )
+      );
+    }
+
+    function renderStudentProgressModal() {
+      if (state.activeModal !== 'student-progress') return null;
+      var summary = state.studentProgressSummary || readStudentProgressSummary();
+      var overview = (summary && summary.overview) || {};
+      var academic = (summary && summary.academic) || {};
+      var sel = (summary && summary.sel) || {};
+      var engagement = (summary && summary.engagement) || {};
+      var gameplay = (summary && summary.gameplay) || {};
+      var recent = (summary && summary.recent) || {};
+      var generated = summary && summary.generatedAt
+        ? new Date(summary.generatedAt).toLocaleDateString()
+        : 'current save';
+      var fmt = function(value, fallback) {
+        if (value === null || value === undefined || value === '') return fallback || '0';
+        return String(value);
+      };
+      var metricBox = function(label, value, sub) {
+        return h('div', {
+          style: {
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            padding: '12px',
+            minWidth: 0
+          }
+        },
+          h('div', {
+            style: {
+              fontSize: '20px',
+              fontWeight: 800,
+              color: palette.accent,
+              lineHeight: '1.1',
+              fontVariantNumeric: 'tabular-nums',
+              overflowWrap: 'anywhere'
+            }
+          }, value),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, fontWeight: 700, marginTop: '4px' } }, label),
+          sub ? h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '3px', lineHeight: '1.35' } }, sub) : null
+        );
+      };
+      var row = function(label, value) {
+        return h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '12px',
+            padding: '8px 0',
+            borderBottom: '1px solid ' + palette.border,
+            fontSize: '12px'
+          }
+        },
+          h('span', { style: { color: palette.textDim } }, label),
+          h('span', { style: { color: palette.text, fontWeight: 700, textAlign: 'right' } }, value)
+        );
+      };
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'My progress summary',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 178,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '680px',
+            width: '100%',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '14px' } },
+            h('div', null,
+              h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800 } }, 'My Progress'),
+              h('p', { style: { margin: '4px 0 0 0', color: palette.textDim, fontSize: '12px' } },
+                summary ? 'From saved student file - ' + generated : 'No saved progress summary is loaded yet.')
+            ),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close progress summary',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, 'x')
+          ),
+          summary ? h('div', null,
+            h('p', {
+              style: {
+                margin: '0 0 16px 0',
+                color: palette.textDim,
+                fontSize: '12px',
+                lineHeight: '1.5'
+              }
+            }, 'Counts only. Reflection text stays out of this view.'),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                gap: '10px',
+                marginBottom: '18px'
+              }
+            },
+              metricBox('Activities', fmt(overview.totalActivities), fmt(overview.resourcesCreated) + ' resources'),
+              metricBox('Points', fmt(overview.globalPoints), fmt(overview.pointEvents) + ' point events'),
+              metricBox('Quiz average', academic.quizAverage ? academic.quizAverage + '%' : '0%', fmt(academic.quizCount) + ' quizzes'),
+              metricBox('Word Sounds', academic.wordSoundsAccuracy ? academic.wordSoundsAccuracy + '%' : '0%', fmt(academic.wordSoundsWords) + ' words')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '16px',
+                marginBottom: '16px'
+              }
+            },
+              h('section', { 'aria-label': 'Learning practice', style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
+                h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'Learning Practice'),
+                row('Fluency', fmt(academic.fluencyWCPM) + ' WCPM'),
+                row('Fluency reads', fmt(academic.fluencyAssessments)),
+                row('Games played', fmt(gameplay.gamesPlayed)),
+                row('Label challenge', gameplay.labelChallengeAverage ? gameplay.labelChallengeAverage + '%' : '0%')
+              ),
+              h('section', { 'aria-label': 'SEL and reflection', style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
+                h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'SEL And Reflection'),
+                row('SEL tools used', fmt(sel.toolsUsed)),
+                row('Reflection snapshots', fmt(sel.reflectionSnapshots)),
+                row('Station quests', fmt(sel.stationQuestsComplete) + '/' + fmt(sel.stationQuestsTotal)),
+                row('SEL streak days', fmt(sel.streakDays))
+              )
+            ),
+            h('div', {
+              style: {
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                padding: '14px',
+                marginBottom: '16px'
+              }
+            },
+              h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'Focus And Adventure'),
+              row('Focus ratio', engagement.focusRatio === null || engagement.focusRatio === undefined ? 'Not tracked' : engagement.focusRatio + '%'),
+              row('Engaged minutes', fmt(engagement.engagedMinutes)),
+              row('Adventure level', fmt(gameplay.adventureLevel)),
+              row('Adventure XP', fmt(gameplay.adventureXP))
+            ),
+            Array.isArray(recent.recentActivityTypes) && recent.recentActivityTypes.length > 0 ? h('div', {
+              style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }
+            },
+              recent.recentActivityTypes.map(function(type, idx) {
+                return h('span', {
+                  key: 'progress-recent-' + idx,
+                  style: {
+                    padding: '4px 9px',
+                    borderRadius: '999px',
+                    border: '1px solid ' + palette.border,
+                    color: palette.textDim,
+                    background: palette.surface,
+                    fontSize: '11px'
+                  }
+                }, type);
+              })
+            ) : null
+          ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
+            'Open a student project file to see saved learning and SEL progress here.'),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+            }, 'Done')
+          )
+        )
+      );
+    }
+
     function renderTenureRecapModal() {
       if (state.activeModal !== 'tenure-recap') return null;
       var stats = computeTenureStats(state);
@@ -24546,7 +26185,7 @@
                   var blob = new Blob([raw], { type: 'application/json' });
                   var url = URL.createObjectURL(blob);
                   var a = document.createElement('a');
-                  var stamp = new Date().toISOString().slice(0, 10);
+                  var stamp = localDateKey();
                   a.href = url;
                   a.download = (_hasVoice ? 'allohaven_CONFIDENTIAL-backup-' : 'allohaven-backup-') + stamp + '.json';
                   document.body.appendChild(a);
@@ -24696,12 +26335,12 @@
       var daysActive = {};
       earningsThisWeek.forEach(function(e) {
         if (!e.date) return;
-        daysActive[e.date.slice(0, 10)] = true;
+        daysActive[localDateKey(e.date)] = true;
       });
       (state.journalEntries || []).forEach(function(j) {
         if (!j.date) return;
         var t = new Date(j.date).getTime();
-        if (t >= weekAgo) daysActive[j.date.slice(0, 10)] = true;
+        if (t >= weekAgo) daysActive[localDateKey(j.date)] = true;
       });
       var daysActiveCount = Object.keys(daysActive).length;
 
@@ -26054,7 +27693,7 @@
           var perDay = {};
           function dayKey(d) {
             var dk = new Date(d); dk.setHours(0, 0, 0, 0);
-            return dk.toISOString().slice(0, 10);
+            return localDateKey(dk);
           }
           earnings.forEach(function(e) {
             if (!e.date) return;
@@ -26077,7 +27716,7 @@
             var cells = [];
             for (var col = 0; col < 13; col++) {
               var dayMs = startMs + (col * 7 + dow) * msPerDay;
-              var iso = new Date(dayMs).toISOString().slice(0, 10);
+              var iso = localDateKey(dayMs);
               var v = perDay[iso] || 0;
               var isFuture = dayMs > nowMs;
               var fill;
@@ -26430,7 +28069,7 @@
 
             // Today's vignette (if present)
             (function() {
-              var todayK = new Date().toISOString().slice(0, 10);
+              var todayK = localDateKey();
               var tv = (state.companionVignettes || {})[todayK];
               if (!tv || !tv.text) return null;
               return h('div', {
@@ -26835,6 +28474,8 @@
       renderGoalsListModal(),
       renderGoalBuilderModal(),
       renderAchievementsModal(),
+      renderPortfolioShelfModal(),
+      renderStudentProgressModal(),
       renderTenureRecapModal(),
       renderCompanionSetupModal(),
       renderTourModal(),
@@ -27644,6 +29285,20 @@
   window.AlloModules.AlloHavenInternals = {
     computeTenureStats: computeTenureStats, computeSkillLevel: computeSkillLevel,
     computeStreak: computeStreak, cardMasteryBucket: cardMasteryBucket, daysUntilDue: daysUntilDue,
+    buildHavenPalaceData: buildHavenPalaceData,
+    getThemeBase: getThemeBase, localDateKey: localDateKey, localDateKeyOffset: localDateKeyOffset,
+    getAlloHavenDailySnapshot: getAlloHavenDailySnapshot,
+    getAlloHavenDailyPlan: getAlloHavenDailyPlan,
+    spendAlloHavenTokens: spendAlloHavenTokens,
+    refundAlloHavenTokens: refundAlloHavenTokens,
+    normalizeIdeaText: normalizeIdeaText,
+    getLinkedContentIdeaText: getLinkedContentIdeaText,
+    buildIdeaSeedFromMemory: buildIdeaSeedFromMemory,
+    ensureIdeaSeedForContent: ensureIdeaSeedForContent,
+    waterIdeaSeed: waterIdeaSeed,
+    getIdeaGrowthStage: getIdeaGrowthStage,
+    getIdeaSeedStatus: getIdeaSeedStatus,
+    DECORATION_COST: DECORATION_COST
   };
   console.log('[CDN] AlloHaven loaded');
 

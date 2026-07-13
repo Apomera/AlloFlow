@@ -857,7 +857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       // Controls — slider + play button + reset
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         h('input', {
-          type: 'range', min: 1, max: 7, step: 1, value: currentPhase,
+          type: 'range', 'aria-valuetext': 'phase ' + currentPhase + ' of 7', min: 1, max: 7, step: 1, value: currentPhase,
           'aria-label': 'Cycle phase',
           onChange: function(e) { setCurrentPhase(parseInt(e.target.value, 10)); setAutoPlay(false); },
           style: { flex: 1, minWidth: 160, accentColor: ph.color }
@@ -1051,7 +1051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           var bg, color, borderC;
           if (showAsCorrect) { bg = 'rgba(34,197,94,0.18)'; color = '#22c55e'; borderC = '#22c55e'; }
           else if (showAsWrong) { bg = 'rgba(239,68,68,0.18)'; color = '#ef4444'; borderC = '#ef4444'; }
-          else if (picked) { bg = 'rgba(15,23,42,0.5)'; color = '#64748b'; borderC = 'rgba(100,116,139,0.30)'; }
+          else if (picked) { bg = 'rgba(15,23,42,0.5)'; color = '#94a3b8'; borderC = 'rgba(100,116,139,0.30)'; }
           else { bg = f.color + '12'; color = f.color; borderC = f.color + '60'; }
 
           return h('button', {
@@ -1348,6 +1348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       { id: 'open_pbis', label: 'Open the PBIS three-tier framework', icon: '🏫', check: function(d) { return !!(d && d.sbtViewedPbis); }, progress: function(d) { return (d && d.sbtViewedPbis) ? 'opened' : 'not yet'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -1402,12 +1403,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         minHeight: '70vh',
         padding: 0,
         boxShadow: '0 0 40px rgba(20,184,166,0.15)',
-        outline: 'none'
+        outline: 'none',
+        // ── Theme self-containment (2026-07-02, Aaron: "light mode … is not right") ──
+        // This tool's background is a FIXED dark teal atmosphere (above), and its
+        // content is built for a dark substrate: 46 hardcoded light-text colors,
+        // dark SVG strokes (#0f172a), bright teal accents (#5eead4/#14b8a6). But it
+        // draws 80 text nodes with var(--allo-stem-text), which the StemLab shell
+        // makes theme-reactive — so in LIGHT app mode that text flipped DARK and
+        // vanished on the dark panels. Pin the STEM theme vars to their dark-substrate
+        // values ON THIS ROOT so every var(--allo-stem-*) descendant reads light-on-dark
+        // (>13:1, AAA) in every app theme, plus an explicit light `color` so inherited
+        // text is light too. The tool becomes a self-contained dark island — the
+        // standard pattern for an immersive tool whose background can't go light.
+        '--allo-stem-canvas': '#0f172a',
+        '--allo-stem-text': '#e2e8f0',
+        '--allo-stem-text-soft': '#94a3b8',
+        '--allo-stem-border': '#334155',
+        color: '#e2e8f0'
       };
 
       function renderHeader() {
         return h('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,184,166,0.20)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab',
+          h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.back_to_stem_lab', 'Back to STEM Lab'),
             style: { background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '←'),
           // Circular accent badge — same vocabulary as the rest of the
           // design system. 56px (large hero size).
@@ -1423,7 +1440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           }, '🏫'),
           h('div', { style: { flex: 1, minWidth: 240 } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
-              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#5eead4', letterSpacing: '-0.01em' } }, 'School Behavior Toolkit'),
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#5eead4', letterSpacing: '-0.01em' } }, __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit', 'School Behavior Toolkit')),
               // Meta-count chip — shows section count
               h('span', { style: {
                 padding: '2px 8px', borderRadius: 999,
@@ -1431,29 +1448,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, '11 sections · 3 interactive')
+              } }, __alloT('stem.schoolbehaviortoolkit.12_sections_4_interactive', '12 sections · 4 interactive'))
             ),
-            h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.')
+            h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.5 } }, __alloT('stem.schoolbehaviortoolkit.applied_k_12_practice_pbis_replacement', 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.'))
           )
         );
       }
 
       function renderTabs() {
         var tabs = [
-          { id: 'pbis', label: 'PBIS Tiers', icon: '🏫' },
-          { id: 'fba', label: 'FBA Process', icon: '🔬' },
-          { id: 'bip', label: 'BIP Template', icon: '📑' },
-          { id: 'replacement', label: 'Replacement Behaviors', icon: '🔄' },
-          { id: 'setting', label: 'Setting Events', icon: '🕰️' },
-          { id: 'cycle', label: 'Acting-Out Cycle', icon: '🌀' },
-          { id: 'restraint', label: 'Restraint & Seclusion', icon: '🛑' },
-          { id: 'cico', label: 'CICO Template', icon: '📋' },
-          { id: 'equity', label: 'Equity & Disparities', icon: '⚖️' },
-          { id: 'maine', label: 'Maine Resources', icon: '🦞' },
-          { id: 'connect', label: 'Connect', icon: '🔗' },
-          { id: 'inquiry', label: 'Behavior Inquiry', icon: '🧪' }
+          { id: 'pbis', label: __alloT('stem.schoolbehaviortoolkit.pbis_tiers', 'PBIS Tiers'), icon: '🏫' },
+          { id: 'fba', label: __alloT('stem.schoolbehaviortoolkit.fba_process', 'FBA Process'), icon: '🔬' },
+          { id: 'bip', label: __alloT('stem.schoolbehaviortoolkit.bip_template', 'BIP Template'), icon: '📑' },
+          { id: 'replacement', label: __alloT('stem.schoolbehaviortoolkit.replacement_behaviors', 'Replacement Behaviors'), icon: '🔄' },
+          { id: 'setting', label: __alloT('stem.schoolbehaviortoolkit.setting_events', 'Setting Events'), icon: '🕰️' },
+          { id: 'cycle', label: __alloT('stem.schoolbehaviortoolkit.acting_out_cycle', 'Acting-Out Cycle'), icon: '🌀' },
+          { id: 'restraint', label: __alloT('stem.schoolbehaviortoolkit.restraint_seclusion', 'Restraint & Seclusion'), icon: '🛑' },
+          { id: 'cico', label: __alloT('stem.schoolbehaviortoolkit.cico_template', 'CICO Template'), icon: '📋' },
+          { id: 'equity', label: __alloT('stem.schoolbehaviortoolkit.equity_disparities', 'Equity & Disparities'), icon: '⚖️' },
+          { id: 'maine', label: __alloT('stem.schoolbehaviortoolkit.maine_resources', 'Maine Resources'), icon: '🦞' },
+          { id: 'connect', label: __alloT('stem.schoolbehaviortoolkit.connect', 'Connect'), icon: '🔗' },
+          { id: 'inquiry', label: __alloT('stem.schoolbehaviortoolkit.behavior_inquiry', 'Behavior Inquiry'), icon: '🧪' }
         ];
-        return h('div', { role: 'tablist', 'aria-label': 'School Behavior Toolkit sections',
+        return h('div', { role: 'tablist', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_sections', 'School Behavior Toolkit sections'),
           style: { display: 'flex', gap: 4, padding: '14px 18px 0', overflowX: 'auto', borderBottom: '1px solid rgba(20,184,166,0.15)', alignItems: 'flex-end' } },
           tabs.map(function(t) {
             var active = section === t.id;
@@ -1520,6 +1537,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         return h('div', null,
           panelHeader('🏫 PBIS — Three Tiers of Support',
             'Positive Behavioral Interventions and Supports is the school-wide framework that holds individual ABA work inside a system. Most school psychs spend ~80% of their time inside this framework — not in 1-on-1 ABA.'),
+          // ── The field's iconic PBIS pyramid, AREA-proportional to the 80/15/5
+          // split (for a triangle, cumulative area from the apex scales as the
+          // height-fraction squared, so the band boundaries are at sqrt of the
+          // cumulative percentages). Labels use a white fill + dark halo so they
+          // stay legible on red, yellow, AND green bands.
+          (function() {
+            var W = 230, H = 172, apexY = 8, baseY = 152, cx = W / 2, halfBase = 100, hgt = baseY - apexY;
+            function lvl(f) { return { y: apexY + hgt * f, lx: cx - halfBase * f, rx: cx + halfBase * f }; }
+            var a = lvl(Math.sqrt(0.05)), b = lvl(Math.sqrt(0.20));
+            var labelStyle = { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2.4, strokeLinejoin: 'round' };
+            var bands = [
+              { poly: cx + ',' + apexY + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.lx.toFixed(1) + ',' + a.y.toFixed(1), fill: '#ef4444', label: __alloT('stem.schoolbehaviortoolkit.tier_3_5_intensive', 'Tier 3 · ~5% · intensive'), ly: apexY + (a.y - apexY) * 0.62, fs: 7 },
+              { poly: a.lx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.lx.toFixed(1) + ',' + b.y.toFixed(1), fill: '#fbbf24', label: __alloT('stem.schoolbehaviortoolkit.tier_2_15_targeted', 'Tier 2 · ~15% · targeted'), ly: (a.y + b.y) / 2 + 3, fs: 8.5 },
+              { poly: b.lx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + (cx + halfBase) + ',' + baseY + ' ' + (cx - halfBase) + ',' + baseY, fill: '#22c55e', label: __alloT('stem.schoolbehaviortoolkit.tier_1_80_universal_all_students', 'Tier 1 · ~80% · universal (all students)'), ly: (b.y + baseY) / 2 + 3, fs: 9 }
+            ];
+            return h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 12 } },
+              h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 320 }, role: 'img', 'aria-label': __alloT('stem.schoolbehaviortoolkit.pbis_pyramid_tier_1_universal_supports', 'PBIS pyramid: Tier 1 universal supports for ~80% of students, Tier 2 targeted for ~15%, Tier 3 intensive for ~5%.') },
+                bands.map(function(bd, i) {
+                  return h('g', { key: i },
+                    h('polygon', { points: bd.poly, fill: bd.fill, stroke: '#0f172a', strokeWidth: 1.5, opacity: 0.94 }),
+                    h('text', { x: cx, y: bd.ly, textAnchor: 'middle', fill: '#ffffff', fontSize: bd.fs, fontWeight: 800, style: labelStyle }, bd.label)
+                  );
+                }),
+                h('text', { x: cx, y: H - 3, textAnchor: 'middle', fill: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 7.5, fontStyle: 'italic' }, __alloT('stem.schoolbehaviortoolkit.bands_are_area_proportional_to_the_80_', 'bands are area-proportional to the ~80 / 15 / 5 split'))
+              )
+            );
+          })(),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             PBIS_TIERS.map(function(pt) {
               return h('div', { key: 'pbis-' + pt.tier,
@@ -1539,18 +1583,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   )
                 ),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },
-                  h('b', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Who it serves: '), pt.who),
+                  h('b', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, __alloT('stem.schoolbehaviortoolkit.who_it_serves', 'Who it serves: ')), pt.who),
                 h('div', null,
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Concrete examples'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.concrete_examples', 'Concrete examples')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, pt.examples)
                 ),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.20)' } },
-                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '📊 Data signal'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.data_signal', '📊 Data signal')),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, pt.data)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)' } },
-                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⏫ When to escalate'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.when_to_escalate', '⏫ When to escalate')),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, pt.escalate)
                   )
                 )
@@ -1580,19 +1624,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   )
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⚠ Problem behavior typically looks like'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.problem_behavior_typically_looks_like', '⚠ Problem behavior typically looks like')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, rb.problemEx)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '↪ Replacement behavior'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.replacement_behavior', '↪ Replacement behavior')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, rb.replacement)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🎓 How to teach it'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.how_to_teach_it', '🎓 How to teach it')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, rb.teaching)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)' } },
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🪤 Common pitfall'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.common_pitfall', '🪤 Common pitfall')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, rb.pitfall)
                 )
               );
@@ -1644,15 +1688,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, ph.icon),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: ph.color, letterSpacing: '0.01em' } }, ph.name)
                 ),
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Signs'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.signs', 'Signs')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, ph.signs),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.20)' } },
-                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '✓ Do this'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.do_this', '✓ Do this')),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, ph.doThis)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.20)' } },
-                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '✗ Don\'t do'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.don_t_do', '✗ Don\'t do')),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, ph.dontDo)
                   )
                 )
@@ -1670,9 +1714,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             'High-stakes content most ABA tools cover briefly or not at all. School psychs sit on IEP teams that authorize, debrief, and revise BIPs in response to restraint and seclusion incidents.'),
           h(DecisionTree, { scenarios: DECISION_SCENARIOS, awardXP: awardXP }),
           h('div', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', marginBottom: 12 } },
-            h('div', { style: { fontSize: 11, color: '#fca5a5', fontWeight: 800, marginBottom: 4 } }, '⚠ This is education, not training.'),
+            h('div', { style: { fontSize: 11, color: '#fca5a5', fontWeight: 800, marginBottom: 4 } }, __alloT('stem.schoolbehaviortoolkit.this_is_education_not_training', '⚠ This is education, not training.')),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
-              'Reading this section does not authorize anyone to perform restraint or seclusion. State law requires specific certified training (CPI / NCI / Mandt or equivalent) and authorized-staff designation. This panel teaches the framework and ethics so school psychs and IEP-team members can recognize appropriate use, document properly, and revise BIPs in response to incidents.')
+              __alloT('stem.schoolbehaviortoolkit.reading_this_section_does_not_authoriz', 'Reading this section does not authorize anyone to perform restraint or seclusion. State law requires specific certified training (CPI / NCI / Mandt or equivalent) and authorized-staff designation. This panel teaches the framework and ethics so school psychs and IEP-team members can recognize appropriate use, document properly, and revise BIPs in response to incidents.'))
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             RESTRAINT_PRINCIPLES.map(function(rp, i) {
@@ -1685,7 +1729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 ),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, rp.content),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
-                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '↪ Counter-line:'),
+                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.schoolbehaviortoolkit.counter_line', '↪ Counter-line:')),
                   rp.counter)
               );
             })
@@ -1699,6 +1743,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         return h('div', null,
           panelHeader('🔬 FBA Process — the upstream of every Tier 3 BIP',
             'Functional Behavior Assessment is the systematic process for identifying WHY a behavior is happening. Without an FBA, the BIP is just a guess. Five steps from indirect assessment through hypothesis testing to BIP development.'),
+          // ── FBA -> Function Statement -> BIP pipeline, drawn. The tool's
+          // central thesis ("the FBA names the function; the BIP is the plan;
+          // every component traces back to the function statement") rendered as
+          // flat card lists with no flow. This makes the spine visible. ──
+          (function() {
+            var arrow = function(k) { return h('span', { key: k, style: { color: '#64748b', fontWeight: 800, fontSize: 13 } }, '→'); };
+            var bigArrowStyle = { color: '#fbbf24', fontWeight: 800, fontSize: 16, margin: '0 1px' };
+            var chip = function(s) {
+              return h('div', { key: 'fc-' + s.step, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + s.color + '66', minWidth: 60 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 3 } },
+                  h('span', { style: { fontSize: 13 } }, s.icon),
+                  h('span', { style: { fontSize: 10, fontWeight: 800, color: s.color } }, s.step)),
+                h('span', { style: { fontSize: 8.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', lineHeight: 1.2 } }, s.name));
+            };
+            var seq = [];
+            FBA_STEPS.forEach(function(s, i) { if (i) seq.push(arrow('a' + i)); seq.push(chip(s)); });
+            var fnBox = h('div', { key: 'fn', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', borderRadius: 8, background: 'rgba(251,191,36,0.12)', border: '1.5px solid #fbbf24', minWidth: 70 } },
+              h('span', { style: { fontSize: 13 } }, '🎯'),
+              h('span', { style: { fontSize: 9, fontWeight: 800, color: '#fbbf24', textAlign: 'center', lineHeight: 1.2 } }, __alloT('stem.schoolbehaviortoolkit.function_statement', 'Function statement')));
+            var bipBox = h('div', { key: 'bip', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', borderRadius: 8, background: 'rgba(96,165,250,0.12)', border: '1.5px solid #60a5fa', minWidth: 62 } },
+              h('span', { style: { fontSize: 13 } }, '📋'),
+              h('span', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textAlign: 'center', lineHeight: 1.2 } }, __alloT('stem.schoolbehaviortoolkit.bip_8_parts', 'BIP (8 parts)')));
+            return h('div', { style: { marginBottom: 14, padding: '12px 10px', borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 4, rowGap: 8 } },
+                seq.concat([
+                  h('span', { key: 'ba1', style: bigArrowStyle }, '⇒'), fnBox,
+                  h('span', { key: 'ba2', style: bigArrowStyle }, '⇒'), bipBox
+                ])),
+              h('div', { style: { fontSize: 9.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 8, fontStyle: 'italic' } }, __alloT('stem.schoolbehaviortoolkit.the_5_fba_steps_produce_one_function_s', 'The 5 FBA steps produce one function statement — the spine every BIP strategy must trace back to.'))
+            );
+          })(),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             FBA_STEPS.map(function(s) {
               return h('div', { key: 'fba-' + s.step,
@@ -1717,7 +1792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic', fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + s.duration)
                   )
                 ),
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to do'),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.what_to_do', 'What to do')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, s.what),
                 h('div', {
                   style: {
@@ -1727,11 +1802,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     marginBottom: 8
                   }
                 },
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: s.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🔑 Key idea'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: s.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.key_idea', '🔑 Key idea')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, s.key)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
-                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
+                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.schoolbehaviortoolkit.common_pitfall_2', '🪤 Common pitfall:')),
                   s.pitfall)
               );
             })
@@ -1760,7 +1835,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, c.icon),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: c.color, lineHeight: 1.2 } }, c.name)
                 ),
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to write'),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.what_to_write', 'What to write')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, c.what),
                 h('div', {
                   style: {
@@ -1770,11 +1845,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     marginBottom: 8
                   }
                 },
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '📝 Sample entry'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.sample_entry', '📝 Sample entry')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, c.sample)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
-                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
+                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.schoolbehaviortoolkit.common_pitfall_3', '🪤 Common pitfall:')),
                   c.pitfall)
               );
             })
@@ -1808,7 +1883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   )
                 ),
                 // What
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What it looks like'),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.what_it_looks_like', 'What it looks like')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, c.what),
                 // Script — quoted in monospace italic, clearly distinct
                 h('div', {
@@ -1819,12 +1894,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     marginBottom: 8
                   }
                 },
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🗣 Sample script'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.sample_script', '🗣 Sample script')),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, c.script)
                 ),
                 // Pitfall
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
-                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
+                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.schoolbehaviortoolkit.common_pitfall_4', '🪤 Common pitfall:')),
                   c.pitfall)
               );
             })
@@ -1865,10 +1940,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               circularBadge('🔍', '#14b8a6', 36),
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'School-psych equity audit — five questions')
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, __alloT('stem.schoolbehaviortoolkit.school_psych_equity_audit_five_questio', 'School-psych equity audit — five questions'))
             ),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } },
-              'Practical questions to bring into your next discipline-data review or PBIS team meeting. The federal numbers describe the pattern. These questions help your building see where your specific patterns sit and what to do about them.'),
+              __alloT('stem.schoolbehaviortoolkit.practical_questions_to_bring_into_your', 'Practical questions to bring into your next discipline-data review or PBIS team meeting. The federal numbers describe the pattern. These questions help your building see where your specific patterns sit and what to do about them.')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               EQUITY_AUDIT_QUESTIONS.map(function(eaq, i) {
                 return h('div', { key: 'eaq-' + i,
@@ -1931,30 +2006,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 circularBadge('🐭', '#fb923c', 44),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fb923c' } }, 'BehaviorLab'),
-                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'STEM Lab → Behavioral Science')
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, __alloT('stem.schoolbehaviortoolkit.stem_lab_behavioral_science', 'STEM Lab → Behavioral Science'))
                 )
               ),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },
-                'The science of operant conditioning — Skinner-box simulation, schedules of reinforcement, shaping, extinction, FBA practice. The mechanics behind what this Toolkit applies in K-12 settings.'),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '9 progressive levels · Schedule Sleuth · Function Sleuth · Glossary · Ethics')
+                __alloT('stem.schoolbehaviortoolkit.the_science_of_operant_conditioning_sk', 'The science of operant conditioning — Skinner-box simulation, schedules of reinforcement, shaping, extinction, FBA practice. The mechanics behind what this Toolkit applies in K-12 settings.')),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.schoolbehaviortoolkit.9_progressive_levels_schedule_sleuth_f', '9 progressive levels · Schedule Sleuth · Function Sleuth · Glossary · Ethics'))
             ),
             // Disability Voices — the people
             h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: 16, borderTop: '1px solid rgba(244,114,182,0.30)', borderRight: '1px solid rgba(244,114,182,0.30)', borderBottom: '1px solid rgba(244,114,182,0.30)', borderLeft: '4px solid #f472b6' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 circularBadge('🎤', '#f472b6', 44),
                 h('div', null,
-                  h('div', { style: { fontSize: 14, fontWeight: 800, color: '#f472b6' } }, 'Disability Voices'),
-                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'SEL Hub → Identity & Care')
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: '#f472b6' } }, __alloT('stem.schoolbehaviortoolkit.disability_voices', 'Disability Voices')),
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, __alloT('stem.schoolbehaviortoolkit.sel_hub_identity_care', 'SEL Hub → Identity & Care'))
                 )
               ),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },
-                'Real autistic and disabled advocates whose work shaped — and critiqued — disability practice. Centered as persons, not behavioral subjects. Read here for the human side of the work.'),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Ari Ne\'eman · Temple Grandin · Damian Milton · Henny Kupferstein · Kassiane Asasumasu · Mel Baggs · Lydia X. Z. Brown · Patty Berne')
+                __alloT('stem.schoolbehaviortoolkit.real_autistic_and_disabled_advocates_w', 'Real autistic and disabled advocates whose work shaped — and critiqued — disability practice. Centered as persons, not behavioral subjects. Read here for the human side of the work.')),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.schoolbehaviortoolkit.ari_ne_eman_temple_grandin_damian_milt', 'Ari Ne\'eman · Temple Grandin · Damian Milton · Henny Kupferstein · Kassiane Asasumasu · Mel Baggs · Lydia X. Z. Brown · Patty Berne'))
             )
           ),
           h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.65 } },
-            h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 6 } }, '🧭 Why three separate spaces'),
-            'Putting Skinner-box imagery, applied K-12 practice, and named real autistic adults all in one tool would be exactly the dehumanizing arc the disability community has critiqued: animal-conditioning visuals → "applied" → and the people we apply it to. Splitting them into three connected but distinct spaces is a deliberate ethical choice. The science is the science (BehaviorLab). The K-12 practice is school-psych work (this Toolkit). The voices are the people (Disability Voices in SEL Hub). All three matter. None should crowd the others.'
+            h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 6 } }, __alloT('stem.schoolbehaviortoolkit.why_three_separate_spaces', '🧭 Why three separate spaces')),
+            __alloT('stem.schoolbehaviortoolkit.putting_skinner_box_imagery_applied_k_', 'Putting Skinner-box imagery, applied K-12 practice, and named real autistic adults all in one tool would be exactly the dehumanizing arc the disability community has critiqued: animal-conditioning visuals → "applied" → and the people we apply it to. Splitting them into three connected but distinct spaces is a deliberate ethical choice. The science is the science (BehaviorLab). The K-12 practice is school-psych work (this Toolkit). The voices are the people (Disability Voices in SEL Hub). All three matter. None should crowd the others.')
           )
         );
       }
@@ -1983,15 +2058,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         var ready = tierMatch && (!fbaNeeded || iq.functionConfidence >= 7) && iq.environmentStability >= 4;
         var state = !tierMatch ? 'tiermismatch' : fbaNeeded && iq.functionConfidence < 5 ? 'fbafirst' : ready ? 'implementable' : iq.environmentStability < 4 ? 'unstable' : 'partial';
         var sm = ({
-          tiermismatch: { label: 'Tier mismatch', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Selected tier does not match observed intensity. Move up (under-supporting) or down (over-pathologizing) accordingly.' },
-          fbafirst: { label: 'FBA needed first', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Tier 3 BIP requires function knowledge. Function confidence below 7 means you cannot ethically design a function-based plan yet.' },
-          unstable: { label: 'Environment too unstable', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Any plan will look like it failed if the setting events are constantly shifting. Stabilize the environment before measuring outcomes.' },
-          partial: { label: 'Partially ready', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Most pieces in place. Address the weakest dimension before going live.' },
-          implementable: { label: 'Implementable plan', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Tier matched to intensity, function confidence adequate, environment stable enough. Pilot the plan with progress monitoring.' }
+          tiermismatch: { label: __alloT('stem.schoolbehaviortoolkit.tier_mismatch', 'Tier mismatch'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.schoolbehaviortoolkit.selected_tier_does_not_match_observed_', 'Selected tier does not match observed intensity. Move up (under-supporting) or down (over-pathologizing) accordingly.') },
+          fbafirst: { label: __alloT('stem.schoolbehaviortoolkit.fba_needed_first', 'FBA needed first'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.schoolbehaviortoolkit.tier_3_bip_requires_function_knowledge', 'Tier 3 BIP requires function knowledge. Function confidence below 7 means you cannot ethically design a function-based plan yet.') },
+          unstable: { label: __alloT('stem.schoolbehaviortoolkit.environment_too_unstable', 'Environment too unstable'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.schoolbehaviortoolkit.any_plan_will_look_like_it_failed_if_t', 'Any plan will look like it failed if the setting events are constantly shifting. Stabilize the environment before measuring outcomes.') },
+          partial: { label: __alloT('stem.schoolbehaviortoolkit.partially_ready', 'Partially ready'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.schoolbehaviortoolkit.most_pieces_in_place_address_the_weake', 'Most pieces in place. Address the weakest dimension before going live.') },
+          implementable: { label: __alloT('stem.schoolbehaviortoolkit.implementable_plan', 'Implementable plan'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.schoolbehaviortoolkit.tier_matched_to_intensity_function_con', 'Tier matched to intensity, function confidence adequate, environment stable enough. Pilot the plan with progress monitoring.') }
         })[state];
         return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-          h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🧪 Behavior Plan Inquiry — Is This Plan Ready to Pilot?'),
-          h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, 'Set tier, observed intensity, function confidence, environment stability. Predict whether the plan is ready to implement. No score, no reveal.'),
+          h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.schoolbehaviortoolkit.behavior_plan_inquiry_is_this_plan_rea', '🧪 Behavior Plan Inquiry — Is This Plan Ready to Pilot?')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.schoolbehaviortoolkit.set_tier_observed_intensity_function_c', 'Set tier, observed intensity, function confidence, environment stability. Predict whether the plan is ready to implement. No score, no reveal.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
@@ -2005,58 +2080,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 h('text', { x: x + w / 2, y: 50, fill: active ? '#000' : '#64748b', fontSize: 8, textAnchor: 'middle' }, tier === 1 ? 'universal' : tier === 2 ? 'targeted' : 'intensive')
               );
             }),
-            h('text', { x: 160, y: 75, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'PBIS multi-tiered system of supports')
+            h('text', { x: 160, y: 75, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.schoolbehaviortoolkit.pbis_multi_tiered_system_of_supports', 'PBIS multi-tiered system of supports'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'PBIS Tier'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, 'Tier ' + iq.tier)),
-              h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.tier, onChange: function(e) { setKey('tier', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.pbis_tier', 'PBIS Tier')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, 'Tier ' + iq.tier)),
+              h('input', { type: 'range', 'aria-label': 'Behavior tier', 'aria-valuetext': 'tier ' + iq.tier, min: 1, max: 3, step: 1, value: iq.tier, onChange: function(e) { setKey('tier', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Behavior intensity (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.intensity)),
-              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.intensity, onChange: function(e) { setKey('intensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.behavior_intensity_1_10', 'Behavior intensity (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.intensity)),
+              h('input', { type: 'range', 'aria-label': 'Intensity', 'aria-valuetext': iq.intensity + ' of 10', min: 1, max: 10, step: 1, value: iq.intensity, onChange: function(e) { setKey('intensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Function confidence (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.functionConfidence)),
-              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.functionConfidence, onChange: function(e) { setKey('functionConfidence', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.function_confidence_1_10', 'Function confidence (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.functionConfidence)),
+              h('input', { type: 'range', 'aria-label': 'Function confidence', 'aria-valuetext': iq.functionConfidence + ' of 10', min: 1, max: 10, step: 1, value: iq.functionConfidence, onChange: function(e) { setKey('functionConfidence', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, 'Environment stability (1-10)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.environmentStability)),
-              h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.environmentStability, onChange: function(e) { setKey('environmentStability', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.environment_stability_1_10', 'Environment stability (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.environmentStability)),
+              h('input', { type: 'range', 'aria-label': 'Environment stability', 'aria-valuetext': iq.environmentStability + ' of 10', min: 1, max: 10, step: 1, value: iq.environmentStability, onChange: function(e) { setKey('environmentStability', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
             h('button', { onClick: function() {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, tr: iq.tier, i: iq.intensity, fc: iq.functionConfidence, es: iq.environmentStability, state: sm.label }]) });
-            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this case'),
-            h('button', { onClick: function() { setIQ({ tier: 2, intensity: 5, functionConfidence: 5, environmentStability: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.schoolbehaviortoolkit.log_this_case', '📋 Log this case')),
+            h('button', { onClick: function() { setIQ({ tier: 2, intensity: 5, functionConfidence: 5, environmentStability: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.schoolbehaviortoolkit.reset', 'Reset'))
           ),
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · T' + e.tr + ' int' + e.i + ' fc' + e.fc + ' env' + e.es); })
           ),
-          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (when does an unstable environment matter MORE than function knowledge?)'),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., if setting events are dominant, even a perfect function-based plan fails because the antecedent context keeps changing...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.schoolbehaviortoolkit.your_hypothesis_when_does_an_unstable_', 'Your hypothesis (when does an unstable environment matter MORE than function knowledge?)')),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.schoolbehaviortoolkit.e_g_if_setting_events_are_dominant_eve', 'e.g., if setting events are dominant, even a perfect function-based plan fails because the antecedent context keeps changing...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.schoolbehaviortoolkit.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.schoolbehaviortoolkit.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
-              h('li', null, 'Why does a Tier 3 plan require FBA-level function confidence before you can ethically design it?'),
-              h('li', null, 'A high-intensity behavior in a stable environment vs the same intensity in chaos — same plan?'),
-              h('li', null, 'When is "tier mismatch" actually a sign that adult bias is driving over-pathologizing (especially across race/disability lines)?'),
-              h('li', null, 'How would you communicate "not implementable yet" to a frustrated team or parent without sounding dismissive?')
+              h('li', null, __alloT('stem.schoolbehaviortoolkit.why_does_a_tier_3_plan_require_fba_lev', 'Why does a Tier 3 plan require FBA-level function confidence before you can ethically design it?')),
+              h('li', null, __alloT('stem.schoolbehaviortoolkit.a_high_intensity_behavior_in_a_stable_', 'A high-intensity behavior in a stable environment vs the same intensity in chaos — same plan?')),
+              h('li', null, __alloT('stem.schoolbehaviortoolkit.when_is_tier_mismatch_actually_a_sign_', 'When is "tier mismatch" actually a sign that adult bias is driving over-pathologizing (especially across race/disability lines)?')),
+              h('li', null, __alloT('stem.schoolbehaviortoolkit.how_would_you_communicate_not_implemen', 'How would you communicate "not implementable yet" to a frustrated team or parent without sounding dismissive?'))
             )
           ),
           h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-            h('span', null, 'I can explain why this tier/intensity/function/environment combination yields this state.')
+            h('span', null, __alloT('stem.schoolbehaviortoolkit.i_can_explain_why_this_tier_intensity_', 'I can explain why this tier/intensity/function/environment combination yields this state.'))
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. PBIS tier-matching heuristics from CASEL/PBIS Center; real plans should be team-developed and parent/family-centered. Equity audit (see Equity tab) is essential before assuming a tier-3 case is purely behavioral.')
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.schoolbehaviortoolkit.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.schoolbehaviortoolkit.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. PBIS tier-matching heuristics from CASEL/PBIS Center; real plans should be team-developed and parent/family-centered. Equity audit (see Equity tab) is essential before assuming a tier-3 case is purely behavioral.'))
         );
       }
 
-      return h('div', { style: rootStyle, role: 'region', 'aria-label': 'School Behavior Toolkit' },
+      return h('div', { style: rootStyle, role: 'region', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_2', 'School Behavior Toolkit') },
         renderHeader(),
         renderTabs(),
         h('div', { style: { padding: 20 } },

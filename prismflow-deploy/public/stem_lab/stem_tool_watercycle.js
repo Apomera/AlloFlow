@@ -172,6 +172,91 @@
   // WCAG a11y CSS
   if (!document.getElementById('wc-a11y-css')) { var _s = document.createElement('style'); _s.id = 'wc-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
 
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-watercycle-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-watercycle-polish-css';
+    st.textContent = [
+      '.wc-explorer-root{width:100%;max-width:65rem!important}',
+      '.wc-cycle-brief{border-radius:16px;padding:14px;margin-bottom:12px;background:linear-gradient(135deg,rgba(14,165,233,.16),rgba(16,185,129,.10) 56%,rgba(251,191,36,.12));border:1px solid rgba(14,165,233,.28);box-shadow:0 16px 36px rgba(15,23,42,.12)}',
+      '.wc-brief-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}',
+      '.wc-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#0284c7;margin-bottom:3px}',
+      '.wc-brief-title{font-size:19px;font-weight:900;line-height:1.15;margin:0;color:#0f172a}',
+      '.wc-brief-copy{font-size:13px;line-height:1.55;margin:6px 0 0;color:#334155;max-width:680px}',
+      '.wc-status-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;background:rgba(15,23,42,.88);color:#e0f2fe;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}',
+      '.wc-metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}',
+      '.wc-metric{border-radius:12px;padding:9px 10px;background:rgba(255,255,255,.78);border:1px solid rgba(125,211,252,.45);min-height:66px}',
+      '.wc-metric span{display:block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#64748b}',
+      '.wc-metric strong{display:block;margin-top:3px;font-size:14px;line-height:1.25;color:#0f172a}',
+      '.wc-canvas-shell{position:relative;border-radius:18px!important;overflow:hidden!important;height:clamp(360px,48vw,520px)!important;border:1px solid rgba(14,165,233,.38)!important;background:linear-gradient(180deg,#082f49 0%,#0f172a 100%);box-shadow:0 22px 46px rgba(15,23,42,.28),inset 0 1px 0 rgba(255,255,255,.12)}',
+      '.wc-view-switch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px;flex-wrap:wrap}',
+      '.wc-view-segments{display:inline-flex;padding:3px;border-radius:8px;background:#e2e8f0;border:1px solid #cbd5e1}',
+      '.wc-view-segments button{min-width:86px;min-height:32px;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:800;color:#475569}',
+      '.wc-view-segments button[aria-pressed="true"]{background:#0369a1;color:#fff;box-shadow:0 3px 10px rgba(3,105,161,.28)}',
+      '.wc-journey-3d{position:absolute;inset:0;width:100%;height:100%;display:block;background:#041a2b}',
+      '.wc-3d-status{font-size:11px;font-weight:800;color:#0369a1}',
+      '.wc-view-status{display:flex;align-items:center;gap:6px}',
+      '.wc-camera-reset{width:32px;height:32px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:18px;font-weight:900}',
+      '.wc-journey-lens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:-2px 0 10px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.16)}',
+      '.wc-journey-lens div{padding:8px 10px;background:rgba(255,255,255,.88)}',
+      '.wc-journey-lens span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
+      '.wc-journey-lens strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#0f172a}',
+      '.wc-journey-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 0}',
+      '.wc-journey-actions{display:flex;align-items:center;gap:5px}',
+      '.wc-journey-icon-btn{width:34px;height:34px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:16px;font-weight:900}',
+      '.wc-speed-segments{display:inline-flex;padding:3px;border-radius:7px;background:#e0f2fe;border:1px solid #7dd3fc}',
+      '.wc-speed-segments button{min-width:42px;min-height:28px;border-radius:5px;font-size:10px;font-weight:800;color:#075985}',
+      '.wc-speed-segments button[aria-pressed="true"]{background:#0369a1;color:#fff}',
+      '.wc-journey-timeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:2px 0 8px}',
+      '.wc-timeline-step{position:relative;min-width:0;padding:7px 4px;border-top:3px solid #cbd5e1;text-align:center;color:#64748b}',
+      '.wc-timeline-step strong{display:block;font-size:10px;line-height:1.2;white-space:normal}',
+      '.wc-timeline-step[aria-current="step"]{border-color:#0284c7;color:#075985;background:rgba(224,242,254,.72)}',
+      '.dark .wc-speed-segments{background:#0f172a;border-color:#334155}.dark .wc-speed-segments button{color:#bae6fd}.dark .wc-timeline-step{color:#94a3b8;border-color:#334155}.dark .wc-timeline-step[aria-current="step"]{color:#7dd3fc;border-color:#38bdf8;background:rgba(8,47,73,.5)}',
+      '@media(max-width:560px){.wc-journey-timeline{grid-template-columns:repeat(3,minmax(0,1fr))}}',
+      '.wc-hydro-quest{margin:0 0 10px;padding:11px 12px;border-left:3px solid #06b6d4;background:linear-gradient(90deg,rgba(8,47,73,.08),rgba(16,185,129,.08))}',
+      '.wc-hydro-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.wc-hydro-kicker{display:block;font-size:10px;font-weight:900;text-transform:uppercase;color:#0284c7}.wc-hydro-head h4{margin:1px 0 0;font-size:16px;line-height:1.2;color:#0f172a}.wc-hydro-score{font-size:14px;color:#0369a1}',
+      '.wc-hydro-progress{height:5px;margin:8px 0;background:#cbd5e1;overflow:hidden}.wc-hydro-progress span{display:block;height:100%;background:linear-gradient(90deg,#0ea5e9,#10b981);transition:width 320ms ease}',
+      '.wc-hydro-missions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.wc-hydro-mission{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:6px;min-width:0;padding:7px;background:rgba(255,255,255,.76);border:1px solid #cbd5e1;color:#475569}.wc-hydro-mission.is-complete{border-color:#34d399;background:rgba(236,253,245,.92);color:#065f46}.wc-hydro-mark{font-size:17px;font-weight:900}.wc-hydro-mission strong,.wc-hydro-mission small{display:block;line-height:1.2}.wc-hydro-mission strong{font-size:11px}.wc-hydro-mission small{margin-top:2px;font-size:9px;color:#64748b}.wc-hydro-state{font-size:9px;font-weight:900;text-transform:uppercase}',
+      '.dark .wc-hydro-quest{background:linear-gradient(90deg,rgba(8,47,73,.7),rgba(6,78,59,.3))}.dark .wc-hydro-head h4{color:#f8fafc}.dark .wc-hydro-score,.dark .wc-hydro-kicker{color:#67e8f9}.dark .wc-hydro-progress{background:#334155}.dark .wc-hydro-mission{background:rgba(15,23,42,.82);border-color:#334155;color:#cbd5e1}.dark .wc-hydro-mission.is-complete{background:rgba(6,78,59,.46);border-color:#10b981;color:#a7f3d0}.dark .wc-hydro-mission small{color:#94a3b8}',
+      '@media(max-width:700px){.wc-hydro-missions{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:460px){.wc-hydro-missions{grid-template-columns:1fr}}',
+      '.wc-3d-loading{position:absolute;z-index:6;inset:0;display:grid;place-items:center;background:#041a2b;color:#bae6fd;font-size:12px;font-weight:800}',
+      '.dark .wc-view-segments{background:#0f172a;border-color:#334155}.dark .wc-view-segments button{color:#cbd5e1}.dark .wc-3d-status{color:#7dd3fc}',
+      '.dark .wc-journey-lens div{background:rgba(15,23,42,.9)}.dark .wc-journey-lens strong{color:#f8fafc}.dark .wc-journey-lens span{color:#94a3b8}',
+      '@media(max-width:560px){.wc-journey-lens{grid-template-columns:1fr}}',
+      '.wc-canvas-topbar{position:absolute;z-index:4;top:10px;left:10px;right:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;pointer-events:none}',
+      '.wc-canvas-title{border-radius:12px;padding:8px 10px;background:rgba(15,23,42,.68);border:1px solid rgba(125,211,252,.28);backdrop-filter:blur(8px);color:#e0f2fe}',
+      '.wc-canvas-title span{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}',
+      '.wc-canvas-title strong{display:block;font-size:14px;margin-top:1px}',
+      '.wc-chip-row{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}',
+      '.wc-chip{border-radius:999px;padding:6px 8px;font-size:11px;font-weight:800;color:#e0f2fe;background:rgba(8,47,73,.72);border:1px solid rgba(125,211,252,.28);backdrop-filter:blur(8px)}',
+      '.wc-stage-rack{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}',
+      '.wc-stage-rack button{min-height:34px}',
+      '.wc-control-panel{box-shadow:0 12px 28px rgba(15,23,42,.10)}',
+      '.wc-land-lab{border:1px solid rgba(16,185,129,.34);background:linear-gradient(135deg,rgba(236,253,245,.96),rgba(239,246,255,.96));padding:12px;margin-bottom:12px;box-shadow:0 12px 28px rgba(15,23,42,.09)}',
+      '.wc-land-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}',
+      '.wc-land-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}',
+      '.wc-land-control{min-width:0}',
+      '.wc-land-control label,.wc-land-control legend{display:block;font-size:11px;font-weight:800;color:#166534;margin-bottom:5px}',
+      '.wc-land-segments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}',
+      '.wc-land-segments button{min-height:32px;padding:4px 5px;border:1px solid #a7f3d0;background:rgba(255,255,255,.88);color:#166534;font-size:10px;font-weight:800}',
+      '.wc-land-segments button[aria-pressed="true"]{background:#047857;border-color:#047857;color:#fff}',
+      '.wc-land-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}',
+      '.wc-land-result{padding:9px 10px;border-left:3px solid #0ea5e9;background:rgba(255,255,255,.82)}',
+      '.wc-land-result span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
+      '.wc-land-result strong{display:block;margin-top:2px;font-size:15px;color:#0f172a}',
+      '.dark .wc-land-lab{background:linear-gradient(135deg,rgba(6,78,59,.28),rgba(8,47,73,.32));border-color:rgba(52,211,153,.3)}',
+      '.dark .wc-land-control label,.dark .wc-land-control legend{color:#6ee7b7}.dark .wc-land-segments button{background:#0f172a;border-color:#334155;color:#cbd5e1}.dark .wc-land-segments button[aria-pressed="true"]{background:#047857;color:#fff}.dark .wc-land-result{background:rgba(15,23,42,.82)}.dark .wc-land-result strong{color:#f8fafc}',
+      '@media(max-width:640px){.wc-land-grid,.wc-land-results{grid-template-columns:1fr}}',
+      '.wc-control-panel .grid.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}',
+      '@media(max-width:840px){.wc-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-canvas-shell{height:360px!important}.wc-canvas-topbar{position:absolute;align-items:flex-start}.wc-chip-row{max-width:50%;justify-content:flex-end}.wc-control-panel .grid.grid-cols-3{grid-template-columns:1fr!important}}',
+      '@media(max-width:560px){.wc-metric-grid{grid-template-columns:1fr}.wc-canvas-shell{height:320px!important}.wc-canvas-topbar{left:8px;right:8px;top:8px}.wc-canvas-title{padding:7px 8px}.wc-chip{font-size:10px;padding:5px 7px}.wc-chip-row{max-width:48%}}',
+      '.dark .wc-cycle-brief{background:linear-gradient(135deg,rgba(14,165,233,.14),rgba(16,185,129,.10) 58%,rgba(30,41,59,.76));border-color:rgba(56,189,248,.24)}',
+      '.dark .wc-brief-title{color:#f8fafc}.dark .wc-brief-copy{color:#cbd5e1}.dark .wc-metric{background:rgba(15,23,42,.72);border-color:rgba(56,189,248,.22)}.dark .wc-metric strong{color:#f8fafc}.dark .wc-metric span{color:#94a3b8}'
+    ].join('');
+    if (document.head) document.head.appendChild(st);
+  })();
+
   // ═══════════════════════════════════════════════════════
   // WATERSHED STEWARD: 10-YEAR MAINE WATERSHED CAMPAIGN
   // Parallel to Fire Ecology's Cultural Mosaic, Ecosystem's Conservation
@@ -290,6 +375,26 @@
     { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
   ];
 
+  // Parallel "coaching" view of the feedback rules above: the same thresholds,
+  // but readable so the year-review debrief can (a) explain WHY a cascade fired
+  // and (b) flag a near-miss — a component sitting just under a threshold, so the
+  // student learns which single move would unlock a free downstream benefit.
+  // Kept in lockstep with STEWARD_FEEDBACK_RULES by hand (only 4 rules).
+  var STEWARD_CASCADE_HINTS = [
+    { id: 'bufferFeedsHeadwaters', comp: 'forestBuffer', field: 'quality', threshold: 70,
+      fired: 'Your forest buffers crossed 70% quality — shade cooled the water and roots filtered it, so cleaner cold water flowed downhill into the headwaters (+quality there, for free).',
+      near: 'Forest-buffer quality is at {v}. Get it past 70 (one riparian buffer planting) and it will cool and clean the headwaters automatically every year after.' },
+    { id: 'beaverHelpsFloodplain', comp: 'floodplainWetlands', field: 'quality', threshold: 60,
+      fired: 'Your floodplain wetlands crossed 60% — beaver-built storage slowed the flood pulses and let sediment settle, improving mainstem water quality downstream.',
+      near: 'Floodplain wetlands sit at {v}. A single Beaver Dam Analog would push past 60 and start cleaning the mainstem for you.' },
+    { id: 'agCleansUp', comp: 'agriculturalWatershed', field: 'quality', threshold: 60,
+      fired: 'Farm runoff dropped enough (agricultural quality over 60) that the mainstem cleaned up on its own — less nitrogen, phosphorus, and sediment reaching the river.',
+      near: 'Agricultural quality is {v}. BMP outreach is cheap (4h) and would tip it past 60, cleaning the mainstem via the runoff feedback.' },
+    { id: 'runRestoration', comp: 'riverMainstem', field: 'connectivity', threshold: 60,
+      fired: 'A connected, shaded mainstem (connectivity over 60, with healthy buffers) is now supporting documented anadromous fish returns — morale rose across every component.',
+      near: 'Mainstem connectivity is {v}. Cross 60 with buffers already healthy and you unlock fish returns plus a support boost watershed-wide.' }
+  ];
+
   var STEWARD_DIFFICULTIES = {
     volunteer:   { id: 'volunteer',   label: 'New Volunteer',         hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hours / year, gentler events. For first runs.' },
     coordinator: { id: 'coordinator', label: 'Watershed Coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hours / year, standard events. Default.' },
@@ -360,7 +465,8 @@
     { id: 'adjust_climate', name: 'Climate Experimenter', desc: 'Adjust solar, temperature, or wind sliders in the Climate Lab', icon: '🌡️', rp: 20 },
     { id: 'quiz_pass', name: 'Hydrologist Scholar', desc: 'Answer a quiz question correctly', icon: '🎓', rp: 15 },
     { id: 'vocabulary_studied', name: 'Word Power', desc: 'Study 3 water cycle vocabulary flashcards', icon: '📝', rp: 20 },
-    { id: 'stewardship_win', name: 'Watershed Champion', desc: 'Achieve a "Watershed Recovery" or "Recovering Watershed" outcome in the campaign', icon: '🏆', rp: 50 }
+    { id: 'stewardship_win', name: 'Watershed Champion', desc: 'Achieve a "Watershed Recovery" or "Recovering Watershed" outcome in the campaign', icon: '🏆', rp: 50 },
+    { id: 'myth_buster', name: 'Myth Buster', desc: 'Answer 3 water myths (True/False)', icon: '🧠', rp: 30 }
   ];
 
   var WATER_CYCLE_QUIZZES = {
@@ -736,14 +842,17 @@
       { id: 'complete_journey', label: 'Complete a water droplet journey loop', icon: '\uD83D\uDCA7', check: function(d) { return (d.journeyLoops || 0) >= 1; }, progress: function(d) { return (d.journeyLoops || 0) >= 1 ? 'Complete!' : 'In journey'; } },
       { id: 'complete_3_journeys', label: 'Complete 3 journey loops', icon: '\uD83C\uDFC6', check: function(d) { return (d.journeyLoops || 0) >= 3; }, progress: function(d) { return (d.journeyLoops || 0) + '/3 loops'; } },
       { id: 'explore_all_stages', label: 'View all water cycle stages', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.stagesViewed || {}).length >= 5; }, progress: function(d) { return Object.keys(d.stagesViewed || {}).length + '/5 stages'; } },
-      { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } }
+      { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } },
+      { id: 'myth_3', label: 'Answer 3 water myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.wcMythsDone || 0) >= 3; }, progress: function(d) { return (d.wcMythsDone || 0) + '/3 myths'; } }
     ],
     render:function(ctx){
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React=ctx.React; var h=React.createElement;
       var labToolData=ctx.toolData; var setLabToolData=ctx.setToolData;
       var setStemLabTool=ctx.setStemLabTool;
       var toolSnapshots=ctx.toolSnapshots; var setToolSnapshots=ctx.setToolSnapshots;
-      var addToast=ctx.addToast; var t=ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft=ctx.icons.ArrowLeft;
       var announceToSR=ctx.announceToSR;
       var a11yClick=ctx.a11yClick;
@@ -783,6 +892,8 @@ const d = labToolData.waterCycle || {};
                 met = (state.vocabWordsStudied || []).length >= 3;
               } else if (ch.id === 'stewardship_win') {
                 met = state.campaignSuccess === true;
+              } else if (ch.id === 'myth_buster') {
+                met = (state.wcMythsDone || 0) >= 3;
               }
 
               if (met) {
@@ -864,6 +975,22 @@ const d = labToolData.waterCycle || {};
             setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
           };
 
+          var adjustLand = function(key, val) {
+            updMulti({ [key]: val, landAdjusted: true });
+          };
+
+          var resetLandScenario = function() {
+            updMulti({
+              landRainIntensity: 55,
+              landSaturation: 45,
+              landPermeability: 'medium',
+              landSlope: 'moderate',
+              landCover: 'grass',
+              landAdjusted: false
+            });
+            if (typeof announceToSR === 'function') announceToSR('Land-surface scenario reset to balanced conditions.');
+          };
+
           var askHydrologist = function() {
             var query = d.hydrologistQuery || '';
             if (!query.trim()) return;
@@ -872,9 +999,15 @@ const d = labToolData.waterCycle || {};
               return;
             }
             updMulti({ hydrologistLoading: true, hydrologistError: '', hydrologistReply: '' });
+            var landContext = 'Land scenario: rainfall intensity ' + (d.landRainIntensity != null ? d.landRainIntensity : 55) +
+              '/100, antecedent soil saturation ' + (d.landSaturation != null ? d.landSaturation : 45) +
+              '/100, permeability ' + (d.landPermeability || 'medium') +
+              ', slope ' + (d.landSlope || 'moderate') +
+              ', land cover ' + (d.landCover || 'grass') + '. ';
             var prompt = 'You are a friendly, encouraging Water Cycle & Hydrology tutor for middle-to-high school students. ' +
-              'The student is asking about: "' + query + '". ' +
+              'The student is asking about: "' + query + '". ' + landContext +
               'Explain the science behind this clearly in 3-4 sentences using helpful analogies. ' +
+              'Treat tool outputs as qualitative teaching indices, not measured percentages or forecasts. ' +
               'Provide the explanation in plain prose. No markdown, no headings, no bullets.';
             callGemini(prompt, false, false, 0.5).then(function(resp) {
               updMulti({
@@ -956,7 +1089,7 @@ const d = labToolData.waterCycle || {};
             var pickRng = stewardRng(steward.seed, steward.year, 'pick');
             var ev;
             if (skipRng() < (diff.eventSkip || 0)) {
-              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. Routine fieldwork, steady progress.', apply: function() {} };
+              ev = { id: 'quietYear', name: t('stem.watercycle.a_quiet_year', 'A Quiet Year'), icon: '🌤️', desc: t('stem.watercycle.no_major_event_routine_fieldwork_stead', 'No major event. Routine fieldwork, steady progress.'), apply: function() {} };
             } else {
               ev = STEWARD_EVENTS[Math.floor(pickRng() * STEWARD_EVENTS.length)];
             }
@@ -1003,10 +1136,10 @@ const d = labToolData.waterCycle || {};
               var componentsAt75 = steward.components.filter(function(c) { return c.quality >= 75; }).length;
               var connectivityBoosts = steward.connectivityBoosts || 0;
               var outcome;
-              if (componentsAt75 >= 4 && connectivityBoosts >= 1 && avgQ >= 70) outcome = { tier: 'recovery', label: 'Watershed Recovery', color: '#16a34a', icon: '🏆', desc: 'The watershed is healing across the board. Headwaters are cold and clean. The mainstem carries fish again. Beaver wetlands are doing the floodplain work. This is what watershed-scale recovery looks like when timing and community come together.' };
-              else if (componentsAt75 >= 3 && avgQ >= 62) outcome = { tier: 'recovering', label: 'Recovering Watershed', color: '#22c55e', icon: '🌊', desc: 'Most components are improving. A few still need work. The trajectory is good and the community is engaged.' };
-              else if (componentsAt75 >= 2 || avgQ >= 55) outcome = { tier: 'mixed', label: 'Mixed Recovery', color: '#f59e0b', icon: '🍃', desc: 'Some wins, some gaps. Real watershed work is rarely uniform; some pieces improved while others stalled.' };
-              else outcome = { tier: 'slipping', label: 'Slipping Watershed', color: '#ef4444', icon: '⚠️', desc: 'Average quality is low and few components reached recovery thresholds. This is how watersheds degrade quietly when stewardship cannot keep up with pressures.' };
+              if (componentsAt75 >= 4 && connectivityBoosts >= 1 && avgQ >= 70) outcome = { tier: 'recovery', label: t('stem.watercycle.watershed_recovery', 'Watershed Recovery'), color: '#16a34a', icon: '🏆', desc: t('stem.watercycle.the_watershed_is_healing_across_the_bo', 'The watershed is healing across the board. Headwaters are cold and clean. The mainstem carries fish again. Beaver wetlands are doing the floodplain work. This is what watershed-scale recovery looks like when timing and community come together.') };
+              else if (componentsAt75 >= 3 && avgQ >= 62) outcome = { tier: 'recovering', label: t('stem.watercycle.recovering_watershed', 'Recovering Watershed'), color: '#22c55e', icon: '🌊', desc: t('stem.watercycle.most_components_are_improving_a_few_st', 'Most components are improving. A few still need work. The trajectory is good and the community is engaged.') };
+              else if (componentsAt75 >= 2 || avgQ >= 55) outcome = { tier: 'mixed', label: t('stem.watercycle.mixed_recovery', 'Mixed Recovery'), color: '#f59e0b', icon: '🍃', desc: t('stem.watercycle.some_wins_some_gaps_real_watershed_wor', 'Some wins, some gaps. Real watershed work is rarely uniform; some pieces improved while others stalled.') };
+              else outcome = { tier: 'slipping', label: t('stem.watercycle.slipping_watershed', 'Slipping Watershed'), color: '#ef4444', icon: '⚠️', desc: t('stem.watercycle.average_quality_is_low_and_few_compone', 'Average quality is low and few components reached recovery thresholds. This is how watersheds degrade quietly when stewardship cannot keep up with pressures.') };
               var success = (outcome.tier === 'recovery' || outcome.tier === 'recovering');
               var nextState = Object.assign({}, d, { campaignSuccess: success });
               setSteward({ phase: 'debrief', finalOutcome: outcome, componentsAt75: componentsAt75 });
@@ -1079,8 +1212,79 @@ const d = labToolData.waterCycle || {};
             }
             return {
               priority: 'Hold and read the watershed',
-              text: 'Initial conditions look workable. Use Year 1 for citizen-science monitoring and education to build community support before spending it on contested actions like dam removal.'
+              text: t('stem.watercycle.initial_conditions_look_workable_use_y', 'Initial conditions look workable. Use Year 1 for citizen-science monitoring and education to build community support before spending it on contested actions like dam removal.')
             };
+          }
+
+          // ── Steward's debrief: turn a silent numbers turn into a coaching loop ──
+          // Grades the year's DECISIONS (not just the outcome): were the hours
+          // spent, aimed at the weakest link, and did they trip — or nearly trip —
+          // a downstream feedback cascade? This is the systems-thinking payload the
+          // campaign was missing: interventions have downstream, delayed effects.
+          function stewardYearDebrief() {
+            var snap = steward.yearLog[steward.yearLog.length - 1] || {};
+            var actions = snap.actions || [];
+            var comps = steward.components || [];
+            var byId = {}; comps.forEach(function(c) { byId[c.id] = c; });
+            var techByName = {}; STEWARD_TECHNIQUES.forEach(function(tc) { techByName[tc.name] = tc; });
+            var compByName = {}; MAINE_WATERSHED_COMPONENTS.forEach(function(cd) { compByName[cd.name] = cd; });
+
+            // Hours utilization
+            var hoursSpent = actions.reduce(function(a, x) { return a + (x.hours || 0); }, 0);
+            var hoursPerYear = steward.hoursPerYear || 18;
+            var hoursIdle = Math.max(0, hoursPerYear - hoursSpent);
+
+            // Where did the investment land? Track components touched + notable moves.
+            var investedIds = {}, usedDamRemoval = false, restedOnly = actions.length > 0;
+            actions.forEach(function(a) {
+              var tech = techByName[a.tech];
+              if (tech && tech.id === 'damRemoval') usedDamRemoval = true;
+              if (tech && tech.id !== 'rest') restedOnly = false;
+              var comp = compByName[a.target];
+              if (comp) investedIds[comp.id] = true;
+            });
+
+            // Weakest link = component furthest below its OWN quality target
+            var weakest = null, worstGap = -1;
+            comps.forEach(function(c) {
+              var def = getWatershedComponent(c.id); if (!def) return;
+              var gap = (def.targets && def.targets.quality ? def.targets.quality : 75) - c.quality;
+              if (gap > worstGap) { worstGap = gap; weakest = { c: c, def: def, gap: Math.round(gap) }; }
+            });
+            // Highest-quality technique that directly applies to the weakest link
+            var rec = null, recQ = -1;
+            if (weakest) {
+              STEWARD_TECHNIQUES.forEach(function(tech) {
+                if (tech.appliesTo === 'any' || tech.id === 'rest') return;
+                if (tech.appliesTo.indexOf(weakest.c.id) < 0) return;
+                var q = tech.effects.quality || 0;
+                if (q > recQ) { recQ = q; rec = tech; }
+              });
+              if (!rec) rec = STEWARD_TECHNIQUES.find(function(tc) { return tc.id === 'easement'; });
+            }
+
+            // Cascades: which fired this year, which are one move away
+            var firedIds = {}; (snap.cascades || []).forEach(function(x) { firedIds[x.id] = true; });
+            var firedMsgs = [], nearMsgs = [];
+            STEWARD_CASCADE_HINTS.forEach(function(hint) {
+              var c = byId[hint.comp]; if (!c) return;
+              var v = Math.round(c[hint.field]);
+              if (firedIds[hint.id]) firedMsgs.push(hint.fired);
+              else if (v >= hint.threshold - 8 && v < hint.threshold) nearMsgs.push(hint.near.replace('{v}', v));
+            });
+
+            // Decision grade — targeting × utilization
+            var touchedWeakest = weakest && investedIds[weakest.c.id];
+            var usedMost = hoursSpent >= hoursPerYear * 0.7;
+            var grade;
+            if (touchedWeakest && usedMost) grade = { emoji: '🌟', label: 'Sharp targeting', note: 'You put real hours into the watershed\'s weakest link. That is how a thin stewardship budget actually moves the needle.' };
+            else if (usedMost || touchedWeakest) grade = { emoji: '👍', label: 'Solid year', note: touchedWeakest ? 'Good instinct hitting the priority component — try to spend more of your hour budget next year.' : 'You worked most of your hours; aim them at the single weakest component next year for compounding gains.' };
+            else if (restedOnly) grade = { emoji: '🍃', label: 'Deliberate pause', note: 'Holding steady lets support recover and some components self-heal — a valid move once or twice, but pressures do not wait forever.' };
+            else grade = { emoji: '🤔', label: 'Scattered effort', note: 'A lot of capacity sat idle or spread thin. Pressures never rest — pick the one component holding the watershed back and concentrate there.' };
+
+            var backfire = usedDamRemoval ? 'Dam removal is the single biggest connectivity gain available, but it costs about 12 community support — the backlash is real and modeled. Follow it with public education and River Days to rebuild trust before the support hit stalls your other work.' : '';
+
+            return { hoursSpent: hoursSpent, hoursIdle: hoursIdle, hoursPerYear: hoursPerYear, grade: grade, fired: firedMsgs, near: nearMsgs, weakest: weakest, rec: rec, backfire: backfire };
           }
 
           // ── Per-component deep-dive ──
@@ -1108,7 +1312,7 @@ const d = labToolData.waterCycle || {};
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Watershed deep-dive'),
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.watercycle.watershed_deep_dive', 'Watershed deep-dive')),
                   h('h3', { style: { margin: '2px 0 0', color: isDark ? '#fff' : '#0f172a', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
@@ -1125,19 +1329,19 @@ const d = labToolData.waterCycle || {};
                     fontWeight: 700,
                     fontSize: 13
                   }
-                }, '✕ Close')
+                }, t('stem.watercycle.close', '✕ Close'))
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
                 h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#22c55e', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '💧 Hydrology'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#22c55e', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.hydrology', '💧 Hydrology')),
                   h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
                 h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.case_work', '📰 Case work')),
                   h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                 ),
                 h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#0ea5e9', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#0ea5e9', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.maine_context', '🌍 Maine context')),
                   h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
@@ -1153,7 +1357,7 @@ const d = labToolData.waterCycle || {};
                   borderRadius: 10
                 }
               },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: isDark ? '#7dd3fc' : '#0369a1', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this component'),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: isDark ? '#7dd3fc' : '#0369a1', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.what_you_can_do_for_this_component', '🛠 What you can do for this component')),
                 applicable.map(function(t, i) {
                   return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: isDark ? '#bae6fd' : '#0e7490', lineHeight: 1.5 } },
                     h('strong', { style: { color: isDark ? '#e0f2fe' : '#0c4a6e' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
@@ -1189,8 +1393,8 @@ const d = labToolData.waterCycle || {};
                 border: isDark ? '1px solid #334155' : '1px solid #cbd5e1'
               }
             },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 8 } }, '📈 Component quality across the 10-year campaign'),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Year-by-year quality trend chart by watershed component' },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 8 } }, t('stem.watercycle.component_quality_across_the_10_year_c', '📈 Component quality across the 10-year campaign')),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': t('stem.watercycle.year_by_year_quality_trend_chart_by_wa', 'Year-by-year quality trend chart by watershed component') },
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
                   return h('g', { key: 'g' + gi },
@@ -1290,10 +1494,10 @@ const d = labToolData.waterCycle || {};
                   fontSize: 13
                 }
               },
-                '⏳ AI watershed educator is reading your watershed data...');
+                t('stem.watercycle.ai_watershed_educator_is_reading_your_', '⏳ AI watershed educator is reading your watershed data...'));
             }
             if (!steward.aiReadResponse) return null;
-            return h('div', { role: 'region', 'aria-label': 'AI Watershed Reading',
+            return h('div', { role: 'region', 'aria-label': t('stem.watercycle.ai_watershed_reading', 'AI Watershed Reading'),
               style: {
                 padding: 14,
                 borderRadius: 12,
@@ -1309,13 +1513,13 @@ const d = labToolData.waterCycle || {};
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
-                h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9', fontSize: 14 } }, 'AI Watershed Reading'),
+                h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9', fontSize: 14 } }, t('stem.watercycle.ai_watershed_reading_2', 'AI Watershed Reading')),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
                   h('button', {
                     onClick: readWatershed,
                     className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                     style: { background: 'transparent', border: isDark ? '1px solid #38bdf8' : '1px solid #0ea5e9', color: isDark ? '#38bdf8' : '#0ea5e9', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
-                  }, '↻ Re-read'),
+                  }, t('stem.watercycle.re_read', '↻ Re-read')),
                   h('button', {
                     onClick: dismissStewardAIRead,
                     className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
@@ -1327,16 +1531,16 @@ const d = labToolData.waterCycle || {};
               h('div', {
                 style: {
                   fontSize: 11,
-                  color: isDark ? '#64748b' : '#475569',
+                  color: isDark ? '#94a3b8' : '#475569',
                   lineHeight: 1.5,
                   paddingTop: 8,
                   borderTop: isDark ? '1px solid rgba(56,189,248,0.2)' : '1px solid rgba(14,165,233,0.2)',
                   fontStyle: 'italic'
                 }
               },
-                'AI watershed-science educator. ',
-                h('strong', null, 'It is not a Wabanaki person, not a real watershed coordinator or hydrologist, and does not speak for any Wabanaki nation, agency, or organization.'),
-                ' For authoritative voices on Maine watershed work, consult Penobscot Nation Cultural and Historic Preservation Department, Wabanaki Public Health and Wellness, Atlantic Salmon Federation, Maine Coast Heritage Trust, Maine Audubon, Maine Soil and Water Conservation Districts, and the Maine Department of Environmental Protection.'
+                t('stem.watercycle.ai_watershed_science_educator', 'AI watershed-science educator. '),
+                h('strong', null, t('stem.watercycle.it_is_not_a_wabanaki_person_not_a_real', 'It is not a Wabanaki person, not a real watershed coordinator or hydrologist, and does not speak for any Wabanaki nation, agency, or organization.')),
+                t('stem.watercycle.for_authoritative_voices_on_maine_wate', ' For authoritative voices on Maine watershed work, consult Penobscot Nation Cultural and Historic Preservation Department, Wabanaki Public Health and Wellness, Atlantic Salmon Federation, Maine Coast Heritage Trust, Maine Audubon, Maine Soil and Water Conservation Districts, and the Maine Department of Environmental Protection.')
               )
             );
           }
@@ -1352,9 +1556,9 @@ const d = labToolData.waterCycle || {};
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', {
                     onClick: function() { switchMode('explorer'); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
-                  }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Maine campaign')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
+                  }, t('stem.watercycle.water_cycle_explorer', '← Water Cycle Explorer')),
+                  h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, t('stem.watercycle.watershed_steward_maine_campaign', '💧 Watershed Steward: Maine campaign'))
                 ),
                 h('div', {
                   style: {
@@ -1370,14 +1574,14 @@ const d = labToolData.waterCycle || {};
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                     h('span', { style: { fontSize: 36 } }, '💧'),
                     h('div', null,
-                      h('h3', { style: { margin: 0, color: isDark ? T_BLUE_HI : '#0284c7', fontSize: 22 } }, 'Watershed Steward: 10-year Maine campaign'),
+                      h('h3', { style: { margin: 0, color: isDark ? T_BLUE_HI : '#0284c7', fontSize: 22 } }, t('stem.watercycle.watershed_steward_10_year_maine_campai', 'Watershed Steward: 10-year Maine campaign')),
                       h('div', { style: { fontSize: 13, color: isDark ? '#94a3b8' : '#475569', marginTop: 2 } }, 'You are the Watershed Coordinator for a central Maine river system.')
                     )
                   ),
                   h('p', { style: { margin: '8px 0 0', color: isDark ? '#cbd5e1' : '#334155', fontSize: 14, lineHeight: 1.6 } },
-                    'Six watershed components, ten years, real Maine pressures: dam barriers, agricultural runoff, suburban stormwater, climate-driven floods and droughts. ',
-                    h('strong', null, 'Hydrological feedback rules tie them together.'),
-                    ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs.'
+                    t('stem.watercycle.six_watershed_components_ten_years_rea', 'Six watershed components, ten years, real Maine pressures: dam barriers, agricultural runoff, suburban stormwater, climate-driven floods and droughts. '),
+                    h('strong', null, t('stem.watercycle.hydrological_feedback_rules_tie_them_t', 'Hydrological feedback rules tie them together.')),
+                    t('stem.watercycle.healthy_buffers_cool_headwater_streams', ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs. Outcomes are hand-authored teaching indices, not field measurements, forecasts, or project guarantees.')
                   )
                 ),
 
@@ -1401,7 +1605,7 @@ const d = labToolData.waterCycle || {};
                         h('strong', { style: { color: c.color } }, c.name)
                       ),
                       h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 4 } }, c.role),
-                      h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
+                      h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.watercycle.' + (c.id) + '_desc', c.desc)),
                       c.deepDive ? h('button', {
                         onClick: function() { openStewardDeepDive(c.id); },
                         'aria-label': 'Open deep-dive for ' + c.name,
@@ -1417,7 +1621,7 @@ const d = labToolData.waterCycle || {};
                           fontWeight: 700,
                           fontSize: 11.5
                         }
-                      }, '📚 Watershed deep-dive →') : null
+                      }, t('stem.watercycle.watershed_deep_dive_2', '📚 Watershed deep-dive →')) : null
                     );
                   })
                 ),
@@ -1431,7 +1635,7 @@ const d = labToolData.waterCycle || {};
                     border: isDark ? '1px solid #334155' : '1px solid #cbd5e1'
                   }
                 },
-                  h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                  h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, t('stem.watercycle.difficulty', 'Difficulty')),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                     Object.keys(STEWARD_DIFFICULTIES).map(function(dkey) {
                       var df = STEWARD_DIFFICULTIES[dkey];
@@ -1456,7 +1660,7 @@ const d = labToolData.waterCycle || {};
                         }
                       },
                         h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                        h('div', { style: { fontSize: 11, color: picked ? (isDark ? '#bae6fd' : '#0c4a6e') : (isDark ? '#94a3b8' : '#64748b'), marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                        h('div', { style: { fontSize: 11, color: picked ? (isDark ? '#bae6fd' : '#0c4a6e') : (isDark ? '#94a3b8' : '#64748b'), marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.watercycle.' + (dkey) + '_desc', df.desc))
                       );
                     })
                   )
@@ -1477,7 +1681,7 @@ const d = labToolData.waterCycle || {};
                     fontSize: 16,
                     boxShadow: '0 6px 14px rgba(14,165,233,0.35)'
                   }
-                }, '💧 Begin 10-year Watershed Campaign')
+                }, t('stem.watercycle.begin_10_year_watershed_campaign', '💧 Begin 10-year Watershed Campaign'))
               );
             }
 
@@ -1494,9 +1698,9 @@ const d = labToolData.waterCycle || {};
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', {
                     onClick: function() { switchMode('explorer'); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
-                  }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward: Debrief')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
+                  }, t('stem.watercycle.water_cycle_explorer_2', '← Water Cycle Explorer')),
+                  h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, t('stem.watercycle.watershed_steward_debrief', '💧 Watershed Steward: Debrief'))
                 ),
                 h('div', {
                   style: {
@@ -1569,14 +1773,14 @@ const d = labToolData.waterCycle || {};
                     border: isDark ? '1px solid rgba(248,113,113,0.4)' : '1px solid rgba(248,113,113,0.3)'
                   }
                 },
-                  h('strong', { style: { color: isDark ? '#fca5a5' : '#b91c1c', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing for 10 years?'),
+                  h('strong', { style: { color: isDark ? '#fca5a5' : '#b91c1c', fontSize: 14, display: 'block', marginBottom: 8 } }, t('stem.watercycle.what_if_you_had_done_nothing_for_10_ye', '↔ What if you had done nothing for 10 years?')),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                     h('div', { style: { background: isDark ? '#0f172a' : '#f8fafc', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
-                      h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your campaign'),
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, t('stem.watercycle.your_campaign', 'Your campaign')),
                       h('div', { style: { color: isDark ? '#cbd5e1' : '#334155', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
                     ),
                     h('div', { style: { background: isDark ? '#0f172a' : '#f8fafc', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
-                      h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#fca5a5' : '#ef4444', marginBottom: 4 } }, 'Pure neglect'),
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#fca5a5' : '#ef4444', marginBottom: 4 } }, t('stem.watercycle.pure_neglect', 'Pure neglect')),
                       h('div', { style: { color: isDark ? '#cbd5e1' : '#334155', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
                     )
                   ),
@@ -1589,21 +1793,21 @@ const d = labToolData.waterCycle || {};
                   )
                 ),
                 h('div', { style: { padding: 10, background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #cbd5e1', borderRadius: 8, fontSize: 12, color: isDark ? '#cbd5e1' : '#334155' } },
-                  h('strong', { style: { color: '#0ea5e9' } }, 'Components at 75+ quality: '), steward.componentsAt75 + ' / 6 · ',
-                  h('strong', { style: { color: '#0ea5e9' } }, 'Connectivity boosts: '), (steward.connectivityBoosts || 0)
+                  h('strong', { style: { color: '#0ea5e9' } }, t('stem.watercycle.components_at_75_quality', 'Components at 75+ quality: ')), steward.componentsAt75 + ' / 6 · ',
+                  h('strong', { style: { color: '#0ea5e9' } }, t('stem.watercycle.connectivity_boosts', 'Connectivity boosts: ')), (steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
                     onClick: resetSteward,
-                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-slate-200 hover:bg-slate-700" : "bg-slate-200 text-slate-800 hover:bg-slate-300")
-                  }, '↻ New campaign'),
+                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-slate-200 text-slate-800 hover:bg-slate-300 active:scale-[0.97]")
+                  }, t('stem.watercycle.new_campaign', '↻ New campaign')),
                   h('button', {
                     onClick: function() { startStewardCampaign({ seed: steward.seed, difficulty: steward.difficulty }); },
-                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/50 hover:bg-sky-900/40" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
-                  }, '🔁 Replay same conditions')
+                    className: "px-4 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-sky-950/60 text-sky-400 border border-sky-900/50 hover:bg-sky-900/40 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
+                  }, t('stem.watercycle.replay_same_conditions', '🔁 Replay same conditions'))
                 ),
                 h('div', { style: { padding: 8, background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #cbd5e1', borderRadius: 8, fontSize: 11.5, color: isDark ? '#cbd5e1' : '#334155', fontFamily: 'ui-monospace, monospace' } },
-                  h('span', { style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'Campaign seed: '),
+                  h('span', { style: { color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.watercycle.campaign_seed', 'Campaign seed: ')),
                   h('strong', { style: { color: isDark ? '#cbd5e1' : '#334155' } }, steward.seed)
                 )
               );
@@ -1618,9 +1822,9 @@ const d = labToolData.waterCycle || {};
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', {
                     onClick: function() { switchMode('explorer'); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
-                  }, '← Water Cycle Explorer'),
-                  h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Year ' + steward.year + ' review')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
+                  }, t('stem.watercycle.water_cycle_explorer_3', '← Water Cycle Explorer')),
+                  h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Year ' + steward.year + ' review')
                 ),
                 h('div', {
                   style: {
@@ -1645,9 +1849,44 @@ const d = labToolData.waterCycle || {};
                     color: isDark ? '#bae6fd' : '#0369a1'
                   }
                 },
-                  h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9' } }, '🔄 Hydrological feedback rules this year'),
+                  h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9' } }, t('stem.watercycle.hydrological_feedback_rules_this_year', '🔄 Hydrological feedback rules this year')),
                   lastSnap.cascades.map(function(c, ci) { return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg); })
                 ) : null,
+
+                // ── Steward's debrief — coaching synthesis of THIS year's decisions ──
+                (function() {
+                  var db = stewardYearDebrief();
+                  var pillBg = isDark ? 'rgba(15,23,42,0.55)' : '#ffffff';
+                  return h('div', {
+                    style: {
+                      padding: 12, borderRadius: 12,
+                      background: isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.06)',
+                      border: isDark ? '1px solid rgba(16,185,129,0.28)' : '1px solid rgba(16,185,129,0.35)',
+                      borderLeft: '4px solid #10b981'
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+                      h('strong', { style: { color: isDark ? '#6ee7b7' : '#047857', fontSize: 14 } }, "🧭 Steward's debrief"),
+                      h('span', { style: { fontSize: 12, fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: pillBg, border: isDark ? '1px solid #334155' : '1px solid #d1fae5', color: isDark ? '#e2e8f0' : '#334155' } }, db.grade.emoji + ' ' + db.grade.label),
+                      h('span', { style: { marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: db.hoursIdle > 0 ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#6ee7b7' : '#047857') } }, db.hoursSpent + '/' + db.hoursPerYear + 'h used' + (db.hoursIdle > 0 ? ' · ' + db.hoursIdle + 'h idle' : ' · full'))
+                    ),
+                    h('p', { style: { margin: '0 0 6px', fontSize: 12.5, lineHeight: 1.55, color: isDark ? '#cbd5e1' : '#334155' } }, db.grade.note),
+                    // Causal chains that fired this year
+                    db.fired.length > 0 ? db.fired.map(function(m, i) {
+                      return h('p', { key: 'f' + i, style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#a7f3d0' : '#065f46' } }, '🔗 ' + m);
+                    }) : null,
+                    // Backfire / tradeoff warning
+                    db.backfire ? h('p', { style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#fca5a5' : '#b91c1c' } }, '⚖️ ' + db.backfire) : null,
+                    // Near-miss cascades — the one-move-away coaching
+                    db.near.length > 0 ? db.near.map(function(m, i) {
+                      return h('p', { key: 'n' + i, style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#7dd3fc' : '#0369a1' } }, '🎯 ' + m);
+                    }) : null,
+                    // Strategic next priority
+                    db.weakest && db.rec ? h('p', { style: { margin: '6px 0 0', paddingTop: 6, borderTop: isDark ? '1px solid rgba(16,185,129,0.2)' : '1px solid #d1fae5', fontSize: 12, lineHeight: 1.5, fontWeight: 600, color: isDark ? '#e2e8f0' : '#334155' } },
+                      '➡️ Weakest link now: ' + db.weakest.def.icon + ' ' + db.weakest.def.name + ' (quality ' + Math.round(db.weakest.c.quality) + ', ' + db.weakest.gap + ' below its goal). Best matched move: ' + db.rec.icon + ' ' + db.rec.name + '.'
+                    ) : null
+                  );
+                })(),
 
                 // Per-component deltas
                 h('div', {
@@ -1658,7 +1897,7 @@ const d = labToolData.waterCycle || {};
                     padding: 10
                   }
                 },
-                  h('div', { style: { fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                  h('div', { style: { fontWeight: 700, color: isDark ? '#cbd5e1' : '#334155', marginBottom: 6, fontSize: 13 } }, t('stem.watercycle.what_changed_this_year', 'What changed this year')),
                   (lastSnap.pre || []).map(function(preC) {
                     var postC = (lastSnap.post || []).find(function(p) { return p.id === preC.id; }) || preC;
                     var def = getWatershedComponent(preC.id);
@@ -1693,9 +1932,9 @@ const d = labToolData.waterCycle || {};
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('button', {
                   onClick: function() { switchMode('explorer'); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700" : "bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300")
-                }, '← Water Cycle Explorer'),
-                h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward · Year ' + steward.year)
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-slate-800 text-sky-400 border border-slate-700 hover:bg-slate-700 active:scale-[0.97]" : "transition-colors bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300 active:scale-[0.97]")
+                }, t('stem.watercycle.water_cycle_explorer_4', '← Water Cycle Explorer')),
+                h('h3', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-slate-100' : 'text-slate-800') }, '💧 Watershed Steward · Year ' + steward.year)
               ),
               coachingTip ? h('div', {
                 role: 'note',
@@ -1717,13 +1956,13 @@ const d = labToolData.waterCycle || {};
               },
                 h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
                 h('div', { style: { flex: 1 } },
-                  h('strong', { style: { color: isDark ? '#c084fc' : '#6b21a8' } }, 'Year 1 priority: '),
+                  h('strong', { style: { color: isDark ? '#c084fc' : '#6b21a8' } }, t('stem.watercycle.year_1_priority', 'Year 1 priority: ')),
                   h('span', { style: { color: isDark ? '#fde68a' : '#854d0e' } }, coachingTip.priority),
                   h('div', { style: { marginTop: 4, color: isDark ? '#cbd5e1' : '#475569' } }, coachingTip.text)
                 ),
                 h('button', {
                   onClick: function() { setSteward({ firstTipDismissed: true }); },
-                  'aria-label': 'Dismiss tip',
+                  'aria-label': t('stem.watercycle.dismiss_tip', 'Dismiss tip'),
                   className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                   style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 }
                 }, '✕')
@@ -1747,23 +1986,23 @@ const d = labToolData.waterCycle || {};
                 }
               },
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, 'Year'),
+                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.watercycle.year', 'Year')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: T_BLUE_HI } }, steward.year + ' / ' + steward.maxYears)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, 'Hours left'),
+                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.watercycle.hours_left', 'Hours left')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, steward.hoursLeft + ' / ' + steward.hoursPerYear)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, 'Connectivity boosts'),
+                  h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.watercycle.connectivity_boosts_2', 'Connectivity boosts')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                   callGemini ? h('button', {
                     onClick: readWatershed,
                     disabled: steward.aiReadLoading,
-                    'aria-label': 'Ask AI watershed educator to read your watershed data',
-                    title: 'AI watershed-science educator reads your current state',
+                    'aria-label': t('stem.watercycle.ask_ai_watershed_educator_to_read_your', 'Ask AI watershed educator to read your watershed data'),
+                    title: t('stem.watercycle.ai_watershed_science_educator_reads_yo', 'AI watershed-science educator reads your current state'),
                     className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                     style: {
                       padding: '8px 12px',
@@ -1779,10 +2018,10 @@ const d = labToolData.waterCycle || {};
                   }, steward.aiReadLoading ? '⏳ Reading...' : '🔍 Read the watershed (AI)') : null,
                   h('button', {
                     onClick: endStewardYear,
-                    'aria-label': 'End this year',
+                    'aria-label': t('stem.watercycle.end_this_year', 'End this year'),
                     className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all font-bold rounded-lg",
                     style: { padding: '10px 16px', border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontSize: 13 }
-                  }, 'End Year →')
+                  }, t('stem.watercycle.end_year', 'End Year →'))
                 )
               ),
 
@@ -1813,7 +2052,7 @@ const d = labToolData.waterCycle || {};
                       def.deepDive ? h('button', {
                         onClick: function() { openStewardDeepDive(c.id); },
                         'aria-label': 'Deep-dive for ' + def.name,
-                        title: 'Watershed deep-dive',
+                        title: t('stem.watercycle.watershed_deep_dive_3', 'Watershed deep-dive'),
                         className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                         style: {
                           background: 'transparent',
@@ -1828,9 +2067,9 @@ const d = labToolData.waterCycle || {};
                       }, '📚') : null
                     ),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
-                      [['Q', Math.round(c.quality), c.quality < 40 ? '#ef4444' : c.quality < 65 ? '#f59e0b' : '#22c55e', def.targets.quality],
-                       ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? '#ef4444' : c.connectivity < 65 ? '#f59e0b' : '#22c55e', def.targets.connectivity],
-                       ['Sup', Math.round(c.support), c.support < 40 ? '#ef4444' : c.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                      [['Q', Math.round(c.quality), c.quality < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.quality < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.quality],
+                       ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.connectivity < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.connectivity],
+                       ['Sup', Math.round(c.support), c.support < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.support < 60 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.support]
                       ].map(function(st, si) {
                         return h('div', {
                           key: si,
@@ -1842,9 +2081,9 @@ const d = labToolData.waterCycle || {};
                             textAlign: 'center'
                           }
                         },
-                          h('div', { style: { fontSize: 10, color: isDark ? '#64748b' : '#94a3b8' } }, st[0]),
+                          h('div', { style: { fontSize: 10, color: isDark ? '#94a3b8' : '#64748b' } }, st[0]),
                           h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                          h('div', { style: { fontSize: 9, color: isDark ? '#475569' : '#64748b' } }, 'goal ' + st[3])
+                          h('div', { style: { fontSize: 9, color: isDark ? '#94a3b8' : '#475569' } }, 'goal ' + st[3])
                         );
                       })
                     ),
@@ -1887,7 +2126,7 @@ const d = labToolData.waterCycle || {};
                   borderLeft: '3px solid #38bdf8'
                 }
               },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#38bdf8', marginBottom: 8 } }, '🛠 Watershed-wide actions'),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#38bdf8', marginBottom: 8 } }, t('stem.watercycle.watershed_wide_actions', '🛠 Watershed-wide actions')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
                     var disabled = steward.hoursLeft < t.hours;
@@ -1930,7 +2169,7 @@ const d = labToolData.waterCycle || {};
                 steward.yearActions.map(function(a, ai) {
                   return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.target + ' (' + a.hours + 'h)');
                 })
-              ) : h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#64748b', fontStyle: 'italic' } }, 'No actions yet this year. Pick a component, pick a technique.')
+              ) : h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#64748b', fontStyle: 'italic' } }, t('stem.watercycle.no_actions_yet_this_year_pick_a_compon', 'No actions yet this year. Pick a component, pick a technique.'))
             );
           }
 
@@ -1953,28 +2192,28 @@ const d = labToolData.waterCycle || {};
             else if (rate < 0.65) ptype = 'rain';
             else ptype = 'storm';
             var ptMeta = {
-              clear:   { label: '☀️ Clear / very light', color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Insufficient condensation — too warm or too dry.' },
-              drizzle: { label: '🌦️ Light drizzle',      color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Slow condensation. Steady but gentle precipitation.' },
-              rain:    { label: '🌧️ Moderate rain',     color: '#0284c7', bg: '#e0f2fe', border: '#7dd3fc', desc: 'Strong condensation. Typical rainfall.' },
-              storm:   { label: '⛈️ Storm burst',        color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', desc: 'High moisture + cool temp + strong lift → heavy convective precipitation.' }
+              clear:   { label: t('stem.watercycle.clear_very_light', '☀️ Clear / very light'), color: '#facc15', bg: '#fefce8', border: '#fde047', desc: t('stem.watercycle.insufficient_condensation_too_warm_or_', 'Insufficient condensation — too warm or too dry.') },
+              drizzle: { label: t('stem.watercycle.light_drizzle', '🌦️ Light drizzle'),      color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.watercycle.slow_condensation_steady_but_gentle_pr', 'Slow condensation. Steady but gentle precipitation.') },
+              rain:    { label: t('stem.watercycle.moderate_rain', '🌧️ Moderate rain'),     color: '#0284c7', bg: '#e0f2fe', border: '#7dd3fc', desc: t('stem.watercycle.strong_condensation_typical_rainfall', 'Strong condensation. Typical rainfall.') },
+              storm:   { label: t('stem.watercycle.storm_burst', '⛈️ Storm burst'),        color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', desc: t('stem.watercycle.high_moisture_cool_temp_strong_lift_he', 'High moisture + cool temp + strong lift → heavy convective precipitation.') }
             }[ptype];
             function logObs() {
               setIQ({ log: (iq.log || []).concat([{ m: iq.moisture, t: iq.tempC, w: iq.wind, p: ptype }]).slice(-8) });
             }
             return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-200 shadow-sm space-y-3' },
-              h('button', { onClick: function() { upd('wcMode', 'explorer'); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700' }, '← Back to Explorer'),
-              h('h3', { className: 'text-sm font-black text-cyan-700' }, '🌧️ Precipitation discovery'),
+              h('button', { onClick: function() { upd('wcMode', 'explorer'); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700' }, t('stem.watercycle.back_to_explorer', '← Back to Explorer')),
+              h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.watercycle.precipitation_discovery', '🌧️ Precipitation discovery')),
               h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
-                'Adjust cloud moisture, temperature, and wind. Widget classifies precipitation into one of four discrete types. No score, no reveal — sweep and notice.'),
+                t('stem.watercycle.adjust_cloud_moisture_temperature_and_', 'Adjust cloud moisture, temperature, and wind. Widget classifies precipitation into one of four discrete types. No score, no reveal — sweep and notice.')),
               h('div', { className: 'p-3 rounded-lg text-center', style: { background: ptMeta.bg, border: '2px solid ' + ptMeta.border } },
                 h('div', { className: 'text-base font-black', style: { color: ptMeta.color } }, ptMeta.label),
                 h('div', { className: 'text-[11px] text-slate-700 mt-1' }, ptMeta.desc)
               ),
               h('div', { className: 'grid grid-cols-3 gap-3' },
                 [
-                  { key: 'moisture', label: 'Moisture (%)',  val: iq.moisture, min: 0, max: 100, step: 1 },
-                  { key: 'tempC',    label: 'Temp (°C)',     val: iq.tempC,    min: -10, max: 40, step: 1 },
-                  { key: 'wind',     label: 'Wind (m/s)',    val: iq.wind,     min: 0, max: 60, step: 1 }
+                  { key: 'moisture', label: t('stem.watercycle.moisture', 'Moisture (%)'),  val: iq.moisture, min: 0, max: 100, step: 1 },
+                  { key: 'tempC',    label: t('stem.watercycle.temp_c', 'Temp (°C)'),     val: iq.tempC,    min: -10, max: 40, step: 1 },
+                  { key: 'wind',     label: t('stem.watercycle.wind_m_s', 'Wind (m/s)'),    val: iq.wind,     min: 0, max: 60, step: 1 }
                 ].map(function(s) {
                   return h('div', { key: s.key },
                     h('label', { htmlFor: 'ph-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
@@ -1985,8 +2224,8 @@ const d = labToolData.waterCycle || {};
                 })
               ),
               h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                h('button', { onClick: function() { setIQ({ moisture: 50, tempC: 20, wind: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.watercycle.log', '📋 Log')),
+                h('button', { onClick: function() { setIQ({ moisture: 50, tempC: 20, wind: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.watercycle.reset', '↺ Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
               ),
               (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
@@ -1999,21 +2238,21 @@ const d = labToolData.waterCycle || {};
                     h('td', { className: 'px-1 border border-slate-200' }, o.p));
                 }))
               ),
-              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): What triggers a storm vs drizzle?',
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.watercycle.hypothesis_free_text_what_triggers_a_s', 'Hypothesis (free text): What triggers a storm vs drizzle?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.watercycle.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, 'Hold two sliders steady. Move one. Watch.'),
-                  h('li', null, 'Find two settings producing the same type.'),
-                  h('li', null, 'Real storms need both moisture and instability. Investigate.'))),
+                  h('li', null, t('stem.watercycle.hold_two_sliders_steady_move_one_watch', 'Hold two sliders steady. Move one. Watch.')),
+                  h('li', null, t('stem.watercycle.find_two_settings_producing_the_same_t', 'Find two settings producing the same type.')),
+                  h('li', null, t('stem.watercycle.real_storms_need_both_moisture_and_ins', 'Real storms need both moisture and instability. Investigate.')))),
               h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how moisture, temperature, and wind jointly determine precipitation type.',
+                  t('stem.watercycle.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.watercycle.explain_how_moisture_temperature_and_w', 'Explain how moisture, temperature, and wind jointly determine precipitation type.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-type precipitation marker; no rainfall-rate score; no reveal — by design.')
+              h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.watercycle.design_note_discrete_4_type_precipitat', 'Design note: discrete 4-type precipitation marker; no rainfall-rate score; no reveal — by design.'))
             );
           }
 
@@ -2038,7 +2277,7 @@ const d = labToolData.waterCycle || {};
                       '3-5': 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water. About 90% of evaporation comes from oceans.',
                       '6-8': 'Solar radiation provides thermal energy that increases water molecule kinetic energy until they escape the liquid surface as vapor. The rate depends on temperature, humidity, wind speed, and surface area. Oceans contribute ~90% of atmospheric moisture.',
                       '9-12': 'Evaporation is governed by the Clausius-Clapeyron relation: saturation vapor pressure increases ~7% per \u00B0C. The latent heat of vaporization is 2.45 MJ/kg at 20\u00B0C. Penman-Monteith equations model evapotranspiration using net radiation, soil heat flux, and aerodynamic resistance.' },
-              funFact: { 'K-2': 'If all the water in clouds fell at once, it would only cover the ground with a tiny layer  -  thinner than your thumb!',
+              funFact: { 'K-2': 'All the water floating in the sky as invisible vapor would only cover the ground about as deep as your fingertip  -  the sky holds just a tiny bit of Earth\'s water at one time!',
                          '3-5': 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!',
                          '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time  -  but that is only 0.001% of all water on Earth.',
                          '9-12': 'Global mean evaporation is ~1,200 mm/yr over oceans. The Bowen ratio (sensible/latent heat) determines partitioning of surface energy into evaporation vs heating.' } },
@@ -2071,7 +2310,7 @@ const d = labToolData.waterCycle || {};
                          '9-12': 'Antarctic ice cores preserve 800,000 years of climate history, with \u03B4\u00B9\u2078O variations of ~5\u2030 between glacial and interglacial periods.' } },
             { id: 'transpiration', label: t('stem.water_cycle.transpiration'), emoji: '\uD83C\uDF3F', color: '#22c55e',
               desc: { 'K-2': 'Plants drink water through their roots. Then the water travels up to the leaves and floats away into the air through tiny holes  -  like the plant is breathing!',
-                      '3-5': 'Plants absorb water through roots and release vapor from tiny pores called stomata in their leaves. A single large oak tree can transpire 150,000 liters per year.',
+                      '3-5': 'Plants absorb water through roots and release vapor from tiny pores called stomata in their leaves. A large tree can transpire substantial amounts of water, but the rate varies widely with species, size, season, soil moisture, and weather.',
                       '6-8': 'Transpiration is driven by the soil-plant-atmosphere continuum. Water moves through xylem via cohesion-tension, exiting through ~100,000 stomata per cm\u00B2 of leaf surface. Guard cells regulate stomatal aperture in response to light, CO\u2082, and water stress.',
                       '9-12': 'The Penman-Monteith equation models transpiration: ET = [\u0394(Rn-G) + \u03C1a·cp·VPD/ra] / [\u0394 + \u03B3(1 + rs/ra)]. Stomatal conductance follows the Ball-Berry model linking assimilation, humidity, and CO\u2082 concentration.' },
               funFact: { 'K-2': 'A big oak tree lets out enough water every year to fill a swimming pool!',
@@ -2093,6 +2332,17 @@ const d = labToolData.waterCycle || {};
           // Resolve grade-tiered content
           var selDesc = sel ? (typeof sel.desc === 'object' ? (sel.desc[gradeBand] || sel.desc['3-5']) : sel.desc) : '';
           var selFunFact = sel ? (typeof sel.funFact === 'object' ? (sel.funFact[gradeBand] || sel.funFact['3-5']) : sel.funFact) : '';
+          // Phase-change tag per stage — ties each process to the state change driving it (the
+          // core standards-level idea). "State:" where no phase change occurs (gravity/storage).
+          var STAGE_PHASE = {
+            evaporation:   '🔥→💨 Liquid → gas — absorbs heat energy (the sun powers this)',
+            condensation:  '💨→💧 Gas → liquid — releases the stored heat back to the air',
+            precipitation: '💧/❄ Liquid (rain) or solid (snow/hail) falls — gravity, not a phase change',
+            collection:    '💧 Liquid stored in oceans, lakes & rivers (and solid as ice)',
+            transpiration: '🌿→💨 Liquid → gas — water vapor exits the leaves',
+            infiltration:  '💧 Liquid soaking down into soil and rock — no phase change'
+          };
+          var selPhase = sel ? STAGE_PHASE[sel.id] : '';
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -2113,13 +2363,17 @@ const d = labToolData.waterCycle || {};
           const canvasRef = function (canvasEl) {
 
             if (!canvasEl) {
-
-              if (_lastWcCanvas && _lastWcCanvas._wcCleanup) { _lastWcCanvas._wcCleanup(); _lastWcCanvas._wcInit = false; }
-
+              var detachedCanvas = _lastWcCanvas;
               _lastWcCanvas = null;
-
+              // React calls an old callback ref with null on ordinary rerenders.
+              // Defer teardown so the same, still-connected canvas keeps its progress.
+              setTimeout(function() {
+                if (detachedCanvas && !detachedCanvas.isConnected && detachedCanvas._wcCleanup) {
+                  detachedCanvas._wcCleanup();
+                  detachedCanvas._wcInit = false;
+                }
+              }, 0);
               return;
-
             }
 
             _lastWcCanvas = canvasEl;
@@ -2133,10 +2387,51 @@ const d = labToolData.waterCycle || {};
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._wcInit = false; return; }
 
             var dpr = 2;
 
             var tick = 0;
+            var wcAlive = true;
+            var wcMotionReduced = false;
+            try { wcMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isWaterCycleHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelWaterCycleFrame() {
+              if (canvasEl._wcAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._wcAnim);
+              canvasEl._wcAnim = null;
+            }
+
+            function scheduleWaterCycleFrame() {
+              if (!wcAlive || canvasEl._wcAnim || isWaterCycleHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._wcAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupWaterCycleCanvas() {
+              wcAlive = false;
+              cancelWaterCycleFrame();
+              canvasEl.removeEventListener('click', onWaterCycleCanvasClick);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onWaterCycleVisibilityChange);
+              canvasEl._onJourneyTransition = null;
+              canvasEl._onJourneyComplete = null;
+              canvasEl._wcSyncReact = null;
+              canvasEl._wcRestartJourney = null;
+              canvasEl._wcCleanup = null;
+            }
+
+            function onWaterCycleVisibilityChange() {
+              if (!wcAlive) return;
+              if (!canvasEl.isConnected) { cleanupWaterCycleCanvas(); return; }
+              if (isWaterCycleHidden()) cancelWaterCycleFrame();
+              else { cancelWaterCycleFrame(); draw(); }
+            }
+
+            canvasEl._wcCleanup = cleanupWaterCycleCanvas;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onWaterCycleVisibilityChange);
 
 
 
@@ -2218,7 +2513,7 @@ const d = labToolData.waterCycle || {};
 
 
             // ═══ JOURNEY MODE ENGINE ═══
-            var journey = { state: 'idle', progress: 0, pathIdx: 0, timer: 0, particleTrail: [], phase: 0 };
+            var journey = { state: canvasEl.dataset.journeyState || 'idle', progress: 0, pathIdx: 0, timer: 0, particleTrail: [], phase: 0 };
 
             // Waypoint paths (fractional coords relative to cW/cH, in dpr-independent space)
             var JOURNEY_PATHS = {
@@ -2236,7 +2531,7 @@ const d = labToolData.waterCycle || {};
             // Science facts shown at each transition
             var JOURNEY_FACTS = {
               ocean:       'You are in the ocean! 97% of Earth\'s water is here. The sun heats you up...',
-              evaporating: 'Solar energy excites your molecules! At 100\u00B0C you become water vapor  -  invisible gas rising upward.',
+              evaporating: 'Solar energy gives some surface molecules enough speed to escape as invisible water vapor  -  no boiling needed! Evaporation happens at everyday temperatures, fastest when it is warm, sunny, and windy.',
               condensing:  'As you rise, temperature drops ~6.5\u00B0C per 1000m. You condense onto tiny dust particles to form a cloud droplet!',
               precipitating:'Cloud droplets collide and merge. When you reach ~0.5mm, gravity overcomes air resistance  -  you fall!',
               ground_choice:'You hit the ground! Water can take 3 paths from here. Where will you go?',
@@ -2266,9 +2561,9 @@ const d = labToolData.waterCycle || {};
 
             // Shared ground-choice button definitions (used by both draw + click handler)
             var GROUND_CHOICES = [
-              { x: 0.20, y: 0.63, w: 0.18, h: 0.08, state: 'river_runoff', pathKey: 'runoff', label: '\uD83C\uDF0A River Path', color: 'rgba(59,130,246,0.2)', border: 'rgba(59,130,246,0.6)' },
-              { x: 0.28, y: 0.72, w: 0.18, h: 0.08, state: 'infiltrating', pathKey: 'infiltrate', label: '\uD83E\uDEB4 Go Underground', color: 'rgba(120,53,15,0.2)', border: 'rgba(120,53,15,0.6)' },
-              { x: 0.50, y: 0.56, w: 0.18, h: 0.08, state: 'plant_absorb', pathKey: 'plant', label: '\uD83C\uDF3F Enter Plant', color: 'rgba(34,197,94,0.2)', border: 'rgba(34,197,94,0.6)' }
+              { x: 0.20, y: 0.63, w: 0.18, h: 0.08, state: 'river_runoff', pathKey: 'runoff', label: t('stem.watercycle.river_path', '\uD83C\uDF0A River Path'), color: 'rgba(59,130,246,0.2)', border: 'rgba(59,130,246,0.6)' },
+              { x: 0.28, y: 0.72, w: 0.18, h: 0.08, state: 'infiltrating', pathKey: 'infiltrate', label: t('stem.watercycle.go_underground', '\uD83E\uDEB4 Go Underground'), color: 'rgba(120,53,15,0.2)', border: 'rgba(120,53,15,0.6)' },
+              { x: 0.50, y: 0.56, w: 0.18, h: 0.08, state: 'plant_absorb', pathKey: 'plant', label: t('stem.watercycle.enter_plant', '\uD83C\uDF3F Enter Plant'), color: 'rgba(34,197,94,0.2)', border: 'rgba(34,197,94,0.6)' }
             ];
 
             // Helper: interpolate along a waypoint path
@@ -2385,7 +2680,7 @@ const d = labToolData.waterCycle || {};
             }
 
             // Click handler for journey decisions  -  uses shared GROUND_CHOICES for hit zones
-            canvasEl.addEventListener('click', function(e) {
+            function onWaterCycleCanvasClick(e) {
               if (journey.state !== 'ground_choice') return;
               var rect = canvasEl.getBoundingClientRect();
               var mx = (e.clientX - rect.left) / rect.width;
@@ -2407,11 +2702,16 @@ const d = labToolData.waterCycle || {};
                   break;
                 }
               }
-            });
+            }
+            canvasEl.addEventListener('click', onWaterCycleCanvasClick);
 
             function draw() {
+              if (!wcAlive) return;
+              canvasEl._wcAnim = null;
+              if (!canvasEl.isConnected) { cleanupWaterCycleCanvas(); return; }
+              if (isWaterCycleHidden()) { cancelWaterCycleFrame(); return; }
 
-              tick++;
+              tick += wcMotionReduced ? 0.2 : 1;
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -2455,7 +2755,32 @@ const d = labToolData.waterCycle || {};
 
               ctx.fillRect(0, 0, cW, cH * 0.65);
 
-
+              // ── Aurora curtains (dark mode) — slow green/violet ribbons above the peaks ──
+              if (isDark) {
+                for (var au = 0; au < 3; au++) {
+                  var auX = cW * (0.12 + au * 0.3) + Math.sin(tick * 0.004 + au * 2.1) * cW * 0.05;
+                  var auW = cW * (0.09 + 0.03 * Math.sin(tick * 0.006 + au));
+                  var auHue = au === 1 ? '168,85,247' : '52,211,153';
+                  var auA = 0.09 + 0.05 * Math.sin(tick * 0.01 + au * 1.7);
+                  var auGrad = ctx.createLinearGradient(0, cH * 0.04, 0, cH * 0.4);
+                  auGrad.addColorStop(0, 'rgba(' + auHue + ',0)');
+                  auGrad.addColorStop(0.45, 'rgba(' + auHue + ',' + auA.toFixed(3) + ')');
+                  auGrad.addColorStop(1, 'rgba(' + auHue + ',0)');
+                  ctx.fillStyle = auGrad;
+                  ctx.beginPath();
+                  ctx.moveTo(auX + Math.sin(tick * 0.008 + au) * cW * 0.02, cH * 0.04);
+                  for (var auy = 0; auy <= 8; auy++) {
+                    var ayy = cH * (0.04 + auy * 0.045);
+                    ctx.lineTo(auX + Math.sin(ayy * 0.012 + tick * 0.008 + au) * cW * 0.03, ayy);
+                  }
+                  for (var auy2 = 8; auy2 >= 0; auy2--) {
+                    var ayy2 = cH * (0.04 + auy2 * 0.045);
+                    ctx.lineTo(auX + auW + Math.sin(ayy2 * 0.012 + tick * 0.008 + au + 0.6) * cW * 0.03, ayy2);
+                  }
+                  ctx.closePath();
+                  ctx.fill();
+                }
+              }
 
               // ── Sun / Moon with animated rays / glow ──
 
@@ -2507,9 +2832,54 @@ const d = labToolData.waterCycle || {};
                   ctx.strokeStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(tick * 0.03 + sr) * 0.2) + ')';
                   ctx.lineWidth = 2 * dpr; ctx.stroke();
                 }
+
+                // ── God rays — volumetric beams fanning down-left across the valley ──
+                // Strength follows the solar slider; beams breathe slowly and are
+                // occluded by the mountains drawn after them (real crepuscular feel).
+                if (skyBright > 0.45) {
+                  var rayAlpha = (skyBright - 0.45) * 0.14;
+                  for (var gr2 = 0; gr2 < 5; gr2++) {
+                    var grA = 2.2 + (gr2 - 2) * 0.18 + Math.sin(tick * 0.002 + gr2 * 1.3) * 0.04;
+                    var grLen = cH * 0.95;
+                    var grHalf = 0.045 + 0.015 * Math.sin(tick * 0.004 + gr2);
+                    var gx1 = sunX + Math.cos(grA - grHalf) * grLen, gy1 = sunY + Math.sin(grA - grHalf) * grLen;
+                    var gx2 = sunX + Math.cos(grA + grHalf) * grLen, gy2 = sunY + Math.sin(grA + grHalf) * grLen;
+                    var grGrad = ctx.createLinearGradient(sunX, sunY, (gx1 + gx2) / 2, (gy1 + gy2) / 2);
+                    grGrad.addColorStop(0, 'rgba(253,224,71,' + rayAlpha.toFixed(3) + ')');
+                    grGrad.addColorStop(0.6, 'rgba(253,224,71,' + (rayAlpha * 0.35).toFixed(3) + ')');
+                    grGrad.addColorStop(1, 'rgba(253,224,71,0)');
+                    ctx.fillStyle = grGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(sunX, sunY);
+                    ctx.lineTo(gx1, gy1);
+                    ctx.lineTo(gx2, gy2);
+                    ctx.closePath();
+                    ctx.fill();
+                  }
+                }
               }
 
-
+              // ── Distant range + horizon haze — atmospheric depth behind the peaks ──
+              // A pale far ridge drifts almost imperceptibly (parallax) over the water
+              // horizon, and a haze band settles between it and the near mountains.
+              var farShift = Math.sin(tick * 0.001) * cW * 0.012;
+              ctx.fillStyle = isDark ? 'rgba(30,41,59,0.55)' : 'rgba(148,163,184,0.4)';
+              ctx.beginPath();
+              ctx.moveTo(cW * 0.3 + farShift, cH * 0.65);
+              ctx.lineTo(cW * 0.46 + farShift, cH * 0.45);
+              ctx.lineTo(cW * 0.62 + farShift, cH * 0.65);
+              ctx.closePath(); ctx.fill();
+              ctx.fillStyle = isDark ? 'rgba(30,41,59,0.4)' : 'rgba(148,163,184,0.28)';
+              ctx.beginPath();
+              ctx.moveTo(cW * 0.05 + farShift * 1.5, cH * 0.65);
+              ctx.lineTo(cW * 0.2 + farShift * 1.5, cH * 0.5);
+              ctx.lineTo(cW * 0.38 + farShift * 1.5, cH * 0.65);
+              ctx.closePath(); ctx.fill();
+              var hazeGrad = ctx.createLinearGradient(0, cH * 0.5, 0, cH * 0.65);
+              hazeGrad.addColorStop(0, isDark ? 'rgba(30,58,138,0)' : 'rgba(224,242,254,0)');
+              hazeGrad.addColorStop(1, isDark ? 'rgba(30,58,138,0.2)' : 'rgba(224,242,254,' + (0.25 + 0.25 * skyBright).toFixed(3) + ')');
+              ctx.fillStyle = hazeGrad;
+              ctx.fillRect(0, cH * 0.5, cW, cH * 0.15);
 
               // ── Mountains ──
 
@@ -2566,7 +2936,24 @@ const d = labToolData.waterCycle || {};
               ctx.beginPath(); ctx.moveTo(cW * 0.8, cH * 0.40); ctx.lineTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.84, cH * 0.41);
               ctx.lineTo(cW * 0.83, cH * 0.43); ctx.lineTo(cW * 0.81, cH * 0.42); ctx.closePath(); ctx.fill();
 
-
+              // ── Birds — a small flock gliding on the wind (daylight only) ──
+              // Crossing speed follows the wind slider, wings flap as shallow Vs.
+              if (!isDark && skyBright > 0.4) {
+                var birdWind = parseFloat(canvasEl.dataset.climWind || '1.0');
+                for (var bd = 0; bd < 5; bd++) {
+                  var bT = ((tick * 0.0016 * (0.6 + birdWind * 0.6) + bd * 0.21) % 1.2) - 0.1;
+                  var bx = bT * cW;
+                  var by = cH * (0.14 + (bd % 3) * 0.05) + Math.sin(tick * 0.02 + bd * 2) * cH * 0.008;
+                  var flap = Math.sin(tick * 0.12 + bd * 1.8) * 3.5 * dpr;
+                  var bs = (3 + (bd % 2) * 1.5) * dpr;
+                  ctx.strokeStyle = 'rgba(51,65,85,' + (0.35 + 0.15 * (bd % 2)) + ')';
+                  ctx.lineWidth = 1.2 * dpr;
+                  ctx.beginPath();
+                  ctx.moveTo(bx - bs, by - flap);
+                  ctx.quadraticCurveTo(bx, by + Math.abs(flap) * 0.4, bx + bs, by - flap);
+                  ctx.stroke();
+                }
+              }
 
               // ── Ground ──
 
@@ -2620,6 +3007,22 @@ const d = labToolData.waterCycle || {};
 
                 }
 
+              }
+
+              // ── Fireflies — warm pulsing glints over the meadow at night ──
+              if (isDark || skyBright < 0.3) {
+                for (var ff = 0; ff < 8; ff++) {
+                  var fseed = Math.sin(ff * 91.7) * 24634.63; fseed -= Math.floor(fseed);
+                  var ffx = cW * (0.58 + fseed * 0.38) + Math.sin(tick * 0.01 + ff * 2.3) * 12 * dpr;
+                  var ffy = cH * 0.6 + Math.sin(tick * 0.013 + ff * 1.1) * cH * 0.02 - fseed * cH * 0.03;
+                  var ffPulse = Math.max(0, Math.sin(tick * 0.03 + ff * 2.9));
+                  if (ffPulse < 0.25) continue;
+                  var ffGlow = ctx.createRadialGradient(ffx, ffy, 0, ffx, ffy, 5 * dpr);
+                  ffGlow.addColorStop(0, 'rgba(253,224,71,' + (0.7 * ffPulse).toFixed(3) + ')');
+                  ffGlow.addColorStop(1, 'rgba(253,224,71,0)');
+                  ctx.fillStyle = ffGlow;
+                  ctx.beginPath(); ctx.arc(ffx, ffy, 5 * dpr, 0, Math.PI * 2); ctx.fill();
+                }
               }
 
 
@@ -2784,6 +3187,32 @@ const d = labToolData.waterCycle || {};
                 ctx.stroke();
 
               }
+
+              // ── Specular glitter — sun/moon light dancing on the wave crests ──
+              // Deterministic per-glint positions; twinkle phase + a brightness bias
+              // toward the sun side so the water reads as lit from the upper right.
+              for (var gl = 0; gl < 24; gl++) {
+                var gseed = Math.sin(gl * 127.1) * 43758.5453; gseed -= Math.floor(gseed);
+                var glx = gseed * cW * 0.53;
+                var gly = cH * (0.655 + (gl % 5) * 0.011);
+                var twinkle = Math.sin(tick * 0.08 + gl * 2.7) * 0.5 + 0.5;
+                var sunBias = 0.25 + 0.75 * (glx / (cW * 0.55));
+                var ga = twinkle * twinkle * sunBias * (isDark ? 0.35 : 0.5) * Math.max(0.25, skyBright);
+                if (ga < 0.04) continue;
+                ctx.strokeStyle = isDark ? 'rgba(165,243,252,' + ga.toFixed(3) + ')' : 'rgba(255,255,255,' + ga.toFixed(3) + ')';
+                ctx.lineWidth = 1 * dpr;
+                ctx.beginPath();
+                ctx.moveTo(glx - (2 + twinkle * 3) * dpr, gly);
+                ctx.lineTo(glx + (2 + twinkle * 3) * dpr, gly);
+                ctx.stroke();
+              }
+
+              // Soft light sheen across the water toward the sun side
+              var sheen = ctx.createLinearGradient(cW * 0.55, 0, cW * 0.15, 0);
+              sheen.addColorStop(0, isDark ? 'rgba(125,211,252,0.10)' : 'rgba(255,255,255,' + (0.12 * skyBright).toFixed(3) + ')');
+              sheen.addColorStop(1, 'rgba(255,255,255,0)');
+              ctx.fillStyle = sheen;
+              ctx.fillRect(0, cH * 0.635, cW * 0.55, cH * 0.085);
 
 
 
@@ -3045,6 +3474,13 @@ const d = labToolData.waterCycle || {};
 
 
 
+              // ── Active-stage emphasis ──
+              // The selected process's particles stay full strength while the others fade, so the
+              // animated diagram actually ISOLATES the stage the student chose instead of showing
+              // every process at once. Reads the same dataset.activeStage the label loop uses.
+              var _activeStage = canvasEl.dataset.activeStage || 'evaporation';
+              var _emph = function (id) { return _activeStage === id ? 1 : 0.25; };
+
               // ── Evaporation particles ──
 
               for (var epi = 0; epi < evapPs.length; epi++) {
@@ -3061,7 +3497,7 @@ const d = labToolData.waterCycle || {};
 
                 ctx.beginPath(); ctx.arc(ep.x * dpr, ep.y * dpr, ep.size * dpr, 0, Math.PI * 2);
 
-                var epAlpha = 0.2 + 0.2 * Math.sin(ep.phase);
+                var epAlpha = (0.2 + 0.2 * Math.sin(ep.phase)) * _emph('evaporation');
 
                 ctx.fillStyle = 'rgba(251,191,36,' + epAlpha + ')';
 
@@ -3087,7 +3523,7 @@ const d = labToolData.waterCycle || {};
 
                 ctx.beginPath(); ctx.arc(tp.x * dpr, tp.y * dpr, tp.size * dpr, 0, Math.PI * 2);
 
-                ctx.fillStyle = 'rgba(74,222,128,' + (0.2 + Math.sin(tp.phase) * 0.15) + ')';
+                ctx.fillStyle = 'rgba(74,222,128,' + ((0.2 + Math.sin(tp.phase) * 0.15) * _emph('transpiration')) + ')';
 
                 ctx.fill();
 
@@ -3113,7 +3549,7 @@ const d = labToolData.waterCycle || {};
 
                 }
 
-                ctx.strokeStyle = 'rgba(59,130,246,' + (0.3 + Math.sin(rr.phase + tick * 0.05) * 0.2) + ')';
+                ctx.strokeStyle = 'rgba(59,130,246,' + ((0.3 + Math.sin(rr.phase + tick * 0.05) * 0.2) * _emph('precipitation')) + ')';
 
                 ctx.lineWidth = 1.5 * dpr;
 
@@ -3165,7 +3601,7 @@ const d = labToolData.waterCycle || {};
 
                 ctx.beginPath(); ctx.arc(ip.x * dpr, ip.y * dpr, 1.5 * dpr, 0, Math.PI * 2);
 
-                ctx.fillStyle = 'rgba(59,130,246,0.2)';
+                ctx.fillStyle = 'rgba(59,130,246,' + (0.2 * _emph('infiltration')) + ')';
 
                 ctx.fill();
 
@@ -3181,17 +3617,17 @@ const d = labToolData.waterCycle || {};
 
               var labels = [
 
-                { id: 'evaporation', text: '\u2191 Evaporation', x: 8, y: cH * 0.54, color: '#fbbf24' },
+                { id: 'evaporation', text: t('stem.watercycle.evaporation', '\u2191 Evaporation'), x: 8, y: cH * 0.54, color: '#fbbf24' },
 
-                { id: 'condensation', text: '\u2601 Condensation', x: cW * 0.28, y: cH * 0.06, color: 'var(--allo-stem-text-soft, #94a3b8)' },
+                { id: 'condensation', text: t('stem.watercycle.condensation', '\u2601 Condensation'), x: cW * 0.28, y: cH * 0.06, color: 'var(--allo-stem-text-soft, #94a3b8)' },
 
-                { id: 'precipitation', text: '\u2193 Precipitation', x: cW * 0.08, y: cH * 0.28, color: '#60a5fa' },
+                { id: 'precipitation', text: t('stem.watercycle.precipitation', '\u2193 Precipitation'), x: cW * 0.08, y: cH * 0.28, color: '#60a5fa' },
 
-                { id: 'collection', text: '\uD83C\uDF0A Collection', x: cW * 0.55, y: cH * 0.72, color: '#0ea5e9' },
+                { id: 'collection', text: t('stem.watercycle.collection', '\uD83C\uDF0A Collection'), x: cW * 0.55, y: cH * 0.72, color: '#0ea5e9' },
 
-                { id: 'transpiration', text: '\uD83C\uDF3F Transpiration', x: cW * 0.70, y: cH * 0.42, color: '#22c55e' },
+                { id: 'transpiration', text: t('stem.watercycle.transpiration', '\uD83C\uDF3F Transpiration'), x: cW * 0.70, y: cH * 0.42, color: '#22c55e' },
 
-                { id: 'infiltration', text: '\uD83E\uDEB4 Infiltration', x: cW * 0.42, y: cH * 0.80, color: '#92400e' }
+                { id: 'infiltration', text: t('stem.watercycle.infiltration', '\uD83E\uDEB4 Infiltration'), x: cW * 0.42, y: cH * 0.80, color: '#92400e' }
 
               ];
 
@@ -3297,7 +3733,7 @@ const d = labToolData.waterCycle || {};
               }
 
               // ── Lightning (random, when temp > 30) ──
-              if (climTemp > 30) {
+              if (canvasEl.dataset.stormActive === 'true') {
                 lightning.timer--;
                 if (lightning.timer <= 0 && Math.random() < 0.003) {
                   lightning.active = true;
@@ -3400,13 +3836,16 @@ const d = labToolData.waterCycle || {};
 
               // ═══ JOURNEY MODE  -  Draw droplet + update state ═══
               var jState = canvasEl.dataset.journeyState || 'idle';
+              var journeyPaused2 = canvasEl.dataset.journeyPaused === 'true';
+              var journeySpeed2 = parseFloat(canvasEl.dataset.journeySpeed || '1');
+              if (!isFinite(journeySpeed2) || journeySpeed2 <= 0) journeySpeed2 = 1;
               if (jState !== 'idle') {
                 journey.state = jState;
                 var speed2 = (jState === 'aquifer_flow' || jState === 'infiltrating') ? 0.003 : 
                             (jState === 'precipitating') ? 0.012 : 0.006;
                 
-                if (jState !== 'ground_choice' && jState !== 'complete') {
-                  journey.progress += speed2;
+                if (!journeyPaused2 && jState !== 'ground_choice' && jState !== 'complete') {
+                  journey.progress += speed2 * journeySpeed2;
                   if (journey.progress >= 1) {
                     journey.progress = 0;
                     journey.particleTrail = [];
@@ -3417,6 +3856,7 @@ const d = labToolData.waterCycle || {};
                       if (canvasEl._onJourneyComplete) canvasEl._onJourneyComplete(jState);
                     } else if (next === 'ground_choice') {
                       canvasEl.dataset.journeyState = 'ground_choice';
+                      if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition('ground_choice');
                     } else {
                       canvasEl.dataset.journeyState = next || 'idle';
                       if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition(next);
@@ -3509,11 +3949,11 @@ const d = labToolData.waterCycle || {};
 
 
 
-              canvasEl._wcAnim = requestAnimationFrame(draw);
+              scheduleWaterCycleFrame();
 
             }
 
-            canvasEl._wcAnim = requestAnimationFrame(draw);
+            scheduleWaterCycleFrame();
 
             // Journey callbacks
             canvasEl._onJourneyTransition = function(nextState) {
@@ -3532,6 +3972,14 @@ const d = labToolData.waterCycle || {};
               }
             };
             // Bridge canvas clicks and events to React state
+            canvasEl._wcRestartJourney = function() {
+              journey.state = 'ocean';
+              journey.progress = 0;
+              journey.particleTrail = [];
+              canvasEl.dataset.journeyState = 'ocean';
+              canvasEl.dataset.journeyPaused = 'false';
+              if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition('ocean');
+            };
             canvasEl._wcSyncReact = function(nextState, pathKey) {
               // Play state-specific water cycle sound
               if (nextState === 'complete') sfxWcCorrect();
@@ -3542,23 +3990,398 @@ const d = labToolData.waterCycle || {};
               else if (nextState && (nextState.indexOf('collect') >= 0 || nextState.indexOf('ocean') >= 0 || nextState.indexOf('lake') >= 0)) sfxCollect();
               else if (nextState && (nextState.indexOf('freez') >= 0 || nextState.indexOf('ice') >= 0 || nextState.indexOf('glacier') >= 0)) sfxFreeze();
               else sfxWcClick();
-              upd('journeyState', nextState);
-              if (pathKey) {
-                var paths = Object.assign({}, d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
-                paths[pathKey] = (paths[pathKey] || 0) + 1;
-                upd('journeyPaths', paths);
-              }
-            };
-
-            canvasEl._wcCleanup = function () {
-
-              if (canvasEl._wcAnim) cancelAnimationFrame(canvasEl._wcAnim);
-
+              setLabToolData(function(prev) {
+                var current = prev.waterCycle || {};
+                var nextWaterCycle = Object.assign({}, current, { journeyState: nextState });
+                if (pathKey) {
+                  var paths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, current.journeyPaths || {});
+                  paths[pathKey] = (paths[pathKey] || 0) + 1;
+                  nextWaterCycle.journeyPaths = paths;
+                }
+                if (current.journeyView === '3d') {
+                  var visited3d = Object.assign({}, current.journey3dStatesVisited || {});
+                  visited3d[nextState] = true;
+                  nextWaterCycle.journey3dStatesVisited = visited3d;
+                }
+                return Object.assign({}, prev, { waterCycle: nextWaterCycle });
+              });
             };
 
           };
 
           // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 = stage, J = toggle Journey, R/U/P = journey ground choice ──
+          var _lastWc3dCanvas = null;
+          const journey3dRef = function(canvasEl) {
+            if (!canvasEl) {
+              var detached3d = _lastWc3dCanvas;
+              _lastWc3dCanvas = null;
+              setTimeout(function() {
+                if (detached3d && !detached3d.isConnected && detached3d._wc3dCleanup) {
+                  detached3d._wc3dCleanup();
+                  detached3d._wc3dInit = false;
+                }
+              }, 0);
+              return;
+            }
+
+            _lastWc3dCanvas = canvasEl;
+            if (canvasEl._wc3dInit) return;
+            if (!window.THREE) {
+              canvasEl.dataset.engineState = 'loading';
+              return;
+            }
+
+            var THREE = window.THREE;
+            var renderer;
+            try {
+              renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: false, powerPreference: 'high-performance' });
+            } catch (err) {
+              canvasEl.dataset.engineState = 'error';
+              setTimeout(function() {
+                upd('journey3dError', 'WebGL is unavailable on this device. Use the 2D Cycle view instead.');
+              }, 0);
+              return;
+            }
+
+            canvasEl._wc3dInit = true;
+            canvasEl.dataset.engineState = 'ready';
+            var alive3d = true;
+            var frame3d = null;
+            var motionReduced3d = false;
+            try { motionReduced3d = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            var width = Math.max(320, canvasEl.clientWidth || 800);
+            var height = Math.max(260, canvasEl.clientHeight || 460);
+            renderer.setSize(width, height, false);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setClearColor(0x041a2b, 1);
+            if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.12;
+            if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            var scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x041a2b);
+            scene.fog = new THREE.FogExp2(0x08283b, 0.035);
+
+            var camera = new THREE.PerspectiveCamera(48, width / height, 0.1, 80);
+            camera.position.set(8.5, 4.6, 11.5);
+            camera.lookAt(0, 0, 0);
+
+            scene.add(new THREE.HemisphereLight(0xbde9ff, 0x183225, 1.25));
+            var sun3d = new THREE.DirectionalLight(0xfff2c7, 1.8);
+            sun3d.position.set(-5, 9, 6);
+            sun3d.castShadow = true;
+            scene.add(sun3d);
+            var fill3d = new THREE.PointLight(0x38bdf8, 1.6, 22);
+            fill3d.position.set(0, 2, 5);
+            scene.add(fill3d);
+
+            var world3d = new THREE.Group();
+            scene.add(world3d);
+
+            var oceanMat = new THREE.MeshPhysicalMaterial({
+              color: 0x087aa5, roughness: 0.18, metalness: 0.05,
+              transparent: true, opacity: 0.9, clearcoat: 0.75, clearcoatRoughness: 0.16
+            });
+            var ocean3d = new THREE.Mesh(new THREE.PlaneGeometry(18, 10, 28, 18), oceanMat);
+            ocean3d.rotation.x = -Math.PI / 2;
+            ocean3d.position.set(-2.5, -1.25, 1.6);
+            ocean3d.receiveShadow = true;
+            world3d.add(ocean3d);
+
+            var land3d = new THREE.Mesh(
+              new THREE.BoxGeometry(9, 1.5, 7),
+              new THREE.MeshStandardMaterial({ color: 0x6b482d, roughness: 0.95 })
+            );
+            land3d.position.set(4.8, -1.8, -0.6);
+            land3d.castShadow = true;
+            land3d.receiveShadow = true;
+            world3d.add(land3d);
+
+            var grass3d = new THREE.Mesh(
+              new THREE.PlaneGeometry(9, 7),
+              new THREE.MeshStandardMaterial({ color: 0x39734b, roughness: 0.9 })
+            );
+            grass3d.rotation.x = -Math.PI / 2;
+            grass3d.position.set(4.8, -1.02, -0.6);
+            grass3d.receiveShadow = true;
+            world3d.add(grass3d);
+
+            var aquifer3d = new THREE.Mesh(
+              new THREE.BoxGeometry(8.6, 0.38, 6.6),
+              new THREE.MeshPhysicalMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.58, roughness: 0.2, clearcoat: 0.8 })
+            );
+            aquifer3d.position.set(4.8, -2.22, -0.6);
+            world3d.add(aquifer3d);
+
+            var riverCurve = new THREE.CatmullRomCurve3([
+              new THREE.Vector3(7.8, -0.88, -2.5),
+              new THREE.Vector3(5.7, -0.86, -1.4),
+              new THREE.Vector3(3.5, -0.88, 0.2),
+              new THREE.Vector3(1.1, -0.98, 1.25),
+              new THREE.Vector3(-0.3, -1.15, 1.6)
+            ]);
+            var river3d = new THREE.Mesh(
+              new THREE.TubeGeometry(riverCurve, 64, 0.24, 12, false),
+              new THREE.MeshPhysicalMaterial({ color: 0x22b8e6, roughness: 0.16, clearcoat: 0.75, transparent: true, opacity: 0.7 })
+            );
+            world3d.add(river3d);
+
+            var mountainMat = new THREE.MeshStandardMaterial({ color: 0x52636b, roughness: 0.9 });
+            for (var mi3 = 0; mi3 < 4; mi3++) {
+              var mountain = new THREE.Mesh(new THREE.ConeGeometry(1.6 + mi3 * 0.22, 3.3 + mi3 * 0.5, 7), mountainMat);
+              mountain.position.set(3.5 + mi3 * 1.7, 0.35 + mi3 * 0.12, -3.1 - (mi3 % 2) * 0.6);
+              mountain.castShadow = true;
+              world3d.add(mountain);
+            }
+
+            var cloudGroup3d = new THREE.Group();
+            var cloudMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0xe8f5ff, transparent: true, opacity: 0.76,
+              roughness: 0.72, depthWrite: false
+            });
+            for (var ci3 = 0; ci3 < 18; ci3++) {
+              var puff = new THREE.Mesh(new THREE.SphereGeometry(0.52 + (ci3 % 4) * 0.12, 18, 14), cloudMat3d);
+              puff.position.set((ci3 % 6) * 0.72 - 1.8, Math.floor(ci3 / 6) * 0.34, (ci3 % 3) * 0.4 - 0.4);
+              cloudGroup3d.add(puff);
+            }
+            cloudGroup3d.position.set(0.5, 3.15, -1.7);
+            world3d.add(cloudGroup3d);
+
+            var plant3d = new THREE.Group();
+            var trunk3d = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.16, 0.24, 2.5, 12),
+              new THREE.MeshStandardMaterial({ color: 0x6b4226, roughness: 0.95 })
+            );
+            trunk3d.position.y = 0.2;
+            trunk3d.castShadow = true;
+            plant3d.add(trunk3d);
+            var leafMat3d = new THREE.MeshStandardMaterial({ color: 0x22a45a, roughness: 0.75 });
+            for (var li3 = 0; li3 < 7; li3++) {
+              var leaf = new THREE.Mesh(new THREE.SphereGeometry(0.62, 16, 12), leafMat3d);
+              leaf.scale.set(1.15, 0.78, 0.9);
+              leaf.position.set(Math.cos(li3 * 0.9) * 0.72, 1.35 + (li3 % 3) * 0.32, Math.sin(li3 * 0.9) * 0.55);
+              leaf.castShadow = true;
+              plant3d.add(leaf);
+            }
+            plant3d.position.set(5.9, -1.0, 1.25);
+            world3d.add(plant3d);
+
+            function makePoints3d(count, color, size, spreadX, spreadY, spreadZ) {
+              var positions = new Float32Array(count * 3);
+              for (var pi3 = 0; pi3 < count; pi3++) {
+                positions[pi3 * 3] = (Math.random() - 0.5) * spreadX;
+                positions[pi3 * 3 + 1] = (Math.random() - 0.5) * spreadY;
+                positions[pi3 * 3 + 2] = (Math.random() - 0.5) * spreadZ;
+              }
+              var geometry = new THREE.BufferGeometry();
+              geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+              return new THREE.Points(geometry, new THREE.PointsMaterial({
+                color: color, size: size, transparent: true, opacity: 0.78, depthWrite: false,
+                blending: THREE.AdditiveBlending
+              }));
+            }
+
+            var vapor3d = makePoints3d(90, 0x9ee7ff, 0.095, 5.5, 4.5, 3.2);
+            vapor3d.position.set(-2.1, 0.8, 1.0);
+            world3d.add(vapor3d);
+            var rain3d = makePoints3d(120, 0x69d7ff, 0.075, 5.2, 5.5, 2.6);
+            rain3d.position.set(1.2, 0.75, -0.8);
+            world3d.add(rain3d);
+
+            var starPositions = new Float32Array(240 * 3);
+            for (var si3 = 0; si3 < 240; si3++) {
+              starPositions[si3 * 3] = (Math.random() - 0.5) * 34;
+              starPositions[si3 * 3 + 1] = 3 + Math.random() * 12;
+              starPositions[si3 * 3 + 2] = -5 - Math.random() * 18;
+            }
+            var starGeo = new THREE.BufferGeometry();
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            world3d.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xa5dfff, size: 0.07, transparent: true, opacity: 0.65 })));
+
+            var routePoints = [
+              new THREE.Vector3(-3.0, -0.72, 1.7),
+              new THREE.Vector3(-2.3, 1.0, 0.9),
+              new THREE.Vector3(0.2, 3.25, -1.5),
+              new THREE.Vector3(2.5, 0.2, -0.4),
+              new THREE.Vector3(4.3, -0.9, -0.1),
+              new THREE.Vector3(4.5, -2.2, -0.4),
+              new THREE.Vector3(5.8, -0.4, 1.2),
+              new THREE.Vector3(5.9, 2.0, 1.2)
+            ];
+            var route3d = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints(new THREE.CatmullRomCurve3(routePoints).getPoints(100)),
+              new THREE.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.18 })
+            );
+            world3d.add(route3d);
+
+            var dropletGroup3d = new THREE.Group();
+            var dropletMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0x38bdf8, emissive: 0x075985, emissiveIntensity: 0.65,
+              roughness: 0.08, metalness: 0.02, clearcoat: 1, clearcoatRoughness: 0.06,
+              transparent: true, opacity: 0.96
+            });
+            var droplet3d = new THREE.Mesh(new THREE.SphereGeometry(0.31, 28, 22), dropletMat3d);
+            droplet3d.castShadow = true;
+            dropletGroup3d.add(droplet3d);
+            var halo3d = new THREE.Mesh(
+              new THREE.SphereGeometry(0.48, 20, 16),
+              new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending })
+            );
+            dropletGroup3d.add(halo3d);
+            var dropletLight3d = new THREE.PointLight(0x38bdf8, 2.2, 5.5);
+            dropletGroup3d.add(dropletLight3d);
+            world3d.add(dropletGroup3d);
+
+            var stageTargets3d = {
+              ocean: [-3.0, -0.72, 1.7], collection: [-3.0, -0.72, 1.7],
+              evaporating: [-2.3, 1.0, 0.9], evaporation: [-2.3, 1.0, 0.9],
+              condensing: [0.2, 3.25, -1.5], condensation: [0.2, 3.25, -1.5],
+              precipitating: [2.5, 0.2, -0.4], precipitation: [2.5, 0.2, -0.4],
+              ground_choice: [4.3, -0.82, -0.1],
+              river_runoff: [1.2, -0.9, 1.3],
+              infiltrating: [4.5, -1.78, -0.35], infiltration: [4.5, -1.78, -0.35],
+              aquifer_flow: [5.25, -2.18, -0.35],
+              plant_absorb: [5.8, -0.35, 1.2],
+              transpiring: [5.9, 2.0, 1.2], transpiration: [5.9, 2.0, 1.2],
+              complete: [-3.0, -0.72, 1.7], idle: [-3.0, -0.72, 1.7]
+            };
+            var cameraTargets3d = {
+              ocean: [3.2, 2.6, 9.5], collection: [3.2, 2.6, 9.5],
+              evaporating: [3.8, 3.2, 9.0], evaporation: [3.8, 3.2, 9.0],
+              condensing: [5.2, 5.0, 8.8], condensation: [5.2, 5.0, 8.8],
+              precipitating: [7.0, 3.2, 8.5], precipitation: [7.0, 3.2, 8.5],
+              ground_choice: [9.0, 2.0, 6.8],
+              river_runoff: [6.4, 1.8, 8.2],
+              infiltrating: [9.1, 0.4, 6.3], infiltration: [9.1, 0.4, 6.3],
+              aquifer_flow: [9.2, -0.4, 6.8],
+              plant_absorb: [9.2, 2.0, 7.3],
+              transpiring: [9.0, 4.1, 7.6], transpiration: [9.0, 4.1, 7.6],
+              complete: [3.2, 2.6, 9.5], idle: [8.5, 4.6, 11.5]
+            };
+            var stateColors3d = {
+              evaporating: 0xfbbf24, evaporation: 0xfbbf24,
+              condensing: 0xe0f2fe, condensation: 0xe0f2fe,
+              precipitating: 0x60a5fa, precipitation: 0x60a5fa,
+              infiltrating: 0x22d3ee, infiltration: 0x22d3ee, aquifer_flow: 0x22d3ee,
+              plant_absorb: 0x4ade80, transpiring: 0x86efac, transpiration: 0x86efac
+            };
+            var stageMap3d = {
+              evaporation: 'evaporating', condensation: 'condensing', precipitation: 'precipitating',
+              collection: 'ocean', transpiration: 'transpiring', infiltration: 'infiltrating'
+            };
+            var controls3d = null;
+            var userOrbit3d = false;
+            if (THREE.OrbitControls) {
+              controls3d = new THREE.OrbitControls(camera, canvasEl);
+              controls3d.enableDamping = true;
+              controls3d.dampingFactor = 0.06;
+              controls3d.enablePan = false;
+              controls3d.minDistance = 4.5;
+              controls3d.maxDistance = 18;
+              controls3d.maxPolarAngle = Math.PI * 0.86;
+              controls3d.addEventListener('start', function() { userOrbit3d = true; });
+            }
+            canvasEl._wc3dResetCamera = function() {
+              userOrbit3d = false;
+            };
+
+            var clock3d = new THREE.Clock();
+            var resizeObserver3d = null;
+            function resizeJourney3d() {
+              if (!alive3d) return;
+              var nextW = Math.max(320, canvasEl.clientWidth || 800);
+              var nextH = Math.max(260, canvasEl.clientHeight || 460);
+              if (nextW === width && nextH === height) return;
+              width = nextW; height = nextH;
+              camera.aspect = width / height;
+              camera.updateProjectionMatrix();
+              renderer.setSize(width, height, false);
+            }
+            if (typeof ResizeObserver !== 'undefined') {
+              resizeObserver3d = new ResizeObserver(resizeJourney3d);
+              resizeObserver3d.observe(canvasEl);
+            }
+
+            function animateJourney3d() {
+              if (!alive3d || !canvasEl.isConnected) return;
+              resizeJourney3d();
+              var elapsed3d = clock3d.getElapsedTime();
+              var rawState3d = canvasEl.dataset.journeyState || 'idle';
+              var stage3d = canvasEl.dataset.activeStage || 'collection';
+              var runoffVisual3d = parseFloat(canvasEl.dataset.runoffIndex || '50');
+              var infiltrationVisual3d = parseFloat(canvasEl.dataset.infiltrationIndex || '50');
+              var rainVisual3d = parseFloat(canvasEl.dataset.rainIntensity || '55');
+              var coverVisual3d = canvasEl.dataset.landCover || 'grass';
+              var journeyPaused3d = canvasEl.dataset.journeyPaused === 'true';
+              var hydroPoints3d = Math.max(0, Math.min(120, parseFloat(canvasEl.dataset.hydroPoints || '0')));
+              var state3d = rawState3d === 'idle' ? (stageMap3d[stage3d] || stage3d) : rawState3d;
+              var targetArray3d = stageTargets3d[state3d] || stageTargets3d.ocean;
+              var cameraArray3d = cameraTargets3d[state3d] || cameraTargets3d.idle;
+              var target3d = new THREE.Vector3(targetArray3d[0], targetArray3d[1], targetArray3d[2]);
+              var cameraGoal3d = new THREE.Vector3(cameraArray3d[0], cameraArray3d[1], cameraArray3d[2]);
+              var lerp3d = motionReduced3d ? 1 : 0.045;
+              dropletGroup3d.position.lerp(target3d, lerp3d);
+              if (!userOrbit3d) camera.position.lerp(cameraGoal3d, motionReduced3d ? 1 : 0.025);
+              dropletMat3d.color.setHex(stateColors3d[state3d] || 0x38bdf8);
+              dropletMat3d.emissive.setHex(stateColors3d[state3d] || 0x075985);
+              dropletLight3d.intensity = 1.8 + hydroPoints3d / 55;
+              halo3d.material.opacity = 0.10 + hydroPoints3d / 600;
+              route3d.material.opacity = 0.18 + hydroPoints3d / 800;
+              if (!motionReduced3d && !journeyPaused3d) {
+                dropletGroup3d.position.y += Math.sin(elapsed3d * 2.8) * 0.0025;
+                halo3d.scale.setScalar(1 + Math.sin(elapsed3d * 3.2) * 0.12);
+                cloudGroup3d.position.x = 0.5 + Math.sin(elapsed3d * 0.18) * 0.35;
+                vapor3d.rotation.y += 0.0015;
+                var rainPos3d = rain3d.geometry.attributes.position;
+                for (var ri3 = 0; ri3 < rainPos3d.count; ri3++) {
+                  var rainY3d = rainPos3d.getY(ri3) - 0.028;
+                  if (rainY3d < -2.6) rainY3d = 2.7;
+                  rainPos3d.setY(ri3, rainY3d);
+                }
+                rainPos3d.needsUpdate = true;
+              }
+              vapor3d.visible = state3d === 'evaporating' || state3d === 'transpiring' || state3d === 'evaporation' || state3d === 'transpiration';
+              rain3d.visible = state3d === 'precipitating' || state3d === 'precipitation' || state3d === 'ground_choice';
+              rain3d.material.opacity = 0.3 + rainVisual3d / 145;
+              river3d.material.opacity = 0.3 + runoffVisual3d / 145;
+              aquifer3d.material.opacity = Math.min(0.92, 0.28 + infiltrationVisual3d / 180 +
+                ((state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.2 : 0));
+              grass3d.material.color.setHex(coverVisual3d === 'forest' ? 0x245c3a : coverVisual3d === 'urban' ? 0x68737d : 0x5d8f3b);
+              if (controls3d) {
+                if (!userOrbit3d) controls3d.target.lerp(target3d, motionReduced3d ? 1 : 0.035);
+                controls3d.update();
+              } else {
+                camera.lookAt(target3d);
+              }
+              renderer.render(scene, camera);
+              canvasEl.dataset.rendered = 'true';
+              frame3d = requestAnimationFrame(animateJourney3d);
+            }
+
+            function cleanupJourney3d() {
+              if (!alive3d) return;
+              alive3d = false;
+              if (frame3d) cancelAnimationFrame(frame3d);
+              if (resizeObserver3d) resizeObserver3d.disconnect();
+              if (controls3d) controls3d.dispose();
+              scene.traverse(function(obj) {
+                if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+                if (obj.material) {
+                  var materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+                  materials.forEach(function(mat) { if (mat && mat.dispose) mat.dispose(); });
+                }
+              });
+              renderer.dispose();
+              canvasEl._wc3dCleanup = null;
+              canvasEl._wc3dResetCamera = null;
+            }
+
+            canvasEl._wc3dCleanup = cleanupJourney3d;
+            animateJourney3d();
+          };
           function onWcKey(e) {
             var tgt = e.target || {};
             var tn = (tgt.tagName || '').toUpperCase();
@@ -3575,11 +4398,11 @@ const d = labToolData.waterCycle || {};
             } else if (k === 'j' || k === 'J') {
               e.preventDefault();
               if (d.journeyActive) {
-                upd('journeyActive', false); upd('journeyState', 'idle');
+                upd('journeyActive', false); upd('journeyState', 'idle'); upd('journeyPaused', false);
                 var cvOff = document.getElementById('wcCanvas'); if (cvOff) cvOff.dataset.journeyState = 'idle';
                 if (typeof announceToSR === 'function') announceToSR('Journey ended.');
               } else {
-                upd('journeyActive', true); upd('journeyState', 'ocean');
+                upd('journeyActive', true); upd('journeyState', 'ocean'); upd('journeyPaused', false);
                 upd('journeyLoops', d.journeyLoops || 0);
                 upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                 var cvOn = document.getElementById('wcCanvas'); if (cvOn) cvOn.dataset.journeyState = 'ocean';
@@ -3599,10 +4422,130 @@ const d = labToolData.waterCycle || {};
             }
           }
 
+          var currentSolar = d.climSolar != null ? d.climSolar : 1.0;
+          var currentTemp = d.climTemp != null ? d.climTemp : 15;
+          var currentWind = d.climWind != null ? d.climWind : 1.0;
+          var journeyView = d.journeyView || '2d';
+          var currentStageLabel = sel ? sel.label : 'Evaporation';
+          var completedChallengeCount = (d.completedChallenges || []).length;
+          var viewedStageCount = Object.keys(d.stagesViewed || {}).length;
+          var journeyLabel = d.journeyActive
+            ? ((d.journeyState || 'ocean').replace(/_/g, ' '))
+            : 'Ready to start';
+          var journeyPaused = !!d.journeyPaused;
+          var journeySpeed = d.journeySpeed || 1;
+          var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];
+          var journeyTimelineIndex = {
+            ocean: 0,
+            evaporating: 1,
+            condensing: 2,
+            precipitating: 3,
+            ground_choice: 4,
+            river_runoff: 4,
+            infiltrating: 4,
+            aquifer_flow: 4,
+            plant_absorb: 4,
+            transpiring: 4,
+            complete: 5
+          }[d.journeyState || 'ocean'];
+          if (journeyTimelineIndex == null) journeyTimelineIndex = 0;
+          var lensStageMap = {
+            evaporation: 'evaporating', condensation: 'condensing', precipitation: 'precipitating',
+            collection: 'ocean', transpiration: 'transpiring', infiltration: 'infiltrating'
+          };
+          var lensState = d.journeyActive ? (d.journeyState || 'ocean') : (lensStageMap[d.activeStage || 'evaporation'] || 'ocean');
+          var journeyLensMap = {
+            ocean: { state: 'Liquid storage', driver: 'Solar energy begins the next transfer', pace: 'Variable residence' },
+            evaporating: { state: 'Liquid to gas', driver: 'Net surface energy', pace: 'Energy dependent' },
+            condensing: { state: 'Gas to liquid or ice', driver: 'Cooling toward saturation', pace: 'Cloud microphysics' },
+            precipitating: { state: 'Liquid or solid', driver: 'Gravity after particle growth', pace: 'Minutes to hours' },
+            ground_choice: { state: 'Liquid at the surface', driver: 'Gravity plus land properties', pace: 'Path dependent' },
+            river_runoff: { state: 'Liquid surface flow', driver: 'Gravity over terrain', pace: 'Usually fast' },
+            infiltrating: { state: 'Liquid in pore spaces', driver: 'Gravity plus capillarity', pace: 'Soil dependent' },
+            aquifer_flow: { state: 'Groundwater', driver: 'Hydraulic gradient', pace: 'Often slow' },
+            plant_absorb: { state: 'Liquid in xylem', driver: 'Water-potential gradient', pace: 'Biology plus weather' },
+            transpiring: { state: 'Liquid to gas', driver: 'Solar energy plus stomata', pace: 'Daytime responsive' },
+            complete: { state: 'Liquid storage', driver: 'Cycle continues', pace: 'No fixed endpoint' }
+          };
+          var journeyLens = journeyLensMap[lensState] || journeyLensMap.ocean;
+          var journeyPaths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, d.journeyPaths || {});
+          var journey3dVisited = d.journey3dStatesVisited || {};
+          var hydroMissions = [
+            { id: 'cloud', name: 'Cloud Chaser', detail: 'Reach condensation in 3D', complete: !!journey3dVisited.condensing },
+            { id: 'river', name: 'River Runner', detail: 'Travel by surface runoff', complete: journeyPaths.runoff > 0 },
+            { id: 'deep', name: 'Deep Current', detail: 'Enter soil or an aquifer', complete: journeyPaths.infiltrate > 0 },
+            { id: 'green', name: 'Green Return', detail: 'Travel through a plant', complete: journeyPaths.plant > 0 },
+            { id: 'routes', name: 'Route Master', detail: 'Explore all three land paths', complete: journeyPaths.runoff > 0 && journeyPaths.infiltrate > 0 && journeyPaths.plant > 0 },
+            { id: 'cycle', name: 'Cycle Keeper', detail: 'Complete a full 3D cycle', complete: !!journey3dVisited.complete }
+          ];
+          var hydroCompleted = hydroMissions.filter(function(mission) { return mission.complete; }).length;
+          var hydroPoints = hydroCompleted * 20;
+          var hydroRank = hydroPoints >= 120 ? 'Cycle Guardian' :
+            hydroPoints >= 80 ? 'Hydro Explorer' :
+            hydroPoints >= 40 ? 'Watershed Scout' :
+            hydroPoints >= 20 ? 'Droplet' : 'Observer';
+          var weatherLabel = currentTemp < 0 ? 'Cold-surface scenario' :
+            currentTemp > 30 ? 'Hot-surface scenario' :
+            currentSolar < 0.3 ? 'Night cycle' :
+            currentTemp > 2 && currentTemp < 18 ? 'Fog and rain' :
+            'Balanced cycle';
+          var evaporationIndex = Math.max(0.2, Math.min(2, currentSolar * (currentTemp / 15)));
+          var landRainIntensity = d.landRainIntensity != null ? d.landRainIntensity : 55;
+          var landSaturation = d.landSaturation != null ? d.landSaturation : 45;
+          var landPermeability = d.landPermeability || 'medium';
+          var landSlope = d.landSlope || 'moderate';
+          var landCover = d.landCover || 'grass';
+          var permeabilityResistance = { high: 0.15, medium: 0.5, low: 0.85 }[landPermeability];
+          var slopePressure = { gentle: 0.15, moderate: 0.45, steep: 0.8 }[landSlope];
+          var coverRunoffPressure = { forest: 0.15, grass: 0.35, urban: 0.9 }[landCover];
+          if (permeabilityResistance == null) permeabilityResistance = 0.5;
+          if (slopePressure == null) slopePressure = 0.45;
+          if (coverRunoffPressure == null) coverRunoffPressure = 0.35;
+          var rainPressure = landRainIntensity / 100;
+          var saturationPressure = landSaturation / 100;
+          // Qualitative teaching indices only. They are intentionally independent,
+          // not percentages in a closed water budget and not a calibrated forecast.
+          var runoffTendency = Math.round(100 * Math.max(0, Math.min(1,
+            0.30 * rainPressure +
+            0.25 * saturationPressure +
+            0.18 * coverRunoffPressure +
+            0.15 * slopePressure +
+            0.12 * permeabilityResistance
+          )));
+          var infiltrationOpportunity = Math.round(100 * Math.max(0, Math.min(1,
+            0.32 * (1 - saturationPressure) +
+            0.28 * (1 - permeabilityResistance) +
+            0.20 * (1 - coverRunoffPressure) +
+            0.12 * (1 - slopePressure) +
+            0.08 * (1 - rainPressure)
+          )));
+          function landIndexBand(value) {
+            return value < 35 ? 'Low' : value < 65 ? 'Moderate' : 'High';
+          }
+          function renderLandSegments(label, stateKey, options, selected) {
+            return React.createElement("fieldset", { className: "wc-land-control" },
+              React.createElement("legend", null, label),
+              React.createElement("div", { className: "wc-land-segments" },
+                options.map(function(option) {
+                  var active = selected === option.id;
+                  return React.createElement("button", {
+                    key: option.id,
+                    type: "button",
+                    "aria-pressed": active,
+                    onClick: function() { adjustLand(stateKey, option.id); }
+                  }, option.label);
+                })
+              )
+            );
+          }
+          var missionCopy = d.journeyActive
+            ? 'Follow the highlighted droplet and choose its path when it reaches the ground.'
+            : 'Start a droplet journey or tune the climate sliders to see how energy, temperature, and wind reshape the cycle.';
+
           return React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "text-slate-100" : "text-slate-800"),
+              className: "wc-explorer-root max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "text-slate-100" : "text-slate-800"),
               role: "region",
-              "aria-label": "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, J toggles Journey mode, R U P choose your journey path.",
+              "aria-label": t('stem.watercycle.water_cycle_keyboard_shortcuts_1_throu', "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, J toggles Journey mode, R U P choose your journey path."),
               tabIndex: 0,
               onKeyDown: onWcKey
             },
@@ -3611,31 +4554,31 @@ const d = labToolData.waterCycle || {};
 
               React.createElement("button", { 
                 onClick: () => setStemLabTool(null), 
-                className: "p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "hover:bg-slate-800 text-slate-350" : "hover:bg-slate-100 text-slate-600"), 
-                'aria-label': 'Back to tools' 
+                className: "p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors hover:bg-slate-800 text-slate-350 active:scale-[0.97]" : "transition-colors hover:bg-slate-100 text-slate-600 active:scale-[0.97]"), 
+                'aria-label': t('stem.watercycle.back_to_tools', 'Back to tools') 
               }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-350" : "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold " + (isDark ? "text-slate-100" : "text-slate-800") }, "\uD83C\uDF0A Water Cycle"),
+              React.createElement("h3", { className: "text-lg font-bold  tracking-tight" + (isDark ? "text-slate-100" : "text-slate-800") }, t('stem.watercycle.water_cycle', "\uD83C\uDF0A Water Cycle")),
 
               React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/50" : "bg-sky-100 text-sky-700") }, "ANIMATED"),
 
               React.createElement("button", {
                 onClick: () => switchMode('steward'),
                 className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-500 to-emerald-500 text-white hover:from-sky-600 hover:to-emerald-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
-                'aria-label': 'Switch to Watershed Steward 10-year campaign'
-              }, "\uD83D\uDCA7 Watershed Steward \u2192"),
+                'aria-label': t('stem.watercycle.switch_to_watershed_steward_10_year_ca', 'Switch to Watershed Steward 10-year campaign')
+              }, t('stem.watercycle.watershed_steward', "\uD83D\uDCA7 Watershed Steward \u2192")),
 
               React.createElement("button", {
                 onClick: () => switchMode('precipHunt'),
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
-                'aria-label': 'Switch to Precipitation Discovery widget'
-              }, "\uD83C\uDF27\uFE0F Precipitation Lab \u2192")
+                'aria-label': t('stem.watercycle.switch_to_precipitation_discovery_widg', 'Switch to Precipitation Discovery widget')
+              }, t('stem.watercycle.precipitation_lab', "\uD83C\uDF27\uFE0F Precipitation Lab \u2192"))
 
             ),
 
             // ═══ GRADE LEVEL SELECTOR ═══
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
-              React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider mr-1 " + (isDark ? "text-slate-400" : "text-slate-600") }, "\uD83C\uDF93 Grade:"),
+              React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider mr-1 " + (isDark ? "text-slate-400" : "text-slate-600") }, t('stem.watercycle.grade', "\uD83C\uDF93 Grade:")),
               GRADE_BANDS.map(function(gb) {
                 return React.createElement("button", { 
                   key: gb,
@@ -3643,7 +4586,7 @@ const d = labToolData.waterCycle || {};
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' - content complexity updated!', 'success');
                   },
-                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400'))
+                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'transition-colors bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 active:scale-[0.97]'))
                 }, gb);
               }),
               React.createElement("span", { className: "ml-auto px-2 py-0.5 text-[11px] font-bold rounded-full border " + (isDark ? "bg-indigo-950/40 text-indigo-400 border-indigo-900/50" : "bg-indigo-50 text-indigo-600 border-indigo-200") },
@@ -3652,7 +4595,45 @@ const d = labToolData.waterCycle || {};
             ),
 
             // ═══ CHALLENGES PROGRESS CARD ═══
-            React.createElement("div", { 
+            React.createElement("section", {
+              className: "wc-cycle-brief",
+              "data-watercycle-focus": "true",
+              "aria-label": t('stem.watercycle.cycle_mission', "Cycle mission")
+            },
+              React.createElement("div", { className: "wc-brief-top" },
+                React.createElement("div", null,
+                  React.createElement("div", { className: "wc-kicker" }, t('stem.watercycle.live_cycle_lab', "Live cycle lab")),
+                  React.createElement("h4", { className: "wc-brief-title" },
+                    d.journeyActive ? t('stem.watercycle.track_the_droplet', "Track the droplet") : t('stem.watercycle.build_the_water_cycle', "Build the water cycle")
+                  ),
+                  React.createElement("p", { className: "wc-brief-copy" }, missionCopy)
+                ),
+                React.createElement("span", { className: "wc-status-pill" },
+                  (d.journeyActive ? "\uD83D\uDCA7 " : "\uD83C\uDF0D ") + journeyLabel
+                )
+              ),
+              React.createElement("div", { className: "wc-metric-grid" },
+                React.createElement("div", { className: "wc-metric" },
+                  React.createElement("span", null, t('stem.watercycle.stage', "Stage")),
+                  React.createElement("strong", null, currentStageLabel)
+                ),
+                React.createElement("div", { className: "wc-metric" },
+                  React.createElement("span", null, t('stem.watercycle.weather', "Weather")),
+                  React.createElement("strong", null, weatherLabel)
+                ),
+                React.createElement("div", { className: "wc-metric" },
+                  React.createElement("span", null, t('stem.watercycle.evaporation_rate', "Evaporation")),
+                  React.createElement("strong", null, evaporationIndex.toFixed(2) + "x index")
+                ),
+                React.createElement("div", { className: "wc-metric" },
+                  React.createElement("span", null, t('stem.watercycle.progress', "Progress")),
+                  React.createElement("strong", null, viewedStageCount + "/6 stages - " + completedChallengeCount + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              "data-watercycle-progress": "true",
               className: "rounded-xl p-3 shadow-md mb-3 flex flex-col gap-2 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-br from-indigo-50 via-sky-50 to-blue-50 border-sky-200") 
             },
               React.createElement("div", { className: "flex items-center justify-between" },
@@ -3682,24 +4663,188 @@ const d = labToolData.waterCycle || {};
               )
             ),
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden shadow-lg mb-3 border-2 " + (isDark ? "border-slate-800/80" : "border-sky-300"), style: { height: "420px" } },
+            React.createElement("div", { className: "wc-view-switch", "data-watercycle-view-switch": "true" },
+              React.createElement("div", { className: "wc-view-segments", role: "group", "aria-label": "Water Cycle visualization" },
+                React.createElement("button", {
+                  type: "button",
+                  "aria-pressed": journeyView === '2d',
+                  onClick: function() { upd('journeyView', '2d'); }
+                }, "2D Cycle"),
+                React.createElement("button", {
+                  type: "button",
+                  "aria-pressed": journeyView === '3d',
+                  onClick: function() { upd('journeyView', '3d'); }
+                }, "3D Journey")
+              ),
+              React.createElement("div", { className: "wc-view-status" },
+                React.createElement("div", {
+                  className: "wc-3d-status",
+                  role: "status",
+                  "aria-live": "polite",
+                  "aria-atomic": "true"
+                }, journeyView === '3d'
+                  ? "Immersive stage: " + journeyLabel + " | illustrative scale"
+                  : "Systems view: six connected water-cycle processes"),
+                journeyView === '3d' && React.createElement("button", {
+                  type: "button",
+                  className: "wc-camera-reset",
+                  title: "Resume guided camera",
+                  "aria-label": "Resume guided camera",
+                  onClick: function() {
+                    var journeyCanvas = document.getElementById('wcJourney3d');
+                    if (journeyCanvas && journeyCanvas._wc3dResetCamera) journeyCanvas._wc3dResetCamera();
+                    if (typeof announceToSR === 'function') announceToSR('Guided 3D camera resumed.');
+                  }
+                }, "\u21BA")
+              )
+            ),
 
-              React.createElement("canvas", { ref: canvasRef, id: "wcCanvas", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), "data-dark-mode": String(isDark), style: { width: "100%", height: "100%", display: "block" } }),
+            journeyView === '3d' && React.createElement("div", {
+              className: "wc-journey-lens",
+              role: "region",
+              "aria-label": "Current water parcel state"
+            },
+              React.createElement("div", null,
+                React.createElement("span", null, "State"),
+                React.createElement("strong", null, journeyLens.state)
+              ),
+              React.createElement("div", null,
+                React.createElement("span", null, "Dominant driver"),
+                React.createElement("strong", null, journeyLens.driver)
+              ),
+              React.createElement("div", null,
+                React.createElement("span", null, "Relative pace"),
+                React.createElement("strong", null, journeyLens.pace)
+              )
+            ),
+
+            journeyView === '3d' && React.createElement("section", {
+              className: "wc-hydro-quest",
+              "data-watercycle-hydro-quest": "true",
+              "aria-labelledby": "wcHydroQuestTitle"
+            },
+              React.createElement("div", { className: "wc-hydro-head" },
+                React.createElement("div", null,
+                  React.createElement("span", { className: "wc-hydro-kicker" }, "Hydro Quest"),
+                  React.createElement("h4", { id: "wcHydroQuestTitle" }, hydroRank)
+                ),
+                React.createElement("strong", { className: "wc-hydro-score", "aria-label": hydroPoints + " of 120 Hydro Points" }, hydroPoints + " HP")
+              ),
+              React.createElement("div", {
+                className: "wc-hydro-progress",
+                role: "progressbar",
+                "aria-label": "Hydro Quest progress",
+                "aria-valuemin": 0,
+                "aria-valuemax": 120,
+                "aria-valuenow": hydroPoints
+              }, React.createElement("span", { style: { width: (hydroPoints / 1.2) + "%" } })),
+              React.createElement("div", { className: "wc-hydro-missions" },
+                hydroMissions.map(function(mission) {
+                  return React.createElement("div", {
+                    key: mission.id,
+                    className: "wc-hydro-mission" + (mission.complete ? " is-complete" : ""),
+                    "data-mission": mission.id
+                  },
+                    React.createElement("span", { className: "wc-hydro-mark", "aria-hidden": "true" }, mission.complete ? "\u2713" : "\u25cb"),
+                    React.createElement("span", null,
+                      React.createElement("strong", null, mission.name),
+                      React.createElement("small", null, mission.detail)
+                    ),
+                    React.createElement("span", { className: "wc-hydro-state" }, mission.complete ? "Complete" : "Open")
+                  );
+                })
+              )
+            ),
+
+            React.createElement("div", {
+              className: "wc-canvas-shell relative rounded-xl overflow-hidden shadow-lg mb-3 border-2 " + (isDark ? "border-slate-800/80" : "border-sky-300"),
+              "data-watercycle-canvas-shell": "true"
+            },
+
+              React.createElement("div", { className: "wc-canvas-topbar", "aria-hidden": "true" },
+                React.createElement("div", { className: "wc-canvas-title" },
+                  React.createElement("span", null, (journeyView === '3d' ? "Immersive droplet journey" : t('stem.watercycle.live_cycle_model', "Live cycle model"))),
+                  React.createElement("strong", null, currentStageLabel)
+                ),
+                React.createElement("div", { className: "wc-chip-row" },
+                  React.createElement("span", { className: "wc-chip" }, weatherLabel),
+                  React.createElement("span", { className: "wc-chip" }, currentTemp + "\u00B0C"),
+                  React.createElement("span", { className: "wc-chip" }, "Wind " + currentWind.toFixed(1) + "x")
+                )
+              ),
+              React.createElement("canvas", {
+                role: "img",
+                tabIndex: journeyView === '2d' ? 0 : -1,
+                "aria-hidden": journeyView === '3d' ? "true" : undefined,
+                "aria-label": "Water cycle animation showing the " + (d.activeStage || 'evaporation') + " stage.",
+                ref: canvasRef,
+                id: "wcCanvas",
+                className: "wc-canvas-element",
+                "data-watercycle-canvas": "true",
+                "data-active-stage": d.activeStage || 'evaporation',
+                "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
+                "data-journey-paused": String(!!d.journeyPaused),
+                "data-journey-speed": String(d.journeySpeed || 1),
+                "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0),
+                "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15),
+                "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0),
+                "data-dark-mode": String(isDark),
+                style: {
+                  position: "absolute", inset: 0, width: "100%", height: "100%", display: "block",
+                  opacity: journeyView === '2d' ? 1 : 0, pointerEvents: journeyView === '2d' ? "auto" : "none",
+                  transition: "opacity 240ms ease"
+                }
+              }),
+              journeyView === '3d' && React.createElement("canvas", {
+                role: "img",
+                tabIndex: 0,
+                "aria-label": "Three-dimensional tracked water parcel in the " + journeyLabel + " stage. Drag to rotate the scene.",
+                ref: journey3dRef,
+                id: "wcJourney3d",
+                className: "wc-journey-3d",
+                "data-watercycle-journey-3d": "true",
+                "data-active-stage": d.activeStage || 'evaporation',
+                "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
+                "data-journey-paused": String(!!d.journeyPaused),
+                "data-journey-speed": String(d.journeySpeed || 1),
+                "data-hydro-points": String(hydroPoints),
+                "data-runoff-index": String(runoffTendency),
+                "data-infiltration-index": String(infiltrationOpportunity),
+                "data-rain-intensity": String(landRainIntensity),
+                "data-land-cover": landCover
+              }),
+              journeyView === '3d' && (!labToolData._threeLoaded || labToolData._threeLoadError || d.journey3dError) && React.createElement("div", {
+                className: "wc-3d-loading",
+                role: "status",
+                "aria-live": "polite"
+              },
+                (labToolData._threeLoadError || d.journey3dError)
+                  ? React.createElement("div", { style: { textAlign: "center", maxWidth: 360, padding: 20 } },
+                      React.createElement("p", { style: { margin: "0 0 12px", lineHeight: 1.5 } }, labToolData._threeLoadError || d.journey3dError),
+                      React.createElement("button", {
+                        type: "button",
+                        onClick: function() { updMulti({ journeyView: '2d', journey3dError: '' }); },
+                        className: "px-3 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+                      }, "Return to 2D Cycle")
+                    )
+                  : "Loading the 3D water journey..."
+              ),
 
               // Weather badge overlay
-              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\u2744\uFE0F SNOW"),
-              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\u26A1 STORM"),
-              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\uD83C\uDF19 NIGHT")
+              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
+              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "HOT SURFACE"),
+              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute bottom-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.night', "\uD83C\uDF19 NIGHT"))
 
             ),
 
             // ═══ CLIMATE LAB  -  Interactive Controls ═══
-            React.createElement("div", { 
-              className: "rounded-xl p-3 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-amber-900/40 backdrop-blur-md" : "bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200") 
+            React.createElement("div", {
+              className: "wc-control-panel rounded-xl p-3 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-amber-900/40 backdrop-blur-md" : "bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200"),
+              "data-watercycle-climate": "true"
             },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-lg" }, "\uD83C\uDF21"),
-                React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-amber-400" : "text-amber-800") }, "Climate Lab"),
+                React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-amber-400" : "text-amber-800") }, t('stem.watercycle.climate_lab', "Climate Lab")),
                 React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-amber-950/50 text-amber-300 border border-amber-900/30" : "bg-amber-200 text-amber-800") }, "INTERACTIVE")
               ),
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
@@ -3708,14 +4853,15 @@ const d = labToolData.waterCycle || {};
                   React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-amber-400" : "text-amber-700") }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "2", step: "0.05",
+                    "aria-label": t('stem.watercycle.solar_intensity_slider', 'Solar intensity'),
                     value: d.climSolar != null ? d.climSolar : 1.0,
-                    onChange: function(e) { upd('climSolar', parseFloat(e.target.value)); var cv = document.getElementById('wcCanvas'); if(cv) cv.dataset.climSolar = e.target.value; },
+                    onChange: function(e) { adjustClimate('climSolar', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#f59e0b' }
                   }),
                   React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-amber-500/80" : "text-amber-500") },
-                    React.createElement("span", null, "\uD83C\uDF19 Night"),
-                    React.createElement("span", null, "\u2600\uFE0F Bright")
+                    React.createElement("span", null, t('stem.watercycle.night_2', "\uD83C\uDF19 Night")),
+                    React.createElement("span", null, t('stem.watercycle.bright', "\u2600\uFE0F Bright"))
                   )
                 ),
                 // Temperature
@@ -3723,14 +4869,15 @@ const d = labToolData.waterCycle || {};
                   React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-sky-400" : "text-sky-700") }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
                   React.createElement("input", {
                     type: "range", min: "-20", max: "45", step: "1",
+                    "aria-label": t('stem.watercycle.temperature_slider_celsius', 'Temperature in degrees Celsius'),
                     value: d.climTemp != null ? d.climTemp : 15,
-                    onChange: function(e) { upd('climTemp', parseFloat(e.target.value)); var cv = document.getElementById('wcCanvas'); if(cv) cv.dataset.climTemp = e.target.value; },
+                    onChange: function(e) { adjustClimate('climTemp', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#0ea5e9' }
                   }),
                   React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-sky-500/80" : "text-sky-500") },
-                    React.createElement("span", null, "\u2744\uFE0F -20\u00B0"),
-                    React.createElement("span", null, "\uD83D\uDD25 45\u00B0")
+                    React.createElement("span", null, t('stem.watercycle.20', "\u2744\uFE0F -20\u00B0")),
+                    React.createElement("span", null, t('stem.watercycle.45', "\uD83D\uDD25 45\u00B0"))
                   )
                 ),
                 // Wind Speed
@@ -3738,32 +4885,125 @@ const d = labToolData.waterCycle || {};
                   React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-emerald-400" : "text-emerald-700") }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "3", step: "0.1",
+                    "aria-label": t('stem.watercycle.wind_speed_slider', 'Wind speed multiplier'),
                     value: d.climWind != null ? d.climWind : 1.0,
-                    onChange: function(e) { upd('climWind', parseFloat(e.target.value)); var cv = document.getElementById('wcCanvas'); if(cv) cv.dataset.climWind = e.target.value; },
+                    onChange: function(e) { adjustClimate('climWind', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#22c55e' }
                   }),
                   React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-emerald-500/80" : "text-emerald-500") },
-                    React.createElement("span", null, "Calm"),
-                    React.createElement("span", null, "\uD83C\uDF2A Gale")
+                    React.createElement("span", null, t('stem.watercycle.calm', "Calm")),
+                    React.createElement("span", null, t('stem.watercycle.gale', "\uD83C\uDF2A Gale"))
                   )
                 )
               ),
               // Weather readout
               React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold" },
-                (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-blue-950/60 text-blue-300 border border-blue-900/50" : "bg-blue-100 text-blue-700") }, "\u2744\uFE0F Snow active"),
-                (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, "\u26A1 Thunderstorm"),
-                (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-purple-950/60 text-purple-300 border border-purple-900/50" : "bg-purple-100 text-purple-700") }, "\uD83C\uDF08 Rainbow"),
-                (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/50" : "bg-indigo-100 text-indigo-700") }, "\u2B50 Stars visible"),
-                (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-350 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, "\uD83C\uDF2B\uFE0F Fog"),
+                (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-blue-950/60 text-blue-300 border border-blue-900/50" : "bg-blue-100 text-blue-700") }, t('stem.watercycle.snow_active', "\u2744\uFE0F Snow active")),
+                (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, "Hot surface"),
+                (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-purple-950/60 text-purple-300 border border-purple-900/50" : "bg-purple-100 text-purple-700") }, t('stem.watercycle.rainbow', "\uD83C\uDF08 Rainbow")),
+                (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/50" : "bg-indigo-100 text-indigo-700") }, t('stem.watercycle.stars_visible', "\u2B50 Stars visible")),
+                (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-350 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, t('stem.watercycle.fog', "\uD83C\uDF2B\uFE0F Fog")),
                 React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-sky-950/60 text-sky-300 border border-sky-900/50" : "bg-sky-100 text-sky-600") },
-                  "\uD83D\uDCA7 Evap: " + (Math.max(0.2, Math.min(2, (d.climSolar != null ? d.climSolar : 1) * ((d.climTemp != null ? d.climTemp : 15) / 15))) * 100).toFixed(0) + "%"
+                  "Evaporation index: " + Math.max(0.2, Math.min(2, (d.climSolar != null ? d.climSolar : 1) * ((d.climTemp != null ? d.climTemp : 15) / 15))).toFixed(2) + "x"
                 )
               )
             ),
 
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3", role: "group", "aria-label": "Water cycle stages" },
+            React.createElement("section", {
+              className: "wc-land-lab",
+              "data-watercycle-land": "true",
+              "aria-labelledby": "wc-land-title"
+            },
+              React.createElement("div", { className: "wc-land-head" },
+                React.createElement("div", null,
+                  React.createElement("h4", { id: "wc-land-title", className: "text-sm font-bold " + (isDark ? "text-emerald-300" : "text-emerald-800") }, "Land-Surface Scenario Lab"),
+                  React.createElement("p", { className: "text-[11px] mt-1 " + (isDark ? "text-slate-300" : "text-slate-600") }, "Explore how storm and landscape conditions influence pathways after water reaches the ground.")
+                ),
+                React.createElement("button", {
+                  type: "button",
+                  title: "Reset land scenario",
+                  "aria-label": "Reset land-surface scenario",
+                  onClick: resetLandScenario,
+                  className: "w-8 h-8 grid place-items-center rounded-md bg-emerald-700 text-white text-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                }, "\u21BA")
+              ),
+              React.createElement("div", { className: "wc-land-grid" },
+                React.createElement("div", { className: "wc-land-control" },
+                  React.createElement("label", { htmlFor: "wc-land-rain" }, "Rainfall intensity: " + landRainIntensity),
+                  React.createElement("input", {
+                    id: "wc-land-rain",
+                    type: "range",
+                    min: "0",
+                    max: "100",
+                    step: "5",
+                    value: landRainIntensity,
+                    "aria-label": "Rainfall intensity index",
+                    onChange: function(e) { adjustLand('landRainIntensity', parseFloat(e.target.value)); },
+                    className: "w-full",
+                    style: { accentColor: '#0284c7' }
+                  })
+                ),
+                React.createElement("div", { className: "wc-land-control" },
+                  React.createElement("label", { htmlFor: "wc-land-saturation" }, "Soil saturation: " + landSaturation),
+                  React.createElement("input", {
+                    id: "wc-land-saturation",
+                    type: "range",
+                    min: "0",
+                    max: "100",
+                    step: "5",
+                    value: landSaturation,
+                    "aria-label": "Antecedent soil saturation index",
+                    onChange: function(e) { adjustLand('landSaturation', parseFloat(e.target.value)); },
+                    className: "w-full",
+                    style: { accentColor: '#0891b2' }
+                  })
+                ),
+                renderLandSegments("Soil permeability", "landPermeability", [
+                  { id: "low", label: "Low" },
+                  { id: "medium", label: "Medium" },
+                  { id: "high", label: "High" }
+                ], landPermeability),
+                renderLandSegments("Slope", "landSlope", [
+                  { id: "gentle", label: "Gentle" },
+                  { id: "moderate", label: "Moderate" },
+                  { id: "steep", label: "Steep" }
+                ], landSlope),
+                renderLandSegments("Land cover", "landCover", [
+                  { id: "forest", label: "Forest" },
+                  { id: "grass", label: "Grass" },
+                  { id: "urban", label: "Urban" }
+                ], landCover)
+              ),
+              React.createElement("div", {
+                className: "wc-land-results",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              },
+                React.createElement("div", { className: "wc-land-result" },
+                  React.createElement("span", null, "Runoff tendency"),
+                  React.createElement("strong", null, landIndexBand(runoffTendency) + " | " + runoffTendency + "/100")
+                ),
+                React.createElement("div", { className: "wc-land-result", style: { borderLeftColor: "#10b981" } },
+                  React.createElement("span", null, "Infiltration opportunity"),
+                  React.createElement("strong", null, landIndexBand(infiltrationOpportunity) + " | " + infiltrationOpportunity + "/100")
+                )
+              ),
+              React.createElement("p", { role: "note", className: "text-[11px] mt-2 leading-relaxed " + (isDark ? "text-emerald-200" : "text-emerald-800") },
+                "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
+              )
+            ),
+            React.createElement("div", { className: "wc-stage-rack flex flex-wrap gap-1.5 mb-3", role: "group", "data-watercycle-stage-rack": "true", "aria-label": t('stem.watercycle.water_cycle_stages', "Water cycle stages") },
               STAGES.map(function (stage, stageIdx) {
+                // active-tab ink: pick near-black or white per stage color so white
+                // never sits on a light stage fill (e.g. evaporation amber #f59e0b = 2.15:1).
+                var _wcInk = (function (hex) {
+                  var n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+                  var lin = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+                  var L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+                  return ((L + 0.05) / 0.05) >= (1.05 / (L + 0.05)) ? '#0a0f1a' : '#ffffff';
+                })(stage.color);
                 var isActive = (d.activeStage || 'evaporation') === stage.id;
                 var shortcut = (stageIdx + 1).toString();
                 return React.createElement("button", {
@@ -3781,28 +5021,30 @@ const d = labToolData.waterCycle || {};
                       }, { debounce: 500 });
                     }
                   },
-                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'text-white shadow-md' : 'border hover:opacity-80'),
-                  style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? 'white' : stage.color }
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'shadow-md' : 'border hover:opacity-80'),
+                  style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? _wcInk : stage.color }
                 },
-                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
+                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
                   React.createElement("span", null, stage.emoji + " " + stage.label));
               })
             ),
 
-            React.createElement("div", { 
-              className: "rounded-xl p-4 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-cyan-900/40 backdrop-blur-md" : "bg-gradient-to-r from-cyan-50 to-sky-50 border-cyan-300") 
+            React.createElement("div", {
+              className: "wc-control-panel rounded-xl p-4 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-cyan-900/40 backdrop-blur-md" : "bg-gradient-to-r from-cyan-50 to-sky-50 border-cyan-300"),
+              "data-watercycle-journey": "true"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { className: "text-xl" }, "\uD83D\uDCA7"),
-                  React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-cyan-400" : "text-cyan-800") }, "Journey Mode"),
-                  React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-cyan-950/50 text-cyan-300 border border-cyan-900/30" : "bg-cyan-200 text-cyan-800") }, "PLAY AS WATER")
+                  React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-cyan-400" : "text-cyan-800") }, t('stem.watercycle.journey_mode', "Journey Mode")),
+                  React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-cyan-950/50 text-cyan-300 border border-cyan-900/30" : "bg-cyan-200 text-cyan-800") }, t('stem.watercycle.play_as_water', "PLAY AS WATER"))
                 ),
                 !d.journeyActive
-                  ? React.createElement("button", { "aria-label": "Start Journey mode (shortcut: J)",
+                  ? React.createElement("button", { "aria-label": t('stem.watercycle.start_journey_mode_shortcut_j', "Start Journey mode (shortcut: J)"),
                       onClick: function() {
                         upd('journeyActive', true);
                         upd('journeyState', 'ocean');
+                        upd('journeyPaused', false);
                         upd('journeyLoops', d.journeyLoops || 0);
                         upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                         var cv = document.getElementById('wcCanvas');
@@ -3811,18 +5053,19 @@ const d = labToolData.waterCycle || {};
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
-                    }, "\uD83C\uDFAE Start Journey (J)")
+                    }, t('stem.watercycle.start_journey_j', "\uD83C\uDFAE Start Journey (J)"))
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", { "aria-label": "End Journey mode (shortcut: J)",
+                      React.createElement("button", { "aria-label": t('stem.watercycle.end_journey_mode_shortcut_j', "End Journey mode (shortcut: J)"),
                         onClick: function() {
                           upd('journeyActive', false);
                           upd('journeyState', 'idle');
+                          upd('journeyPaused', false);
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                           if (typeof announceToSR === 'function') announceToSR('Journey ended.');
                         },
-                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
-                      }, "\u23F9 End Journey (J)")
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
+                      }, t('stem.watercycle.end_journey_j', "\u23F9 End Journey (J)"))
                     )
               ),
 
@@ -3839,11 +5082,71 @@ const d = labToolData.waterCycle || {};
                 }
               },
                 React.createElement("strong", { style: { color: isDark ? '#38bdf8' : '#0369a1' } }, "Goal: "),
-                "ride one droplet from the ocean back to the ocean. You will start in the ocean, evaporate, drift into a cloud, fall as rain, then pick a path at the ground (river runoff, underground infiltration, or absorbed by a plant). Each path takes a different amount of time. Complete the loop to log a journey; 3 loops unlocks the Journey badge."
+                t('stem.watercycle.ride_one_droplet_from_the_ocean_back_t', "ride one droplet from the ocean back to the ocean. You will start in the ocean, evaporate, drift into a cloud, fall as rain, then pick a path at the ground (river runoff, underground infiltration, or absorbed by a plant). Each path takes a different amount of time. Complete the loop to log a journey; 3 loops unlocks the Journey badge.")
               ),
 
               // Journey status
               d.journeyActive && React.createElement("div", { className: "space-y-2" },
+                React.createElement("div", { className: "wc-journey-controls" },
+                  React.createElement("div", { className: "wc-journey-actions" },
+                    React.createElement("button", {
+                      type: "button",
+                      className: "wc-journey-icon-btn",
+                      disabled: d.journeyState === 'ground_choice' || d.journeyState === 'complete',
+                      "aria-label": journeyPaused ? "Resume water journey" : "Pause water journey",
+                      title: journeyPaused ? "Resume journey" : "Pause journey",
+                      onClick: function() {
+                        var nextPaused = !journeyPaused;
+                        upd('journeyPaused', nextPaused);
+                        var journeyCanvas = document.getElementById('wcCanvas');
+                        if (journeyCanvas) journeyCanvas.dataset.journeyPaused = String(nextPaused);
+                        if (typeof announceToSR === 'function') announceToSR(nextPaused ? 'Water journey paused.' : 'Water journey resumed.');
+                      }
+                    }, journeyPaused ? "\u25B6" : "\u23F8"),
+                    React.createElement("button", {
+                      type: "button",
+                      className: "wc-journey-icon-btn",
+                      "aria-label": "Restart water journey from the ocean",
+                      title: "Restart from ocean",
+                      onClick: function() {
+                        updMulti({ journeyState: 'ocean', journeyPaused: false });
+                        var journeyCanvas = document.getElementById('wcCanvas');
+                        if (journeyCanvas && journeyCanvas._wcRestartJourney) journeyCanvas._wcRestartJourney();
+                        if (typeof announceToSR === 'function') announceToSR('Water journey restarted in the ocean.');
+                      }
+                    }, "\u21BA")
+                  ),
+                  React.createElement("div", { className: "wc-speed-segments", role: "group", "aria-label": "Journey animation speed" },
+                    [0.5, 1, 2].map(function(speedOption) {
+                      return React.createElement("button", {
+                        key: String(speedOption),
+                        type: "button",
+                        "aria-pressed": journeySpeed === speedOption,
+                        onClick: function() {
+                          upd('journeySpeed', speedOption);
+                          var journeyCanvas = document.getElementById('wcCanvas');
+                          if (journeyCanvas) journeyCanvas.dataset.journeySpeed = String(speedOption);
+                          if (typeof announceToSR === 'function') announceToSR('Journey animation speed ' + speedOption + ' times.');
+                        }
+                      }, speedOption + "\u00D7");
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "wc-journey-timeline", role: "list", "aria-label": "Water journey timeline" },
+                  journeyTimelineSteps.map(function(step, index) {
+                    return React.createElement("div", {
+                      key: step,
+                      role: "listitem",
+                      className: "wc-timeline-step",
+                      "aria-current": index === journeyTimelineIndex ? "step" : undefined
+                    },
+                      React.createElement("strong", null, (index + 1) + ". " + step)
+                    );
+                  })
+                ),
+                React.createElement("p", { role: "note", className: "text-[11px] leading-relaxed " + (isDark ? "text-cyan-200" : "text-cyan-800") },
+                  "Playback speed changes this animation only. Real water residence times vary enormously; groundwater pathways can take years to millennia."
+                ),
                 // Current state card
                 React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-350" : "bg-white border-cyan-100 text-slate-800") },
                   React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
@@ -3851,8 +5154,9 @@ const d = labToolData.waterCycle || {};
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
+                  d.journeyState === 'complete' && React.createElement("p", { className: "text-[11px] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, t('stem.watercycle.you_rode_the_same_water_molecule_the_w', "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years.")),
                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
-                    React.createElement("button", { "aria-label": "Choose River Runoff path (shortcut: R)",
+                    React.createElement("button", { "aria-label": t('stem.watercycle.choose_river_runoff_path_shortcut_r', "Choose River Runoff path (shortcut: R)"),
                       onClick: function() {
                         upd('journeyState', 'river_runoff');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { runoff: (d.journeyPaths.runoff || 0) + 1 }));
@@ -3860,13 +5164,13 @@ const d = labToolData.waterCycle || {};
                         if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
                       },
-                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300" : "bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700")
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300 active:scale-[0.97]" : "transition-colors bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
-                      React.createElement("p", { className: "text-[11px] font-bold" }, "River Runoff (R)"),
-                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Fast path!")
+                      React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.river_runoff_r', "River Runoff (R)")),
+                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Runoff tendency: " + landIndexBand(runoffTendency))
                     ),
-                    React.createElement("button", { "aria-label": "Choose Underground infiltration path (shortcut: U)",
+                    React.createElement("button", { "aria-label": t('stem.watercycle.choose_underground_infiltration_path_s', "Choose Underground infiltration path (shortcut: U)"),
                       onClick: function() {
                         upd('journeyState', 'infiltrating');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { infiltrate: (d.journeyPaths.infiltrate || 0) + 1 }));
@@ -3874,13 +5178,13 @@ const d = labToolData.waterCycle || {};
                         if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
                       },
-                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300" : "bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700")
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300 active:scale-[0.97]" : "transition-colors bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
-                      React.createElement("p", { className: "text-[11px] font-bold" }, "Underground (U)"),
-                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Slow + deep")
+                      React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.underground_u', "Underground (U)")),
+                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Infiltration opportunity: " + landIndexBand(infiltrationOpportunity))
                     ),
-                    React.createElement("button", { "aria-label": "Choose Plant absorption path (shortcut: P)",
+                    React.createElement("button", { "aria-label": t('stem.watercycle.choose_plant_absorption_path_shortcut_', "Choose Plant absorption path (shortcut: P)"),
                       onClick: function() {
                         upd('journeyState', 'plant_absorb');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { plant: (d.journeyPaths.plant || 0) + 1 }));
@@ -3888,16 +5192,17 @@ const d = labToolData.waterCycle || {};
                         if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
                       },
-                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300" : "bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700")
+                      className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300 active:scale-[0.97]" : "transition-colors bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
-                      React.createElement("p", { className: "text-[11px] font-bold" }, "Enter Plant (P)"),
+                      React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.enter_plant_p', "Enter Plant (P)")),
                       React.createElement("p", { className: "text-[11px] opacity-70" }, "Transpiration!")
                     )
                   ),
-                  d.journeyState === 'complete' && React.createElement("button", { "aria-label": "Start Another Loop",
+                  d.journeyState === 'complete' && React.createElement("button", { "aria-label": t('stem.watercycle.start_another_loop', "Start Another Loop"),
                     onClick: function() {
                       upd('journeyState', 'ocean');
+                      upd('journeyPaused', false);
                       upd('journeyLoops', (d.journeyLoops || 0) + 1);
                       var cv = document.getElementById('wcCanvas');
                       if (cv) { cv.dataset.journeyState = 'ocean'; }
@@ -3909,7 +5214,7 @@ const d = labToolData.waterCycle || {};
                       addToast('\uD83C\uDF89 Cycle complete! +25 XP. Starting new loop...', 'success');
                     },
                     className: "mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold rounded-xl hover:from-emerald-600 hover:to-cyan-600 shadow-md transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
-                  }, "\uD83D\uDD04 Start Another Loop")
+                  }, t('stem.watercycle.start_another_loop_2', "\uD83D\uDD04 Start Another Loop"))
                 ),
 
                 // Stats bar
@@ -3922,7 +5227,7 @@ const d = labToolData.waterCycle || {};
               ),
 
               // Inactive description
-              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-500 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
+              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-500 mt-1" }, t('stem.watercycle.become_a_water_droplet_and_travel_thro', "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation."))
             ),
 
             sel && React.createElement("div", { 
@@ -3939,6 +5244,8 @@ const d = labToolData.waterCycle || {};
 
               React.createElement("p", { className: "text-sm leading-relaxed mb-2 " + (isDark ? "text-slate-300" : "text-slate-600") }, selDesc),
 
+              selPhase && React.createElement("div", { className: "rounded-lg p-2 mb-2 border text-[11px] font-semibold " + (isDark ? "bg-cyan-950/40 border-cyan-900/50 text-cyan-200" : "bg-cyan-50 border-cyan-200 text-cyan-800") }, selPhase),
+
               selFunFact && React.createElement("div", { className: "rounded-lg p-2 border " + (isDark ? "bg-amber-950/40 border-amber-900/50 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-700") },
 
                 React.createElement("p", { className: "text-[11px]" }, "\uD83D\uDCA1 " + selFunFact)
@@ -3951,7 +5258,7 @@ const d = labToolData.waterCycle || {};
             React.createElement("div", { className: "rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-white border-sky-200 shadow-sm") },
               React.createElement("p", { className: "text-xs font-black mb-1 flex items-center gap-1.5 " + (isDark ? "text-slate-200" : "text-slate-700") },
                 React.createElement("span", null, "🧠"),
-                React.createElement("span", null, "Ask the AI Hydrologist Tutor")
+                React.createElement("span", null, t('stem.watercycle.ask_the_ai_hydrologist_tutor', "Ask the AI Hydrologist Tutor"))
               ),
               React.createElement("p", { className: "text-[10px] mb-2 " + (isDark ? "text-slate-400" : "text-slate-500") },
                 "Ask questions about the " + (sel ? sel.label : 'water cycle') + " stage, climate feedbacks, or global hydrology."
@@ -3959,7 +5266,7 @@ const d = labToolData.waterCycle || {};
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
                   type: "text",
-                  placeholder: "Ask a question (e.g., Why do clouds float?)...",
+                  placeholder: t('stem.watercycle.ask_a_question_e_g_why_do_clouds_float', "Ask a question (e.g., Why do clouds float?)..."),
                   value: d.hydrologistQuery || '',
                   onChange: function(e) { upd("hydrologistQuery", e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askHydrologist(); },
@@ -3968,7 +5275,7 @@ const d = labToolData.waterCycle || {};
                 React.createElement("button", {
                   disabled: d.hydrologistLoading,
                   onClick: askHydrologist,
-                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                 }, d.hydrologistLoading ? "Thinking..." : "Ask")
               ),
               d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg border animate-in slide-in-from-top-1 " + (isDark ? "bg-sky-950/40 border-sky-900/50 text-slate-200" : "bg-sky-50 border-sky-100 text-slate-700") },
@@ -3978,44 +5285,46 @@ const d = labToolData.waterCycle || {};
             ),
 
             // ═══ WATER BUDGET  -  Live Data Panel ═══
-            React.createElement("div", { className: "rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-r from-slate-50 to-sky-50 border-slate-400 shadow-sm") },
+            React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-r from-slate-50 to-sky-50 border-slate-400 shadow-sm") },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
-                React.createElement("h4", { className: "text-xs font-bold " + (isDark ? "text-slate-200" : "text-slate-700") }, "Water Budget (Live)"),
-                React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-600") }, "REAL-TIME")
+                React.createElement("h4", { className: "text-xs font-bold " + (isDark ? "text-slate-200" : "text-slate-700") }, t('stem.watercycle.water_budget_live', "Scenario Readout")),
+                React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-600") }, "TEACHING MODEL")
               ),
               (function() {
                 var s2 = d.climSolar != null ? d.climSolar : 1.0;
                 var t3 = d.climTemp != null ? d.climTemp : 15;
                 var w2 = d.climWind != null ? d.climWind : 1.0;
-                var evapRate = Math.max(0, (s2 * 0.5 + Math.max(0, t3) / 30) * (0.8 + w2 * 0.2));
-                var precipType = t3 < -5 ? '\u2744\uFE0F Snow' : t3 < 2 ? '\uD83E\uDEE7 Sleet' : t3 > 30 ? '\u26A1 Storm' : '\uD83C\uDF27 Rain';
-                var runoffPct = Math.min(95, Math.max(5, 30 + (t3 > 0 ? t3 * 0.8 : 0) + w2 * 8));
-                var gwRecharge = Math.max(2, 100 - runoffPct - evapRate * 15);
-                return React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+                var evapRate = Math.max(0.2, Math.min(2, s2 * Math.max(0.2, (t3 + 20) / 35) * (0.85 + w2 * 0.15)));
+                var precipType = t3 < -2 ? 'Snow favored' : t3 <= 3 ? 'Mixed / uncertain' : 'Rain favored';
+                var runoffDisplay = landIndexBand(runoffTendency) + ' | ' + runoffTendency + '/100';
+                var infiltrationDisplay = landIndexBand(infiltrationOpportunity) + ' | ' + infiltrationOpportunity + '/100';
+                return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-amber-500" }, (evapRate * 100).toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, "Evaporation")
+                    React.createElement("p", { className: "text-lg font-bold text-amber-500 tracking-tight" }, evapRate.toFixed(2) + "x"),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, t('stem.watercycle.evaporation_2', "Evaporation index"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-blue-950/50" : "bg-white border-blue-100") },
                     React.createElement("p", { className: "text-sm font-bold text-blue-500" }, precipType),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-600" : "text-blue-500") }, "Precip Type")
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-600" : "text-blue-500") }, t('stem.watercycle.precip_type', "Precip Type"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-cyan-950/50" : "bg-white border-cyan-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-cyan-500" }, runoffPct.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, "Runoff")
+                    React.createElement("p", { className: "text-sm font-bold text-cyan-500" }, runoffDisplay),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, "Runoff tendency")
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-emerald-950/50" : "bg-white border-emerald-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-emerald-500" }, gwRecharge.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, "GW Recharge")
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-500" }, infiltrationDisplay),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, "Infiltration opportunity")
                   )
+                  ),
+                  React.createElement("p", { role: "note", className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "Relative teaching indices, not measurements or a forecast. Surface temperature only hints at precipitation phase; the vertical temperature profile matters. Land controls shape runoff tendency and infiltration opportunity, but neither index is a water-budget percentage. Groundwater recharge remains unresolved.")
                 );
               })()
             ),
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
-              React.createElement("button", { "aria-label": "Start water cycle quiz",
+              React.createElement("button", { "aria-label": t('stem.watercycle.start_water_cycle_quiz', "Start water cycle quiz"),
                 onClick: function () {
                   var pool = WATER_CYCLE_QUIZZES[gradeBand] || WATER_CYCLE_QUIZZES['3-5'];
                   var q = pool[Math.floor(Math.random() * pool.length)];
@@ -4032,7 +5341,7 @@ const d = labToolData.waterCycle || {};
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
-              callGemini && React.createElement("button", { "aria-label": "Generate AI quiz question",
+              callGemini && React.createElement("button", { "aria-label": t('stem.watercycle.generate_ai_quiz_question', "Generate AI quiz question"),
                 onClick: function() {
                   if (d.aiQuizLoading) return;
                   upd('aiQuizLoading', true);
@@ -4091,7 +5400,7 @@ const d = labToolData.waterCycle || {};
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
+              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, t('stem.watercycle.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
               (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
@@ -4109,8 +5418,8 @@ const d = labToolData.waterCycle || {};
 
                     var cls = !d.wcQuiz.answered
                       ? (isDark
-                         ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-550 hover:bg-sky-950/40 hover:shadow-sm'
-                         : 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm text-slate-800')
+                         ? 'transition-colors bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-550 hover:bg-sky-950/40 hover:shadow-sm active:scale-[0.97]'
+                         : 'transition-colors bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm text-slate-800 active:scale-[0.97]')
                       : isCorrect
                         ? (isDark ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400 shadow-sm' : 'bg-emerald-100 border-emerald-400 shadow-sm text-emerald-900')
                         : wasChosen
@@ -4194,8 +5503,8 @@ const d = labToolData.waterCycle || {};
                         onClick: function() {
                           studyVocab(concept);
                         },
-                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
-                      }, "📖 Study Term (+5 RP)")
+                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
+                      }, t('stem.watercycle.study_term_5_rp', "📖 Study Term (+5 RP)"))
                     );
                   })()
                 )
@@ -4204,7 +5513,84 @@ const d = labToolData.waterCycle || {};
 
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, "\uD83D\uDCF8 Snapshot")
+            // \u2550\u2550\u2550 \uD83D\uDCA7 WATER MYTHS \u2014 grade-banded misconceptions, each falsifiable IN the tool \u2550\u2550\u2550
+            // Every myth is a documented water-cycle misconception (clouds-as-containers,
+            // vapor-is-visible, disappearing puddles, underground rivers...), and every
+            // verdict ends with a "Try it" pointing at the Journey Mode path, Climate Lab
+            // slider, or stage view that lets the student SEE the truth for themselves.
+            (function () {
+              var MYTHS_35 = [
+                { s: 'Rain falls when clouds get holes in them, like a leaky bucket.', t: false, why: 'Clouds are not containers \u2014 they are billions of tiny floating droplets. Rain begins when droplets bump together and grow too heavy to float.', tryIt: 'Watch the Condensation stage, then Precipitation: droplets grow until gravity wins.' },
+                { s: 'When a puddle dries up, its water is gone forever.', t: false, why: 'The water turned into invisible vapor and floated into the sky. Later it condenses into clouds and rains back down \u2014 water is never used up, it only changes form.', tryIt: 'Start Journey Mode and ride one droplet from the ocean to a cloud and back again.' },
+                { s: 'The water you drank today may once have been drunk by a dinosaur.', t: true, why: 'Earth has recycled the same water for billions of years \u2014 the cycle never makes new water, it just keeps moving what it has.', tryIt: 'Complete a full Journey Mode loop: the same droplet just keeps going around.' },
+                { s: 'You can see water vapor.', t: false, why: 'Water vapor is an invisible gas. The white mist above a hot drink \u2014 and clouds themselves \u2014 are LIQUID droplets that have already condensed back.', tryIt: 'In the Evaporation stage the rising vapor is invisible; the visible cloud only forms high up, where the air is cold.' }
+              ];
+              var MYTHS_68 = MYTHS_35.concat([
+                { s: 'Clouds are made of water vapor.', t: false, why: 'Clouds are liquid droplets (or ice crystals) condensed onto dust particles. Vapor is the invisible gas BEFORE condensation \u2014 if clouds were vapor, you could not see them.', tryIt: 'Read the Condensation stage: vapor condenses onto tiny nuclei to become ~10 \u00B5m droplets.' },
+                { s: 'Water only evaporates when it is hot or boiling.', t: false, why: 'Evaporation happens at every temperature \u2014 the fastest surface molecules escape even from cold water. Heat just speeds it up.', tryIt: 'In the Climate Lab, drag the temperature down and watch the evaporation index fall \u2014 but never reach zero.' },
+                { s: 'Groundwater flows in big underground rivers and lakes.', t: false, why: 'Almost all groundwater seeps through tiny pores in soil and rock, like water held in a sponge \u2014 often moving just meters per YEAR.', tryIt: 'In Journey Mode, take the Infiltration path \u2014 the aquifer leg is the slowest part of the whole cycle.' }
+              ]);
+              var MYTHS_912 = MYTHS_68.concat([
+                { s: 'Saturation vapor pressure rises as air warms.', t: true, why: 'Near common surface temperatures, saturation vapor pressure rises by roughly 7% per degree Celsius. Actual atmospheric moisture also depends on relative humidity and circulation.', tryIt: 'Raise temperature in the Climate Lab and compare the relative evaporation index. This teaching model does not forecast storms.' },
+                { s: 'Rain falls in the same place the water evaporated from.', t: false, why: 'Vapor rides the wind for hundreds of kilometers (atmospheric "flying rivers"). Rain falls where the air COOLS, not where the water left the surface.', tryIt: 'Crank the wind slider and watch the clouds drift far downwind before the rain drops.' },
+                { s: 'Transpiration from plants barely matters to the cycle.', t: false, why: 'Transpiration is a major part of evapotranspiration over vegetated land. Its share varies with ecosystem, season, soil moisture, and weather.', tryIt: 'Open the Transpiration stage and trace how roots, xylem, and stomata return water to the atmosphere.' }
+              ]);
+              var mythBank = gradeBand === '9-12' ? MYTHS_912 : gradeBand === '6-8' ? MYTHS_68 : MYTHS_35;
+              var myth = d.wcMyth || null;
+              function startMyth() {
+                var mi = Math.floor(Math.random() * mythBank.length);
+                if (myth && mi === myth.idx) mi = (mi + 1) % mythBank.length;
+                var m = mythBank[mi];
+                upd('wcMyth', { idx: mi, s: m.s, t: m.t, why: m.why, tryIt: m.tryIt, answered: false, chosen: null });
+              }
+              return React.createElement("div", { className: "rounded-xl p-3 mb-2 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-violet-900/40 backdrop-blur-md" : "bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200") },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? "text-violet-400" : "text-violet-700") }, t('stem.watercycle.water_myths', "\uD83E\uDDE0 Water Myths \u2014 true or false?")),
+                  React.createElement("button", { "aria-label": t('stem.watercycle.start_water_myth', "Start a water myth question"),
+                    onClick: startMyth,
+                    className: "px-3 py-1 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  }, myth ? "\uD83D\uDD04 New Myth" : "\u25B6 Start")
+                ),
+                myth && React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-xs font-bold " + (isDark ? "text-slate-300" : "text-slate-700") }, "\u201C" + myth.s + "\u201D"),
+                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    [true, false].map(function (val) {
+                      return React.createElement("button", { key: String(val),
+                        "aria-label": "Answer " + (val ? 'true' : 'false'),
+                        onClick: function () {
+                          var right = val === myth.t;
+                          var nextMythsDone = (d.wcMythsDone || 0) + 1;
+                          if (right) {
+                            sfxWcCorrect();
+                            if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 5, 'Water myth busted');
+                          } else {
+                            sfxWcIncorrect();
+                          }
+                          var nextState = Object.assign({}, d, { wcMythsDone: nextMythsDone });
+                          updMulti({
+                            wcMyth: Object.assign({}, myth, { answered: true, chosen: val }),
+                            wcMythsDone: nextMythsDone
+                          });
+                          if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (myth.t ? 'True. ' : 'False. ') + myth.why);
+                          setTimeout(function () { checkWaterCycleChallenges(nextState); }, 50);
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900/60 text-slate-300 border-violet-900/50 hover:border-violet-600" : "bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50")
+                      }, val ? '\u2705 True' : '\u274C False');
+                    })
+                  ),
+                  myth.answered && React.createElement("div", { className: "p-2.5 rounded-lg border " + (myth.chosen === myth.t
+                    ? (isDark ? "bg-emerald-950/40 border-emerald-900/50" : "bg-emerald-50 border-emerald-200")
+                    : (isDark ? "bg-red-950/40 border-red-900/50" : "bg-red-50 border-red-200")) },
+                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },
+                      (myth.chosen === myth.t ? '\u2705 Correct \u2014 ' : '\u274C Not quite \u2014 ') + (myth.t ? 'TRUE.' : 'FALSE.')),
+                    React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-350" : "text-slate-700") }, myth.why),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold " + (isDark ? "text-indigo-400" : "text-indigo-700") }, "\uD83D\uDD2C Try it: " + myth.tryIt)
+                  )
+                )
+              );
+            })(),
+
+            React.createElement("button", { "aria-label": t('stem.watercycle.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, t('stem.watercycle.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 
           );
       })();

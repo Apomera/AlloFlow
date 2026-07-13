@@ -4758,7 +4758,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             workMin: workMin, task: task,
             startedAt: startedAt, completedAt: Date.now()
           };
-          setData({ sessions: sessions.concat([newSession]) });
+          // Preserve sibling keys: setData REPLACES the whole mytkFocus object,
+          // so a bare { sessions } write silently wiped the user's custom
+          // workMin/breakMin (Pomodoro durations reset to 25/5 on every session).
+          setData(Object.assign({}, data, { sessions: sessions.concat([newSession]) }));
           // play ding (if audio context available)
           try {
             var ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -4768,6 +4771,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
             o.connect(g); g.connect(ac.destination);
             o.start(); o.stop(ac.currentTime + 0.4);
+            // Close the context once the tone ends — otherwise every completed
+            // session leaks an AudioContext (Chrome caps ~6, then the ding dies).
+            o.onended = function() { try { ac.close(); } catch (e) {} };
           } catch (e) {}
           setPhase('break');
           setSecondsLeft(breakMin * 60);
@@ -7185,7 +7191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var m = getMap();
       if (!m) { setView('list'); return null; }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🕸', m.title, m.nodes.length + ' concepts · ' + m.edges.length + ' connections · click canvas to add', '#a855f7'),
+        tkSectionHeader('🕸', m.title, m.nodes.length + ' concepts · ' + m.edges.length + ' connections · use + Add concept', '#a855f7'),
         hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap' } },
           tkBtn('← All maps', function() { setView('list'); setActiveMap(null); setSelectedNode(null); setConnectFrom(null); }, 'ghost'),
           hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
@@ -15938,6 +15944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     tags: ['pedagogy', 'learning-science', 'metacognition', 'UDL', 'study-skills', 'education-career', 'maine', 'teachers', 'school-psych'],
 
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       try {
       var React = ctx.React;
       var h = React.createElement;
@@ -16014,16 +16021,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       function backBar(title) {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-          h('button', { 'data-ll-focusable': true, 'aria-label': 'Back to Learning Lab menu',
-            onClick: function() { setView('menu'); }, style: btnGhost() }, '← Menu'),
+          h('button', { 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.back_to_learning_lab_menu', 'Back to Learning Lab menu'),
+            onClick: function() { setView('menu'); }, style: btnGhost() }, __alloT('stem.learning_lab.menu', '← Menu')),
           h('h2', { style: { margin: 0, fontSize: 18, color: T.text } }, title)
         );
       }
 
       function disclaimerFooter() {
-        return h('div', { role: 'note', 'aria-label': 'Educational notes',
+        return h('div', { role: 'note', 'aria-label': __alloT('stem.learning_lab.educational_notes', 'Educational notes'),
           style: { marginTop: 18, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-          'Educational tool. Cites primary research sources where possible (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0). Honest about contested findings. For academic research, consult the cited papers + your school\'s education library.'
+          __alloT('stem.learning_lab.educational_tool_cites_primary_researc', 'Educational tool. Cites primary research sources where possible (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0). Honest about contested findings. For academic research, consult the cited papers + your school\'s education library.')
         );
       }
 
@@ -16032,197 +16039,204 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // ─────────────────────────────────────────
       function renderMenu() {
         var categories = [
-          { id: 'mytk', icon: '🧰', name: 'My Toolkit (personal + saved)',
-            desc: 'Build YOUR own evidence-based learning + executive-function supports. Everything saves to your browser.',
+          { id: 'mytk', icon: '🧰', name: __alloT('stem.learning_lab.my_toolkit_personal_saved', 'My Toolkit (personal + saved)'),
+            desc: __alloT('stem.learning_lab.build_your_own_evidence_based_learning', 'Build YOUR own evidence-based learning + executive-function supports. Everything saves to your browser.'),
             featured: true,
             modules: [
-              { id: 'mytkHub',    icon: '🧰', label: 'Toolkit Hub',          desc: 'All my personal tools in one place + quick stats.' },
-              { id: 'mytkGoals',  icon: '🎯', label: 'My Goals',             desc: 'Personal SMART goals, progress tracking, check-in history.' },
-              { id: 'mytkFocus',  icon: '⏱️', label: 'Focus Timer',          desc: 'Custom Pomodoro + session log + daily streak.' },
-              { id: 'mytkBrain',  icon: '🧠', label: 'Brain Dump',           desc: 'Externalize working-memory contents — get it out of your head.' },
-              { id: 'mytkIfThen', icon: '🔗', label: 'If-Then Plans',        desc: 'Gollwitzer implementation intentions. Pre-decide your response to triggers.' },
-              { id: 'mytkAccom',  icon: '🪪', label: 'Accommodation Card',   desc: 'Your own accommodations card + self-advocacy script.' },
-              { id: 'mytkFlash',  icon: '🃏', label: 'Flashcards',           desc: 'Personal decks with spaced-repetition review (SM-2-lite).' },
-              { id: 'mytkPlanner',icon: '📅', label: 'Study Planner',        desc: 'Weekly schedule grid + subject-time breakdown.' },
-              { id: 'mytkExam',   icon: '🎓', label: 'Exam Prep',            desc: 'Backwards-plan from exam date with auto-generated daily intensity.' },
-              { id: 'mytkTasks',  icon: '✂', label: 'Task Breaker',          desc: 'Decompose big assignments into 2-5 minute steps with time estimates.' },
-              { id: 'mytkHabits', icon: '✅', label: 'Habit Tracker',        desc: 'Daily check-ins + streak heatmap + Lally 2009 evidence.' },
-              { id: 'mytkReflect',icon: '📔', label: 'Weekly Reflection',    desc: '5-prompt structured journal — Zimmerman 2002 metacognitive growth.' },
-              { id: 'mytkWizard', icon: '🪄', label: 'Strategy Wizard',      desc: 'Adaptive study-plan generator based on Dunlosky 2013 + your context.' },
-              { id: 'mytkLoad',   icon: '⚖️', label: 'Cog Load Monitor',     desc: 'Daily check-in on Sweller\'s 3 load types + overwhelm triggers.' },
-              { id: 'mytkMotiv',  icon: '🌟', label: 'Motivation Audit',     desc: 'Self-Determination Theory check (autonomy / competence / relatedness).' },
-              { id: 'mytkProfile',icon: '🪞', label: 'Learning Profile',     desc: 'One-page self-snapshot you control — printable for teachers / IEP.' },
-              { id: 'mytkPrompts',icon: '📓', label: 'Reflection Prompts',   desc: '30+ metacognitive prompts across 4 categories. Saves to journal history.' },
-              { id: 'mytkMap',    icon: '🕸', label: 'Concept Maps',         desc: 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.' },
-              { id: 'mytkNotes',  icon: '📝', label: 'Cornell Notes',        desc: 'In-tool Cornell-style note-taking with cue column + summary + search.' },
-              { id: 'mytkAgenda', icon: '📋', label: 'Today',                desc: 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.' },
-              { id: 'mytkEmotion',icon: '💖', label: 'Emotion + Grounding',  desc: 'Quick emotion check + box breathing + 5-4-3-2-1 grounding for tough moments.' },
-              { id: 'mytkEF',     icon: '🧩', label: 'EF Dashboard',         desc: '8 executive-function dimensions tracked weekly + strategy library (Barkley + Brown).' },
-              { id: 'mytkIEP',    icon: '🎓', label: 'My IEP Tracker',       desc: 'Your own copy of your IEP goals + sub-goal tracking + meeting log. Self-advocacy tool.' },
-              { id: 'mytkMastery',icon: '📚', label: 'Subject Mastery',      desc: 'Track mastery per topic per subject across 5 levels (new → mastered).' },
-              { id: 'mytkSleep',  icon: '😴', label: 'Sleep Log',            desc: 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.' },
-              { id: 'mytkJournal',icon: '📓', label: 'Learning Journal',     desc: 'Free-form journal with subject + mood tags. Search across all entries.' },
-              { id: 'mytkGrat',   icon: '🙏', label: 'Gratitude Log',        desc: '3 daily gratitudes (Emmons + McCullough 2003) — strongest single positive-psychology intervention.' },
-              { id: 'mytkRead',   icon: '📚', label: 'Reading Tracker',      desc: 'Books read + want-to-read + reflections + page counter (Krashen 2004).' },
-              { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: 'Guided RAIN + Inner Coach + Self-Compassion Break (Neff 2003).' },
-              { id: 'mytkDash',   icon: '📊', label: 'Progress Dashboard',   desc: 'Single overview of every toolkit tool with 14-day activity strip + suggestions.' },
-              { id: 'mytkChall',  icon: '🏆', label: 'Challenge Board',      desc: '30-day challenges with daily action log + Fogg 2019 Tiny Habits.' },
-              { id: 'mytkTime',   icon: '⏱', label: 'Time Estimator',       desc: 'Predict task time, log actual, see your calibration percentage.' },
-              { id: 'mytkDist',   icon: '🚨', label: 'Distraction Log',      desc: 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.' },
-              { id: 'mytkSearch', icon: '🔎', label: 'Search My Toolkit',    desc: 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.' },
-              { id: 'mytkCheats', icon: '📋', label: 'Cheat Sheet Builder',  desc: 'Build 1-page cheat sheets per topic. Building IS the studying.' },
-              { id: 'mytkAsk',    icon: '🙋', label: 'Ask-for-Help Tracker', desc: 'Log every help-ask. Normalize the most underused academic skill.' },
-              { id: 'mytkMind',   icon: '🧘', label: 'Mindfulness',          desc: '6 guided practices (body scan, breath, RAIN, walking, eating, open). MBSR-aligned.' },
-              { id: 'mytkAnxiety',icon: '🧰', label: 'Anxiety Toolkit',      desc: '6 quick-access tools when anxiety hits: naming, slow-exhale breath, cold water, defusion, grounding, evidence-check.' },
-              { id: 'mytkDec',    icon: '⚖️', label: 'Decision Maker',       desc: 'Structured choice tool: options × weighted criteria × scores → clarity for big decisions.' },
-              { id: 'mytkVocab',  icon: '🔤', label: 'Vocab Builder',        desc: 'Subject-specific vocab lists with self-quiz + mastery tracking.' },
-              { id: 'mytkPalace', icon: '🏛', label: 'Memory Palace',        desc: 'Method of loci — attach memorized items to locations in a familiar place.' },
-              { id: 'mytkRoster', icon: '🎒', label: 'My Class Roster',      desc: 'Classes + teachers + periods + rooms + friends-in-class.' },
-              { id: 'mytkQuote',  icon: '💭', label: 'Quote Collector',      desc: 'Save lines from books + classes + anywhere. Personal library.' },
-              { id: 'mytkCrisis', icon: '🛡', label: 'My Crisis Plan',       desc: 'Stanley + Brown 2012 Safety Planning Intervention. Build your plan when calm.' },
-              { id: 'mytkIdent',  icon: '🪞', label: 'My Identity Map',      desc: '8-dimension self-snapshot for identity work (Erikson 1968).' },
-              { id: 'mytkCareer', icon: '🎯', label: 'Career Explorer',      desc: '5-question interest inventory → 18+ curated career paths with save-for-later.' },
-              { id: 'mytkMood',   icon: '🌈', label: 'Mood Tracker',         desc: 'Daily mood + energy sliders + 14-day trend visualization.' },
-              { id: 'mytkFut',    icon: '💌', label: 'Letters to Future Self', desc: 'Write a letter that opens on a chosen date. Hershfield 2011 future-self research.' },
-              { id: 'mytkDisc',   icon: '🗝', label: 'Disclosure Wizard',    desc: 'Should I tell them about my IEP/disability/MH? Walk through the decision.' },
-              { id: 'mytkAudio',  icon: '🎧', label: 'Focus Audio',          desc: '8 categories (lo-fi, classical, nature, white noise, silence) with rating.' },
-              { id: 'mytkWorry',  icon: '⏰', label: 'Worry Time',           desc: '15-min scheduled worry-processing instead of all-day anxiety. Borkovec 1983.' },
-              { id: 'mytkEnergy', icon: '⚡', label: 'Energy Tracker',       desc: 'Log energy by hour. Find YOUR peak windows for hard cognitive work.' },
-              { id: 'mytkQuest',  icon: '❓', label: 'Question Log',         desc: 'Capture mid-class wonders. Process in study or office hours.' },
-              { id: 'mytkSuccess',icon: '🏆', label: 'Success Log',          desc: 'Log wins, tiny + big. Counter negativity bias (Goldman 2020).' },
-              { id: 'mytkEmail',  icon: '📧', label: 'Teacher Email Builder',desc: '6 templates (missed class, extension, accommodation, help, grade question, thanks).' },
-              { id: 'mytkBody',   icon: '🫀', label: 'Body Awareness',       desc: '8-area daily body scan. Builds interoception (van der Kolk).' },
-              { id: 'mytkAchieve',icon: '🏆', label: 'Achievement Wall',     desc: 'Categorized gallery of accomplishments + reflections. Counters imposter syndrome.' },
-              { id: 'mytkAffirm', icon: '✨', label: 'Affirmation Library',  desc: '20+ built-in affirmations + custom + daily rotation (Steele 1988 self-affirmation).' },
-              { id: 'mytkRole',   icon: '🌟', label: 'Role Models',          desc: 'People (real/fictional/historical) whose qualities you admire + want to grow.' },
-              { id: 'mytkAssess', icon: '🔍', label: 'Self-Assessment',      desc: '12-question quiz on how YOU learn. Saves snapshots over time.' },
-              { id: 'mytkContract',icon: '📜',label: 'Learning Contract',    desc: 'Formal self-agreement with commitments + rewards + accountability (behavioral contracting).' },
-              { id: 'mytkCircle', icon: '🤝', label: 'Circle of Support',    desc: 'Map your support network in 5 levels of closeness.' },
-              { id: 'mytkRoutine',icon: '🔁', label: 'Routine Builder',      desc: 'Morning/evening/study/transition/pre-test routines with streak tracking.' },
-              { id: 'mytkPrio',   icon: '📊', label: 'Priorities Matrix',    desc: 'Eisenhower 4-quadrant matrix. Goal: live more in Q2 (important, not urgent).' },
-              { id: 'mytkParent', icon: '💌', label: 'Parent Message Builder',desc: '6 templates for hard parent conversations (struggling, MH, IEP, future, boundary, thanks).' },
-              { id: 'mytkRecovery',icon: '🌧',label: 'Recovery Kit',         desc: '8-step post-hard-day reset checklist. Even 2 steps helps.' },
-              { id: 'mytkCurrentRead',icon: '📖',label: 'Currently Reading', desc: 'Track multiple books in progress with current/total pages + percent.' },
-              { id: 'mytkGreatDay',icon: '☀',label: 'Great-Day Pattern',    desc: '5 ingredients (sleep/ate/moved/connected/accomplished) → find YOUR formula.' },
-              { id: 'mytkSensory',icon: '🌈',label: 'Sensory Profile',      desc: '8-dimension preferences for autistic/ADHD/sensory-sensitive students.' },
-              { id: 'mytkND',     icon: '🧠',label: 'Neurodivergence Journal', desc: 'Identity-first journal for the lived ND experience.' },
-              { id: 'mytkLifeMap',icon: '🗺',label: 'Life Map',             desc: '8-dimension life snapshot with SVG radar visualization.' },
-              { id: 'mytkOpen',   icon: '✉',label: 'Unsent Letters',       desc: 'Therapeutic letter-writing (Pennebaker 1986). Don\'t send.' },
-              { id: 'mytkHigh',   icon: '✨',label: 'Daily Highlights',     desc: '5-min end-of-day reel: 3 bright moments + lesson + tomorrow intention.' },
-              { id: 'mytkLifeSkills',icon: '🏆',label: 'Life Skills Tracker', desc: '72 practical adult skills across 6 categories (cooking/home/money/transport/social/civic).' },
-              { id: 'mytkEthical',icon: '⚖',label: 'Ethical Dilemma Walker',desc: '6-step framework for working through hard moral situations (Kohlberg-aligned).' },
-              { id: 'mytkResources',icon: '🛟',label: 'Community Resources',  desc: 'Universal crisis lines (988, Maine Mobile, Trevor, etc.) + your personal additions.' },
-              { id: 'mytkSunday', icon: '📋',label: 'Sunday Plan',          desc: '5-section weekly planning ritual: wins, focus, deadlines, self-care, hopes.' },
-              { id: 'mytkFriends',icon: '🤝',label: 'Friendship Tracker',   desc: 'Track who you owe a check-in to. Cadence-aware. Especially helpful when life gets busy.' },
-              { id: 'mytkValues',icon: '🧭',label: 'Values Compass',        desc: 'Sort 36 values → top 10 → top 5 → top 3 with why-reasoning (Hayes ACT 1999).' },
-              { id: 'mytkMomentum',icon: '📆',label: 'Momentum Calendar',   desc: '12-week × 7-day grid per habit. Seinfeld "don\'t break the chain" flexible version.' },
-              { id: 'mytkScreen',icon: '📱',label: 'Screen Time Tracker',   desc: 'Self-report total + scrolling + productive screen time + how you felt about it.' },
-              { id: 'mytkD3',   icon: '🎯',label: 'Daily 3',                desc: 'THE 3 most important things to do today. Resist adding more.' },
-              { id: 'mytkConf', icon: '💪',label: 'Confidence Builder',     desc: 'Log moments when you noticed confidence. Pattern reveals what builds it (Bandura 1977).' },
-              { id: 'mytkHope', icon: '🌅',label: 'Hope Library',           desc: 'Places, experiences, skills, people, ways of being you hope for. Random pick for hard days.' },
-              { id: 'mytkScript',icon: '💬',label: 'Script Library',         desc: 'Curated phrases for hard moments across 5 categories. Especially valuable for ND students.' },
-              { id: 'mytkKnowl',icon: '🗺',label: 'Knowledge Map',           desc: 'Track topics per area across 5 statuses (mastered/know/learning/next/curious).' },
-              { id: 'mytkCurr',icon: '🎓',label: 'Curriculum Builder',       desc: 'Design YOUR own learning curriculum across any topic. 8 step-types. THE capstone tool.' },
-              { id: 'mytkTransition',icon: '🌉',label: 'Transition Planner', desc: 'Plan major life transitions using Schlossberg\'s 4-phase model (Anticipating/Moving in/Through/Out).' },
-              { id: 'mytkAccomReq',icon: '🪪',label: 'Accommodation Request Builder', desc: '5 formal-letter templates for IEP/504/college DSS/teacher/workplace ADA requests.' },
-              { id: 'mytkDeck',icon: '🃏',label: 'Life Deck',                 desc: '52 reflection cards. Random pick. Build a journal of answers over time.' },
-              { id: 'mytkComm',icon: '🗣',label: 'Communication Style',        desc: '4-dim self-profile (direct/written/logic/now) + printable comm card.' },
-              { id: 'mytkBackup',icon: '💾',label: 'Backup + Import',           desc: 'Export/import your toolkit data as JSON. Browser-local only. Your data, your control.' }
+              { id: 'mytkHub',    icon: '🧰', label: __alloT('stem.learning_lab.toolkit_hub', 'Toolkit Hub'),          desc: __alloT('stem.learning_lab.all_my_personal_tools_in_one_place_qui', 'All my personal tools in one place + quick stats.') },
+              { id: 'mytkGoals',  icon: '🎯', label: __alloT('stem.learning_lab.my_goals', 'My Goals'),             desc: __alloT('stem.learning_lab.personal_smart_goals_progress_tracking', 'Personal SMART goals, progress tracking, check-in history.') },
+              { id: 'mytkFocus',  icon: '⏱️', label: __alloT('stem.learning_lab.focus_timer', 'Focus Timer'),          desc: __alloT('stem.learning_lab.custom_pomodoro_session_log_daily_stre', 'Custom Pomodoro + session log + daily streak.') },
+              { id: 'mytkBrain',  icon: '🧠', label: __alloT('stem.learning_lab.brain_dump', 'Brain Dump'),           desc: __alloT('stem.learning_lab.externalize_working_memory_contents_ge', 'Externalize working-memory contents — get it out of your head.') },
+              { id: 'mytkIfThen', icon: '🔗', label: __alloT('stem.learning_lab.if_then_plans', 'If-Then Plans'),        desc: __alloT('stem.learning_lab.gollwitzer_implementation_intentions_p', 'Gollwitzer implementation intentions. Pre-decide your response to triggers.') },
+              { id: 'mytkAccom',  icon: '🪪', label: __alloT('stem.learning_lab.accommodation_card', 'Accommodation Card'),   desc: __alloT('stem.learning_lab.your_own_accommodations_card_self_advo', 'Your own accommodations card + self-advocacy script.') },
+              { id: 'mytkFlash',  icon: '🃏', label: __alloT('stem.learning_lab.flashcards', 'Flashcards'),           desc: __alloT('stem.learning_lab.personal_decks_with_spaced_repetition_', 'Personal decks with spaced-repetition review (SM-2-lite).') },
+              { id: 'mytkPlanner',icon: '📅', label: __alloT('stem.learning_lab.study_planner', 'Study Planner'),        desc: __alloT('stem.learning_lab.weekly_schedule_grid_subject_time_brea', 'Weekly schedule grid + subject-time breakdown.') },
+              { id: 'mytkExam',   icon: '🎓', label: __alloT('stem.learning_lab.exam_prep', 'Exam Prep'),            desc: __alloT('stem.learning_lab.backwards_plan_from_exam_date_with_aut', 'Backwards-plan from exam date with auto-generated daily intensity.') },
+              { id: 'mytkTasks',  icon: '✂', label: __alloT('stem.learning_lab.task_breaker', 'Task Breaker'),          desc: __alloT('stem.learning_lab.decompose_big_assignments_into_2_5_min', 'Decompose big assignments into 2-5 minute steps with time estimates.') },
+              { id: 'mytkHabits', icon: '✅', label: __alloT('stem.learning_lab.habit_tracker', 'Habit Tracker'),        desc: __alloT('stem.learning_lab.daily_check_ins_streak_heatmap_lally_2', 'Daily check-ins + streak heatmap + Lally 2009 evidence.') },
+              { id: 'mytkReflect',icon: '📔', label: __alloT('stem.learning_lab.weekly_reflection', 'Weekly Reflection'),    desc: __alloT('stem.learning_lab.5_prompt_structured_journal_zimmerman_', '5-prompt structured journal — Zimmerman 2002 metacognitive growth.') },
+              { id: 'mytkWizard', icon: '🪄', label: __alloT('stem.learning_lab.strategy_wizard', 'Strategy Wizard'),      desc: __alloT('stem.learning_lab.adaptive_study_plan_generator_based_on', 'Adaptive study-plan generator based on Dunlosky 2013 + your context.') },
+              { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Daily check-in on Sweller\'s 3 load types + overwhelm triggers.') },
+              { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Self-Determination Theory check (autonomy / competence / relatedness).') },
+              { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'One-page self-snapshot you control — printable for teachers / IEP.') },
+              { id: 'mytkPrompts',icon: '📓', label: __alloT('stem.learning_lab.reflection_prompts', 'Reflection Prompts'),   desc: __alloT('stem.learning_lab.30_metacognitive_prompts_across_4_cate', '30+ metacognitive prompts across 4 categories. Saves to journal history.') },
+              { id: 'mytkMap',    icon: '🕸', label: __alloT('stem.learning_lab.concept_maps', 'Concept Maps'),         desc: __alloT('stem.learning_lab.interactive_node_edge_canvas_for_visua', 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.') },
+              { id: 'mytkNotes',  icon: '📝', label: __alloT('stem.learning_lab.cornell_notes', 'Cornell Notes'),        desc: __alloT('stem.learning_lab.in_tool_cornell_style_note_taking_with', 'In-tool Cornell-style note-taking with cue column + summary + search.') },
+              { id: 'mytkAgenda', icon: '📋', label: __alloT('stem.learning_lab.today', 'Today'),                desc: __alloT('stem.learning_lab.today_s_pulled_together_agenda_habits_', 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.') },
+              { id: 'mytkEmotion',icon: '💖', label: __alloT('stem.learning_lab.emotion_grounding', 'Emotion + Grounding'),  desc: __alloT('stem.learning_lab.quick_emotion_check_box_breathing_5_4_', 'Quick emotion check + box breathing + 5-4-3-2-1 grounding for tough moments.') },
+              { id: 'mytkEF',     icon: '🧩', label: __alloT('stem.learning_lab.ef_dashboard', 'EF Dashboard'),         desc: __alloT('stem.learning_lab.8_executive_function_dimensions_tracke', '8 executive-function dimensions tracked weekly + strategy library (Barkley + Brown).') },
+              { id: 'mytkIEP',    icon: '🎓', label: __alloT('stem.learning_lab.my_iep_tracker', 'My IEP Tracker'),       desc: __alloT('stem.learning_lab.your_own_copy_of_your_iep_goals_sub_go', 'Your own copy of your IEP goals + sub-goal tracking + meeting log. Self-advocacy tool.') },
+              { id: 'mytkMastery',icon: '📚', label: __alloT('stem.learning_lab.subject_mastery', 'Subject Mastery'),      desc: __alloT('stem.learning_lab.track_mastery_per_topic_per_subject_ac', 'Track mastery per topic per subject across 5 levels (new → mastered).') },
+              { id: 'mytkSleep',  icon: '😴', label: __alloT('stem.learning_lab.sleep_log', 'Sleep Log'),            desc: __alloT('stem.learning_lab.daily_bedtime_waketime_quality_log_8_s', 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.') },
+              { id: 'mytkJournal',icon: '📓', label: __alloT('stem.learning_lab.learning_journal', 'Learning Journal'),     desc: __alloT('stem.learning_lab.free_form_journal_with_subject_mood_ta', 'Free-form journal with subject + mood tags. Search across all entries.') },
+              { id: 'mytkGrat',   icon: '🙏', label: __alloT('stem.learning_lab.gratitude_log', 'Gratitude Log'),        desc: __alloT('stem.learning_lab.3_daily_gratitudes_emmons_mccullough_2', '3 daily gratitudes (Emmons + McCullough 2003) — strongest single positive-psychology intervention.') },
+              { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Books read + want-to-read + reflections + page counter (Krashen 2004).') },
+              { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Guided RAIN + Inner Coach + Self-Compassion Break (Neff 2003).') },
+              { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Single overview of every toolkit tool with 14-day activity strip + suggestions.') },
+              { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', '30-day challenges with daily action log + Fogg 2019 Tiny Habits.') },
+              { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Predict task time, log actual, see your calibration percentage.') },
+              { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.') },
+              { id: 'mytkSearch', icon: '🔎', label: __alloT('stem.learning_lab.search_my_toolkit', 'Search My Toolkit'),    desc: __alloT('stem.learning_lab.instant_full_text_search_across_notes_', 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.') },
+              { id: 'mytkCheats', icon: '📋', label: __alloT('stem.learning_lab.cheat_sheet_builder', 'Cheat Sheet Builder'),  desc: __alloT('stem.learning_lab.build_1_page_cheat_sheets_per_topic_bu', 'Build 1-page cheat sheets per topic. Building IS the studying.') },
+              { id: 'mytkAsk',    icon: '🙋', label: __alloT('stem.learning_lab.ask_for_help_tracker', 'Ask-for-Help Tracker'), desc: __alloT('stem.learning_lab.log_every_help_ask_normalize_the_most_', 'Log every help-ask. Normalize the most underused academic skill.') },
+              { id: 'mytkMind',   icon: '🧘', label: __alloT('stem.learning_lab.mindfulness', 'Mindfulness'),          desc: __alloT('stem.learning_lab.6_guided_practices_body_scan_breath_ra', '6 guided practices (body scan, breath, RAIN, walking, eating, open). MBSR-aligned.') },
+              { id: 'mytkAnxiety',icon: '🧰', label: __alloT('stem.learning_lab.anxiety_toolkit', 'Anxiety Toolkit'),      desc: __alloT('stem.learning_lab.6_quick_access_tools_when_anxiety_hits', '6 quick-access tools when anxiety hits: naming, slow-exhale breath, cold water, defusion, grounding, evidence-check.') },
+              { id: 'mytkDec',    icon: '⚖️', label: __alloT('stem.learning_lab.decision_maker', 'Decision Maker'),       desc: __alloT('stem.learning_lab.structured_choice_tool_options_weighte', 'Structured choice tool: options × weighted criteria × scores → clarity for big decisions.') },
+              { id: 'mytkVocab',  icon: '🔤', label: __alloT('stem.learning_lab.vocab_builder', 'Vocab Builder'),        desc: __alloT('stem.learning_lab.subject_specific_vocab_lists_with_self', 'Subject-specific vocab lists with self-quiz + mastery tracking.') },
+              { id: 'mytkPalace', icon: '🏛', label: __alloT('stem.learning_lab.memory_palace', 'Memory Palace'),        desc: __alloT('stem.learning_lab.method_of_loci_attach_memorized_items_', 'Method of loci — attach memorized items to locations in a familiar place.') },
+              { id: 'mytkRoster', icon: '🎒', label: __alloT('stem.learning_lab.my_class_roster', 'My Class Roster'),      desc: __alloT('stem.learning_lab.classes_teachers_periods_rooms_friends', 'Classes + teachers + periods + rooms + friends-in-class.') },
+              { id: 'mytkQuote',  icon: '💭', label: __alloT('stem.learning_lab.quote_collector', 'Quote Collector'),      desc: __alloT('stem.learning_lab.save_lines_from_books_classes_anywhere', 'Save lines from books + classes + anywhere. Personal library.') },
+              { id: 'mytkCrisis', icon: '🛡', label: __alloT('stem.learning_lab.my_crisis_plan', 'My Crisis Plan'),       desc: __alloT('stem.learning_lab.stanley_brown_2012_safety_planning_int', 'Stanley + Brown 2012 Safety Planning Intervention. Build your plan when calm.') },
+              { id: 'mytkIdent',  icon: '🪞', label: __alloT('stem.learning_lab.my_identity_map', 'My Identity Map'),      desc: __alloT('stem.learning_lab.8_dimension_self_snapshot_for_identity', '8-dimension self-snapshot for identity work (Erikson 1968).') },
+              { id: 'mytkCareer', icon: '🎯', label: __alloT('stem.learning_lab.career_explorer', 'Career Explorer'),      desc: __alloT('stem.learning_lab.5_question_interest_inventory_18_curat', '5-question interest inventory → 18+ curated career paths with save-for-later.') },
+              { id: 'mytkMood',   icon: '🌈', label: __alloT('stem.learning_lab.mood_tracker', 'Mood Tracker'),         desc: __alloT('stem.learning_lab.daily_mood_energy_sliders_14_day_trend', 'Daily mood + energy sliders + 14-day trend visualization.') },
+              { id: 'mytkFut',    icon: '💌', label: __alloT('stem.learning_lab.letters_to_future_self', 'Letters to Future Self'), desc: __alloT('stem.learning_lab.write_a_letter_that_opens_on_a_chosen_', 'Write a letter that opens on a chosen date. Hershfield 2011 future-self research.') },
+              { id: 'mytkDisc',   icon: '🗝', label: __alloT('stem.learning_lab.disclosure_wizard', 'Disclosure Wizard'),    desc: __alloT('stem.learning_lab.should_i_tell_them_about_my_iep_disabi', 'Should I tell them about my IEP/disability/MH? Walk through the decision.') },
+              { id: 'mytkAudio',  icon: '🎧', label: __alloT('stem.learning_lab.focus_audio', 'Focus Audio'),          desc: __alloT('stem.learning_lab.8_categories_lo_fi_classical_nature_wh', '8 categories (lo-fi, classical, nature, white noise, silence) with rating.') },
+              { id: 'mytkWorry',  icon: '⏰', label: __alloT('stem.learning_lab.worry_time', 'Worry Time'),           desc: __alloT('stem.learning_lab.15_min_scheduled_worry_processing_inst', '15-min scheduled worry-processing instead of all-day anxiety. Borkovec 1983.') },
+              { id: 'mytkEnergy', icon: '⚡', label: __alloT('stem.learning_lab.energy_tracker', 'Energy Tracker'),       desc: __alloT('stem.learning_lab.log_energy_by_hour_find_your_peak_wind', 'Log energy by hour. Find YOUR peak windows for hard cognitive work.') },
+              { id: 'mytkQuest',  icon: '❓', label: __alloT('stem.learning_lab.question_log', 'Question Log'),         desc: __alloT('stem.learning_lab.capture_mid_class_wonders_process_in_s', 'Capture mid-class wonders. Process in study or office hours.') },
+              { id: 'mytkSuccess',icon: '🏆', label: __alloT('stem.learning_lab.success_log', 'Success Log'),          desc: __alloT('stem.learning_lab.log_wins_tiny_big_counter_negativity_b', 'Log wins, tiny + big. Counter negativity bias (Goldman 2020).') },
+              { id: 'mytkEmail',  icon: '📧', label: __alloT('stem.learning_lab.teacher_email_builder', 'Teacher Email Builder'),desc: __alloT('stem.learning_lab.6_templates_missed_class_extension_acc', '6 templates (missed class, extension, accommodation, help, grade question, thanks).') },
+              { id: 'mytkBody',   icon: '🫀', label: __alloT('stem.learning_lab.body_awareness', 'Body Awareness'),       desc: __alloT('stem.learning_lab.8_area_daily_body_scan_builds_interoce', '8-area daily body scan. Builds interoception (van der Kolk).') },
+              { id: 'mytkAchieve',icon: '🏆', label: __alloT('stem.learning_lab.achievement_wall', 'Achievement Wall'),     desc: __alloT('stem.learning_lab.categorized_gallery_of_accomplishments', 'Categorized gallery of accomplishments + reflections. Counters imposter syndrome.') },
+              { id: 'mytkAffirm', icon: '✨', label: __alloT('stem.learning_lab.affirmation_library', 'Affirmation Library'),  desc: __alloT('stem.learning_lab.20_built_in_affirmations_custom_daily_', '20+ built-in affirmations + custom + daily rotation (Steele 1988 self-affirmation).') },
+              { id: 'mytkRole',   icon: '🌟', label: __alloT('stem.learning_lab.role_models', 'Role Models'),          desc: __alloT('stem.learning_lab.people_real_fictional_historical_whose', 'People (real/fictional/historical) whose qualities you admire + want to grow.') },
+              { id: 'mytkAssess', icon: '🔍', label: 'Self-Assessment',      desc: __alloT('stem.learning_lab.12_question_quiz_on_how_you_learn_save', '12-question quiz on how YOU learn. Saves snapshots over time.') },
+              { id: 'mytkContract',icon: '📜',label: __alloT('stem.learning_lab.learning_contract', 'Learning Contract'),    desc: __alloT('stem.learning_lab.formal_self_agreement_with_commitments', 'Formal self-agreement with commitments + rewards + accountability (behavioral contracting).') },
+              { id: 'mytkCircle', icon: '🤝', label: __alloT('stem.learning_lab.circle_of_support', 'Circle of Support'),    desc: __alloT('stem.learning_lab.map_your_support_network_in_5_levels_o', 'Map your support network in 5 levels of closeness.') },
+              { id: 'mytkRoutine',icon: '🔁', label: __alloT('stem.learning_lab.routine_builder', 'Routine Builder'),      desc: __alloT('stem.learning_lab.morning_evening_study_transition_pre_t', 'Morning/evening/study/transition/pre-test routines with streak tracking.') },
+              { id: 'mytkPrio',   icon: '📊', label: __alloT('stem.learning_lab.priorities_matrix', 'Priorities Matrix'),    desc: __alloT('stem.learning_lab.eisenhower_4_quadrant_matrix_goal_live', 'Eisenhower 4-quadrant matrix. Goal: live more in Q2 (important, not urgent).') },
+              { id: 'mytkParent', icon: '💌', label: __alloT('stem.learning_lab.parent_message_builder', 'Parent Message Builder'),desc: __alloT('stem.learning_lab.6_templates_for_hard_parent_conversati', '6 templates for hard parent conversations (struggling, MH, IEP, future, boundary, thanks).') },
+              { id: 'mytkRecovery',icon: '🌧',label: __alloT('stem.learning_lab.recovery_kit', 'Recovery Kit'),         desc: __alloT('stem.learning_lab.8_step_post_hard_day_reset_checklist_e', '8-step post-hard-day reset checklist. Even 2 steps helps.') },
+              { id: 'mytkCurrentRead',icon: '📖',label: __alloT('stem.learning_lab.currently_reading', 'Currently Reading'), desc: __alloT('stem.learning_lab.track_multiple_books_in_progress_with_', 'Track multiple books in progress with current/total pages + percent.') },
+              { id: 'mytkGreatDay',icon: '☀',label: __alloT('stem.learning_lab.great_day_pattern', 'Great-Day Pattern'),    desc: __alloT('stem.learning_lab.5_ingredients_sleep_ate_moved_connecte', '5 ingredients (sleep/ate/moved/connected/accomplished) → find YOUR formula.') },
+              { id: 'mytkSensory',icon: '🌈',label: __alloT('stem.learning_lab.sensory_profile', 'Sensory Profile'),      desc: __alloT('stem.learning_lab.8_dimension_preferences_for_autistic_a', '8-dimension preferences for autistic/ADHD/sensory-sensitive students.') },
+              { id: 'mytkND',     icon: '🧠',label: __alloT('stem.learning_lab.neurodivergence_journal', 'Neurodivergence Journal'), desc: __alloT('stem.learning_lab.identity_first_journal_for_the_lived_n', 'Identity-first journal for the lived ND experience.') },
+              { id: 'mytkLifeMap',icon: '🗺',label: __alloT('stem.learning_lab.life_map', 'Life Map'),             desc: __alloT('stem.learning_lab.8_dimension_life_snapshot_with_svg_rad', '8-dimension life snapshot with SVG radar visualization.') },
+              { id: 'mytkOpen',   icon: '✉',label: __alloT('stem.learning_lab.unsent_letters', 'Unsent Letters'),       desc: __alloT('stem.learning_lab.therapeutic_letter_writing_pennebaker_', 'Therapeutic letter-writing (Pennebaker 1986). Don\'t send.') },
+              { id: 'mytkHigh',   icon: '✨',label: __alloT('stem.learning_lab.daily_highlights', 'Daily Highlights'),     desc: __alloT('stem.learning_lab.5_min_end_of_day_reel_3_bright_moments', '5-min end-of-day reel: 3 bright moments + lesson + tomorrow intention.') },
+              { id: 'mytkLifeSkills',icon: '🏆',label: __alloT('stem.learning_lab.life_skills_tracker', 'Life Skills Tracker'), desc: __alloT('stem.learning_lab.72_practical_adult_skills_across_6_cat', '72 practical adult skills across 6 categories (cooking/home/money/transport/social/civic).') },
+              { id: 'mytkEthical',icon: '⚖',label: __alloT('stem.learning_lab.ethical_dilemma_walker', 'Ethical Dilemma Walker'),desc: __alloT('stem.learning_lab.6_step_framework_for_working_through_h', '6-step framework for working through hard moral situations (Kohlberg-aligned).') },
+              { id: 'mytkResources',icon: '🛟',label: __alloT('stem.learning_lab.community_resources', 'Community Resources'),  desc: __alloT('stem.learning_lab.universal_crisis_lines_988_maine_mobil', 'Universal crisis lines (988, Maine Mobile, Trevor, etc.) + your personal additions.') },
+              { id: 'mytkSunday', icon: '📋',label: __alloT('stem.learning_lab.sunday_plan', 'Sunday Plan'),          desc: __alloT('stem.learning_lab.5_section_weekly_planning_ritual_wins_', '5-section weekly planning ritual: wins, focus, deadlines, self-care, hopes.') },
+              { id: 'mytkFriends',icon: '🤝',label: __alloT('stem.learning_lab.friendship_tracker', 'Friendship Tracker'),   desc: __alloT('stem.learning_lab.track_who_you_owe_a_check_in_to_cadenc', 'Track who you owe a check-in to. Cadence-aware. Especially helpful when life gets busy.') },
+              { id: 'mytkValues',icon: '🧭',label: __alloT('stem.learning_lab.values_compass', 'Values Compass'),        desc: __alloT('stem.learning_lab.sort_36_values_top_10_top_5_top_3_with', 'Sort 36 values → top 10 → top 5 → top 3 with why-reasoning (Hayes ACT 1999).') },
+              { id: 'mytkMomentum',icon: '📆',label: __alloT('stem.learning_lab.momentum_calendar', 'Momentum Calendar'),   desc: __alloT('stem.learning_lab.12_week_7_day_grid_per_habit_seinfeld_', '12-week × 7-day grid per habit. Seinfeld "don\'t break the chain" flexible version.') },
+              { id: 'mytkScreen',icon: '📱',label: __alloT('stem.learning_lab.screen_time_tracker', 'Screen Time Tracker'),   desc: __alloT('stem.learning_lab.self_report_total_scrolling_productive', 'Self-report total + scrolling + productive screen time + how you felt about it.') },
+              { id: 'mytkD3',   icon: '🎯',label: __alloT('stem.learning_lab.daily_3', 'Daily 3'),                desc: __alloT('stem.learning_lab.the_3_most_important_things_to_do_toda', 'THE 3 most important things to do today. Resist adding more.') },
+              { id: 'mytkConf', icon: '💪',label: __alloT('stem.learning_lab.confidence_builder', 'Confidence Builder'),     desc: __alloT('stem.learning_lab.log_moments_when_you_noticed_confidenc', 'Log moments when you noticed confidence. Pattern reveals what builds it (Bandura 1977).') },
+              { id: 'mytkHope', icon: '🌅',label: __alloT('stem.learning_lab.hope_library', 'Hope Library'),           desc: __alloT('stem.learning_lab.places_experiences_skills_people_ways_', 'Places, experiences, skills, people, ways of being you hope for. Random pick for hard days.') },
+              { id: 'mytkScript',icon: '💬',label: __alloT('stem.learning_lab.script_library', 'Script Library'),         desc: __alloT('stem.learning_lab.curated_phrases_for_hard_moments_acros', 'Curated phrases for hard moments across 5 categories. Especially valuable for ND students.') },
+              { id: 'mytkKnowl',icon: '🗺',label: __alloT('stem.learning_lab.knowledge_map', 'Knowledge Map'),           desc: __alloT('stem.learning_lab.track_topics_per_area_across_5_statuse', 'Track topics per area across 5 statuses (mastered/know/learning/next/curious).') },
+              { id: 'mytkCurr',icon: '🎓',label: __alloT('stem.learning_lab.curriculum_builder', 'Curriculum Builder'),       desc: __alloT('stem.learning_lab.design_your_own_learning_curriculum_ac', 'Design YOUR own learning curriculum across any topic. 8 step-types. THE capstone tool.') },
+              { id: 'mytkTransition',icon: '🌉',label: __alloT('stem.learning_lab.transition_planner', 'Transition Planner'), desc: __alloT('stem.learning_lab.plan_major_life_transitions_using_schl', 'Plan major life transitions using Schlossberg\'s 4-phase model (Anticipating/Moving in/Through/Out).') },
+              { id: 'mytkAccomReq',icon: '🪪',label: __alloT('stem.learning_lab.accommodation_request_builder', 'Accommodation Request Builder'), desc: __alloT('stem.learning_lab.5_formal_letter_templates_for_iep_504_', '5 formal-letter templates for IEP/504/college DSS/teacher/workplace ADA requests.') },
+              { id: 'mytkDeck',icon: '🃏',label: __alloT('stem.learning_lab.life_deck', 'Life Deck'),                 desc: __alloT('stem.learning_lab.52_reflection_cards_random_pick_build_', '52 reflection cards. Random pick. Build a journal of answers over time.') },
+              { id: 'mytkComm',icon: '🗣',label: __alloT('stem.learning_lab.communication_style', 'Communication Style'),        desc: __alloT('stem.learning_lab.4_dim_self_profile_direct_written_logi', '4-dim self-profile (direct/written/logic/now) + printable comm card.') },
+              { id: 'mytkBackup',icon: '💾',label: __alloT('stem.learning_lab.backup_import', 'Backup + Import'),           desc: __alloT('stem.learning_lab.export_import_your_toolkit_data_as_jso', 'Export/import your toolkit data as JSON. Browser-local only. Your data, your control.') }
             ]
           },
-          { id: 'foundation', icon: '🧠', name: 'How learning works (foundation)',
-            desc: 'The core cognitive science. Start here.',
+          { id: 'foundation', icon: '🧠', name: __alloT('stem.learning_lab.how_learning_works_foundation', 'How learning works (foundation)'),
+            desc: __alloT('stem.learning_lab.the_core_cognitive_science_start_here', 'The core cognitive science. Start here.'),
             modules: [
-              { id: 'bloom', icon: '📊', label: 'Bloom\'s Taxonomy', desc: '6 cognitive levels with verb lists + examples.' },
-              { id: 'cogload', icon: '⚖️', label: 'Cognitive Load Theory', desc: 'Working memory limits + 3 types of load (Sweller).' },
-              { id: 'metacog', icon: '🗺️', label: 'Metacognition', desc: 'Plan / Monitor / Evaluate. Self-rating prompts.' },
-              { id: 'zpd', icon: '🤝', label: 'ZPD + scaffolding', desc: 'Vygotsky. Gradual release. 6 scaffolding strategies.' },
-              { id: 'sdt', icon: '🎯', label: 'Self-Determination Theory', desc: 'Deci + Ryan: autonomy, competence, relatedness. The most-supported motivation theory.' }
+              { id: 'bloom', icon: '📊', label: __alloT('stem.learning_lab.bloom_s_taxonomy', 'Bloom\'s Taxonomy'), desc: __alloT('stem.learning_lab.6_cognitive_levels_with_verb_lists_exa', '6 cognitive levels with verb lists + examples.') },
+              { id: 'cogload', icon: '⚖️', label: __alloT('stem.learning_lab.cognitive_load_theory', 'Cognitive Load Theory'), desc: __alloT('stem.learning_lab.working_memory_limits_3_types_of_load_', 'Working memory limits + 3 types of load (Sweller).') },
+              { id: 'metacog', icon: '🗺️', label: __alloT('stem.learning_lab.metacognition', 'Metacognition'), desc: __alloT('stem.learning_lab.plan_monitor_evaluate_self_rating_prom', 'Plan / Monitor / Evaluate. Self-rating prompts.') },
+              { id: 'zpd', icon: '🤝', label: __alloT('stem.learning_lab.zpd_scaffolding', 'ZPD + scaffolding'), desc: __alloT('stem.learning_lab.vygotsky_gradual_release_6_scaffolding', 'Vygotsky. Gradual release. 6 scaffolding strategies.') },
+              { id: 'sdt', icon: '🎯', label: __alloT('stem.learning_lab.self_determination_theory', 'Self-Determination Theory'), desc: __alloT('stem.learning_lab.deci_ryan_autonomy_competence_relatedn', 'Deci + Ryan: autonomy, competence, relatedness. The most-supported motivation theory.') }
             ]
           },
-          { id: 'udl', icon: '🎯', name: 'UDL framework',
-            desc: 'The lens this whole platform is built on.',
+          { id: 'udl', icon: '🎯', name: __alloT('stem.learning_lab.udl_framework', 'UDL framework'),
+            desc: __alloT('stem.learning_lab.the_lens_this_whole_platform_is_built_', 'The lens this whole platform is built on.'),
             modules: [
-              { id: 'udlPrinciples', icon: '🎯', label: 'UDL principles + 9 guidelines', desc: 'CAST 3.0. Engagement / Representation / Action+Expression. With AlloFlow tool examples.' }
+              { id: 'udlPrinciples', icon: '🎯', label: __alloT('stem.learning_lab.udl_principles_9_guidelines', 'UDL principles + 9 guidelines'), desc: __alloT('stem.learning_lab.cast_3_0_engagement_representation_act', 'CAST 3.0. Engagement / Representation / Action+Expression. With AlloFlow tool examples.') }
             ]
           },
-          { id: 'strategies', icon: '📚', name: 'Strategies that work',
-            desc: 'What the research actually supports.',
+          { id: 'strategies', icon: '📚', name: __alloT('stem.learning_lab.strategies_that_work', 'Strategies that work'),
+            desc: __alloT('stem.learning_lab.what_the_research_actually_supports', 'What the research actually supports.'),
             modules: [
-              { id: 'spaced', icon: '⏰', label: 'Spaced repetition + retrieval', desc: 'Ebbinghaus, testing effect, illusion of fluency.' },
-              { id: 'study', icon: '📝', label: 'Study strategies', desc: 'Dunlosky 2013 ratings: high vs low utility.' },
-              { id: 'memory', icon: '🧠', label: 'Memory + active learning techniques', desc: 'Feynman, loci, mnemonic, dual coding, interleaving deep dive. 8 concrete techniques.' },
-              { id: 'noteTaking', icon: '📓', label: 'Note-taking systems', desc: 'Cornell, mind-mapping, outline, sketchnoting, two-column. When to use each + universal principles.' },
-              { id: 'sleep', icon: '😴', label: 'Sleep + learning', desc: 'Memory consolidation, all-nighter myth, naps, caffeine, screens. The single most under-discussed factor.' },
-              { id: 'goals', icon: '🎯', label: 'Goals + procrastination', desc: 'SMART, OKRs, implementation intentions, Pomodoro deep dive, 5 procrastination reframes (emotion-regulation, not time-management).' },
-              { id: 'multitask', icon: '📵', label: 'Multitasking myth + attention', desc: 'Sophie Leroy attention residue, 23-min reorientation cost, 6 hidden costs, 5 single-tasking tips.' },
-              { id: 'testAnxiety', icon: '😰', label: 'Test anxiety + performance', desc: 'Yerkes-Dodson, pre/during/after-test routines, 6 calming techniques, when to seek help.' },
-              { id: 'mindset', icon: '🌱', label: 'Growth mindset (brief)', desc: 'Dweck. Honest about replication. Links to Growth Mindset SEL tool.' },
-              { id: 'myths', icon: '🚫', label: 'Neuromyth debunker', desc: '8 popular beliefs that research rejects.' },
-              { id: 'researchLit', icon: '🔬', label: 'Research literacy', desc: 'Hierarchy of evidence, p-values, effect sizes, replication, red flags, where to find good research.' },
-              { id: 'writing', icon: '✍️', label: 'Writing process pedagogy', desc: 'Bereiter+Scardamalia knowledge-telling vs knowledge-transforming, the 5 pillars, mentor texts, SRSD, 6+1 Traits.' },
-              { id: 'groupWork', icon: '🤝', label: 'Group work that works', desc: 'Slavin\'s 2 non-negotiables, Jigsaw (Aronson), Numbered Heads, productive struggle in groups, when NOT to.' }
+              { id: 'spaced', icon: '⏰', label: __alloT('stem.learning_lab.spaced_repetition_retrieval', 'Spaced repetition + retrieval'), desc: __alloT('stem.learning_lab.ebbinghaus_testing_effect_illusion_of_', 'Ebbinghaus, testing effect, illusion of fluency.') },
+              { id: 'study', icon: '📝', label: __alloT('stem.learning_lab.study_strategies', 'Study strategies'), desc: __alloT('stem.learning_lab.dunlosky_2013_ratings_high_vs_low_util', 'Dunlosky 2013 ratings: high vs low utility.') },
+              { id: 'memory', icon: '🧠', label: __alloT('stem.learning_lab.memory_active_learning_techniques', 'Memory + active learning techniques'), desc: __alloT('stem.learning_lab.feynman_loci_mnemonic_dual_coding_inte', 'Feynman, loci, mnemonic, dual coding, interleaving deep dive. 8 concrete techniques.') },
+              { id: 'noteTaking', icon: '📓', label: __alloT('stem.learning_lab.note_taking_systems', 'Note-taking systems'), desc: __alloT('stem.learning_lab.cornell_mind_mapping_outline_sketchnot', 'Cornell, mind-mapping, outline, sketchnoting, two-column. When to use each + universal principles.') },
+              { id: 'sleep', icon: '😴', label: __alloT('stem.learning_lab.sleep_learning', 'Sleep + learning'), desc: __alloT('stem.learning_lab.memory_consolidation_all_nighter_myth_', 'Memory consolidation, all-nighter myth, naps, caffeine, screens. The single most under-discussed factor.') },
+              { id: 'goals', icon: '🎯', label: __alloT('stem.learning_lab.goals_procrastination', 'Goals + procrastination'), desc: __alloT('stem.learning_lab.smart_okrs_implementation_intentions_p', 'SMART, OKRs, implementation intentions, Pomodoro deep dive, 5 procrastination reframes (emotion-regulation, not time-management).') },
+              { id: 'multitask', icon: '📵', label: __alloT('stem.learning_lab.multitasking_myth_attention', 'Multitasking myth + attention'), desc: __alloT('stem.learning_lab.sophie_leroy_attention_residue_23_min_', 'Sophie Leroy attention residue, 23-min reorientation cost, 6 hidden costs, 5 single-tasking tips.') },
+              { id: 'testAnxiety', icon: '😰', label: __alloT('stem.learning_lab.test_anxiety_performance', 'Test anxiety + performance'), desc: __alloT('stem.learning_lab.yerkes_dodson_pre_during_after_test_ro', 'Yerkes-Dodson, pre/during/after-test routines, 6 calming techniques, when to seek help.') },
+              { id: 'mindset', icon: '🌱', label: __alloT('stem.learning_lab.growth_mindset_brief', 'Growth mindset (brief)'), desc: __alloT('stem.learning_lab.dweck_honest_about_replication_links_t', 'Dweck. Honest about replication. Links to Growth Mindset SEL tool.') },
+              { id: 'myths', icon: '🚫', label: __alloT('stem.learning_lab.neuromyth_debunker', 'Neuromyth debunker'), desc: __alloT('stem.learning_lab.8_popular_beliefs_that_research_reject', '8 popular beliefs that research rejects.') },
+              { id: 'researchLit', icon: '🔬', label: __alloT('stem.learning_lab.research_literacy', 'Research literacy'), desc: __alloT('stem.learning_lab.hierarchy_of_evidence_p_values_effect_', 'Hierarchy of evidence, p-values, effect sizes, replication, red flags, where to find good research.') },
+              { id: 'writing', icon: '✍️', label: __alloT('stem.learning_lab.writing_process_pedagogy', 'Writing process pedagogy'), desc: __alloT('stem.learning_lab.bereiter_scardamalia_knowledge_telling', 'Bereiter+Scardamalia knowledge-telling vs knowledge-transforming, the 5 pillars, mentor texts, SRSD, 6+1 Traits.') },
+              { id: 'groupWork', icon: '🤝', label: __alloT('stem.learning_lab.group_work_that_works', 'Group work that works'), desc: __alloT('stem.learning_lab.slavin_s_2_non_negotiables_jigsaw_aron', 'Slavin\'s 2 non-negotiables, Jigsaw (Aronson), Numbered Heads, productive struggle in groups, when NOT to.') }
             ]
           },
-          { id: 'careers', icon: '🏅', name: 'Pedagogy careers + Maine',
-            desc: 'How to do this for a living.',
+          { id: 'careers', icon: '🏅', name: __alloT('stem.learning_lab.pedagogy_careers_maine', 'Pedagogy careers + Maine'),
+            desc: __alloT('stem.learning_lab.how_to_do_this_for_a_living', 'How to do this for a living.'),
             modules: [
-              { id: 'careers-list', icon: '🍎', label: 'Education + ed-adjacent careers', desc: '10 career paths from teacher to ed researcher.' },
-              { id: 'maine-progs', icon: '🌲', label: 'Maine education programs', desc: 'USM, UMaine, UMF, UNE + cert pathway + EL Education.' }
+              { id: 'careers-list', icon: '🍎', label: __alloT('stem.learning_lab.education_ed_adjacent_careers', 'Education + ed-adjacent careers'), desc: __alloT('stem.learning_lab.10_career_paths_from_teacher_to_ed_res', '10 career paths from teacher to ed researcher.') },
+              { id: 'maine-progs', icon: '🌲', label: __alloT('stem.learning_lab.maine_education_programs', 'Maine education programs'), desc: __alloT('stem.learning_lab.usm_umaine_umf_une_cert_pathway_el_edu', 'USM, UMaine, UMF, UNE + cert pathway + EL Education.') }
             ]
           },
-          { id: 'apply', icon: '🎯', name: 'Apply it',
-            desc: 'Active practice. Use Bloom\'s + the strategies on YOUR work.',
+          { id: 'apply', icon: '🎯', name: __alloT('stem.learning_lab.apply_it', 'Apply it'),
+            desc: __alloT('stem.learning_lab.active_practice_use_bloom_s_the_strate', 'Active practice. Use Bloom\'s + the strategies on YOUR work.'),
             modules: [
-              { id: 'lessonPlan', icon: '🎯', label: 'Lesson plan builder', desc: 'Topic + Bloom\'s level + grade band → matched verbs, activities, assessments.' },
-              { id: 'strategyPicker', icon: '💡', label: 'Strategy picker', desc: 'Subject + time + assessment + prior knowledge → evidence-backed strategy recommendations.' },
-              { id: 'bloomMatch', icon: '🕵️', label: 'Bloom Match — interactive', desc: '10 task descriptions. Pick the Bloom\'s taxonomy level each one targets. Coaching cites the verb-level mapping (revised 2001 Anderson + Krathwohl) and what makes Apply vs Analyze the most-confused pair.' },
-              { id: 'lab', icon: '🧪', label: 'Hands-on lab simulator', desc: '6 graded "advise a struggling student" cases. Letter grade + per-step feedback.' }
+              { id: 'lessonPlan', icon: '🎯', label: __alloT('stem.learning_lab.lesson_plan_builder', 'Lesson plan builder'), desc: __alloT('stem.learning_lab.topic_bloom_s_level_grade_band_matched', 'Topic + Bloom\'s level + grade band → matched verbs, activities, assessments.') },
+              { id: 'strategyPicker', icon: '💡', label: __alloT('stem.learning_lab.strategy_picker', 'Strategy picker'), desc: __alloT('stem.learning_lab.subject_time_assessment_prior_knowledg', 'Subject + time + assessment + prior knowledge → evidence-backed strategy recommendations.') },
+              { id: 'bloomMatch', icon: '🕵️', label: __alloT('stem.learning_lab.bloom_match_interactive', 'Bloom Match — interactive'), desc: __alloT('stem.learning_lab.10_task_descriptions_pick_the_bloom_s_', '10 task descriptions. Pick the Bloom\'s taxonomy level each one targets. Coaching cites the verb-level mapping (revised 2001 Anderson + Krathwohl) and what makes Apply vs Analyze the most-confused pair.') },
+              { id: 'lab', icon: '🧪', label: __alloT('stem.learning_lab.hands_on_lab_simulator', 'Hands-on lab simulator'), desc: __alloT('stem.learning_lab.6_graded_advise_a_struggling_student_c', '6 graded "advise a struggling student" cases. Letter grade + per-step feedback.') }
             ]
           },
-          { id: 'specialized', icon: '👩‍🏫', name: 'Specialized teaching',
-            desc: 'Topics most teachers + school psychs need but rarely get formal training in.',
+          { id: 'specialized', icon: '👩‍🏫', name: __alloT('stem.learning_lab.specialized_teaching', 'Specialized teaching'),
+            desc: __alloT('stem.learning_lab.topics_most_teachers_school_psychs_nee', 'Topics most teachers + school psychs need but rarely get formal training in.'),
             modules: [
-              { id: 'reading', icon: '📖', label: 'Reading + literacy science', desc: 'Simple View of Reading, 5 pillars, structured vs balanced literacy, Orton-Gillingham, the reading wars.' },
-              { id: 'trauma', icon: '💚', label: 'Trauma-informed teaching', desc: 'ACEs, behavior as communication, co-regulation, window of tolerance, 6 practices, when to refer.' },
-              { id: 'mtss', icon: '🏗️', label: 'MTSS / RTI + universal screening', desc: 'Tier 1/2/3 framework, 8 screening tools (DIBELS, AIMSweb, NWEA, SAEBRS), decision rules, school-psych role.' },
-              { id: 'mathPed', icon: '🔢', label: 'Math anxiety + math pedagogy', desc: 'Distinct from test anxiety, conceptual vs procedural, productive struggle, number talks, Boaler mindset, identity disruption.' }
+              { id: 'reading', icon: '📖', label: __alloT('stem.learning_lab.reading_literacy_science', 'Reading + literacy science'), desc: __alloT('stem.learning_lab.simple_view_of_reading_5_pillars_struc', 'Simple View of Reading, 5 pillars, structured vs balanced literacy, Orton-Gillingham, the reading wars.') },
+              { id: 'trauma', icon: '💚', label: __alloT('stem.learning_lab.trauma_informed_teaching', 'Trauma-informed teaching'), desc: __alloT('stem.learning_lab.aces_behavior_as_communication_co_regu', 'ACEs, behavior as communication, co-regulation, window of tolerance, 6 practices, when to refer.') },
+              { id: 'mtss', icon: '🏗️', label: __alloT('stem.learning_lab.mtss_rti_universal_screening', 'MTSS / RTI + universal screening'), desc: __alloT('stem.learning_lab.tier_1_2_3_framework_8_screening_tools', 'Tier 1/2/3 framework, 8 screening tools (DIBELS, AIMSweb, NWEA, SAEBRS), decision rules, school-psych role.') },
+              { id: 'mathPed', icon: '🔢', label: __alloT('stem.learning_lab.math_anxiety_math_pedagogy', 'Math anxiety + math pedagogy'), desc: __alloT('stem.learning_lab.distinct_from_test_anxiety_conceptual_', 'Distinct from test anxiety, conceptual vs procedural, productive struggle, number talks, Boaler mindset, identity disruption.') }
             ]
           },
-          { id: 'progress', icon: '📊', name: 'Progress + reference',
-            desc: 'Self-test, learning path, achievements, glossary, citations.',
+          { id: 'progress', icon: '📊', name: __alloT('stem.learning_lab.progress_reference', 'Progress + reference'),
+            desc: __alloT('stem.learning_lab.self_test_learning_path_achievements_g', 'Self-test, learning path, achievements, glossary, citations.'),
             modules: [
-              { id: 'path', icon: '🛤️', label: 'Recommended learning path', desc: 'New here? 4-week curated walkthrough through the modules.' },
-              { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ pedagogy + cog-sci terms with category filter.' },
-              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '65 questions across the full curriculum.' },
-              { id: 'badges', icon: '🏆', label: 'Badge gallery', desc: 'All earned + unlockable badges.' },
-              { id: 'resources', icon: '📚', label: 'Resources', desc: 'Cited papers + free + paid tools.' }
+              { id: 'path', icon: '🛤️', label: __alloT('stem.learning_lab.recommended_learning_path', 'Recommended learning path'), desc: __alloT('stem.learning_lab.new_here_4_week_curated_walkthrough_th', 'New here? 4-week curated walkthrough through the modules.') },
+              { id: 'glossary', icon: '📖', label: __alloT('stem.learning_lab.glossary', 'Glossary'), desc: __alloT('stem.learning_lab.50_pedagogy_cog_sci_terms_with_categor', '50+ pedagogy + cog-sci terms with category filter.') },
+              { id: 'quiz', icon: '🧪', label: __alloT('stem.learning_lab.knowledge_quiz', 'Knowledge quiz'), desc: __alloT('stem.learning_lab.65_questions_across_the_full_curriculu', '65 questions across the full curriculum.') },
+              { id: 'badges', icon: '🏆', label: __alloT('stem.learning_lab.badge_gallery', 'Badge gallery'), desc: __alloT('stem.learning_lab.all_earned_unlockable_badges', 'All earned + unlockable badges.') },
+              { id: 'resources', icon: '📚', label: __alloT('stem.learning_lab.resources', 'Resources'), desc: __alloT('stem.learning_lab.cited_papers_free_paid_tools', 'Cited papers + free + paid tools.') }
             ]
           }
         ];
         var badgeCount = Object.keys(badges).length;
-        var collapsedCats = d.collapsedCats || {};
+        var defaultCollapsedCats = {
+          mytk: true,
+          udl: true,
+          strategies: true,
+          careers: true,
+          specialized: true
+        };
+        var collapsedCats = d.collapsedCats || defaultCollapsedCats;
 
-        return h('div', { role: 'main', 'aria-label': 'Learning Lab main menu', style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.learning_lab.learning_lab_main_menu', 'Learning Lab main menu'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           h('a', { href: '#ll-menu-categories', 'data-ll-focusable': true,
             style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
             onFocus: function(e) { Object.assign(e.target.style, { position: 'static', left: 'auto', width: 'auto', height: 'auto', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
             onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
-          }, 'Skip to module categories'),
+          }, __alloT('stem.learning_lab.skip_to_module_categories', 'Skip to module categories')),
           h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
             h('h1', { style: { margin: '0 0 6px', fontSize: 24, color: T.text } },
-              h('span', { 'aria-hidden': 'true' }, '🧠 '), 'Learning Lab'),
+              h('span', { 'aria-hidden': 'true' }, '🧠 '), __alloT('stem.learning_lab.learning_lab', 'Learning Lab')),
             h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
-              'The science of how learning works — for students, teachers, and future educators. Bloom\'s, UDL, metacognition, cognitive load, spaced repetition, study strategies that actually work, neuromyth debunking, education careers. Cited primary sources; honest about contested claims.')
+              __alloT('stem.learning_lab.the_science_of_how_learning_works_for_', 'The science of how learning works — for students, teachers, and future educators. Bloom\'s, UDL, metacognition, cognitive load, spaced repetition, study strategies that actually work, neuromyth debunking, education careers. Cited primary sources; honest about contested claims.'))
           ),
           badgeCount > 0 && h('button', { 'data-ll-focusable': true,
             'aria-label': 'View badge gallery — ' + badgeCount + ' badges earned',
             onClick: function() { setView('badges'); },
             style: { width: '100%', marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, cursor: 'pointer', textAlign: 'left' } },
             h('span', { 'aria-hidden': 'true' }, '🏅 '),
-            h('strong', { style: { color: T.accentHi } }, 'Badges earned: '), String(badgeCount), ' — tap to view gallery →'
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.learning_lab.tap_to_view_gallery', ' — tap to view gallery →')
           ),
-          h('div', { id: 'll-menu-categories', tabIndex: -1 }),
+          h('div', { id: 'll-menu-categories', tabIndex: -1, 'aria-label': __alloT('stem.learning_lab.module_categories', 'Learning Lab module categories') }),
           categories.map(function(cat) {
             var collapsed = !!collapsedCats[cat.id];
             return h('div', { key: cat.id, style: { marginBottom: 14 } },
@@ -16258,8 +16272,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             );
           }),
           h('div', { style: { marginTop: 16, padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, '🌲 Maine + EL Education context: '),
-            'King Middle School (Portland) is a flagship EL Education school. Crew + HOWLs + Expeditions naturally implement UDL principles. AlloFlow built with these traditions in mind — the platform itself exemplifies "multiple means of representation + expression."'),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.maine_el_education_context', '🌲 Maine + EL Education context: ')),
+            __alloT('stem.learning_lab.king_middle_school_portland_is_a_flags', 'King Middle School (Portland) is a flagship EL Education school. Crew + HOWLs + Expeditions naturally implement UDL principles. AlloFlow built with these traditions in mind — the platform itself exemplifies "multiple means of representation + expression."')),
           disclaimerFooter()
         );
       }
@@ -16274,11 +16288,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           backBar('📊 Bloom\'s Taxonomy'),
           h(BloomSorter, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📊 Bloom\'s Taxonomy (revised 2001)'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.bloom_s_taxonomy_revised_2001', '📊 Bloom\'s Taxonomy (revised 2001)')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              '6 cognitive levels from low to high demand. Each level has its own verbs — use them when writing learning objectives so the objective + assessment match the cognitive level you\'re targeting.'),
+              __alloT('stem.learning_lab.6_cognitive_levels_from_low_to_high_de', '6 cognitive levels from low to high demand. Each level has its own verbs — use them when writing learning objectives so the objective + assessment match the cognitive level you\'re targeting.')),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 11, lineHeight: 1.5, fontStyle: 'italic' } },
-              'Source: Anderson + Krathwohl (2001) revised Bloom\'s. Tap any level for verbs, examples, and the common pitfall.')
+              __alloT('stem.learning_lab.source_anderson_krathwohl_2001_revised', 'Source: Anderson + Krathwohl (2001) revised Bloom\'s. Tap any level for verbs, examples, and the common pitfall.'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 14 } },
             BLOOMS_LEVELS.map(function(l) {
@@ -16306,21 +16320,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               'Level ' + pickedLevel.n + ': ' + pickedLevel.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 14, fontWeight: 700 } }, pickedLevel.def),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } }, pickedLevel.cognitive),
-            h('h5', { style: { margin: '8px 0 4px', fontSize: 13, color: T.accentHi } }, '📝 Verbs you can use'),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.verbs_you_can_use', '📝 Verbs you can use')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               pickedLevel.verbs.map(function(v) {
                 return h('span', { key: v, style: { padding: '3px 8px', borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.text, fontFamily: 'monospace' } }, v);
               })
             ),
-            h('h5', { style: { margin: '8px 0 4px', fontSize: 13, color: T.accentHi } }, '✏️ Example tasks at this level'),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.example_tasks_at_this_level', '✏️ Example tasks at this level')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               pickedLevel.examples.map(function(e, i) { return h('li', { key: i }, e); })
             ),
             h('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 12, color: T.muted } },
-              h('strong', { style: { color: T.warn } }, '⚠️ Common pitfall: '), pickedLevel.pitfall)
+              h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.common_pitfall', '⚠️ Common pitfall: ')), pickedLevel.pitfall)
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, '💡 Usage notes'),
+            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.usage_notes', '💡 Usage notes')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               BLOOMS_USAGE_NOTES.map(function(n, i) { return h('li', { key: i }, n); })
             )
@@ -16339,11 +16353,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           backBar('⚖️ Cognitive Load Theory'),
           h(CognitiveLoadBuilder, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚖️ Sweller\'s Cognitive Load Theory'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.sweller_s_cognitive_load_theory', '⚖️ Sweller\'s Cognitive Load Theory')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Working memory is severely limited. Effective instruction minimizes wasted cognitive effort + maximizes effort that builds mental models.'),
+              __alloT('stem.learning_lab.working_memory_is_severely_limited_eff', 'Working memory is severely limited. Effective instruction minimizes wasted cognitive effort + maximizes effort that builds mental models.')),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🧠 Working memory limits: '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.working_memory_limits', '🧠 Working memory limits: ')),
               WORKING_MEMORY_FACTS.cowans, ' ', WORKING_MEMORY_FACTS.practical)
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
@@ -16369,16 +16383,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedLoad.icon + ' ' + pickedLoad.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 14, fontWeight: 700, lineHeight: 1.5 } }, pickedLoad.def),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '📋 Example: '), pickedLoad.example),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.example', '📋 Example: ')), pickedLoad.example),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🎯 How to manage: '), pickedLoad.manage),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.how_to_manage', '🎯 How to manage: ')), pickedLoad.manage),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 11, lineHeight: 1.5, fontStyle: 'italic' } },
-              h('strong', null, '📚 Source: '), pickedLoad.research)
+              h('strong', null, __alloT('stem.learning_lab.source', '📚 Source: ')), pickedLoad.research)
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, '🧠 Working memory: Miller vs Cowan'),
-            h('p', { style: { margin: '0 0 4px' } }, h('strong', { style: { color: T.text } }, 'Miller (1956): '), WORKING_MEMORY_FACTS.millers),
-            h('p', { style: { margin: '0 0 4px' } }, h('strong', { style: { color: T.text } }, 'Cowan (2001): '), WORKING_MEMORY_FACTS.cowans),
+            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.working_memory_miller_vs_cowan', '🧠 Working memory: Miller vs Cowan')),
+            h('p', { style: { margin: '0 0 4px' } }, h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.miller_1956', 'Miller (1956): ')), WORKING_MEMORY_FACTS.millers),
+            h('p', { style: { margin: '0 0 4px' } }, h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.cowan_2001', 'Cowan (2001): ')), WORKING_MEMORY_FACTS.cowans),
             h('p', { style: { margin: 0 } }, h('strong', { style: { color: T.text } }, 'Chunking: '), WORKING_MEMORY_FACTS.chunking)
           ),
           disclaimerFooter()
@@ -16398,11 +16412,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🗺️ Metacognition'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🗺️ Thinking about thinking'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.thinking_about_thinking', '🗺️ Thinking about thinking')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Metacognition = monitoring + regulating your own thinking. Strong metacognition predicts academic outcomes BEYOND raw IQ + prior knowledge. The 3 phases below are the loop.')
+              __alloT('stem.learning_lab.metacognition_monitoring_regulating_yo', 'Metacognition = monitoring + regulating your own thinking. Strong metacognition predicts academic outcomes BEYOND raw IQ + prior knowledge. The 3 phases below are the loop.'))
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '⏱️ The 3 phases'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.the_3_phases', '⏱️ The 3 phases')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
             METACOG_PHASES.map(function(p) {
               var sel = picked === p.id;
@@ -16424,19 +16438,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           ),
           pickedPhase && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedPhase.icon + ' Phase ' + pickedPhase.n + ': ' + pickedPhase.name),
-            h('h5', { style: { margin: '8px 0 6px', fontSize: 13, color: T.text } }, '🔍 Questions to ask yourself'),
+            h('h5', { style: { margin: '8px 0 6px', fontSize: 13, color: T.text } }, __alloT('stem.learning_lab.questions_to_ask_yourself', '🔍 Questions to ask yourself')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, color: T.muted, lineHeight: 1.7 } },
               pickedPhase.questions.map(function(q, i) { return h('li', { key: i }, q); })
             ),
             h('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 12, color: T.muted } },
-              h('strong', { style: { color: T.warn } }, '💡 Tip: '), pickedPhase.tip)
+              h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.tip', '💡 Tip: ')), pickedPhase.tip)
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📋 Self-rate your metacognition'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.self_rate_your_metacognition', '📋 Self-rate your metacognition')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              'For each statement, rate from 1 (rarely) to 5 (always). No "correct" answer — this is for your own awareness.',
+              __alloT('stem.learning_lab.for_each_statement_rate_from_1_rarely_', 'For each statement, rate from 1 (rarely) to 5 (always). No "correct" answer — this is for your own awareness.'),
               ratedCount > 0 && h('span', null, ' ',
-                h('strong', { style: { color: T.accentHi } }, 'Your average so far: '), avgRating)),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.your_average_so_far', 'Your average so far: ')), avgRating)),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               METACOG_SELF_RATE.map(function(item, i) {
                 var rated = ratings[i];
@@ -16477,11 +16491,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🤝 ZPD + scaffolding'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🤝 Vygotsky\'s Zone of Proximal Development'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.vygotsky_s_zone_of_proximal_developmen', '🤝 Vygotsky\'s Zone of Proximal Development')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'The ZPD = the gap between what a learner can do alone and what they can do with help. The "sweet spot" for instruction. Scaffolding = the temporary support that makes ZPD work accessible; faded as competence grows.')
+              __alloT('stem.learning_lab.the_zpd_the_gap_between_what_a_learner', 'The ZPD = the gap between what a learner can do alone and what they can do with help. The "sweet spot" for instruction. Scaffolding = the temporary support that makes ZPD work accessible; faded as competence grows.'))
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📍 The 3 zones'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.the_3_zones', '📍 The 3 zones')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
             ZPD_ZONES.map(function(z) {
               return h('div', { key: z.id, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -16489,13 +16503,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('span', { style: { fontSize: 22 } }, z.icon),
                   h('strong', { style: { fontSize: 13, color: T.accentHi } }, z.name)
                 ),
-                h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, z.desc),
+                h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, __alloT('stem.learning_lab.' + (z.id) + '_desc', z.desc)),
                 h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.warn } }, '🎯 Teaching implication: '), z.teaching)
+                  h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.teaching_implication', '🎯 Teaching implication: ')), z.teaching)
               );
             })
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🪜 6 scaffolding strategies'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.6_scaffolding_strategies', '🪜 6 scaffolding strategies')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
             SCAFFOLDING_STRATEGIES.map(function(s) {
               var sel = picked === s.id;
@@ -16518,11 +16532,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedScaff && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedScaff.icon + ' ' + pickedScaff.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What it is: '), pickedScaff.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_it_is', '🔍 What it is: ')), pickedScaff.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, '📋 Example: '), pickedScaff.example),
+              h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.example_2', '📋 Example: ')), pickedScaff.example),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '↓ How to fade: '), pickedScaff.fade)
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.how_to_fade', '↓ How to fade: ')), pickedScaff.fade)
           ),
           disclaimerFooter()
         );
@@ -16537,11 +16551,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🎯 UDL Framework'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 Universal Design for Learning (CAST UDL Guidelines 3.0)'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.universal_design_for_learning_cast_udl', '🎯 Universal Design for Learning (CAST UDL Guidelines 3.0)')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'UDL is the framework AlloFlow itself is built on. 3 principles + 9 guidelines. Each guideline has multiple checkpoints. Tap any principle for the guidelines + AlloFlow tool examples.'),
+              __alloT('stem.learning_lab.udl_is_the_framework_alloflow_itself_i', 'UDL is the framework AlloFlow itself is built on. 3 principles + 9 guidelines. Each guideline has multiple checkpoints. Tap any principle for the guidelines + AlloFlow tool examples.')),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 11, fontStyle: 'italic' } },
-              'Source: CAST.org UDL Guidelines 3.0 (2024 update). Free + open framework.')
+              __alloT('stem.learning_lab.source_cast_org_udl_guidelines_3_0_202', 'Source: CAST.org UDL Guidelines 3.0 (2024 update). Free + open framework.'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             UDL_PRINCIPLES.map(function(p) {
@@ -16568,7 +16582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             h('h4', { style: { margin: '0 0 4px', fontSize: 16, color: T.accentHi } }, pickedPrin.icon + ' ' + pickedPrin.name),
             h('p', { style: { margin: '0 0 4px', fontSize: 13, color: T.text, fontStyle: 'italic' } }, pickedPrin.tagline),
             h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.muted, lineHeight: 1.55 } }, pickedPrin.def),
-            h('h5', { style: { margin: '8px 0 8px', fontSize: 13, color: T.accentHi } }, '📋 Guidelines for this principle'),
+            h('h5', { style: { margin: '8px 0 8px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.guidelines_for_this_principle', '📋 Guidelines for this principle')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               pickedPrin.guidelines.map(function(g, i) {
                 return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -16577,7 +16591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     h('strong', { style: { color: T.dim } }, 'Checkpoints: '),
                     g.checkpoints.join(' • ')),
                   h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.55, padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.borderSoft } },
-                    h('strong', { style: { color: T.accentHi } }, '🔧 AlloFlow example: '), g.alloflowExample)
+                    h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.alloflow_example', '🔧 AlloFlow example: ')), g.alloflowExample)
                 );
               })
             )
@@ -16597,7 +16611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⏰ ' + FORGETTING_CURVE.title),
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55, fontWeight: 700 } }, FORGETTING_CURVE.summary),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } }, FORGETTING_CURVE.bigIdea),
-            h('h5', { style: { margin: '8px 0 6px', fontSize: 13, color: T.accentHi } }, '📅 An evidence-backed spacing schedule'),
+            h('h5', { style: { margin: '8px 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.an_evidence_backed_spacing_schedule', '📅 An evidence-backed spacing schedule')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               FORGETTING_CURVE.schedule.map(function(s, i) {
                 return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -16606,33 +16620,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               })
             ),
             h('p', { style: { marginTop: 10, marginBottom: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🛠️ Tools: '), FORGETTING_CURVE.tools)
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.tools', '🛠️ Tools: ')), FORGETTING_CURVE.tools)
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } }, '🎯 ' + TESTING_EFFECT.title),
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55, fontWeight: 700 } }, TESTING_EFFECT.bigIdea),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🧠 Why: '), TESTING_EFFECT.why),
-            h('h5', { style: { margin: '8px 0 6px', fontSize: 13, color: T.accentHi } }, '✏️ Practical applications'),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.why', '🧠 Why: ')), TESTING_EFFECT.why),
+            h('h5', { style: { margin: '8px 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.practical_applications', '✏️ Practical applications')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               TESTING_EFFECT.practical.map(function(p, i) { return h('li', { key: i }, p); })
             ),
             h('p', { style: { marginTop: 10, marginBottom: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-              h('strong', null, '📚 Source: '), TESTING_EFFECT.research)
+              h('strong', null, __alloT('stem.learning_lab.source_2', '📚 Source: ')), TESTING_EFFECT.research)
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.warn } }, '⚠️ ' + ILLUSION_OF_FLUENCY.title),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, ILLUSION_OF_FLUENCY.explanation),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🧪 Test: '), ILLUSION_OF_FLUENCY.test),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.test', '🧪 Test: ')), ILLUSION_OF_FLUENCY.test),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🔧 Fix: '), ILLUSION_OF_FLUENCY.fix),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.fix', '🔧 Fix: ')), ILLUSION_OF_FLUENCY.fix),
             h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-              h('strong', null, '📚 Source: '), ILLUSION_OF_FLUENCY.research),
+              h('strong', null, __alloT('stem.learning_lab.source_3', '📚 Source: ')), ILLUSION_OF_FLUENCY.research),
             h('button', { 'data-ll-focusable': true,
-              'aria-label': 'Mark spaced-repetition module complete',
+              'aria-label': __alloT('stem.learning_lab.mark_spaced_repetition_module_complete', 'Mark spaced-repetition module complete'),
               onClick: function() { awardBadge('spaced-rep-aware', 'Spaced Rep Aware'); },
-              style: Object.assign({}, btnPrimary(), { marginTop: 10 }) }, '✓ I get it')
+              style: Object.assign({}, btnPrimary(), { marginTop: 10 }) }, __alloT('stem.learning_lab.i_get_it', '✓ I get it'))
           ),
           disclaimerFooter()
         );
@@ -16654,13 +16668,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           backBar('📝 Study strategies'),
           h(StrategyRanker, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📝 What works (per Dunlosky 2013)'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.what_works_per_dunlosky_2013', '📝 What works (per Dunlosky 2013)')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Dunlosky et al.\'s 2013 meta-review of 100+ studies. The takeaway: practice testing + distributed practice are HIGH utility; highlighting + rereading are LOW. Most students intuitively gravitate toward the LOW-utility ones.'),
+              __alloT('stem.learning_lab.dunlosky_et_al_s_2013_meta_review_of_1', 'Dunlosky et al.\'s 2013 meta-review of 100+ studies. The takeaway: practice testing + distributed practice are HIGH utility; highlighting + rereading are LOW. Most students intuitively gravitate toward the LOW-utility ones.')),
             h('div', { style: { display: 'flex', gap: 8, fontSize: 11, flexWrap: 'wrap' } },
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.good, border: '1px solid ' + T.good, fontWeight: 700 } }, '🟢 HIGH'),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accentHi, fontWeight: 700 } }, '🟡 MODERATE / STRUCTURE'),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.bad, border: '1px solid ' + T.bad, fontWeight: 700 } }, '🔴 LOW')
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.good, border: '1px solid ' + T.good, fontWeight: 700 } }, __alloT('stem.learning_lab.high', '🟢 HIGH')),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accentHi, fontWeight: 700 } }, __alloT('stem.learning_lab.moderate_structure', '🟡 MODERATE / STRUCTURE')),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.bad, border: '1px solid ' + T.bad, fontWeight: 700 } }, __alloT('stem.learning_lab.low', '🔴 LOW'))
             )
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
@@ -16694,13 +16708,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 pickedStr.utilityLabel)
             ),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedStr.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what', '🔍 What: ')), pickedStr.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, '🧠 Why it works (or doesn\'t): '), pickedStr.whyWorks),
+              h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.why_it_works_or_doesn_t', '🧠 Why it works (or doesn\'t): ')), pickedStr.whyWorks),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🕐 When to use: '), pickedStr.whenToUse),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.when_to_use', '🕐 When to use: ')), pickedStr.whenToUse),
             h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-              h('strong', null, '📚 Research: '), pickedStr.research)
+              h('strong', null, __alloT('stem.learning_lab.research', '📚 Research: ')), pickedStr.research)
           ),
           disclaimerFooter()
         );
@@ -16713,26 +16727,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌱 Growth mindset (brief)'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌱 Growth mindset — the core idea'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.growth_mindset_the_core_idea', '🌱 Growth mindset — the core idea')),
             h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, GROWTH_MINDSET_BRIEF.coreIdea)
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🛠️ Practical applications'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.practical_applications_2', '🛠️ Practical applications')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, color: T.muted, lineHeight: 1.7 } },
               GROWTH_MINDSET_BRIEF.practical.map(function(p, i) { return h('li', { key: i }, p); })
             )
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.warn, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, '⚠️ Honest caveat'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, __alloT('stem.learning_lab.honest_caveat', '⚠️ Honest caveat')),
             h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, GROWTH_MINDSET_BRIEF.honestCaveat)
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, '📚 Research'),
+            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.research_2', '📚 Research')),
             h('ul', { style: { margin: 0, paddingLeft: 18 } },
               GROWTH_MINDSET_BRIEF.research.map(function(r, i) { return h('li', { key: i }, r); })
             ),
             h('p', { style: { marginTop: 10, marginBottom: 0, fontSize: 12, color: T.text } },
-              h('strong', { style: { color: T.accentHi } }, '🔗 See also: '), GROWTH_MINDSET_BRIEF.seeAlso)
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.see_also', '🔗 See also: ')), GROWTH_MINDSET_BRIEF.seeAlso)
           ),
           disclaimerFooter()
         );
@@ -16748,9 +16762,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           backBar('🚫 Neuromyth debunker'),
           h(NeuromythSwiper, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚫 8 popular beliefs that research rejects'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.8_popular_beliefs_that_research_reject_2', '🚫 8 popular beliefs that research rejects')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'These myths persist because they\'re intuitive, marketed, or fit common stories. Critical for pre-service teachers — many education programs still teach some of these.')
+              __alloT('stem.learning_lab.these_myths_persist_because_they_re_in', 'These myths persist because they\'re intuitive, marketed, or fit common stories. Critical for pre-service teachers — many education programs still teach some of these.'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             NEUROMYTHS.map(function(m) {
@@ -16774,15 +16788,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedMyth && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.bad } },
             h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.bad } }, pickedMyth.icon + ' ' + pickedMyth.name),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#7f1d1d', border: '1px solid ' + T.bad, color: '#fee2e2', marginBottom: 10, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', null, '❌ The myth: '), pickedMyth.myth),
+              h('strong', null, __alloT('stem.learning_lab.the_myth', '❌ The myth: ')), pickedMyth.myth),
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '✅ The truth: '), pickedMyth.truth),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.the_truth', '✅ The truth: ')), pickedMyth.truth),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.warn } }, '🤔 Why it persists: '), pickedMyth.whyPersists),
+              h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.why_it_persists', '🤔 Why it persists: ')), pickedMyth.whyPersists),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🎯 What to do instead: '), pickedMyth.whatToDoInstead),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_to_do_instead', '🎯 What to do instead: ')), pickedMyth.whatToDoInstead),
             h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-              h('strong', null, '📚 Research: '), pickedMyth.research)
+              h('strong', null, __alloT('stem.learning_lab.research_3', '📚 Research: ')), pickedMyth.research)
           ),
           disclaimerFooter()
         );
@@ -16797,9 +16811,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🍎 Education + ed-adjacent careers'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🍎 10 career paths'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.10_career_paths', '🍎 10 career paths')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'From classroom teacher to school psychologist (Aaron\'s path) to instructional designer + ed researcher. Each: degree, pay, what\'s good, what\'s hard.')
+              __alloT('stem.learning_lab.from_classroom_teacher_to_school_psych', 'From classroom teacher to school psychologist (Aaron\'s path) to instructional designer + ed researcher. Each: degree, pay, what\'s good, what\'s hard.'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
             ED_CAREERS.map(function(c) {
@@ -16823,12 +16837,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedCar && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedCar.icon + ' ' + pickedCar.name),
             [
-              { label: '🎯 What they do', val: pickedCar.what },
-              { label: '🎓 Degree path', val: pickedCar.degree },
-              { label: '💵 Pay', val: pickedCar.pay },
-              { label: '🌲 Maine path', val: pickedCar.mainePath },
-              { label: '✅ Good', val: pickedCar.good },
-              { label: '⚠️ Hard parts', val: pickedCar.hard }
+              { label: __alloT('stem.learning_lab.what_they_do', '🎯 What they do'), val: pickedCar.what },
+              { label: __alloT('stem.learning_lab.degree_path', '🎓 Degree path'), val: pickedCar.degree },
+              { label: __alloT('stem.learning_lab.pay', '💵 Pay'), val: pickedCar.pay },
+              { label: __alloT('stem.learning_lab.maine_path', '🌲 Maine path'), val: pickedCar.mainePath },
+              { label: __alloT('stem.learning_lab.good', '✅ Good'), val: pickedCar.good },
+              { label: __alloT('stem.learning_lab.hard_parts', '⚠️ Hard parts'), val: pickedCar.hard }
             ].map(function(r, i) {
               return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
@@ -16845,9 +16859,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌲 Maine education programs'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌲 Maine ed-degree pathways'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.maine_ed_degree_pathways', '🌲 Maine ed-degree pathways')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'In-state options for teacher prep, school psych, OT, counseling, + EL Education context.')
+              __alloT('stem.learning_lab.in_state_options_for_teacher_prep_scho', 'In-state options for teacher prep, school psych, OT, counseling, + EL Education context.'))
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             MAINE_ED_PROGRAMS.map(function(p, i) {
@@ -16944,7 +16958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               ),
               // Per-question result strip
               h('div', { style: { padding: '0 18px 8px' } },
-                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, 'Your answers'),
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, __alloT('stem.learning_lab.your_answers', 'Your answers')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                   perQ.map(function(q, qi) {
                     return h('div', { key: qi,
@@ -16960,11 +16974,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   })
                 )
               ),
-              pct >= 80 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.good, fontWeight: 700, borderTop: '1px solid ' + T.border } }, '🏅 Badge earned: Quiz Passed'),
+              pct >= 80 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.good, fontWeight: 700, borderTop: '1px solid ' + T.border } }, __alloT('stem.learning_lab.badge_earned_quiz_passed', '🏅 Badge earned: Quiz Passed')),
               h('div', { style: { padding: '12px 18px', borderTop: '1px solid ' + T.border } },
                 h('button', { 'data-ll-focusable': true,
                   onClick: function() { upd('quizIdx', 0); upd('quizAnswers', {}); },
-                  style: btnPrimary() }, '🔄 Retake quiz')
+                  style: btnPrimary() }, __alloT('stem.learning_lab.retake_quiz', '🔄 Retake quiz'))
               )
             ),
             disclaimerFooter()
@@ -16976,7 +16990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
               h('span', { style: { fontSize: 24 }, 'aria-hidden': 'true' }, question.icon),
-              h('span', { style: { fontSize: 11, color: T.dim } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length, ' · Score: ', score)
+              h('span', { style: { fontSize: 11, color: T.dim } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length, __alloT('stem.learning_lab.score', ' · Score: '), score)
             ),
             h('h3', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.5 } }, question.stem),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -17025,47 +17039,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       function renderBadges() {
         var BADGE_CATALOG = [
           { group: '🧠 Foundation', items: [
-            { id: 'bloom-explorer', icon: '📊', name: 'Bloom\'s Explorer', how: 'Tap any Bloom\'s level.' },
-            { id: 'cogload-aware', icon: '⚖️', name: 'Cognitive Load Aware', how: 'Tap any cognitive-load type.' },
-            { id: 'meta-self-rated', icon: '🗺️', name: 'Metacognition Self-Rated', how: 'Rate all 8 metacognition self-statements.' },
-            { id: 'zpd-scaffolder', icon: '🤝', name: 'ZPD Scaffolder', how: 'Tap any scaffolding strategy.' },
-            { id: 'sdt-explorer', icon: '🎯', name: 'SDT Explorer', how: 'Tap any of the 3 basic psychological needs.' }
+            { id: 'bloom-explorer', icon: '📊', name: __alloT('stem.learning_lab.bloom_s_explorer', 'Bloom\'s Explorer'), how: 'Tap any Bloom\'s level.' },
+            { id: 'cogload-aware', icon: '⚖️', name: __alloT('stem.learning_lab.cognitive_load_aware', 'Cognitive Load Aware'), how: 'Tap any cognitive-load type.' },
+            { id: 'meta-self-rated', icon: '🗺️', name: __alloT('stem.learning_lab.metacognition_self_rated', 'Metacognition Self-Rated'), how: 'Rate all 8 metacognition self-statements.' },
+            { id: 'zpd-scaffolder', icon: '🤝', name: __alloT('stem.learning_lab.zpd_scaffolder', 'ZPD Scaffolder'), how: 'Tap any scaffolding strategy.' },
+            { id: 'sdt-explorer', icon: '🎯', name: __alloT('stem.learning_lab.sdt_explorer', 'SDT Explorer'), how: 'Tap any of the 3 basic psychological needs.' }
           ] },
           { group: '🎯 UDL', items: [
-            { id: 'udl-explorer', icon: '🎯', name: 'UDL Explorer', how: 'Tap any UDL principle.' }
+            { id: 'udl-explorer', icon: '🎯', name: __alloT('stem.learning_lab.udl_explorer', 'UDL Explorer'), how: 'Tap any UDL principle.' }
           ] },
           { group: '📚 Strategies', items: [
-            { id: 'spaced-rep-aware', icon: '⏰', name: 'Spaced Rep Aware', how: 'Mark the spaced-repetition module complete.' },
-            { id: 'study-strategist', icon: '📝', name: 'Study Strategist', how: 'Tap any study strategy in the Dunlosky table.' },
-            { id: 'memory-explorer', icon: '🧠', name: 'Memory Explorer', how: 'Tap any technique in the Memory + Active Learning module.' },
-            { id: 'note-explorer', icon: '📓', name: 'Note-Taking Explorer', how: 'Tap any note-taking system.' },
-            { id: 'sleep-aware', icon: '😴', name: 'Sleep Aware', how: 'Tap any sleep-for-learning principle.' },
-            { id: 'goal-frameworks', icon: '🎯', name: 'Goal Framework Explorer', how: 'Tap any of the 4 goal-setting frameworks.' },
-            { id: 'mt-aware', icon: '📵', name: 'Multitasking Aware', how: 'Tap any multitasking cost source.' },
-            { id: 'anxiety-toolkit', icon: '😰', name: 'Anxiety Toolkit', how: 'Tap any calming technique in the Test Anxiety module.' },
-            { id: 'myth-buster', icon: '🚫', name: 'Myth Buster', how: 'Tap any neuromyth in the debunker.' },
-            { id: 'research-literate', icon: '🔬', name: 'Research Literate', how: 'Tap any stats term in Research Literacy.' },
-            { id: 'writing-explorer', icon: '✍️', name: 'Writing Process Explorer', how: 'Tap any of the 5 writing-process pillars.' },
-            { id: 'group-strategist', icon: '🤝', name: 'Group Work Strategist', how: 'Tap any of the 6 cooperative-learning structures.' }
+            { id: 'spaced-rep-aware', icon: '⏰', name: __alloT('stem.learning_lab.spaced_rep_aware', 'Spaced Rep Aware'), how: 'Mark the spaced-repetition module complete.' },
+            { id: 'study-strategist', icon: '📝', name: __alloT('stem.learning_lab.study_strategist', 'Study Strategist'), how: 'Tap any study strategy in the Dunlosky table.' },
+            { id: 'memory-explorer', icon: '🧠', name: __alloT('stem.learning_lab.memory_explorer', 'Memory Explorer'), how: 'Tap any technique in the Memory + Active Learning module.' },
+            { id: 'note-explorer', icon: '📓', name: __alloT('stem.learning_lab.note_taking_explorer', 'Note-Taking Explorer'), how: 'Tap any note-taking system.' },
+            { id: 'sleep-aware', icon: '😴', name: __alloT('stem.learning_lab.sleep_aware', 'Sleep Aware'), how: 'Tap any sleep-for-learning principle.' },
+            { id: 'goal-frameworks', icon: '🎯', name: __alloT('stem.learning_lab.goal_framework_explorer', 'Goal Framework Explorer'), how: 'Tap any of the 4 goal-setting frameworks.' },
+            { id: 'mt-aware', icon: '📵', name: __alloT('stem.learning_lab.multitasking_aware', 'Multitasking Aware'), how: 'Tap any multitasking cost source.' },
+            { id: 'anxiety-toolkit', icon: '😰', name: __alloT('stem.learning_lab.anxiety_toolkit_2', 'Anxiety Toolkit'), how: 'Tap any calming technique in the Test Anxiety module.' },
+            { id: 'myth-buster', icon: '🚫', name: __alloT('stem.learning_lab.myth_buster', 'Myth Buster'), how: 'Tap any neuromyth in the debunker.' },
+            { id: 'research-literate', icon: '🔬', name: __alloT('stem.learning_lab.research_literate', 'Research Literate'), how: 'Tap any stats term in Research Literacy.' },
+            { id: 'writing-explorer', icon: '✍️', name: __alloT('stem.learning_lab.writing_process_explorer', 'Writing Process Explorer'), how: 'Tap any of the 5 writing-process pillars.' },
+            { id: 'group-strategist', icon: '🤝', name: __alloT('stem.learning_lab.group_work_strategist', 'Group Work Strategist'), how: 'Tap any of the 6 cooperative-learning structures.' }
           ] },
           { group: '👩‍🏫 Specialized teaching', items: [
-            { id: 'reading-explorer', icon: '📖', name: 'Reading Science Explorer', how: 'Tap any of the 5 Pillars of Reading.' },
-            { id: 'trauma-informed', icon: '💚', name: 'Trauma-Informed Aware', how: 'Tap any of the 6 trauma-informed practices.' },
-            { id: 'mtss-explorer', icon: '🏗️', name: 'MTSS Explorer', how: 'Tap any of the 8 universal-screening tools in the MTSS module.' },
-            { id: 'math-pedagogy', icon: '🔢', name: 'Math Pedagogy Explorer', how: 'Tap any of the 6 math pedagogy moves (number talks, productive struggle, etc.).' }
+            { id: 'reading-explorer', icon: '📖', name: __alloT('stem.learning_lab.reading_science_explorer', 'Reading Science Explorer'), how: 'Tap any of the 5 Pillars of Reading.' },
+            { id: 'trauma-informed', icon: '💚', name: __alloT('stem.learning_lab.trauma_informed_aware', 'Trauma-Informed Aware'), how: 'Tap any of the 6 trauma-informed practices.' },
+            { id: 'mtss-explorer', icon: '🏗️', name: __alloT('stem.learning_lab.mtss_explorer', 'MTSS Explorer'), how: 'Tap any of the 8 universal-screening tools in the MTSS module.' },
+            { id: 'math-pedagogy', icon: '🔢', name: __alloT('stem.learning_lab.math_pedagogy_explorer', 'Math Pedagogy Explorer'), how: 'Tap any of the 6 math pedagogy moves (number talks, productive struggle, etc.).' }
           ] },
           { group: '🏅 Career', items: [
-            { id: 'career-explorer', icon: '🍎', name: 'Career Explorer', how: 'Tap any education career path.' }
+            { id: 'career-explorer', icon: '🍎', name: __alloT('stem.learning_lab.career_explorer_2', 'Career Explorer'), how: 'Tap any education career path.' }
           ] },
           { group: '🎯 Apply it', items: [
-            { id: 'lesson-builder', icon: '🎯', name: 'Lesson Builder', how: 'Pick a Bloom\'s level in the Lesson Plan Builder.' },
-            { id: 'strategy-picked', icon: '💡', name: 'Strategy Picker User', how: 'Fill in all 4 fields in the Strategy Picker.' },
-            { id: 'lab-master', icon: '🏆', name: 'Lab Master', how: 'Complete all 6 lab simulator cases with 70%+ scores.' }
+            { id: 'lesson-builder', icon: '🎯', name: __alloT('stem.learning_lab.lesson_builder', 'Lesson Builder'), how: 'Pick a Bloom\'s level in the Lesson Plan Builder.' },
+            { id: 'strategy-picked', icon: '💡', name: __alloT('stem.learning_lab.strategy_picker_user', 'Strategy Picker User'), how: 'Fill in all 4 fields in the Strategy Picker.' },
+            { id: 'lab-master', icon: '🏆', name: __alloT('stem.learning_lab.lab_master', 'Lab Master'), how: 'Complete all 6 lab simulator cases with 70%+ scores.' }
           ] },
           { group: '🧪 Self-test + path', items: [
-            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 65-question knowledge quiz.' },
-            { id: 'path-graduate', icon: '🛤️', name: 'Learning Path Graduate', how: 'Mark all 14 Recommended Learning Path modules as visited.' },
-            { id: 'glossary-user', icon: '📖', name: 'Glossary User', how: 'Search the glossary at least once.' }
+            { id: 'quiz-passed', icon: '🧪', name: __alloT('stem.learning_lab.quiz_passed', 'Quiz Passed'), how: 'Score 80%+ on the 65-question knowledge quiz.' },
+            { id: 'path-graduate', icon: '🛤️', name: __alloT('stem.learning_lab.learning_path_graduate', 'Learning Path Graduate'), how: 'Mark all 14 Recommended Learning Path modules as visited.' },
+            { id: 'glossary-user', icon: '📖', name: __alloT('stem.learning_lab.glossary_user', 'Glossary User'), how: 'Search the glossary at least once.' }
           ] }
         ];
 
@@ -17083,7 +17097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           backBar('🏆 Badge gallery'),
           h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + pctColor, marginBottom: 14, textAlign: 'center' } },
-            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, 'Curriculum mastery'),
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, __alloT('stem.learning_lab.curriculum_mastery', 'Curriculum mastery')),
             h('div', { style: { fontSize: 36, fontWeight: 900, color: pctColor, lineHeight: 1, marginBottom: 6 } }, earnedBadges + ' / ' + totalBadges),
             h('div', { style: { fontSize: 14, color: T.text, fontWeight: 700 } }, pct + '% complete')
           ),
@@ -17137,7 +17151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📚 Resources'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Primary research sources + free tools + Maine career orgs.'),
+            __alloT('stem.learning_lab.primary_research_sources_free_tools_ma', 'Primary research sources + free tools + Maine career orgs.')),
           section('🎯 UDL framework', RESOURCES.udl),
           section('🔬 Foundational research papers', RESOURCES.research),
           section('🛠️ Practical learning tools', RESOURCES.practical),
@@ -17160,36 +17174,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🎯 Lesson plan builder'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 Bloom\'s-aligned lesson plan builder'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.bloom_s_aligned_lesson_plan_builder', '🎯 Bloom\'s-aligned lesson plan builder')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Enter your topic + pick a Bloom\'s level + grade band. Get matched verbs, activity ideas, and assessment formats. Use the output as a draft of a learning objective + activity plan.'),
+              __alloT('stem.learning_lab.enter_your_topic_pick_a_bloom_s_level_', 'Enter your topic + pick a Bloom\'s level + grade band. Get matched verbs, activity ideas, and assessment formats. Use the output as a draft of a learning objective + activity plan.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, '📚 Topic / content'),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.learning_lab.topic_content', '📚 Topic / content')),
                 h('input', { type: 'text', 'data-ll-focusable': true,
-                  'aria-label': 'Topic or content for the lesson',
-                  placeholder: 'e.g. photosynthesis, fractions, the French Revolution',
+                  'aria-label': __alloT('stem.learning_lab.topic_or_content_for_the_lesson', 'Topic or content for the lesson'),
+                  placeholder: __alloT('stem.learning_lab.e_g_photosynthesis_fractions_the_frenc', 'e.g. photosynthesis, fractions, the French Revolution'),
                   value: topic,
                   onChange: function(e) { upd('lpTopic', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, '🎓 Grade band'),
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.learning_lab.grade_band', '🎓 Grade band')),
                 h('select', { 'data-ll-focusable': true,
-                  'aria-label': 'Grade band for the lesson',
+                  'aria-label': __alloT('stem.learning_lab.grade_band_for_the_lesson', 'Grade band for the lesson'),
                   value: grade,
                   onChange: function(e) { upd('lpGrade', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
-                  h('option', { value: 'elementary' }, 'Elementary (K-5)'),
-                  h('option', { value: 'middle' }, 'Middle (6-8)'),
-                  h('option', { value: 'highSchool' }, 'High School (9-12)'),
-                  h('option', { value: 'college' }, 'College / Adult')
+                  h('option', { value: 'elementary' }, __alloT('stem.learning_lab.elementary_k_5', 'Elementary (K-5)')),
+                  h('option', { value: 'middle' }, __alloT('stem.learning_lab.middle_6_8', 'Middle (6-8)')),
+                  h('option', { value: 'highSchool' }, __alloT('stem.learning_lab.high_school_9_12', 'High School (9-12)')),
+                  h('option', { value: 'college' }, __alloT('stem.learning_lab.college_adult', 'College / Adult'))
                 )
               )
             )
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📊 Pick your target Bloom\'s level'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.pick_your_target_bloom_s_level', '📊 Pick your target Bloom\'s level')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6 } },
               BLOOMS_LEVELS.map(function(l) {
                 var sel = pickedLevel === l.id;
@@ -17216,35 +17230,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               levelData.icon + ' Lesson plan draft for: ',
               h('em', null, topic || '[your topic]')),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 10, fontSize: 13, color: T.text, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '📝 Suggested learning objective: '),
-              'Students will ',
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.suggested_learning_objective', '📝 Suggested learning objective: ')),
+              __alloT('stem.learning_lab.students_will', 'Students will '),
               h('strong', { style: { color: T.accent } }, levelData.verbs[0].toUpperCase()),
               ' ' + (topic ? topic : '[topic]') + (pickedLevel === 'apply' || pickedLevel === 'analyze' || pickedLevel === 'evaluate' ? ' using [criteria/method].' : '.')),
-            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '✏️ Verbs you can use'),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, __alloT('stem.learning_lab.verbs_you_can_use_2', '✏️ Verbs you can use')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               levelData.verbs.map(function(v) {
                 return h('span', { key: v, style: { padding: '3px 8px', borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.text, fontFamily: 'monospace' } }, v);
               })
             ),
-            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '🎬 Activity ideas at this level'),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, __alloT('stem.learning_lab.activity_ideas_at_this_level', '🎬 Activity ideas at this level')),
             h('ul', { style: { margin: '0 0 10px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               activityData.activities.map(function(a, i) { return h('li', { key: i }, a); })
             ),
-            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '📋 Assessment formats that match'),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, __alloT('stem.learning_lab.assessment_formats_that_match', '📋 Assessment formats that match')),
             h('ul', { style: { margin: '0 0 10px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               activityData.assessments.map(function(a, i) { return h('li', { key: i }, a); })
             ),
-            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '🎯 Assessment verbs (the verb in the test prompt should match the objective verb)'),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, __alloT('stem.learning_lab.assessment_verbs_the_verb_in_the_test_', '🎯 Assessment verbs (the verb in the test prompt should match the objective verb)')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               activityData.assessmentVerbs.map(function(v) {
                 return h('span', { key: v, style: { padding: '3px 8px', borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.good, fontSize: 11, color: T.good, fontFamily: 'monospace' } }, v);
               })
             ),
             h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.warn } }, '🎓 Grade-band note: '), GRADE_BAND_GUIDANCE[grade])
+              h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.grade_band_note', '🎓 Grade-band note: ')), GRADE_BAND_GUIDANCE[grade])
           ),
           !pickedLevel && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
-            'Pick a Bloom\'s level above to generate a lesson-plan draft.'),
+            __alloT('stem.learning_lab.pick_a_bloom_s_level_above_to_generate', 'Pick a Bloom\'s level above to generate a lesson-plan draft.')),
           disclaimerFooter()
         );
       }
@@ -17282,62 +17296,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('💡 Strategy picker'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '💡 Get evidence-backed strategy recommendations'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.get_evidence_backed_strategy_recommend', '💡 Get evidence-backed strategy recommendations')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Tell the picker about a real assignment or test you have coming up. It will return strategies matched to your situation, drawn from Dunlosky 2013 + supporting research.')
+              __alloT('stem.learning_lab.tell_the_picker_about_a_real_assignmen', 'Tell the picker about a real assignment or test you have coming up. It will return strategies matched to your situation, drawn from Dunlosky 2013 + supporting research.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, '📋 Tell us about your assignment'),
+            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.tell_us_about_your_assignment', '📋 Tell us about your assignment')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, '📚 Subject'),
-                h('select', { 'data-ll-focusable': true, 'aria-label': 'Subject', value: subj,
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.learning_lab.subject', '📚 Subject')),
+                h('select', { 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.subject_2', 'Subject'), value: subj,
                   onChange: function(e) { upd('spSubject', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
-                  h('option', { value: '' }, '— pick one —'),
-                  h('option', { value: 'math' }, 'Math'),
-                  h('option', { value: 'language-arts' }, 'Language arts / English'),
-                  h('option', { value: 'science' }, 'Science'),
-                  h('option', { value: 'social-studies' }, 'Social studies / history'),
-                  h('option', { value: 'foreign-language' }, 'Foreign language'),
-                  h('option', { value: 'arts' }, 'Arts'),
-                  h('option', { value: 'standardized-test' }, 'Standardized test (SAT, ACT, AP)')
+                  h('option', { value: '' }, __alloT('stem.learning_lab.pick_one', '— pick one —')),
+                  h('option', { value: 'math' }, __alloT('stem.learning_lab.math', 'Math')),
+                  h('option', { value: 'language-arts' }, __alloT('stem.learning_lab.language_arts_english', 'Language arts / English')),
+                  h('option', { value: 'science' }, __alloT('stem.learning_lab.science', 'Science')),
+                  h('option', { value: 'social-studies' }, __alloT('stem.learning_lab.social_studies_history', 'Social studies / history')),
+                  h('option', { value: 'foreign-language' }, __alloT('stem.learning_lab.foreign_language', 'Foreign language')),
+                  h('option', { value: 'arts' }, __alloT('stem.learning_lab.arts', 'Arts')),
+                  h('option', { value: 'standardized-test' }, __alloT('stem.learning_lab.standardized_test_sat_act_ap', 'Standardized test (SAT, ACT, AP)'))
                 )
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, '⏰ Time available'),
-                h('select', { 'data-ll-focusable': true, 'aria-label': 'Time available', value: time,
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.learning_lab.time_available', '⏰ Time available')),
+                h('select', { 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.time_available_2', 'Time available'), value: time,
                   onChange: function(e) { upd('spTime', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
-                  h('option', { value: '' }, '— pick one —'),
-                  h('option', { value: 'cramming-tonight' }, 'Test is tomorrow (cramming-tonight)'),
-                  h('option', { value: 'few-days' }, 'A few days'),
-                  h('option', { value: '1-2-weeks' }, '1-2 weeks'),
-                  h('option', { value: 'month-plus' }, 'A month or more')
+                  h('option', { value: '' }, __alloT('stem.learning_lab.pick_one_2', '— pick one —')),
+                  h('option', { value: 'cramming-tonight' }, __alloT('stem.learning_lab.test_is_tomorrow_cramming_tonight', 'Test is tomorrow (cramming-tonight)')),
+                  h('option', { value: 'few-days' }, __alloT('stem.learning_lab.a_few_days', 'A few days')),
+                  h('option', { value: '1-2-weeks' }, __alloT('stem.learning_lab.1_2_weeks', '1-2 weeks')),
+                  h('option', { value: 'month-plus' }, __alloT('stem.learning_lab.a_month_or_more', 'A month or more'))
                 )
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, '📋 Assessment type'),
-                h('select', { 'data-ll-focusable': true, 'aria-label': 'Assessment type', value: assessType,
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.learning_lab.assessment_type', '📋 Assessment type')),
+                h('select', { 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.assessment_type_2', 'Assessment type'), value: assessType,
                   onChange: function(e) { upd('spAssess', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
-                  h('option', { value: '' }, '— pick one —'),
-                  h('option', { value: 'multiple-choice' }, 'Multiple choice'),
-                  h('option', { value: 'short-answer' }, 'Short answer'),
-                  h('option', { value: 'essay' }, 'Essay'),
-                  h('option', { value: 'performance-task' }, 'Performance task / demonstration'),
-                  h('option', { value: 'project' }, 'Project / paper')
+                  h('option', { value: '' }, __alloT('stem.learning_lab.pick_one_3', '— pick one —')),
+                  h('option', { value: 'multiple-choice' }, __alloT('stem.learning_lab.multiple_choice', 'Multiple choice')),
+                  h('option', { value: 'short-answer' }, __alloT('stem.learning_lab.short_answer', 'Short answer')),
+                  h('option', { value: 'essay' }, __alloT('stem.learning_lab.essay', 'Essay')),
+                  h('option', { value: 'performance-task' }, __alloT('stem.learning_lab.performance_task_demonstration', 'Performance task / demonstration')),
+                  h('option', { value: 'project' }, __alloT('stem.learning_lab.project_paper', 'Project / paper'))
                 )
               ),
               h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, '🧠 Prior knowledge'),
-                h('select', { 'data-ll-focusable': true, 'aria-label': 'Prior knowledge of topic', value: prior,
+                h('span', { style: { fontWeight: 700 } }, __alloT('stem.learning_lab.prior_knowledge', '🧠 Prior knowledge')),
+                h('select', { 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.prior_knowledge_of_topic', 'Prior knowledge of topic'), value: prior,
                   onChange: function(e) { upd('spPrior', e.target.value); },
                   style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
-                  h('option', { value: '' }, '— pick one —'),
-                  h('option', { value: 'novice' }, 'Novice (just starting)'),
-                  h('option', { value: 'some-familiarity' }, 'Some familiarity'),
-                  h('option', { value: 'strong' }, 'Strong (review/refine)')
+                  h('option', { value: '' }, __alloT('stem.learning_lab.pick_one_4', '— pick one —')),
+                  h('option', { value: 'novice' }, __alloT('stem.learning_lab.novice_just_starting', 'Novice (just starting)')),
+                  h('option', { value: 'some-familiarity' }, __alloT('stem.learning_lab.some_familiarity', 'Some familiarity')),
+                  h('option', { value: 'strong' }, __alloT('stem.learning_lab.strong_review_refine', 'Strong (review/refine)'))
                 )
               )
             )
@@ -17356,43 +17370,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               else                       groups.other.push(sId);
             });
             var groupMeta = [
-              { key: 'high',     icon: '🟢', title: 'HIGH UTILITY', desc: 'Strongest evidence (Dunlosky 2013) — prioritize these', color: T.good },
-              { key: 'moderate', icon: '🟡', title: 'MODERATE UTILITY', desc: 'Useful with caveats — works in specific conditions', color: T.warn },
-              { key: 'other',    icon: '🟦', title: 'STRUCTURE / SUPPORTING', desc: 'Scaffolding patterns that pair with the high-utility ones', color: T.accent }
+              { key: 'high',     icon: '🟢', title: __alloT('stem.learning_lab.high_utility', 'HIGH UTILITY'), desc: __alloT('stem.learning_lab.strongest_evidence_dunlosky_2013_prior', 'Strongest evidence (Dunlosky 2013) — prioritize these'), color: T.good },
+              { key: 'moderate', icon: '🟡', title: __alloT('stem.learning_lab.moderate_utility', 'MODERATE UTILITY'), desc: __alloT('stem.learning_lab.useful_with_caveats_works_in_specific_', 'Useful with caveats — works in specific conditions'), color: T.warn },
+              { key: 'other',    icon: '🟦', title: __alloT('stem.learning_lab.structure_supporting', 'STRUCTURE / SUPPORTING'), desc: __alloT('stem.learning_lab.scaffolding_patterns_that_pair_with_th', 'Scaffolding patterns that pair with the high-utility ones'), color: T.accent }
             ];
             // Time-blocked plan keyed off the student's `time` input
             var planByTime = {
               'cramming-tonight': [
-                { mins: 30, label: 'Free recall (closed-book; write what you remember)', strategy: 'free-recall' },
-                { mins: 15, label: 'Compare against notes; identify gaps', strategy: 'self-explanation' },
-                { mins: 15, label: 'Practice quiz on weak spots', strategy: 'practice-testing' },
-                { mins: 0,  label: 'Sleep — consolidates the retrieval you just did', strategy: 'sleep-between-sessions' }
+                { mins: 30, label: __alloT('stem.learning_lab.free_recall_closed_book_write_what_you', 'Free recall (closed-book; write what you remember)'), strategy: 'free-recall' },
+                { mins: 15, label: __alloT('stem.learning_lab.compare_against_notes_identify_gaps', 'Compare against notes; identify gaps'), strategy: 'self-explanation' },
+                { mins: 15, label: __alloT('stem.learning_lab.practice_quiz_on_weak_spots', 'Practice quiz on weak spots'), strategy: 'practice-testing' },
+                { mins: 0,  label: __alloT('stem.learning_lab.sleep_consolidates_the_retrieval_you_j', 'Sleep — consolidates the retrieval you just did'), strategy: 'sleep-between-sessions' }
               ],
               'few-days': [
-                { mins: 25, label: 'Day 1: read + summarize from memory', strategy: 'free-recall' },
-                { mins: 25, label: 'Day 2: retrieval-practice quiz', strategy: 'practice-testing' },
-                { mins: 20, label: 'Day 3: mixed problem set (interleaved)', strategy: 'interleaving' },
-                { mins: 15, label: 'Day 4: explain to a friend', strategy: 'self-explanation' }
+                { mins: 25, label: __alloT('stem.learning_lab.day_1_read_summarize_from_memory', 'Day 1: read + summarize from memory'), strategy: 'free-recall' },
+                { mins: 25, label: __alloT('stem.learning_lab.day_2_retrieval_practice_quiz', 'Day 2: retrieval-practice quiz'), strategy: 'practice-testing' },
+                { mins: 20, label: __alloT('stem.learning_lab.day_3_mixed_problem_set_interleaved', 'Day 3: mixed problem set (interleaved)'), strategy: 'interleaving' },
+                { mins: 15, label: __alloT('stem.learning_lab.day_4_explain_to_a_friend', 'Day 4: explain to a friend'), strategy: 'self-explanation' }
               ],
               '1-2-weeks': [
-                { mins: 30, label: 'Week 1, day 1: SQ3R initial pass', strategy: 'active-reading-SQ3R' },
-                { mins: 25, label: 'Week 1, day 3: free recall + quiz', strategy: 'practice-testing' },
-                { mins: 25, label: 'Week 1, day 6: interleaved problems', strategy: 'interleaving' },
-                { mins: 25, label: 'Week 2, day 2: spaced retrieval', strategy: 'spaced-retrieval' },
-                { mins: 20, label: 'Week 2, day 5: mock test under conditions', strategy: 'mixed-problem-sets' }
+                { mins: 30, label: __alloT('stem.learning_lab.week_1_day_1_sq3r_initial_pass', 'Week 1, day 1: SQ3R initial pass'), strategy: 'active-reading-SQ3R' },
+                { mins: 25, label: __alloT('stem.learning_lab.week_1_day_3_free_recall_quiz', 'Week 1, day 3: free recall + quiz'), strategy: 'practice-testing' },
+                { mins: 25, label: __alloT('stem.learning_lab.week_1_day_6_interleaved_problems', 'Week 1, day 6: interleaved problems'), strategy: 'interleaving' },
+                { mins: 25, label: __alloT('stem.learning_lab.week_2_day_2_spaced_retrieval', 'Week 2, day 2: spaced retrieval'), strategy: 'spaced-retrieval' },
+                { mins: 20, label: __alloT('stem.learning_lab.week_2_day_5_mock_test_under_condition', 'Week 2, day 5: mock test under conditions'), strategy: 'mixed-problem-sets' }
               ],
               'month-plus': [
-                { mins: 20, label: 'Set up Anki/Quizlet deck (one-time)', strategy: 'spaced-repetition-app' },
-                { mins: 15, label: 'Daily — 5-15 min spaced flashcards', strategy: 'spaced-repetition-flashcards' },
-                { mins: 30, label: 'Weekly — free recall + cumulative review', strategy: 'periodic-cumulative-review' },
-                { mins: 30, label: 'Bi-weekly — mock test under conditions', strategy: 'mixed-problem-sets' },
-                { mins: 20, label: 'Final week — deliberate practice on weak spots', strategy: 'deliberate-practice' }
+                { mins: 20, label: __alloT('stem.learning_lab.set_up_anki_quizlet_deck_one_time', 'Set up Anki/Quizlet deck (one-time)'), strategy: 'spaced-repetition-app' },
+                { mins: 15, label: __alloT('stem.learning_lab.daily_5_15_min_spaced_flashcards', 'Daily — 5-15 min spaced flashcards'), strategy: 'spaced-repetition-flashcards' },
+                { mins: 30, label: __alloT('stem.learning_lab.weekly_free_recall_cumulative_review', 'Weekly — free recall + cumulative review'), strategy: 'periodic-cumulative-review' },
+                { mins: 30, label: __alloT('stem.learning_lab.bi_weekly_mock_test_under_conditions', 'Bi-weekly — mock test under conditions'), strategy: 'mixed-problem-sets' },
+                { mins: 20, label: __alloT('stem.learning_lab.final_week_deliberate_practice_on_weak', 'Final week — deliberate practice on weak spots'), strategy: 'deliberate-practice' }
               ]
             };
             var plan = planByTime[time] || planByTime['few-days'];
             var totalMins = plan.reduce(function(a, b) { return a + b.mins; }, 0);
             return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
-              h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🎯 Recommended strategies for your situation'),
+              h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, __alloT('stem.learning_lab.recommended_strategies_for_your_situat', '🎯 Recommended strategies for your situation')),
               groupMeta.map(function(g) {
                 var ids = groups[g.key];
                 if (!ids.length) return null;
@@ -17414,14 +17428,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                         ),
                         h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.55 } }, detail.what),
                         stratFull && stratFull.whyWorks && h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 4, paddingLeft: 8, borderLeft: '2px solid ' + g.color + '55' } },
-                          h('strong', null, 'Why it works: '), stratFull.whyWorks)
+                          h('strong', null, __alloT('stem.learning_lab.why_it_works', 'Why it works: ')), stratFull.whyWorks)
                       );
                     })
                   )
                 );
               }),
               groups.caveat.length > 0 && h('div', { style: { marginBottom: 12 } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: T.warn, marginBottom: 6 } }, '⚠️ WATCH OUT'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: T.warn, marginBottom: 6 } }, __alloT('stem.learning_lab.watch_out', '⚠️ WATCH OUT')),
                 groups.caveat.map(function(sId) {
                   var detail = STRATEGY_DETAILS[sId];
                   if (!detail) return null;
@@ -17434,7 +17448,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               h('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'linear-gradient(135deg, ' + T.accent + '22, ' + T.cardAlt + ')', border: '2px solid ' + T.accent } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, '🗓️'),
-                  h('strong', { style: { fontSize: 14, color: T.accentHi } }, 'Your time-blocked study session'),
+                  h('strong', { style: { fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.your_time_blocked_study_session', 'Your time-blocked study session')),
                   h('span', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic' } }, '· ' + totalMins + ' min total, scoped to your time available')
                 ),
                 h('ol', { style: { margin: 0, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -17454,12 +17468,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 )
               ),
               h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, '🎯 Action: '),
-                'Use the time-blocked plan above on THIS assignment THIS WEEK. The first time always feels awkward — push through. Notice the difference vs your default approach. That\'s the proof.')
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.action', '🎯 Action: ')),
+                __alloT('stem.learning_lab.use_the_time_blocked_plan_above_on_thi', 'Use the time-blocked plan above on THIS assignment THIS WEEK. The first time always feels awkward — push through. Notice the difference vs your default approach. That\'s the proof.'))
             );
           })(),
           !recs && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
-            'Fill in all 4 fields above to get strategy recommendations.'),
+            __alloT('stem.learning_lab.fill_in_all_4_fields_above_to_get_stra', 'Fill in all 4 fields above to get strategy recommendations.')),
           disclaimerFooter()
         );
       }
@@ -17485,9 +17499,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🛤️ Recommended learning path'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🛤️ A 4-week curated walkthrough'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.a_4_week_curated_walkthrough', '🛤️ A 4-week curated walkthrough')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'New here? This is the most valuable 4 weeks you can spend in this tool. Each week: theme + 2-6 target modules + measurable outcome. ',
+              __alloT('stem.learning_lab.new_here_this_is_the_most_valuable_4_w', 'New here? This is the most valuable 4 weeks you can spend in this tool. Each week: theme + 2-6 target modules + measurable outcome. '),
               h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalMods + ' (' + pct + '%)')
           ),
           LEARNING_PATH.map(function(w) {
@@ -17550,16 +17564,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📖 Glossary'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📖 50+ pedagogy + cognitive-science terms'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.50_pedagogy_cognitive_science_terms', '📖 50+ pedagogy + cognitive-science terms')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              'Reference glossary for the vocabulary used across this tool + most education + cognitive-science writing. Filter by category or search.'),
+              __alloT('stem.learning_lab.reference_glossary_for_the_vocabulary_', 'Reference glossary for the vocabulary used across this tool + most education + cognitive-science writing. Filter by category or search.')),
             h('input', { type: 'search', 'data-ll-focusable': true,
-              'aria-label': 'Search glossary terms',
-              placeholder: 'Search terms or definitions...',
+              'aria-label': __alloT('stem.learning_lab.search_glossary_terms', 'Search glossary terms'),
+              placeholder: __alloT('stem.learning_lab.search_terms_or_definitions', 'Search terms or definitions...'),
               value: query,
               onChange: function(e) { upd('glQuery', e.target.value); awardBadge('glossary-user', 'Glossary User'); },
               style: { width: '100%', padding: 10, borderRadius: 8, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13, marginBottom: 10, boxSizing: 'border-box' } }),
-            h('div', { role: 'tablist', 'aria-label': 'Filter by category', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.learning_lab.filter_by_category', 'Filter by category'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               tags.map(function(t) {
                 var active = tagFilter === t;
                 return h('button', { key: t, 'data-ll-focusable': true, role: 'tab',
@@ -17584,7 +17598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               );
             }),
             filtered.length === 0 && h('div', { style: { padding: 14, textAlign: 'center', color: T.dim, fontSize: 13 } },
-              'No terms match. Try clearing the search or picking "All".')
+              __alloT('stem.learning_lab.no_terms_match_try_clearing_the_search', 'No terms match. Try clearing the search or picking "All".'))
           ),
           disclaimerFooter()
         );
@@ -17600,9 +17614,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           backBar('🧠 Memory + active learning techniques'),
           h(DigitSpanTest, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🧠 8 specific techniques'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.8_specific_techniques', '🧠 8 specific techniques')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Concrete + actionable. Pick one to try this week — you don\'t need all 8. Each: what it is, how to do it, when to use, research backing, example.')
+              __alloT('stem.learning_lab.concrete_actionable_pick_one_to_try_th', 'Concrete + actionable. Pick one to try this week — you don\'t need all 8. Each: what it is, how to do it, when to use, research backing, example.'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             MEMORY_TECHNIQUES.map(function(t) {
@@ -17626,17 +17640,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedTech && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedTech.icon + ' ' + pickedTech.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What it is: '), pickedTech.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_it_is_2', '🔍 What it is: ')), pickedTech.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '📋 How to do it: '), pickedTech.how),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.how_to_do_it', '📋 How to do it: ')), pickedTech.how),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🕐 When to use: '), pickedTech.when),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.when_to_use_2', '🕐 When to use: ')), pickedTech.when),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, '📋 Example: '), pickedTech.example),
+              h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.example_3', '📋 Example: ')), pickedTech.example),
             pickedTech.caveat && h('div', { style: { padding: 8, borderRadius: 6, background: '#7c2d12', border: '1px solid ' + T.warn, fontSize: 11, color: '#fed7aa', lineHeight: 1.55, marginBottom: 8 } },
-              h('strong', null, '⚠️ Caveat: '), pickedTech.caveat),
+              h('strong', null, __alloT('stem.learning_lab.caveat', '⚠️ Caveat: ')), pickedTech.caveat),
             h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-              h('strong', null, '📚 Research: '), pickedTech.research)
+              h('strong', null, __alloT('stem.learning_lab.research_4', '📚 Research: ')), pickedTech.research)
           ),
           disclaimerFooter()
         );
@@ -17658,12 +17672,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         function overview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '😰 Yerkes-Dodson — anxiety isn\'t always bad'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.yerkes_dodson_anxiety_isn_t_always_bad', '😰 Yerkes-Dodson — anxiety isn\'t always bad')),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55, fontWeight: 700 } }, TEST_ANXIETY_OVERVIEW.yerkesDodson),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
-                'Goal: not "zero anxiety" but the optimal middle. Mild activation sharpens focus. The strategies in this module help bring HIGH anxiety down toward optimal, not eliminate all activation.')
+                __alloT('stem.learning_lab.goal_not_zero_anxiety_but_the_optimal_', 'Goal: not "zero anxiety" but the optimal middle. Mild activation sharpens focus. The strategies in this module help bring HIGH anxiety down toward optimal, not eliminate all activation.'))
             ),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🔍 The 4 components — recognize each'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.the_4_components_recognize_each', '🔍 The 4 components — recognize each')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               TEST_ANXIETY_OVERVIEW.fourComponents.map(function(c) {
                 return h('div', { key: c.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -17672,7 +17686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     h('strong', { style: { fontSize: 13, color: T.accentHi } }, c.name)
                   ),
                   h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } },
-                    h('strong', null, 'What it looks like: '), c.what),
+                    h('strong', null, __alloT('stem.learning_lab.what_it_looks_like', 'What it looks like: ')), c.what),
                   h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
                     h('strong', { style: { color: T.warn } }, 'Cost: '), c.cost));
               })
@@ -17683,9 +17697,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         function preTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌅 Pre-test routine'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.pre_test_routine', '🌅 Pre-test routine')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'The 24 hours before the test do more than the 30 minutes during. Set yourself up.')
+                __alloT('stem.learning_lab.the_24_hours_before_the_test_do_more_t', 'The 24 hours before the test do more than the 30 minutes during. Set yourself up.'))
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               PRE_TEST_ROUTINE.map(function(s) {
@@ -17697,7 +17711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.55, marginLeft: 36 } },
                     h('strong', { style: { color: T.dim } }, 'Why: '), s.why),
                   h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 36 } },
-                    h('strong', { style: { color: T.accentHi } }, '💡 Tip: '), s.tip));
+                    h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.tip_2', '💡 Tip: ')), s.tip));
               })
             )
           );
@@ -17706,9 +17720,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         function duringTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📝 During-test strategies'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.during_test_strategies', '📝 During-test strategies')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Every minute you spend on these structural moves frees working memory for the actual test content.')
+                __alloT('stem.learning_lab.every_minute_you_spend_on_these_struct', 'Every minute you spend on these structural moves frees working memory for the actual test content.'))
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               DURING_TEST_STRATEGIES.map(function(s) {
@@ -17720,7 +17734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.55, marginLeft: 36 } },
                     h('strong', { style: { color: T.dim } }, 'Why: '), s.why),
                   h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 36 } },
-                    h('strong', { style: { color: T.accentHi } }, '💡 Tip: '), s.tip));
+                    h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.tip_3', '💡 Tip: ')), s.tip));
               })
             )
           );
@@ -17731,9 +17745,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           var pickedC = picked ? CALMING_TECHNIQUES.find(function(c) { return c.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌬️ 6 calming techniques'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.6_calming_techniques', '🌬️ 6 calming techniques')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Pick 1-2 to actually practice when you\'re NOT in a test, so they\'re available when you ARE in a test. Practice = autopilot when you need it.')
+                __alloT('stem.learning_lab.pick_1_2_to_actually_practice_when_you', 'Pick 1-2 to actually practice when you\'re NOT in a test, so they\'re available when you ARE in a test. Practice = autopilot when you need it.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
               CALMING_TECHNIQUES.map(function(c) {
@@ -17754,30 +17768,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             pickedC && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedC.icon + ' ' + pickedC.name),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, '📋 How: '), pickedC.how),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.how', '📋 How: ')), pickedC.how),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, '🧠 Why it works: '), pickedC.whyWorks),
+                h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.why_it_works_2', '🧠 Why it works: ')), pickedC.whyWorks),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.good } }, '🕐 When to use: '), pickedC.whenToUse),
+                h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.when_to_use_3', '🕐 When to use: ')), pickedC.whenToUse),
               h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-                h('strong', null, '📚 Research: '), pickedC.research))
+                h('strong', null, __alloT('stem.learning_lab.research_5', '📚 Research: ')), pickedC.research))
           );
         }
 
         function helpTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.good, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.good } }, '✅ When self-help is enough'),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.good } }, __alloT('stem.learning_lab.when_self_help_is_enough', '✅ When self-help is enough')),
               h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
                 WHEN_TO_SEEK_HELP.selfHelp.map(function(s, i) { return h('li', { key: i }, s); }))
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, '⚠️ When to reach out for support'),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, __alloT('stem.learning_lab.when_to_reach_out_for_support', '⚠️ When to reach out for support')),
               h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
                 WHEN_TO_SEEK_HELP.seekHelp.map(function(s, i) { return h('li', { key: i }, s); }))
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🤝 Who can help'),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.who_can_help', '🤝 Who can help')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 WHEN_TO_SEEK_HELP.who.map(function(w, i) {
                   return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -17787,13 +17801,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '📋 Accommodations: '), WHEN_TO_SEEK_HELP.accommodations)
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.accommodations', '📋 Accommodations: ')), WHEN_TO_SEEK_HELP.accommodations)
           );
         }
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('😰 Test anxiety + performance'),
-          h('div', { role: 'tablist', 'aria-label': 'Test anxiety sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.learning_lab.test_anxiety_sections', 'Test anxiety sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('pre', '🌅 Before'),
@@ -17818,14 +17832,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🎯 Self-Determination Theory'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 Deci + Ryan\'s SDT'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.deci_ryan_s_sdt', '🎯 Deci + Ryan\'s SDT')),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, SDT_OVERVIEW.bigIdea),
             h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔬 Why it matters: '), SDT_OVERVIEW.why),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.why_it_matters', '🔬 Why it matters: ')), SDT_OVERVIEW.why),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 11, fontStyle: 'italic' } },
-              h('strong', null, '📚 Source: '), SDT_OVERVIEW.research)
+              h('strong', null, __alloT('stem.learning_lab.source_4', '📚 Source: ')), SDT_OVERVIEW.research)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧩 The 3 basic psychological needs'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.the_3_basic_psychological_needs', '🧩 The 3 basic psychological needs')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             SDT_NEEDS.map(function(n) {
               var sel = picked === n.id;
@@ -17849,22 +17863,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, pickedNeed.def),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good } },
-                h('strong', { style: { color: T.good, fontSize: 12 } }, '✅ When met:'),
+                h('strong', { style: { color: T.good, fontSize: 12 } }, __alloT('stem.learning_lab.when_met', '✅ When met:')),
                 h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.text, lineHeight: 1.5 } }, pickedNeed.met)),
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad } },
-                h('strong', { style: { color: T.bad, fontSize: 12 } }, '❌ When thwarted:'),
+                h('strong', { style: { color: T.bad, fontSize: 12 } }, __alloT('stem.learning_lab.when_thwarted', '❌ When thwarted:')),
                 h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.text, lineHeight: 1.5 } }, pickedNeed.thwarted))
             ),
-            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '👩‍🏫 Teacher applications'),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, __alloT('stem.learning_lab.teacher_applications', '👩‍🏫 Teacher applications')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               pickedNeed.teacherSupport.map(function(s, i) { return h('li', { key: i }, s); })),
             h('div', { style: { marginTop: 10, padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn } },
-              h('strong', { style: { color: T.warn, fontSize: 12 } }, '👨‍🎓 Student application: '),
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, __alloT('stem.learning_lab.student_application', '👨‍🎓 Student application: ')),
               h('span', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } }, pickedNeed.studentApply))
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📈 The motivation continuum'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.the_motivation_continuum', '📈 The motivation continuum')),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-            'Motivation isn\'t binary. It runs on a continuum from amotivation → controlled → autonomous → intrinsic. The 3 needs being met pushes motivation up the continuum.'),
+            __alloT('stem.learning_lab.motivation_isn_t_binary_it_runs_on_a_c', 'Motivation isn\'t binary. It runs on a continuum from amotivation → controlled → autonomous → intrinsic. The 3 needs being met pushes motivation up the continuum.')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
             SDT_CONTINUUM.map(function(s) {
               var hue = s.n === 0 ? T.bad : s.n <= 2 ? T.warn : s.n <= 3 ? T.accentHi : T.good;
@@ -17872,11 +17886,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 h('span', { 'aria-hidden': 'true', style: { background: hue, color: s.n === 0 ? '#fff' : '#000', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 } }, s.n),
                 h('div', null,
                   h('strong', { style: { fontSize: 12, color: hue } }, s.name),
-                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, s.desc)));
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, __alloT('stem.learning_lab.' + (s.id) + '_desc', s.desc))));
             })
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, '🌲 EL Education + Maine note: '), SDT_MAINE_NOTE),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.el_education_maine_note', '🌲 EL Education + Maine note: ')), SDT_MAINE_NOTE),
           disclaimerFooter()
         );
       }
@@ -17897,9 +17911,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         function hierarchy() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏆 Hierarchy of evidence'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.hierarchy_of_evidence', '🏆 Hierarchy of evidence')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Not all evidence is equal. Lowest = anecdote ("I tried it"). Highest = systematic review of multiple high-quality studies. Always weight findings by strength of evidence.')
+                __alloT('stem.learning_lab.not_all_evidence_is_equal_lowest_anecd', 'Not all evidence is equal. Lowest = anecdote ("I tried it"). Highest = systematic review of multiple high-quality studies. Always weight findings by strength of evidence.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               RESEARCH_HIERARCHY.map(function(r) {
@@ -17923,9 +17937,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           var pickedT = picked != null ? STATS_TERMS[picked] : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📊 Stats terms you need'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.stats_terms_you_need', '📊 Stats terms you need')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'You don\'t need to do statistics — but you do need to read them. Tap each term for definition + cutoff + caution.')
+                __alloT('stem.learning_lab.you_don_t_need_to_do_statistics_but_yo', 'You don\'t need to do statistics — but you do need to read them. Tap each term for definition + cutoff + caution.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
               STATS_TERMS.map(function(t, i) {
@@ -17943,20 +17957,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             pickedT && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedT.term),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, '🔍 Definition: '), pickedT.def),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.definition', '🔍 Definition: ')), pickedT.def),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, '📏 Conventional cutoff: '), pickedT.conventionalCutoff),
+                h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.conventional_cutoff', '📏 Conventional cutoff: ')), pickedT.conventionalCutoff),
               h('p', { style: { margin: 0, padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, color: T.text, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, '⚠️ Caution: '), pickedT.caution))
+                h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.caution', '⚠️ Caution: ')), pickedT.caution))
           );
         }
 
         function redFlags() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚩 8 red flags in education research'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.8_red_flags_in_education_research', '🚩 8 red flags in education research')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Critical reading skills. Most "studies show" claims circulating online have one or more of these issues.')
+                __alloT('stem.learning_lab.critical_reading_skills_most_studies_s', 'Critical reading skills. Most "studies show" claims circulating online have one or more of these issues.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               RESEARCH_RED_FLAGS.map(function(f, i) {
@@ -17965,7 +17979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } },
                     h('strong', { style: { color: T.dim } }, 'Example: '), f.example),
                   h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                    h('strong', { style: { color: T.good } }, '🎯 What to do: '), f.whatToDo));
+                    h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.what_to_do', '🎯 What to do: ')), f.whatToDo));
               })
             )
           );
@@ -17974,9 +17988,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         function findResearch() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔍 Where to find good research'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.where_to_find_good_research', '🔍 Where to find good research')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Free + paid databases. Most have free patron access via your school + public library.')
+                __alloT('stem.learning_lab.free_paid_databases_most_have_free_pat', 'Free + paid databases. Most have free patron access via your school + public library.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               WHERE_TO_FIND_RESEARCH.map(function(r, i) {
@@ -17992,7 +18006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🔬 Research literacy'),
-          h('div', { role: 'tablist', 'aria-label': 'Research literacy sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.learning_lab.research_literacy_sections', 'Research literacy sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('hierarchy', '🏆 Hierarchy of evidence'),
             tabBtn('stats', '📊 Stats terms'),
@@ -18015,22 +18029,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // ─────────────────────────────────────────
       function renderBloomMatch() {
         var LEVELS = [
-          { id: 'remember',   label: 'Remember',    color: '#ef4444', icon: '📝',
+          { id: 'remember',   label: __alloT('stem.learning_lab.remember', 'Remember'),    color: '#ef4444', icon: '📝',
             verbs: 'list, name, define, identify, recall, recognize, label, repeat',
             def: 'Recall facts and basic concepts. Lowest cognitive demand.' },
-          { id: 'understand', label: 'Understand',  color: '#f59e0b', icon: '💡',
+          { id: 'understand', label: __alloT('stem.learning_lab.understand', 'Understand'),  color: '#f59e0b', icon: '💡',
             verbs: 'explain, describe, summarize, paraphrase, classify, interpret, give example',
             def: 'Translate, interpret, explain. Demonstrate comprehension in your own words.' },
-          { id: 'apply',      label: 'Apply',       color: '#16a34a', icon: '🔧',
+          { id: 'apply',      label: __alloT('stem.learning_lab.apply', 'Apply'),       color: '#16a34a', icon: '🔧',
             verbs: 'use, solve, calculate, demonstrate, implement, execute, predict outcome',
             def: 'Use procedures or knowledge in a NEW situation. Most-confused with Analyze.' },
-          { id: 'analyze',    label: 'Analyze',     color: '#0ea5e9', icon: '🔍',
+          { id: 'analyze',    label: __alloT('stem.learning_lab.analyze', 'Analyze'),     color: '#0ea5e9', icon: '🔍',
             verbs: 'compare, contrast, distinguish, examine, categorize, differentiate, infer, deconstruct',
             def: 'Break apart, find relationships, see how parts fit. Most-confused with Apply.' },
-          { id: 'evaluate',   label: 'Evaluate',    color: '#7c3aed', icon: '⚖️',
+          { id: 'evaluate',   label: __alloT('stem.learning_lab.evaluate', 'Evaluate'),    color: '#7c3aed', icon: '⚖️',
             verbs: 'judge, critique, defend, justify, recommend, prioritize, support, argue',
             def: 'Make defensible judgments based on criteria + evidence. Almost always involves trade-offs.' },
-          { id: 'create',     label: 'Create',      color: '#ec4899', icon: '✨',
+          { id: 'create',     label: __alloT('stem.learning_lab.create', 'Create'),      color: '#ec4899', icon: '✨',
             verbs: 'design, compose, construct, plan, produce, generate, devise, invent',
             def: 'Produce something genuinely new. Highest cognitive demand. Synthesizes everything below.' }
         ];
@@ -18098,12 +18112,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🕵️ Bloom Match'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '10 task descriptions — pick the Bloom\'s level'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, __alloT('stem.learning_lab.10_task_descriptions_pick_the_bloom_s__2', '10 task descriptions — pick the Bloom\'s level')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                'For each task, pick the Bloom\'s taxonomy level it targets. Coaching after each pick names the canonical verb stem and what would have to change to push the task to a higher (or lower) level. Verb selection is the primary discriminator.')
+                __alloT('stem.learning_lab.for_each_task_pick_the_bloom_s_taxonom', 'For each task, pick the Bloom\'s taxonomy level it targets. Coaching after each pick names the canonical verb stem and what would have to change to push the task to a higher (or lower) level. Verb selection is the primary discriminator.'))
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The 6 levels (revised 2001)'),
+              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, __alloT('stem.learning_lab.the_6_levels_revised_2001', 'The 6 levels (revised 2001)')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
                 LEVELS.map(function(l) {
                   return h('div', { key: l.id, style: { padding: '8px 10px', borderRadius: 8, background: l.color + '15', border: '1px solid ' + l.color + '55' } },
@@ -18120,7 +18134,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             h('button', { 'data-ll-focusable': true,
               onClick: startBm,
               style: btnPrimary({ width: '100%', textAlign: 'center', padding: '12px 18px', fontSize: 14 })
-            }, '🕵️ Start — task 1 of 10')
+            }, __alloT('stem.learning_lab.start_task_1_of_10', '🕵️ Start — task 1 of 10'))
           );
         }
 
@@ -18134,17 +18148,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🕵️ Bloom Match'),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.dim, marginBottom: 12 } },
-            h('span', null, 'Task ', h('strong', { style: { color: T.text } }, bmShown.length)),
-            h('span', null, 'Score ', h('strong', { style: { color: T.good } }, bmScore + ' / ' + bmRounds)),
-            bmRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link } }, pct + '%')),
-            h('span', null, 'Streak ', h('strong', { style: { color: T.warn } }, bmStreak)),
-            h('span', null, 'Best ', h('strong', { style: { color: T.accentHi } }, bmBest))
+            h('span', null, __alloT('stem.learning_lab.task', 'Task '), h('strong', { style: { color: T.text } }, bmShown.length)),
+            h('span', null, __alloT('stem.learning_lab.score_2', 'Score '), h('strong', { style: { color: T.good } }, bmScore + ' / ' + bmRounds)),
+            bmRounds > 0 && h('span', null, __alloT('stem.learning_lab.accuracy', 'Accuracy '), h('strong', { style: { color: T.link } }, pct + '%')),
+            h('span', null, __alloT('stem.learning_lab.streak', 'Streak '), h('strong', { style: { color: T.warn } }, bmStreak)),
+            h('span', null, __alloT('stem.learning_lab.best', 'Best '), h('strong', { style: { color: T.accentHi } }, bmBest))
           ),
           h('section', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent + '88', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Task ' + bmShown.length + ' of ' + V.length),
             h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.55 } }, '"' + v.task + '"')
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the Bloom level' },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': __alloT('stem.learning_lab.pick_the_bloom_level', 'Pick the Bloom level') },
             LEVELS.map(function(l) {
               var picked = bmAns && bmPick === l.id;
               var isRight = bmAns && l.id === v.correct;
@@ -18187,7 +18201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
             allDone
               ? h('div', { style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 tasks complete'),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, __alloT('stem.learning_lab.all_10_tasks_complete', '🏆 All 10 tasks complete')),
                   h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.5 } },
                     'Final: ', h('strong', null, bmScore + ' / ' + V.length + ' (' + Math.round((bmScore / V.length) * 100) + '%)'),
                     bmScore === V.length ? ' — every Bloom level identified. Ready to write your own taxonomy-aligned learning objectives.' :
@@ -18198,12 +18212,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('button', { 'data-ll-focusable': true,
                     onClick: function() { upd('bmIdx', -1); upd('bmShown', []); upd('bmScore', 0); upd('bmRounds', 0); upd('bmStreak', 0); },
                     style: btnPrimary({ marginTop: 10, padding: '6px 14px', fontSize: 12 })
-                  }, '🔄 Restart')
+                  }, __alloT('stem.learning_lab.restart', '🔄 Restart'))
                 )
               : h('button', { 'data-ll-focusable': true,
                   onClick: startBm,
                   style: btnPrimary({ padding: '8px 14px', fontSize: 13 })
-                }, '➡️ Next task')
+                }, __alloT('stem.learning_lab.next_task', '➡️ Next task'))
           )
         );
       }
@@ -18240,14 +18254,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🧪 Hands-on lab simulator'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🧪 Diagnostic + intervention thinking, scored'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.diagnostic_intervention_thinking_score', '🧪 Diagnostic + intervention thinking, scored')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                'A teacher consults you about a struggling student. You walk through diagnostic + intervention decisions. Each choice is scored: ',
-                h('strong', { style: { color: T.good } }, '+10 = best'), ', ',
-                h('strong', { style: { color: T.accentHi } }, '+5 = OK'), ', ',
-                h('strong', { style: { color: T.bad } }, '−5 to −10 = harmful or pathologizing'), '. Final letter grade + per-step feedback.'),
+                __alloT('stem.learning_lab.a_teacher_consults_you_about_a_struggl', 'A teacher consults you about a struggling student. You walk through diagnostic + intervention decisions. Each choice is scored: '),
+                h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.10_best', '+10 = best')), ', ',
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.5_ok', '+5 = OK')), ', ',
+                h('strong', { style: { color: T.bad } }, __alloT('stem.learning_lab.5_to_10_harmful_or_pathologizing', '−5 to −10 = harmful or pathologizing')), __alloT('stem.learning_lab.final_letter_grade_per_step_feedback', '. Final letter grade + per-step feedback.')),
               h('div', { style: { fontSize: 12, color: T.muted } },
-                h('strong', { style: { color: T.accentHi } }, 'Cases completed: '), labsCompleted + ' / ' + LAB_SCENARIOS.length)
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.cases_completed', 'Cases completed: ')), labsCompleted + ' / ' + LAB_SCENARIOS.length)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
               LAB_SCENARIOS.map(function(s) {
@@ -18258,7 +18272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + (done ? T.good : T.border), color: T.text, cursor: 'pointer' } },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
                   h('div', { style: { fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 4 } }, s.name, done && ' ✓'),
-                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, ' decision points'),
+                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, __alloT('stem.learning_lab.decision_points', ' decision points')),
                   h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, s.intro.substring(0, 140) + '...')
                 );
               })
@@ -18290,11 +18304,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           }
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-              h('button', { 'data-ll-focusable': true, onClick: reset, style: btnGhost() }, '← Cases'),
+              h('button', { 'data-ll-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.learning_lab.cases', '← Cases')),
               h('span', { style: { fontSize: 24 } }, lab.icon),
               h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, lab.name + ' — Results')),
             h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + gradeColor, marginBottom: 14, textAlign: 'center' } },
-              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, 'Final score'),
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, __alloT('stem.learning_lab.final_score', 'Final score')),
               h('div', { style: { fontSize: 56, fontWeight: 900, color: gradeColor, lineHeight: 1, marginBottom: 6 } }, grade),
               h('div', { style: { fontSize: 18, color: T.text, fontWeight: 700 } }, totalScore + ' / ' + maxScore + ' (' + pct + '%)'),
               h('p', { style: { margin: '10px 0 0', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
@@ -18304,7 +18318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 pct >= 60 ? '🛠️ Hands need work. Review the foundation modules + retake.' :
                 '📚 The traps are pathologizing language + jumping to intervention before diagnosis. Walk through the framework modules.')
             ),
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🔍 Step-by-step feedback'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, __alloT('stem.learning_lab.step_by_step_feedback', '🔍 Step-by-step feedback')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
               lab.steps.map(function(step, i) {
                 var picked = answers[step.id];
@@ -18325,11 +18339,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               })
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-              h('strong', { style: { color: T.accentHi } }, '✅ What was actually going on (with the evidence-aligned plan): '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_was_actually_going_on_with_the_ev', '✅ What was actually going on (with the evidence-aligned plan): ')),
               h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.55 } }, lab.truth)),
             h('div', { style: { display: 'flex', gap: 8 } },
-              h('button', { 'data-ll-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, '🔁 Retry'),
-              h('button', { 'data-ll-focusable': true, onClick: reset, style: btnPrimary() }, '🧪 Pick another')),
+              h('button', { 'data-ll-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, __alloT('stem.learning_lab.retry', '🔁 Retry')),
+              h('button', { 'data-ll-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.learning_lab.pick_another', '🧪 Pick another'))),
             disclaimerFooter()
           );
         }
@@ -18337,12 +18351,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var step = lab.steps[stepIdx];
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
-            h('button', { 'data-ll-focusable': true, onClick: reset, style: btnGhost() }, '← Quit case'),
+            h('button', { 'data-ll-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.learning_lab.quit_case', '← Quit case')),
             h('span', { style: { fontSize: 24 } }, lab.icon),
             h('h2', { style: { margin: 0, fontSize: 17, color: T.text, flex: 1 } }, lab.name),
             h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, 'Step ' + (stepIdx + 1) + ' / ' + totalSteps)),
           stepIdx === 0 && h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '👤 Student case'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.student_case', '👤 Student case')),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55, fontStyle: 'italic' } }, lab.intro),
             h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
               h('div', null, h('strong', { style: { color: T.text } }, 'Grade: '), lab.student.grade + ' · ' + lab.student.subject),
@@ -18374,12 +18388,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           backBar('📓 Note-taking systems'),
           h(LonghandVsLaptopDemo, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📓 5 note-taking systems + 4 universal principles'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.5_note_taking_systems_4_universal_prin', '📓 5 note-taking systems + 4 universal principles')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'The most popular study skill, often badly executed. Each system has a structure + ideal use case + research backing + the pitfall most students fall into. ',
-              h('strong', { style: { color: T.accentHi } }, 'Picking a system is meaningless without commitment to active processing.'))
+              __alloT('stem.learning_lab.the_most_popular_study_skill_often_bad', 'The most popular study skill, often badly executed. Each system has a structure + ideal use case + research backing + the pitfall most students fall into. '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.picking_a_system_is_meaningless_withou', 'Picking a system is meaningless without commitment to active processing.')))
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎨 5 systems'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.5_systems', '🎨 5 systems')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
             NOTE_SYSTEMS.map(function(s) {
               var sel = picked === s.id;
@@ -18399,17 +18413,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedSys && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedSys.icon + ' ' + pickedSys.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '📐 Structure: '), pickedSys.structure),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.structure', '📐 Structure: ')), pickedSys.structure),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '✅ Good for: '), pickedSys.goodFor),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.good_for', '✅ Good for: ')), pickedSys.goodFor),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.bad } }, '❌ Bad for: '), pickedSys.badFor),
+              h('strong', { style: { color: T.bad } }, __alloT('stem.learning_lab.bad_for', '❌ Bad for: ')), pickedSys.badFor),
             h('p', { style: { margin: '0 0 8px', color: T.dim, fontSize: 11, fontStyle: 'italic' } },
-              h('strong', { style: { color: T.text } }, '📚 Research: '), pickedSys.research),
+              h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.research_6', '📚 Research: ')), pickedSys.research),
             h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.warn } }, '⚠️ Common pitfall: '), pickedSys.pitfall)
+              h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.common_pitfall_2', '⚠️ Common pitfall: ')), pickedSys.pitfall)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 4 universal principles'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.4_universal_principles', '🎯 4 universal principles')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             NOTE_TAKING_PRINCIPLES.map(function(p, i) {
               return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -18433,18 +18447,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           backBar('😴 Sleep + learning'),
           h(SleepCycleViz, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '😴 The single most under-discussed factor in academic performance'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.the_single_most_under_discussed_factor', '😴 The single most under-discussed factor in academic performance')),
             h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, 'Memory consolidation happens in sleep. '),
-              'During Stage 2 (sleep spindles) + REM, the brain replays + transfers info from hippocampus to cortex — that\'s when learning becomes durable. Sleep AFTER learning produces 30-50% better retention vs equivalent waking time (Stickgold 2005).')
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.memory_consolidation_happens_in_sleep', 'Memory consolidation happens in sleep. ')),
+              __alloT('stem.learning_lab.during_stage_2_sleep_spindles_rem_the_', 'During Stage 2 (sleep spindles) + REM, the brain replays + transfers info from hippocampus to cortex — that\'s when learning becomes durable. Sleep AFTER learning produces 30-50% better retention vs equivalent waking time (Stickgold 2005).'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, '⚠️ Sleep deprivation costs'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, __alloT('stem.learning_lab.sleep_deprivation_costs', '⚠️ Sleep deprivation costs')),
             h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, SLEEP_FACTS.deprivation),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
-              h('strong', { style: { color: T.text } }, 'Adolescent note: '), SLEEP_FACTS.teenagers)
+              h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.adolescent_note', 'Adolescent note: ')), SLEEP_FACTS.teenagers)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 6 sleep-for-learning principles'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.6_sleep_for_learning_principles', '🎯 6 sleep-for-learning principles')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             SLEEP_FOR_LEARNING.map(function(s) {
               var sel = picked === s.id;
@@ -18464,16 +18478,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedItem.icon + ' ' + pickedItem.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedItem.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_2', '🔍 What: ')), pickedItem.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🎯 Practical: '), pickedItem.practical),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.practical', '🎯 Practical: ')), pickedItem.practical),
             h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-              h('strong', null, '📚 Research: '), pickedItem.research)
+              h('strong', null, __alloT('stem.learning_lab.research_7', '📚 Research: ')), pickedItem.research)
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, '🛏️ Sleep facts at a glance'),
+            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.learning_lab.sleep_facts_at_a_glance', '🛏️ Sleep facts at a glance')),
             h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: T.text } }, 'Consolidation: '), SLEEP_FACTS.consolidation),
-            h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: T.text } }, 'Adult need: '), SLEEP_FACTS.adults),
+            h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.adult_need', 'Adult need: ')), SLEEP_FACTS.adults),
             h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: T.text } }, 'Naps: '), SLEEP_FACTS.naps),
             h('div', null, h('strong', { style: { color: T.text } }, 'Caffeine: '), SLEEP_FACTS.caffeine)
           ),
@@ -18501,9 +18515,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           var pickedFw = picked ? GOAL_FRAMEWORKS.find(function(f) { return f.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 4 goal-setting frameworks'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.4_goal_setting_frameworks', '🎯 4 goal-setting frameworks')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                'No single framework is best. Match to the situation: SMART for discrete targets, OKRs for stretch quarters, implementation intentions for habits, 2-min rule for momentum.')
+                __alloT('stem.learning_lab.no_single_framework_is_best_match_to_t', 'No single framework is best. Match to the situation: SMART for discrete targets, OKRs for stretch quarters, implementation intentions for habits, 2-min rule for momentum.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
               GOAL_FRAMEWORKS.map(function(f) {
@@ -18524,48 +18538,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             pickedFw && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedFw.icon + ' ' + pickedFw.name),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, '🔍 What it is: '), pickedFw.what),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_it_is_3', '🔍 What it is: ')), pickedFw.what),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.good } }, '✅ Good for: '), pickedFw.goodFor),
+                h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.good_for_2', '✅ Good for: ')), pickedFw.goodFor),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.bad } }, '❌ Bad for: '), pickedFw.badFor),
+                h('strong', { style: { color: T.bad } }, __alloT('stem.learning_lab.bad_for_2', '❌ Bad for: ')), pickedFw.badFor),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 12, lineHeight: 1.55, padding: 8, borderRadius: 6, background: T.cardAlt } },
-                h('strong', { style: { color: T.accentHi } }, '📋 Example: '), pickedFw.example),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.example_4', '📋 Example: ')), pickedFw.example),
               h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, '⚠️ Pitfall: '), pickedFw.pitfall))
+                h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.pitfall', '⚠️ Pitfall: ')), pickedFw.pitfall))
           );
         }
 
         function pomodoroTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🍅 Pomodoro deep dive'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.pomodoro_deep_dive', '🍅 Pomodoro deep dive')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
                 h('strong', { style: { color: T.text } }, 'Origin: '), POMODORO_DEEP.creator),
               h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, '⏱️ Structure: '), POMODORO_DEEP.structure)
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.structure_2', '⏱️ Structure: ')), POMODORO_DEEP.structure)
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, '🧠 Why it works'),
+              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.why_it_works_3', '🧠 Why it works')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, POMODORO_DEEP.why)
             ),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📋 Rules'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.rules', '📋 Rules')),
             h('ul', { style: { margin: '0 0 14px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               POMODORO_DEEP.rules.map(function(r, i) { return h('li', { key: i }, r); })),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🔧 Modifications'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.modifications', '🔧 Modifications')),
             h('ul', { style: { margin: '0 0 14px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               POMODORO_DEEP.modifications.map(function(m, i) { return h('li', { key: i }, m); })),
             h('p', { style: { margin: 0, padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-              h('strong', null, '📚 Research: '), POMODORO_DEEP.research)
+              h('strong', null, __alloT('stem.learning_lab.research_8', '📚 Research: ')), POMODORO_DEEP.research)
           );
         }
 
         function reframesTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔄 5 procrastination reframes'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.5_procrastination_reframes', '🔄 5 procrastination reframes')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                'The modern reframe: procrastination is emotion-regulation, not time-management. Each reframe + an action.')
+                __alloT('stem.learning_lab.the_modern_reframe_procrastination_is_', 'The modern reframe: procrastination is emotion-regulation, not time-management. Each reframe + an action.'))
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               PROCRASTINATION_REFRAMES.map(function(r, i) {
@@ -18573,7 +18587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 4 } }, '→ ' + r.reframe),
                   h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, r.detail),
                   h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.5, padding: 8, borderRadius: 6, background: T.bg } },
-                    h('strong', { style: { color: T.good } }, '🎯 Action: '), r.action));
+                    h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.action_2', '🎯 Action: ')), r.action));
               })
             )
           );
@@ -18582,7 +18596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🎯 Goals + procrastination'),
           smartBuilder,
-          h('div', { role: 'tablist', 'aria-label': 'Goals + procrastination sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.learning_lab.goals_procrastination_sections', 'Goals + procrastination sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('frameworks', '🎯 4 frameworks'),
             tabBtn('pomodoro', '🍅 Pomodoro'),
@@ -18605,19 +18619,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           h(TaskSwitchDemo, { awardXP: ctx.awardXP }),
           h(PhoneProximitySlider, { awardXP: ctx.awardXP }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📵 The brain doesn\'t multitask — it task-switches'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.the_brain_doesn_t_multitask_it_task_sw', '📵 The brain doesn\'t multitask — it task-switches')),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, MULTITASKING_FACTS.coreReality),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, marginBottom: 8 } },
-              h('strong', { style: { color: T.warn, fontSize: 12 } }, '⏳ Attention residue (Sophie Leroy 2009): '),
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, __alloT('stem.learning_lab.attention_residue_sophie_leroy_2009', '⏳ Attention residue (Sophie Leroy 2009): ')),
               h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, MULTITASKING_FACTS.attentionResidue)),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, marginBottom: 8 } },
-              h('strong', { style: { color: T.warn, fontSize: 12 } }, '🕐 Reorientation cost (Gloria Mark UCI): '),
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, __alloT('stem.learning_lab.reorientation_cost_gloria_mark_uci', '🕐 Reorientation cost (Gloria Mark UCI): ')),
               h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, MULTITASKING_FACTS.reorientationCost)),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad } },
-              h('strong', { style: { color: T.bad, fontSize: 12 } }, '🪞 The Dunning-Kruger of multitasking: '),
+              h('strong', { style: { color: T.bad, fontSize: 12 } }, __alloT('stem.learning_lab.the_dunning_kruger_of_multitasking', '🪞 The Dunning-Kruger of multitasking: ')),
               h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, MULTITASKING_FACTS.ironicAwareness))
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '💸 6 hidden costs'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.6_hidden_costs', '💸 6 hidden costs')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
             MULTITASKING_COSTS.map(function(c, i) {
               var sel = picked === i;
@@ -18634,11 +18648,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedM && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedM.source),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.bad } }, '💸 Cost: '), pickedM.cost),
+              h('strong', { style: { color: T.bad } }, __alloT('stem.learning_lab.cost', '💸 Cost: ')), pickedM.cost),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🔧 Fix: '), pickedM.fix)
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.fix_2', '🔧 Fix: ')), pickedM.fix)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 5 single-tasking tips'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.5_single_tasking_tips', '🎯 5 single-tasking tips')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             SINGLE_TASKING_TIPS.map(function(t, i) {
               return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -18666,20 +18680,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         function simpleTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📐 The Simple View of Reading'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.the_simple_view_of_reading', '📐 The Simple View of Reading')),
               h('div', { style: { padding: 12, borderRadius: 6, background: T.bg, border: '1px solid ' + T.accent, marginBottom: 8, textAlign: 'center', fontFamily: 'monospace', fontSize: 16, fontWeight: 800, color: T.accentHi } },
                 SIMPLE_VIEW_OF_READING.formula),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, SIMPLE_VIEW_OF_READING.explanation),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 } },
                 h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
-                  h('strong', { style: { color: T.accentHi, fontSize: 12 } }, '🔤 Decoding'),
+                  h('strong', { style: { color: T.accentHi, fontSize: 12 } }, __alloT('stem.learning_lab.decoding', '🔤 Decoding')),
                   h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.muted, lineHeight: 1.5 } }, SIMPLE_VIEW_OF_READING.decoding)),
                 h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
-                  h('strong', { style: { color: T.accentHi, fontSize: 12 } }, '💬 Language Comp'),
+                  h('strong', { style: { color: T.accentHi, fontSize: 12 } }, __alloT('stem.learning_lab.language_comp', '💬 Language Comp')),
                   h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.muted, lineHeight: 1.5 } }, SIMPLE_VIEW_OF_READING.languageComp)))
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 Implications for diagnosis + intervention'),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.implications_for_diagnosis_interventio', '🎯 Implications for diagnosis + intervention')),
               h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
                 SIMPLE_VIEW_OF_READING.implications.map(function(imp, i) { return h('li', { key: i }, imp); }))
             )
@@ -18691,9 +18705,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           var pickedP = picked ? READING_FIVE_PILLARS.find(function(p) { return p.id === picked; }) : null;
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏛️ The 5 Pillars (NRP 2000)'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.the_5_pillars_nrp_2000', '🏛️ The 5 Pillars (NRP 2000)')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'The National Reading Panel\'s 2000 meta-review identified these 5 areas as essential. Tap any for what + when + research.')
+                __alloT('stem.learning_lab.the_national_reading_panel_s_2000_meta', 'The National Reading Panel\'s 2000 meta-review identified these 5 areas as essential. Tap any for what + when + research.'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
               READING_FIVE_PILLARS.map(function(p) {
@@ -18714,20 +18728,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             pickedP && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedP.icon + ' ' + pickedP.name),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedP.what),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_3', '🔍 What: ')), pickedP.what),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, '📋 Example: '), pickedP.example),
+                h('strong', { style: { color: T.text } }, __alloT('stem.learning_lab.example_5', '📋 Example: ')), pickedP.example),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.good } }, '🕐 When taught: '), pickedP.whenTaught),
+                h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.when_taught', '🕐 When taught: ')), pickedP.whenTaught),
               h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-                h('strong', null, '📚 Research: '), pickedP.research))
+                h('strong', null, __alloT('stem.learning_lab.research_9', '📚 Research: ')), pickedP.research))
           );
         }
 
         function approachesTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚔️ The reading wars'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.the_reading_wars', '⚔️ The reading wars')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, READING_WARS_SUMMARY)
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
@@ -18742,9 +18756,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('p', { style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } },
                     h('strong', null, 'Origin: '), a.origin),
                   h('p', { style: { margin: '0 0 6px', fontSize: 11, color: T.good, lineHeight: 1.5 } },
-                    h('strong', null, '✅ Good: '), a.good),
+                    h('strong', null, __alloT('stem.learning_lab.good_2', '✅ Good: ')), a.good),
                   h('p', { style: { margin: 0, fontSize: 11, color: T.warn, lineHeight: 1.5 } },
-                    h('strong', null, '⚠️ Caveat: '), a.caveat));
+                    h('strong', null, __alloT('stem.learning_lab.caveat_2', '⚠️ Caveat: ')), a.caveat));
               })
             )
           );
@@ -18753,26 +18767,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         function ogTab() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏛️ Orton-Gillingham approach'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.orton_gillingham_approach', '🏛️ Orton-Gillingham approach')),
               h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, ORTON_GILLINGHAM.what),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
                 h('strong', { style: { color: T.text } }, 'History: '), ORTON_GILLINGHAM.history)
             ),
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧩 Core features'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.core_features', '🧩 Core features')),
             h('ul', { style: { margin: '0 0 14px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
               ORTON_GILLINGHAM.coreFeatures.map(function(f, i) { return h('li', { key: i }, f); })),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, marginBottom: 8 } },
-              h('strong', { style: { color: T.good, fontSize: 12 } }, '📚 Evidence: '),
+              h('strong', { style: { color: T.good, fontSize: 12 } }, __alloT('stem.learning_lab.evidence', '📚 Evidence: ')),
               h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, ORTON_GILLINGHAM.evidence)),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn } },
-              h('strong', { style: { color: T.warn, fontSize: 12 } }, '⚠️ Accessibility: '),
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, __alloT('stem.learning_lab.accessibility', '⚠️ Accessibility: ')),
               h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, ORTON_GILLINGHAM.accessibility))
           );
         }
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📖 Reading + literacy science'),
-          h('div', { role: 'tablist', 'aria-label': 'Reading sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.learning_lab.reading_sections', 'Reading sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('simple', '📐 Simple View'),
             tabBtn('pillars', '🏛️ 5 Pillars'),
@@ -18795,19 +18809,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('💚 Trauma-informed teaching'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '💚 Trauma-informed foundations'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.trauma_informed_foundations', '💚 Trauma-informed foundations')),
             [
-              { label: '📊 ACEs', val: TRAUMA_FOUNDATIONS.aces },
-              { label: '🗣️ Behavior is communication', val: TRAUMA_FOUNDATIONS.behaviorAsCommunication },
-              { label: '🤝 Co-regulation before self-regulation', val: TRAUMA_FOUNDATIONS.coRegBeforeSelfReg },
-              { label: '🪟 Window of tolerance', val: TRAUMA_FOUNDATIONS.windowOfTolerance },
-              { label: '⚠️ You\'re NOT a therapist', val: TRAUMA_FOUNDATIONS.notATherapist }
+              { label: __alloT('stem.learning_lab.aces', '📊 ACEs'), val: TRAUMA_FOUNDATIONS.aces },
+              { label: __alloT('stem.learning_lab.behavior_is_communication', '🗣️ Behavior is communication'), val: TRAUMA_FOUNDATIONS.behaviorAsCommunication },
+              { label: __alloT('stem.learning_lab.co_regulation_before_self_regulation', '🤝 Co-regulation before self-regulation'), val: TRAUMA_FOUNDATIONS.coRegBeforeSelfReg },
+              { label: __alloT('stem.learning_lab.window_of_tolerance', '🪟 Window of tolerance'), val: TRAUMA_FOUNDATIONS.windowOfTolerance },
+              { label: __alloT('stem.learning_lab.you_re_not_a_therapist', '⚠️ You\'re NOT a therapist'), val: TRAUMA_FOUNDATIONS.notATherapist }
             ].map(function(r, i) {
               return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
             })
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 6 trauma-informed practices'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.6_trauma_informed_practices', '🎯 6 trauma-informed practices')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
             TRAUMA_INFORMED_PRACTICES.map(function(p) {
               var sel = picked === p.id;
@@ -18827,14 +18841,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedP && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedP.icon + ' ' + pickedP.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedP.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_4', '🔍 What: ')), pickedP.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🏫 In the classroom: '), pickedP.classroom),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.in_the_classroom', '🏫 In the classroom: ')), pickedP.classroom),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.bad } }, '🚫 Avoid: '), pickedP.avoid)
+              h('strong', { style: { color: T.bad } }, __alloT('stem.learning_lab.avoid', '🚫 Avoid: ')), pickedP.avoid)
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
-            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.warn } }, '⚠️ When to refer (you\'re NOT a therapist)'),
+            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.warn } }, __alloT('stem.learning_lab.when_to_refer_you_re_not_a_therapist', '⚠️ When to refer (you\'re NOT a therapist)')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               TRAUMA_REFERRAL_GUIDE.map(function(g, i) {
                 return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -18857,21 +18871,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto', color: T.text } },
           backBar('🏗️ MTSS / RTI + universal screening'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🏗️ The framework'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.the_framework', '🏗️ The framework')),
             [
-              { label: '🔍 What it is', val: MTSS_FOUNDATIONS.what },
-              { label: '🎯 Purpose', val: MTSS_FOUNDATIONS.purpose },
-              { label: '🟢 Tier 1', val: MTSS_FOUNDATIONS.tier1 },
-              { label: '🟡 Tier 2', val: MTSS_FOUNDATIONS.tier2 },
-              { label: '🔴 Tier 3', val: MTSS_FOUNDATIONS.tier3 },
-              { label: '🧠 School-psych role', val: MTSS_FOUNDATIONS.schoolPsychRole }
+              { label: __alloT('stem.learning_lab.what_it_is_4', '🔍 What it is'), val: MTSS_FOUNDATIONS.what },
+              { label: __alloT('stem.learning_lab.purpose', '🎯 Purpose'), val: MTSS_FOUNDATIONS.purpose },
+              { label: __alloT('stem.learning_lab.tier_1', '🟢 Tier 1'), val: MTSS_FOUNDATIONS.tier1 },
+              { label: __alloT('stem.learning_lab.tier_2', '🟡 Tier 2'), val: MTSS_FOUNDATIONS.tier2 },
+              { label: __alloT('stem.learning_lab.tier_3', '🔴 Tier 3'), val: MTSS_FOUNDATIONS.tier3 },
+              { label: __alloT('stem.learning_lab.school_psych_role', '🧠 School-psych role'), val: MTSS_FOUNDATIONS.schoolPsychRole }
             ].map(function(r, i) {
               return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
             })
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🛠️ Universal screening tools (8)'),
-          h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.dim, lineHeight: 1.5 } }, 'Tap any tool for details. Most schools screen reading + math but skip behavioral screening — that\'s a gap to close.'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.universal_screening_tools_8', '🛠️ Universal screening tools (8)')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.dim, lineHeight: 1.5 } }, __alloT('stem.learning_lab.tap_any_tool_for_details_most_schools_', 'Tap any tool for details. Most schools screen reading + math but skip behavioral screening — that\'s a gap to close.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
             MTSS_SCREENING_TOOLS.map(function(t) {
               var sel = picked === t.id;
@@ -18891,13 +18905,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedTool && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedTool.name),
             h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedTool.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_5', '🔍 What: ')), pickedTool.what),
             h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🎯 Use: '), pickedTool.use),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.use', '🎯 Use: ')), pickedTool.use),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.warn } }, '💰 Cost: '), pickedTool.cost)
+              h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.cost_2', '💰 Cost: ')), pickedTool.cost)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '⚖️ Decision-making framework'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.decision_making_framework', '⚖️ Decision-making framework')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
             MTSS_DECISION_FRAMEWORK.map(function(g) {
               return h('div', { key: g.id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
@@ -18905,21 +18919,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, g.icon),
                   h('strong', { style: { fontSize: 12, color: T.text } }, g.when)),
                 h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.accentHi } }, '🔍 What it means: '), g.what),
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_it_means', '🔍 What it means: ')), g.what),
                 h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.good } }, '→ Action: '), g.action));
+                  h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.action_3', '→ Action: ')), g.action));
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⚠️ Common pitfalls'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, __alloT('stem.learning_lab.common_pitfalls', '⚠️ Common pitfalls')),
             MTSS_PITFALLS.map(function(p, i) {
               return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.warn } }, '• '), p);
             })
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, '🔗 Cross-link: '),
-            'For deeper coverage of assessment validity + reliability + bias-in-testing, see the Assessment Literacy Lab tool. MTSS uses screening tools whose validity drives every tier-movement decision — bad screening = bad decisions.'),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.cross_link', '🔗 Cross-link: ')),
+            __alloT('stem.learning_lab.for_deeper_coverage_of_assessment_vali', 'For deeper coverage of assessment validity + reliability + bias-in-testing, see the Assessment Literacy Lab tool. MTSS uses screening tools whose validity drives every tier-movement decision — bad screening = bad decisions.')),
           disclaimerFooter()
         );
       }
@@ -18933,20 +18947,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('✍️ Writing process pedagogy'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '✍️ Writing-as-thinking foundations'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.writing_as_thinking_foundations', '✍️ Writing-as-thinking foundations')),
             [
-              { label: '💡 Big idea', val: WRITING_FOUNDATIONS.bigIdea },
-              { label: '📝 Knowledge-telling (novice)', val: WRITING_FOUNDATIONS.knowledgeTelling },
-              { label: '🔄 Knowledge-transforming (expert)', val: WRITING_FOUNDATIONS.knowledgeTransforming },
-              { label: '⚠️ Product-vs-process trap', val: WRITING_FOUNDATIONS.productVsProcess },
-              { label: '🧠 Cognitive load', val: WRITING_FOUNDATIONS.cognitiveLoad },
-              { label: '🔬 Research', val: WRITING_FOUNDATIONS.research }
+              { label: __alloT('stem.learning_lab.big_idea', '💡 Big idea'), val: WRITING_FOUNDATIONS.bigIdea },
+              { label: __alloT('stem.learning_lab.knowledge_telling_novice', '📝 Knowledge-telling (novice)'), val: WRITING_FOUNDATIONS.knowledgeTelling },
+              { label: __alloT('stem.learning_lab.knowledge_transforming_expert', '🔄 Knowledge-transforming (expert)'), val: WRITING_FOUNDATIONS.knowledgeTransforming },
+              { label: __alloT('stem.learning_lab.product_vs_process_trap', '⚠️ Product-vs-process trap'), val: WRITING_FOUNDATIONS.productVsProcess },
+              { label: __alloT('stem.learning_lab.cognitive_load', '🧠 Cognitive load'), val: WRITING_FOUNDATIONS.cognitiveLoad },
+              { label: __alloT('stem.learning_lab.research_10', '🔬 Research'), val: WRITING_FOUNDATIONS.research }
             ].map(function(r, i) {
               return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
             })
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏗️ The 5 pillars of the writing process'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.the_5_pillars_of_the_writing_process', '🏗️ The 5 pillars of the writing process')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
             WRITING_PILLARS.map(function(p) {
               var sel = picked === p.id;
@@ -18966,13 +18980,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedP && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedP.icon + ' ' + pickedP.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedP.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_6', '🔍 What: ')), pickedP.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🏫 In the classroom: '), pickedP.classroom),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.in_the_classroom_2', '🏫 In the classroom: ')), pickedP.classroom),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.bad } }, '🚫 Avoid: '), pickedP.avoid)
+              h('strong', { style: { color: T.bad } }, __alloT('stem.learning_lab.avoid_2', '🚫 Avoid: ')), pickedP.avoid)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧰 Frameworks worth knowing'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.frameworks_worth_knowing', '🧰 Frameworks worth knowing')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
             WRITING_FRAMEWORKS.map(function(f) {
               return h('div', { key: f.id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
@@ -18980,13 +18994,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, f.icon),
                   h('strong', { style: { fontSize: 13, color: T.text } }, f.name)),
                 h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.accentHi } }, '🔍 What: '), f.what),
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_7', '🔍 What: ')), f.what),
                 h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.good } }, '🎯 Use: '), f.use));
+                  h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.use_2', '🎯 Use: ')), f.use));
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⚠️ Common failure modes (with fixes)'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, __alloT('stem.learning_lab.common_failure_modes_with_fixes', '⚠️ Common failure modes (with fixes)')),
             WRITING_FAILURES.map(function(f, i) {
               return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.warn } }, '• '), f);
@@ -19005,19 +19019,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🤝 Group work + collaborative learning'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🤝 The 2 non-negotiables'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.the_2_non_negotiables', '🤝 The 2 non-negotiables')),
             [
-              { label: '💡 Big idea', val: GROUP_FOUNDATIONS.bigIdea },
-              { label: '🔗 Positive interdependence', val: GROUP_FOUNDATIONS.posInterdep },
-              { label: '👤 Individual accountability', val: GROUP_FOUNDATIONS.indivAccount },
-              { label: '🧠 Why cooperation works', val: GROUP_FOUNDATIONS.cooperation },
-              { label: '⚠️ Why most "group work" fails', val: GROUP_FOUNDATIONS.failures }
+              { label: __alloT('stem.learning_lab.big_idea_2', '💡 Big idea'), val: GROUP_FOUNDATIONS.bigIdea },
+              { label: __alloT('stem.learning_lab.positive_interdependence', '🔗 Positive interdependence'), val: GROUP_FOUNDATIONS.posInterdep },
+              { label: __alloT('stem.learning_lab.individual_accountability', '👤 Individual accountability'), val: GROUP_FOUNDATIONS.indivAccount },
+              { label: __alloT('stem.learning_lab.why_cooperation_works', '🧠 Why cooperation works'), val: GROUP_FOUNDATIONS.cooperation },
+              { label: __alloT('stem.learning_lab.why_most_group_work_fails', '⚠️ Why most "group work" fails'), val: GROUP_FOUNDATIONS.failures }
             ].map(function(r, i) {
               return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
             })
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏗️ 6 cooperative structures that work'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.6_cooperative_structures_that_work', '🏗️ 6 cooperative structures that work')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
             GROUP_STRUCTURES.map(function(s) {
               var sel = picked === s.id;
@@ -19037,13 +19051,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedS && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedS.icon + ' ' + pickedS.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedS.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_8', '🔍 What: ')), pickedS.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '✅ Strengths: '), pickedS.strengths),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.strengths', '✅ Strengths: ')), pickedS.strengths),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.warn } }, '⚠️ Weaknesses: '), pickedS.weaknesses)
+              h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.weaknesses', '⚠️ Weaknesses: ')), pickedS.weaknesses)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🛠️ 5 failure modes + fixes'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.5_failure_modes_fixes', '🛠️ 5 failure modes + fixes')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
             GROUP_FAILURES.map(function(f, i) {
               return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
@@ -19055,15 +19069,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⛔ When NOT to use group work'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, __alloT('stem.learning_lab.when_not_to_use_group_work', '⛔ When NOT to use group work')),
             GROUP_WHEN_NOT.map(function(p, i) {
               return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.warn } }, '• '), p);
             })
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, '🌲 EL Education context: '),
-            'EL\'s Crew structure naturally implements collaborative-learning principles — daily 20-min Crew with consistent membership builds the relational trust + norms that turn "groups" into "communities of practice." That\'s why Crew + Expedition design at King Middle is more than scheduling — it\'s the load-bearing architecture for collaborative learning.'),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.el_education_context', '🌲 EL Education context: ')),
+            __alloT('stem.learning_lab.el_s_crew_structure_naturally_implemen', 'EL\'s Crew structure naturally implements collaborative-learning principles — daily 20-min Crew with consistent membership builds the relational trust + norms that turn "groups" into "communities of practice." That\'s why Crew + Expedition design at King Middle is more than scheduling — it\'s the load-bearing architecture for collaborative learning.')),
           disclaimerFooter()
         );
       }
@@ -19077,32 +19091,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto', color: T.text } },
           backBar('🔢 Math anxiety + math pedagogy'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '😰 Math anxiety foundations'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.learning_lab.math_anxiety_foundations', '😰 Math anxiety foundations')),
             [
-              { label: '🧪 Distinct from test anxiety', val: MATH_FOUNDATIONS.distinct },
-              { label: '👨‍👩‍👧 Cultural transmission', val: MATH_FOUNDATIONS.transmission },
-              { label: '🪪 Identity problem', val: MATH_FOUNDATIONS.identity },
-              { label: '🌱 Mathematical mindset', val: MATH_FOUNDATIONS.mindset },
-              { label: '⚖️ Productive struggle', val: MATH_FOUNDATIONS.research }
+              { label: __alloT('stem.learning_lab.distinct_from_test_anxiety', '🧪 Distinct from test anxiety'), val: MATH_FOUNDATIONS.distinct },
+              { label: __alloT('stem.learning_lab.cultural_transmission', '👨‍👩‍👧 Cultural transmission'), val: MATH_FOUNDATIONS.transmission },
+              { label: __alloT('stem.learning_lab.identity_problem', '🪪 Identity problem'), val: MATH_FOUNDATIONS.identity },
+              { label: __alloT('stem.learning_lab.mathematical_mindset', '🌱 Mathematical mindset'), val: MATH_FOUNDATIONS.mindset },
+              { label: __alloT('stem.learning_lab.productive_struggle', '⚖️ Productive struggle'), val: MATH_FOUNDATIONS.research }
             ].map(function(r, i) {
               return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '⚙️ Conceptual vs procedural understanding'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.conceptual_vs_procedural_understanding', '⚙️ Conceptual vs procedural understanding')),
             [
-              { label: '📐 Procedural fluency', val: MATH_CONCEPT_VS_PROC.procedural },
-              { label: '💡 Conceptual understanding', val: MATH_CONCEPT_VS_PROC.conceptual },
-              { label: '🤝 Both matter', val: MATH_CONCEPT_VS_PROC.bothMatter },
-              { label: '⚠️ The danger', val: MATH_CONCEPT_VS_PROC.danger },
-              { label: '📚 NCTM 5 practices', val: MATH_CONCEPT_VS_PROC.nctm }
+              { label: __alloT('stem.learning_lab.procedural_fluency', '📐 Procedural fluency'), val: MATH_CONCEPT_VS_PROC.procedural },
+              { label: __alloT('stem.learning_lab.conceptual_understanding', '💡 Conceptual understanding'), val: MATH_CONCEPT_VS_PROC.conceptual },
+              { label: __alloT('stem.learning_lab.both_matter', '🤝 Both matter'), val: MATH_CONCEPT_VS_PROC.bothMatter },
+              { label: __alloT('stem.learning_lab.the_danger', '⚠️ The danger'), val: MATH_CONCEPT_VS_PROC.danger },
+              { label: __alloT('stem.learning_lab.nctm_5_practices', '📚 NCTM 5 practices'), val: MATH_CONCEPT_VS_PROC.nctm }
             ].map(function(r, i) {
               return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
             })
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 6 high-leverage math pedagogy moves'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.6_high_leverage_math_pedagogy_moves', '🎯 6 high-leverage math pedagogy moves')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
             MATH_PEDAGOGY_MOVES.map(function(m) {
               var sel = picked === m.id;
@@ -19122,27 +19136,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           pickedM && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedM.icon + ' ' + pickedM.name),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedM.what),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_9', '🔍 What: ')), pickedM.what),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.good } }, '🎯 Why: '), pickedM.why),
+              h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.why_2', '🎯 Why: ')), pickedM.why),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '📋 Example: '), pickedM.example)
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.example_6', '📋 Example: ')), pickedM.example)
           ),
-          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '💚 Math anxiety interventions'),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.learning_lab.math_anxiety_interventions', '💚 Math anxiety interventions')),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
             MATH_ANXIETY_INTERVENTIONS.map(function(intv) {
               return h('div', { key: intv.id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
                 h('strong', { style: { fontSize: 12, color: T.text, display: 'block', marginBottom: 4 } }, intv.name),
                 h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.accentHi } }, '🔍 What: '), intv.what),
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.what_10', '🔍 What: ')), intv.what),
                 h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.good } }, '🎯 Why: '), intv.why),
+                  h('strong', { style: { color: T.good } }, __alloT('stem.learning_lab.why_3', '🎯 Why: ')), intv.why),
                 h('p', { style: { margin: 0, fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.dim } }, '📚 Evidence: '), intv.evidence));
+                  h('strong', { style: { color: T.dim } }, __alloT('stem.learning_lab.evidence_2', '📚 Evidence: ')), intv.evidence));
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⚠️ Common math-pedagogy pitfalls'),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, __alloT('stem.learning_lab.common_math_pedagogy_pitfalls', '⚠️ Common math-pedagogy pitfalls')),
             MATH_PITFALLS.map(function(p, i) {
               return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.warn } }, '• '), p);
@@ -19160,9 +19174,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       function tkBackBar() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, padding: '0 14px' } },
           h('button', { 'data-ll-focusable': true,
-            'aria-label': 'Back to My Toolkit',
+            'aria-label': __alloT('stem.learning_lab.back_to_my_toolkit', 'Back to My Toolkit'),
             onClick: function() { setView('mytkHub'); },
-            style: btnGhost({ padding: '6px 12px' }) }, '← My Toolkit')
+            style: btnGhost({ padding: '6px 12px' }) }, __alloT('stem.learning_lab.my_toolkit', '← My Toolkit'))
         );
       }
       function renderMytkHub() {

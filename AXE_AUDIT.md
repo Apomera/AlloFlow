@@ -1,5 +1,7 @@
 # AlloFlow axe-core Audit Report
 
+> **Historical snapshot, not current status (2026-07-09):** This report captures one axe-core run against the hosted app on April 28, 2026. Use the current VPAT, `docs/wcag_sc_coverage.md`, and the latest automated test output for present-day accessibility posture.
+
 - **Target:** https://prismflow-911fe.web.app
 - **When:** 2026-04-28T00:39:39.490Z
 - **axe-core:** 4.10.3

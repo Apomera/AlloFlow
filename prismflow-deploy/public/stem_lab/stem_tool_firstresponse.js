@@ -45,6 +45,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
       '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
       '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+      '}',
+      '@keyframes firstresponse-heartbeat {',
+      '  0%   { transform: scale(1); }',
+      '  15%  { transform: scale(1.22); }',
+      '  40%  { transform: scale(1); }',
+      '  100% { transform: scale(1); }',
       '}'
     ].join('');
     if (document.head) document.head.appendChild(st);
@@ -314,6 +320,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   // SECTION 3: TOOL REGISTRATION + RENDER
   // ─────────────────────────────────────────────────────────
 
+  if (typeof document !== 'undefined' && !document.getElementById('firstresponse-readiness-css')) {
+    var firstResponseStyle = document.createElement('style');
+    firstResponseStyle.id = 'firstresponse-readiness-css';
+    firstResponseStyle.textContent = [
+      '.firstresponse-menu-shell{width:min(100%,1100px);margin:0 auto;padding:8px;color:#f8fafc;display:grid;gap:14px;}',
+      '.firstresponse-menu-shell *{box-sizing:border-box;}',
+      '.firstresponse-command{padding:20px;border:1px solid rgba(96,165,250,.4);border-radius:20px;background:radial-gradient(circle at 91% 9%,rgba(59,130,246,.22),transparent 34%),linear-gradient(135deg,rgba(30,58,138,.64),rgba(2,6,23,.98) 68%);box-shadow:0 18px 44px rgba(2,6,23,.28);}',
+      '.firstresponse-command-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
+      '.firstresponse-eyebrow{margin:0 0 7px;color:#93c5fd;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
+      '.firstresponse-title{margin:0;color:#fff;font-size:clamp(22px,3vw,31px);line-height:1.12;}',
+      '.firstresponse-subtitle{max-width:740px;margin:8px 0 0;color:#dbeafe;font-size:13px;line-height:1.55;}',
+      '.firstresponse-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(147,197,253,.35);border-radius:999rem;background:rgba(2,6,23,.66);color:#bfdbfe;font-size:10px;font-weight:800;white-space:nowrap;}',
+      '.firstresponse-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:17px;}',
+      '.firstresponse-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.72);}',
+      '.firstresponse-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.firstresponse-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.firstresponse-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;}',
+      '.firstresponse-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(219,234,254,.42);border-radius:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(37,99,235,.22);transition:transform .18s,box-shadow .18s;}',
+      '.firstresponse-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(37,99,235,.3);}',
+      '.firstresponse-action-note{color:#bfdbfe;font-size:10px;line-height:1.4;}',
+      '.firstresponse-section{padding:16px;border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.67);}',
+      '.firstresponse-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}',
+      '.firstresponse-section-head h3{margin:0;color:#f8fafc;font-size:15px;}',
+      '.firstresponse-section-head p{margin:3px 0 0;color:#94a3b8;font-size:11px;line-height:1.45;}',
+      '.firstresponse-core-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}',
+      '.firstresponse-tile-wrap{min-width:0;}',
+      '.firstresponse-menu-tile{width:100%;height:100%;min-height:142px;transition:transform .18s,border-color .18s,box-shadow .18s;}',
+      '.firstresponse-menu-tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(2,6,23,.25);}',
+      '.firstresponse-menu-tile--compact{min-height:108px;}',
+      '.firstresponse-catalog{border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.72);overflow:hidden;}',
+      '.firstresponse-catalog summary{min-height:50px;padding:14px 16px;cursor:pointer;color:#dbeafe;font-size:12px;font-weight:900;}',
+      '.firstresponse-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:0 14px 14px;}',
+      '.firstresponse-badges{padding:13px;border:1px solid #334155;border-radius:14px;background:#0f172a;}',
+      '@media(max-width:980px){.firstresponse-core-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.firstresponse-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(max-width:720px){.firstresponse-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.firstresponse-core-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(max-width:520px){.firstresponse-menu-shell{padding:0;}.firstresponse-command{padding:14px;border-radius:16px;}.firstresponse-command-top{flex-direction:column;}.firstresponse-status{white-space:normal;}.firstresponse-core-grid,.firstresponse-catalog-grid{grid-template-columns:1fr;}.firstresponse-primary{width:100%;}.firstresponse-actions{align-items:stretch;}.firstresponse-action-note{width:100%;}.firstresponse-menu-tile{min-height:100px;}}',
+      '@media(prefers-reduced-motion:reduce){.firstresponse-primary,.firstresponse-menu-tile{transition:none;}.firstresponse-primary:hover,.firstresponse-menu-tile:hover{transform:none;}}',
+      '.theme-contrast .firstresponse-command,.theme-contrast .firstresponse-section,.theme-contrast .firstresponse-catalog,.theme-contrast .firstresponse-badges{box-shadow:none;border-width:2px;}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(firstResponseStyle);
+  }
+
   window.StemLab.registerTool('firstResponse', {
     name: 'First Response Lab',
     icon: '🚑',
@@ -322,6 +370,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     tags: ['first-aid', 'cpr', 'aed', 'emergency', 'safety', 'life-skills', 'maine', 'disability-affirming'],
 
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       try {
       var React = ctx.React;
       var h = React.createElement;
@@ -347,12 +396,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ── First Action Sleuth shared data (hoisted so both the play view
       // and the Mastery view can reference the same canonical list) ──
       var FA_ACTIONS = [
-        { id: 'callEMS',  label: 'Call 911',                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
-        { id: 'cpr',      label: 'Start CPR',                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
-        { id: 'aed',      label: 'Apply AED',                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
-        { id: 'pressure', label: 'Direct pressure',           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
-        { id: 'heimlich', label: 'Abdominal thrusts',         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
-        { id: 'recovery', label: 'Recovery position',         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
+        { id: 'callEMS',  label: __alloT('stem.firstresponse.call_911', 'Call 911'),                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
+        { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
+        { id: 'aed',      label: __alloT('stem.firstresponse.apply_aed', 'Apply AED'),                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
+        { id: 'pressure', label: __alloT('stem.firstresponse.direct_pressure', 'Direct pressure'),           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
+        { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts', 'Abdominal thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
+        { id: 'recovery', label: __alloT('stem.firstresponse.recovery_position', 'Recovery position'),         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
       ];
       // Compact vignette index for Mastery view (full scenarios still live in
       // renderFirstActionSleuth's local block to keep this hoist small).
@@ -482,43 +531,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       function renderConsent() {
         return h('div', { 'data-fr-focusable': true,
           style: { padding: 24, maxWidth: 720, margin: '0 auto', color: T.text } },
-          h('div', { role: 'region', 'aria-label': 'First Response Lab consent and educational scope',
+          h('div', { role: 'region', 'aria-label': __alloT('stem.firstresponse.first_response_lab_consent_and_educati', 'First Response Lab consent and educational scope'),
             style: { background: '#7f1d1d', border: '1px solid #dc2626', borderRadius: 14, padding: 24 } },
             h('h2', { style: { margin: '0 0 12px', fontSize: 22, color: '#fde2e2' } },
-              '🚑 First Response Lab is an EDUCATIONAL tool.'),
+              __alloT('stem.firstresponse.first_response_lab_is_an_educational_t', '🚑 First Response Lab is an EDUCATIONAL tool.')),
             h('p', { style: { margin: '0 0 12px', color: '#fde2e2', lineHeight: 1.55 } },
-              'It teaches you to ',
+              __alloT('stem.firstresponse.it_teaches_you_to', 'It teaches you to '),
               h('strong', null, 'recognize'),
-              ' medical emergencies and ',
-              h('strong', null, 'what to do'),
-              '. It is ',
+              __alloT('stem.firstresponse.medical_emergencies_and', ' medical emergencies and '),
+              h('strong', null, __alloT('stem.firstresponse.what_to_do', 'what to do')),
+              __alloT('stem.firstresponse.it_is', '. It is '),
               h('strong', null, 'NOT'),
-              ' a substitute for hands-on certification.'),
+              __alloT('stem.firstresponse.a_substitute_for_hands_on_certificatio', ' a substitute for hands-on certification.')),
             h('p', { style: { margin: '0 0 12px', color: '#fde2e2', lineHeight: 1.55 } },
-              'To get certified, take a course with the ',
-              h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, 'American Red Cross'),
-              ', the ',
-              h('a', { href: 'https://cpr.heart.org', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, 'American Heart Association'),
-              ', or your local ',
-              h('a', { href: 'https://www.maine.gov/ems', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, 'Maine EMS'),
+              __alloT('stem.firstresponse.to_get_certified_take_a_course_with_th', 'To get certified, take a course with the '),
+              h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, __alloT('stem.firstresponse.american_red_cross', 'American Red Cross')),
+              __alloT('stem.firstresponse.the', ', the '),
+              h('a', { href: 'https://cpr.heart.org', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, __alloT('stem.firstresponse.american_heart_association', 'American Heart Association')),
+              __alloT('stem.firstresponse.or_your_local', ', or your local '),
+              h('a', { href: 'https://www.maine.gov/ems', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, __alloT('stem.firstresponse.maine_ems', 'Maine EMS')),
               ' chapter.'),
             h('p', { style: { margin: '0 0 16px', color: '#fde2e2', lineHeight: 1.55 } },
-              h('strong', null, 'In a real emergency, call 911.'),
-              ' In Maine, you can ',
-              h('strong', null, 'text 911'),
-              ' if you cannot speak.'),
+              h('strong', null, __alloT('stem.firstresponse.in_a_real_emergency_call_911', 'In a real emergency, call 911.')),
+              __alloT('stem.firstresponse.in_maine_you_can', ' In Maine, you can '),
+              h('strong', null, __alloT('stem.firstresponse.text_911', 'text 911')),
+              __alloT('stem.firstresponse.if_you_cannot_speak', ' if you cannot speak.')),
             h('button', { 'data-fr-focusable': true,
-              'aria-label': 'I understand. Show me the lab.',
+              'aria-label': __alloT('stem.firstresponse.i_understand_show_me_the_lab', 'I understand. Show me the lab.'),
               onClick: function() {
                 updMulti({ consentAccepted: true, consentDate: new Date().toISOString(), view: 'menu' });
                 awardBadge('first_responder_in_training', 'First Responder in Training');
                 frAnnounceUrgent('Consent accepted. Welcome to First Response Lab.');
               },
               style: { padding: '12px 22px', borderRadius: 10, border: 'none', background: '#fff', color: '#7f1d1d', fontSize: 15, fontWeight: 700, cursor: 'pointer' }
-            }, 'I understand — show me the lab')
+            }, __alloT('stem.firstresponse.i_understand_show_me_the_lab_2', 'I understand — show me the lab'))
           ),
           h('p', { style: { marginTop: 14, fontSize: 12, color: T.dim, fontStyle: 'italic' } },
-            'Acknowledging this screen is a one-time gate. Your acknowledgment is saved with your profile so you do not see it again.')
+            __alloT('stem.firstresponse.acknowledging_this_screen_is_a_one_tim', 'Acknowledging this screen is a one-time gate. Your acknowledgment is saved with your profile so you do not see it again.'))
         );
       }
 
@@ -526,12 +575,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // PERSISTENT BANNER (shown above every clinical view)
       // ─────────────────────────────────────────
       function emergencyBanner() {
-        return h('div', { role: 'region', 'aria-label': 'Emergency reminder',
+        return h('div', { role: 'region', 'aria-label': __alloT('stem.firstresponse.emergency_reminder', 'Emergency reminder'),
           style: { margin: '0 0 14px', padding: '10px 14px', borderRadius: 10, background: '#7f1d1d', border: '1px solid #dc2626', color: '#fde2e2', fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
           h('span', { 'aria-hidden': 'true' }, '🚑'),
           h('span', null,
-            h('strong', null, 'In a real emergency: call 911'),
-            ' — in Maine you can text 911. This tool is educational only.')
+            h('strong', null, __alloT('stem.firstresponse.in_a_real_emergency_call_911_2', 'In a real emergency: call 911')),
+            __alloT('stem.firstresponse.in_maine_you_can_text_911_this_tool_is', ' — in Maine you can text 911. This tool is educational only.'))
         );
       }
 
@@ -539,11 +588,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // DISCLAIMER FOOTER (renders below every clinical content view)
       // ─────────────────────────────────────────
       function disclaimerFooter() {
-        return h('div', { role: 'contentinfo', 'aria-label': 'Educational disclaimer',
+        return h('div', { role: 'contentinfo', 'aria-label': __alloT('stem.firstresponse.educational_disclaimer', 'Educational disclaimer'),
           style: { marginTop: 18, padding: '10px 14px', borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 11, textAlign: 'center', lineHeight: 1.55 } },
-          'Educational only. Real emergencies → ',
+          __alloT('stem.firstresponse.educational_only_real_emergencies', 'Educational only. Real emergencies → '),
           h('strong', { style: { color: T.accentHi } }, '911'),
-          '. Get certified → ',
+          __alloT('stem.firstresponse.get_certified', '. Get certified → '),
           h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'redcross.org'),
           ' · ',
           h('a', { href: 'https://cpr.heart.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'heart.org'),
@@ -558,99 +607,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // Tile metadata. order = top-down on the menu. status indicator shows
       // whether the user has visited that module (small green dot).
       var MENU_TILES = [
-        { id: 'recognize', icon: '👁️', label: 'Recognize', desc: 'Visual signs of 12 emergencies. Quiz at the end.', ready: true },
-        { id: 'call', icon: '📞', label: 'Call (911 + 988)', desc: 'What to say. Text-to-911. When 988 vs 911.', ready: true },
-        { id: 'cprAed', icon: '❤️', label: 'CPR + AED', desc: 'Hands-only rhythm trainer. AED walkthrough.', ready: true },
-        { id: 'bleed', icon: '🩸', label: 'Stop the Bleed', desc: 'Pressure → packing → tourniquet.', ready: true },
-        { id: 'choking', icon: '😬', label: 'Choking', desc: 'Infant, child, adult, pregnant, alone.', ready: true },
-        { id: 'disabilityAware', icon: '♾️', label: 'Disability-aware response', desc: 'Deaf/HoH, autistic, epilepsy, hidden disability.', ready: true },
-        { id: 'scenarios', icon: '🎭', label: 'Scenario sim', desc: 'Multi-step branching emergency decisions.', ready: true },
-        { id: 'firstAction', icon: '🎯', label: 'First Action Sleuth', desc: '10 vignettes. Pick the FIRST action from 6 options (call EMS, CPR, AED, pressure, abdominal thrusts, recovery position). Builds the decision reflex.', ready: true },
-        { id: 'aiPractice', icon: '🤖', label: 'AI Practice', desc: 'Novel scenes — you write the response, AI critiques.', ready: true },
-        { id: 'mastery', icon: '🏅', label: 'Responder Mastery', desc: 'Cross-attempt log of every First Action scenario you have nailed, plus per-action coverage.', ready: true },
-        { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every org cited in this tool. Tap to call or visit.', ready: true }
+        { id: 'recognize', icon: '👁️', label: __alloT('stem.firstresponse.recognize', 'Recognize'), desc: __alloT('stem.firstresponse.visual_signs_of_12_emergencies_quiz_at', 'Visual signs of 12 emergencies. Quiz at the end.'), ready: true },
+        { id: 'call', icon: '📞', label: __alloT('stem.firstresponse.call_911_988', 'Call (911 + 988)'), desc: __alloT('stem.firstresponse.what_to_say_text_to_911_when_988_vs_91', 'What to say. Text-to-911. When 988 vs 911.'), ready: true },
+        { id: 'cprAed', icon: '❤️', label: __alloT('stem.firstresponse.cpr_aed', 'CPR + AED'), desc: __alloT('stem.firstresponse.hands_only_rhythm_trainer_aed_walkthro', 'Hands-only rhythm trainer. AED walkthrough.'), ready: true },
+        { id: 'bleed', icon: '🩸', label: __alloT('stem.firstresponse.stop_the_bleed', 'Stop the Bleed'), desc: __alloT('stem.firstresponse.pressure_packing_tourniquet', 'Pressure → packing → tourniquet.'), ready: true },
+        { id: 'choking', icon: '😬', label: __alloT('stem.firstresponse.choking', 'Choking'), desc: __alloT('stem.firstresponse.infant_child_adult_pregnant_alone', 'Infant, child, adult, pregnant, alone.'), ready: true },
+        { id: 'disabilityAware', icon: '♾️', label: __alloT('stem.firstresponse.disability_aware_response', 'Disability-aware response'), desc: __alloT('stem.firstresponse.deaf_hoh_autistic_epilepsy_hidden_disa', 'Deaf/HoH, autistic, epilepsy, hidden disability.'), ready: true },
+        { id: 'scenarios', icon: '🎭', label: __alloT('stem.firstresponse.scenario_sim', 'Scenario sim'), desc: __alloT('stem.firstresponse.multi_step_branching_emergency_decisio', 'Multi-step branching emergency decisions.'), ready: true },
+        { id: 'firstAction', icon: '🎯', label: __alloT('stem.firstresponse.first_action_sleuth', 'First Action Sleuth'), desc: __alloT('stem.firstresponse.10_vignettes_pick_the_first_action_fro', '10 vignettes. Pick the FIRST action from 6 options (call EMS, CPR, AED, pressure, abdominal thrusts, recovery position). Builds the decision reflex.'), ready: true },
+        { id: 'aiPractice', icon: '🤖', label: __alloT('stem.firstresponse.ai_practice', 'AI Practice'), desc: __alloT('stem.firstresponse.novel_scenes_you_write_the_response_ai', 'Novel scenes — you write the response, AI critiques.'), ready: true },
+        { id: 'mastery', icon: '🏅', label: __alloT('stem.firstresponse.responder_mastery', 'Responder Mastery'), desc: __alloT('stem.firstresponse.cross_attempt_log_of_every_first_actio', 'Cross-attempt log of every First Action scenario you have nailed, plus per-action coverage.'), ready: true },
+        { id: 'resources', icon: '📚', label: __alloT('stem.firstresponse.resources', 'Resources'), desc: __alloT('stem.firstresponse.every_org_cited_in_this_tool_tap_to_ca', 'Every org cited in this tool. Tap to call or visit.'), ready: true }
       ];
 
       function renderMenu() {
-        var visitedCount = Object.keys(modulesVisited).length;
         var _mMastery = (d.faMastery && typeof d.faMastery === 'object') ? d.faMastery : {};
-        var _mDoneCount = FA_VIGNETTE_INDEX.filter(function (v) { return !!_mMastery[v.id]; }).length;
+        var _mDoneCount = FA_VIGNETTE_INDEX.filter(function(v) { return !!_mMastery[v.id]; }).length;
         var _mTotal = FA_VIGNETTE_INDEX.length;
-        return h('div', { style: { padding: 20, maxWidth: 960, margin: '0 auto', color: T.text } },
-          emergencyBanner(),
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 } },
-            h('h2', { style: { margin: 0, fontSize: 22 } }, '🚑 First Response Lab'),
-            h('div', { style: { display: 'flex', gap: 14, fontSize: 12, color: T.dim, flexWrap: 'wrap' } },
-              h('span', null, 'Modules: ', h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 1))),
-              h('span', { 'aria-label': 'Responder mastery: ' + _mDoneCount + ' of ' + _mTotal + ' scenarios mastered' },
-                h('span', { 'aria-hidden': 'true' }, '🏅 '),
-                'Mastery: ',
-                h('strong', { style: { color: _mDoneCount > 0 ? T.accentHi : T.text } }, _mDoneCount + ' / ' + _mTotal)
-              )
+        var coreIds = ['recognize', 'call', 'cprAed', 'bleed', 'choking'];
+        var coreTiles = coreIds.map(function(id) { return MENU_TILES.filter(function(tile) { return tile.id === id; })[0]; }).filter(Boolean);
+        var catalogTiles = MENU_TILES.filter(function(tile) { return coreIds.indexOf(tile.id) < 0; });
+        var learningTiles = MENU_TILES.filter(function(tile) { return tile.id !== 'resources'; });
+        var visitedCount = learningTiles.filter(function(tile) { return !!modulesVisited[tile.id]; }).length;
+        var coreCompleted = coreTiles.filter(function(tile) { return !!modulesVisited[tile.id]; }).length;
+        var nextTile = coreTiles.filter(function(tile) { return !modulesVisited[tile.id]; })[0]
+          || learningTiles.filter(function(tile) { return !modulesVisited[tile.id]; })[0]
+          || MENU_TILES.filter(function(tile) { return tile.id === 'mastery'; })[0];
+
+        function openTile(tile) {
+          if (!tile || !tile.ready) return;
+          upd('view', tile.id);
+          markVisited(tile.id);
+          frAnnounce('Opening ' + tile.label);
+        }
+
+        function metric(label, value) {
+          return h('div', { className: 'firstresponse-metric', role: 'listitem' },
+            h('span', { className: 'firstresponse-metric-label' }, label),
+            h('strong', { className: 'firstresponse-metric-value' }, value));
+        }
+
+        function renderTile(tile, core, compact) {
+          var visited = !!modulesVisited[tile.id];
+          return h('div', { key: tile.id, role: 'listitem', className: 'firstresponse-tile-wrap' },
+            h('button', {
+              type: 'button',
+              className: 'firstresponse-menu-tile' + (compact ? ' firstresponse-menu-tile--compact' : ''),
+              'data-fr-focusable': true,
+              disabled: !tile.ready,
+              'aria-label': tile.label + (visited ? ' (visited)' : '') + (core ? ' - core response step' : ''),
+              onClick: function() { openTile(tile); },
+              style: btn({
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
+                padding: 14, background: core ? '#101b3d' : T.card,
+                borderColor: visited ? T.ok : (core ? '#3b82f6' : T.border),
+                borderWidth: core ? 2 : 1, borderStyle: 'solid'
+              })
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
+                h('span', { style: { fontWeight: 700, fontSize: compact ? 13 : 14, flex: 1 } }, tile.label),
+                visited && h('span', { 'aria-hidden': 'true', style: { color: T.ok, fontSize: 14 } }, '\u2713')),
+              h('div', { style: { fontSize: compact ? 11 : 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
             )
-          ),
-          h('p', { style: { margin: '0 0 16px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Pick a module. Start with ',
-            h('strong', { style: { color: T.text } }, 'Recognize'),
-            ' if you are new — every other module assumes you can spot the emergency first.'),
-          h('div', { role: 'list',
-            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
-            MENU_TILES.map(function(tile) {
-              var visited = !!modulesVisited[tile.id];
-              var isReady = tile.ready;
-              return h('button', { key: tile.id, role: 'listitem',
-                'data-fr-focusable': true,
-                disabled: !isReady,
-                'aria-label': tile.label + (visited ? ' (visited)' : '') + (!isReady ? ' (coming soon)' : ''),
-                onClick: function() {
-                  if (!isReady) return;
-                  upd('view', tile.id);
-                  markVisited(tile.id);
-                  frAnnounce('Opening ' + tile.label);
-                },
-                style: btn({
-                  display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                  padding: 14, minHeight: 110,
-                  background: isReady ? T.card : T.cardAlt,
-                  opacity: isReady ? 1 : 0.55, cursor: isReady ? 'pointer' : 'not-allowed',
-                  borderColor: visited ? T.ok : T.border
-                })
-              },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
-                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
-                  h('span', { style: { fontWeight: 700, fontSize: 15, flex: 1 } }, tile.label),
-                  visited && h('span', { 'aria-hidden': 'true', style: { color: T.ok, fontSize: 14 } }, '✓'),
-                  !isReady && h('span', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic' } }, 'Soon')
-                ),
-                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
-              );
-            })
-          ),
-          // Badge tray
-          Object.keys(badges).length > 0 && h('div', { style: { marginTop: 18, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, '🏅 Badges earned'),
+          );
+        }
+
+        return h('main', { className: 'firstresponse-menu-shell', 'data-firstresponse-readiness': 'true' },
+          emergencyBanner(),
+          h('header', { className: 'firstresponse-command' },
+            h('div', { className: 'firstresponse-command-top' },
+              h('div', null,
+                h('p', { className: 'firstresponse-eyebrow' }, __alloT('stem.firstresponse.readiness_label', 'Emergency response readiness')),
+                h('h2', { className: 'firstresponse-title' }, __alloT('stem.firstresponse.first_response_lab', 'First Response Lab')),
+                h('p', { className: 'firstresponse-subtitle' }, __alloT('stem.firstresponse.readiness_blurb', 'Build the decision sequence: recognize the emergency, activate help, then choose the appropriate first action.'))),
+              h('div', { className: 'firstresponse-status', role: 'status' }, __alloT('stem.firstresponse.education_status', 'Educational only - real emergencies: call 911'))),
+            h('div', { className: 'firstresponse-metrics', role: 'list', 'aria-label': __alloT('stem.firstresponse.progress_label', 'First Response progress') },
+              metric(__alloT('stem.firstresponse.core_readiness', 'Core readiness'), coreCompleted + ' / ' + coreTiles.length),
+              metric(__alloT('stem.firstresponse.modules_explored', 'Modules explored'), visitedCount + ' / ' + learningTiles.length),
+              metric(__alloT('stem.firstresponse.scenario_mastery', 'Scenario mastery'), _mDoneCount + ' / ' + _mTotal),
+              metric(__alloT('stem.firstresponse.badges', 'Badges'), String(Object.keys(badges).length))),
+            h('div', { className: 'firstresponse-actions' },
+              h('button', { type: 'button', className: 'firstresponse-primary', onClick: function() { openTile(nextTile); } },
+                coreCompleted < coreTiles.length ? __alloT('stem.firstresponse.continue_core', 'Continue core response path') : __alloT('stem.firstresponse.continue_practice', 'Continue practice')),
+              h('span', { className: 'firstresponse-action-note' }, nextTile ? nextTile.label : __alloT('stem.firstresponse.review', 'Review mastery')))),
+
+          h('section', { className: 'firstresponse-section', 'aria-labelledby': 'firstresponse-core-heading' },
+            h('div', { className: 'firstresponse-section-head' },
+              h('div', null,
+                h('h3', { id: 'firstresponse-core-heading' }, __alloT('stem.firstresponse.core_path', 'Recognize - Call - Act')),
+                h('p', null, __alloT('stem.firstresponse.core_path_blurb', 'Start with recognition and emergency activation, then learn the core response modules.'))),
+              h('span', { className: 'firstresponse-action-note' }, coreCompleted + ' / ' + coreTiles.length)),
+            h('div', { className: 'firstresponse-core-grid', role: 'list' },
+              coreTiles.map(function(tile) { return renderTile(tile, true, false); }))),
+
+          h('details', { className: 'firstresponse-catalog', open: coreCompleted === coreTiles.length },
+            h('summary', null, __alloT('stem.firstresponse.more_practice', 'More practice, accessibility, mastery, and resources') + ' (' + catalogTiles.length + ')'),
+            h('div', { className: 'firstresponse-catalog-grid', role: 'list' },
+              catalogTiles.map(function(tile) { return renderTile(tile, false, true); }))),
+
+          Object.keys(badges).length > 0 && h('section', { className: 'firstresponse-badges', 'aria-label': __alloT('stem.firstresponse.badges_earned', 'Badges earned') },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, __alloT('stem.firstresponse.badges_earned', 'Badges earned')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               Object.keys(badges).map(function(bid) {
-                return h('span', { key: bid,
-                  style: { fontSize: 11, padding: '4px 10px', borderRadius: 999, background: '#1e3a8a', color: '#dbeafe', border: '1px solid #1e40af' } },
-                  badges[bid].label || bid);
-              })
-            )
-          ),
+                return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: '999rem', background: '#1e3a8a', color: '#dbeafe', border: '1px solid #1e40af' } }, badges[bid].label || bid);
+              }))),
           disclaimerFooter()
         );
       }
 
-      // ─────────────────────────────────────────
-      // BACK BUTTON (returns to menu)
-      // ─────────────────────────────────────────
+      // Back button (returns to menu)
       function backBar(title) {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
           h('button', { 'data-fr-focusable': true,
-            'aria-label': 'Back to First Response Lab menu',
+            'aria-label': __alloT('stem.firstresponse.back_to_first_response_lab_menu', 'Back to First Response Lab menu'),
             onClick: function() { upd('view', 'menu'); frAnnounce('Back to menu'); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
-          }, '← Menu'),
+          }, __alloT('stem.firstresponse.menu', '← Menu')),
           h('h2', { style: { margin: 0, fontSize: 18, color: T.text, flex: 1 } }, title)
         );
       }
@@ -671,11 +744,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           emergencyBanner(),
           !showQuiz && h('div', null,
             h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'These are the ',
-              h('strong', { style: { color: T.text } }, 'recognition cues'),
-              ' — what you would actually see. Tap a card for the first action at your grade band (',
+              __alloT('stem.firstresponse.these_are_the', 'These are the '),
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.recognition_cues', 'recognition cues')),
+              __alloT('stem.firstresponse.what_you_would_actually_see_tap_a_card', ' — what you would actually see. Tap a card for the first action at your grade band ('),
               h('strong', { style: { color: T.text } }, gradeBand.toUpperCase()),
-              '). Sources cited on each card.'),
+              __alloT('stem.firstresponse.sources_cited_on_each_card', '). Sources cited on each card.')),
             h('div', { role: 'list',
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 } },
               visibleCards.map(function(card) {
@@ -689,7 +762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   h('div', { style: { fontSize: 12, color: T.accentHi, fontStyle: 'italic', marginBottom: 6 } },
                     'Sign: ', card.cue),
                   h('div', { style: { fontSize: 13, color: T.text, lineHeight: 1.5, marginBottom: 6 } },
-                    h('strong', null, 'First action: '), firstText),
+                    h('strong', null, __alloT('stem.firstresponse.first_action', 'First action: ')), firstText),
                   h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic' } },
                     'Source: ', card.source)
                 );
@@ -697,18 +770,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ),
             h('div', { style: { marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Start the 5-question recognition quiz',
+                'aria-label': __alloT('stem.firstresponse.start_the_5_question_recognition_quiz', 'Start the 5-question recognition quiz'),
                 onClick: function() {
                   updMulti({ recognizeView: 'quiz', quizState: { idx: 0, score: 0, answered: false, lastChoice: null } });
                   frAnnounce('Quiz started. Question 1 of 5.');
                 },
                 style: btnPrimary()
-              }, '🎯 Take the 5-question quiz'),
+              }, __alloT('stem.firstresponse.take_the_5_question_quiz', '🎯 Take the 5-question quiz')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Go to Resources tab',
+                'aria-label': __alloT('stem.firstresponse.go_to_resources_tab', 'Go to Resources tab'),
                 onClick: function() { upd('view', 'resources'); markVisited('resources'); },
                 style: btn()
-              }, '📚 Resources')
+              }, __alloT('stem.firstresponse.resources_2', '📚 Resources'))
             ),
             disclaimerFooter()
           ),
@@ -758,7 +831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                             : 'Recognition is the most important step — you can’t respond to what you don’t see. Review the cards and try again.';
           var rad = 36, circ = 2 * Math.PI * rad;
           var dashOff = circ - (pct / 100) * circ;
-          return h('div', { role: 'region', 'aria-label': 'Quiz results',
+          return h('div', { role: 'region', 'aria-label': __alloT('stem.firstresponse.quiz_results', 'Quiz results'),
             style: { padding: 0, borderRadius: 14, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: T.card } },
             h('div', {
               style: {
@@ -790,23 +863,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ),
             h('div', { style: { padding: 14, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', borderTop: '1px solid ' + T.border } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Retake the recognition quiz',
+                'aria-label': __alloT('stem.firstresponse.retake_the_recognition_quiz', 'Retake the recognition quiz'),
                 onClick: function() {
                   updMulti({ quizState: { idx: 0, score: 0, answered: false, lastChoice: null }, lastQuizResult: null });
                   frAnnounce('Quiz restarted. Question 1 of 5.');
                 },
                 style: btn()
-              }, '↺ Retake'),
+              }, __alloT('stem.firstresponse.retake', '↺ Retake')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Back to recognize cards',
+                'aria-label': __alloT('stem.firstresponse.back_to_recognize_cards', 'Back to recognize cards'),
                 onClick: function() { upd('recognizeView', 'cards'); frAnnounce('Back to recognize cards'); },
                 style: btn()
-              }, '← Back to cards'),
+              }, __alloT('stem.firstresponse.back_to_cards', '← Back to cards')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Back to menu',
+                'aria-label': __alloT('stem.firstresponse.back_to_menu', 'Back to menu'),
                 onClick: function() { upd('view', 'menu'); frAnnounce('Back to menu'); },
                 style: btnPrimary()
-              }, '→ Menu')
+              }, __alloT('stem.firstresponse.menu_2', '→ Menu'))
             ),
             disclaimerFooter()
           );
@@ -818,14 +891,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return h('div', { role: 'region', 'aria-label': 'Recognition quiz question ' + (qs.idx + 1),
           style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 6 } },
-            h('div', { style: { fontSize: 12, color: T.dim } }, 'Question ', (qs.idx + 1), ' of ', RECOGNIZE_QUIZ.length),
+            h('div', { style: { fontSize: 12, color: T.dim } }, __alloT('stem.firstresponse.question', 'Question '), (qs.idx + 1), ' of ', RECOGNIZE_QUIZ.length),
             h('div', { style: { fontSize: 12, color: T.muted } }, 'Score: ', qs.score)
           ),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 30 } }, q.icon),
             h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.55 } }, q.stem)
           ),
-          h('div', { role: 'group', 'aria-label': 'Answer choices',
+          h('div', { role: 'group', 'aria-label': __alloT('stem.firstresponse.answer_choices', 'Answer choices'),
             style: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 } },
             q.choices.map(function(choice, i) {
               var isPicked = lastChoice === i;
@@ -888,9 +961,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function callOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🤔 Which line do I call?'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.which_line_do_i_call', '🤔 Which line do I call?')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Pick the situation that fits. Calling the wrong line is rarely a disaster — but knowing the right one helps.'),
+                __alloT('stem.firstresponse.pick_the_situation_that_fits_calling_t', 'Pick the situation that fits. Calling the wrong line is rarely a disaster — but knowing the right one helps.')),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 CALL_DECISIONS.map(function(c) {
                   var active = pickedTag === c.tag;
@@ -906,15 +979,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   }, c.situation);
                 })
               ),
-              picked && h('div', { role: 'region', 'aria-label': 'Recommended line for selected situation',
+              picked && h('div', { role: 'region', 'aria-label': __alloT('stem.firstresponse.recommended_line_for_selected_situatio', 'Recommended line for selected situation'),
                 style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#064e3b', border: '1px solid ' + T.ok, color: '#d1fae5' } },
-                h('div', { style: { fontSize: 12, opacity: 0.8, marginBottom: 4 } }, 'Call'),
+                h('div', { style: { fontSize: 12, opacity: 0.8, marginBottom: 4 } }, __alloT('stem.firstresponse.call', 'Call')),
                 h('div', { style: { fontSize: 22, fontWeight: 800 } }, picked.line),
                 h('div', { style: { fontSize: 12, marginTop: 6, lineHeight: 1.5 } }, picked.why)
               )
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 In Maine'),
+              h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.firstresponse.in_maine', '🌲 In Maine')),
               h('div', { style: { marginBottom: 4 } }, MAINE_EMS.text911),
               h('div', { style: { marginBottom: 4 } }, MAINE_EMS.crisisRoute),
               h('div', null, MAINE_EMS.ruralEta)
@@ -924,17 +997,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
         function callTapToCall() {
           var lines = [
-            { num: '911', label: 'Emergency (police / fire / EMS)', tel: '911' },
-            { num: '988', label: 'Suicide & Crisis Lifeline', tel: '988' },
-            { num: '741741', label: 'Crisis Text Line — text HOME', tel: null, sms: '741741', body: 'HOME' },
-            { num: '1-800-222-1222', label: 'Poison Control', tel: '+18002221222' },
-            { num: '1-800-950-NAMI', label: 'NAMI HelpLine (mental health support)', tel: '+18009506264' },
-            { num: '1-877-565-8860', label: 'Trans Lifeline', tel: '+18775658860' },
-            { num: '1-800-422-4453', label: 'Childhelp National Child Abuse Hotline', tel: '+18004224453' }
+            { num: '911', label: __alloT('stem.firstresponse.emergency_police_fire_ems', 'Emergency (police / fire / EMS)'), tel: '911' },
+            { num: '988', label: __alloT('stem.firstresponse.suicide_crisis_lifeline', 'Suicide & Crisis Lifeline'), tel: '988' },
+            { num: '741741', label: __alloT('stem.firstresponse.crisis_text_line_text_home', 'Crisis Text Line — text HOME'), tel: null, sms: '741741', body: 'HOME' },
+            { num: '1-800-222-1222', label: __alloT('stem.firstresponse.poison_control', 'Poison Control'), tel: '+18002221222' },
+            { num: '1-800-950-NAMI', label: __alloT('stem.firstresponse.nami_helpline_mental_health_support', 'NAMI HelpLine (mental health support)'), tel: '+18009506264' },
+            { num: '1-877-565-8860', label: __alloT('stem.firstresponse.trans_lifeline', 'Trans Lifeline'), tel: '+18775658860' },
+            { num: '1-800-422-4453', label: __alloT('stem.firstresponse.childhelp_national_child_abuse_hotline', 'Childhelp National Child Abuse Hotline'), tel: '+18004224453' }
           ];
           return h('div', null,
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              'On a phone, tap a number to call. Save the ones you might need ahead of time.'),
+              __alloT('stem.firstresponse.on_a_phone_tap_a_number_to_call_save_t', 'On a phone, tap a number to call. Save the ones you might need ahead of time.')),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               lines.map(function(L) {
                 var href = L.sms ? ('sms:' + L.sms + (L.body ? ('?body=' + encodeURIComponent(L.body)) : '')) : ('tel:' + L.tel);
@@ -957,9 +1030,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function callPractice() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📞 What to say to the 911 dispatcher'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.what_to_say_to_the_911_dispatcher', '📞 What to say to the 911 dispatcher')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Say it in this order. Location FIRST so help can roll even if your call drops.'),
+                __alloT('stem.firstresponse.say_it_in_this_order_location_first_so', 'Say it in this order. Location FIRST so help can roll even if your call drops.')),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 DISPATCHER_SCRIPT.map(function(s) {
                   return h('div', { key: s.step, role: 'listitem',
@@ -975,9 +1048,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               )
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '💬 Text-to-911 (Maine)'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.text_to_911_maine', '💬 Text-to-911 (Maine)')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'Use text-to-911 if you’re deaf/HoH, can’t speak safely, or have a speech disability. Maine supports it statewide; check coverage at ',
+                __alloT('stem.firstresponse.use_text_to_911_if_you_re_deaf_hoh_can', 'Use text-to-911 if you’re deaf/HoH, can’t speak safely, or have a speech disability. Maine supports it statewide; check coverage at '),
                 h('a', { href: 'https://www.maine.gov/dps/911', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'maine.gov/dps/911'),
                 '.'),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -996,10 +1069,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ),
             h('div', { style: { marginTop: 14 } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Mark Call module complete',
+                'aria-label': __alloT('stem.firstresponse.mark_call_module_complete', 'Mark Call module complete'),
                 onClick: function() { awardBadge('caller', 'Caller (knows what to say)'); },
                 style: btnPrimary()
-              }, '✓ I’ve practiced the script')
+              }, __alloT('stem.firstresponse.i_ve_practiced_the_script', '✓ I’ve practiced the script'))
             )
           );
         }
@@ -1007,7 +1080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📞 Call (911 + 988)'),
           emergencyBanner(),
-          h('div', { role: 'tablist', 'aria-label': 'Call module sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.call_module_sections', 'Call module sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Which line?'),
             tabBtn('tap-to-call', 'Tap to call'),
@@ -1115,47 +1188,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function cprOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, '❤️ Hands-only CPR'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.hands_only_cpr', '❤️ Hands-only CPR')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, 'For untrained bystanders'),
-                ': hands-only CPR (no breaths) is what AHA recommends for adults who collapse suddenly. It works.'),
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.for_untrained_bystanders', 'For untrained bystanders')),
+                __alloT('stem.firstresponse.hands_only_cpr_no_breaths_is_what_aha_', ': hands-only CPR (no breaths) is what AHA recommends for adults who collapse suddenly. It works.')),
               h('ol', { style: { margin: '0 0 0 18px', color: T.muted, fontSize: 13, lineHeight: 1.7 } },
-                h('li', null, h('strong', { style: { color: T.text } }, 'Check'), ' — shake & shout. No response? Not breathing normally?'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Call 911'), ' (or have someone else call). Send another person for an AED.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Push hard, push fast'), ' — center of chest, ',
-                  h('span', { style: { color: T.accentHi } }, '2 inches deep'), ', at ',
-                  h('span', { style: { color: T.accentHi } }, '100–120 bpm'), '.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Don’t stop'), ' until EMS takes over, AED tells you to clear, or person starts breathing.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Use the AED'), ' as soon as it arrives — it talks you through it.')
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.check', 'Check')), __alloT('stem.firstresponse.shake_shout_no_response_not_breathing_', ' — shake & shout. No response? Not breathing normally?')),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.call_911_2', 'Call 911')), __alloT('stem.firstresponse.or_have_someone_else_call_send_another', ' (or have someone else call). Send another person for an AED.')),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.push_hard_push_fast', 'Push hard, push fast')), __alloT('stem.firstresponse.center_of_chest', ' — center of chest, '),
+                  h('span', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.2_inches_deep', '2 inches deep')), __alloT('stem.firstresponse.at', ', at '),
+                  h('span', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.100_120_bpm', '100–120 bpm')), '.'),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.don_t_stop', 'Don’t stop')), __alloT('stem.firstresponse.until_ems_takes_over_aed_tells_you_to_', ' until EMS takes over, AED tells you to clear, or person starts breathing.')),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.use_the_aed', 'Use the AED')), __alloT('stem.firstresponse.as_soon_as_it_arrives_it_talks_you_thr', ' as soon as it arrives — it talks you through it.'))
               ),
               h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-                'Depth: 2 in (5 cm) adult, ~1.5 in (4 cm) child, ~1.5 in (4 cm) infant. Source: AHA 2020 Guidelines for CPR & ECC.')
+                __alloT('stem.firstresponse.depth_2_in_5_cm_adult_1_5_in_4_cm_chil', 'Depth: 2 in (5 cm) adult, ~1.5 in (4 cm) child, ~1.5 in (4 cm) infant. Source: AHA 2020 Guidelines for CPR & ECC.'))
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, '⚡ AED in one paragraph'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.aed_in_one_paragraph', '⚡ AED in one paragraph')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                'AEDs are designed for untrained people. Turn it on. ',
-                h('strong', { style: { color: T.text } }, 'It will talk you through every step.'),
-                ' It will not shock someone who doesn’t need it — it analyzes the heart rhythm first. ',
-                h('strong', { style: { color: T.accentHi } }, 'Use it.'),
-                ' Many AEDs also show visual prompts on a screen for deaf and hard-of-hearing rescuers.')
+                __alloT('stem.firstresponse.aeds_are_designed_for_untrained_people', 'AEDs are designed for untrained people. Turn it on. '),
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.it_will_talk_you_through_every_step', 'It will talk you through every step.')),
+                __alloT('stem.firstresponse.it_will_not_shock_someone_who_doesn_t_', ' It will not shock someone who doesn’t need it — it analyzes the heart rhythm first. '),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.use_it', 'Use it.')),
+                __alloT('stem.firstresponse.many_aeds_also_show_visual_prompts_on_', ' Many AEDs also show visual prompts on a screen for deaf and hard-of-hearing rescuers.'))
             ),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Open CPR rhythm metronome',
+                'aria-label': __alloT('stem.firstresponse.open_cpr_rhythm_metronome', 'Open CPR rhythm metronome'),
                 onClick: function() { upd('cprView', 'metronome'); frAnnounce('Metronome'); },
                 style: btnPrimary()
-              }, '🥁 Metronome (100–120 bpm)'),
+              }, __alloT('stem.firstresponse.metronome_100_120_bpm', '🥁 Metronome (100–120 bpm)')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Practice CPR rhythm — 30 second window',
+                'aria-label': __alloT('stem.firstresponse.practice_cpr_rhythm_30_second_window', 'Practice CPR rhythm — 30 second window'),
                 onClick: function() { upd('cprView', 'practice'); frAnnounce('Practice mode'); },
                 style: btn()
-              }, '⏱️ Practice (30 sec)'),
+              }, __alloT('stem.firstresponse.practice_30_sec', '⏱️ Practice (30 sec)')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Walk through using an AED',
+                'aria-label': __alloT('stem.firstresponse.walk_through_using_an_aed', 'Walk through using an AED'),
                 onClick: function() { upd('cprView', 'aed'); frAnnounce('AED walkthrough'); },
                 style: btn()
-              }, '⚡ AED walkthrough')
+              }, __alloT('stem.firstresponse.aed_walkthrough', '⚡ AED walkthrough'))
             )
           );
         }
@@ -1183,14 +1256,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 width: 160, height: 160, borderRadius: '50%',
                 background: 'radial-gradient(circle at 30% 30%, ' + T.accentHi + ', ' + T.accent + ')',
                 margin: '20px auto',
-                transform: 'scale(' + pulseScale().toFixed(3) + ')',
-                transition: 'transform 80ms ease-out',
+                animation: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'none' : ('firstresponse-heartbeat ' + (60000 / bpm).toFixed(0) + 'ms ease-in-out infinite'),
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 48, color: '#fff', fontWeight: 800,
                 boxShadow: '0 0 40px rgba(220,38,38,0.45)'
               } }, '❤'),
               h('div', { 'aria-live': 'off', style: { fontSize: 36, fontWeight: 800, color: T.text, marginBottom: 4 } }, bpm + ' bpm'),
-              h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8 } }, 'Beats counted: ', beat),
+              h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8 } }, __alloT('stem.firstresponse.beats_counted', 'Beats counted: '), beat),
               // Visual rhythm strip — last 16 beats as pulsing dots that fade.
               // Pairs with the audio metronome so deaf/hard-of-hearing rescuers
               // see the rhythm too.
@@ -1230,21 +1302,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   style: btn({ padding: '6px 12px', fontSize: 12, background: audioOn ? '#1e3a8a' : T.card, color: audioOn ? '#dbeafe' : T.text })
                 }, audioOn ? '🔊 Audio on' : '🔇 Audio off'),
                 h('button', { 'data-fr-focusable': true,
-                  'aria-label': 'Reset bpm to 110',
+                  'aria-label': __alloT('stem.firstresponse.reset_bpm_to_110', 'Reset bpm to 110'),
                   onClick: function() { upd('cprBpm', 110); },
                   style: btn({ padding: '6px 12px', fontSize: 12 })
-                }, 'Reset to 110')
+                }, __alloT('stem.firstresponse.reset_to_110', 'Reset to 110'))
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
               h('strong', { style: { color: T.text } }, 'Tip:'),
               ' ',
-              h('em', null, 'Stayin’ Alive'),
-              ' is ~104 bpm. ',
-              h('em', null, 'Baby Shark'),
-              ' is ~115 bpm. ',
-              h('em', null, 'Mr. Brightside'),
-              ' is ~148 bpm — too fast. Audio is OFF by default; enable if it helps you keep time.')
+              h('em', null, __alloT('stem.firstresponse.stayin_alive', 'Stayin’ Alive')),
+              __alloT('stem.firstresponse.is_104_bpm', ' is ~104 bpm. '),
+              h('em', null, __alloT('stem.firstresponse.baby_shark', 'Baby Shark')),
+              __alloT('stem.firstresponse.is_115_bpm', ' is ~115 bpm. '),
+              h('em', null, __alloT('stem.firstresponse.mr_brightside', 'Mr. Brightside')),
+              __alloT('stem.firstresponse.is_148_bpm_too_fast_audio_is_off_by_de', ' is ~148 bpm — too fast. Audio is OFF by default; enable if it helps you keep time.'))
           );
         }
 
@@ -1287,11 +1359,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '⏱️ Practice (30-second window)'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.practice_30_second_window', '⏱️ Practice (30-second window)')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                'Tap the big button in rhythm — like you would push on someone’s chest. Aim for ',
-                h('strong', { style: { color: T.accentHi } }, '100–120 bpm'),
-                '. The metronome above gives you the target sound/visual.'),
+                __alloT('stem.firstresponse.tap_the_big_button_in_rhythm_like_you_', 'Tap the big button in rhythm — like you would push on someone’s chest. Aim for '),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.100_120_bpm_2', '100–120 bpm')),
+                __alloT('stem.firstresponse.the_metronome_above_gives_you_the_targ', '. The metronome above gives you the target sound/visual.')),
               h('div', { style: { textAlign: 'center', margin: '14px 0' } },
                 h('button', { 'data-fr-focusable': true,
                   disabled: !practiceRunning,
@@ -1313,24 +1385,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 practiceRunning
                   ? h('span', null,
                       h('strong', { style: { color: inRange ? T.ok : T.warn } }, currentBpm + ' bpm'),
-                      ' • ', Math.round(elapsedSec), 's / 30s • taps: ', taps.length)
+                      ' • ', Math.round(elapsedSec), __alloT('stem.firstresponse.s_30s_taps', 's / 30s • taps: '), taps.length)
                   : (practiceBest
                       ? h('span', null, 'Best: ', h('strong', { style: { color: T.text } }, practiceBest.rate + ' bpm'))
                       : 'Press Start, then tap with the rhythm.')
               ),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
                 !practiceRunning && h('button', { 'data-fr-focusable': true,
-                  'aria-label': 'Start 30 second practice',
+                  'aria-label': __alloT('stem.firstresponse.start_30_second_practice', 'Start 30 second practice'),
                   onClick: startPractice, style: btnPrimary()
-                }, '▶ Start 30s'),
+                }, __alloT('stem.firstresponse.start_30s', '▶ Start 30s')),
                 practiceRunning && h('button', { 'data-fr-focusable': true,
-                  'aria-label': 'Stop practice early',
+                  'aria-label': __alloT('stem.firstresponse.stop_practice_early', 'Stop practice early'),
                   onClick: stopPractice, style: btn()
-                }, '■ Stop')
+                }, __alloT('stem.firstresponse.stop', '■ Stop'))
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-              'You’re practicing rhythm only — depth (2 inches on an adult) and chest recoil also matter, and you can’t practice those on a screen. Get hands-on at ',
+              __alloT('stem.firstresponse.you_re_practicing_rhythm_only_depth_2_', 'You’re practicing rhythm only — depth (2 inches on an adult) and chest recoil also matter, and you can’t practice those on a screen. Get hands-on at '),
               h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'redcross.org'),
               '.')
           );
@@ -1341,24 +1413,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           var aedShockBranch = d.aedShockBranch || null; // 'shock' or 'noshock'
 
           var STEPS = [
-            { icon: '🟢', title: 'Step 1 — Turn it on',
+            { icon: '🟢', title: __alloT('stem.firstresponse.step_1_turn_it_on', 'Step 1 — Turn it on'),
               say: '"AED ON. Apply pads to bare chest as shown."',
-              tip: 'Open the case. Press the green/power button. The AED starts giving voice prompts immediately. Visual prompts on the screen mirror them for deaf/HoH rescuers.' },
-            { icon: '👕', title: 'Step 2 — Expose the chest',
+              tip: __alloT('stem.firstresponse.open_the_case_press_the_green_power_bu', 'Open the case. Press the green/power button. The AED starts giving voice prompts immediately. Visual prompts on the screen mirror them for deaf/HoH rescuers.') },
+            { icon: '👕', title: __alloT('stem.firstresponse.step_2_expose_the_chest', 'Step 2 — Expose the chest'),
               say: '"Apply pads to bare chest."',
-              tip: 'Cut or tear off the shirt. If chest is wet — wipe dry. If hairy — most AEDs include a razor in the case. Remove medication patches. The pads go skin-to-skin.' },
-            { icon: '📍', title: 'Step 3 — Place the pads',
+              tip: __alloT('stem.firstresponse.cut_or_tear_off_the_shirt_if_chest_is_', 'Cut or tear off the shirt. If chest is wet — wipe dry. If hairy — most AEDs include a razor in the case. Remove medication patches. The pads go skin-to-skin.') },
+            { icon: '📍', title: __alloT('stem.firstresponse.step_3_place_the_pads', 'Step 3 — Place the pads'),
               say: '"Place one pad on upper-right chest, one on lower-left side."',
-              tip: 'The pads have a picture showing where they go. Adult: upper-right + lower-left ribs. Child <8 or <55 lbs: use child pads if available, or place one on chest and one on the back.' },
-            { icon: '✋', title: 'Step 4 — Stand clear',
+              tip: __alloT('stem.firstresponse.the_pads_have_a_picture_showing_where_', 'The pads have a picture showing where they go. Adult: upper-right + lower-left ribs. Child <8 or <55 lbs: use child pads if available, or place one on chest and one on the back.') },
+            { icon: '✋', title: __alloT('stem.firstresponse.step_4_stand_clear', 'Step 4 — Stand clear'),
               say: '"Analyzing. Do not touch the patient."',
-              tip: 'Loudly say "CLEAR!" so no one is touching the person. The AED is reading the heart rhythm. Takes 5–15 seconds.' },
-            { icon: '⚡', title: 'Step 5 — Shock or no shock',
+              tip: __alloT('stem.firstresponse.loudly_say_clear_so_no_one_is_touching', 'Loudly say "CLEAR!" so no one is touching the person. The AED is reading the heart rhythm. Takes 5–15 seconds.') },
+            { icon: '⚡', title: __alloT('stem.firstresponse.step_5_shock_or_no_shock', 'Step 5 — Shock or no shock'),
               say: aedShockBranch === 'shock' ? '"Shock advised. Stand clear. Press the flashing button now."' : (aedShockBranch === 'noshock' ? '"No shock advised. Begin CPR."' : '"Analyzing..."'),
-              tip: 'Pick a branch below to see what happens for each.' },
-            { icon: '🔁', title: 'Step 6 — Continue compressions',
+              tip: __alloT('stem.firstresponse.pick_a_branch_below_to_see_what_happen', 'Pick a branch below to see what happens for each.') },
+            { icon: '🔁', title: __alloT('stem.firstresponse.step_6_continue_compressions', 'Step 6 — Continue compressions'),
               say: '"Begin CPR. Continue chest compressions. AED will re-analyze in 2 minutes."',
-              tip: 'Whether shock or no shock — the AED will tell you to do CPR for 2 minutes, then it re-analyzes. Do not remove the pads. Keep going until EMS arrives.' }
+              tip: __alloT('stem.firstresponse.whether_shock_or_no_shock_the_aed_will', 'Whether shock or no shock — the AED will tell you to do CPR for 2 minutes, then it re-analyzes. Do not remove the pads. Keep going until EMS arrives.') }
           ];
 
           function next() {
@@ -1396,20 +1468,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   'aria-pressed': aedShockBranch === 'shock' ? 'true' : 'false',
                   onClick: function() { upd('aedShockBranch', 'shock'); frAnnounce('Shock advised branch.'); },
                   style: btn({ background: aedShockBranch === 'shock' ? '#7f1d1d' : T.card, color: aedShockBranch === 'shock' ? '#fde2e2' : T.text, padding: '6px 12px', fontSize: 12 })
-                }, '⚡ "Shock advised"'),
+                }, __alloT('stem.firstresponse.shock_advised', '⚡ "Shock advised"')),
                 h('button', { 'data-fr-focusable': true,
                   'aria-pressed': aedShockBranch === 'noshock' ? 'true' : 'false',
                   onClick: function() { upd('aedShockBranch', 'noshock'); frAnnounce('No shock advised branch.'); },
                   style: btn({ background: aedShockBranch === 'noshock' ? '#064e3b' : T.card, color: aedShockBranch === 'noshock' ? '#d1fae5' : T.text, padding: '6px 12px', fontSize: 12 })
-                }, '🚫 "No shock advised"')
+                }, __alloT('stem.firstresponse.no_shock_advised', '🚫 "No shock advised"'))
               )
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
               h('div', { style: { fontSize: 12, color: T.dim } },
-                'Step ', (aedStep + 1), ' of ', STEPS.length),
+                __alloT('stem.firstresponse.step', 'Step '), (aedStep + 1), ' of ', STEPS.length),
               h('div', { style: { display: 'flex', gap: 6 } },
-                aedStep > 0 && h('button', { 'data-fr-focusable': true, 'aria-label': 'Previous step', onClick: prev, style: btn({ padding: '6px 12px', fontSize: 12 }) }, '← Back'),
-                h('button', { 'data-fr-focusable': true, 'aria-label': 'Reset to first step', onClick: reset, style: btn({ padding: '6px 12px', fontSize: 12 }) }, 'Reset'),
+                aedStep > 0 && h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.previous_step', 'Previous step'), onClick: prev, style: btn({ padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.firstresponse.back', '← Back')),
+                h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.reset_to_first_step', 'Reset to first step'), onClick: reset, style: btn({ padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.firstresponse.reset', 'Reset')),
                 h('button', { 'data-fr-focusable': true,
                   'aria-label': aedStep < STEPS.length - 1 ? 'Next step' : 'Finish walkthrough',
                   onClick: next,
@@ -1423,7 +1495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('❤️ CPR + AED'),
           emergencyBanner(),
-          h('div', { role: 'tablist', 'aria-label': 'CPR + AED sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.cpr_aed_sections', 'CPR + AED sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('metronome', 'Metronome'),
@@ -1463,7 +1535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         }
 
         var STEPS = [
-          { num: 1, icon: '✋', name: 'Direct pressure',
+          { num: 1, icon: '✋', name: __alloT('stem.firstresponse.direct_pressure_2', 'Direct pressure'),
             short: 'Press hard with both hands.',
             detail: [
               'Use both hands and your bodyweight. Lean in.',
@@ -1474,7 +1546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ],
             when: 'ALWAYS start here. Most bleeding stops with pressure alone.',
             source: 'Stop the Bleed step 1' },
-          { num: 2, icon: '🧤', name: 'Wound packing',
+          { num: 2, icon: '🧤', name: __alloT('stem.firstresponse.wound_packing', 'Wound packing'),
             short: 'Pack gauze deep into the wound; keep pressure.',
             detail: [
               'For deep wounds on a limb, neck, armpit, or groin where pressure alone isn’t stopping it.',
@@ -1485,10 +1557,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ],
             when: 'Use when direct pressure isn’t controlling a DEEP wound, especially on the neck, armpit, or groin where you CAN’T tourniquet.',
             source: 'Stop the Bleed step 2' },
-          { num: 3, icon: '🩹', name: 'Tourniquet',
+          { num: 3, icon: '🩹', name: __alloT('stem.firstresponse.tourniquet', 'Tourniquet'),
             short: 'Limbs only. 2–3" above wound. Note time.',
             detail: [
-              h('strong', null, 'Limbs ONLY. NEVER on neck, head, torso, groin, or armpit.'),
+              h('strong', null, __alloT('stem.firstresponse.limbs_only_never_on_neck_head_torso_gr', 'Limbs ONLY. NEVER on neck, head, torso, groin, or armpit.')),
               'Place the tourniquet 2–3 inches ABOVE the wound, between wound and heart. Not on a joint — go above or below the elbow/knee.',
               'Tighten until the bleeding STOPS. It will hurt — that is correct.',
               'Note the TIME you applied it. Write it on the tourniquet, on the patient’s forehead with marker, or tell EMS.',
@@ -1503,15 +1575,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function bleedOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, '🩸 Life-threatening bleeding'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.life_threatening_bleeding', '🩸 Life-threatening bleeding')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, 'Recognize it: '),
-                'spurting blood, blood pooling on the ground, blood that won’t stop after 5+ minutes of pressure, soaks through cloth fast. A person can bleed to death from a limb wound in ',
-                h('strong', { style: { color: T.accentHi } }, 'as little as 3–5 minutes'),
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.recognize_it', 'Recognize it: ')),
+                __alloT('stem.firstresponse.spurting_blood_blood_pooling_on_the_gr', 'spurting blood, blood pooling on the ground, blood that won’t stop after 5+ minutes of pressure, soaks through cloth fast. A person can bleed to death from a limb wound in '),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.as_little_as_3_5_minutes', 'as little as 3–5 minutes')),
                 '.'),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, 'The protocol: '),
-                'Pressure → (if needed) Packing → (if needed) Tourniquet. Always start at step 1. Escalate only if the previous step isn’t working.')
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.the_protocol', 'The protocol: ')),
+                __alloT('stem.firstresponse.pressure_if_needed_packing_if_needed_t', 'Pressure → (if needed) Packing → (if needed) Tourniquet. Always start at step 1. Escalate only if the previous step isn’t working.'))
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               STEPS.map(function(s) {
@@ -1529,15 +1601,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ),
             h('div', { style: { marginTop: 14 } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'See detailed protocol with step-by-step instructions',
+                'aria-label': __alloT('stem.firstresponse.see_detailed_protocol_with_step_by_ste', 'See detailed protocol with step-by-step instructions'),
                 onClick: function() { upd('bleedView', 'detail'); frAnnounce('Detailed protocol'); },
                 style: btnPrimary()
-              }, '📋 See detailed protocol'),
+              }, __alloT('stem.firstresponse.see_detailed_protocol', '📋 See detailed protocol')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'See where you can and cannot put a tourniquet',
+                'aria-label': __alloT('stem.firstresponse.see_where_you_can_and_cannot_put_a_tou', 'See where you can and cannot put a tourniquet'),
                 onClick: function() { upd('bleedView', 'tourniquet'); frAnnounce('Tourniquet placement'); },
                 style: btn({ marginLeft: 8 })
-              }, '🩹 Tourniquet placement')
+              }, __alloT('stem.firstresponse.tourniquet_placement', '🩹 Tourniquet placement'))
             )
           );
         }
@@ -1545,9 +1617,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function bleedDetail() {
           return h('div', null,
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              'Each step in detail. ',
-              h('strong', { style: { color: T.text } }, 'Always start at step 1.'),
-              ' Escalate only when the previous step isn’t working.'),
+              __alloT('stem.firstresponse.each_step_in_detail', 'Each step in detail. '),
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.always_start_at_step_1', 'Always start at step 1.')),
+              __alloT('stem.firstresponse.escalate_only_when_the_previous_step_i', ' Escalate only when the previous step isn’t working.')),
             STEPS.map(function(s) {
               return h('div', { key: s.num,
                 style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 10 } },
@@ -1560,24 +1632,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   s.detail.map(function(item, i) { return h('li', { key: i }, item); })
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, marginBottom: 6 } },
-                  h('strong', { style: { color: T.text } }, 'Use when: '), s.when),
+                  h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.use_when', 'Use when: ')), s.when),
                 h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic' } }, 'Source: ', s.source)
               );
             }),
             h('div', { style: { padding: 12, borderRadius: 10, background: '#7f1d1d', border: '1px solid #dc2626', color: '#fde2e2', fontSize: 13, lineHeight: 1.55, marginTop: 6 } },
-              h('strong', null, '🌲 Maine reality: '),
+              h('strong', null, __alloT('stem.firstresponse.maine_reality', '🌲 Maine reality: ')),
               MAINE_EMS.ruralEta,
-              ' That distance is why a tourniquet may be life-saving here where pressure alone might be enough in a city — EMS is closer there.'),
+              __alloT('stem.firstresponse.that_distance_is_why_a_tourniquet_may_', ' That distance is why a tourniquet may be life-saving here where pressure alone might be enough in a city — EMS is closer there.')),
             h('div', { style: { marginTop: 12 } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Mark Stop the Bleed module complete',
+                'aria-label': __alloT('stem.firstresponse.mark_stop_the_bleed_module_complete', 'Mark Stop the Bleed module complete'),
                 onClick: function() { awardBadge('bleed_stopped', 'Stop the Bleed (knows the protocol)'); },
                 style: btnPrimary()
-              }, '✓ I’ve learned the protocol'),
+              }, __alloT('stem.firstresponse.i_ve_learned_the_protocol', '✓ I’ve learned the protocol')),
               h('a', { href: 'https://www.stopthebleed.org', target: '_blank', rel: 'noopener',
                 'data-fr-focusable': true,
                 style: Object.assign(btn({ marginLeft: 8, display: 'inline-block', textDecoration: 'none' }), { padding: '10px 16px' })
-              }, 'Take a free course → stopthebleed.org')
+              }, __alloT('stem.firstresponse.take_a_free_course_stopthebleed_org', 'Take a free course → stopthebleed.org'))
             )
           );
         }
@@ -1585,24 +1657,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function bleedTourniquet() {
           // Body-zone diagram: green = OK to tourniquet (limbs), red = NEVER.
           var ZONES = [
-            { zone: 'Upper arm', ok: true, note: '2–3" above wound, between wound and shoulder.' },
-            { zone: 'Forearm', ok: true, note: 'Above the elbow if wound is at/near elbow.' },
-            { zone: 'Thigh', ok: true, note: '2–3" above wound, between wound and hip.' },
-            { zone: 'Lower leg / shin', ok: true, note: 'Above the knee if wound is at/near knee.' },
-            { zone: 'Neck', ok: false, note: 'NEVER. Pack the wound and apply pressure.' },
-            { zone: 'Head / face', ok: false, note: 'NEVER. Direct pressure only.' },
-            { zone: 'Chest / back / abdomen', ok: false, note: 'NEVER. Pack if you can; pressure; 911 fast.' },
-            { zone: 'Armpit (axilla)', ok: false, note: 'Junctional — can’t tourniquet. Pack with gauze and apply pressure.' },
-            { zone: 'Groin', ok: false, note: 'Junctional — can’t tourniquet. Pack with gauze and apply pressure with bodyweight.' }
+            { zone: 'Upper arm', ok: true, note: __alloT('stem.firstresponse.2_3_above_wound_between_wound_and_shou', '2–3" above wound, between wound and shoulder.') },
+            { zone: 'Forearm', ok: true, note: __alloT('stem.firstresponse.above_the_elbow_if_wound_is_at_near_el', 'Above the elbow if wound is at/near elbow.') },
+            { zone: 'Thigh', ok: true, note: __alloT('stem.firstresponse.2_3_above_wound_between_wound_and_hip', '2–3" above wound, between wound and hip.') },
+            { zone: 'Lower leg / shin', ok: true, note: __alloT('stem.firstresponse.above_the_knee_if_wound_is_at_near_kne', 'Above the knee if wound is at/near knee.') },
+            { zone: 'Neck', ok: false, note: __alloT('stem.firstresponse.never_pack_the_wound_and_apply_pressur', 'NEVER. Pack the wound and apply pressure.') },
+            { zone: 'Head / face', ok: false, note: __alloT('stem.firstresponse.never_direct_pressure_only', 'NEVER. Direct pressure only.') },
+            { zone: 'Chest / back / abdomen', ok: false, note: __alloT('stem.firstresponse.never_pack_if_you_can_pressure_911_fas', 'NEVER. Pack if you can; pressure; 911 fast.') },
+            { zone: 'Armpit (axilla)', ok: false, note: __alloT('stem.firstresponse.junctional_can_t_tourniquet_pack_with_', 'Junctional — can’t tourniquet. Pack with gauze and apply pressure.') },
+            { zone: 'Groin', ok: false, note: __alloT('stem.firstresponse.junctional_can_t_tourniquet_pack_with__2', 'Junctional — can’t tourniquet. Pack with gauze and apply pressure with bodyweight.') }
           ];
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🩹 Where can a tourniquet go?'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.where_can_a_tourniquet_go', '🩹 Where can a tourniquet go?')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, 'Limbs only.'),
-                ' Junctional wounds (neck, armpit, groin) and torso wounds need ',
-                h('strong', { style: { color: T.text } }, 'wound packing'),
-                ' instead — gauze deep into the wound, then heavy pressure.'),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.limbs_only', 'Limbs only.')),
+                __alloT('stem.firstresponse.junctional_wounds_neck_armpit_groin_an', ' Junctional wounds (neck, armpit, groin) and torso wounds need '),
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.wound_packing_2', 'wound packing')),
+                __alloT('stem.firstresponse.instead_gauze_deep_into_the_wound_then', ' instead — gauze deep into the wound, then heavy pressure.')),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 ZONES.map(function(z, i) {
                   return h('div', { key: i, role: 'listitem',
@@ -1625,15 +1697,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Improvised tourniquet (no real one available): '),
-              'a belt won’t tighten enough on its own — you need a windlass. Triangular bandage or a torn shirt strip wrapped around the limb, with a stick or pen as a windlass to twist tighter, then secure. Real tourniquets (CAT, SOFT-T) work better and are widely available — many schools and Stop the Bleed kits stock them.')
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.improvised_tourniquet_no_real_one_avai', 'Improvised tourniquet (no real one available): ')),
+              __alloT('stem.firstresponse.a_belt_won_t_tighten_enough_on_its_own', 'a belt won’t tighten enough on its own — you need a windlass. Triangular bandage or a torn shirt strip wrapped around the limb, with a stick or pen as a windlass to twist tighter, then secure. Real tourniquets (CAT, SOFT-T) work better and are widely available — many schools and Stop the Bleed kits stock them.'))
           );
         }
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🩸 Stop the Bleed'),
           emergencyBanner(),
-          h('div', { role: 'tablist', 'aria-label': 'Stop the Bleed sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.stop_the_bleed_sections', 'Stop the Bleed sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('detail', 'Detailed protocol'),
@@ -1673,39 +1745,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         }
 
         var WHO = [
-          { id: 'adult', icon: '🧑', label: 'Adult or child (1+ year)' },
-          { id: 'child', icon: '🧒', label: 'Small child (1–8)' },
-          { id: 'infant', icon: '👶', label: 'Infant (under 1 year)' },
-          { id: 'pregnant', icon: '🤰', label: 'Pregnant person' },
-          { id: 'alone', icon: '🆘', label: 'You — alone, choking' }
+          { id: 'adult', icon: '🧑', label: __alloT('stem.firstresponse.adult_or_child_1_year', 'Adult or child (1+ year)') },
+          { id: 'child', icon: '🧒', label: __alloT('stem.firstresponse.small_child_1_8', 'Small child (1–8)') },
+          { id: 'infant', icon: '👶', label: __alloT('stem.firstresponse.infant_under_1_year', 'Infant (under 1 year)') },
+          { id: 'pregnant', icon: '🤰', label: __alloT('stem.firstresponse.pregnant_person', 'Pregnant person') },
+          { id: 'alone', icon: '🆘', label: __alloT('stem.firstresponse.you_alone_choking', 'You — alone, choking') }
         ];
 
         var PROTOCOLS = {
           adult: {
-            title: 'Adult or child (1+ year)',
+            title: __alloT('stem.firstresponse.adult_or_child_1_year_2', 'Adult or child (1+ year)'),
             recognize: 'Universal sign: hands at throat, can’t cough, can’t speak, can’t breathe. Color may turn dusky/blue.',
             steps: [
               'Ask: "Are you choking?" If they nod or can’t answer — act.',
               'Stand behind them. Lean them slightly forward.',
-              h('strong', null, '5 back blows '),
+              h('strong', null, __alloT('stem.firstresponse.5_back_blows', '5 back blows ')),
               'between the shoulder blades with the heel of your hand.',
-              h('strong', null, '5 abdominal thrusts (Heimlich): '),
+              h('strong', null, __alloT('stem.firstresponse.5_abdominal_thrusts_heimlich', '5 abdominal thrusts (Heimlich): ')),
               'fist just above the navel, other hand over fist, quick inward + upward thrusts.',
               'Repeat 5+5 until the object comes out OR they go unconscious.',
-              h('strong', null, 'If they go unconscious: '),
+              h('strong', null, __alloT('stem.firstresponse.if_they_go_unconscious', 'If they go unconscious: ')),
               'lower them safely to the ground, call 911, start CPR. Look in the mouth before each set of breaths and remove anything you see — do NOT do a blind finger sweep.'
             ],
             after: 'Even if the object comes out: they should see a doctor. Abdominal thrusts can cause internal injury.',
             source: 'Red Cross First Aid'
           },
           child: {
-            title: 'Small child (1–8)',
+            title: __alloT('stem.firstresponse.small_child_1_8_2', 'Small child (1–8)'),
             recognize: 'Same universal sign — hands at throat, silent, can’t breathe.',
             steps: [
               'Kneel behind them so you’re at their level.',
-              h('strong', null, '5 back blows '),
+              h('strong', null, __alloT('stem.firstresponse.5_back_blows_2', '5 back blows ')),
               'between shoulder blades with the heel of your hand.',
-              h('strong', null, '5 abdominal thrusts: '),
+              h('strong', null, __alloT('stem.firstresponse.5_abdominal_thrusts', '5 abdominal thrusts: ')),
               'gentler than for an adult — fist just above the navel, brisk inward + upward.',
               'Repeat 5+5 until object dislodges or they’re unconscious.',
               'If unconscious: 911, start CPR.'
@@ -1714,15 +1786,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             source: 'Red Cross First Aid'
           },
           infant: {
-            title: 'Infant (under 1 year)',
+            title: __alloT('stem.firstresponse.infant_under_1_year_2', 'Infant (under 1 year)'),
             recognize: 'Can’t cry, can’t cough, weak/silent, color dusky. Different from a fussy baby — there is no sound.',
             steps: [
-              h('strong', null, 'NEVER use abdominal thrusts on an infant.'),
+              h('strong', null, __alloT('stem.firstresponse.never_use_abdominal_thrusts_on_an_infa', 'NEVER use abdominal thrusts on an infant.')),
               'Sit. Lay the baby face-DOWN along your forearm, head lower than body, supporting the jaw. Use your thigh as a brace.',
-              h('strong', null, '5 back blows '),
+              h('strong', null, __alloT('stem.firstresponse.5_back_blows_3', '5 back blows ')),
               'between the shoulder blades with the heel of your hand. Firm but not violent.',
               'Flip the baby face-UP along your other forearm, head still low.',
-              h('strong', null, '5 chest thrusts: '),
+              h('strong', null, __alloT('stem.firstresponse.5_chest_thrusts', '5 chest thrusts: ')),
               'two fingers on the breastbone (just below the nipple line), 1.5 inches deep, slower than CPR (about 1 per second).',
               'Repeat 5+5 until object comes out or baby is unconscious.',
               'If unconscious: 911, start infant CPR.'
@@ -1731,12 +1803,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             source: 'Red Cross Pediatric First Aid'
           },
           pregnant: {
-            title: 'Pregnant person',
+            title: __alloT('stem.firstresponse.pregnant_person_2', 'Pregnant person'),
             recognize: 'Same universal sign — hands at throat, can’t breathe.',
             steps: [
-              h('strong', null, 'Use chest thrusts, NOT abdominal thrusts.'),
+              h('strong', null, __alloT('stem.firstresponse.use_chest_thrusts_not_abdominal_thrust', 'Use chest thrusts, NOT abdominal thrusts.')),
               'Stand behind them. Place your fist on the CENTER of the breastbone (sternum), not the abdomen.',
-              h('strong', null, '5 chest thrusts: '),
+              h('strong', null, __alloT('stem.firstresponse.5_chest_thrusts_2', '5 chest thrusts: ')),
               'pull straight back into the chest, sharp and quick.',
               'Same goes for anyone too large for you to wrap your arms around the abdomen.',
               'Repeat until object comes out or they’re unconscious.',
@@ -1746,12 +1818,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             source: 'Red Cross First Aid'
           },
           alone: {
-            title: 'You — alone, choking',
+            title: __alloT('stem.firstresponse.you_alone_choking_2', 'You — alone, choking'),
             recognize: 'You can’t cough, can’t make sound. Don’t panic — you have a minute or so.',
             steps: [
-              h('strong', null, 'Self abdominal thrusts. '),
+              h('strong', null, __alloT('stem.firstresponse.self_abdominal_thrusts', 'Self abdominal thrusts. ')),
               'Make a fist just above your navel. Other hand on top. Pull sharply inward and upward.',
-              h('strong', null, 'OR use a chair back / counter / railing: '),
+              h('strong', null, __alloT('stem.firstresponse.or_use_a_chair_back_counter_railing', 'OR use a chair back / counter / railing: ')),
               'lean over a hard horizontal edge (back of a chair, kitchen counter) and push your abdomen down onto it sharply.',
               'Repeat until the object dislodges.',
               'If you can dial — call 911 and leave the line open even if you can’t speak. Modern dispatchers can locate the call.'
@@ -1764,9 +1836,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function chokeSelect() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '😬 Who is choking?'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.who_is_choking', '😬 Who is choking?')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-                'The right technique depends on who. Pick one to see the protocol.'),
+                __alloT('stem.firstresponse.the_right_technique_depends_on_who_pic', 'The right technique depends on who. Pick one to see the protocol.')),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 WHO.map(function(w) {
                   var active = who === w.id;
@@ -1792,11 +1864,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
               h('strong', { style: { color: T.text } }, 'Universal: '),
-              'if the person is coughing forcefully, ',
-              h('strong', { style: { color: T.text } }, 'don’t intervene'),
-              ' — let them cough. Step in only when they ',
+              __alloT('stem.firstresponse.if_the_person_is_coughing_forcefully', 'if the person is coughing forcefully, '),
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.don_t_intervene', 'don’t intervene')),
+              __alloT('stem.firstresponse.let_them_cough_step_in_only_when_they', ' — let them cough. Step in only when they '),
               h('em', null, 'can’t'),
-              ' cough, can’t speak, or can’t breathe.')
+              __alloT('stem.firstresponse.cough_can_t_speak_or_can_t_breathe', ' cough, can’t speak, or can’t breathe.'))
           );
         }
 
@@ -1817,15 +1889,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Pick a different person',
+                'aria-label': __alloT('stem.firstresponse.pick_a_different_person', 'Pick a different person'),
                 onClick: function() { upd('chokeView', 'select'); frAnnounce('Pick someone else'); },
                 style: btn()
-              }, '← Pick someone else'),
+              }, __alloT('stem.firstresponse.pick_someone_else', '← Pick someone else')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Mark choking module complete',
+                'aria-label': __alloT('stem.firstresponse.mark_choking_module_complete', 'Mark choking module complete'),
                 onClick: function() { awardBadge('choking_responder', 'Choking Responder (knows all 5 cases)'); },
                 style: btnPrimary()
-              }, '✓ Got it')
+              }, __alloT('stem.firstresponse.got_it', '✓ Got it'))
             )
           );
         }
@@ -1833,7 +1905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('😬 Choking'),
           emergencyBanner(),
-          h('div', { role: 'tablist', 'aria-label': 'Choking module sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.choking_module_sections', 'Choking module sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('select', 'Pick who'),
             tabBtn('protocol', 'Protocol')
@@ -1887,126 +1959,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function daOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: '#1e3a8a', border: '1px solid #1e40af', marginBottom: 14, color: '#dbeafe' } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, '♾️ Why this module exists'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, __alloT('stem.firstresponse.why_this_module_exists', '♾️ Why this module exists')),
               h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.55 } },
-                'Most first-aid courses don’t cover this: how disability shapes both ',
+                __alloT('stem.firstresponse.most_first_aid_courses_don_t_cover_thi', 'Most first-aid courses don’t cover this: how disability shapes both '),
                 h('strong', null, 'recognition'),
-                ' (a peer’s seizure isn’t "weird behavior" — it’s a medical event) and ',
+                __alloT('stem.firstresponse.a_peer_s_seizure_isn_t_weird_behavior_', ' (a peer’s seizure isn’t "weird behavior" — it’s a medical event) and '),
                 h('strong', null, 'response'),
-                ' (you can’t shout instructions to a Deaf patient).'),
+                __alloT('stem.firstresponse.you_can_t_shout_instructions_to_a_deaf', ' (you can’t shout instructions to a Deaf patient).')),
               h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55 } },
-                'This module pulls from community-led orgs — ',
+                __alloT('stem.firstresponse.this_module_pulls_from_community_led_o', 'This module pulls from community-led orgs — '),
                 h('a', { href: 'https://autisticadvocacy.org', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, 'ASAN'),
                 ', ',
-                h('a', { href: 'https://www.epilepsy.com', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, 'Epilepsy Foundation'),
+                h('a', { href: 'https://www.epilepsy.com', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, __alloT('stem.firstresponse.epilepsy_foundation', 'Epilepsy Foundation')),
                 ', ',
                 h('a', { href: 'https://www.hearingloss.org', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, 'HLAA'),
                 ', ',
                 h('a', { href: 'https://www.diabetes.org', target: '_blank', rel: 'noopener', style: { color: '#fff', fontWeight: 700 } }, 'ADA'),
-                '. Where community preference is mixed (e.g. person-first vs identity-first language), this module follows the most common preference and notes it.')
+                __alloT('stem.firstresponse.where_community_preference_is_mixed_e_', '. Where community preference is mixed (e.g. person-first vs identity-first language), this module follows the most common preference and notes it.'))
             ),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              'Pick a section above. Each section is short — these are the things most adults don’t know either.')
+              __alloT('stem.firstresponse.pick_a_section_above_each_section_is_s', 'Pick a section above. Each section is short — these are the things most adults don’t know either.'))
           );
         }
 
         function daDeaf() {
           return card('👂 Communicating with a deaf or hard-of-hearing patient', [
-            h('span', null, h('strong', null, 'Get their attention visually: '), 'wave in their line of sight, tap their shoulder. Don’t grab. Don’t shout — louder doesn’t help.'),
-            h('span', null, h('strong', null, 'Face them directly'), ' so they can see your mouth and expressions. Good lighting on your face. Don’t cover your mouth.'),
-            h('span', null, h('strong', null, 'Use the phone’s notes app'), ' to type questions. Most teens already do this.'),
-            h('span', null, h('strong', null, 'Text-to-911 is the right call'), ' — Maine has it. Don’t call FOR them on a voice line if they want to text themselves.'),
-            h('span', null, h('strong', null, 'Don’t assume ASL'), ' — many late-deafened or HoH people don’t sign. Ask their preferred way to communicate.'),
-            h('span', null, h('strong', null, 'In a real emergency'), ', simple gestures + writing key words ("AMBULANCE COMING", "WHERE HURT?") often work faster than typing full sentences.'),
-            h('span', null, h('strong', null, 'AEDs talk + show'), ' — modern AEDs display visual prompts on a screen for the rescuer. Use one even if no one in the room can hear the voice prompts.')
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.get_their_attention_visually', 'Get their attention visually: ')), __alloT('stem.firstresponse.wave_in_their_line_of_sight_tap_their_', 'wave in their line of sight, tap their shoulder. Don’t grab. Don’t shout — louder doesn’t help.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.face_them_directly', 'Face them directly')), __alloT('stem.firstresponse.so_they_can_see_your_mouth_and_express', ' so they can see your mouth and expressions. Good lighting on your face. Don’t cover your mouth.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.use_the_phone_s_notes_app', 'Use the phone’s notes app')), __alloT('stem.firstresponse.to_type_questions_most_teens_already_d', ' to type questions. Most teens already do this.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.text_to_911_is_the_right_call', 'Text-to-911 is the right call')), __alloT('stem.firstresponse.maine_has_it_don_t_call_for_them_on_a_', ' — Maine has it. Don’t call FOR them on a voice line if they want to text themselves.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.don_t_assume_asl', 'Don’t assume ASL')), __alloT('stem.firstresponse.many_late_deafened_or_hoh_people_don_t', ' — many late-deafened or HoH people don’t sign. Ask their preferred way to communicate.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.in_a_real_emergency', 'In a real emergency')), __alloT('stem.firstresponse.simple_gestures_writing_key_words_ambu', ', simple gestures + writing key words ("AMBULANCE COMING", "WHERE HURT?") often work faster than typing full sentences.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.aeds_talk_show', 'AEDs talk + show')), __alloT('stem.firstresponse.modern_aeds_display_visual_prompts_on_', ' — modern AEDs display visual prompts on a screen for the rescuer. Use one even if no one in the room can hear the voice prompts.'))
           ], 'Hearing Loss Association of America (hearingloss.org)', 'https://www.hearingloss.org');
         }
 
         function daAutism() {
           return h('div', null,
             card('♾️ Supporting an autistic peer in distress', [
-              h('span', null, h('strong', null, 'Lower the sensory load: '), 'lights down if you can, fewer voices, fewer hands. A crowd of helpers can make a meltdown worse.'),
-              h('span', null, h('strong', null, 'Predictable verbal warnings: '), '"I’m going to touch your wrist now" before you do. Touch without warning can escalate panic.'),
-              h('span', null, h('strong', null, 'Short, literal sentences. '), 'Avoid figures of speech. "Sit down" is clearer than "take a load off."'),
-              h('span', null, h('strong', null, 'Allow stims'), ' (rocking, hand-flapping, repeating words) — they’re self-regulation, NOT a symptom of the emergency.'),
-              h('span', null, h('strong', null, 'Meltdown ≠ tantrum.'), ' A meltdown is involuntary nervous-system overload. Don’t threaten consequences. Reduce input and wait.'),
-              h('span', null, h('strong', null, 'Look for a comm card / AAC device / scripted phrases'), ' the person may use. Many autistic people carry a card explaining their communication needs.'),
-              h('span', null, h('strong', null, 'Don’t mistake autism for the medical emergency. '), 'A non-speaking autistic peer may be having a seizure or a panic attack — recognize THAT separately.')
+              h('span', null, h('strong', null, __alloT('stem.firstresponse.lower_the_sensory_load', 'Lower the sensory load: ')), __alloT('stem.firstresponse.lights_down_if_you_can_fewer_voices_fe', 'lights down if you can, fewer voices, fewer hands. A crowd of helpers can make a meltdown worse.')),
+              h('span', null, h('strong', null, __alloT('stem.firstresponse.predictable_verbal_warnings', 'Predictable verbal warnings: ')), __alloT('stem.firstresponse.i_m_going_to_touch_your_wrist_now_befo', '"I’m going to touch your wrist now" before you do. Touch without warning can escalate panic.')),
+              h('span', null, h('strong', null, __alloT('stem.firstresponse.short_literal_sentences', 'Short, literal sentences. ')), __alloT('stem.firstresponse.avoid_figures_of_speech_sit_down_is_cl', 'Avoid figures of speech. "Sit down" is clearer than "take a load off."')),
+              h('span', null, h('strong', null, __alloT('stem.firstresponse.allow_stims', 'Allow stims')), __alloT('stem.firstresponse.rocking_hand_flapping_repeating_words_', ' (rocking, hand-flapping, repeating words) — they’re self-regulation, NOT a symptom of the emergency.')),
+              h('span', null, h('strong', null, __alloT('stem.firstresponse.meltdown_tantrum', 'Meltdown ≠ tantrum.')), __alloT('stem.firstresponse.a_meltdown_is_involuntary_nervous_syst', ' A meltdown is involuntary nervous-system overload. Don’t threaten consequences. Reduce input and wait.')),
+              h('span', null, h('strong', null, __alloT('stem.firstresponse.look_for_a_comm_card_aac_device_script', 'Look for a comm card / AAC device / scripted phrases')), __alloT('stem.firstresponse.the_person_may_use_many_autistic_peopl', ' the person may use. Many autistic people carry a card explaining their communication needs.')),
+              h('span', null, h('strong', null, __alloT('stem.firstresponse.don_t_mistake_autism_for_the_medical_e', 'Don’t mistake autism for the medical emergency. ')), __alloT('stem.firstresponse.a_non_speaking_autistic_peer_may_be_ha', 'A non-speaking autistic peer may be having a seizure or a panic attack — recognize THAT separately.'))
             ], 'Autistic Self Advocacy Network (autisticadvocacy.org)', 'https://autisticadvocacy.org'),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
               h('strong', { style: { color: T.text } }, 'Note: '),
-              'this module uses identity-first language ("autistic person") because that is the majority preference in autistic-led communities. Some people and families prefer "person with autism." If you know someone’s preference, use it.')
+              __alloT('stem.firstresponse.this_module_uses_identity_first_langua', 'this module uses identity-first language ("autistic person") because that is the majority preference in autistic-led communities. Some people and families prefer "person with autism." If you know someone’s preference, use it.'))
           );
         }
 
         function daSeizure() {
           return card('⚡ Seizure first aid as epilepsy advocacy', [
-            h('span', null, h('strong', null, 'A peer having a seizure is having a medical event'), ' — not "acting weird." Recognizing it as epilepsy (or another seizure cause) is the first thing.'),
-            h('span', null, h('strong', null, 'TIME the seizure'), ' from when it starts. Most last under 2 minutes.'),
-            h('span', null, h('strong', null, 'Move sharp things AWAY'), ' — chairs, desks, glasses. Don’t move the person unless they’re in immediate danger (water, road, fire).'),
-            h('span', null, h('strong', null, 'Cushion the head '), '(jacket, backpack). Loosen anything around the neck.'),
-            h('span', null, h('strong', null, 'DO NOT restrain'), ' — never hold them down or try to stop the movements.'),
-            h('span', null, h('strong', null, 'DO NOT put anything in their mouth'), ' — old myth. They cannot swallow their tongue.'),
-            h('span', null, h('strong', null, 'After: recovery position'), ' (on their side) so saliva can drain. They may be confused for several minutes — that’s normal. Stay with them.'),
-            h('span', null, h('strong', null, 'Call 911 if: '), 'seizure is over 5 minutes, repeats without recovery in between, first-ever, in water, follows a head injury, or person is pregnant/diabetic/not breathing after.'),
-            h('span', null, h('strong', null, 'Privacy after: '), 'a post-ictal person may be embarrassed. Clear gawkers. They get to choose what to share with classmates.')
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.a_peer_having_a_seizure_is_having_a_me', 'A peer having a seizure is having a medical event')), __alloT('stem.firstresponse.not_acting_weird_recognizing_it_as_epi', ' — not "acting weird." Recognizing it as epilepsy (or another seizure cause) is the first thing.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.time_the_seizure', 'TIME the seizure')), __alloT('stem.firstresponse.from_when_it_starts_most_last_under_2_', ' from when it starts. Most last under 2 minutes.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.move_sharp_things_away', 'Move sharp things AWAY')), __alloT('stem.firstresponse.chairs_desks_glasses_don_t_move_the_pe', ' — chairs, desks, glasses. Don’t move the person unless they’re in immediate danger (water, road, fire).')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.cushion_the_head', 'Cushion the head ')), __alloT('stem.firstresponse.jacket_backpack_loosen_anything_around', '(jacket, backpack). Loosen anything around the neck.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.do_not_restrain', 'DO NOT restrain')), __alloT('stem.firstresponse.never_hold_them_down_or_try_to_stop_th', ' — never hold them down or try to stop the movements.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.do_not_put_anything_in_their_mouth', 'DO NOT put anything in their mouth')), __alloT('stem.firstresponse.old_myth_they_cannot_swallow_their_ton', ' — old myth. They cannot swallow their tongue.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.after_recovery_position', 'After: recovery position')), __alloT('stem.firstresponse.on_their_side_so_saliva_can_drain_they', ' (on their side) so saliva can drain. They may be confused for several minutes — that’s normal. Stay with them.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.call_911_if', 'Call 911 if: ')), __alloT('stem.firstresponse.seizure_is_over_5_minutes_repeats_with', 'seizure is over 5 minutes, repeats without recovery in between, first-ever, in water, follows a head injury, or person is pregnant/diabetic/not breathing after.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.privacy_after', 'Privacy after: ')), __alloT('stem.firstresponse.a_post_ictal_person_may_be_embarrassed', 'a post-ictal person may be embarrassed. Clear gawkers. They get to choose what to share with classmates.'))
           ], 'Epilepsy Foundation (epilepsy.com)', 'https://www.epilepsy.com/recognition');
         }
 
         function daDiabetes() {
           return card('🩺 Diabetic emergency — low vs high blood sugar', [
-            h('span', null, h('strong', null, 'Low blood sugar (hypoglycemia) '), 'in a teen often looks like ',
-              h('em', null, 'behavior change'),
-              ' — irritable, confused, "off," shaky, sweaty, suddenly clumsy. Easy to mistake for being drunk or having an attitude.'),
-            h('span', null, h('strong', null, 'If they CAN swallow safely: '),
-              '15g fast carb — juice box, regular soda, glucose tab, a tablespoon of honey. Recheck in 15 minutes. Repeat if still low.'),
-            h('span', null, h('strong', null, 'If they CANNOT swallow safely (slurring, confused, semi-conscious): '),
-              'do NOT give food or liquid — choking risk. Glucagon if available. Call 911. Recovery position.'),
-            h('span', null, h('strong', null, 'If unconscious: '),
-              '911 immediately. Recovery position. NEVER pour juice into the mouth of an unconscious person.'),
-            h('span', null, h('strong', null, 'High blood sugar (hyperglycemia / DKA) '),
-              'in a peer with diabetes: extreme thirst, peeing constantly, fruity-acetone breath, deep rapid breathing, nausea/vomiting, confusion. ',
-              h('strong', null, 'This is also a 911 emergency.'),
-              ' Don’t give insulin unless they are managing it themselves and you’re just supporting.'),
-            h('span', null, h('strong', null, 'Behavior changes in a peer you know has diabetes '),
-              '— assume blood sugar first, attitude second. Ask "Have you checked? Can I get you juice?"')
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.low_blood_sugar_hypoglycemia', 'Low blood sugar (hypoglycemia) ')), __alloT('stem.firstresponse.in_a_teen_often_looks_like', 'in a teen often looks like '),
+              h('em', null, __alloT('stem.firstresponse.behavior_change', 'behavior change')),
+              __alloT('stem.firstresponse.irritable_confused_off_shaky_sweaty_su', ' — irritable, confused, "off," shaky, sweaty, suddenly clumsy. Easy to mistake for being drunk or having an attitude.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.if_they_can_swallow_safely', 'If they CAN swallow safely: ')),
+              __alloT('stem.firstresponse.15g_fast_carb_juice_box_regular_soda_g', '15g fast carb — juice box, regular soda, glucose tab, a tablespoon of honey. Recheck in 15 minutes. Repeat if still low.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.if_they_cannot_swallow_safely_slurring', 'If they CANNOT swallow safely (slurring, confused, semi-conscious): ')),
+              __alloT('stem.firstresponse.do_not_give_food_or_liquid_choking_ris', 'do NOT give food or liquid — choking risk. Glucagon if available. Call 911. Recovery position.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.if_unconscious', 'If unconscious: ')),
+              __alloT('stem.firstresponse.911_immediately_recovery_position_neve', '911 immediately. Recovery position. NEVER pour juice into the mouth of an unconscious person.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.high_blood_sugar_hyperglycemia_dka', 'High blood sugar (hyperglycemia / DKA) ')),
+              __alloT('stem.firstresponse.in_a_peer_with_diabetes_extreme_thirst', 'in a peer with diabetes: extreme thirst, peeing constantly, fruity-acetone breath, deep rapid breathing, nausea/vomiting, confusion. '),
+              h('strong', null, __alloT('stem.firstresponse.this_is_also_a_911_emergency', 'This is also a 911 emergency.')),
+              __alloT('stem.firstresponse.don_t_give_insulin_unless_they_are_man', ' Don’t give insulin unless they are managing it themselves and you’re just supporting.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.behavior_changes_in_a_peer_you_know_ha', 'Behavior changes in a peer you know has diabetes ')),
+              __alloT('stem.firstresponse.assume_blood_sugar_first_attitude_seco', '— assume blood sugar first, attitude second. Ask "Have you checked? Can I get you juice?"'))
           ], 'American Diabetes Association (diabetes.org)', 'https://www.diabetes.org');
         }
 
         function daHidden() {
           return card('👁️ Hidden disabilities + disclosure rights', [
-            h('span', null, h('strong', null, 'You can’t see most disabilities'), ' — chronic illness, cardiac conditions, epilepsy, allergies, mental health, autism, ADHD, learning differences. A peer who looks "fine" may have a condition that matters in an emergency.'),
-            h('span', null, h('strong', null, 'Look for medical ID jewelry'), ' (bracelet, necklace, dog tag, watch sticker, card in wallet). It often lists condition + emergency contact + critical med.'),
-            h('span', null, h('strong', null, 'Phone medical ID: '),
-              'iPhones and Androids both have a medical ID screen accessible from the lock screen — emergency responders can view condition + meds + emergency contacts without unlocking the phone. Look for "Emergency" or "SOS" on the lock screen.'),
-            h('span', null, h('strong', null, 'Disclosure is THEIR choice. '),
-              'Don’t tell other classmates / teachers / random adults a peer has a condition unless it’s necessary to keep them safe RIGHT NOW. To EMS, yes. To the lunchroom, no.'),
-            h('span', null, h('strong', null, 'Ask, don’t assume: '),
-              '"Is there anything I should know to help you?" gives them the chance to tell you if they want to. "Are you OK? You look weird" doesn’t.'),
-            h('span', null, h('strong', null, 'Service dogs are working: '),
-              'don’t pet, distract, or call to them. The handler is the only person who interacts with them in an emergency.')
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.you_can_t_see_most_disabilities', 'You can’t see most disabilities')), __alloT('stem.firstresponse.chronic_illness_cardiac_conditions_epi', ' — chronic illness, cardiac conditions, epilepsy, allergies, mental health, autism, ADHD, learning differences. A peer who looks "fine" may have a condition that matters in an emergency.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.look_for_medical_id_jewelry', 'Look for medical ID jewelry')), __alloT('stem.firstresponse.bracelet_necklace_dog_tag_watch_sticke', ' (bracelet, necklace, dog tag, watch sticker, card in wallet). It often lists condition + emergency contact + critical med.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.phone_medical_id', 'Phone medical ID: ')),
+              __alloT('stem.firstresponse.iphones_and_androids_both_have_a_medic', 'iPhones and Androids both have a medical ID screen accessible from the lock screen — emergency responders can view condition + meds + emergency contacts without unlocking the phone. Look for "Emergency" or "SOS" on the lock screen.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.disclosure_is_their_choice', 'Disclosure is THEIR choice. ')),
+              __alloT('stem.firstresponse.don_t_tell_other_classmates_teachers_r', 'Don’t tell other classmates / teachers / random adults a peer has a condition unless it’s necessary to keep them safe RIGHT NOW. To EMS, yes. To the lunchroom, no.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.ask_don_t_assume', 'Ask, don’t assume: ')),
+              __alloT('stem.firstresponse.is_there_anything_i_should_know_to_hel', '"Is there anything I should know to help you?" gives them the chance to tell you if they want to. "Are you OK? You look weird" doesn’t.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.service_dogs_are_working', 'Service dogs are working: ')),
+              __alloT('stem.firstresponse.don_t_pet_distract_or_call_to_them_the', 'don’t pet, distract, or call to them. The handler is the only person who interacts with them in an emergency.'))
           ], 'NAMI + American Diabetes Association', 'https://www.nami.org');
         }
 
         function daSelf() {
           return card('🤝 If YOU have a disability and want to help', [
-            h('span', null, h('strong', null, 'You can do CPR with a limb difference'), ' — depth and rate matter most. You can use your hand differently, use your forearm, or partner up so someone else does compressions while you coach (you know the rate).'),
-            h('span', null, h('strong', null, 'You can do CPR with low muscle tone or fatigue: '),
-              'partner up. Switch every 2 minutes anyway — even adults without disabilities tire fast. The AHA recommends compressors swap every 2 minutes.'),
-            h('span', null, h('strong', null, 'You can call 911 if you can’t speak: '),
-              'use text-to-911 (Maine has it). You can leave a voice line open even silent — dispatchers can locate the call.'),
-            h('span', null, h('strong', null, 'You can lead'), ' even if you can’t do compressions: assign tasks ("YOU call 911. YOU run for the AED in the gym. YOU clear people back."). Calm direction is real first aid.'),
-            h('span', null, h('strong', null, 'Sensory overload during the emergency? '),
-              'Step back, hands over ears, find a quieter spot. You don’t have to be the closest helper to be a helpful one. Coaching others through the protocol is a real role.'),
-            h('span', null, h('strong', null, 'Practice ahead. '),
-              'Knowing what you would do — your specific role, given what your body does — turns a freeze into a plan. That’s what this lab is for.')
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.you_can_do_cpr_with_a_limb_difference', 'You can do CPR with a limb difference')), __alloT('stem.firstresponse.depth_and_rate_matter_most_you_can_use', ' — depth and rate matter most. You can use your hand differently, use your forearm, or partner up so someone else does compressions while you coach (you know the rate).')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.you_can_do_cpr_with_low_muscle_tone_or', 'You can do CPR with low muscle tone or fatigue: ')),
+              __alloT('stem.firstresponse.partner_up_switch_every_2_minutes_anyw', 'partner up. Switch every 2 minutes anyway — even adults without disabilities tire fast. The AHA recommends compressors swap every 2 minutes.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.you_can_call_911_if_you_can_t_speak', 'You can call 911 if you can’t speak: ')),
+              __alloT('stem.firstresponse.use_text_to_911_maine_has_it_you_can_l', 'use text-to-911 (Maine has it). You can leave a voice line open even silent — dispatchers can locate the call.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.you_can_lead', 'You can lead')), __alloT('stem.firstresponse.even_if_you_can_t_do_compressions_assi', ' even if you can’t do compressions: assign tasks ("YOU call 911. YOU run for the AED in the gym. YOU clear people back."). Calm direction is real first aid.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.sensory_overload_during_the_emergency', 'Sensory overload during the emergency? ')),
+              __alloT('stem.firstresponse.step_back_hands_over_ears_find_a_quiet', 'Step back, hands over ears, find a quieter spot. You don’t have to be the closest helper to be a helpful one. Coaching others through the protocol is a real role.')),
+            h('span', null, h('strong', null, __alloT('stem.firstresponse.practice_ahead', 'Practice ahead. ')),
+              __alloT('stem.firstresponse.knowing_what_you_would_do_your_specifi', 'Knowing what you would do — your specific role, given what your body does — turns a freeze into a plan. That’s what this lab is for.'))
           ], 'Synthesizes ASAN + AHA + Hartford Consensus guidance', null);
         }
 
         return h('div', { style: { padding: 20, maxWidth: 920, margin: '0 auto', color: T.text } },
           backBar('♾️ Disability-aware response'),
           emergencyBanner(),
-          h('div', { role: 'tablist', 'aria-label': 'Disability-aware sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.disability_aware_sections', 'Disability-aware sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Why'),
             tabBtn('deaf', 'Deaf / HoH'),
@@ -2025,10 +2097,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           daSection === 'self' && daSelf(),
           h('div', { style: { marginTop: 12, textAlign: 'right' } },
             h('button', { 'data-fr-focusable': true,
-              'aria-label': 'Mark disability-aware module complete',
+              'aria-label': __alloT('stem.firstresponse.mark_disability_aware_module_complete', 'Mark disability-aware module complete'),
               onClick: function() { awardBadge('da_responder', 'Disability-Aware Responder'); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13 })
-            }, '✓ I’ve read this module')
+            }, __alloT('stem.firstresponse.i_ve_read_this_module', '✓ I’ve read this module'))
           ),
           disclaimerFooter()
         );
@@ -2041,149 +2113,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // The mental-health scenario carries a content warning + opt-out.
       // ─────────────────────────────────────────
       var SCENARIOS = [
-        { id: 'cafeteria', icon: '🍎', title: 'Cafeteria collapse',
+        { id: 'cafeteria', icon: '🍎', title: __alloT('stem.firstresponse.cafeteria_collapse', 'Cafeteria collapse'),
           setup: 'Lunchtime. A student two tables over suddenly slumps forward, then slides off the bench onto the floor. They are not moving. People around them are screaming. You’re the closest peer who has First Response Lab training.',
           steps: [
             { situation: 'You reach them first. What do you do FIRST?',
               choices: [
-                { text: 'Shake their shoulder firmly and shout "Are you OK?"', impact: 'help', feedback: 'Right. Check responsiveness before anything else. They might just have fainted and be coming around.', source: 'AHA BLS' },
-                { text: 'Start chest compressions immediately.', impact: 'hurt', feedback: 'Compressions on someone whose heart is still beating can cause real injury. Always check first.', source: 'AHA BLS' },
-                { text: 'Run to get a teacher.', impact: 'neutral', feedback: 'A teacher is needed soon, but leaving the patient alone wastes the most critical seconds. Send someone else.', source: 'AHA BLS' }
+                { text: __alloT('stem.firstresponse.shake_their_shoulder_firmly_and_shout_', 'Shake their shoulder firmly and shout "Are you OK?"'), impact: 'help', feedback: __alloT('stem.firstresponse.right_check_responsiveness_before_anyt', 'Right. Check responsiveness before anything else. They might just have fainted and be coming around.'), source: 'AHA BLS' },
+                { text: __alloT('stem.firstresponse.start_chest_compressions_immediately', 'Start chest compressions immediately.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.compressions_on_someone_whose_heart_is', 'Compressions on someone whose heart is still beating can cause real injury. Always check first.'), source: 'AHA BLS' },
+                { text: __alloT('stem.firstresponse.run_to_get_a_teacher', 'Run to get a teacher.'), impact: 'neutral', feedback: __alloT('stem.firstresponse.a_teacher_is_needed_soon_but_leaving_t', 'A teacher is needed soon, but leaving the patient alone wastes the most critical seconds. Send someone else.'), source: 'AHA BLS' }
               ] },
             { situation: 'No response. They’re not breathing normally. Three other students are standing nearby looking at their phones.',
               choices: [
-                { text: 'Yell "YOU — call 911. YOU — go to the front office for the AED. NOW."', impact: 'help', feedback: 'Pointing at specific people works — diffuse responsibility freezes a crowd. Now you can focus on the patient.', source: 'Hartford Consensus / bystander effect research' },
-                { text: 'Yell "Someone call 911!" and start CPR.', impact: 'neutral', feedback: 'Better than nothing, but "someone" often means no one. Pointing at a specific person fixes that.', source: 'Hartford Consensus' },
-                { text: 'Pull out your phone and call 911 yourself while standing up.', impact: 'hurt', feedback: 'You are the closest trained person. Delegate the call so you can start compressions in the next few seconds.', source: 'AHA BLS' }
+                { text: __alloT('stem.firstresponse.yell_you_call_911_you_go_to_the_front_', 'Yell "YOU — call 911. YOU — go to the front office for the AED. NOW."'), impact: 'help', feedback: __alloT('stem.firstresponse.pointing_at_specific_people_works_diff', 'Pointing at specific people works — diffuse responsibility freezes a crowd. Now you can focus on the patient.'), source: 'Hartford Consensus / bystander effect research' },
+                { text: __alloT('stem.firstresponse.yell_someone_call_911_and_start_cpr', 'Yell "Someone call 911!" and start CPR.'), impact: 'neutral', feedback: __alloT('stem.firstresponse.better_than_nothing_but_someone_often_', 'Better than nothing, but "someone" often means no one. Pointing at a specific person fixes that.'), source: 'Hartford Consensus' },
+                { text: __alloT('stem.firstresponse.pull_out_your_phone_and_call_911_yours', 'Pull out your phone and call 911 yourself while standing up.'), impact: 'hurt', feedback: 'You are the closest trained person. Delegate the call so you can start compressions in the next few seconds.', source: 'AHA BLS' }
               ] },
             { situation: 'You begin CPR. What rate?',
               choices: [
-                { text: '100–120 compressions per minute, about the pace of "Stayin’ Alive."', impact: 'help', feedback: 'Exactly right. Push hard (2 inches deep on an adult), let the chest fully recoil between pushes.', source: 'AHA 2020 Guidelines' },
-                { text: 'As fast as you can — speed saves lives.', impact: 'hurt', feedback: 'Too fast (>120 bpm) means shallow compressions and not enough time for the heart to refill between pushes. Aim for 100–120.', source: 'AHA 2020 Guidelines' },
-                { text: 'Slow and steady, about 60 per minute.', impact: 'hurt', feedback: 'Too slow. The heart needs ~100–120 pushes per minute to circulate blood enough to keep the brain alive.', source: 'AHA 2020 Guidelines' }
+                { text: __alloT('stem.firstresponse.100_120_compressions_per_minute_about_', '100–120 compressions per minute, about the pace of "Stayin’ Alive."'), impact: 'help', feedback: __alloT('stem.firstresponse.exactly_right_push_hard_2_inches_deep_', 'Exactly right. Push hard (2 inches deep on an adult), let the chest fully recoil between pushes.'), source: 'AHA 2020 Guidelines' },
+                { text: __alloT('stem.firstresponse.as_fast_as_you_can_speed_saves_lives', 'As fast as you can — speed saves lives.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.too_fast_120_bpm_means_shallow_compres', 'Too fast (>120 bpm) means shallow compressions and not enough time for the heart to refill between pushes. Aim for 100–120.'), source: 'AHA 2020 Guidelines' },
+                { text: __alloT('stem.firstresponse.slow_and_steady_about_60_per_minute', 'Slow and steady, about 60 per minute.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.too_slow_the_heart_needs_100_120_pushe', 'Too slow. The heart needs ~100–120 pushes per minute to circulate blood enough to keep the brain alive.'), source: 'AHA 2020 Guidelines' }
               ] },
             { situation: 'The AED arrives. The student you sent says "I’ve never used one." What do you tell them?',
               choices: [
-                { text: '"Turn it on. It will talk you through it. Listen and do exactly what it says."', impact: 'help', feedback: 'AEDs are designed for untrained users. Voice prompts (and visual prompts on most models) lead you through every step.', source: 'AHA / Red Cross AED training' },
-                { text: '"Wait until I’m done with compressions, then I’ll do it."', impact: 'hurt', feedback: 'Every second without an AED on a shockable rhythm reduces survival. Have them set it up while you keep compressing.', source: 'AHA Chain of Survival' },
-                { text: '"Forget it, just keep doing CPR."', impact: 'hurt', feedback: 'CPR alone has much lower survival than CPR + AED. Even an untrained person can run an AED — it talks them through it.', source: 'AHA Chain of Survival' }
+                { text: __alloT('stem.firstresponse.turn_it_on_it_will_talk_you_through_it', '"Turn it on. It will talk you through it. Listen and do exactly what it says."'), impact: 'help', feedback: __alloT('stem.firstresponse.aeds_are_designed_for_untrained_users_', 'AEDs are designed for untrained users. Voice prompts (and visual prompts on most models) lead you through every step.'), source: 'AHA / Red Cross AED training' },
+                { text: __alloT('stem.firstresponse.wait_until_i_m_done_with_compressions_', '"Wait until I’m done with compressions, then I’ll do it."'), impact: 'hurt', feedback: __alloT('stem.firstresponse.every_second_without_an_aed_on_a_shock', 'Every second without an AED on a shockable rhythm reduces survival. Have them set it up while you keep compressing.'), source: 'AHA Chain of Survival' },
+                { text: __alloT('stem.firstresponse.forget_it_just_keep_doing_cpr', '"Forget it, just keep doing CPR."'), impact: 'hurt', feedback: __alloT('stem.firstresponse.cpr_alone_has_much_lower_survival_than', 'CPR alone has much lower survival than CPR + AED. Even an untrained person can run an AED — it talks them through it.'), source: 'AHA Chain of Survival' }
               ] }
           ] },
-        { id: 'hallway', icon: '🥪', title: 'Hallway choking',
+        { id: 'hallway', icon: '🥪', title: __alloT('stem.firstresponse.hallway_choking', 'Hallway choking'),
           setup: 'Between classes, a friend takes a big bite of a sandwich and starts panicking. Their hands are at their throat. They’re not making noise. Their face is turning red.',
           steps: [
             { situation: 'What is the FIRST thing to confirm?',
               choices: [
-                { text: 'Ask: "Are you choking?" Watch for a nod or thumbs-up.', impact: 'help', feedback: 'The universal sign is hands at the throat with no sound. Confirming gives them a chance to cough first if they still can.', source: 'Red Cross First Aid' },
-                { text: 'Slap them hard on the back right away.', impact: 'neutral', feedback: 'Back blows ARE part of the protocol, but confirm they can’t cough first. If they’re coughing forcefully, let them cough.', source: 'Red Cross First Aid' },
-                { text: 'Get them to drink water immediately.', impact: 'hurt', feedback: 'Don’t give a choking person water — it can go down the wrong way too. Don’t give anything by mouth.', source: 'Red Cross First Aid' }
+                { text: __alloT('stem.firstresponse.ask_are_you_choking_watch_for_a_nod_or', 'Ask: "Are you choking?" Watch for a nod or thumbs-up.'), impact: 'help', feedback: __alloT('stem.firstresponse.the_universal_sign_is_hands_at_the_thr', 'The universal sign is hands at the throat with no sound. Confirming gives them a chance to cough first if they still can.'), source: 'Red Cross First Aid' },
+                { text: __alloT('stem.firstresponse.slap_them_hard_on_the_back_right_away', 'Slap them hard on the back right away.'), impact: 'neutral', feedback: __alloT('stem.firstresponse.back_blows_are_part_of_the_protocol_bu', 'Back blows ARE part of the protocol, but confirm they can’t cough first. If they’re coughing forcefully, let them cough.'), source: 'Red Cross First Aid' },
+                { text: __alloT('stem.firstresponse.get_them_to_drink_water_immediately', 'Get them to drink water immediately.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.don_t_give_a_choking_person_water_it_c', 'Don’t give a choking person water — it can go down the wrong way too. Don’t give anything by mouth.'), source: 'Red Cross First Aid' }
               ] },
             { situation: 'They nod yes. Can’t cough, can’t breathe. What now?',
               choices: [
-                { text: '5 back blows between the shoulder blades, then 5 abdominal thrusts. Repeat.', impact: 'help', feedback: 'Correct sequence. Lean them forward, heel of your hand between the shoulder blades.', source: 'Red Cross First Aid' },
-                { text: '5 abdominal thrusts only.', impact: 'neutral', feedback: 'Abdominal thrusts work but pairing them with back blows is more effective. The current Red Cross protocol is 5 back blows + 5 thrusts.', source: 'Red Cross First Aid' },
-                { text: 'Have them lie down on their back so you can do CPR.', impact: 'hurt', feedback: 'CPR is for unconscious patients. While they’re still conscious, do back blows + thrusts.', source: 'Red Cross First Aid' }
+                { text: __alloT('stem.firstresponse.5_back_blows_between_the_shoulder_blad', '5 back blows between the shoulder blades, then 5 abdominal thrusts. Repeat.'), impact: 'help', feedback: __alloT('stem.firstresponse.correct_sequence_lean_them_forward_hee', 'Correct sequence. Lean them forward, heel of your hand between the shoulder blades.'), source: 'Red Cross First Aid' },
+                { text: __alloT('stem.firstresponse.5_abdominal_thrusts_only', '5 abdominal thrusts only.'), impact: 'neutral', feedback: __alloT('stem.firstresponse.abdominal_thrusts_work_but_pairing_the', 'Abdominal thrusts work but pairing them with back blows is more effective. The current Red Cross protocol is 5 back blows + 5 thrusts.'), source: 'Red Cross First Aid' },
+                { text: __alloT('stem.firstresponse.have_them_lie_down_on_their_back_so_yo', 'Have them lie down on their back so you can do CPR.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.cpr_is_for_unconscious_patients_while_', 'CPR is for unconscious patients. While they’re still conscious, do back blows + thrusts.'), source: 'Red Cross First Aid' }
               ] },
             { situation: 'After two cycles, they go limp and fall to the floor.',
               choices: [
-                { text: 'Lower them safely, call 911, start CPR. Look in the mouth before each set of breaths.', impact: 'help', feedback: 'Right. Once unconscious, CPR can dislodge the object on its own. Look in the mouth before breaths and remove anything you see — no blind finger sweeps.', source: 'AHA / Red Cross unconscious choking' },
-                { text: 'Do a blind finger sweep down their throat.', impact: 'hurt', feedback: 'Never — you can push the object deeper. Look first, only remove what you can see.', source: 'AHA' },
-                { text: 'Keep doing abdominal thrusts on them while they’re on the floor.', impact: 'hurt', feedback: 'Once unconscious, switch to CPR. Compressions can also help dislodge the object.', source: 'AHA' }
+                { text: __alloT('stem.firstresponse.lower_them_safely_call_911_start_cpr_l', 'Lower them safely, call 911, start CPR. Look in the mouth before each set of breaths.'), impact: 'help', feedback: __alloT('stem.firstresponse.right_once_unconscious_cpr_can_dislodg', 'Right. Once unconscious, CPR can dislodge the object on its own. Look in the mouth before breaths and remove anything you see — no blind finger sweeps.'), source: 'AHA / Red Cross unconscious choking' },
+                { text: __alloT('stem.firstresponse.do_a_blind_finger_sweep_down_their_thr', 'Do a blind finger sweep down their throat.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.never_you_can_push_the_object_deeper_l', 'Never — you can push the object deeper. Look first, only remove what you can see.'), source: 'AHA' },
+                { text: __alloT('stem.firstresponse.keep_doing_abdominal_thrusts_on_them_w', 'Keep doing abdominal thrusts on them while they’re on the floor.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.once_unconscious_switch_to_cpr_compres', 'Once unconscious, switch to CPR. Compressions can also help dislodge the object.'), source: 'AHA' }
               ] }
           ] },
-        { id: 'field', icon: '⚽', title: 'Sports field — severe bleeding',
+        { id: 'field', icon: '⚽', title: __alloT('stem.firstresponse.sports_field_severe_bleeding', 'Sports field — severe bleeding'),
           setup: 'During a soccer game, a player goes down hard after a collision with another player’s cleat. There’s a deep gash on their thigh and blood is spurting. The closest hospital is 20 minutes away.',
           steps: [
             { situation: 'You sprint over. What FIRST?',
               choices: [
-                { text: 'Press both hands hard directly on the wound. Lean in with bodyweight.', impact: 'help', feedback: 'Direct pressure stops most bleeding. Your bodyweight gets the depth a hand alone can’t.', source: 'Stop the Bleed' },
-                { text: 'Run to find the coach to grab the first-aid kit.', impact: 'hurt', feedback: 'Every second matters with arterial bleeding. Apply pressure NOW; have someone else run for the kit.', source: 'Stop the Bleed' },
-                { text: 'Lift the leg up to "drain" the wound and check it.', impact: 'hurt', feedback: 'Don’t lift to peek. You break the clot you’re trying to form. Press and hold.', source: 'Stop the Bleed' }
+                { text: __alloT('stem.firstresponse.press_both_hands_hard_directly_on_the_', 'Press both hands hard directly on the wound. Lean in with bodyweight.'), impact: 'help', feedback: __alloT('stem.firstresponse.direct_pressure_stops_most_bleeding_yo', 'Direct pressure stops most bleeding. Your bodyweight gets the depth a hand alone can’t.'), source: 'Stop the Bleed' },
+                { text: __alloT('stem.firstresponse.run_to_find_the_coach_to_grab_the_firs', 'Run to find the coach to grab the first-aid kit.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.every_second_matters_with_arterial_ble', 'Every second matters with arterial bleeding. Apply pressure NOW; have someone else run for the kit.'), source: 'Stop the Bleed' },
+                { text: __alloT('stem.firstresponse.lift_the_leg_up_to_drain_the_wound_and', 'Lift the leg up to "drain" the wound and check it.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.don_t_lift_to_peek_you_break_the_clot_', 'Don’t lift to peek. You break the clot you’re trying to form. Press and hold.'), source: 'Stop the Bleed' }
               ] },
             { situation: 'Pressure helps but blood is still soaking through. The coach hands you a bleeding-control kit with a tourniquet.',
               choices: [
-                { text: 'Place the tourniquet 2–3" ABOVE the wound on the thigh. Tighten until bleeding stops. Note the time.', impact: 'help', feedback: 'Limbs are the right place for a tourniquet. Above the wound, between wound and heart, not on a joint. Always note the time it was applied.', source: 'Stop the Bleed' },
-                { text: 'Place the tourniquet ON the wound.', impact: 'hurt', feedback: 'Tourniquets go above the wound, between the wound and the heart. Putting it on the wound itself can damage tissue and won’t cut off the artery.', source: 'Stop the Bleed' },
-                { text: 'Don’t use the tourniquet — just keep pressing harder.', impact: 'hurt', feedback: 'Pressure that isn’t controlling spurting bleeding from a limb is the textbook indication for a tourniquet. Use it.', source: 'Stop the Bleed / Hartford Consensus' }
+                { text: __alloT('stem.firstresponse.place_the_tourniquet_2_3_above_the_wou', 'Place the tourniquet 2–3" ABOVE the wound on the thigh. Tighten until bleeding stops. Note the time.'), impact: 'help', feedback: __alloT('stem.firstresponse.limbs_are_the_right_place_for_a_tourni', 'Limbs are the right place for a tourniquet. Above the wound, between wound and heart, not on a joint. Always note the time it was applied.'), source: 'Stop the Bleed' },
+                { text: __alloT('stem.firstresponse.place_the_tourniquet_on_the_wound', 'Place the tourniquet ON the wound.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.tourniquets_go_above_the_wound_between', 'Tourniquets go above the wound, between the wound and the heart. Putting it on the wound itself can damage tissue and won’t cut off the artery.'), source: 'Stop the Bleed' },
+                { text: __alloT('stem.firstresponse.don_t_use_the_tourniquet_just_keep_pre', 'Don’t use the tourniquet — just keep pressing harder.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.pressure_that_isn_t_controlling_spurti', 'Pressure that isn’t controlling spurting bleeding from a limb is the textbook indication for a tourniquet. Use it.'), source: 'Stop the Bleed / Hartford Consensus' }
               ] },
             { situation: 'EMS is 18 minutes out. Player is conscious but pale. What now?',
               choices: [
-                { text: 'Stay with them. Keep them lying down, warm. Tell EMS the time the tourniquet went on.', impact: 'help', feedback: 'Right. Don’t loosen the tourniquet. Don’t let bystanders give them water. Time on tourniquet is the single most important fact for the ER.', source: 'Stop the Bleed' },
-                { text: 'Loosen the tourniquet every couple minutes "to let blood flow."', impact: 'hurt', feedback: 'Never — once it’s on, it stays on until EMS or the ER takes over. Loosening can cause re-bleeding.', source: 'Stop the Bleed' },
-                { text: 'Give them water and sit them up.', impact: 'hurt', feedback: 'Don’t give anything by mouth (they may need surgery). Keep them lying flat to maintain blood pressure to the brain.', source: 'Red Cross' }
+                { text: __alloT('stem.firstresponse.stay_with_them_keep_them_lying_down_wa', 'Stay with them. Keep them lying down, warm. Tell EMS the time the tourniquet went on.'), impact: 'help', feedback: __alloT('stem.firstresponse.right_don_t_loosen_the_tourniquet_don_', 'Right. Don’t loosen the tourniquet. Don’t let bystanders give them water. Time on tourniquet is the single most important fact for the ER.'), source: 'Stop the Bleed' },
+                { text: __alloT('stem.firstresponse.loosen_the_tourniquet_every_couple_min', 'Loosen the tourniquet every couple minutes "to let blood flow."'), impact: 'hurt', feedback: __alloT('stem.firstresponse.never_once_it_s_on_it_stays_on_until_e', 'Never — once it’s on, it stays on until EMS or the ER takes over. Loosening can cause re-bleeding.'), source: 'Stop the Bleed' },
+                { text: __alloT('stem.firstresponse.give_them_water_and_sit_them_up', 'Give them water and sit them up.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.don_t_give_anything_by_mouth_they_may_', 'Don’t give anything by mouth (they may need surgery). Keep them lying flat to maintain blood pressure to the brain.'), source: 'Red Cross' }
               ] }
           ] },
-        { id: 'classroom', icon: '⚡', title: 'Classroom seizure',
+        { id: 'classroom', icon: '⚡', title: __alloT('stem.firstresponse.classroom_seizure', 'Classroom seizure'),
           setup: 'In second-period English, a classmate you know has epilepsy suddenly stiffens, falls out of their chair, and starts jerking on the floor. The teacher has stepped out of the room. People are filming on their phones.',
           steps: [
             { situation: 'You move toward them. What FIRST?',
               choices: [
-                { text: 'Move sharp objects (chair legs, desk corners) away. Note the time it started.', impact: 'help', feedback: 'Right. Make the area safe and TIME the seizure. Most last under 2 minutes; over 5 is a 911 emergency.', source: 'Epilepsy Foundation' },
-                { text: 'Hold their arms and legs down so they don’t hurt themselves.', impact: 'hurt', feedback: 'Never restrain someone having a seizure. You can cause serious injury. Move hazards away from THEM, not the other way.', source: 'Epilepsy Foundation' },
-                { text: 'Try to put a pen in their mouth so they don’t bite their tongue.', impact: 'hurt', feedback: 'Old myth. Never put anything in someone’s mouth during a seizure. They cannot swallow their tongue. You can break their teeth or get bitten.', source: 'Epilepsy Foundation' }
+                { text: __alloT('stem.firstresponse.move_sharp_objects_chair_legs_desk_cor', 'Move sharp objects (chair legs, desk corners) away. Note the time it started.'), impact: 'help', feedback: __alloT('stem.firstresponse.right_make_the_area_safe_and_time_the_', 'Right. Make the area safe and TIME the seizure. Most last under 2 minutes; over 5 is a 911 emergency.'), source: 'Epilepsy Foundation' },
+                { text: __alloT('stem.firstresponse.hold_their_arms_and_legs_down_so_they_', 'Hold their arms and legs down so they don’t hurt themselves.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.never_restrain_someone_having_a_seizur', 'Never restrain someone having a seizure. You can cause serious injury. Move hazards away from THEM, not the other way.'), source: 'Epilepsy Foundation' },
+                { text: __alloT('stem.firstresponse.try_to_put_a_pen_in_their_mouth_so_the', 'Try to put a pen in their mouth so they don’t bite their tongue.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.old_myth_never_put_anything_in_someone', 'Old myth. Never put anything in someone’s mouth during a seizure. They cannot swallow their tongue. You can break their teeth or get bitten.'), source: 'Epilepsy Foundation' }
               ] },
             { situation: 'About the kids filming on their phones:',
               choices: [
-                { text: 'Tell them firmly to put the phones away — this is not for the internet.', impact: 'help', feedback: 'Right. Your classmate did not consent to being filmed during a medical event. Protect their dignity.', source: 'Epilepsy Foundation advocacy' },
-                { text: 'Ignore them — focus on the seizure.', impact: 'neutral', feedback: 'Focus on the seizure first, but ask someone else to clear cameras. Their privacy matters too.', source: 'Epilepsy Foundation advocacy' },
-                { text: 'Take a video yourself "for the doctor."', impact: 'hurt', feedback: 'Their family or doctor can request specific recordings if helpful — that’s their decision, not yours. Don’t add to the camera count.', source: 'Epilepsy Foundation advocacy' }
+                { text: __alloT('stem.firstresponse.tell_them_firmly_to_put_the_phones_awa', 'Tell them firmly to put the phones away — this is not for the internet.'), impact: 'help', feedback: __alloT('stem.firstresponse.right_your_classmate_did_not_consent_t', 'Right. Your classmate did not consent to being filmed during a medical event. Protect their dignity.'), source: 'Epilepsy Foundation advocacy' },
+                { text: __alloT('stem.firstresponse.ignore_them_focus_on_the_seizure', 'Ignore them — focus on the seizure.'), impact: 'neutral', feedback: __alloT('stem.firstresponse.focus_on_the_seizure_first_but_ask_som', 'Focus on the seizure first, but ask someone else to clear cameras. Their privacy matters too.'), source: 'Epilepsy Foundation advocacy' },
+                { text: __alloT('stem.firstresponse.take_a_video_yourself_for_the_doctor', 'Take a video yourself "for the doctor."'), impact: 'hurt', feedback: __alloT('stem.firstresponse.their_family_or_doctor_can_request_spe', 'Their family or doctor can request specific recordings if helpful — that’s their decision, not yours. Don’t add to the camera count.'), source: 'Epilepsy Foundation advocacy' }
               ] },
             { situation: 'After about 90 seconds, the jerking stops. They’re breathing but groggy and confused.',
               choices: [
-                { text: 'Roll them gently onto their side (recovery position). Stay with them. Speak calmly.', impact: 'help', feedback: 'Right. Recovery position lets saliva drain. The post-ictal phase can last 5–30 minutes — confusion is normal.', source: 'Epilepsy Foundation' },
-                { text: 'Wake them up by splashing water on their face.', impact: 'hurt', feedback: 'Don’t. They’re recovering. Stay calm, talk softly, give them time.', source: 'Epilepsy Foundation' },
-                { text: 'Walk away — the seizure is over.', impact: 'hurt', feedback: 'They need someone with them through the post-ictal phase. They may also need to know what just happened — they often don’t remember.', source: 'Epilepsy Foundation' }
+                { text: __alloT('stem.firstresponse.roll_them_gently_onto_their_side_recov', 'Roll them gently onto their side (recovery position). Stay with them. Speak calmly.'), impact: 'help', feedback: __alloT('stem.firstresponse.right_recovery_position_lets_saliva_dr', 'Right. Recovery position lets saliva drain. The post-ictal phase can last 5–30 minutes — confusion is normal.'), source: 'Epilepsy Foundation' },
+                { text: __alloT('stem.firstresponse.wake_them_up_by_splashing_water_on_the', 'Wake them up by splashing water on their face.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.don_t_they_re_recovering_stay_calm_tal', 'Don’t. They’re recovering. Stay calm, talk softly, give them time.'), source: 'Epilepsy Foundation' },
+                { text: __alloT('stem.firstresponse.walk_away_the_seizure_is_over', 'Walk away — the seizure is over.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.they_need_someone_with_them_through_th', 'They need someone with them through the post-ictal phase. They may also need to know what just happened — they often don’t remember.'), source: 'Epilepsy Foundation' }
               ] }
           ] },
-        { id: 'busstop', icon: '🚌', title: 'Bus stop — diabetic emergency',
+        { id: 'busstop', icon: '🚌', title: __alloT('stem.firstresponse.bus_stop_diabetic_emergency', 'Bus stop — diabetic emergency'),
           setup: 'At the bus stop after school, a classmate you know has type 1 diabetes is acting strange. They’re sweating, slurring their words, and staring blankly. They look almost drunk. They tell you "I’m fine, leave me alone" but they’re shaky.',
           steps: [
             { situation: 'What do you suspect first?',
               choices: [
-                { text: 'Low blood sugar (hypoglycemia). Check if they have juice or glucose tabs.', impact: 'help', feedback: 'In a peer with diabetes, behavior change + sweaty + shaky = low blood sugar until proven otherwise. They may not know how impaired they are.', source: 'American Diabetes Association' },
-                { text: 'They’re drunk. Ignore them.', impact: 'hurt', feedback: 'Hypoglycemia in diabetics often LOOKS like being drunk. Mistaking it can be fatal. Always treat first when you’re not sure.', source: 'ADA' },
-                { text: 'Call their parent first.', impact: 'neutral', feedback: 'A parent can help, but treating the low NOW matters more. Sugar first, phone call second.', source: 'ADA' }
+                { text: __alloT('stem.firstresponse.low_blood_sugar_hypoglycemia_check_if_', 'Low blood sugar (hypoglycemia). Check if they have juice or glucose tabs.'), impact: 'help', feedback: __alloT('stem.firstresponse.in_a_peer_with_diabetes_behavior_chang', 'In a peer with diabetes, behavior change + sweaty + shaky = low blood sugar until proven otherwise. They may not know how impaired they are.'), source: 'American Diabetes Association' },
+                { text: __alloT('stem.firstresponse.they_re_drunk_ignore_them', 'They’re drunk. Ignore them.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.hypoglycemia_in_diabetics_often_looks_', 'Hypoglycemia in diabetics often LOOKS like being drunk. Mistaking it can be fatal. Always treat first when you’re not sure.'), source: 'ADA' },
+                { text: __alloT('stem.firstresponse.call_their_parent_first', 'Call their parent first.'), impact: 'neutral', feedback: __alloT('stem.firstresponse.a_parent_can_help_but_treating_the_low', 'A parent can help, but treating the low NOW matters more. Sugar first, phone call second.'), source: 'ADA' }
               ] },
             { situation: 'They nod weakly. They have a juice box in their bag.',
               choices: [
-                { text: 'Open it and help them sip it. Stay with them and recheck in 15 minutes.', impact: 'help', feedback: '15-15 rule: 15g fast carb (a juice box is ~15g), wait 15 min, recheck. Stay with them — they can crash again.', source: 'ADA' },
-                { text: 'Make them eat a sandwich first — protein is better.', impact: 'hurt', feedback: 'When blood sugar is low, you need FAST carbs (juice, glucose tab, regular soda). Protein takes too long.', source: 'ADA' },
-                { text: 'Give them their insulin pen.', impact: 'hurt', feedback: 'Never — insulin LOWERS blood sugar. They need sugar, not insulin.', source: 'ADA' }
+                { text: __alloT('stem.firstresponse.open_it_and_help_them_sip_it_stay_with', 'Open it and help them sip it. Stay with them and recheck in 15 minutes.'), impact: 'help', feedback: __alloT('stem.firstresponse.15_15_rule_15g_fast_carb_a_juice_box_i', '15-15 rule: 15g fast carb (a juice box is ~15g), wait 15 min, recheck. Stay with them — they can crash again.'), source: 'ADA' },
+                { text: __alloT('stem.firstresponse.make_them_eat_a_sandwich_first_protein', 'Make them eat a sandwich first — protein is better.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.when_blood_sugar_is_low_you_need_fast_', 'When blood sugar is low, you need FAST carbs (juice, glucose tab, regular soda). Protein takes too long.'), source: 'ADA' },
+                { text: __alloT('stem.firstresponse.give_them_their_insulin_pen', 'Give them their insulin pen.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.never_insulin_lowers_blood_sugar_they_', 'Never — insulin LOWERS blood sugar. They need sugar, not insulin.'), source: 'ADA' }
               ] },
             { situation: '15 minutes later: still confused, can barely keep eyes open. Won’t reliably swallow.',
               choices: [
-                { text: 'Call 911. Recovery position. Don’t put anything else in their mouth.', impact: 'help', feedback: 'Right. Choking risk is real if they can’t swallow safely. 911. They may need IV glucose or glucagon.', source: 'ADA' },
-                { text: 'Pour more juice into their mouth — more sugar will help.', impact: 'hurt', feedback: 'Aspiration risk. Never pour liquid into the mouth of a barely-conscious person. 911.', source: 'ADA' },
-                { text: 'Wait it out — give it more time.', impact: 'hurt', feedback: 'Severe hypoglycemia can lead to seizures, coma, brain damage. Don’t wait when they’re past the 15-minute mark and still impaired.', source: 'ADA' }
+                { text: __alloT('stem.firstresponse.call_911_recovery_position_don_t_put_a', 'Call 911. Recovery position. Don’t put anything else in their mouth.'), impact: 'help', feedback: __alloT('stem.firstresponse.right_choking_risk_is_real_if_they_can', 'Right. Choking risk is real if they can’t swallow safely. 911. They may need IV glucose or glucagon.'), source: 'ADA' },
+                { text: __alloT('stem.firstresponse.pour_more_juice_into_their_mouth_more_', 'Pour more juice into their mouth — more sugar will help.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.aspiration_risk_never_pour_liquid_into', 'Aspiration risk. Never pour liquid into the mouth of a barely-conscious person. 911.'), source: 'ADA' },
+                { text: __alloT('stem.firstresponse.wait_it_out_give_it_more_time', 'Wait it out — give it more time.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.severe_hypoglycemia_can_lead_to_seizur', 'Severe hypoglycemia can lead to seizures, coma, brain damage. Don’t wait when they’re past the 15-minute mark and still impaired.'), source: 'ADA' }
               ] }
           ] },
-        { id: 'mh', icon: '💚', title: 'Mental health — peer in crisis',
+        { id: 'mh', icon: '💚', title: __alloT('stem.firstresponse.mental_health_peer_in_crisis', 'Mental health — peer in crisis'),
           contentWarning: 'This scenario includes a peer expressing suicidal thoughts. If that is too heavy right now, you can skip it — pick another scenario or come back later. There is no penalty for sitting this one out.',
           setup: 'A friend texts you late at night: "I don’t know if I can keep doing this. I don’t want to be here anymore." They live across town. You’re alone in your room.',
           steps: [
             { situation: 'You read the text. What FIRST?',
               choices: [
-                { text: 'Text back right now: "I’m here. I hear you. Tell me more."', impact: 'help', feedback: 'Showing up matters. Don’t lecture, don’t fix yet — just be present and listen. You can’t make someone more suicidal by asking.', source: '988 Lifeline / NAMI' },
-                { text: 'Don’t respond — you don’t know what to say and you’re scared.', impact: 'hurt', feedback: 'Silence in this moment is the most dangerous thing. Even "I see you. I’m here." is a lifeline. You don’t need the right words.', source: 'QPR / NAMI' },
-                { text: 'Screenshot it and post it to TikTok asking what to do.', impact: 'hurt', feedback: 'No. This is private. Posting it betrays trust and can escalate. Take the message to a trusted adult, not the internet.', source: 'NAMI peer support guidance' }
+                { text: __alloT('stem.firstresponse.text_back_right_now_i_m_here_i_hear_yo', 'Text back right now: "I’m here. I hear you. Tell me more."'), impact: 'help', feedback: __alloT('stem.firstresponse.showing_up_matters_don_t_lecture_don_t', 'Showing up matters. Don’t lecture, don’t fix yet — just be present and listen. You can’t make someone more suicidal by asking.'), source: '988 Lifeline / NAMI' },
+                { text: __alloT('stem.firstresponse.don_t_respond_you_don_t_know_what_to_s', 'Don’t respond — you don’t know what to say and you’re scared.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.silence_in_this_moment_is_the_most_dan', 'Silence in this moment is the most dangerous thing. Even "I see you. I’m here." is a lifeline. You don’t need the right words.'), source: 'QPR / NAMI' },
+                { text: __alloT('stem.firstresponse.screenshot_it_and_post_it_to_tiktok_as', 'Screenshot it and post it to TikTok asking what to do.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.no_this_is_private_posting_it_betrays_', 'No. This is private. Posting it betrays trust and can escalate. Take the message to a trusted adult, not the internet.'), source: 'NAMI peer support guidance' }
               ] },
             { situation: 'They text back: "I’ve been thinking about it for a while. I have a plan."',
               choices: [
-                { text: 'Tell them you’re glad they trusted you. Ask if you can call 988 with them or if you can tell their parent / a trusted adult so they’re not alone tonight.', impact: 'help', feedback: 'A specific plan = high risk. Looping in an adult or 988 isn’t a betrayal — it’s the move. Ask their preference but make sure SOMEONE who can be physically present knows.', source: '988 Lifeline / NAMI' },
-                { text: 'Promise you won’t tell anyone, ever, no matter what.', impact: 'hurt', feedback: 'Don’t promise this. Some things you can’t keep secret — a friend’s safety is one. You can promise to be there. You can’t promise silence.', source: 'NAMI peer support / school safe-messaging' },
-                { text: 'Tell them to "just hang in there" and go to sleep.', impact: 'hurt', feedback: 'This dismisses the crisis. They told you because they need help RIGHT NOW. Stay engaged.', source: 'NAMI / SAMHSA' }
+                { text: __alloT('stem.firstresponse.tell_them_you_re_glad_they_trusted_you', 'Tell them you’re glad they trusted you. Ask if you can call 988 with them or if you can tell their parent / a trusted adult so they’re not alone tonight.'), impact: 'help', feedback: __alloT('stem.firstresponse.a_specific_plan_high_risk_looping_in_a', 'A specific plan = high risk. Looping in an adult or 988 isn’t a betrayal — it’s the move. Ask their preference but make sure SOMEONE who can be physically present knows.'), source: '988 Lifeline / NAMI' },
+                { text: __alloT('stem.firstresponse.promise_you_won_t_tell_anyone_ever_no_', 'Promise you won’t tell anyone, ever, no matter what.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.don_t_promise_this_some_things_you_can', 'Don’t promise this. Some things you can’t keep secret — a friend’s safety is one. You can promise to be there. You can’t promise silence.'), source: 'NAMI peer support / school safe-messaging' },
+                { text: __alloT('stem.firstresponse.tell_them_to_just_hang_in_there_and_go', 'Tell them to "just hang in there" and go to sleep.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.this_dismisses_the_crisis_they_told_yo', 'This dismisses the crisis. They told you because they need help RIGHT NOW. Stay engaged.'), source: 'NAMI / SAMHSA' }
               ] },
             { situation: 'They’re scared their parents will be mad. What do you say?',
               choices: [
-                { text: 'Tell them: "I know it feels that way. The grown-ups who matter will be relieved you said something. Want me to call with you, or call 988 first?"', impact: 'help', feedback: 'Acknowledge the fear. Offer to share the load. 988 counselors can help them figure out next steps and what to say to a parent.', source: '988 Lifeline' },
-                { text: 'Tell them their parents won’t care.', impact: 'hurt', feedback: 'You don’t know that. Even if a relationship is hard, a crisis adult can step in (counselor, coach, aunt, neighbor). 988 helps figure out who.', source: 'NAMI' },
-                { text: 'Wait until tomorrow to tell anyone — it’s late.', impact: 'hurt', feedback: 'A specific plan is a now problem, not a tomorrow problem. 988 is open 24/7. So is 911 if there’s immediate life threat.', source: '988 Lifeline' }
+                { text: __alloT('stem.firstresponse.tell_them_i_know_it_feels_that_way_the', 'Tell them: "I know it feels that way. The grown-ups who matter will be relieved you said something. Want me to call with you, or call 988 first?"'), impact: 'help', feedback: __alloT('stem.firstresponse.acknowledge_the_fear_offer_to_share_th', 'Acknowledge the fear. Offer to share the load. 988 counselors can help them figure out next steps and what to say to a parent.'), source: '988 Lifeline' },
+                { text: __alloT('stem.firstresponse.tell_them_their_parents_won_t_care', 'Tell them their parents won’t care.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.you_don_t_know_that_even_if_a_relation', 'You don’t know that. Even if a relationship is hard, a crisis adult can step in (counselor, coach, aunt, neighbor). 988 helps figure out who.'), source: 'NAMI' },
+                { text: __alloT('stem.firstresponse.wait_until_tomorrow_to_tell_anyone_it_', 'Wait until tomorrow to tell anyone — it’s late.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.a_specific_plan_is_a_now_problem_not_a', 'A specific plan is a now problem, not a tomorrow problem. 988 is open 24/7. So is 911 if there’s immediate life threat.'), source: '988 Lifeline' }
               ] },
             { situation: 'They agree to text 988 (HOME to 741741). What do YOU do next?',
               choices: [
-                { text: 'Stay on the phone or text with them. Tell a trusted adult in your life what just happened — you need support too.', impact: 'help', feedback: 'Right. Don’t carry this alone. Hearing this from a friend is heavy — your own adult / counselor / parent can help you process. NAMI HelpLine: 1-800-950-NAMI.', source: 'NAMI peer support' },
-                { text: 'Hang up and put your phone away — you handled it.', impact: 'hurt', feedback: 'You did show up — that matters. But staying connected and getting your own support afterward both matter. This is the kind of thing that lingers.', source: 'NAMI' },
-                { text: 'Tell everyone at school tomorrow what happened.', impact: 'hurt', feedback: 'No. Their story is theirs. You can tell trusted adults who can help; you can’t tell the lunch table.', source: 'NAMI peer support' }
+                { text: __alloT('stem.firstresponse.stay_on_the_phone_or_text_with_them_te', 'Stay on the phone or text with them. Tell a trusted adult in your life what just happened — you need support too.'), impact: 'help', feedback: __alloT('stem.firstresponse.right_don_t_carry_this_alone_hearing_t', 'Right. Don’t carry this alone. Hearing this from a friend is heavy — your own adult / counselor / parent can help you process. NAMI HelpLine: 1-800-950-NAMI.'), source: 'NAMI peer support' },
+                { text: __alloT('stem.firstresponse.hang_up_and_put_your_phone_away_you_ha', 'Hang up and put your phone away — you handled it.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.you_did_show_up_that_matters_but_stayi', 'You did show up — that matters. But staying connected and getting your own support afterward both matter. This is the kind of thing that lingers.'), source: 'NAMI' },
+                { text: __alloT('stem.firstresponse.tell_everyone_at_school_tomorrow_what_', 'Tell everyone at school tomorrow what happened.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.no_their_story_is_theirs_you_can_tell_', 'No. Their story is theirs. You can tell trusted adults who can help; you can’t tell the lunch table.'), source: 'NAMI peer support' }
               ] }
           ] }
       ];
@@ -2244,13 +2316,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function scenarioPicker() {
           return h('div', null,
             h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Each scenario is multiple steps. At each step, pick what you’d do — you’ll see whether it ',
+              __alloT('stem.firstresponse.each_scenario_is_multiple_steps_at_eac', 'Each scenario is multiple steps. At each step, pick what you’d do — you’ll see whether it '),
               h('span', { style: { color: T.ok } }, 'helped'),
-              ', was ',
+              __alloT('stem.firstresponse.was', ', was '),
               h('span', { style: { color: T.warn } }, 'neutral'),
-              ', or ',
+              __alloT('stem.firstresponse.or', ', or '),
               h('span', { style: { color: T.danger } }, 'hurt'),
-              ', and why. Sources cited per choice.'),
+              __alloT('stem.firstresponse.and_why_sources_cited_per_choice', ', and why. Sources cited per choice.')),
             h('div', { role: 'list',
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
               SCENARIOS.map(function(s) {
@@ -2275,7 +2347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     h('span', { style: { fontWeight: 700, fontSize: 14 } }, s.title)
                   ),
                   h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, s.steps.length, ' steps'),
-                  s.contentWarning && h('div', { style: { fontSize: 10, color: T.accentHi, fontStyle: 'italic' } }, '⚠️ content warning')
+                  s.contentWarning && h('div', { style: { fontSize: 10, color: T.accentHi, fontStyle: 'italic' } }, __alloT('stem.firstresponse.content_warning', '⚠️ content warning'))
                 );
               })
             )
@@ -2285,21 +2357,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         // ── Content warning dialog (mental-health scenario gate)
         function contentWarningDialog() {
           var cw = sc.contentWarning;
-          return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Content warning before mental health scenario',
+          return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.firstresponse.content_warning_before_mental_health_s', 'Content warning before mental health scenario'),
             style: { padding: 16, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid ' + T.warn } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.warn } }, '⚠️ Content warning'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.warn } }, __alloT('stem.firstresponse.content_warning_2', '⚠️ Content warning')),
             h('p', { style: { margin: '0 0 12px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, cw),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'I understand. Start the scenario.',
+                'aria-label': __alloT('stem.firstresponse.i_understand_start_the_scenario', 'I understand. Start the scenario.'),
                 onClick: function() { upd('mhAcknowledged', true); pickScenario(sc.id); },
                 style: btnPrimary()
-              }, 'I understand — start'),
+              }, __alloT('stem.firstresponse.i_understand_start', 'I understand — start')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': 'Skip this scenario; pick a different one.',
+                'aria-label': __alloT('stem.firstresponse.skip_this_scenario_pick_a_different_on', 'Skip this scenario; pick a different one.'),
                 onClick: leaveScenario,
                 style: btn()
-              }, 'Skip — pick different')
+              }, __alloT('stem.firstresponse.skip_pick_different', 'Skip — pick different'))
             )
           );
         }
@@ -2315,7 +2387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               : 'Some hurts. Read the feedback and try again.';
             return h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '🏁'),
-              h('h3', { style: { margin: '0 0 8px', fontSize: 18 } }, 'Scenario complete: ', sc.title),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 18 } }, __alloT('stem.firstresponse.scenario_complete', 'Scenario complete: '), sc.title),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 } },
                 h('span', { style: { padding: '4px 10px', borderRadius: 999, background: '#064e3b', color: '#d1fae5', fontSize: 12, fontWeight: 700 } }, '✓ Helped: ' + (scenarioScore.help || 0)),
                 h('span', { style: { padding: '4px 10px', borderRadius: 999, background: '#78350f', color: '#fde68a', fontSize: 12, fontWeight: 700 } }, '~ Neutral: ' + (scenarioScore.neutral || 0)),
@@ -2323,8 +2395,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               ),
               h('p', { style: { color: T.muted, fontSize: 13, marginBottom: 14 } }, verdict),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
-                h('button', { 'data-fr-focusable': true, onClick: function() { pickScenario(sc.id); }, style: btn() }, '↺ Retry'),
-                h('button', { 'data-fr-focusable': true, onClick: leaveScenario, style: btnPrimary() }, '→ Pick another scenario')
+                h('button', { 'data-fr-focusable': true, onClick: function() { pickScenario(sc.id); }, style: btn() }, __alloT('stem.firstresponse.retry', '↺ Retry')),
+                h('button', { 'data-fr-focusable': true, onClick: leaveScenario, style: btnPrimary() }, __alloT('stem.firstresponse.pick_another_scenario', '→ Pick another scenario'))
               )
             );
           }
@@ -2334,13 +2406,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, sc.icon),
                 h('strong', { style: { fontSize: 15 } }, sc.title),
-                h('span', { style: { marginLeft: 'auto', fontSize: 11, color: T.dim } }, 'Step ', (scenarioStep + 1), ' / ', sc.steps.length)
+                h('span', { style: { marginLeft: 'auto', fontSize: 11, color: T.dim } }, __alloT('stem.firstresponse.step_2', 'Step '), (scenarioStep + 1), ' / ', sc.steps.length)
               ),
               scenarioStep === 0 && h('p', { style: { margin: '6px 0 0', color: T.muted, fontSize: 13, lineHeight: 1.55, fontStyle: 'italic' } }, sc.setup)
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
               h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, step.situation),
-              h('div', { role: 'group', 'aria-label': 'Choices',
+              h('div', { role: 'group', 'aria-label': __alloT('stem.firstresponse.choices', 'Choices'),
                 style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 step.choices.map(function(c, i) {
                   var picked = scenarioLastChoice === i;
@@ -2363,10 +2435,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 h('div', { style: { marginTop: 4, fontSize: 10, color: T.dim, fontStyle: 'italic' } }, 'Source: ', step.choices[scenarioLastChoice].source)
               ),
               h('div', { style: { marginTop: 10, display: 'flex', justifyContent: 'space-between' } },
-                h('button', { 'data-fr-focusable': true, 'aria-label': 'Leave scenario',
+                h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.leave_scenario', 'Leave scenario'),
                   onClick: leaveScenario, style: btn({ padding: '6px 12px', fontSize: 12 })
-                }, '← Leave'),
-                scenarioAnswered && h('button', { 'data-fr-focusable': true, 'aria-label': 'Next step',
+                }, __alloT('stem.firstresponse.leave', '← Leave')),
+                scenarioAnswered && h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.next_step', 'Next step'),
                   onClick: nextStep, style: btnPrimary({ padding: '6px 14px', fontSize: 12 })
                 }, scenarioStep + 1 >= sc.steps.length ? 'See result →' : 'Next →')
               )
@@ -2393,17 +2465,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ─────────────────────────────────────────
       var FALLBACK_SCENES = [
         { id: 'fb1', difficulty: 'basic',
-          text: 'In study hall, a peer drops his soda and slumps face-first onto his desk. He does not respond when you say his name. You can see his chest is not moving normally.' },
+          text: __alloT('stem.firstresponse.in_study_hall_a_peer_drops_his_soda_an', 'In study hall, a peer drops his soda and slumps face-first onto his desk. He does not respond when you say his name. You can see his chest is not moving normally.') },
         { id: 'fb2', difficulty: 'basic',
-          text: 'On the school bus, a 1st-grader starts crying loudly that his throat itches and his lip looks swollen. He just shared a granola bar with another kid and his backpack has a "PEANUT ALLERGY" tag on it.' },
+          text: __alloT('stem.firstresponse.on_the_school_bus_a_1st_grader_starts_', 'On the school bus, a 1st-grader starts crying loudly that his throat itches and his lip looks swollen. He just shared a granola bar with another kid and his backpack has a "PEANUT ALLERGY" tag on it.') },
         { id: 'fb3', difficulty: 'intermediate',
-          text: 'Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say "I’m fine" but it comes out garbled. Time is 7:14 PM.' },
+          text: __alloT('stem.firstresponse.your_aunt_is_over_for_dinner_mid_conve', 'Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say "I’m fine" but it comes out garbled. Time is 7:14 PM.') },
         { id: 'fb4', difficulty: 'intermediate',
-          text: 'At the skate park, a kid wipes out and lies on the ground bleeding heavily from a deep gash on her thigh. Blood is pooling on the concrete. The nearest hospital is 25 minutes away.' },
+          text: __alloT('stem.firstresponse.at_the_skate_park_a_kid_wipes_out_and_', 'At the skate park, a kid wipes out and lies on the ground bleeding heavily from a deep gash on her thigh. Blood is pooling on the concrete. The nearest hospital is 25 minutes away.') },
         { id: 'fb5', difficulty: 'advanced',
-          text: 'You walk into a friend’s house unannounced. He’s on the bathroom floor, lips blue, breathing slowly and shallowly. There’s a small empty pill bottle and a vape pen near him. His phone is buzzing on the counter.' },
+          text: __alloT('stem.firstresponse.you_walk_into_a_friend_s_house_unannou', 'You walk into a friend’s house unannounced. He’s on the bathroom floor, lips blue, breathing slowly and shallowly. There’s a small empty pill bottle and a vape pen near him. His phone is buzzing on the counter.') },
         { id: 'fb6', difficulty: 'advanced',
-          text: 'At lunch, a classmate who is Deaf taps you and points at another student across the cafeteria who is alone, eyes wide, hands gripping the edge of the table, breathing fast and shallow. You don’t know if they’re having a heart attack or a panic attack.' }
+          text: __alloT('stem.firstresponse.at_lunch_a_classmate_who_is_deaf_taps_', 'At lunch, a classmate who is Deaf taps you and points at another student across the cafeteria who is alone, eyes wide, hands gripping the edge of the table, breathing fast and shallow. You don’t know if they’re having a heart attack or a panic attack.') }
       ];
 
       // Hardcoded ground-truth signal list. The AI critique prompt references
@@ -2555,31 +2627,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function aiOverview() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🤖 How AI Practice works'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.how_ai_practice_works', '🤖 How AI Practice works')),
               h('ol', { style: { margin: '0 0 0 18px', color: T.muted, fontSize: 13, lineHeight: 1.7 } },
-                h('li', null, 'Pick a difficulty. Generate a novel scene.'),
-                h('li', null, 'Write your response in 2–3 sentences: what you’d do, in what order.'),
-                h('li', null, 'Get critique. The AI grades your reasoning against the protocols hardcoded in this tool.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'The AI never gives clinical decisions'),
-                  ' — it only checks your reasoning. For "should I give X" questions, the answer is always "follow what’s prescribed + call 911."')
+                h('li', null, __alloT('stem.firstresponse.pick_a_difficulty_generate_a_novel_sce', 'Pick a difficulty. Generate a novel scene.')),
+                h('li', null, __alloT('stem.firstresponse.write_your_response_in_2_3_sentences_w', 'Write your response in 2–3 sentences: what you’d do, in what order.')),
+                h('li', null, __alloT('stem.firstresponse.get_critique_the_ai_grades_your_reason', 'Get critique. The AI grades your reasoning against the protocols hardcoded in this tool.')),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.the_ai_never_gives_clinical_decisions', 'The AI never gives clinical decisions')),
+                  __alloT('stem.firstresponse.it_only_checks_your_reasoning_for_shou', ' — it only checks your reasoning. For "should I give X" questions, the answer is always "follow what’s prescribed + call 911."'))
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Without an AI key: '),
-              'the module still works — pre-written scenes are bundled, and a local keyword check stands in for AI critique.')
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.without_an_ai_key', 'Without an AI key: ')),
+              __alloT('stem.firstresponse.the_module_still_works_pre_written_sce', 'the module still works — pre-written scenes are bundled, and a local keyword check stands in for AI critique.'))
           );
         }
 
         function aiPractice() {
           var difficulties = [
-            { id: 'basic', label: 'Basic — single emergency, clear cues' },
-            { id: 'intermediate', label: 'Intermediate — needs recognition + decision' },
-            { id: 'advanced', label: 'Advanced — ambiguity / multiple issues' }
+            { id: 'basic', label: __alloT('stem.firstresponse.basic_single_emergency_clear_cues', 'Basic — single emergency, clear cues') },
+            { id: 'intermediate', label: __alloT('stem.firstresponse.intermediate_needs_recognition_decisio', 'Intermediate — needs recognition + decision') },
+            { id: 'advanced', label: __alloT('stem.firstresponse.advanced_ambiguity_multiple_issues', 'Advanced — ambiguity / multiple issues') }
           ];
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '⚙️ Pick difficulty'),
-              h('div', { role: 'radiogroup', 'aria-label': 'Difficulty',
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.pick_difficulty', '⚙️ Pick difficulty')),
+              h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.firstresponse.difficulty', 'Difficulty'),
                 style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 difficulties.map(function(diff) {
                   var active = aiDifficulty === diff.id;
@@ -2605,23 +2677,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               )
             ),
             aiScene && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📖 The scene'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.the_scene', '📖 The scene')),
               h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } }, aiScene.text),
-              aiScene.id && aiScene.id.indexOf('fb') === 0 && h('div', { style: { marginTop: 6, fontSize: 10, color: T.dim, fontStyle: 'italic' } }, 'Bundled scene (no AI used).')
+              aiScene.id && aiScene.id.indexOf('fb') === 0 && h('div', { style: { marginTop: 6, fontSize: 10, color: T.dim, fontStyle: 'italic' } }, __alloT('stem.firstresponse.bundled_scene_no_ai_used', 'Bundled scene (no AI used).'))
             ),
             aiScene && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('label', { htmlFor: 'fr-ai-response', style: { display: 'block', fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 6 } },
-                '✏️ Your response (2–3 sentences)'),
+                __alloT('stem.firstresponse.your_response_2_3_sentences', '✏️ Your response (2–3 sentences)')),
               h('textarea', { id: 'fr-ai-response', 'data-fr-focusable': true,
                 value: aiResponse,
                 onChange: function(e) { upd('aiResponse', e.target.value); },
-                placeholder: 'What do you do, and in what order? Be specific (call 911? CPR? AED? EpiPen? recovery position?).',
-                'aria-label': 'Your emergency response, 2 to 3 sentences',
+                placeholder: __alloT('stem.firstresponse.what_do_you_do_and_in_what_order_be_sp', 'What do you do, and in what order? Be specific (call 911? CPR? AED? EpiPen? recovery position?).'),
+                'aria-label': __alloT('stem.firstresponse.your_emergency_response_2_to_3_sentenc', 'Your emergency response, 2 to 3 sentences'),
                 rows: 4,
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 13, lineHeight: 1.5, fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }
               }),
               h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, marginBottom: 8 } },
-                aiResponse.length, ' characters. Aim for ~150–400.'),
+                aiResponse.length, __alloT('stem.firstresponse.characters_aim_for_150_400', ' characters. Aim for ~150–400.')),
               h('button', { 'data-fr-focusable': true,
                 'aria-label': aiLoadingCritique ? 'Getting critique...' : 'Get AI critique of your response',
                 'aria-busy': aiLoadingCritique ? 'true' : 'false',
@@ -2631,7 +2703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               }, aiLoadingCritique ? '⏳ Critiquing...' : '🎓 Get critique')
             ),
             aiCritique && h('div', { style: { padding: 14, borderRadius: 10, background: '#1e3a8a', border: '1px solid #1e40af', color: '#dbeafe' } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, '🎓 Critique'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, __alloT('stem.firstresponse.critique', '🎓 Critique')),
               h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.6 } }, aiCritique.text),
               h('div', { style: { marginTop: 10, fontSize: 10, opacity: 0.75, fontStyle: 'italic' } },
                 aiCritique.source === 'ai' ? 'Critique generated by AI; protocol references are checked against this tool’s hardcoded ground truth.' : 'Local keyword check (AI unavailable).')
@@ -2642,7 +2714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🤖 AI Practice'),
           emergencyBanner(),
-          h('div', { role: 'tablist', 'aria-label': 'AI Practice sections',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.ai_practice_sections', 'AI Practice sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'How it works'),
             tabBtn('practice', 'Practice')
@@ -2680,15 +2752,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           backBar('📚 Resources'),
           emergencyBanner(),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Every org cited in this tool. On a phone, tap a phone number to call. ',
-            h('strong', { style: { color: T.accentHi } }, 'Maine note: '), MAINE_EMS.text911),
+            __alloT('stem.firstresponse.every_org_cited_in_this_tool_on_a_phon', 'Every org cited in this tool. On a phone, tap a phone number to call. '),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.maine_note', 'Maine note: ')), MAINE_EMS.text911),
           section('🚑 Emergency', RESOURCES.emergency),
           section('💚 Crisis & mental health', RESOURCES.crisis),
           section('✚ Get certified', RESOURCES.certification),
           section('⚡ Condition-specific', RESOURCES.conditions),
           section('♾️ Disability advocacy', RESOURCES.disabilityAdvocacy),
           h('div', { style: { marginTop: 8, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
+            h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.firstresponse.maine_reality_2', '🌲 Maine reality')),
             h('div', { style: { marginBottom: 4 } }, MAINE_EMS.ruralEta),
             h('div', { style: { marginBottom: 4 } }, MAINE_EMS.heartAed),
             h('div', { style: { marginBottom: 4 } }, MAINE_EMS.crisisRoute),
@@ -2708,12 +2780,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ─────────────────────────────────────────
       function renderFirstActionSleuth() {
         var ACTIONS = [
-          { id: 'callEMS',  label: 'Call 911',                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
-          { id: 'cpr',      label: 'Start CPR',                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
-          { id: 'aed',      label: 'Apply AED',                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
-          { id: 'pressure', label: 'Direct pressure',           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
-          { id: 'heimlich', label: 'Abdominal thrusts',         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
-          { id: 'recovery', label: 'Recovery position',         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
+          { id: 'callEMS',  label: __alloT('stem.firstresponse.call_911_3', 'Call 911'),                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
+          { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr_2', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
+          { id: 'aed',      label: __alloT('stem.firstresponse.apply_aed_2', 'Apply AED'),                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
+          { id: 'pressure', label: __alloT('stem.firstresponse.direct_pressure_3', 'Direct pressure'),           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
+          { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts_2', 'Abdominal thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
+          { id: 'recovery', label: __alloT('stem.firstresponse.recovery_position_2', 'Recovery position'),         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
         ];
         var VIGNETTES = [
           { id: 1, scenario: 'A coworker collapses in the office. They are unresponsive, not breathing, and have no pulse. You are alone with them. Your phone is in your pocket.', correct: 'callEMS',
@@ -2824,14 +2896,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🎯 First Action Sleuth'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '🎯 Pick the FIRST action — 10 vignettes'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.pick_the_first_action_10_vignettes', '🎯 Pick the FIRST action — 10 vignettes')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                'You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.'),
+                __alloT('stem.firstresponse.you_will_see_10_brief_emergency_vignet', 'You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.')),
               h('p', { style: { margin: 0, color: T.dim, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
-                'In a real emergency, call 911. In Maine, you can text 911 if you cannot speak.')
+                __alloT('stem.firstresponse.in_a_real_emergency_call_911_in_maine_', 'In a real emergency, call 911. In Maine, you can text 911 if you cannot speak.'))
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The six first actions'),
+              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, __alloT('stem.firstresponse.the_six_first_actions', 'The six first actions')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                 ACTIONS.map(function(a) {
                   return h('div', { key: a.id,
@@ -2849,7 +2921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('button', { 'data-fr-focusable': true,
               onClick: nextRound,
               style: btnPrimary({ width: '100%', textAlign: 'center', padding: '12px 18px' })
-            }, '🎯 Start — vignette 1 of 10')
+            }, __alloT('stem.firstresponse.start_vignette_1_of_10', '🎯 Start — vignette 1 of 10'))
           );
         }
 
@@ -2863,11 +2935,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           backBar('🎯 First Action Sleuth'),
           // Score header
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.muted, marginBottom: 12 } },
-            h('span', null, 'Vignette ', h('strong', { style: { color: T.text } }, faShown.length)),
-            h('span', null, 'Score ', h('strong', { style: { color: T.ok } }, faScore + ' / ' + faRounds)),
-            faRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link } }, pct + '%')),
-            h('span', null, 'Streak ', h('strong', { style: { color: T.warn } }, faStreak)),
-            h('span', null, 'Best ', h('strong', { style: { color: T.accentHi } }, faBest))
+            h('span', null, __alloT('stem.firstresponse.vignette', 'Vignette '), h('strong', { style: { color: T.text } }, faShown.length)),
+            h('span', null, __alloT('stem.firstresponse.score', 'Score '), h('strong', { style: { color: T.ok } }, faScore + ' / ' + faRounds)),
+            faRounds > 0 && h('span', null, __alloT('stem.firstresponse.accuracy', 'Accuracy '), h('strong', { style: { color: T.link } }, pct + '%')),
+            h('span', null, __alloT('stem.firstresponse.streak', 'Streak '), h('strong', { style: { color: T.warn } }, faStreak)),
+            h('span', null, __alloT('stem.firstresponse.best', 'Best '), h('strong', { style: { color: T.accentHi } }, faBest))
           ),
           // The vignette
           h('section', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent + '88', marginBottom: 14 } },
@@ -2875,7 +2947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.55 } }, v.scenario)
           ),
           // 6 action picker buttons
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the first action' },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': __alloT('stem.firstresponse.pick_the_first_action', 'Pick the first action') },
             ACTIONS.map(function(a) {
               var picked = faAnswered && faPick === a.id;
               var isRight = faAnswered && a.id === v.correct;
@@ -2920,7 +2992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, v.why),
             allDone
               ? h('div', { style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-                  h('div', { style: { fontSize: 14, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 vignettes complete'),
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, __alloT('stem.firstresponse.all_10_vignettes_complete', '🏆 All 10 vignettes complete')),
                   h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } },
                     'Final: ', h('strong', null, faScore + ' / ' + VIGNETTES.length + ' (' + Math.round((faScore / VIGNETTES.length) * 100) + '%)'),
                     faScore === VIGNETTES.length ? ' — every first action correct. The next step is hands-on certification with Red Cross or AHA.' :
@@ -2931,12 +3003,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   h('button', { 'data-fr-focusable': true,
                     onClick: function() { upd('faIdx', -1); upd('faShown', []); upd('faScore', 0); upd('faRounds', 0); upd('faStreak', 0); },
                     style: Object.assign(btnPrimary({ marginTop: 10, padding: '8px 14px', fontSize: 12 }), {})
-                  }, '🔄 Restart')
+                  }, __alloT('stem.firstresponse.restart', '🔄 Restart'))
                 )
               : h('button', { 'data-fr-focusable': true,
                   onClick: nextRound,
                   style: btnPrimary({ marginTop: 4, padding: '10px 16px', fontSize: 13 })
-                }, '➡️ Next vignette')
+                }, __alloT('stem.firstresponse.next_vignette', '➡️ Next vignette'))
           ),
           disclaimerFooter()
         );
@@ -2981,15 +3053,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
               h('div', { style: { textAlign: 'center', minWidth: 110 } },
                 h('div', { style: { fontSize: 38, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, doneCount + ' / ' + total),
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Scenarios mastered')
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, __alloT('stem.firstresponse.scenarios_mastered', 'Scenarios mastered'))
               ),
               h('div', { style: { flex: 1, minWidth: 240 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
-                  h('h3', { style: { margin: 0, fontSize: 17, color: T.text, fontWeight: 800 } }, "Responder Mastery")
+                  h('h3', { style: { margin: 0, fontSize: 17, color: T.text, fontWeight: 800 } }, __alloT('stem.firstresponse.responder_mastery_2', "Responder Mastery"))
                 ),
                 h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                  'Every First Action Sleuth scenario you answer correctly at least once locks in here. Per-attempt streak resets between sessions; mastery sticks. Build coverage across all 10 scenarios — and across all 6 first actions — before you trust your reflex.'),
+                  __alloT('stem.firstresponse.every_first_action_sleuth_scenario_you', 'Every First Action Sleuth scenario you answer correctly at least once locks in here. Per-attempt streak resets between sessions; mastery sticks. Build coverage across all 10 scenarios — and across all 6 first actions — before you trust your reflex.')),
                 h('div', { style: { height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
                   h('div', { style: { width: pct + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
                 ),
@@ -3003,7 +3075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           ),
           // Per-action breakdown
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: T.text, marginBottom: 10 } }, 'First-action coverage'),
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: T.text, marginBottom: 10 } }, __alloT('stem.firstresponse.first_action_coverage', 'First-action coverage')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
               FA_ACTIONS.map(function (a) {
                 var done = actionCounts[a.id] || 0;
@@ -3029,7 +3101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           ),
           // Per-scenario list
           h('section', null,
-            h('h3', { style: { fontSize: 13, fontWeight: 800, margin: '0 0 8px', color: T.text } }, 'Scenarios'),
+            h('h3', { style: { fontSize: 13, fontWeight: 800, margin: '0 0 8px', color: T.text } }, __alloT('stem.firstresponse.scenarios', 'Scenarios')),
             h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
               FA_VIGNETTE_INDEX.map(function (v) {
                 var entry = mastery[v.id];
@@ -3059,7 +3131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           ),
           h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
             h('button', { 'data-fr-focusable': true,
-              onClick: function () { upd({ view: 'firstAction', faIdx: -1, faAnswered: false, faPick: null, faShown: [] }); },
+              onClick: function () { updMulti({ view: 'firstAction', faIdx: -1, faAnswered: false, faPick: null, faShown: [] }); },
               style: btnPrimary({ width: '100%', textAlign: 'center' })
             }, doneCount === 0 ? '🎯 Open First Action Sleuth to start'
               : doneCount === total ? '🏆 All mastered — re-attempt to reinforce reflex'
@@ -3083,7 +3155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                               display: 'flex', alignItems: 'center', gap: 12 } },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, frCeleb.actionIcon || '🎯'),
             h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'First action locked in'),
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, __alloT('stem.firstresponse.first_action_locked_in', 'First action locked in')),
               h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, 'Scenario ' + frCeleb.vignetteId + ' — ' + (frCeleb.actionLabel || 'correct')),
               h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, frCeleb.total + ' / ' + FA_VIGNETTE_INDEX.length + ' scenarios mastered')
             )
@@ -3119,10 +3191,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           else if (readiness < 0.8) state = 'competent';
           else state = 'expert';
           var sm = {
-            novice:     { label: '🌱 Novice responder', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Build foundational recognition first.' },
-            developing: { label: '🟡 Developing', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Practice scenarios; build automaticity.' },
-            competent:  { label: '🟢 Competent', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Reliable in familiar situations.' },
-            expert:     { label: '🌟 Expert', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Calibrated across diverse vignettes.' }
+            novice:     { label: __alloT('stem.firstresponse.novice_responder', '🌱 Novice responder'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.firstresponse.build_foundational_recognition_first', 'Build foundational recognition first.') },
+            developing: { label: __alloT('stem.firstresponse.developing', '🟡 Developing'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.firstresponse.practice_scenarios_build_automaticity', 'Practice scenarios; build automaticity.') },
+            competent:  { label: __alloT('stem.firstresponse.competent', '🟢 Competent'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.firstresponse.reliable_in_familiar_situations', 'Reliable in familiar situations.') },
+            expert:     { label: __alloT('stem.firstresponse.expert', '🌟 Expert'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.firstresponse.calibrated_across_diverse_vignettes', 'Calibrated across diverse vignettes.') }
           }[state];
           var H = function(t, p, c) { return ctx.React.createElement.apply(null, arguments); };
           return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
@@ -3165,7 +3237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ sp: iq.speed, a: iq.accuracy, c: iq.consistency, r: iq.recall, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: T.bg2 || '#1e293b', color: T.text, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
                 H('button', { onClick: function() { setIQ({ speed: 50, accuracy: 50, consistency: 50, recall: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: T.muted, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
               ),
-              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: which capability matters most for first-aid response?',
+              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.firstresponse.hypothesis_which_capability_matters_mo', 'Hypothesis: which capability matters most for first-aid response?'),
                 style: { width: '100%', minHeight: 50, padding: 6, background: T.bg2 || '#1e293b', color: T.text, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
               !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — open prompts'),
               iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
@@ -3174,7 +3246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   H('li', null, 'Real EMTs run drills until response is automatic. Why?'))),
               H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                 H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain'),
-              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain readiness composition.',
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.firstresponse.explain_readiness_composition', 'Explain readiness composition.'),
                 style: { width: '100%', minHeight: 60, padding: 6, background: T.bg2 || '#1e293b', color: T.text, border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
               H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: T.muted } }, 'Design note: discrete 4-state readiness marker; SVG capability map; no certification score — by design.')
             )

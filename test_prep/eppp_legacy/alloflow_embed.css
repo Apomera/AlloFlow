@@ -1,0 +1,7 @@
+#alloflow-legacy-notice {
+  position: sticky; top: 0; z-index: 99999; padding: 10px 16px;
+  border-bottom: 2px solid #f59e0b; background: #fffbeb; color: #451a03;
+  font: 600 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+#alloflow-legacy-notice strong { font-weight: 800; }
+#alloflow-legacy-notice a { color: #3730a3; text-decoration: underline; }

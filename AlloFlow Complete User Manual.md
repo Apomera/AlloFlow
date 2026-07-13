@@ -1,7 +1,7 @@
 # AlloFlow — Complete User Manual & Pedagogical Guide
 ## Adaptive Levels, Layers, & Outputs: Flexible Learning Options for Whole-Student Education
 
-*Version 1.0 | Copyright 2026, Aaron Pomeranz, PsyD*
+*Version 1.1 | Copyright 2026, Aaron Pomeranz, PsyD*
 *Distributed under AGPL 3.0 (GNU Affero General Public License v3)*
 
 ---
@@ -27,13 +27,17 @@
    - [FAQ Generator](#-faq-generator)
    - [Socratic Tutor](#-socratic-tutor)
 5. [Word Sounds Studio](#5-word-sounds-studio)
-6. [STEM Lab (55 Tools)](#6-stem-lab)
+6. [STEM Lab (111 tool files / 116 registered IDs)](#6-stem-lab)
 7. [Educator Tools Hub](#7-educator-tools-hub-teachergate-gated)
    - [Student Analytics & RTI Dashboard](#-student-analytics--rti-dashboard)
    - [Psychometric & CBM Probes](#-psychometric--cbm-probes)
    - [BehaviorLens (FBA / BIP)](#-behaviorlens-fba--bip-clinical-suite)
    - [Report Writer Wizard](#-report-writer-wizard)
    - [Symbol Studio (AAC & Visual Supports)](#-symbol-studio-aac--visual-supports)
+   - [PDF Accessibility Pipeline](#-pdf-accessibility-pipeline)
+   - [Cinematic Studio](#-cinematic-studio)
+   - [Professional Development](#-professional-development-community-catalog)
+   - [Newer Assessment & Research Tools](#-newer-assessment--research-tools)
 8. [Live Session & Engagement Modes](#8-live-session--engagement-modes)
 9. [Accessibility Features](#9-accessibility-features)
 10. [AlloBot (AI Companion)](#10-allobot-ai-companion)
@@ -56,13 +60,13 @@ This tool is designed strictly for **curriculum adaptation, lesson planning, and
 - 🛑 **Do NOT input confidential student data**, including ID numbers, IEP/504 specifics, medical information, or behavioral records (unless utilizing the specialized, isolated *Clinical Reasoning Suite* which is architected for this purpose).
 - 🛑 **Do NOT input sensitive district data** or internal administrative credentials.
 - ✅ **Best Practice:** Always use pseudonyms (e.g., "Student A", "Group Blue", "The Thursday Cohort") when saving configurations. If pasting student work for grading, redact all identifying details first.
-- ✅ **Recommended:** Log in with your district's Google Education account. While AlloFlow is designed with a privacy-first, FERPA-compatible architecture, always confirm that your use aligns with your district's acceptable use policy.
+- ✅ **Recommended:** Log in with your district's Google Education account. AlloFlow is designed to support FERPA-aligned use, but always confirm that your workflow aligns with your district's acceptable use policy, provider agreements, and retention rules.
 
 ---
 
 ## 1. Introduction to AlloFlow
 
-AlloFlow is an advanced, privacy-conscious generative AI platform created to help educators instantly differentiate curriculum materials. Powered by Google Gemini 2.5 Flash for text logic and Imagen for visual generation — as well as optional local open-source models — it transforms static, one-size-fits-all source text into a dynamic suite of interactive, gamified, and accessible learning resources.
+AlloFlow is an advanced, privacy-conscious generative AI platform created to help educators instantly differentiate curriculum materials. It can use configured cloud providers such as Gemini/Imagen when explicitly enabled, and local provider paths through AlloFlow Desktop or compatible local servers. It transforms static, one-size-fits-all source text into a dynamic suite of interactive, gamified, and accessible learning resources.
 
 ### The Philosophy: Universal Design for Learning (UDL)
 
@@ -72,19 +76,24 @@ AlloFlow is built upon the principles of Universal Design for Learning (UDL), a 
 - **Multiple Means of Action & Expression** — Allow students to demonstrate understanding through diverse avenues (quizzes, sorting activities, writing scaffolds, oral fluency) rather than relying solely on standard written tests.
 - **Multiple Means of Engagement** — Use gamification, interest-based analogies, and adventure simulations to tap into learners' intrinsic motivation.
 
-### Key Architectural Capabilities (v1.0)
+### Key Architectural Capabilities (v1.1)
 
 | Capability | Description |
 | :--- | :--- |
-| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite) load dynamically only when accessed, improving performance on older school devices. |
-| **School Box (Local Docker)** | Full offline deployment via Docker Compose on district hardware. Connect to local models (Ollama/Phi-3.5) — zero cloud API costs, absolute data sovereignty. |
+| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite, studios, document pipeline) load dynamically only when accessed, improving performance on older school devices. The July 2026 build map includes 151 top-level modules plus large plugin families served from Cloudflare Pages. |
+| **AlloStudio** | Born-accessible flyer/worksheet/digital-art studio: real text, explicit reading order, image alt/decorative gates, and process/provenance history. |
+| **Open Groove Studio** | Browser-based music-production studio for pads, patterns, rhythm, synthesis, samples, notation concepts, timing math, and license-aware audio assets. |
+| **PDF Accessibility Pipeline** | Upload any PDF → multi-auditor AI audit → one-click WCAG remediation → **native tagged PDF** output with in-app structural checks and optional local veraPDF QA validation. PII redaction + fillable worksheets. See §7. |
+| **Cinematic Studio** | Agentic document → video generator: source-grounded storyboard, captions/translation, rendered client-side (WebCodecs/Remotion). See §7. |
+| **Professional Development** | Community-authored PD modules with AI co-authoring + completion certificates (Educator Hub → Community Catalog). See §7. |
+| **AlloFlow Desktop + Optional School Box** | Desktop is the everyday local-first app for a teacher laptop and does not require Docker. The Docker School Box stack is optional server/appliance infrastructure for school-owned boxes and district experiments. |
 | **AlloBot Interactive Tours** | Embodied AI character with 30+ emotional states provides guided 5-step walkthroughs for new users. |
 | **TeacherGate** | Educator tools (grading, clinical data, answer keys) are securely gated behind a teacher verification check. |
 | **Teacher vs. Student Modes** | Teacher View = full creation suite. Student View = locked, distraction-free interface. |
 | **Global Gamification Engine** | Students earn XP and level up across all tools. Streaks, badges, and Boss Battles drive sustained engagement. |
 | **Live Collaboration** | Launch a Live Session to push screen state to all student devices in real-time (Teacher Paced or Student Paced). |
 | **Multimodal Input** | Accepts PDFs, images, audio recordings, and video transcripts as source material. |
-| **40+ Language Support** | Full UI translation, bilingual content views, and multilingual TTS via Kokoro (English) + Piper (40+ languages). |
+| **40+ Language Support** | Full UI translation, bilingual content views, and multilingual TTS through the configured browser, cloud, Desktop, or optional local voice engines. |
 | **Content Safety Monitor** | Real-time student input analysis for 7 concern categories with teacher notifications. |
 
 ---
@@ -135,7 +144,7 @@ These settings act as a "lens" that the AI applies to all subsequent generation.
 - **Save** — Click the profile icon in the left panel → "Save Current Profile" → name it (e.g., "Grade 5 ESL", "3rd Grade ADHD Group", "AP Bio").
 - **Load** — Select a saved profile from the dropdown; all settings (grade, language, interests, format, DOK level) are restored instantly.
 - **Share** — Export a profile as JSON to send to a co-teacher. They import it and immediately use your configuration.
-- **Profiles are stored locally** — they live in localStorage and are never synced to the cloud (FERPA-safe).
+- **Profiles are stored locally** — they live in localStorage and are not synced unless you intentionally use a cloud/live-session path.
 
 > 💡 **PRO TIP:** Create one profile per intervention group in your RTI caseload. Switching from your Tier 2 reading group to your Tier 3 math group takes a single click.
 
@@ -352,7 +361,7 @@ Launch the ORF assessment from Student Analytics to time student reading. The sy
 
 ## 6. STEM Lab
 
-**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and hosts **55 interactive browser-based simulations** spanning math, science, technology, arts, economics, and simulation.
+**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and, as of the July 3, 2026 code review, has **111 `stem_tool_*.js` files** and **116 registered plugin IDs** spanning math, science, technology, arts, economics, life skills, and simulation. The registered-ID count is higher than the file count because some files preserve aliases or paired tool IDs.
 
 ### How to Use
 1. Click the STEM Lab icon → select a domain category or browse all tools.
@@ -597,6 +606,60 @@ Waiting My Turn · Feeling Angry · Making Friends · Doctor Visit · Haircut ·
 
 ---
 
+### 📄 PDF Accessibility Pipeline
+
+**Access:** Educator Tools Hub → PDF Audit / Make Accessible (also reachable from the Doc Builder).
+**For:** Anyone remediating inaccessible documents to WCAG 2.1 AA / PDF/UA-1 (the workflow UMaine and district partners evaluate).
+
+Upload an inaccessible PDF (or DOCX/PPTX) and get back a remediated accessible document package plus an audit report.
+
+| Stage | What happens |
+| :--- | :--- |
+| **Multi-auditor audit** | 2–10 independent AI auditors (default 5) with stakeholder perspectives (screen-reader user, Section 508, Title II ADA, JAWS/NVDA tester…) + statistical agreement metrics |
+| **OCR (if scanned)** | Client-side **Tesseract.js** (on-device, deterministic) with Gemini Vision fallback + word-level reconciliation; document language auto-detected |
+| **Remediation** | Deterministic context-aware fixes + 34 surgical AI micro-tools (AI diagnoses, a deterministic tool applies) + full-rewrite for complex structure; self-healing loop with regression-revert + plateau detection; hands-off autonomous mode |
+| **Native tagged PDF out** | `createTaggedPdf` builds a real PDF `/StructTreeRoot` (headings, lists, tables with cell scope, figures with alt), embeds fonts (PDF/UA §7.21.4.1) |
+| **Independent validation** | Optional local **veraPDF (ISO 14289-1)** demo/QA workflow plus in-app structural checks; institutions can re-run exported PDFs through their own veraPDF/PAC/human review path |
+| **Other outputs** | PII **redaction** (true text removal, not visual masking), **fillable AcroForm worksheets** with screen-reader labels, plus ePub 3, DAISY, ODT, HTML, audio |
+
+> 🛡️ Browser and Canvas workflows keep document processing local where supported. Independent veraPDF validation runs through a local dev/demo or school-controlled workflow. A Knowbility referral is surfaced for documents that score below 70 or need expert human review.
+
+---
+
+### 🎬 Cinematic Studio
+
+**Access:** Educator Tools Hub → 🎬 Cinematic Studio.
+**For:** Turning a source document or lesson into a short narrated video with client-side rendering and no render server.
+
+- **Compose** — an agentic flow turns your source into a source-grounded storyboard (constrained scene schema; no AI code-execution) with a FERPA gate.
+- **Captions & translation** — auto-generated captions, translatable into the supported languages.
+- **Client-side rendering** — preview + render run in the browser via WebCodecs / Remotion (free for solo/nonprofit use; no render farm).
+
+> Adapt NotebookLM-style cinematic clips or generate from scratch. Some export paths depend on your browser's WebCodecs support.
+
+---
+
+### 🎓 Professional Development (Community Catalog)
+
+**Access:** Educator Hub → Community Catalog → **Professional Development** tab.
+**For:** Educators creating and completing micro-PD, and sharing it with the community.
+
+- Browse community-authored PD modules; complete them with progress tracking and a **completion certificate**.
+- Author your own with AI co-authoring, then **submit a module** for review (submissions go to a private store, FERPA-gated — never auto-published).
+- Lazy-loaded; zero impact on the core app until opened.
+
+---
+
+### 🧪 Newer Assessment & Research Tools
+
+- **Dynamic Assessment** — guided test-teach-retest "assessment of learning potential" workflow.
+- **Research Hub + Research Lanes** — structured engineering / humanities / scientific research scaffolds with source grounding.
+- **Lumen** — a STEM Lab tool (light/optics-oriented); accessible from the STEM Lab grid.
+- **Generate-Unit / Throughline** — spatial unit builder with an AI co-author (Mind Map module).
+- **Footnotes + APA/MLA/Chicago doc modes** — citation-aware document generation in the Doc Builder.
+
+---
+
 ## 8. Live Session & Engagement Modes
 
 ### 📡 Live Session (Classroom Sync)
@@ -634,7 +697,7 @@ A gamified quiz where the whole class battles a boss character together.
 
 ## 9. Accessibility Features
 
-AlloFlow complies with WCAG 2.1 AA and prioritizes Universal Design for Learning.
+AlloFlow is built toward WCAG 2.1 AA practices and prioritizes Universal Design for Learning.
 
 | Feature | Function | How to Enable |
 | :--- | :--- | :--- |
@@ -653,11 +716,11 @@ AlloFlow complies with WCAG 2.1 AA and prioritizes Universal Design for Learning
 
 ### Text-to-Speech Architecture
 
-> 🛡️ Both TTS engines run *entirely inside the local browser* — audio data is never transmitted to the cloud.
+> 🛡️ Local voice paths keep audio generation on the user's device when the selected local/Desktop engine is available. Cloud voices remain explicit provider choices.
 
-- **Kokoro TTS** — Ultra-high quality English voices (30+ natural voices); primary engine.
-- **Piper TTS** — 40+ language multilingual fallback; activates automatically if Kokoro experiences memory pressure.
-- **Gemini TTS / Edge TTS** — Cloud TTS options for non-Canvas deployments.
+- **Kokoro TTS** — local English voice path available through the Desktop/local stack when installed and ready.
+- **Browser / system speech** — fallback when a local voice engine is unavailable.
+- **Gemini TTS / Edge TTS** — provider-specific voice options for deployments that intentionally enable them.
 - Voice preference is persisted across sessions.
 
 ### Supported Languages (40+)
@@ -776,24 +839,28 @@ See Section 13: School IT Administration.
 
 ---
 
-## 13. School IT Administration (The "School Box")
+## 13. School IT Administration (Desktop and School Box)
 
-AlloFlow can be deployed entirely on district hardware — no cloud AI APIs required.
+AlloFlow has two local-first administration paths.
 
-### Hardware Requirements
-- Dedicated PC: 32GB+ RAM, NVIDIA RTX 3090/4090 GPU (approx. $2,500).
-- Connected to the school's intranet.
+- **AlloFlow Desktop** is the everyday path for a teacher laptop or personal workstation. It serves the bundled app locally, manages local settings and provider keys, supports the built-in local engine, and can host same-room Desktop LAN sessions without Docker.
+- **School Box Server** is the optional Docker server/appliance path for school-owned boxes, district experiments, persistence/TLS work, and heavier air-gapped infrastructure.
 
-### Docker Compose Pipeline
+### Desktop Requirements
+- Teacher laptop or workstation.
+- Current AlloFlow Desktop build.
+- Optional local models/services depending on the selected AI, ASR, TTS, or image provider.
 
-One command (`docker-compose up -d`) spins up 7 interconnected microservices:
+### Optional Docker Compose Pipeline
+
+When a school wants the optional server/appliance stack, Docker Compose starts the local services:
 
 | Service | Function | Default Port |
 | :--- | :--- | :--- |
 | PocketBase | Local database (replaces Firebase Firestore) | 8090 |
-| Ollama | LLM text generation (Phi-3.5, Llama 3.1, etc.) | 11434 |
+| Ollama | Local LLM text generation with a school-selected model | 11434 |
 | Flux | Local image generation (replaces Imagen) | 7860 |
-| Edge TTS | Text-to-speech (replaces Kokoro for some deployments) | 5001 |
+| Edge TTS / local voice service | Text-to-speech helper for some deployments | 5001 |
 | Piper | Multi-lingual TTS fallback | 5500 |
 | SearXNG | Local web search for fact verification | 8888 |
 | Nginx | Reverse proxy and SSL termination | 80 / 443 |
@@ -804,14 +871,14 @@ Copy `.env.example` to `.env` and set:
 ```
 WEB_PORT=3000
 OLLAMA_PORT=11434
-OLLAMA_MODEL=phi3.5
+OLLAMA_MODEL=local-model-name
 TTS_PORT=5002
 # GOOGLE_API_KEY=your_key_here   (optional Gemini fallback)
 ```
 
-### FERPA Compliance
+### FERPA-Aligned Deployment
 
-Because the School Box is physically disconnected from external APIs (Google, OpenAI), strict FERPA and COPPA compliance is architecturally guaranteed. No student PII can leave the building's firewall.
+AlloFlow is designed to support school-controlled, FERPA-aligned deployments by minimizing PII, keeping ordinary work local, and letting schools choose Desktop LAN, their own Firebase tenant, or their own server/appliance infrastructure. FERPA/COPPA posture is not determined by a code switch alone; it also depends on school policy, contracts, access controls, retention, consent, and actual use.
 
 ---
 
@@ -821,24 +888,25 @@ Because the School Box is physically disconnected from external APIs (Google, Op
 A: Ensure teacher and student devices are on the same local network and that your school's content filter isn't blocking WebSocket (WSS) connections. End the session and generate a new 4-character code.
 
 **Q: AI text generation is spinning or failing.**
-A: Check internet connection (cloud version). Try Shift + Refresh to force a hard cache clear. For School Box, verify the Ollama container hasn't timed out (`docker ps`).
+A: Check internet connection for cloud providers. Try Shift + Refresh to force a hard cache clear. In AlloFlow Desktop, open the command center and check the selected provider or built-in engine status. For the optional Docker School Box stack, verify the relevant container is running (`docker ps`).
 
 **Q: AlloBot stopped appearing.**
 A: AlloBot auto-disables after you complete the tutorial or reach Level 3. Re-enable via Settings → Reset Onboarding.
 
 **Q: TTS voice changed suddenly.**
-A: AlloFlow uses a dual-engine TTS architecture. If Kokoro experiences memory pressure, the system seamlessly falls back to Piper. Lock the voice manually in Settings.
+A: AlloFlow can route through different browser, cloud, Desktop, or local voice engines depending on availability and settings. Lock the voice manually in Settings and check the Desktop Voice Engine panel if you are using the installed app.
 
-**Q: Is Firebase FERPA-compliant?**
-A: Yes — for most districts. If your district uses Google Workspace for Education, the Cloud Data Processing Addendum (CDPA) is already incorporated, covering Firebase. AlloFlow uses Firebase *Hosting only* (static files) — no student data is written to Google's servers.
+**Q: Is Firebase FERPA-aligned?**
+A: It depends on your district's Google/Firebase agreement, project ownership, retention settings, access controls, and actual use. AlloFlow is designed to avoid durable student records in ordinary workflows, but a district should confirm its own Firebase/Workspace coverage and policy requirements.
 
 **Q: Do I need a Data Processing Agreement (DPA)?**
 
 | Deployment | DPA Required? | Notes |
 | :--- | :--- | :--- |
-| Gemini Canvas | ✅ Already covered | Google Workspace agreement acts as the DPA. |
-| Firebase Hosting | ✅ Already covered (most districts) | CDPA in Workspace agreement covers GCP. Zero student data touches Google servers. |
-| School Box (Docker) | ✅ No DPA needed | All data on local hardware. Gold standard for FERPA. |
+| Gemini Canvas | Often covered through Google Workspace | Confirm school-account use and district agreement. |
+| Firebase Hosting | District-controlled when you own the project | Confirm Firebase/GCP coverage, retention, and access controls. |
+| AlloFlow Desktop | Usually local-device controlled | Still governed by district device, retention, and acceptable-use policies. |
+| School Box Server (optional Docker) | School-controlled infrastructure | Confirm local policies, access controls, and any support/vendor relationship. |
 
 **Q: Audio isn't playing.**
 A: Ensure the browser tab is not muted. The Web Audio API requires a user gesture (click or keypress) to start. Click anywhere on the page first.
@@ -847,10 +915,10 @@ A: Ensure the browser tab is not muted. The Web Audio API requires a user gestur
 A: Press **Esc** to close the game modal and return to the main interface.
 
 **Q: What browsers does AlloFlow support?**
-A: Google Chrome and Microsoft Edge (Desktop) are fully supported and recommended. Firefox and Safari work for most features but do not support the Web Audio API's full feature set used by Kokoro TTS; Piper TTS will be used as a fallback. Mobile Chrome (Android) is supported; iOS Safari has limitations with IndexedDB and Web Audio. Chromebook (Chrome OS) is fully supported.
+A: Google Chrome and Microsoft Edge are fully supported and recommended. Firefox and Safari work for most features but may have limitations around Web Audio, IndexedDB, and media APIs. Mobile Chrome (Android) is supported; iOS Safari has extra limitations with IndexedDB and Web Audio. Chromebook (Chrome OS) is fully supported.
 
 **Q: How many students can join a Live Session at once?**
-A: In Gemini Canvas, the WebSocket connection supports 30–35 concurrent students reliably on a standard school network. Firebase and School Box deployments can be scaled with Nginx load balancing for larger deployments.
+A: Treat 25–35 students as the practical classroom target until your own network is tested. Desktop LAN depends heavily on school Wi-Fi, firewall rules, and client isolation. Future District Server work can raise the ceiling, but it should be validated on the school's actual network.
 
 **Q: What happens to my work if I close the browser tab?**
 A: AlloFlow auto-saves input text to localStorage continuously. If you close the tab before clicking "Save as JSON", your typed source text and most settings are recovered on next load. Generated content (leveled text, glossary, quizzes) is held in memory during the session — use "Save as JSON" or "Export HTML Bundle" to persist it permanently.
@@ -917,7 +985,7 @@ A: A notification appears in your Teacher View with the flagged text and severit
 
 ## 16. Accessibility Compliance
 
-AlloFlow complies with WCAG 2.1 AA standards for keyboard navigation and screen reader support. All interactive elements — including games — are fully operable without a mouse.
+AlloFlow is built toward WCAG 2.1 AA standards for keyboard navigation and screen reader support. Core interactions are designed to be operable without a mouse, with manual assistive-technology review still recommended for high-stakes deployments.
 
 ### UDL Alignment Matrix
 
@@ -936,6 +1004,10 @@ AlloFlow complies with WCAG 2.1 AA standards for keyboard navigation and screen 
 
 ## Appendix A: Spoke Module Versions
 
+A representative subset of the 151 build-managed top-level module definitions and major spoke modules (the clinical/flagship ones).
+The authoritative list is `build.js` plus the on-disk `*_module.js` files, served hashless from the
+Cloudflare Pages CDN (`alloflow-cdn.pages.dev`).
+
 | Module | Version | Last Updated |
 | :--- | :--- | :--- |
 | BehaviorLens | 1.0.0 | Mar 2026 |
@@ -944,6 +1016,11 @@ AlloFlow complies with WCAG 2.1 AA standards for keyboard navigation and screen 
 | Word Sounds | 1.0.0 | Feb 2026 |
 | Student Analytics | 1.0.0 | Jan 2026 |
 | Math Fluency | 1.0.0 | Jan 2026 |
+| AlloStudio | TBD | Jul 2026 |
+| Open Groove Studio | TBD | Jul 2026 |
+| Doc Pipeline (PDF accessibility) | — | Jun 2026 |
+| Cinematic Studio | — | Jun 2026 |
+| PD Core (Professional Development) | — | Jun 2026 |
 
 ---
 
@@ -958,4 +1035,4 @@ The student card covers: Joining a Live Session, Icon Legend, XP Earning, Access
 ---
 
 *AlloFlow is free and open-source under AGPL v3. Repository: [github.com/Apomera/AlloFlow](https://github.com/Apomera/AlloFlow)*
-*For deployment issues, consult DEPLOY_YOUR_OWN.md (Firebase) or docker/docker-compose.yml (School Box).*
+*For deployment issues, consult DEPLOY_YOUR_OWN.md (Firebase), desktop/README.md (Desktop), or docker/README.md (optional School Box Server stack).*

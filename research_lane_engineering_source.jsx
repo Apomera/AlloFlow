@@ -89,16 +89,33 @@
  *     plan_test, cap 1 (lowest cap, highest harvest-risk). A reverse-leak
  *     validator + a post-AI synthesis gate guard it (see ~lines 737-782).
  */
-(function () {
+(function initResearchLaneEngineering(retriesLeft) {
   'use strict';
+  // Loader visibility: the host's loadModule() checks window.AlloModules[name]
+  // at script onload to decide SUCCESS vs FAILED. Stamp a key immediately
+  // (upgraded to __tier 2 at registration) so a legitimate defer isn't
+  // misread as a failed load — which used to trigger a pointless GitHub-raw
+  // double-fetch on every page load.
+  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules.ResearchLaneEngineering) window.AlloModules.ResearchLaneEngineering = { __pending: true };
   if (window.ResearchHub && window.ResearchHub._lanes && window.ResearchHub._lanes.engineering
       && window.ResearchHub._lanes.engineering.__tier >= 2) {
     console.log('[CDN] ResearchLaneEngineering already registered, skipping');
     return;
   }
   if (!window.ResearchHub || typeof window.ResearchHub.registerLane !== 'function') {
+    // The hub and its lanes load concurrently, so completion order is
+    // network-dependent. NOTE: this branch used `arguments.callee`, which
+    // THROWS in the strict-mode build the moment a lane beats the hub —
+    // recurse via the named IIFE instead, bounded so a permanently missing
+    // hub can't spin forever.
+    if (retriesLeft === undefined) retriesLeft = 50; // ≈10s at 200ms
+    if (retriesLeft <= 0) {
+      console.error('[ResearchLaneEngineering] window.ResearchHub never became available — giving up');
+      return;
+    }
     console.warn('[ResearchLaneEngineering] window.ResearchHub not yet available — deferring');
-    setTimeout(arguments.callee || function(){}, 200);
+    setTimeout(function () { initResearchLaneEngineering(retriesLeft - 1); }, 200);
     return;
   }
 
@@ -3884,5 +3901,7 @@
     __tier: 2,
   });
 
+  // Upgrade the loader-visibility stamp now that the lane is really in.
+  window.AlloModules.ResearchLaneEngineering = { __tier: 2, lane: 'engineering' };
   console.log('[CDN] ResearchLaneEngineering registered (Tier 2)');
 })();

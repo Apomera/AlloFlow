@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * AlloFlow WCAG 2.1 AA Runtime Audit
+ * AlloFlow WCAG 2.2 AA Runtime Audit
  *
  * Uses Puppeteer + axe-core to scan the running application for
  * accessibility violations. Run against local dev server or deployed URL.
@@ -23,10 +23,16 @@ const path = require('path');
 
 const DEFAULT_URL = 'http://localhost:3000';
 const VIEWPORT = { width: 1280, height: 800 };
-const WAIT_MS = 3000; // wait for React to render
+const WAIT_MS = 3000; // minimum hydration delay
+const APP_READY_TIMEOUT_MS = 30000;
 
-// axe-core rules to run (WCAG 2.1 AA)
-const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
+// axe-core rules to run (WCAG 2.0, 2.1, and 2.2 Level A/AA)
+const AXE_TAGS = [
+  'wcag2a', 'wcag2aa',
+  'wcag21a', 'wcag21aa',
+  'wcag22a', 'wcag22aa',
+  'best-practice',
+];
 
 // ── Custom Runtime Checks ──────────────────────────────────────────────────
 
@@ -82,26 +88,34 @@ async function runCustomChecks(page) {
       });
     }
 
-    // Check 5: Focus visible -- check for outline:none in computed styles
+    // Check 5: Focus visible -- inspect the actual focused state. Unfocused
+    // controls commonly compute to outline:none and must not be treated as failures.
     const interactiveElements = document.querySelectorAll(
-      'button, a, input, select, textarea, [tabindex="0"], [role="button"]'
+      'button, a[href], input, select, textarea, [tabindex="0"], [role="button"]'
     );
-    let outlineNoneCount = 0;
+    const originalFocus = document.activeElement;
+    let noVisibleFocusCount = 0;
     interactiveElements.forEach(el => {
-      const style = window.getComputedStyle(el);
-      if (style.outlineStyle === 'none' || style.outline === 'none') {
-        // Check if there's a visible replacement (box-shadow, border change on focus)
-        // We can't fully test this without focusing each element, but flag the count
-        outlineNoneCount++;
-      }
+      const rect = el.getBoundingClientRect();
+      const base = window.getComputedStyle(el);
+      if (el.disabled || el.hidden || base.display === 'none' || base.visibility === 'hidden' || rect.width === 0 || rect.height === 0) return;
+      const baseBorder = base.borderColor;
+      el.focus({ preventScroll: true });
+      const focused = window.getComputedStyle(el);
+      const outlineWidth = Number.parseFloat(focused.outlineWidth) || 0;
+      const hasOutline = focused.outlineStyle !== 'none' && outlineWidth >= 2;
+      const hasShadow = focused.boxShadow && focused.boxShadow !== 'none';
+      const hasBorderChange = focused.borderColor !== baseBorder;
+      if (!hasOutline && !hasShadow && !hasBorderChange) noVisibleFocusCount++;
     });
-    if (outlineNoneCount > 5) {
+    if (originalFocus && typeof originalFocus.focus === 'function') originalFocus.focus({ preventScroll: true });
+    if (noVisibleFocusCount > 0) {
       findings.push({
         id: 'custom-focus-visible',
-        description: `${outlineNoneCount} interactive elements have outline:none in computed styles`,
+        description: `${noVisibleFocusCount} visible interactive element(s) lack a detectable focused-state indicator`,
         wcag: '2.4.7 Focus Visible',
         severity: 'major',
-        selector: 'button, input, [tabindex]',
+        selector: 'button, a[href], input, select, textarea, [tabindex]',
       });
     }
 
@@ -151,6 +165,8 @@ async function runCustomChecks(page) {
     const inputs = document.querySelectorAll('input:not([type="hidden"]), textarea, select');
     let unlabeledInputs = 0;
     inputs.forEach(input => {
+      const inputStyle = window.getComputedStyle(input);
+      if (input.hidden || input.getAttribute('aria-hidden') === 'true' || inputStyle.display === 'none' || inputStyle.visibility === 'hidden') return;
       const hasAriaLabel = input.getAttribute('aria-label');
       const hasAriaLabelledby = input.getAttribute('aria-labelledby');
       const id = input.id;
@@ -170,22 +186,24 @@ async function runCustomChecks(page) {
       });
     }
 
-    // Check 10: Dialogs without role="dialog"
-    const fixedOverlays = document.querySelectorAll('[style*="position: fixed"], .fixed');
-    let dialogsWithoutRole = 0;
-    fixedOverlays.forEach(el => {
-      const z = parseInt(window.getComputedStyle(el).zIndex) || 0;
-      if (z >= 50 && !el.getAttribute('role')) {
-        dialogsWithoutRole++;
-      }
+    // WCAG 2.2 target size is evaluated by axe's wcag22aa target-size rule,
+    // which accounts for inline, spacing, and equivalent-control exceptions.
+
+    // Check 10: repeated-entry support for common personal-data purposes.
+    const repeatablePurpose = /^(?:name|given-name|family-name|email|username|organization|street-address|address-line[123]|address-level[1-4]|country|country-name|postal-code|language|url|tel)$/;
+    const missingAutocomplete = [];
+    document.querySelectorAll('input:not([type="hidden"]):not([disabled])').forEach(input => {
+      const declared = (input.getAttribute('autocomplete') || '').trim();
+      const inferred = (input.getAttribute('name') || input.id || '').toLowerCase();
+      if (!declared && repeatablePurpose.test(inferred)) missingAutocomplete.push(input);
     });
-    if (dialogsWithoutRole > 0) {
+    if (missingAutocomplete.length > 0) {
       findings.push({
-        id: 'custom-dialog-role',
-        description: `${dialogsWithoutRole} high-z-index fixed overlay(s) without role="dialog"`,
-        wcag: '4.1.2 Name/Role/Value',
+        id: 'custom-redundant-entry',
+        description: `${missingAutocomplete.length} common-purpose input(s) may require repeated entry because autocomplete is not declared`,
+        wcag: '3.3.7 Redundant Entry',
         severity: 'major',
-        selector: '.fixed[style*="z-index"]',
+        selector: 'input:not([autocomplete])',
       });
     }
 
@@ -227,7 +245,7 @@ async function main() {
   const urlArg = args.find(a => a.startsWith('http'));
   const url = urlArg || DEFAULT_URL;
 
-  console.log('AlloFlow WCAG 2.1 AA Runtime Audit');
+  console.log('AlloFlow WCAG 2.2 AA Runtime Audit');
   console.log(`Target: ${url}`);
   console.log('Launching browser...\n');
 
@@ -242,9 +260,17 @@ async function main() {
     await page.setViewport(VIEWPORT);
 
     console.log(`Navigating to ${url}...`);
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-    console.log(`Waiting ${WAIT_MS}ms for React to render...`);
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    console.log(`Waiting for the application shell (up to ${APP_READY_TIMEOUT_MS}ms)...`);
     await new Promise(r => setTimeout(r, WAIT_MS));
+    await page.waitForFunction(() => {
+      const loader = document.querySelector('#alloflow-loader');
+      if (!loader) return true;
+      const style = window.getComputedStyle(loader);
+      return loader.hidden || style.display === 'none' || style.visibility === 'hidden';
+    }, { timeout: APP_READY_TIMEOUT_MS }).catch(() => {
+      console.warn('Application shell did not replace the startup loader before the audit timeout.');
+    });
 
     // 1. Run axe-core
     console.log('Running axe-core analysis...');

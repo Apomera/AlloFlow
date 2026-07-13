@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-civil-war-primary-source-set-card",
+  "title": "Library of Congress: Civil War Primary Sources",
+  "description": "A LOC source card for Civil War documents, photographs, maps, and classroom materials.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Civil War",
+    "Primary sources",
+    "U.S. history",
+    "Historical evidence"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/?q=civil+war"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Library of Congress Civil War materials include photographs, maps, letters, songs, newspapers, and other sources about conflict, emancipation, and home-front life."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for document analysis, comparing viewpoints, building historical context, and connecting visual evidence with written evidence."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress collections mix public-domain, rights-unknown, and restricted items. Check item-level rights before downloading or adapting specific sources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

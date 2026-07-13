@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-hubble-space-telescope-card",
+  "title": "NASA Hubble Space Telescope",
+  "description": "A NASA source card about Hubble observations, missions, and astronomy evidence.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Astronomy",
+    "Telescopes",
+    "Galaxies",
+    "Space science"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/hubble/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Hubble resources introduce a major space telescope that has observed planets, stars, nebulae, galaxies, expansion, and deep fields across decades."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for visual evidence reading, scientific timelines, and comparison between different telescope missions."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, insignia, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

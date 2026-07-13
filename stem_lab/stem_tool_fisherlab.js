@@ -93,7 +93,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portCoords: 'Sparks Wharf · 38.9784° N, 76.4922° W',
       landmarks: ['Thomas Point Shoal Light', 'Sandy Point', 'Kent Island', 'Severn River'],
       dmrAuthority: 'Maryland Department of Natural Resources',
-      complete: true
+      complete: false
     },
     pnw: {
       id: 'pnw', label: 'Pacific Northwest',
@@ -102,7 +102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portCoords: 'Cap Sante Marina · 48.5186° N, 122.6083° W',
       landmarks: ['Lime Kiln Light', 'Burrows Island', 'Guemes Channel', 'Mount Baker View'],
       dmrAuthority: 'Washington Department of Fish and Wildlife',
-      complete: true
+      complete: false
     },
     greatlakes: {
       id: 'greatlakes', label: 'Great Lakes',
@@ -110,8 +110,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portName: 'Sault Ste. Marie',
       portCoords: 'Soo Locks Marina · 46.5011° N, 84.3622° W',
       landmarks: ['Point Iroquois Light', 'Whitefish Point', 'St. Marys River', 'Round Island'],
-      dmrAuthority: 'Great Lakes Fishery Commission',
-      complete: true
+      dmrAuthority: 'Michigan Department of Natural Resources for the Sault Ste. Marie training port',
+      complete: false
     }
   };
   var DEFAULT_REGION = 'maine';
@@ -7938,6 +7938,266 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     boat.position.set(0, 0, 0);
     scene.add(boat);
 
+    // ═══════════════════════════════════════════════════════════════════
+    // AMBIENT VISUAL FX — a "living sea & sky" rendering layer draped over
+    // the existing scene. Purely visual: the fisheries SIMULATION (catch
+    // rules, size/slot limits, V-notch conservation, buoyage, COLREGS,
+    // physics) is untouched. Every subsystem is fail-safe (try/caught — a
+    // failure can never break the sim), honors prefers-reduced-motion, and
+    // self-throttles on low-power hardware. Kill-switch: window.AlloPostFXEnabled === false.
+    // ═══════════════════════════════════════════════════════════════════
+    var AF = { update: function () {}, applyEnv: function () {}, dispose: function () {}, seaChop: 0.15 };
+    (function buildAmbientFX() {
+      try {
+        var lowPower = reducedMotion || (typeof navigator !== 'undefined' && !!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+        var disp = [];   // textures / geometries / materials to free
+        var objs = [];   // scene objects to remove on dispose
+        function keep(o) { if (o) disp.push(o); return o; }
+        function add(o) { if (o) { scene.add(o); objs.push(o); } return o; }
+
+        // ── procedural textures ──
+        function radialTex(inner, outer) {
+          var c = document.createElement('canvas'); c.width = c.height = 64;
+          var g = c.getContext('2d');
+          var grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+          grd.addColorStop(0, inner); grd.addColorStop(1, outer);
+          g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
+          return keep(new THREE.CanvasTexture(c));
+        }
+        function streakTex() {
+          var c = document.createElement('canvas'); c.width = 8; c.height = 32;
+          var g = c.getContext('2d');
+          var gr = g.createLinearGradient(0, 0, 0, 32);
+          gr.addColorStop(0, 'rgba(205,222,236,0)'); gr.addColorStop(0.5, 'rgba(214,230,242,0.9)'); gr.addColorStop(1, 'rgba(205,222,236,0)');
+          g.fillStyle = gr; g.fillRect(2, 0, 4, 32);
+          return keep(new THREE.CanvasTexture(c));
+        }
+        function gullTex() {
+          var c = document.createElement('canvas'); c.width = 32; c.height = 32;
+          var g = c.getContext('2d');
+          g.strokeStyle = 'rgba(58,66,76,0.92)'; g.lineWidth = 2.6; g.lineCap = 'round';
+          g.beginPath(); g.moveTo(4, 20); g.quadraticCurveTo(12, 9, 16, 16); g.quadraticCurveTo(20, 9, 28, 20); g.stroke();
+          return keep(new THREE.CanvasTexture(c));
+        }
+
+        // ── 1. Guarded bloom (house style: async CDN addon load, fail-safe) ──
+        renderer._alloComposer = null;
+        (function () {
+          if (typeof window !== 'undefined' && window.AlloPostFXEnabled === false) return;
+          var ensure = function (cb) {
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+            var i = 0; (function n() { if (i >= u.length) { cb(); return; } var s = document.createElement('script'); s.src = u[i]; s.onload = function () { i++; n(); }; s.onerror = function () { i++; n(); }; document.head.appendChild(s); })();
+          };
+          ensure(function () {
+            try {
+              var T = window.THREE; if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+              var rs = lowPower ? 0.5 : 1;
+              var cc = new T.EffectComposer(renderer);
+              cc.addPass(new T.RenderPass(scene, camera));
+              // Threshold high (0.86): only the sun/moon disc + nav lights + sun-glint bloom; whitewater foam stays crisp.
+              cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round((canvas.clientWidth || W) * rs)), Math.max(1, Math.round((canvas.clientHeight || H) * rs))), lowPower ? 0.5 : 0.72, 0.42, 0.86));
+              renderer._alloComposer = cc;
+            } catch (e) { try { renderer._alloComposer = null; } catch (_) {} }
+          });
+        })();
+
+        // ── 2. Gradient sky dome (kills the flat background color) ──
+        var sky = null, skyColArr = null, skyColAttr = null, skyYArr = null;
+        var skyGeo = keep(new THREE.SphereGeometry(560, 24, 16));
+        var scount = skyGeo.attributes.position.count;
+        skyColArr = new Float32Array(scount * 3);
+        skyYArr = new Float32Array(scount);
+        var sp0 = skyGeo.attributes.position;
+        for (var si = 0; si < scount; si++) { skyYArr[si] = Math.max(0, Math.min(1, sp0.getY(si) / 560)); }
+        skyColAttr = new THREE.BufferAttribute(skyColArr, 3);
+        skyGeo.setAttribute('color', skyColAttr);
+        var skyMat = keep(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false, depthTest: false }));
+        sky = add(new THREE.Mesh(skyGeo, skyMat)); sky.renderOrder = -10;
+
+        // ── 3. Sun/moon disc + soft horizon glow (fixed in the sky, recolored by env) ──
+        var sunDir = sun.position.clone().normalize().multiplyScalar(485);
+        var discMat = keep(new THREE.SpriteMaterial({ map: radialTex('rgba(255,255,255,1)', 'rgba(255,255,255,0)'), color: 0xfff2c8, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, fog: false }));
+        var sunDisc = add(new THREE.Sprite(discMat)); sunDisc.scale.set(70, 70, 1); sunDisc.position.copy(sunDir); sunDisc.renderOrder = -8;
+        var glowMat = keep(new THREE.SpriteMaterial({ map: radialTex('rgba(255,224,168,0.9)', 'rgba(255,186,120,0)'), color: 0xffd8a0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, fog: false }));
+        var sunGlow = add(new THREE.Sprite(glowMat)); sunGlow.scale.set(340, 230, 1); sunGlow.position.copy(sunDir); sunGlow.renderOrder = -9;
+
+        // ── 4. Sun-glitter path on the water (the classic shimmering sun trail) ──
+        var glMat = keep(new THREE.MeshBasicMaterial({ map: radialTex('rgba(255,240,205,0.85)', 'rgba(255,240,205,0)'), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: true, side: THREE.DoubleSide }));
+        var glGeo = keep(new THREE.PlaneGeometry(56, 190));
+        var glitter = add(new THREE.Mesh(glGeo, glMat));
+        glitter.rotation.x = -Math.PI / 2;
+        glitter.rotation.z = -Math.atan2(sun.position.x, sun.position.z);
+        glitter.position.set(0, 0.06, 0); glitter.renderOrder = 1;
+
+        // ── 5. Boat wake foam (visualizes speed = the physics you're driving) ──
+        var wake = [], wcur = 0, WAKE_N = lowPower ? 0 : 26;
+        var foamTex = WAKE_N ? radialTex('rgba(232,242,248,0.95)', 'rgba(232,242,248,0)') : null;
+        for (var fi = 0; fi < WAKE_N; fi++) {
+          var fm = new THREE.SpriteMaterial({ map: foamTex, color: 0xe4eef4, transparent: true, opacity: 0, depthWrite: false, fog: true });
+          var fs = add(new THREE.Sprite(fm)); fs.scale.set(0.3, 0.3, 1); fs.visible = false; fs.renderOrder = 2;
+          fs.userData = { life: 0, max: 1 }; wake.push(fs);
+        }
+        // ── bow spray (brief additive burst at higher speed) ──
+        var spray = [], scur = 0, SPRAY_N = lowPower ? 0 : 12;
+        var sprayTex = SPRAY_N ? radialTex('rgba(255,255,255,0.95)', 'rgba(255,255,255,0)') : null;
+        for (var pi = 0; pi < SPRAY_N; pi++) {
+          var pm = new THREE.SpriteMaterial({ map: sprayTex, color: 0xf0f8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: true });
+          var ps = add(new THREE.Sprite(pm)); ps.scale.set(0.2, 0.2, 1); ps.visible = false; ps.renderOrder = 3;
+          ps.userData = { life: 0, max: 1, vy: 0 }; spray.push(ps);
+        }
+
+        // ── 6. Rain (weather coupling — falls only when weather is rainy) ──
+        var rain = null, rainPos = null, rainGeo = null, RAIN_N = lowPower ? 0 : 620;
+        if (RAIN_N) {
+          rainGeo = keep(new THREE.BufferGeometry());
+          rainPos = new Float32Array(RAIN_N * 3);
+          for (var ri = 0; ri < RAIN_N; ri++) {
+            rainPos[ri * 3] = (Math.random() - 0.5) * 80;
+            rainPos[ri * 3 + 1] = Math.random() * 42;
+            rainPos[ri * 3 + 2] = (Math.random() - 0.5) * 80;
+          }
+          rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+          var rainMat = keep(new THREE.PointsMaterial({ map: streakTex(), size: 1.7, transparent: true, opacity: 0, depthWrite: false, color: 0xc4d6e4, sizeAttenuation: true }));
+          rain = add(new THREE.Points(rainGeo, rainMat)); rain.visible = false; rain.renderOrder = 4;
+        }
+
+        // ── 7. Night star field (additive, night-only, gentle twinkle) ──
+        var stars = null, STAR_N = lowPower ? 120 : 320;
+        var starGeo = keep(new THREE.BufferGeometry());
+        var starPos = new Float32Array(STAR_N * 3);
+        for (var sti = 0; sti < STAR_N; sti++) {
+          var th = Math.random() * Math.PI * 2, yy = 0.18 + Math.random() * 0.8, rr = Math.sqrt(Math.max(0, 1 - yy * yy)) * 540;
+          starPos[sti * 3] = Math.cos(th) * rr; starPos[sti * 3 + 1] = yy * 540; starPos[sti * 3 + 2] = Math.sin(th) * rr;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var starMat = keep(new THREE.PointsMaterial({ map: radialTex('rgba(255,255,255,1)', 'rgba(255,255,255,0)'), size: 3.2, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
+        stars = add(new THREE.Points(starGeo, starMat)); stars.visible = false; stars.renderOrder = -7;
+
+        // ── 8. Seabirds (a little life; hidden under reduced motion) ──
+        var gulls = [], GULL_N = (reducedMotion || lowPower) ? 0 : 4;
+        var gTex = GULL_N ? gullTex() : null;
+        for (var gi = 0; gi < GULL_N; gi++) {
+          var gm = new THREE.SpriteMaterial({ map: gTex, transparent: true, opacity: 0.85, depthWrite: false, fog: true });
+          var gs = add(new THREE.Sprite(gm)); gs.scale.set(2.4, 1.4, 1); gs.renderOrder = 5;
+          gs.userData = { r: 10 + Math.random() * 22, ang: Math.random() * 6.28, sp: 0.12 + Math.random() * 0.12, cx: (Math.random() - 0.5) * 40, cz: -30 - Math.random() * 60, h: 9 + Math.random() * 7, ph: Math.random() * 6.28 };
+          gulls.push(gs);
+        }
+
+        // ── env-driven targets (opacities lerp toward these each frame) ──
+        var T_ = { disc: 1, glow: 0, glitter: 0.6, rain: 0, stars: 0 };
+        var C_ = { disc: 1, glow: 0, glitter: 0, rain: 0, stars: 0 };
+        var wacc = 0, sacc = 0;
+
+        function spawnWake() {
+          var w = wake[wcur]; wcur = (wcur + 1) % wake.length;
+          var p = boat.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 1.7, 0.16, -2.6));
+          w.position.copy(p); w.position.y = 0.09;
+          w.userData.max = 1.1 + Math.random() * 0.7; w.userData.life = w.userData.max;
+          w.material.opacity = 0.5; w.scale.setScalar(0.35); w.visible = true;
+        }
+        function spawnSpray() {
+          var s = spray[scur]; scur = (scur + 1) % spray.length;
+          var p = boat.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 1.1, 0.4, 2.7));
+          s.position.copy(p);
+          s.userData.max = 0.5 + Math.random() * 0.3; s.userData.life = s.userData.max; s.userData.vy = 1.8 + Math.random() * 1.6;
+          s.material.opacity = 0.7; s.scale.setScalar(0.18); s.visible = true;
+        }
+
+        AF.applyEnv = function (o) {
+          try {
+            var tod = o.tod || 'day', weather = o.weather || 'clear';
+            // sky gradient: horizon = env background, zenith = deeper sky by time/weather
+            if (sky && skyColArr) {
+              var hor = new THREE.Color(o.bg != null ? o.bg : skyColorHex);
+              var zenHex = tod === 'night' ? 0x01030a : tod === 'sunset' ? 0x241a3a : 0x1f4e78;
+              if (weather === 'foggy') zenHex = 0x8a97a3;
+              else if (weather === 'rainy') zenHex = 0x263243;
+              var zen = new THREE.Color(zenHex);
+              for (var i = 0; i < skyYArr.length; i++) {
+                var tt = Math.pow(skyYArr[i], 1.4);
+                skyColArr[i * 3] = hor.r + (zen.r - hor.r) * tt;
+                skyColArr[i * 3 + 1] = hor.g + (zen.g - hor.g) * tt;
+                skyColArr[i * 3 + 2] = hor.b + (zen.b - hor.b) * tt;
+              }
+              skyColAttr.needsUpdate = true;
+            }
+            // sun becomes a pale moon at night
+            if (tod === 'night') { discMat.color.setHex(0xdfe8ff); T_.disc = 0.9; sunDisc.scale.setScalar(46); }
+            else { discMat.color.setHex(o.sunColorHex != null ? o.sunColorHex : 0xfff2c8); sunDisc.scale.setScalar(70); T_.disc = (weather === 'foggy') ? 0.25 : (weather === 'rainy') ? 0.15 : 1; }
+            T_.glow = (tod === 'sunset') ? 0.9 : (tod === 'day') ? 0.22 : 0;
+            if (weather === 'foggy' || weather === 'rainy') T_.glow *= 0.4;
+            glMat.color.setHex(tod === 'sunset' ? 0xffb877 : 0xfff0cd);
+            T_.glitter = (tod === 'night') ? 0 : (weather === 'foggy') ? 0.06 : (weather === 'rainy') ? 0.1 : (tod === 'sunset') ? 0.5 : 0.6;
+            T_.rain = (weather === 'rainy') ? 0.8 : 0;
+            T_.stars = (tod === 'night' && weather !== 'foggy' && weather !== 'rainy') ? 1 : 0;
+            // sea state responds to weather (rougher in rain) — feeds the wave amplitude
+            AF.seaChop = (weather === 'rainy') ? 1 : (weather === 'foggy') ? 0.35 : (tod === 'sunset') ? 0.28 : 0.15;
+          } catch (_) {}
+        };
+
+        AF.update = function (dt, elapsed) {
+          try {
+            var k = Math.min(1, dt * 2.5);
+            C_.disc += (T_.disc - C_.disc) * k; C_.glow += (T_.glow - C_.glow) * k;
+            C_.glitter += (T_.glitter - C_.glitter) * k; C_.rain += (T_.rain - C_.rain) * k; C_.stars += (T_.stars - C_.stars) * k;
+            discMat.opacity = C_.disc; glowMat.opacity = C_.glow;
+            if (glitter) { glitter.position.x = boat.position.x; glitter.position.z = boat.position.z; glMat.opacity = C_.glitter * (0.82 + 0.18 * Math.sin(elapsed * 2.3)); }
+            if (stars) { stars.visible = C_.stars > 0.01; starMat.opacity = C_.stars * (0.72 + 0.28 * Math.sin(elapsed * 1.3)); }
+            if (rain) {
+              rain.visible = C_.rain > 0.01; rain.material.opacity = C_.rain;
+              if (rain.visible) {
+                rain.position.set(boat.position.x, 0, boat.position.z);
+                for (var i = 0; i < RAIN_N; i++) {
+                  rainPos[i * 3 + 1] -= dt * (24 + (i % 9) * 2.5);
+                  if (rainPos[i * 3 + 1] < 0) { rainPos[i * 3 + 1] = 42; rainPos[i * 3] = (Math.random() - 0.5) * 80; rainPos[i * 3 + 2] = (Math.random() - 0.5) * 80; }
+                }
+                rainGeo.attributes.position.needsUpdate = true;
+              }
+            }
+            // wake + spray tied to actual boat speed
+            if (!reducedMotion) {
+              var sp = Math.abs(boatState.speed);
+              if (wake.length) {
+                wacc += dt * Math.min(14, sp) * 1.3;
+                while (wacc >= 1) { wacc -= 1; spawnWake(); }
+                for (var wi = 0; wi < wake.length; wi++) {
+                  var w = wake[wi]; if (w.userData.life <= 0) continue;
+                  w.userData.life -= dt; var lr = 1 - Math.max(0, w.userData.life) / w.userData.max;
+                  w.scale.setScalar(0.35 + lr * 1.75); w.material.opacity = Math.max(0, 0.5 * (1 - lr));
+                  if (w.userData.life <= 0) w.visible = false;
+                }
+              }
+              if (spray.length && sp > 3.2) { sacc += dt * (sp - 2.5) * 1.1; while (sacc >= 1) { sacc -= 1; spawnSpray(); } }
+              for (var qi = 0; qi < spray.length; qi++) {
+                var s = spray[qi]; if (s.userData.life <= 0) continue;
+                s.userData.life -= dt; s.userData.vy -= dt * 3.2; s.position.y += s.userData.vy * dt;
+                var sr = 1 - Math.max(0, s.userData.life) / s.userData.max;
+                s.scale.setScalar(0.18 + sr * 0.5); s.material.opacity = Math.max(0, 0.7 * (1 - sr));
+                if (s.userData.life <= 0 || s.position.y < 0.1) s.visible = false;
+              }
+              for (var ui = 0; ui < gulls.length; ui++) {
+                var g = gulls[ui]; g.userData.ang += dt * g.userData.sp;
+                g.position.set(g.userData.cx + Math.cos(g.userData.ang) * g.userData.r, g.userData.h + Math.sin(elapsed * 1.1 + g.userData.ph) * 0.7, g.userData.cz + Math.sin(g.userData.ang) * g.userData.r);
+                g.scale.y = 1.1 + 0.5 * Math.abs(Math.sin(elapsed * 6 + g.userData.ph));
+              }
+            }
+          } catch (_) {}
+        };
+
+        AF.dispose = function () {
+          try {
+            objs.forEach(function (o) { try { scene.remove(o); } catch (_) {} });
+            wake.forEach(function (w) { try { if (w.material) w.material.dispose(); } catch (_) {} });
+            spray.forEach(function (s) { try { if (s.material) s.material.dispose(); } catch (_) {} });
+            gulls.forEach(function (g) { try { if (g.material) g.material.dispose(); } catch (_) {} });
+            disp.forEach(function (d) { try { if (d && d.dispose) d.dispose(); } catch (_) {} });
+            try { var ac = renderer._alloComposer; if (ac) { (ac.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); renderer._alloComposer = null; } } catch (_) {}
+          } catch (_) {}
+        };
+      } catch (e) { try { console.warn('[FisherLab] ambient FX unavailable:', e); } catch (_) {} }
+    })();
+
     // ─── Buoyage — populated based on region.
     var buoys = [];
     function addBuoy(x, z, type) {
@@ -8532,6 +8792,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       stbdGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
       sternGlow.intensity = dark ? (tod === 'night' ? 1.5 : 1.0) : 0.0;
       beam.userData.tgt = dark ? 0.35 : 0; // beam now FADES via the loop (was a hard visible snap)
+
+      // Drive the ambient sky/sun/water/weather FX from the same env state.
+      if (typeof AF !== 'undefined') {
+        try { AF.applyEnv({ tod: tod, weather: weather, region: activeRegion, bg: bg, fg: fg, waterColor: waterColor, dark: dark, sunColorHex: sunColor, sunInt: sunInt }); } catch (_) {}
+      }
     }
 
     // ─── Keyboard state
@@ -8902,12 +9167,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (sp.id === 'cod' && isKeeper) boatState.keptKeeperCod = true;
       }
 
-      // Wave animation
+      // Wave animation — 3 octaves; amplitude scales with weather-driven sea state
+      // (calm on clear days, choppy in rain) so the water visibly reads the weather sim.
       if (!reducedMotion) {
+        var chop = 1 + (AF.seaChop || 0.15) * 1.7;
+        var amp1 = 0.15 * chop, amp2 = 0.12 * chop, amp3 = 0.05 * chop;
         for (var iv = 0; iv < waterPosArr.length / 3; iv++) {
           var px = waterPosArr[iv * 3];
           var pz = waterPosArr[iv * 3 + 1];
-          waterPosArr[iv * 3 + 2] = initialZ[iv] + Math.sin(px * 0.08 + elapsed * 1.1) * 0.15 + Math.cos(pz * 0.12 + elapsed * 0.9) * 0.12;
+          waterPosArr[iv * 3 + 2] = initialZ[iv]
+            + Math.sin(px * 0.08 + elapsed * 1.1) * amp1
+            + Math.cos(pz * 0.12 + elapsed * 0.9) * amp2
+            + Math.sin((px + pz) * 0.22 + elapsed * 2.1) * amp3;
         }
         waterPositions.needsUpdate = true;
       }
@@ -8964,7 +9235,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         weather: boatState.weather
       });
 
-      renderer.render(scene, camera);
+      AF.update(dt, elapsed);
+      var _ac = renderer._alloComposer;
+      if (_ac) { try { _ac.render(); } catch (e) { renderer._alloComposer = null; renderer.render(scene, camera); } }
+      else { renderer.render(scene, camera); }
       raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
@@ -8975,6 +9249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       renderer.setSize(nw, nh, false);
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
+      try { if (renderer._alloComposer) renderer._alloComposer.setSize(nw, nh); } catch (_) {}
     }
     window.addEventListener('resize', onResize);
 
@@ -8985,6 +9260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
         window.removeEventListener('resize', onResize);
+        try { AF.dispose(); } catch (_) {}
         try { renderer.dispose(); } catch (_) {}
         if (audioCtx) {
           try { audioCtx.close(); } catch (_) {}
@@ -9028,8 +9304,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     icon: '🎣',
     color: 'cyan',
     category: 'science',
-    description: 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn buoyage, charts, COLREGS, tides, and weather while fishing for cod, striper, mackerel, and pulling lobster traps. Full 3D simulator with Maine-default DMR regs and a region toggle.',
-    desc: 'Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, and Gulf of Maine fish ID + DMR regs in an immersive 3D sim.',
+    description: 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn buoyage, charts, COLREGS, tides, weather, species identification, and stewardship through a 3D simulator with regional practice profiles and live-rule reminders.',
+    desc: 'Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, fish identification, and responsible harvest decisions in an immersive 3D sim.',
     tags: ['fishing', 'boating', 'navigation', 'maine', '3d', 'sim'],
     ready: true,
     render: function(ctx) { return _renderFisherLab(ctx); }
@@ -9044,6 +9320,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var stateInit = loadState();
     var tabHook = useState('home');
     var tab = tabHook[0], setTab = tabHook[1];
+    var tabSearchHook = useState('');
+    var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
@@ -9071,6 +9349,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
     var caliperHook = useState(3.5);
     var caliperVal = caliperHook[0], setCaliperVal = caliperHook[1];
+    var missionDrawerHook = useState(false);
+    var missionDrawerOpen = missionDrawerHook[0], setMissionDrawerOpen = missionDrawerHook[1];
 
     var checkpointHook = useState(null);
     var checkpointSpecimen = checkpointHook[0], setCheckpointSpecimen = checkpointHook[1];
@@ -9080,7 +9360,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var checkpointScore = checkpointScoreHook[0], setCheckpointScore = checkpointScoreHook[1];
 
     function generateCheckpointSpecimen() {
-      var speciesList = getSpeciesForRegion(region);
+      var speciesList = getSpeciesForRegion(region).filter(function(sp) {
+        if (region === 'greatlakes' && sp.id === 'crayfish') return false;
+        return sp.group === 'shellfish' || sp.slot || typeof sp.minSize === 'number';
+      });
       if (!speciesList || speciesList.length === 0) return;
       var sp = speciesList[Math.floor(Math.random() * speciesList.length)];
       var length = 0;
@@ -9095,20 +9378,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           length = 4.0 + Math.random() * 2.5; // 4" to 6.5"
           hasSponge = isFemale && (Math.random() < 0.4);
           isKeeper = (length >= 5.0) && !hasSponge;
-          ruleText = 'Blue Crab regulations: Min width is 5". Female crabs with visible orange egg masses (sponges) are strictly protected.';
+          ruleText = 'Training profile: minimum width 5"; release females carrying a visible egg mass. Confirm the active jurisdiction and season before harvesting.';
         } else if (region === 'pnw') {
           length = 5.0 + Math.random() * 2.5; // 5" to 7.5"
           isKeeper = (length >= 6.25) && !isFemale; // male-only
-          ruleText = 'Dungeness Crab regulations: Min carapace width is 6.25". Only males may be kept; females must be released immediately.';
+          ruleText = 'Training profile: minimum carapace width 6.25" and male-only harvest. Confirm the active jurisdiction and season before harvesting.';
         } else if (region === 'greatlakes') {
           length = 2.0 + Math.random() * 2.5; // 2" to 4.5"
           isKeeper = (length >= 3.0);
-          ruleText = 'Crayfish regulations: Min body length is 3".';
+          ruleText = 'Great Lakes crayfish rules vary by jurisdiction, waterbody, species, and season; this specimen is not used for size-limit scoring.';
         } else { // maine
           length = 3.0 + Math.random() * 2.8; // 3" to 5.8"
           isVNotched = isFemale && (Math.random() < 0.3);
           isKeeper = (length >= 3.25) && (length <= 5.0) && !isVNotched;
-          ruleText = 'Maine Lobster regulations: Carapace must be between 3-1/4" and 5". V-notched females must be released.';
+          ruleText = 'Training profile: carapace between 3-1/4" and 5"; release V-notched females. Confirm current Maine DMR rules before harvesting.';
         }
       } else {
         // Finfish
@@ -9128,7 +9411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             isKeeper = (length >= minB && length <= maxB);
           }
         }
-        ruleText = sp.name + ' rules: ' + (sp.slot ? 'Slot limit ' + sp.slot : (sp.minSize ? 'Min size ' + sp.minSize + '"' : 'No size limit')) + '.';
+        ruleText = sp.name + ' training profile: ' + (sp.slot ? 'slot ' + sp.slot : 'minimum size ' + sp.minSize + '"') + '. Confirm current rules with ' + REGIONS[region].dmrAuthority + '.';
       }
 
       setCheckpointSpecimen({
@@ -9179,28 +9462,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       saveState(s);
     }, [region]);
 
+    function recordCatch(speciesId, length) {
+      var saved = loadState();
+      var priorLog = Array.isArray(saved.lifeLog) ? saved.lifeLog : (lifeLog || []);
+      var next = priorLog.concat([{ species: speciesId, length: length, ts: Date.now() }]);
+      saved.lifeLog = next;
+      saved.speciesCaught = saved.speciesCaught || {};
+      saved.speciesCaught[speciesId] = (saved.speciesCaught[speciesId] || 0) + 1;
+      saveState(saved);
+      setLifeLog(next);
+    }
+
     function pushStatus(ev) {
       setStatus(function(prev) {
         var next = (prev || []).concat([ev]).slice(-8);
         return next;
       });
       if (ev.type === 'fish' && ev.isKeeper) {
-        var newLog = lifeLog.concat([{ species: ev.species.id, length: ev.length, ts: Date.now() }]);
-        setLifeLog(newLog);
-        var ss = loadState();
-        ss.lifeLog = newLog;
-        ss.speciesCaught = ss.speciesCaught || {};
-        ss.speciesCaught[ev.species.id] = (ss.speciesCaught[ev.species.id] || 0) + 1;
-        saveState(ss);
+        recordCatch(ev.species.id, ev.length);
       }
       if (ev.type === 'lobster' && ev.isKeeper) {
-        var newLog = lifeLog.concat([{ species: 'lobster', length: ev.length, ts: Date.now() }]);
-        setLifeLog(newLog);
-        var ss = loadState();
-        ss.lifeLog = newLog;
-        ss.speciesCaught = ss.speciesCaught || {};
-        ss.speciesCaught['lobster'] = (ss.speciesCaught['lobster'] || 0) + 1;
-        saveState(ss);
+        recordCatch('lobster', ev.length);
       }
       if (ev.type === 'lobster-haul') {
         setActiveLobster(ev);
@@ -9403,16 +9685,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function tabBar() {
       var activeCatObj = CATEGORIES.find(function(c) { return c.tabs.indexOf(tab) !== -1; }) || CATEGORIES[0];
       var activeCat = activeCatObj.id;
+      var query = String(tabSearch || '').trim().toLocaleLowerCase();
+      var terms = query ? query.split(/\s+/) : [];
+      var matches = TABS.map(function(tabEntry) {
+        var category = CATEGORIES.find(function(cat) { return cat.tabs.indexOf(tabEntry.id) !== -1; }) || CATEGORIES[0];
+        return { tab: tabEntry, category: category };
+      }).filter(function(entry) {
+        if (!terms.length) return true;
+        var haystack = (entry.tab.id + ' ' + entry.tab.label + ' ' + entry.category.name + ' ' + entry.category.label).toLocaleLowerCase();
+        return terms.every(function(term) { return haystack.indexOf(term) !== -1; });
+      });
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
-        // Category grid
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 } },
+      function openTab(tabEntry) {
+        setTab(tabEntry.id);
+        setTabSearch('');
+        flAnnounce(tabEntry.label + ' section open');
+      }
+
+      return h('nav', { 'aria-label': 'FisherLab learning sections', style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+        h('div', { role: 'search', style: { display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) auto', gap: 7, alignItems: 'end' } },
+          h('label', { htmlFor: 'fl-section-search', style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #cbd5e1)' } },
+            h('span', null, 'Find a FisherLab section'),
+            h('input', {
+              id: 'fl-section-search',
+              type: 'search',
+              value: tabSearch,
+              placeholder: 'Try tides, species, safety, careers…',
+              onChange: function(e) { setTabSearch(e.target.value); },
+              'aria-describedby': 'fl-section-search-status',
+              style: { width: '100%', minWidth: 0, padding: '9px 11px', borderRadius: 7, border: '1px solid rgba(56,189,248,0.42)', background: '#071827', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12 }
+            })
+          ),
+          tabSearch ? h('button', {
+            type: 'button',
+            className: 'fl-btn',
+            onClick: function() { setTabSearch(''); flAnnounce('Section search cleared'); },
+            style: { minHeight: 36, padding: '7px 11px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.35)', background: 'rgba(15,23,42,0.72)', color: '#cbd5e1', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+          }, 'Clear') : h('span', null)
+        ),
+        h('div', {
+          id: 'fl-section-search-status',
+          role: 'status',
+          'aria-live': 'polite',
+          style: { fontSize: 11, color: query && !matches.length ? '#fbbf24' : 'var(--allo-stem-text-soft, #94a3b8)' }
+        }, query ? matches.length + (matches.length === 1 ? ' section found' : ' sections found') : TABS.length + ' sections across 8 learning areas'),
+        h('div', { 'aria-label': 'FisherLab learning areas', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 } },
           CATEGORIES.map(function(cat) {
             var isSelected = activeCat === cat.id;
             return h('button', {
               key: cat.id,
+              type: 'button',
+              'aria-pressed': isSelected,
               onClick: function() {
                 setTab(cat.tabs[0]);
+                setTabSearch('');
                 flAnnounce(cat.label + ' category open');
               },
               style: {
@@ -9432,23 +9758,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 boxShadow: isSelected ? '0 0 10px rgba(14,165,233,0.25)' : 'none'
               }
             },
-              h('span', { style: { fontSize: 14 } }, cat.icon),
+              h('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, cat.icon),
               h('span', null, cat.name)
             );
           })
         ),
-        // Secondary sub-tab row (only for sub-tabs in active category)
-        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, background: 'rgba(15,23,42,0.35)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)' } },
+        !query && h('div', {
+          role: 'group',
+          'aria-label': activeCatObj.name + ' sections',
+          style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, background: 'rgba(15,23,42,0.35)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)' }
+        },
           activeCatObj.tabs.map(function(tId) {
             var tObj = TABS.find(function(tabEntry) { return tabEntry.id === tId; });
             if (!tObj) return null;
             var selected = tab === tId;
             return h('button', {
               key: tId,
-              role: 'tab',
-              'aria-selected': selected,
+              type: 'button',
+              'aria-current': selected ? 'page' : undefined,
               className: 'fl-btn',
-              onClick: function() { setTab(tId); flAnnounce(tObj.label + ' tab open'); },
+              onClick: function() { openTab(tObj); },
               style: {
                 padding: '6px 10px',
                 background: selected ? '#0ea5e9' : 'rgba(15,23,42,0.5)',
@@ -9461,7 +9790,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               }
             }, tObj.label);
           })
-        )
+        ),
+        query && matches.length > 0 && h('div', {
+          role: 'group',
+          'aria-label': 'Matching FisherLab sections',
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 6 }
+        },
+          matches.map(function(entry) {
+            var selected = tab === entry.tab.id;
+            return h('button', {
+              key: entry.tab.id,
+              type: 'button',
+              'aria-current': selected ? 'page' : undefined,
+              onClick: function() { openTab(entry.tab); },
+              style: {
+                minWidth: 0,
+                padding: '9px 10px',
+                borderRadius: 7,
+                border: '1px solid ' + (selected ? '#38bdf8' : 'rgba(100,116,139,0.28)'),
+                background: selected ? 'rgba(14,165,233,0.22)' : 'rgba(15,23,42,0.58)',
+                color: '#e2e8f0',
+                textAlign: 'left',
+                cursor: 'pointer'
+              }
+            },
+              h('span', { style: { display: 'block', fontSize: 11, fontWeight: 800, overflowWrap: 'anywhere' } }, entry.tab.label),
+              h('span', { style: { display: 'block', marginTop: 3, fontSize: 10, color: '#94a3b8' } }, entry.category.name)
+            );
+          })
+        ),
+        query && matches.length === 0 && h('div', {
+          style: { padding: 12, border: '1px dashed rgba(251,191,36,0.48)', borderRadius: 7, color: '#fde68a', fontSize: 12 }
+        }, 'No section matches “' + tabSearch.trim() + '”. Try a broader topic such as navigation, biology, safety, or history.')
       );
     }
 
@@ -9470,12 +9830,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(15,23,42,0.55)', borderRadius: 10, marginBottom: 12, flexWrap: 'wrap' } },
         h('label', { htmlFor: 'fl-region-select', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Region:'),
         h('select', { id: 'fl-region-select', value: region,
+          'aria-describedby': !REGIONS[region].complete ? 'fl-region-preview-note' : undefined,
           onChange: function(e) { setRegion(e.target.value); flAnnounce('Region set to ' + REGIONS[e.target.value].label); },
           style: { background: '#0f1c2f', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.4)', borderRadius: 6, padding: '4px 8px', fontSize: 12 } },
           Object.keys(REGIONS).map(function(rk) {
             return h('option', { key: rk, value: rk }, REGIONS[rk].label + (REGIONS[rk].complete ? '' : ' (preview)'));
           })),
-        !REGIONS[region].complete ? h('span', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Preview region — full data coming in v1.1. Maine data still shown.') : null,
+        !REGIONS[region].complete ? h('span', { id: 'fl-region-preview-note', role: 'note', style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Preview region — regional species and practice profiles are partial; some curriculum sections remain Maine-focused.') : null,
         h('span', { style: { marginLeft: 'auto', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           'Port: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].portName || REGIONS.maine.portName),
           ' · Buoyage: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].buoyage)));
@@ -9523,7 +9884,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, 'Column state: ' + sm.label + ' (' + topN + '/5 params fit for top species)'),
         h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
         // SVG: stacked species fitness bars
-        h('svg', { width: '100%', height: 140, viewBox: '0 0 320 140', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+        h('svg', {
+          width: '100%', height: 140, viewBox: '0 0 320 140',
+          role: 'img',
+          'aria-label': 'Species tolerance comparison. ' + fav[0].sp.name + ' currently matches ' + topN + ' of 5 selected conditions, the highest score in this teaching model.',
+          style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 }
+        },
           [1, 2, 3, 4].map(function(g) { return h('line', { key: 'g' + g, x1: 60 + g * 50, y1: 12, x2: 60 + g * 50, y2: 122, stroke: '#1e293b', strokeDasharray: '2 3' }); }),
           species.map(function(s, i) {
             var n = fitness(s);
@@ -9536,9 +9902,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('text', { x: 60 + w + 4, y: y + 13, fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, n + '/5')
             );
           }),
-          h('text', { x: 60, y: 134, fill: '#64748b', fontSize: 8 }, '0'),
-          h('text', { x: 185, y: 134, fill: '#64748b', fontSize: 8 }, '↑ more parameters in tolerance →'),
-          h('text', { x: 295, y: 134, fill: '#64748b', fontSize: 8 }, '5')
+          h('text', { x: 60, y: 134, fill: '#94a3b8', fontSize: 10 }, '0'),
+          h('text', { x: 185, y: 134, fill: '#94a3b8', fontSize: 10 }, '↑ more parameters in tolerance →'),
+          h('text', { x: 295, y: 134, fill: '#94a3b8', fontSize: 10 }, '5')
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
           sliders.map(function(s) {
@@ -9560,18 +9926,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           })
         ),
         h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-          h('button', { onClick: function() {
+          h('button', { type: 'button', onClick: function() {
             var t = new Date().toISOString().slice(11, 19);
             setIQ({ log: iq.log.concat([{ t: t, temp: iq.temp, sal: iq.salinity, o2: iq.oxygen, cur: iq.current, dep: iq.depth, top: fav[0].sp.name, state: sm.label }]) });
           }, style: { flex: 1, padding: 8, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this condition profile'),
-          h('button', { onClick: function() { setIQ({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30 }); }, style: { padding: '8px 12px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+          h('button', { type: 'button', onClick: function() { setIQ({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30 }); }, style: { padding: '8px 12px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
         ),
-        iq.log.length > 0 && h('div', { style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+        iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Recent condition profiles', style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
           iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · top:' + e.top + ' · T' + e.temp + ' S' + e.sal + ' O' + e.o2 + ' C' + e.cur + ' D' + e.dep); })
         ),
         h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which parameter most often disqualifies a species?)'),
         h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., depth eliminates halibut on the inshore profile but rescued by salinity...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-        !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+        !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
         iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
           h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
           h('ul', { style: { margin: 0, paddingLeft: 16 } },
@@ -9592,15 +9958,131 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── HOME tab
     function homeTab() {
-      var completedCount = Object.keys(loadState().completedMissions || {}).length;
-      var caughtCount = Object.keys(loadState().speciesCaught || {}).length;
+      var saved = loadState();
+      var completedState = saved.completedMissions || {};
+      var speciesState = saved.speciesCaught || {};
+      var completedCount = Object.keys(completedState).length;
+      var caughtCount = Object.keys(speciesState).length;
+      var activeRegion = REGIONS[region] || REGIONS.maine;
+      var nextMission = MISSIONS.filter(function(m) { return !completedState[m.id]; })[0] || MISSIONS[0];
+      var missionProgress = MISSIONS.length ? Math.round((completedCount / MISSIONS.length) * 100) : 0;
+      var routeCards = [
+        { tab: 'sim', step: 'Cast off', title: 'Launch the skiff', detail: 'Load the harbor sim, follow the channel, and fish the waypoint.', metric: sim.threeLoaded ? '3D ready' : 'Loads on demand', color: '#38bdf8' },
+        { tab: 'chart', step: 'Plot', title: 'Read the chart', detail: 'Check landmarks, hazards, and the route to the grounds before throttle.', metric: activeRegion.portName || 'Portland Harbor', color: '#fbbf24' },
+        { tab: 'colregs', step: 'Yield', title: 'Practice rules', detail: 'Use right-of-way decisions before crossing traffic in the sim.', metric: 'COLREGS warmup', color: '#c4b5fd' },
+        { tab: 'species', step: 'Identify', title: 'Know the catch', detail: 'Compare marks, habitat, and season clues before keeping a fish.', metric: caughtCount + ' species logged', color: '#86efac' },
+        { tab: 'regs', step: 'Measure', title: 'Check keeper rules', detail: 'Review size, slot, bag, and release rules for the active region.', metric: activeRegion.dmrAuthority || 'Regulations', color: '#fb923c' }
+      ];
       return h('div', null,
+        h('section', {
+          'data-fisherlab-command': 'true',
+          'aria-labelledby': 'fl-command-title',
+          style: Object.assign({}, cardStyle, {
+            padding: 16,
+            background: 'linear-gradient(135deg, rgba(8,47,73,0.96), rgba(6,78,59,0.86) 58%, rgba(17,24,39,0.94))',
+            border: '1px solid rgba(125,211,252,0.34)',
+            boxShadow: '0 18px 45px rgba(2,8,23,0.28)',
+            overflow: 'hidden'
+          })
+        },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
+            h('div', { style: { minWidth: 0 } },
+              h('div', { style: Object.assign({}, headerStyle, { color: '#a7f3d0', marginBottom: 6 }) }, 'FisherLab Harbor Briefing'),
+              h('h2', { id: 'fl-command-title', style: { margin: '0 0 8px', fontSize: 24, lineHeight: 1.1, color: '#f8fafc', fontWeight: 900 } }, 'Choose a route, then cast off'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: '#dbeafe', maxWidth: 660 } },
+                'Start with the sim when you want motion and decisions, or warm up with chart, rules, species, and regulations before leaving the harbor. The full curriculum stays below when you need it.'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                [
+                  'Region: ' + (activeRegion.label || region),
+                  'Next mission: ' + (nextMission ? nextMission.title : 'Open water practice'),
+                  'Mission progress: ' + missionProgress + '%'
+                ].map(function(label, idx) {
+                  var colors = ['#bae6fd', '#fde68a', '#bbf7d0'];
+                  return h('span', {
+                    key: label,
+                    style: {
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      minHeight: 28,
+                      padding: '5px 9px',
+                      borderRadius: 8,
+                      background: 'rgba(2,6,23,0.42)',
+                      border: '1px solid rgba(226,232,240,0.16)',
+                      color: colors[idx],
+                      fontSize: 11,
+                      fontWeight: 800
+                    }
+                  }, label);
+                })
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) minmax(110px, 0.55fr)', gap: 10, minWidth: 0 } },
+              h('svg', { viewBox: '0 0 340 184', role: 'img', 'aria-label': 'Route from harbor to fishing grounds', style: { width: '100%', height: '100%', minHeight: 160, borderRadius: 8, background: '#082f49', border: '1px solid rgba(186,230,253,0.24)', display: 'block' } },
+                h('rect', { x: 0, y: 0, width: 340, height: 184, fill: '#082f49' }),
+                h('path', { d: 'M0 135 C52 116 76 132 118 106 C160 80 192 92 224 62 C252 36 294 35 340 20 L340 184 L0 184 Z', fill: '#064e3b', opacity: 0.78 }),
+                h('path', { d: 'M42 142 C88 118 126 108 166 92 C204 76 236 58 292 42', fill: 'none', stroke: '#fde68a', strokeWidth: 4, strokeLinecap: 'round', strokeDasharray: '8 8' }),
+                h('circle', { cx: 42, cy: 142, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 3 }),
+                h('circle', { cx: 166, cy: 92, r: 8, fill: '#f97316', stroke: '#ffedd5', strokeWidth: 3 }),
+                h('circle', { cx: 292, cy: 42, r: 10, fill: '#22c55e', stroke: '#dcfce7', strokeWidth: 3 }),
+                h('rect', { x: 72, y: 116, width: 10, height: 28, rx: 2, fill: '#ef4444' }),
+                h('rect', { x: 103, y: 103, width: 10, height: 28, rx: 2, fill: '#22c55e' }),
+                h('text', { x: 20, y: 166, fill: '#e0f2fe', fontSize: 12, fontWeight: 800 }, 'Harbor'),
+                h('text', { x: 132, y: 82, fill: '#ffedd5', fontSize: 12, fontWeight: 800 }, 'Buoys'),
+                h('text', { x: 244, y: 30, fill: '#dcfce7', fontSize: 12, fontWeight: 800 }, 'Grounds'),
+                h('text', { x: 18, y: 22, fill: '#bae6fd', fontSize: 11 }, 'Red right returning')
+              ),
+              h('div', { style: { display: 'grid', gap: 8 } },
+                [
+                  { label: 'Keepers', value: (lifeLog || []).length, color: '#c4b5fd' },
+                  { label: 'Species', value: caughtCount + '/' + MAINE_SPECIES.length, color: '#86efac' },
+                  { label: 'Missions', value: completedCount + '/' + MISSIONS.length, color: '#fde68a' }
+                ].map(function(stat) {
+                  return h('div', { key: stat.label, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.46)', border: '1px solid rgba(226,232,240,0.14)' } },
+                    h('div', { style: { fontSize: 20, lineHeight: 1, fontWeight: 900, color: stat.color, marginBottom: 4 } }, stat.value),
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1', fontWeight: 800, textTransform: 'uppercase' } }, stat.label));
+                })
+              )
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(158px, 1fr))', gap: 10, marginTop: 14 } },
+            routeCards.map(function(route) {
+              return h('button', {
+                key: route.tab,
+                type: 'button',
+                className: 'fl-btn',
+                'aria-label': route.title + '. ' + route.detail,
+                onClick: function() {
+                  setTab(route.tab);
+                  flAnnounce(route.title + ' route open');
+                },
+                style: {
+                  minHeight: 126,
+                  textAlign: 'left',
+                  padding: 12,
+                  borderRadius: 8,
+                  border: '1px solid rgba(226,232,240,0.16)',
+                  background: 'linear-gradient(180deg, rgba(15,23,42,0.76), rgba(8,13,24,0.78))',
+                  color: '#e2e8f0',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: 8
+                }
+              },
+                h('span', { style: { display: 'inline-flex', width: 'fit-content', padding: '3px 7px', borderRadius: 8, background: route.color, color: '#04141f', fontSize: 10, fontWeight: 900 } }, route.step),
+                h('span', { style: { display: 'block', fontSize: 14, color: '#f8fafc', fontWeight: 900, lineHeight: 1.2 } }, route.title),
+                h('span', { style: { display: 'block', fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } }, route.detail),
+                h('span', { style: { display: 'block', fontSize: 10, color: route.color, fontWeight: 800 } }, route.metric));
+            })
+          )
+        ),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🎣 FisherLab — Boating & Fishing Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
             'Pilot a Maine skiff from Custom House Wharf out to the fishing grounds. Learn buoyage (red-right-returning), COLREGS rules of the road, chart reading, tides, and weather while fishing for cod, haddock, pollock, striper, and mackerel — and pulling lobster traps once you\'ve earned your apprenticeship.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px', fontStyle: 'italic' } },
-            'Built for King Middle School EL Education place-based learning expeditions. Maine DMR rules are the default; a region toggle lets you preview other waters. Click any tab above to explore the curriculum modules, or jump straight into the 3D Sim.'),
+            'Built for King Middle School EL Education place-based learning expeditions. The regulation activities use instructional practice profiles rather than live legal advice; always verify current rules with the named authority. Use the region selector to preview other waters.'),
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(56,189,248,0.18)' } },
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
@@ -9612,17 +10094,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#a78bfa' } }, (lifeLog || []).length),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Total keepers'))
           )),
+        // Life-list histogram — catches by species (only renders once you've caught something).
+        (function() {
+          var sc = speciesState;
+          var ids = Object.keys(sc);
+          if (!ids.length) return null;
+          var ALL = MAINE_SPECIES.concat(CHESAPEAKE_SPECIES, PNW_SPECIES, GREATLAKES_SPECIES);
+          var lookup = {}; ALL.forEach(function(s) { lookup[s.id] = s; });
+          var rows = ids.map(function(id) { return { id: id, n: sc[id], sp: lookup[id] || { emoji: '🦞', name: id.charAt(0).toUpperCase() + id.slice(1) } }; }).sort(function(a, b) { return b.n - a.n; });
+          var maxN = Math.max.apply(null, rows.map(function(r) { return r.n; })) || 1;
+          return h('div', { style: cardStyle },
+            h('div', { style: headerStyle }, '🐟 Life list — catches by species'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              rows.map(function(r) {
+                return h('div', { key: r.id, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('span', { style: { width: 130, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (r.sp.emoji || '🐟') + ' ' + (r.sp.name || r.id)),
+                  h('div', { style: { flex: 1, height: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 4, overflow: 'hidden' } },
+                    h('div', { style: { height: '100%', width: Math.round(r.n / maxN * 100) + '%', background: 'linear-gradient(90deg,#38bdf8,#0ea5e9)', borderRadius: 4 } })),
+                  h('span', { style: { width: 22, textAlign: 'right', fontSize: 12, fontWeight: 800, color: '#7dd3fc' } }, r.n));
+              })
+            )
+          );
+        })(),
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Missions (v1)'),
-          MISSIONS.map(function(m, i) {
-            var done = !!(loadState().completedMissions || {})[m.id];
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
+            h('div', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'Mission Log'),
+            h('button', {
+              type: 'button',
+              className: 'fl-btn',
+              onClick: function() {
+                setMissionDrawerOpen(!missionDrawerOpen);
+                flAnnounce(missionDrawerOpen ? 'Mission details collapsed' : 'Mission details expanded');
+              },
+              style: { padding: '7px 10px', borderRadius: 8, border: '1px solid rgba(56,189,248,0.35)', background: missionDrawerOpen ? '#0ea5e9' : 'rgba(15,23,42,0.68)', color: missionDrawerOpen ? '#04141f' : '#bae6fd', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+            }, missionDrawerOpen ? 'Hide details' : 'Show details')
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(56,189,248,0.16)', marginBottom: 10 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc' } }, nextMission ? nextMission.title : 'All missions complete'),
+              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#86efac' } }, completedCount + ' of ' + MISSIONS.length + ' complete')
+            ),
+            h('div', { style: { height: 10, borderRadius: 8, background: 'rgba(2,6,23,0.65)', overflow: 'hidden', marginBottom: 8 } },
+              h('div', { style: { width: missionProgress + '%', height: '100%', borderRadius: 8, background: 'linear-gradient(90deg,#22c55e,#38bdf8)' } })),
+            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, nextMission ? nextMission.brief : 'You have cleared the current mission set. Use the chart, species, and regulations routes to keep practicing.')),
+          missionDrawerOpen ? MISSIONS.map(function(m, i) {
+            var done = !!completedState[m.id];
             return h('div', { key: m.id, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid ' + (done ? '#86efac' : '#38bdf8') } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: done ? '#86efac' : '#bae6fd', marginBottom: 4 } },
                 (done ? '✓ ' : (i + 1) + '. ') + m.title),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
               h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                 m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })));
-          })),
+          }) : h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.36)', color: '#94a3b8', fontSize: 11, lineHeight: 1.45 } },
+            'Mission objectives are tucked away until needed. Use Show details for the full expedition list.')),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'How to play'),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
@@ -10383,14 +10907,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         // Checkpoint quiz section
         checkpointSpecimen ? h('div', { style: Object.assign({}, cardStyle, { border: '2px solid rgba(14, 165, 233, 0.4)', background: 'linear-gradient(135deg, rgba(8, 25, 48, 0.95), rgba(4, 15, 30, 0.95))' }) },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
-            h('div', { style: headerStyle }, '📝 Hands-on Compliance Checkpoint'),
+            h('div', { style: headerStyle }, '📝 Harvest Decision Checkpoint'),
             h('div', { style: { fontSize: 11, color: '#38bdf8', fontWeight: 'bold' } }, 
               'Score: ' + checkpointScore.correctCount + ' / ' + checkpointScore.totalCount + 
               (checkpointScore.totalCount > 0 ? ' (' + Math.round(checkpointScore.correctCount / checkpointScore.totalCount * 100) + '%)' : '')
             )
           ),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
-            'Test your knowledge of the ' + currentAuthority + ' regulations. Examine the specimen below and decide if it is legal to keep.'
+            'Read the instructional practice profile, examine the specimen, and decide whether the profile permits harvest. Verify live rules with ' + currentAuthority + ' before fishing.'
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, background: 'rgba(15,23,42,0.4)', padding: 12, borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)', marginBottom: 12 } },
             h('div', { style: { flex: 1, minWidth: 150 } },
@@ -10413,41 +10937,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           ),
           
           checkpointResult ? h('div', { style: { padding: 10, borderRadius: 6, marginBottom: 12, border: '1px solid ' + (checkpointResult.correct ? '#10b981' : '#ef4444'), background: checkpointResult.correct ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: checkpointResult.correct ? '#34d399' : '#f87171', fontSize: 11.5 } },
-            h('div', { style: { fontWeight: 'bold', marginBottom: 2 } }, checkpointResult.correct ? '✓ Correct Decision!' : '✕ Incorrect Action!'),
+            h('div', { style: { fontWeight: 'bold', marginBottom: 2 } }, checkpointResult.correct ? '✓ Profile interpreted correctly' : '✕ Recheck the profile'),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, checkpointResult.feedback),
-            h('div', { style: { color: '#fb923c', marginTop: 4, fontStyle: 'italic' } }, 'Rule reference: ' + checkpointSpecimen.ruleText)
+            h('div', { style: { color: '#fb923c', marginTop: 4, fontStyle: 'italic' } }, 'Practice profile: ' + checkpointSpecimen.ruleText)
           ) : null,
 
           h('div', { style: { display: 'flex', gap: 10 } },
             !checkpointResult ? [
-              h('button', { key: 'keep', className: 'fl-btn',
+              h('button', { key: 'keep', type: 'button', className: 'fl-btn',
                 onClick: function() {
                   var correct = checkpointSpecimen.isKeeper;
-                  var fb = correct ? 
-                    'Correct! This ' + checkpointSpecimen.species.name + ' is a legal keeper.' :
-                    'Incorrect. You kept an illegal specimen! The rules require this specimen to be released.';
+                  var fb = correct ?
+                    'Correct. This specimen matches the scenario’s harvest profile.' :
+                    'This specimen falls outside the scenario’s harvest profile and should be released.';
                   setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
                   setCheckpointResult({ correct: correct, feedback: fb });
                 },
                 style: { flex: 1, padding: '8px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '📥 Keep Specimen'),
-              h('button', { key: 'release', className: 'fl-btn',
+              h('button', { key: 'release', type: 'button', className: 'fl-btn',
                 onClick: function() {
                   var correct = !checkpointSpecimen.isKeeper;
                   var fb = correct ?
-                    'Correct! You released the specimen, complying with regulations.' :
-                    'Incorrect. You threw back a legal keeper! While conserving is fine, for this compliance check you want to keep legal catch.';
+                    'Correct. This specimen falls outside the scenario’s harvest profile.' :
+                    'Release is always permissible. For this scoring exercise, the profile would also have permitted harvest.';
                   setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
                   setCheckpointResult({ correct: correct, feedback: fb });
                 },
                 style: { flex: 1, padding: '8px', background: '#64748b', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '🌊 Release Overboard')
-            ] : h('button', { className: 'fl-btn',
+            ] : h('button', { type: 'button', className: 'fl-btn',
               onClick: generateCheckpointSpecimen,
               style: { flex: 1, padding: '8px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, 'Next Specimen ➔')
           )
         ) : null,
 
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Conservation tools you\'ll see in the sim'),
+          h('div', { style: headerStyle }, 'Conservation tools represented in practice profiles'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#fbbf24' } }, 'These examples explain management strategies; they do not replace current agency rules for a particular date and waterbody.'),
           h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
             h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Slot limits — '), 'striped bass 19-24" (Chesapeake). Protects both juveniles AND big breeding-age fish.'),
             h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Female-release rule (Dungeness) — '), 'Only male crabs may be harvested. Restricting take to males ensures that females are left in the ocean to reproduce.'),
@@ -11029,7 +11554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, k.name),
             h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-              k.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 3 } }, s.substring(s.indexOf('.') + 2)); })),
+              k.steps.map(function(s, si) { var dot = s.indexOf('.'); return h('li', { key: si, style: { marginBottom: 3 } }, dot >= 0 ? s.substring(dot + 2) : s); })),
             h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '✓ Check: '), k.check));
         })));
     }
@@ -12070,8 +12595,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── Main render
-    return h('div', { style: { padding: 16, background: '#031523', minHeight: 400 } },
+    var activeTabEntry = TABS.find(function(tabEntry) { return tabEntry.id === tab; }) || TABS[0];
+    return h('div', { style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
       tabBar(),
+      h('section', {
+        id: 'fl-panel-' + tab,
+        role: 'region',
+        'aria-label': activeTabEntry.label,
+        style: { minWidth: 0 }
+      },
       tab === 'home' ? homeTab() :
       tab === 'aqcond' ? aqCondTab() :
       tab === 'sim' ? simTab() :
@@ -12179,7 +12711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       tab === 'achievements' ? achievementsTab() :
       tab === 'glossary' ? glossaryTab() :
       tab === 'quiz' ? quizTab() :
-      h('div', null, 'Unknown tab'));
+      h('div', null, 'Unknown tab')));
   }
 
 })();

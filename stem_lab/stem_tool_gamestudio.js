@@ -449,6 +449,7 @@ window.StemLab = window.StemLab || {
     color: 'rose',
     category: 'creativity',
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -534,13 +535,13 @@ window.StemLab = window.StemLab || {
         // == Tabs ==
         var TABS = [
           { id: 'map', icon: '\uD83D\uDDFA\uFE0F', label: 'Map' },
-          { id: 'sprite', icon: '\uD83C\uDFA8', label: 'Sprites' },
-          { id: 'events', icon: '\u26A1', label: 'Events' },
-          { id: 'play', icon: '\u25B6\uFE0F', label: 'Play' },
-          { id: 'learn', icon: '\uD83C\uDF93', label: 'Learn' },
-          { id: 'challenges', icon: '\uD83C\uDFC6', label: 'Challenges' },
-          { id: 'projects', icon: '\uD83D\uDCBE', label: 'Projects' },
-          { id: 'diffHunt', icon: '\uD83D\uDCC8', label: 'Difficulty Tuner' }
+          { id: 'sprite', icon: '\uD83C\uDFA8', label: __alloT('stem.gamestudio.sprites', 'Sprites') },
+          { id: 'events', icon: '\u26A1', label: __alloT('stem.gamestudio.events', 'Events') },
+          { id: 'play', icon: '\u25B6\uFE0F', label: __alloT('stem.gamestudio.play', 'Play') },
+          { id: 'learn', icon: '\uD83C\uDF93', label: __alloT('stem.gamestudio.learn', 'Learn') },
+          { id: 'challenges', icon: '\uD83C\uDFC6', label: __alloT('stem.gamestudio.challenges', 'Challenges') },
+          { id: 'projects', icon: '\uD83D\uDCBE', label: __alloT('stem.gamestudio.projects', 'Projects') },
+          { id: 'diffHunt', icon: '\uD83D\uDCC8', label: __alloT('stem.gamestudio.difficulty_tuner', 'Difficulty Tuner') }
         ];
 
         var _bg = 'linear-gradient(135deg, #fff1f2, #ffe4e6, #fce7f3)';
@@ -787,11 +788,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center gap-3' },
               h('span', { style: { fontSize: '28px' } }, '\uD83C\uDFAE'),
               h('div', { className: 'flex-1' },
-                h('h2', { className: 'text-lg font-black text-rose-900' }, 'Game Design Studio'),
-                h('p', { className: 'text-xs text-rose-600' }, 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP')
+                h('h2', { className: 'text-lg font-black text-rose-900' }, __alloT('stem.gamestudio.game_design_studio', 'Game Design Studio')),
+                h('p', { className: 'text-xs text-rose-600' }, __alloT('stem.gamestudio.build_playable_2d_games_learn_game_des', 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP'))
               ),
               h('div', { className: 'text-right' },
-                h('div', { className: 'text-[11px] font-bold text-rose-400' }, 'TILES PLACED'),
+                h('div', { className: 'text-[11px] font-bold text-rose-400' }, __alloT('stem.gamestudio.tiles_placed', 'TILES PLACED')),
                 h('div', { className: 'text-lg font-black text-rose-700' }, Object.keys(tiles).length)
               )
             )
@@ -824,7 +825,7 @@ window.StemLab = window.StemLab || {
                   var p = e.target.value.split('x');
                   upd({ gridW: parseInt(p[0]), gridH: parseInt(p[1]), tiles: {} });
                 },
-                'aria-label': 'Grid size',
+                'aria-label': __alloT('stem.gamestudio.grid_size', 'Grid size'),
                 className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white'
               },
                 ['8x6','12x8','16x12','20x15','24x18'].map(function(s) { return h('option', { key: s, value: s }, s); })
@@ -833,17 +834,17 @@ window.StemLab = window.StemLab || {
               h('select', {
                 value: gameType,
                 onChange: function(e) { upd({ gameType: e.target.value }); },
-                'aria-label': 'Game type',
+                'aria-label': __alloT('stem.gamestudio.game_type', 'Game type'),
                 className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white'
               },
-                h('option', { value: 'topdown' }, '\uD83D\uDD3D Top-Down'),
-                h('option', { value: 'platformer' }, '\uD83C\uDFC3 Platformer'),
-                h('option', { value: 'puzzle' }, '\uD83E\uDDE9 Puzzle')
+                h('option', { value: 'topdown' }, __alloT('stem.gamestudio.top_down', '\uD83D\uDD3D Top-Down')),
+                h('option', { value: 'platformer' }, __alloT('stem.gamestudio.platformer', '\uD83C\uDFC3 Platformer')),
+                h('option', { value: 'puzzle' }, __alloT('stem.gamestudio.puzzle', '\uD83E\uDDE9 Puzzle'))
               ),
               // Danger overlay toggle
               h('label', { className: 'flex items-center gap-1.5 ml-auto text-xs font-bold text-orange-600 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: showDanger, onChange: function() { upd({ showDanger: !showDanger }); } }),
-                '\u26A0\uFE0F Danger Map'
+                __alloT('stem.gamestudio.danger_map', '\u26A0\uFE0F Danger Map')
               ),
               // AI Map Gen
               callGemini && h('button', { onClick: function() {
@@ -874,8 +875,8 @@ window.StemLab = window.StemLab || {
               h('input', {
                 type: 'text', value: aiPrompt,
                 onChange: function(e) { upd({ aiPrompt: e.target.value }); },
-                placeholder: 'Theme: forest maze, ice castle, dungeon...',
-                'aria-label': 'AI map generation theme',
+                placeholder: __alloT('stem.gamestudio.theme_forest_maze_ice_castle_dungeon', 'Theme: forest maze, ice castle, dungeon...'),
+                'aria-label': __alloT('stem.gamestudio.ai_map_generation_theme', 'AI map generation theme'),
                 className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2 py-1.5'
               }),
               aiResult && h('span', { className: 'text-xs font-bold self-center ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-600' : 'text-red-500') }, aiResult)
@@ -884,7 +885,7 @@ window.StemLab = window.StemLab || {
             // Tile palette + brush tools
             h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
               h('div', { className: 'flex items-center gap-2 mb-2' },
-                h('span', { className: 'text-xs font-bold text-rose-700' }, 'Tiles'),
+                h('span', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.gamestudio.tiles', 'Tiles')),
                 h('div', { className: 'flex gap-1 ml-auto' },
                   [{ id: 'brush', icon: '\u270F\uFE0F' }, { id: 'fill', icon: '\uD83E\uDEA3' }, { id: 'eraser', icon: '\uD83E\uDDF9' }, { id: 'eyedropper', icon: '\uD83D\uDCA7' }].map(function(bt) {
                     return h('button', { key: bt.id,
@@ -954,7 +955,7 @@ window.StemLab = window.StemLab || {
                       fontSize: Math.min(24, Math.floor(600 / gridW)) + 'px',
                       userSelect: 'none', minWidth: '12px', minHeight: '12px'
                     }
-                  }, (showDanger && danger > 0) ? (tInfo.emoji || '') : (tInfo.emoji || ''));
+                  }, (showDanger && danger > 0 && tId === 'empty') ? h('span', { style: { fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.9)' } }, danger) : (tInfo.emoji || ''));
                 })
               )
             ),
@@ -979,7 +980,7 @@ window.StemLab = window.StemLab || {
 
             // Presets
             h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-              h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, 'Sprite Presets'),
+              h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.sprite_presets', 'Sprite Presets')),
               h('div', { className: 'flex flex-wrap gap-2' },
                 SPRITE_PRESETS.map(function(sp) {
                   return h('button', { key: sp.id,
@@ -991,7 +992,7 @@ window.StemLab = window.StemLab || {
                 h('button', { 'aria-label': 'New',
                   onClick: function() { upd({ activeSprite: 'custom_' + Date.now(), spritePixels: {}, spriteColor: '#e74c3c' }); },
                   className: 'px-3 py-2 rounded-lg border-2 border-dashed border-rose-600 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all'
-                }, '\u2795 New')
+                }, __alloT('stem.gamestudio.new', '\u2795 New'))
               )
             ),
 
@@ -1038,11 +1039,11 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex-1 space-y-3', style: { minWidth: '180px' } },
                 // Color picker
                 h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-                  h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, 'Color'),
+                  h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.color', 'Color')),
                   h('input', { type: 'color', value: spriteColor, onChange: function(e) { upd({ spriteColor: e.target.value }); }, className: 'w-full h-8 rounded cursor-pointer' }),
                   h('div', { className: 'flex gap-1 mt-2 flex-wrap' },
                     ['#e74c3c','#f39c12','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#ecf0f1','#34495e','#000000','#ffffff','#e67e22'].map(function(c) {
-                      return h('button', { 'aria-label': 'Mirror',
+                      return h('button', { 'aria-label': __alloT('stem.gamestudio.mirror', 'Mirror'),
                         key: c,
                         onClick: function() { upd({ spriteColor: c }); },
                         className: 'w-6 h-6 rounded border-2 transition-all ' + (spriteColor === c ? 'border-rose-500 scale-110' : 'border-gray-300'),
@@ -1053,10 +1054,10 @@ window.StemLab = window.StemLab || {
                 ),
                 // Draw tools
                 h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-                  h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, 'Tools'),
+                  h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.tools', 'Tools')),
                   h('div', { className: 'flex gap-1' },
                     [{ id: 'draw', icon: '\u270F\uFE0F' }, { id: 'erase', icon: '\uD83E\uDDF9' }, { id: 'fill', icon: '\uD83E\uDEA3' }].map(function(t) {
-                      return h('button', { 'aria-label': 'Mirror \u2194\uFE0F',
+                      return h('button', { 'aria-label': __alloT('stem.gamestudio.mirror_2', 'Mirror \u2194\uFE0F'),
                         key: t.id,
                         onClick: function() { upd({ spriteTool: t.id }); },
                         className: 'flex-1 py-1.5 rounded text-sm transition-all ' + (spriteTool === t.id ? 'bg-rose-200 shadow-inner font-bold' : 'hover:bg-rose-50')
@@ -1065,13 +1066,13 @@ window.StemLab = window.StemLab || {
                   ),
                   h('label', { className: 'flex items-center gap-2 mt-2 text-xs text-rose-600 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: spriteMirror, onChange: function() { upd({ spriteMirror: !spriteMirror }); } }),
-                    'Mirror \u2194\uFE0F'
+                    __alloT('stem.gamestudio.mirror_3', 'Mirror \u2194\uFE0F')
                   )
                 ),
                 // AI sprite gen
                 callImagen && h('div', { className: 'p-3 rounded-xl border border-purple-200 bg-purple-50 space-y-2' },
-                  h('div', { className: 'text-xs font-bold text-purple-700' }, '\uD83E\uDD16 AI Sprite Tools'),
-                  h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: 'a fire-breathing dragon...', 'aria-label': 'AI sprite generation prompt', className: 'w-full text-xs border border-purple-600 rounded-lg px-2 py-1.5' }),
+                  h('div', { className: 'text-xs font-bold text-purple-700' }, __alloT('stem.gamestudio.ai_sprite_tools', '\uD83E\uDD16 AI Sprite Tools')),
+                  h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: __alloT('stem.gamestudio.a_fire_breathing_dragon', 'a fire-breathing dragon...'), 'aria-label': __alloT('stem.gamestudio.ai_sprite_generation_prompt', 'AI sprite generation prompt'), className: 'w-full text-xs border border-purple-600 rounded-lg px-2 py-1.5' }),
                   h('button', { onClick: function() {
                       if (!aiPrompt.trim()) return;
                       upd({ aiLoading: true });
@@ -1101,10 +1102,10 @@ window.StemLab = window.StemLab || {
                   }, aiLoading ? '\u23F3 Generating...' : '\u2728 AI Generate Sprite')
                 ),
                 // Clear
-                h('button', { 'aria-label': 'Clear Canvas',
+                h('button', { 'aria-label': __alloT('stem.gamestudio.clear_canvas', 'Clear Canvas'),
                   onClick: function() { upd({ spritePixels: {} }); },
                   className: 'w-full py-1.5 text-xs font-bold text-rose-500 border border-rose-600 rounded-lg hover:bg-rose-50 transition-all'
-                }, '\uD83D\uDDD1\uFE0F Clear Canvas')
+                }, __alloT('stem.gamestudio.clear_canvas_2', '\uD83D\uDDD1\uFE0F Clear Canvas'))
               )
             ),
             aiResult && h('div', { className: 'text-xs font-bold ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-600' : 'text-red-500') }, aiResult)
@@ -1117,22 +1118,22 @@ window.StemLab = window.StemLab || {
           gsTab === 'events' && h('div', { className: 'space-y-4' },
 
             h('div', { className: 'flex items-center justify-between' },
-              h('h3', { className: 'text-sm font-black text-rose-800' }, '\u26A1 Event Rules'),
+              h('h3', { className: 'text-sm font-black text-rose-800' }, __alloT('stem.gamestudio.event_rules', '\u26A1 Event Rules')),
               h('label', { className: 'flex items-center gap-2 text-xs font-bold text-rose-600 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: advancedCode, onChange: function() { upd({ advancedCode: !advancedCode }); } }),
-                '\uD83D\uDCBB Show Code'
+                __alloT('stem.gamestudio.show_code', '\uD83D\uDCBB Show Code')
               )
             ),
 
             // Info box
             h('div', { className: 'p-3 rounded-xl border border-blue-200 bg-blue-50 text-xs text-blue-700' },
-              h('strong', null, 'How Events Work: '),
+              h('strong', null, __alloT('stem.gamestudio.how_events_work', 'How Events Work: ')),
               'Create "When X happens \u2192 Do Y" rules for each sprite. These rules define your game\'s behavior! ' +
               'Enemies patrol automatically in Play mode. Add rules to customize interactions.'
             ),
 
             // Sprite selector
-            h('div', { className: 'text-xs font-bold text-rose-600 mb-1' }, 'Select sprite to add rules:'),
+            h('div', { className: 'text-xs font-bold text-rose-600 mb-1' }, __alloT('stem.gamestudio.select_sprite_to_add_rules', 'Select sprite to add rules:')),
             h('div', { className: 'flex flex-wrap gap-1 mb-3' },
               ['player','enemy','npc','treasure'].map(function(sid) {
                 var sprEvents = events[sid] || [];
@@ -1149,32 +1150,32 @@ window.StemLab = window.StemLab || {
             activeSprite && (function() {
               var sprEvents = events[activeSprite] || [];
               var TRIGGERS = [
-                { id: 'onKey', label: 'Key Pressed', params: ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'] },
-                { id: 'onCollide', label: 'Collides With', params: ['wall','coin','enemy','lava','door','key','npc','spikes','flag','portal','ice'] },
-                { id: 'onTimer', label: 'Every', params: ['0.5s','1s','2s','5s'] },
-                { id: 'onStart', label: 'Game Starts', params: [] },
-                { id: 'onTalk', label: 'Player Talks', params: [] }
+                { id: 'onKey', label: __alloT('stem.gamestudio.key_pressed', 'Key Pressed'), params: ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'] },
+                { id: 'onCollide', label: __alloT('stem.gamestudio.collides_with', 'Collides With'), params: ['wall','coin','enemy','lava','door','key','npc','spikes','flag','portal','ice'] },
+                { id: 'onTimer', label: __alloT('stem.gamestudio.every', 'Every'), params: ['0.5s','1s','2s','5s'] },
+                { id: 'onStart', label: __alloT('stem.gamestudio.game_starts', 'Game Starts'), params: [] },
+                { id: 'onTalk', label: __alloT('stem.gamestudio.player_talks', 'Player Talks'), params: [] }
               ];
               var ACTIONS = [
-                { id: 'move', label: 'Move', params: ['up','down','left','right','toward-player','random'] },
-                { id: 'collect', label: 'Collect', params: ['+1 score','+key'] },
-                { id: 'stop', label: 'Stop', params: [] },
-                { id: 'destroy', label: 'Destroy', params: ['self','other'] },
-                { id: 'teleport', label: 'Teleport', params: ['start','random-empty'] },
-                { id: 'bounce', label: 'Bounce', params: [] },
-                { id: 'winGame', label: 'Win Game!', params: [] },
-                { id: 'loseLife', label: 'Lose Life', params: [] },
-                { id: 'gravity', label: 'Gravity', params: ['on','off'] },
-                { id: 'jump', label: 'Jump', params: ['1','2','3','4','5'] },
-                { id: 'push', label: 'Push', params: [] },
-                { id: 'aiTalk', label: 'AI NPC Talk', params: [] }
+                { id: 'move', label: __alloT('stem.gamestudio.move', 'Move'), params: ['up','down','left','right','toward-player','random'] },
+                { id: 'collect', label: __alloT('stem.gamestudio.collect', 'Collect'), params: ['+1 score','+key'] },
+                { id: 'stop', label: __alloT('stem.gamestudio.stop', 'Stop'), params: [] },
+                { id: 'destroy', label: __alloT('stem.gamestudio.destroy', 'Destroy'), params: ['self','other'] },
+                { id: 'teleport', label: __alloT('stem.gamestudio.teleport', 'Teleport'), params: ['start','random-empty'] },
+                { id: 'bounce', label: __alloT('stem.gamestudio.bounce', 'Bounce'), params: [] },
+                { id: 'winGame', label: __alloT('stem.gamestudio.win_game', 'Win Game!'), params: [] },
+                { id: 'loseLife', label: __alloT('stem.gamestudio.lose_life', 'Lose Life'), params: [] },
+                { id: 'gravity', label: __alloT('stem.gamestudio.gravity', 'Gravity'), params: ['on','off'] },
+                { id: 'jump', label: __alloT('stem.gamestudio.jump', 'Jump'), params: ['1','2','3','4','5'] },
+                { id: 'push', label: __alloT('stem.gamestudio.push', 'Push'), params: [] },
+                { id: 'aiTalk', label: __alloT('stem.gamestudio.ai_npc_talk', 'AI NPC Talk'), params: [] }
               ];
 
               return h('div', { className: 'space-y-2' },
                 sprEvents.map(function(rule, ri) {
                   return h('div', { key: ri, className: 'p-3 rounded-xl border border-rose-200 bg-white' },
                     h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                      h('span', { className: 'text-xs font-bold text-slate-600' }, 'When'),
+                      h('span', { className: 'text-xs font-bold text-slate-600' }, __alloT('stem.gamestudio.when', 'When')),
                       h('select', {
                         value: rule.trigger || 'onKey',
                         onChange: function(e) {
@@ -1223,7 +1224,7 @@ window.StemLab = window.StemLab || {
                           className: 'text-xs border border-rose-600 rounded px-1.5 py-1'
                         }, h('option', { value: '' }, '\u2014'), act.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
                       })(),
-                      h('button', { 'aria-label': 'Remove item',
+                      h('button', { 'aria-label': __alloT('stem.gamestudio.remove_item', 'Remove item'),
                         onClick: function() {
                           var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
                           arr.splice(ri, 1); ne[activeSprite] = arr; upd({ events: ne });
@@ -1234,7 +1235,7 @@ window.StemLab = window.StemLab || {
                     advancedCode && h('pre', { className: 'mt-2 p-2 rounded-lg bg-slate-900 text-green-400 text-[11px] font-mono overflow-x-auto' }, genCode(rule))
                   );
                 }),
-                sprEvents.length < 8 && h('button', { 'aria-label': 'Add Rule (',
+                sprEvents.length < 8 && h('button', { 'aria-label': __alloT('stem.gamestudio.add_rule', 'Add Rule ('),
                   onClick: function() {
                     var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
                     arr.push({ trigger: 'onKey', param: 'ArrowUp', action: 'move', actionParam: 'up' });
@@ -1317,7 +1318,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'p-3 rounded-lg bg-slate-800 text-center text-xs text-slate-300 font-bold' }, '\u2022'),
                 h('button', { onClick: function() { processMove('right'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B6'),
                 h('div', null),
-                h('button', { 'aria-label': 'Process Move', onClick: function() { processMove('down'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25BC'),
+                h('button', { 'aria-label': __alloT('stem.gamestudio.process_move', 'Process Move'), onClick: function() { processMove('down'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25BC'),
                 h('div', null)
               )
             ),
@@ -1334,18 +1335,18 @@ window.StemLab = window.StemLab || {
                 className: 'px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md ' +
                   (isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600')
               }, isPlaying ? '\u23F9 Stop' : '\u25B6\uFE0F Start Game'),
-              (playWon || playDead) && h('button', { 'aria-label': 'Play Again',
+              (playWon || playDead) && h('button', { 'aria-label': __alloT('stem.gamestudio.play_again', 'Play Again'),
                 onClick: function() {
                   upd({ isPlaying: true, playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
                 },
                 className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-600 shadow-md transition-all'
-              }, '\uD83D\uDD04 Play Again'),
-              h('div', { className: 'text-[11px] text-slate-600 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
+              }, __alloT('stem.gamestudio.play_again_2', '\uD83D\uDD04 Play Again')),
+              h('div', { className: 'text-[11px] text-slate-600 self-center ml-2' }, __alloT('stem.gamestudio.arrow_keys_wasd_to_move_click_game_are', 'Arrow keys / WASD to move \u2022 Click game area first'))
             ),
 
             // Mechanics guide
             h('div', { className: 'p-3 rounded-xl border border-slate-400 bg-slate-50' },
-              h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83C\uDFAE Game Mechanics'),
+              h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.gamestudio.game_mechanics', '\uD83C\uDFAE Game Mechanics')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-600' },
                 [
                   ['\uD83E\uDE99 Coin', '+10 points'],
@@ -1399,8 +1400,8 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-3' },
                 h('span', { style: { fontSize: '28px' } }, '\uD83C\uDF93'),
                 h('div', { className: 'flex-1' },
-                  h('h3', { className: 'text-sm font-black text-indigo-900' }, 'Game Design Academy'),
-                  h('p', { className: 'text-xs text-indigo-600' }, 'Learn the fundamentals of game design through interactive lessons')
+                  h('h3', { className: 'text-sm font-black text-indigo-900' }, __alloT('stem.gamestudio.game_design_academy', 'Game Design Academy')),
+                  h('p', { className: 'text-xs text-indigo-600' }, __alloT('stem.gamestudio.learn_the_fundamentals_of_game_design_', 'Learn the fundamentals of game design through interactive lessons'))
                 ),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-lg font-black text-indigo-700' }, Object.keys(learnCompleted).length + '/' + LESSONS.length),
@@ -1423,10 +1424,10 @@ window.StemLab = window.StemLab || {
               var isComplete = learnCompleted[lesson.id];
               return h('div', { className: 'space-y-4' },
                 // Back + title
-                h('button', { 'aria-label': 'Back to lessons',
+                h('button', { 'aria-label': __alloT('stem.gamestudio.back_to_lessons', 'Back to lessons'),
                   onClick: function() { upd({ activeLesson: null, learnAnswer: null, learnShowResult: false }); },
                   className: 'text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors'
-                }, '\u2190 Back to lessons'),
+                }, __alloT('stem.gamestudio.back_to_lessons_2', '\u2190 Back to lessons')),
 
                 h('div', { className: 'p-4 rounded-xl border border-indigo-200 bg-white' },
                   h('h3', { className: 'text-base font-black text-indigo-900 mb-1' }, lesson.icon + ' ' + lesson.title),
@@ -1435,19 +1436,19 @@ window.StemLab = window.StemLab || {
 
                 // Fun fact
                 h('div', { className: 'p-3 rounded-xl border border-amber-200 bg-amber-50' },
-                  h('div', { className: 'text-xs font-bold text-amber-700 mb-1' }, '\uD83D\uDCA1 Did You Know?'),
+                  h('div', { className: 'text-xs font-bold text-amber-700 mb-1' }, __alloT('stem.gamestudio.did_you_know', '\uD83D\uDCA1 Did You Know?')),
                   h('p', { className: 'text-xs text-amber-800' }, lesson.funFact)
                 ),
 
                 // Real game example
                 h('div', { className: 'p-3 rounded-xl border border-green-200 bg-green-50' },
-                  h('div', { className: 'text-xs font-bold text-green-700 mb-1' }, '\uD83C\uDFAE Real Game Example'),
+                  h('div', { className: 'text-xs font-bold text-green-700 mb-1' }, __alloT('stem.gamestudio.real_game_example', '\uD83C\uDFAE Real Game Example')),
                   h('p', { className: 'text-xs text-green-800' }, lesson.realGame)
                 ),
 
                 // Quiz
                 h('div', { className: 'p-4 rounded-xl border-2 border-indigo-200 bg-indigo-50' },
-                  h('div', { className: 'text-xs font-bold text-indigo-800 mb-3' }, '\uD83E\uDDE0 Knowledge Check'),
+                  h('div', { className: 'text-xs font-bold text-indigo-800 mb-3' }, __alloT('stem.gamestudio.knowledge_check', '\uD83E\uDDE0 Knowledge Check')),
                   h('p', { className: 'text-sm font-bold text-slate-800 mb-3' }, lesson.quiz.question),
                   h('div', { className: 'space-y-2' },
                     lesson.quiz.options.map(function(opt, oi) {
@@ -1471,7 +1472,7 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // Submit / result
-                  !learnShowResult && learnAnswer !== null && h('button', { 'aria-label': 'Check Answer',
+                  !learnShowResult && learnAnswer !== null && h('button', { 'aria-label': __alloT('stem.gamestudio.check_answer', 'Check Answer'),
                     onClick: function() {
                       var correct = learnAnswer === lesson.quiz.correct;
                       upd({ learnShowResult: true });
@@ -1484,7 +1485,7 @@ window.StemLab = window.StemLab || {
                       }
                     },
                     className: 'mt-3 w-full py-2 rounded-lg text-xs font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-all'
-                  }, 'Check Answer'),
+                  }, __alloT('stem.gamestudio.check_answer_2', 'Check Answer')),
 
                   learnShowResult && h('div', { 
                     className: 'mt-3 p-3 rounded-lg text-xs ' +
@@ -1499,12 +1500,12 @@ window.StemLab = window.StemLab || {
                 learnShowResult && (function() {
                   var idx = LESSONS.findIndex(function(l) { return l.id === activeLesson; });
                   if (idx < LESSONS.length - 1) {
-                    return h('button', { 'aria-label': 'Next Lesson:',
+                    return h('button', { 'aria-label': __alloT('stem.gamestudio.next_lesson', 'Next Lesson:'),
                       onClick: function() { upd({ activeLesson: LESSONS[idx + 1].id, learnAnswer: null, learnShowResult: false }); },
                       className: 'w-full py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all'
                     }, 'Next Lesson: ' + LESSONS[idx + 1].icon + ' ' + LESSONS[idx + 1].title + ' \u2192');
                   }
-                  return h('div', { className: 'text-center text-xs font-bold text-indigo-600 p-3' }, '\uD83C\uDF89 You\'ve completed all lessons! Now apply what you\'ve learned in the Challenges tab.');
+                  return h('div', { className: 'text-center text-xs font-bold text-indigo-600 p-3' }, __alloT('stem.gamestudio.you_ve_completed_all_lessons_now_apply', '\uD83C\uDF89 You\'ve completed all lessons! Now apply what you\'ve learned in the Challenges tab.'));
                 })()
               );
             })() :
@@ -1525,7 +1526,7 @@ window.StemLab = window.StemLab || {
                         h('span', { className: 'text-sm font-black ' + (isComplete ? 'text-green-800' : 'text-indigo-900') }, lesson.title),
                         isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713')
                       ),
-                      h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, lesson.desc)
+                      h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, __alloT('stem.gamestudio.' + (lesson.id) + '_desc', lesson.desc))
                     ),
                     h('span', { className: 'text-xs font-bold ' + (isComplete ? 'text-green-500' : 'text-indigo-400') }, 'Lesson ' + (li + 1))
                   )
@@ -1545,8 +1546,8 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-3' },
                 h('span', { style: { fontSize: '28px' } }, '\uD83C\uDFC6'),
                 h('div', { className: 'flex-1' },
-                  h('h3', { className: 'text-sm font-black text-amber-900' }, 'Design Challenges'),
-                  h('p', { className: 'text-xs text-amber-600' }, 'Apply your game design skills! Build levels that meet specific objectives.')
+                  h('h3', { className: 'text-sm font-black text-amber-900' }, __alloT('stem.gamestudio.design_challenges', 'Design Challenges')),
+                  h('p', { className: 'text-xs text-amber-600' }, __alloT('stem.gamestudio.apply_your_game_design_skills_build_le', 'Apply your game design skills! Build levels that meet specific objectives.'))
                 ),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-lg font-black text-amber-700' }, Object.keys(challengeCompleted).length + '/' + CHALLENGES.length),
@@ -1577,7 +1578,7 @@ window.StemLab = window.StemLab || {
                       }, ch.difficulty === 1 ? 'Beginner' : ch.difficulty === 2 ? 'Intermediate' : 'Advanced'),
                       isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713 +' + ch.xp + ' XP')
                     ),
-                    h('p', { className: 'text-xs text-slate-600 mt-1' }, ch.desc)
+                    h('p', { className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.gamestudio.' + (ch.id) + '_desc', ch.desc))
                   )
                 ),
 
@@ -1586,7 +1587,7 @@ window.StemLab = window.StemLab || {
                   results.map(function(r, ri) {
                     return h('div', {
                       key: ri,
-                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-200')
+                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-500')
                     },
                       h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ' +
                         (r.passed ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-500')
@@ -1598,11 +1599,11 @@ window.StemLab = window.StemLab || {
 
                 // Hint
                 !isComplete && !allPassed && h('div', { className: 'p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-700 mb-2' },
-                  h('strong', null, 'Hint: '), ch.hint
+                  h('strong', null, 'Hint: '), __alloT('stem.gamestudio.' + (ch.id) + '_hint', ch.hint)
                 ),
 
                 // Complete button
-                !isComplete && allPassed && h('button', { 'aria-label': 'Claim',
+                !isComplete && allPassed && h('button', { 'aria-label': __alloT('stem.gamestudio.claim', 'Claim'),
                   onClick: function() {
                     var cc = Object.assign({}, challengeCompleted);
                     cc[ch.id] = true;
@@ -1614,13 +1615,13 @@ window.StemLab = window.StemLab || {
                 }, '\uD83C\uDFC6 Claim ' + ch.xp + ' XP!'),
 
                 // Already complete badge
-                isComplete && h('div', { className: 'text-center text-xs font-bold text-green-600 py-1' }, '\u2705 Challenge completed!')
+                isComplete && h('div', { className: 'text-center text-xs font-bold text-green-600 py-1' }, __alloT('stem.gamestudio.challenge_completed', '\u2705 Challenge completed!'))
               );
             }),
 
             // Total XP display
             h('div', { className: 'text-center p-3 rounded-xl border border-amber-200 bg-amber-50' },
-              h('div', { className: 'text-xs font-bold text-amber-700' }, 'Total Challenge XP Earned'),
+              h('div', { className: 'text-xs font-bold text-amber-700' }, __alloT('stem.gamestudio.total_challenge_xp_earned', 'Total Challenge XP Earned')),
               h('div', { className: 'text-2xl font-black text-amber-800' },
                 CHALLENGES.reduce(function(sum, ch) { return sum + (challengeCompleted[ch.id] ? ch.xp : 0); }, 0) + ' XP'
               )
@@ -1635,7 +1636,7 @@ window.StemLab = window.StemLab || {
 
             // Project name
             h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-              h('label', { className: 'text-xs font-bold text-rose-700 mb-1 block' }, 'Project Name'),
+              h('label', { className: 'text-xs font-bold text-rose-700 mb-1 block' }, __alloT('stem.gamestudio.project_name', 'Project Name')),
               h('input', {
                 type: 'text', value: projectName,
                 onChange: function(e) { upd({ projectName: e.target.value }); },
@@ -1658,7 +1659,7 @@ window.StemLab = window.StemLab || {
                 className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
               },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCE4'),
-                h('div', { className: 'text-xs font-bold text-rose-700' }, 'Export')
+                h('div', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.gamestudio.export', 'Export'))
               ),
               h('button', { onClick: function() {
                   var inp = document.createElement('input');
@@ -1686,7 +1687,7 @@ window.StemLab = window.StemLab || {
                 className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
               },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCE5'),
-                h('div', { className: 'text-xs font-bold text-rose-700' }, 'Import')
+                h('div', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.gamestudio.import', 'Import'))
               ),
               h('button', { onClick: function() {
                   var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events };
@@ -1698,21 +1699,21 @@ window.StemLab = window.StemLab || {
                 className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
               },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCCB'),
-                h('div', { className: 'text-xs font-bold text-rose-700' }, 'Share Code')
+                h('div', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.gamestudio.share_code', 'Share Code'))
               )
             ),
 
             // Import share code
             h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-              h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, '\uD83D\uDCCB Import from Share Code'),
+              h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.import_from_share_code', '\uD83D\uDCCB Import from Share Code')),
               h('div', { className: 'flex gap-2' },
                 h('input', {
-                  type: 'text', placeholder: 'Paste share code...',
-                  'aria-label': 'Paste share code to import a game',
+                  type: 'text', placeholder: __alloT('stem.gamestudio.paste_share_code', 'Paste share code...'),
+                  'aria-label': __alloT('stem.gamestudio.paste_share_code_to_import_a_game', 'Paste share code to import a game'),
                   id: 'gs-share-import',
                   className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2 py-1.5'
                 }),
-                h('button', { 'aria-label': 'Load',
+                h('button', { 'aria-label': __alloT('stem.gamestudio.load', 'Load'),
                   onClick: function() {
                     var el = document.getElementById('gs-share-import');
                     if (!el || !el.value.trim()) return;
@@ -1731,13 +1732,13 @@ window.StemLab = window.StemLab || {
                     } catch(err) { if (addToast) addToast('\u274C Invalid share code', 'error'); }
                   },
                   className: 'px-3 py-1.5 text-xs font-bold text-white bg-rose-700 hover:bg-rose-600 rounded-lg transition-all'
-                }, 'Load')
+                }, __alloT('stem.gamestudio.load_2', 'Load'))
               )
             ),
 
             // Starter projects
             h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
-              h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, '\uD83C\uDFAE Starter Projects'),
+              h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.starter_projects', '\uD83C\uDFAE Starter Projects')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                 STARTERS.map(function(starter) {
                   return h('button', { key: starter.name,
@@ -1757,11 +1758,11 @@ window.StemLab = window.StemLab || {
 
             // Quick stats
             h('div', { className: 'p-3 rounded-xl border border-slate-400 bg-slate-50' },
-              h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83D\uDCCA Project Stats'),
+              h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.gamestudio.project_stats', '\uD83D\uDCCA Project Stats')),
               h('div', { className: 'grid grid-cols-3 gap-3 text-center' },
                 h('div', null,
                   h('div', { className: 'text-lg font-black text-slate-800' }, Object.keys(tiles).length),
-                  h('div', { className: 'text-[11px] text-slate-600' }, 'Tiles Placed')
+                  h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.gamestudio.tiles_placed_2', 'Tiles Placed'))
                 ),
                 h('div', null,
                   h('div', { className: 'text-lg font-black text-slate-800' }, (function() {
@@ -1769,11 +1770,11 @@ window.StemLab = window.StemLab || {
                     Object.keys(tiles).forEach(function(k) { types[tiles[k]] = true; });
                     return Object.keys(types).length;
                   })()),
-                  h('div', { className: 'text-[11px] text-slate-600' }, 'Tile Types')
+                  h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.gamestudio.tile_types', 'Tile Types'))
                 ),
                 h('div', null,
                   h('div', { className: 'text-lg font-black text-slate-800' }, Object.keys(spritePixels).length),
-                  h('div', { className: 'text-[11px] text-slate-600' }, 'Pixels Drawn')
+                  h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.gamestudio.pixels_drawn', 'Pixels Drawn'))
                 )
               )
             )
@@ -1781,8 +1782,8 @@ window.StemLab = window.StemLab || {
 
           // === H7b'' RICH inquiry widget: difficulty curve tuner ===
           gsTab === 'diffHunt' && (function() {
-            var iq = d._diffHunt || { enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-            function setIQ(patch) { upd('_diffHunt', Object.assign({}, iq, patch)); }
+            var iq = _gs._diffHunt || { enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd({ _diffHunt: Object.assign({}, iq, patch) }); }
             var diffScore = (iq.enemies / 10) * 2 + (iq.patrolSpeed / 100) * 1.5 + (iq.hazards / 100) * 1.8 - (iq.coins / 100) * 0.8 - (iq.health / 200);
             var state;
             if (diffScore < 1) state = 'veryEasy';
@@ -1791,11 +1792,11 @@ window.StemLab = window.StemLab || {
             else if (diffScore < 6) state = 'hard';
             else state = 'expert';
             var sm = {
-              veryEasy: { label: '🟢 Very Easy', color: '#059669', bg: '#ecfdf5', border: '#86efac', deaths: 0, time: '< 2 min' },
-              easy:     { label: '🟢 Easy', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', deaths: 1, time: '2-5 min' },
-              medium:   { label: '🟡 Medium', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', deaths: 4, time: '5-15 min' },
-              hard:     { label: '🟠 Hard', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', deaths: 12, time: '15-45 min' },
-              expert:   { label: '🔴 Expert', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', deaths: 40, time: '1+ hours' }
+              veryEasy: { label: __alloT('stem.gamestudio.very_easy', '🟢 Very Easy'), color: '#059669', bg: '#ecfdf5', border: '#86efac', deaths: 0, time: '< 2 min' },
+              easy:     { label: __alloT('stem.gamestudio.easy', '🟢 Easy'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', deaths: 1, time: '2-5 min' },
+              medium:   { label: __alloT('stem.gamestudio.medium', '🟡 Medium'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', deaths: 4, time: '5-15 min' },
+              hard:     { label: __alloT('stem.gamestudio.hard', '🟠 Hard'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', deaths: 12, time: '15-45 min' },
+              expert:   { label: __alloT('stem.gamestudio.expert', '🔴 Expert'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', deaths: 40, time: '1+ hours' }
             }[state];
             // Build SVG difficulty curve from 5 progress points
             var curvePoints = [];
@@ -1806,8 +1807,8 @@ window.StemLab = window.StemLab || {
             var pathStr = 'M ' + curvePoints.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' L ');
             return h('div', { className: 'space-y-3' },
               h('div', { className: 'p-4 rounded-xl bg-white border border-rose-300 shadow-sm space-y-3' },
-                h('h3', { className: 'text-sm font-black text-rose-700' }, '📈 Difficulty curve tuner — discovery'),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Five sliders for level parameters. Widget classifies overall difficulty into 5 discrete tiers and renders the difficulty progression curve. No score on your tuning — the inquiry is in finding what shapes the curve.'),
+                h('h3', { className: 'text-sm font-black text-rose-700' }, __alloT('stem.gamestudio.difficulty_curve_tuner_discovery', '📈 Difficulty curve tuner — discovery')),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.gamestudio.five_sliders_for_level_parameters_widg', 'Five sliders for level parameters. Widget classifies overall difficulty into 5 discrete tiers and renders the difficulty progression curve. No score on your tuning — the inquiry is in finding what shapes the curve.')),
                 // Discrete state marker
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-lg font-black', style: { color: sm.color } }, sm.label),
@@ -1833,14 +1834,14 @@ window.StemLab = window.StemLab || {
                       return h('circle', { key: 'cp' + i, cx: pt[0], cy: pt[1], r: 3, fill: sm.color });
                     }),
                     // Labels
-                    h('text', { x: 175, y: 145, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'Game progress 0% → 100%'),
-                    h('text', { x: 10, y: 75, textAnchor: 'middle', fontSize: 10, fill: '#475569', transform: 'rotate(-90 10 75)' }, 'Difficulty'),
-                    h('text', { x: 348, y: 25, fontSize: 9, fill: '#b91c1c' }, 'Expert'),
-                    h('text', { x: 348, y: 88, fontSize: 9, fill: '#d97706' }, 'Medium'),
-                    h('text', { x: 348, y: 128, fontSize: 9, fill: '#059669' }, 'Easy')
+                    h('text', { x: 175, y: 145, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, __alloT('stem.gamestudio.game_progress_0_100', 'Game progress 0% → 100%')),
+                    h('text', { x: 10, y: 75, textAnchor: 'middle', fontSize: 10, fill: '#475569', transform: 'rotate(-90 10 75)' }, __alloT('stem.gamestudio.difficulty', 'Difficulty')),
+                    h('text', { x: 348, y: 25, fontSize: 9, fill: '#b91c1c' }, __alloT('stem.gamestudio.expert_2', 'Expert')),
+                    h('text', { x: 348, y: 88, fontSize: 9, fill: '#d97706' }, __alloT('stem.gamestudio.medium_2', 'Medium')),
+                    h('text', { x: 348, y: 128, fontSize: 9, fill: '#059669' }, __alloT('stem.gamestudio.easy_2', 'Easy'))
                   ),
                   h('div', { className: 'text-[10px] text-slate-600 text-center italic mt-1' },
-                    'Curve shows difficulty ramping over game progress. Compare different parameter combinations.')
+                    __alloT('stem.gamestudio.curve_shows_difficulty_ramping_over_ga', 'Curve shows difficulty ramping over game progress. Compare different parameter combinations.'))
                 ),
                 // Sliders
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
@@ -1853,13 +1854,13 @@ window.StemLab = window.StemLab || {
                       h('label', { htmlFor: 'dt-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-rose-700' }, iq[s.k])),
                       h('input', { id: 'dt-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.l }));
+                        className: 'w-full', 'aria-valuetext': (iq[s.k] + ({ enemies: ' enemies', patrolSpeed: '% speed', hazards: '% hazards', coins: '% coin abundance', health: ' HP' }[s.k] || '')), 'aria-label': s.l }));
                   })
                 ),
                 // Log + reset
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ e: iq.enemies, p: iq.patrolSpeed, h: iq.hazards, c: iq.coins, hp: iq.health, d: diffScore.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ e: iq.enemies, p: iq.patrolSpeed, h: iq.hazards, c: iq.coins, hp: iq.health, d: diffScore.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.gamestudio.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.gamestudio.reset', '↺ Reset')),
                   (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
                 // Log table
@@ -1880,41 +1881,41 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 // Hypothesis textarea
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.gamestudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 // Opt-in stuck prompts
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts (no answers)'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.gamestudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
-                  h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts — investigate by manipulating:'),
+                  h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.gamestudio.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Hold 4 sliders steady. Move 1. Watch the curve. Repeat with each.'),
-                    h('li', null, 'Find two combinations that yield the same tier. What do they share?'),
-                    h('li', null, 'What player-friendly design choices (lots of coins, lots of health) compensate for high enemy count?'),
-                    h('li', null, 'Real games use "difficulty curves" that ramp slowly then plateau. Investigate why.'),
-                    h('li', null, 'Log 4-5 "medium" observations. Look at composite score — is there a single threshold?'))),
+                    h('li', null, __alloT('stem.gamestudio.hold_4_sliders_steady_move_1_watch_the', 'Hold 4 sliders steady. Move 1. Watch the curve. Repeat with each.')),
+                    h('li', null, __alloT('stem.gamestudio.find_two_combinations_that_yield_the_s', 'Find two combinations that yield the same tier. What do they share?')),
+                    h('li', null, __alloT('stem.gamestudio.what_player_friendly_design_choices_lo', 'What player-friendly design choices (lots of coins, lots of health) compensate for high enemy count?')),
+                    h('li', null, __alloT('stem.gamestudio.real_games_use_difficulty_curves_that_', 'Real games use "difficulty curves" that ramp slowly then plateau. Investigate why.')),
+                    h('li', null, __alloT('stem.gamestudio.log_4_5_medium_observations_look_at_co', 'Log 4-5 "medium" observations. Look at composite score — is there a single threshold?')))),
                 // Self-mark
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                   h('div', { className: 'flex items-center gap-2 mb-2' },
                     h('input', { type: 'checkbox', id: 'dt-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     h('label', { htmlFor: 'dt-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
-                      'I think I understand difficulty tuning now — let me explain it in my own words')),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?',
+                      __alloT('stem.gamestudio.i_think_i_understand_difficulty_tuning', 'I think I understand difficulty tuning now — let me explain it in my own words'))),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.gamestudio.explain_in_your_own_words_how_do_the_5', 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
                   iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
-                    '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+                    __alloT('stem.gamestudio.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
                 ),
                 h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
-                  'Design note: discrete 5-tier difficulty marker; SVG curve shows shape not score; no "right" tuning revealed — by design.')
+                  __alloT('stem.gamestudio.design_note_discrete_5_tier_difficulty', 'Design note: discrete 5-tier difficulty marker; SVG curve shows shape not score; no "right" tuning revealed — by design.'))
               )
             );
           })(),
 
           // ---- BACK BUTTON ----
           h('div', { className: 'mt-6 text-center' },
-            h('button', { 'aria-label': 'Back to Tools',
+            h('button', { 'aria-label': __alloT('stem.gamestudio.back_to_tools', 'Back to Tools'),
               onClick: function() { setStemLabTool(null); },
               className: 'px-6 py-2.5 text-sm font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-600 rounded-xl transition-all'
-            }, '\u2190 Back to Tools')
+            }, __alloT('stem.gamestudio.back_to_tools_2', '\u2190 Back to Tools'))
           )
         );
       })();

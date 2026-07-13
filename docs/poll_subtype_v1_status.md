@@ -1,5 +1,7 @@
 # Poll Subtype V1 — what's in, what's not, why
 
+> **Historical implementation-status snapshot, not current poll roadmap authority (2026-07-09):** This status note captured the poll subtype state when Batch 1 landed and Async-B was deferred. Verify current live-session/poll code, tests, and handoff notes before treating Batch 2 or commit/push notes below as active.
+
 **Status:** Batch 1 (live-session poll subtype) — landed.
 **Batch 2:** Async-B (overnight homework path) — DEFERRED to a follow-up session.
 

@@ -1,0 +1,56 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22021-gallipoli-diary-volume-2",
+  "title": "Gallipoli Diary, Volume 2",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Gallipoli Peninsula (Turkey) -- History, Military",
+    "Generals -- Great Britain -- Diaries",
+    "Hamilton, Ian, Sir, 1853-1947 -- Diaries",
+    "World War, 1914-1918 -- Campaigns -- Turkey -- Gallipoli Peninsula",
+    "World War, 1914-1918 -- Personal narratives, British"
+  ],
+  "authors": [
+    "Hamilton, Ian"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22021"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/22021/pg22021.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Gallipoli Diary, Volume 2\" by Hamilton, Ian. Metadata tags include: Gallipoli Peninsula (Turkey) -- History, Military; Generals -- Great Britain -- Diaries; Hamilton, Ian, Sir, 1853-1947 -- Diaries; World War, 1914-1918 -- Campaigns -- Turkey -- Gallipoli Peninsula."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  }
+}

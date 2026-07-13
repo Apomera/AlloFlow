@@ -1,5 +1,7 @@
 # AlloFlow Per-Tool WCAG 2.1 AA Conformance Ledger
 
+> **Historical audit ledger, not a current conformance claim (2026-07-09):** This April 2026 ledger tracks one pass over tool-level WCAG criteria and remains useful as repair history. It should not be treated as the current VPAT or a certification substitute; use `VPAT-2.5-WCAG-AlloFlow.md`, `docs/wcag_sc_coverage.md`, and current automated/manual checks for present status.
+
 **Companion to:** [VPAT-2.5-WCAG-AlloFlow.md](VPAT-2.5-WCAG-AlloFlow.md)
 **Started:** April 26, 2026
 **Maintainer:** Aaron Pomeranz, PsyD
@@ -506,7 +508,7 @@ First top-level module audited beyond STEM Lab + SEL Hub. Same playbook: cross-c
 - **1 SVG `<g>` data-point editor** (line 16598) got `role="button"` + `tabIndex={0}` + `onKeyDown` — but ONLY when `dataMode === 'manual'` (matches the existing mouse-only-when-manual cursor pattern; values undefined when not in edit mode so screen readers don't announce non-interactive elements).
 - **1 bare checkbox** (line 22322 — ABC parsed-entries selector that wasn't wrapped in a `<label>` like the others) got descriptive aria-label including the entry's A/B/C content.
 
-**Agent over-flagging confirmed**: 5 of 6 "checkbox without label" findings were false positives — those checkboxes ARE wrapped in `<label>` elements (which is WCAG-compliant labeling). 4 of 5 "icon-only Print buttons" findings were also false positives — they have visible text content like '🖨️ Print Graph'. Only the truly bare ones got fixes.
+**Agent over-flagging confirmed**: 5 of 6 "checkbox without label" findings were false positives — those checkboxes ARE wrapped in `<label>` elements (a valid WCAG labeling pattern). 4 of 5 "icon-only Print buttons" findings were also false positives — they have visible text content like '🖨️ Print Graph'. Only the truly bare ones got fixes.
 
 **Carried forward**: 30+ h2/h3 headings have decorative emoji prefixes (e.g., `'🎯 Top Behaviors'`, `'🧠 Hypothesized Functions'`) without `aria-hidden`. Cosmetic — SR users hear emoji name but can navigate. Bulk-fixing risky because the regex might catch emojis that ARE meaningful.
 

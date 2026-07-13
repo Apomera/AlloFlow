@@ -1,7 +1,7 @@
 {
   "name": "alloflow-a11y-audit",
   "version": "1.0.0",
-  "description": "WCAG 2.1 AA compliance auditor for AlloFlow",
+  "description": "WCAG 2.2 AA accessibility auditor for AlloFlow",
   "scripts": {
     "audit": "node static-audit.js",
     "audit:runtime": "node runtime-audit.js",

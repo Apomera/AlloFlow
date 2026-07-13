@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * AlloFlow WCAG 2.1 AA Static Source Audit
+ * AlloFlow WCAG 2.2 AA Static Source Audit
  *
  * Scans all JS/JSX source files for known accessibility anti-patterns
  * identified in the March 2026 comprehensive audit.
@@ -14,6 +14,7 @@ const path = require('path');
 // ── Configuration ──────────────────────────────────────────────────────────
 
 const ROOT = path.resolve(__dirname, '..');
+const STANDARD = 'WCAG 2.2 AA';
 
 const SCAN_DIRS = [
   '',                // project root (AlloFlowANTI.txt, modules)
@@ -270,7 +271,7 @@ const CHECKS = [
   {
     id: 'DRAGDROP-001',
     name: 'Drag-and-drop without keyboard alternative',
-    wcag: '2.1.1 Keyboard',
+    wcag: '2.1.1 Keyboard, 2.5.7 Dragging Movements',
     severity: 'major',
     description: 'Draggable interaction with no keyboard-based movement alternative',
     test(line, lineNum, lines) {
@@ -420,7 +421,7 @@ function generateReport(allFindings, outputJson) {
 
   // Console report
   console.log('\n' + '='.repeat(72));
-  console.log('  ALLOFLOW WCAG 2.1 AA STATIC AUDIT REPORT');
+  console.log(`  ALLOFLOW ${STANDARD} STATIC AUDIT REPORT`);
   console.log('  ' + new Date().toISOString());
   console.log('='.repeat(72));
 
@@ -499,7 +500,7 @@ function main() {
   const fileIdx = args.indexOf('--file');
   const singleFile = fileIdx >= 0 ? args[fileIdx + 1] : null;
 
-  console.log('AlloFlow WCAG 2.1 AA Static Audit');
+  console.log(`AlloFlow ${STANDARD} Static Audit`);
   console.log('Scanning source files for accessibility anti-patterns...\n');
 
   const files = discoverFiles(singleFile);

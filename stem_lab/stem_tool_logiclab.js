@@ -75,7 +75,8 @@ window.StemLab = window.StemLab || {
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -131,6 +132,7 @@ window.StemLab = window.StemLab || {
           var proofComplete = d.proofComplete || false;
 
           var showEdu = d.showEdu || false;
+          var showTruthLab = !!d.showTruthLab;
 
           var userTopic = d.userTopic || '';
 
@@ -282,7 +284,12 @@ window.StemLab = window.StemLab || {
 
 
 
-          var parseExpr = function(tokens, pos) {
+          // Precedence-climbing parse so ¬ > ∧ > ∨/⊕ > → > ↔ (the CONN[op].prec fields were previously
+          // ignored, so "P ∨ Q ∧ R" wrongly parsed as "(P ∨ Q) ∧ R" instead of "P ∨ (Q ∧ R)").
+          // minPrec+1 on the right keeps binary operators left-associative (unchanged for same-operator chains).
+          var parseExpr = function(tokens, pos, minPrec) {
+
+            minPrec = minPrec || 0;
 
             var left = parseUnary(tokens, pos);
 
@@ -292,9 +299,13 @@ window.StemLab = window.StemLab || {
 
               if (!tok || !CONN[tok] || CONN[tok].unary) break;
 
+              var prec = CONN[tok].prec;
+
+              if (prec < minPrec) break;
+
               var op = tok;
 
-              var right = parseUnary(tokens, left.pos + 1);
+              var right = parseExpr(tokens, left.pos + 1, prec + 1);
 
               left = { node: { type: 'bin', op: op, left: left.node, right: right.node }, pos: right.pos };
 
@@ -464,25 +475,25 @@ window.StemLab = window.StemLab || {
 
           var PRESETS = [
 
-            { label: 'Implication', expr: 'P → Q' },
+            { label: t('stem.logiclab.implication', 'Implication'), expr: 'P → Q' },
 
-            { label: "De Morgan's 1", expr: '¬ (P ∧ Q)' },
+            { label: t('stem.logiclab.de_morgan_s_1', "De Morgan's 1"), expr: '¬ (P ∧ Q)' },
 
-            { label: "De Morgan's 2", expr: '(¬ P) ∨ (¬ Q)' },
+            { label: t('stem.logiclab.de_morgan_s_2', "De Morgan's 2"), expr: '(¬ P) ∨ (¬ Q)' },
 
-            { label: 'Contrapositive', expr: '(¬ Q) → (¬ P)' },
+            { label: t('stem.logiclab.contrapositive', 'Contrapositive'), expr: '(¬ Q) → (¬ P)' },
 
             { label: 'XOR', expr: 'P ⊕ Q' },
 
-            { label: 'Tautology', expr: 'P ∨ (¬ P)' },
+            { label: t('stem.logiclab.tautology', 'Tautology'), expr: 'P ∨ (¬ P)' },
 
-            { label: 'Contradiction', expr: 'P ∧ (¬ P)' },
+            { label: t('stem.logiclab.contradiction', 'Contradiction'), expr: 'P ∧ (¬ P)' },
 
-            { label: 'Biconditional', expr: 'P ↔ Q' },
+            { label: t('stem.logiclab.biconditional', 'Biconditional'), expr: 'P ↔ Q' },
 
-            { label: 'Distributive', expr: 'P ∧ (Q ∨ R)' },
+            { label: t('stem.logiclab.distributive', 'Distributive'), expr: 'P ∧ (Q ∨ R)' },
 
-            { label: 'Modus Ponens form', expr: '(P ∧ (P → Q)) → Q' }
+            { label: t('stem.logiclab.modus_ponens_form', 'Modus Ponens form'), expr: '(P ∧ (P → Q)) → Q' }
 
           ];
 
@@ -492,9 +503,29 @@ window.StemLab = window.StemLab || {
 
           // ── Inference Rules ──
 
+          // ── Fallacy detection for failed rule applications ──
+          // The two classic invalid moves are recognizable from the selection:
+          // P→Q with Q (affirming the consequent) and P→Q with ¬P (denying the
+          // antecedent). Name the fallacy with a counter-example instead of a
+          // generic "doesn't apply" — the wrong move becomes the lesson.
+          var diagnoseFallacy = function(selTexts) {
+            for (var fi = 0; fi < selTexts.length; fi++) {
+              var fm = selTexts[fi].match(/^(.+)\s*→\s*(.+)$/);
+              if (!fm) continue;
+              var fp = fm[1].trim(), fq = fm[2].trim();
+              for (var fj = 0; fj < selTexts.length; fj++) {
+                if (fi === fj) continue;
+                var fOther = selTexts[fj].trim();
+                if (fOther === fq) return 'That move is AFFIRMING THE CONSEQUENT — a classic fallacy. From "' + fp + ' → ' + fq + '" and "' + fq + '" you cannot conclude "' + fp + '": something ELSE could have caused ' + fq + '. (If it rains, the ground is wet. The ground IS wet — but maybe a sprinkler did it.)';
+                if (fOther === '¬' + fp || fOther === '¬(' + fp + ')') return 'That move is DENYING THE ANTECEDENT — a classic fallacy. From "' + fp + ' → ' + fq + '" and "¬' + fp + '" you cannot conclude "¬' + fq + '": the rule only says what happens IF ' + fp + ' is true. It is silent when ' + fp + ' is false.';
+              }
+            }
+            return null;
+          };
+
           var RULES = [
 
-            { id: 'mp', name: 'Modus Ponens', form: 'P→Q, P ∴ Q', eng: 'If you study, you pass. You studied. ∴ You pass.', needs: 2,
+            { id: 'mp', name: t('stem.logiclab.modus_ponens', 'Modus Ponens'), form: 'P→Q, P ∴ Q', eng: 'If you study, you pass. You studied. ∴ You pass.', needs: 2,
 
               check: function(premises, sel) {
 
@@ -514,7 +545,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'mt', name: 'Modus Tollens', form: 'P→Q, ¬Q ∴ ¬P', eng: "If it rains, ground is wet. Ground isn't wet. ∴ It didn't rain.", needs: 2,
+            { id: 'mt', name: t('stem.logiclab.modus_tollens', 'Modus Tollens'), form: 'P→Q, ¬Q ∴ ¬P', eng: "If it rains, ground is wet. Ground isn't wet. ∴ It didn't rain.", needs: 2,
 
               check: function(premises, sel) {
 
@@ -536,7 +567,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'hs', name: 'Hypothetical Syllogism', form: 'P→Q, Q→R ∴ P→R', eng: 'If A then B, if B then C. ∴ If A then C.', needs: 2,
+            { id: 'hs', name: t('stem.logiclab.hypothetical_syllogism', 'Hypothetical Syllogism'), form: 'P→Q, Q→R ∴ P→R', eng: 'If A then B, if B then C. ∴ If A then C.', needs: 2,
 
               check: function(premises, sel) {
 
@@ -558,7 +589,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'ds', name: 'Disjunctive Syllogism', form: 'P∨Q, ¬P ∴ Q', eng: "It's red or blue. It's not red. ∴ It's blue.", needs: 2,
+            { id: 'ds', name: t('stem.logiclab.disjunctive_syllogism', 'Disjunctive Syllogism'), form: 'P∨Q, ¬P ∴ Q', eng: "It's red or blue. It's not red. ∴ It's blue.", needs: 2,
 
               check: function(premises, sel) {
 
@@ -580,7 +611,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'conj', name: 'Conjunction', form: 'P, Q ∴ P∧Q', eng: 'Combine two truths into one.', needs: 2,
+            { id: 'conj', name: t('stem.logiclab.conjunction', 'Conjunction'), form: 'P, Q ∴ P∧Q', eng: 'Combine two truths into one.', needs: 2,
 
               check: function(premises, sel) {
 
@@ -592,7 +623,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'simp', name: 'Simplification', form: 'P∧Q ∴ P', eng: 'Extract one truth from a pair.', needs: 1,
+            { id: 'simp', name: t('stem.logiclab.simplification', 'Simplification'), form: 'P∧Q ∴ P', eng: 'Extract one truth from a pair.', needs: 1,
 
               check: function(premises, sel) {
 
@@ -606,7 +637,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'add', name: 'Addition', form: 'P ∴ P∨Q', eng: 'Add any alternative to a truth.', needs: 1,
+            { id: 'add', name: t('stem.logiclab.addition', 'Addition'), form: 'P ∴ P∨Q', eng: 'Add any alternative to a truth.', needs: 1,
 
               check: function(premises, sel) {
 
@@ -616,7 +647,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'dn', name: 'Double Negation', form: '¬¬P ≡ P', eng: '"Not not raining" = "Raining."', needs: 1,
+            { id: 'dn', name: t('stem.logiclab.double_negation', 'Double Negation'), form: '¬¬P ≡ P', eng: '"Not not raining" = "Raining."', needs: 1,
 
               check: function(premises, sel) {
 
@@ -630,7 +661,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'contra', name: 'Contrapositive', form: 'P→Q ≡ ¬Q→¬P', eng: 'Reverse and negate.', needs: 1,
+            { id: 'contra', name: t('stem.logiclab.contrapositive_2', 'Contrapositive'), form: 'P→Q ≡ ¬Q→¬P', eng: 'Reverse and negate.', needs: 1,
 
               check: function(premises, sel) {
 
@@ -644,7 +675,7 @@ window.StemLab = window.StemLab || {
 
             },
 
-            { id: 'demorgan', name: "De Morgan's", form: '¬(P∧Q) ≡ ¬P∨¬Q', eng: '"Not both" = "at least one isn\'t."', needs: 1,
+            { id: 'demorgan', name: t('stem.logiclab.de_morgan_s', "De Morgan's"), form: '¬(P∧Q) ≡ ¬P∨¬Q', eng: '"Not both" = "at least one isn\'t."', needs: 1,
 
               check: function(premises, sel) {
 
@@ -669,14 +700,14 @@ window.StemLab = window.StemLab || {
           // ── Proof Challenges ──
 
           var PROOF_CHALLENGES = [
-            { level: 1, title: 'Simple Deduction', premises: ['P \u2192 Q', 'P'], conclusion: 'Q', hint: 'Use Modus Ponens: P\u2192Q and P gives Q' },
-            { level: 2, title: 'Denial', premises: ['P \u2192 Q', '\u00ACQ'], conclusion: '\u00ACP', hint: 'Use Modus Tollens: P\u2192Q and \u00ACQ gives \u00ACP' },
-            { level: 3, title: 'Chain Reaction', premises: ['P \u2192 Q', 'Q \u2192 R', 'P'], conclusion: 'R', hint: 'HS chains P\u2192Q and Q\u2192R, then MP with P' },
-            { level: 4, title: 'Elimination', premises: ['P \u2228 Q', '\u00ACP'], conclusion: 'Q', hint: 'Disjunctive Syllogism: P\u2228Q and \u00ACP gives Q' },
-            { level: 5, title: 'Combine & Conclude', premises: ['(P \u2227 Q) \u2192 R', 'P', 'Q'], conclusion: 'R', hint: 'Conjunction gives P\u2227Q, then Modus Ponens gives R' },
-            { level: 6, title: 'Long Chain', premises: ['P \u2192 Q', 'Q \u2192 R', 'R \u2192 S', 'P'], conclusion: 'S', hint: 'Chain P\u2192Q and Q\u2192R with HS, then again with R\u2192S, then MP' },
-            { level: 7, title: 'Double Deny', premises: ['P \u2192 Q', '\u00ACQ', 'P \u2228 R'], conclusion: 'R', hint: 'MT on P\u2192Q gives \u00ACP, then DS on P\u2228R gives R' },
-            { level: 8, title: 'Master Proof', premises: ['P \u2192 Q', 'Q \u2192 R', '\u00ACR'], conclusion: '\u00ACP', hint: 'HS gives P\u2192R, then MT with \u00ACR gives \u00ACP' }
+            { level: 1, title: t('stem.logiclab.simple_deduction', 'Simple Deduction'), premises: ['P \u2192 Q', 'P'], conclusion: 'Q', rulesNeeded: ['mp'], hint: t('stem.logiclab.use_modus_ponens_p_q_and_p_gives_q', 'Use Modus Ponens: P\u2192Q and P gives Q') },
+            { level: 2, title: t('stem.logiclab.denial', 'Denial'), premises: ['P \u2192 Q', '\u00ACQ'], conclusion: '\u00ACP', rulesNeeded: ['mt'], hint: t('stem.logiclab.use_modus_tollens_p_q_and_q_gives_p', 'Use Modus Tollens: P\u2192Q and \u00ACQ gives \u00ACP') },
+            { level: 3, title: t('stem.logiclab.chain_reaction', 'Chain Reaction'), premises: ['P \u2192 Q', 'Q \u2192 R', 'P'], conclusion: 'R', rulesNeeded: ['hs', 'mp'], hint: t('stem.logiclab.hs_chains_p_q_and_q_r_then_mp_with_p', 'HS chains P\u2192Q and Q\u2192R, then MP with P') },
+            { level: 4, title: t('stem.logiclab.elimination', 'Elimination'), premises: ['P \u2228 Q', '\u00ACP'], conclusion: 'Q', rulesNeeded: ['ds'], hint: t('stem.logiclab.disjunctive_syllogism_p_q_and_p_gives_', 'Disjunctive Syllogism: P\u2228Q and \u00ACP gives Q') },
+            { level: 5, title: t('stem.logiclab.combine_conclude', 'Combine & Conclude'), premises: ['(P \u2227 Q) \u2192 R', 'P', 'Q'], conclusion: 'R', rulesNeeded: ['conj', 'mp'], hint: t('stem.logiclab.conjunction_gives_p_q_then_modus_ponen', 'Conjunction gives P\u2227Q, then Modus Ponens gives R') },
+            { level: 6, title: t('stem.logiclab.long_chain', 'Long Chain'), premises: ['P \u2192 Q', 'Q \u2192 R', 'R \u2192 S', 'P'], conclusion: 'S', rulesNeeded: ['hs', 'mp'], hint: t('stem.logiclab.chain_p_q_and_q_r_with_hs_then_again_w', 'Chain P\u2192Q and Q\u2192R with HS, then again with R\u2192S, then MP') },
+            { level: 7, title: t('stem.logiclab.double_deny', 'Double Deny'), premises: ['P \u2192 Q', '\u00ACQ', 'P \u2228 R'], conclusion: 'R', rulesNeeded: ['mt', 'ds'], hint: t('stem.logiclab.mt_on_p_q_gives_p_then_ds_on_p_r_gives', 'MT on P\u2192Q gives \u00ACP, then DS on P\u2228R gives R') },
+            { level: 8, title: t('stem.logiclab.master_proof', 'Master Proof'), premises: ['P \u2192 Q', 'Q \u2192 R', '\u00ACR'], conclusion: '\u00ACP', rulesNeeded: ['hs', 'mt'], hint: t('stem.logiclab.hs_gives_p_r_then_mt_with_r_gives_p', 'HS gives P\u2192R, then MT with \u00ACR gives \u00ACP') }
           ];
 
 
@@ -685,25 +716,25 @@ window.StemLab = window.StemLab || {
 
           var FALLACIES = [
 
-            { arg: 'If it rains, the ground is wet. The ground is wet. Therefore, it rained.', valid: false, name: 'Affirming the Consequent', formal: 'P→Q, Q ∴ P ✗', explain: 'The ground could be wet for other reasons (sprinkler, spill).' },
+            { arg: 'If it rains, the ground is wet. The ground is wet. Therefore, it rained.', valid: false, name: t('stem.logiclab.affirming_the_consequent', 'Affirming the Consequent'), formal: 'P→Q, Q ∴ P ✗', explain: 'The ground could be wet for other reasons (sprinkler, spill).' },
 
-            { arg: 'If you study, you\'ll pass. You didn\'t study. Therefore, you won\'t pass.', valid: false, name: 'Denying the Antecedent', formal: 'P→Q, ¬P ∴ ¬Q ✗', explain: 'You might pass anyway (natural talent, lucky guesses).' },
+            { arg: 'If you study, you\'ll pass. You didn\'t study. Therefore, you won\'t pass.', valid: false, name: t('stem.logiclab.denying_the_antecedent', 'Denying the Antecedent'), formal: 'P→Q, ¬P ∴ ¬Q ✗', explain: 'You might pass anyway (natural talent, lucky guesses).' },
 
-            { arg: 'All dogs are mammals. Fido is a dog. Therefore, Fido is a mammal.', valid: true, name: 'Valid Syllogism', formal: '∀x(Dog(x)→Mammal(x)), Dog(Fido) ∴ Mammal(Fido) ✓', explain: 'Classic valid deductive reasoning.' },
+            { arg: 'All dogs are mammals. Fido is a dog. Therefore, Fido is a mammal.', valid: true, name: t('stem.logiclab.valid_syllogism', 'Valid Syllogism'), formal: '∀x(Dog(x)→Mammal(x)), Dog(Fido) ∴ Mammal(Fido) ✓', explain: 'Classic valid deductive reasoning.' },
 
-            { arg: 'If you\'re a cat, you have four legs. Spot has four legs. Therefore, Spot is a cat.', valid: false, name: 'Affirming the Consequent', formal: 'P→Q, Q ∴ P ✗', explain: 'Spot could be a dog, a horse, or any four-legged animal!' },
+            { arg: 'If you\'re a cat, you have four legs. Spot has four legs. Therefore, Spot is a cat.', valid: false, name: t('stem.logiclab.affirming_the_consequent_2', 'Affirming the Consequent'), formal: 'P→Q, Q ∴ P ✗', explain: 'Spot could be a dog, a horse, or any four-legged animal!' },
 
-            { arg: 'Either we go to the park or we go to the movies. We\'re not going to the park. Therefore, we go to the movies.', valid: true, name: 'Disjunctive Syllogism', formal: 'P∨Q, ¬P ∴ Q ✓', explain: 'With only two options, eliminating one leaves the other.' },
+            { arg: 'Either we go to the park or we go to the movies. We\'re not going to the park. Therefore, we go to the movies.', valid: true, name: t('stem.logiclab.disjunctive_syllogism_2', 'Disjunctive Syllogism'), formal: 'P∨Q, ¬P ∴ Q ✓', explain: 'With only two options, eliminating one leaves the other.' },
 
-            { arg: 'If it snows, school is cancelled. School is not cancelled. Therefore, it did not snow.', valid: true, name: 'Modus Tollens', formal: 'P→Q, ¬Q ∴ ¬P ✓', explain: 'Denying the consequent validly denies the antecedent.' },
+            { arg: 'If it snows, school is cancelled. School is not cancelled. Therefore, it did not snow.', valid: true, name: t('stem.logiclab.modus_tollens_2', 'Modus Tollens'), formal: 'P→Q, ¬Q ∴ ¬P ✓', explain: 'Denying the consequent validly denies the antecedent.' },
 
-            { arg: 'Everyone who exercises is healthy. Maria is healthy. Therefore, Maria exercises.', valid: false, name: 'Affirming the Consequent', formal: 'P→Q, Q ∴ P ✗', explain: 'Maria might be healthy for other reasons (genetics, diet).' },
+            { arg: 'Everyone who exercises is healthy. Maria is healthy. Therefore, Maria exercises.', valid: false, name: t('stem.logiclab.affirming_the_consequent_3', 'Affirming the Consequent'), formal: 'P→Q, Q ∴ P ✗', explain: 'Maria might be healthy for other reasons (genetics, diet).' },
 
-            { arg: 'If a shape is a square, it has four sides. This shape has four sides. Therefore, it\'s a square.', valid: false, name: 'Affirming the Consequent', formal: 'P\u2192Q, Q \u2234 P \u2717', explain: 'Rectangles and rhombuses also have four sides!' },
-            { arg: 'If you eat vegetables, you grow tall. Sam doesn\'t eat vegetables. Therefore, Sam won\'t grow tall.', valid: false, name: 'Denying the Antecedent', formal: 'P\u2192Q, \u00ACP \u2234 \u00ACQ \u2717', explain: 'Height depends on many factors — genetics, sleep, and more.' },
-            { arg: 'If the alarm goes off, there is a fire. The alarm went off. Therefore, there is a fire.', valid: true, name: 'Modus Ponens', formal: 'P\u2192Q, P \u2234 Q \u2713', explain: 'Classic valid MP — the alarm confirms the fire consequence.' },
-            { arg: 'It is raining OR it is sunny. It is raining. Therefore, it is not sunny.', valid: false, name: 'False Exclusive Disjunction', formal: 'P\u2228Q, P \u2234 \u00ACQ \u2717', explain: 'OR is inclusive — both could be true (a light rain in sunshine).' },
-            { arg: 'If we win the game, we celebrate. We did not win. Therefore, we do not celebrate.', valid: false, name: 'Denying the Antecedent', formal: 'P\u2192Q, \u00ACP \u2234 \u00ACQ \u2717', explain: 'You could celebrate the season ending, effort, or other achievements.' }
+            { arg: 'If a shape is a square, it has four sides. This shape has four sides. Therefore, it\'s a square.', valid: false, name: t('stem.logiclab.affirming_the_consequent_4', 'Affirming the Consequent'), formal: 'P\u2192Q, Q \u2234 P \u2717', explain: 'Rectangles and rhombuses also have four sides!' },
+            { arg: 'If you eat vegetables, you grow tall. Sam doesn\'t eat vegetables. Therefore, Sam won\'t grow tall.', valid: false, name: t('stem.logiclab.denying_the_antecedent_2', 'Denying the Antecedent'), formal: 'P\u2192Q, \u00ACP \u2234 \u00ACQ \u2717', explain: 'Height depends on many factors — genetics, sleep, and more.' },
+            { arg: 'If the alarm goes off, there is a fire. The alarm went off. Therefore, there is a fire.', valid: true, name: t('stem.logiclab.modus_ponens_2', 'Modus Ponens'), formal: 'P\u2192Q, P \u2234 Q \u2713', explain: 'Classic valid MP — the alarm confirms the fire consequence.' },
+            { arg: 'It is raining OR it is sunny. It is raining. Therefore, it is not sunny.', valid: false, name: t('stem.logiclab.false_exclusive_disjunction', 'False Exclusive Disjunction'), formal: 'P\u2228Q, P \u2234 \u00ACQ \u2717', explain: 'OR is inclusive — both could be true (a light rain in sunshine).' },
+            { arg: 'If we win the game, we celebrate. We did not win. Therefore, we do not celebrate.', valid: false, name: t('stem.logiclab.denying_the_antecedent_3', 'Denying the Antecedent'), formal: 'P\u2192Q, \u00ACP \u2234 \u00ACQ \u2717', explain: 'You could celebrate the season ending, effort, or other achievements.' }
           ];
 
 
@@ -712,26 +743,42 @@ window.StemLab = window.StemLab || {
 
           var TT_CHALLENGES = [
 
-            { expr: 'P ∧ Q', desc: 'AND gate' },
+            { expr: 'P ∧ Q', desc: t('stem.logiclab.and_gate', 'AND gate') },
 
-            { expr: 'P ∨ Q', desc: 'OR gate' },
+            { expr: 'P ∨ Q', desc: t('stem.logiclab.or_gate', 'OR gate') },
 
-            { expr: 'P → Q', desc: 'Implication' },
+            { expr: 'P → Q', desc: t('stem.logiclab.implication_2', 'Implication') },
 
-            { expr: '¬ P', desc: 'Negation' },
+            { expr: '¬ P', desc: t('stem.logiclab.negation', 'Negation') },
 
-            { expr: 'P ⊕ Q', desc: 'Exclusive OR' },
+            { expr: 'P ⊕ Q', desc: t('stem.logiclab.exclusive_or', 'Exclusive OR') },
 
-            { expr: '(P \u2192 Q) \u2227 (Q \u2192 P)', desc: 'Biconditional equivalence' },
-            { expr: '\u00AC (P \u2227 Q)', desc: 'NAND gate' },
-            { expr: '\u00AC (P \u2228 Q)', desc: 'NOR gate' },
-            { expr: 'P \u2227 (\u00AC P)', desc: 'Contradiction' },
-            { expr: 'P \u2228 (\u00AC P)', desc: 'Tautology' }
+            { expr: '(P \u2192 Q) \u2227 (Q \u2192 P)', desc: t('stem.logiclab.biconditional_equivalence', 'Biconditional equivalence') },
+            { expr: '\u00AC (P \u2227 Q)', desc: t('stem.logiclab.nand_gate', 'NAND gate') },
+            { expr: '\u00AC (P \u2228 Q)', desc: t('stem.logiclab.nor_gate', 'NOR gate') },
+            { expr: 'P \u2227 (\u00AC P)', desc: t('stem.logiclab.contradiction_2', 'Contradiction') },
+            { expr: 'P \u2228 (\u00AC P)', desc: t('stem.logiclab.tautology_2', 'Tautology') }
           ];
 
 
 
           var activeCh = aiProof || PROOF_CHALLENGES[currentChallenge] || PROOF_CHALLENGES[0];
+
+          // ── Grade-banded rule palette ──
+          // Younger bands start with the two most intuitive rules; the middle band
+          // adds four more; 9-12 sees all eight. Rules the ACTIVE challenge needs
+          // are always unlocked (so no proof is ever blocked), AI-generated proofs
+          // show everything (their requirements are unknown), and a "show all"
+          // toggle lets any student opt out of the training wheels.
+          var _llGl = (gradeLevel || '').toLowerCase();
+          var _llBand = /k|1st|2nd|pre/.test(_llGl) ? 'K-2' : /3rd|4th|5th/.test(_llGl) ? '3-5' : /6th|7th|8th/.test(_llGl) ? '6-8' : '9-12';
+          var _llBandRules = _llBand === '9-12' ? null : (_llBand === '6-8' ? { mp: 1, mt: 1, hs: 1, ds: 1, conj: 1, simp: 1 } : { mp: 1, ds: 1 });
+          var _llNeeded = (!aiProof && activeCh && activeCh.rulesNeeded) || [];
+          var showAllRules = !!d.showAllRules;
+          var ruleVisible = function(rid) {
+            if (showAllRules || _llBandRules === null || aiProof) return true;
+            return !!_llBandRules[rid] || _llNeeded.indexOf(rid) >= 0;
+          };
 
 
 
@@ -770,6 +817,139 @@ window.StemLab = window.StemLab || {
             '(': '#94a3b8', ')': '#94a3b8'
           };
 
+          var renderLogicStudioFocus = function() {
+            var table = genTable(expr);
+            var rowCount = table && table.rows ? table.rows.length : 0;
+            var trueCount = table && table.rows ? table.rows.filter(function(r) { return r.result; }).length : 0;
+            var falseCount = rowCount - trueCount;
+            var truePct = rowCount ? Math.round((trueCount / rowCount) * 100) : 0;
+            var modeLabels = {
+              truth: 'Truth Tables',
+              proof: 'Proof Builder',
+              challenges: 'Challenges',
+              gates: 'Logic Gates',
+              simLogic: 'Probability Logic'
+            };
+            var activeModeLabel = modeLabels[mode] || modeLabels.truth;
+            var proofTarget = activeCh && activeCh.conclusion ? activeCh.conclusion : 'Q';
+            var routeCards = [
+              { id: 'truth', icon: '\uD83D\uDCCA', title: 'Truth Tables', detail: rowCount ? rowCount + ' rows ready' : 'Build every case', accent: '#7c3aed', soft: '#f5f3ff' },
+              { id: 'proof', icon: '\uD83E\uDDE9', title: 'Proof Builder', detail: proofSteps.length + ' steps toward ' + proofTarget, accent: '#0891b2', soft: '#ecfeff' },
+              { id: 'challenges', icon: '\u26A1', title: 'Challenge Run', detail: score + ' pts, streak ' + streak, accent: '#d97706', soft: '#fffbeb' },
+              { id: 'gates', icon: '\u26A1', title: 'Logic Gates', detail: gateType + ' output ' + (gateOutput ? 'true' : 'false'), accent: '#16a34a', soft: '#f0fdf4' },
+              { id: 'simLogic', icon: '\uD83C\uDFB2', title: 'Probability', detail: 'Reason with uncertainty', accent: '#db2777', soft: '#fdf2f8' }
+            ];
+
+            return React.createElement("section", {
+              "data-logiclab-focus": "true",
+              role: "region",
+              "aria-label": t('stem.logiclab.reasoning_studio', 'Logic Lab reasoning studio'),
+              className: "mb-5 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm"
+            },
+              React.createElement("div", {
+                className: "grid grid-cols-1 lg:grid-cols-5 gap-0",
+                style: { background: 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 54%, #eef2ff 100%)' }
+              },
+                React.createElement("div", { className: "lg:col-span-3 p-5 sm:p-6" },
+                  React.createElement("div", { className: "flex flex-wrap items-start gap-3 justify-between" },
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-xs font-black uppercase tracking-wide text-violet-500" }, t('stem.logiclab.current_workspace', 'Current workspace')),
+                      React.createElement("h3", { className: "mt-1 text-xl sm:text-2xl font-black text-slate-950" }, t('stem.logiclab.reasoning_studio_title', 'Reasoning Studio')),
+                      React.createElement("p", { className: "mt-2 max-w-xl text-sm leading-relaxed text-slate-700" }, t('stem.logiclab.reasoning_studio_hint', 'Move between truth tables, proof steps, logic gates, and probability without losing the thread of the argument.'))
+                    ),
+                    React.createElement("span", {
+                      className: "rounded-full px-3 py-1 text-xs font-black text-white",
+                      style: { background: _gViolet }
+                    }, activeModeLabel)
+                  ),
+                  React.createElement("div", { className: "mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                    [
+                      ['Expression', expr || 'P \u2192 Q', rowCount ? table.type : 'ready'],
+                      ['Rows', rowCount || 'Build', trueCount + ' true'],
+                      ['Proof', proofSteps.length + ' steps', 'target ' + proofTarget],
+                      ['Best', bestStreak + ' streak', score + ' pts']
+                    ].map(function(stat) {
+                      return React.createElement("div", {
+                        key: stat[0],
+                        className: "rounded-xl border border-white/80 bg-white/85 p-3 shadow-sm",
+                        style: { minHeight: 86 }
+                      },
+                        React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wide text-slate-500" }, stat[0]),
+                        React.createElement("div", { className: "mt-1 truncate text-sm font-black text-slate-950", title: String(stat[1]) }, stat[1]),
+                        React.createElement("div", { className: "mt-1 text-xs font-bold text-violet-700" }, stat[2])
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "mt-4 rounded-xl border border-violet-100 bg-white/75 p-3" },
+                    React.createElement("div", { className: "flex items-center justify-between text-xs font-black text-slate-600" },
+                      React.createElement("span", null, t('stem.logiclab.truth_mix', 'Truth mix')),
+                      React.createElement("span", null, trueCount + ' true / ' + falseCount + ' false')
+                    ),
+                    React.createElement("div", { className: "mt-2 h-3 overflow-hidden rounded-full bg-red-100" },
+                      React.createElement("div", {
+                        className: "h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400",
+                        style: { width: truePct + '%', minWidth: rowCount && truePct === 0 ? 0 : 10 }
+                      })
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "lg:col-span-2 border-t border-violet-100 bg-slate-950 p-4 lg:border-l lg:border-t-0" },
+                  React.createElement("svg", {
+                    viewBox: "0 0 520 220",
+                    role: "img",
+                    "aria-label": t('stem.logiclab.logic_flow_visual', 'Logic flow visual showing inputs, gate, truth rows, and output.'),
+                    className: "w-full",
+                    style: { display: 'block', minHeight: 190 }
+                  },
+                    React.createElement("defs", null,
+                      React.createElement("linearGradient", { id: "logicStudioLine", x1: "0", x2: "1", y1: "0", y2: "0" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#a78bfa" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#22d3ee" })
+                      )
+                    ),
+                    React.createElement("rect", { x: "0", y: "0", width: "520", height: "220", rx: "28", fill: "#0f172a" }),
+                    React.createElement("path", { d: "M66 72 H170 M66 148 H170 M318 110 H450", stroke: "url(#logicStudioLine)", strokeWidth: "10", strokeLinecap: "round", opacity: "0.75" }),
+                    React.createElement("circle", { cx: "66", cy: "72", r: "30", fill: gateInputs.A ? "#22c55e" : "#334155", stroke: "#a78bfa", strokeWidth: "4" }),
+                    React.createElement("circle", { cx: "66", cy: "148", r: "30", fill: (!isUnaryGate && gateInputs.B) ? "#22c55e" : "#334155", stroke: "#a78bfa", strokeWidth: "4", opacity: isUnaryGate ? "0.38" : "1" }),
+                    React.createElement("text", { x: "66", y: "78", textAnchor: "middle", fontSize: "22", fontWeight: "900", fill: "#f8fafc" }, "P"),
+                    React.createElement("text", { x: "66", y: "154", textAnchor: "middle", fontSize: "22", fontWeight: "900", fill: "#f8fafc" }, "Q"),
+                    React.createElement("rect", { x: "174", y: "48", width: "144", height: "124", rx: "26", fill: "#4c1d95", stroke: "#c4b5fd", strokeWidth: "4" }),
+                    React.createElement("text", { x: "246", y: "98", textAnchor: "middle", fontSize: "28", fontWeight: "900", fill: "#ffffff" }, gateType),
+                    React.createElement("text", { x: "246", y: "130", textAnchor: "middle", fontSize: "15", fontWeight: "800", fill: "#ddd6fe" }, rowCount + " rows"),
+                    React.createElement("circle", { cx: "450", cy: "110", r: "36", fill: gateOutput ? "#16a34a" : "#dc2626", stroke: "#f8fafc", strokeWidth: "5" }),
+                    React.createElement("text", { x: "450", y: "118", textAnchor: "middle", fontSize: "24", fontWeight: "900", fill: "#ffffff" }, gateOutput ? "TRUE" : "FALSE"),
+                    React.createElement("text", { x: "40", y: "205", fontSize: "14", fontWeight: "800", fill: "#c4b5fd" }, "Current: " + (expr || "P \u2192 Q")),
+                    React.createElement("text", { x: "480", y: "205", textAnchor: "end", fontSize: "14", fontWeight: "800", fill: "#67e8f9" }, truePct + "% true")
+                  )
+                )
+              ),
+              React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 border-t border-violet-100 bg-white p-3" },
+                routeCards.map(function(card) {
+                  var active = mode === card.id;
+                  return React.createElement("button", {
+                    key: card.id,
+                    type: "button",
+                    "aria-label": "Open " + card.title,
+                    onClick: function() { sfxLogiclClick(); upd({ mode: card.id }); },
+                    className: "text-left rounded-xl border p-3 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500",
+                    style: {
+                      minHeight: 96,
+                      background: active ? card.soft : '#ffffff',
+                      borderColor: active ? card.accent : '#e2e8f0',
+                      boxShadow: active ? '0 10px 22px rgba(124,58,237,0.14)' : 'none'
+                    }
+                  },
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("span", { "aria-hidden": "true", className: "text-lg" }, card.icon),
+                      React.createElement("span", { className: "text-sm font-black text-slate-950" }, card.title)
+                    ),
+                    React.createElement("div", { className: "mt-2 text-xs font-bold leading-snug text-slate-600" }, card.detail)
+                  );
+                })
+              )
+            );
+          };
+
           return React.createElement("div", { className: "max-w-4xl mx-auto" },
 
             // CSS animations
@@ -785,15 +965,15 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("span", { style: { fontSize: '32px' } }, "\uD83E\uDDE0"),
 
-                React.createElement("h2", { className: "text-2xl font-black text-white tracking-tight" }, "Logic Lab"),
+                React.createElement("h2", { className: "text-2xl font-black text-white tracking-tight" }, t('stem.logiclab.logic_lab', "Logic Lab")),
 
-                React.createElement("span", { className: "text-violet-200 text-sm font-bold ml-2" }, "Propositional Logic & Reasoning")
+                React.createElement("span", { className: "text-violet-200 text-sm font-bold ml-2" }, t('stem.logiclab.propositional_logic_reasoning', "Propositional Logic & Reasoning"))
 
               ),
 
               // Mode tabs
 
-              React.createElement("div", { className: "flex justify-center gap-2 mt-4" },
+              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-4" },
 
                 [['truth', '\uD83D\uDCCA', 'Truth Tables'], ['proof', '\uD83E\uDDE9', 'Proof Builder'], ['challenges', '\u26A1', 'Challenges'], ['gates', '\u26A1\uFE0F', 'Logic Gates'], ['simLogic', '\uD83C\uDFB2', 'Probability']].map(function(m) {
 
@@ -805,9 +985,9 @@ window.StemLab = window.StemLab || {
 
                     onClick: function() { upd({ mode: m[0] }); },
 
-                    className: "px-5 py-2.5 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg scale-105" : "text-violet-600 bg-violet-50 hover:bg-violet-100"),
+                    className: "px-3 py-2.5 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg scale-105" : "text-violet-600 bg-violet-50 hover:bg-violet-100"),
 
-                    style: active ? { background: _gViolet, boxShadow: '0 4px 14px rgba(124,58,237,0.3)' } : {}
+                    style: active ? { background: _gViolet, boxShadow: '0 4px 14px rgba(124,58,237,0.3)', minHeight: 44 } : { minHeight: 44 }
 
                   }, m[1] + " " + m[2]);
 
@@ -817,14 +997,16 @@ window.StemLab = window.StemLab || {
 
             ),
 
+            renderLogicStudioFocus(),
+
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                truth:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: 'Truth Tables \u2014 every input combination, every output', hint: 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.' },
-                proof:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: 'Proof Builder \u2014 derive conclusions step by step',     hint: 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.' },
-                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: 'Challenges \u2014 graded tautology + contradiction puzzles', hint: 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.' },
-                gates:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: 'Logic Gates \u2014 transistors all the way down',         hint: 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.' },
-                simLogic:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFB2', title: 'Probability Logic \u2014 inference under uncertainty', hint: 'P and Q each carry a probability instead of a hard true/false. For independent events, P(P\u2227Q) = P(P) \u00D7 P(Q). Watch how a confidence threshold turns soft probabilities into discrete inferences.' }
+                truth:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: t('stem.logiclab.truth_tables_every_input_combination_e', 'Truth Tables \u2014 every input combination, every output'), hint: t('stem.logiclab.for_n_variables_the_table_has_2_rows_a', 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.') },
+                proof:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: t('stem.logiclab.proof_builder_derive_conclusions_step_', 'Proof Builder \u2014 derive conclusions step by step'),     hint: t('stem.logiclab.modus_ponens_modus_tollens_hypothetica', 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.') },
+                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: t('stem.logiclab.challenges_graded_tautology_contradict', 'Challenges \u2014 graded tautology + contradiction puzzles'), hint: t('stem.logiclab.tautology_always_true_contradiction_al', 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.') },
+                gates:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: t('stem.logiclab.logic_gates_transistors_all_the_way_do', 'Logic Gates \u2014 transistors all the way down'),         hint: t('stem.logiclab.nand_is_functionally_complete_you_can_', 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.') },
+                simLogic:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFB2', title: t('stem.logiclab.probability_logic_inference_under_unce', 'Probability Logic \u2014 inference under uncertainty'), hint: t('stem.logiclab.p_and_q_each_carry_a_probability_inste', 'P and Q each carry a probability instead of a hard true/false. For independent events, P(P\u2227Q) = P(P) \u00D7 P(Q). Watch how a confidence threshold turns soft probabilities into discrete inferences.') }
               };
               var meta = MODE_META[mode] || MODE_META.truth;
               return React.createElement('div', {
@@ -857,13 +1039,13 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { style: { fontSize: '18px' } }, "\uD83E\uDDE9"),
-                  React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, "Drag-and-Drop Expression Builder"),
-                  React.createElement("span", { className: "text-xs text-violet-400 font-bold ml-auto" }, "Drag tiles or click to add")
+                  React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, t('stem.logiclab.drag_and_drop_expression_builder', "Drag-and-Drop Expression Builder")),
+                  React.createElement("span", { className: "text-xs text-violet-400 font-bold ml-auto" }, t('stem.logiclab.drag_tiles_or_click_to_add', "Drag tiles or click to add"))
                 ),
 
                 // Symbol palette
                 React.createElement("div", { className: "mb-3 space-y-2" },
-                  React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, "Variables"),
+                  React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, t('stem.logiclab.variables', "Variables")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['P','Q','R','S'].map(function(v) {
                       return React.createElement("div", { 
@@ -875,7 +1057,7 @@ window.StemLab = window.StemLab || {
                       }, v);
                     })
                   ),
-                  React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, "Connectives"),
+                  React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, t('stem.logiclab.connectives', "Connectives")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['\u2227','\u2228','\u00AC','\u2192','\u2194','\u2295'].map(function(sym) {
                       return React.createElement("div", { 
@@ -907,7 +1089,7 @@ window.StemLab = window.StemLab || {
                   onDrop: function(e) { e.preventDefault(); if (_drag.sym) { upd({ expression: expr+_drag.sym, _dragOver: false }); _drag.sym=null; } }
                 },
                   expr.length === 0
-                    ? React.createElement("span", { className: "text-slate-600 text-sm font-bold" }, "Drop symbols here or click above…")
+                    ? React.createElement("span", { className: "text-slate-600 text-sm font-bold" }, t('stem.logiclab.drop_symbols_here_or_click_above', "Drop symbols here or click above…"))
                     : (function() {
                         var toks = tokenize(expr);
                         return toks.length === 0
@@ -927,25 +1109,25 @@ window.StemLab = window.StemLab || {
                   React.createElement("input", {
                     type: "text", value: expr,
                     onChange: function(e) { upd({ expression: e.target.value }); },
-                    placeholder: "Or type: P \u2192 Q",
-                    'aria-label': 'Logic expression input',
+                    placeholder: t('stem.logiclab.or_type_p_q', "Or type: P \u2192 Q"),
+                    'aria-label': t('stem.logiclab.logic_expression_input', 'Logic expression input'),
                     className: "flex-1 px-3 py-2 rounded-lg border border-violet-200 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
-                  React.createElement("button", { "aria-label": "Backspace last symbol",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.backspace_last_symbol', "Backspace last symbol"),
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
                     className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg text-sm"
                   }, "\u232B"),
-                  React.createElement("button", { "aria-label": "Clear",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.clear', "Clear"),
                     onClick: function() { upd({ expression: '' }); },
                     className: "px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg text-sm"
-                  }, "Clear")
+                  }, t('stem.logiclab.clear_2', "Clear"))
                 ),
 
                 // Current expression display (kept for English toggle)
                 React.createElement("div", { className: "flex items-center gap-3 mb-4 p-3 bg-white rounded-xl border border-violet-200" },
                   React.createElement("code", { className: "text-lg font-mono font-bold text-violet-800 flex-1" }, expr),
 
-                  React.createElement("button", { "aria-label": "Toggle English and Formal notation",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.toggle_english_and_formal_notation', "Toggle English and Formal notation"),
 
                     onClick: function() { upd({ showEnglish: !showEnglish }); },
 
@@ -1019,7 +1201,7 @@ window.StemLab = window.StemLab || {
 
                   }),
 
-                  React.createElement("button", { "aria-label": "Backspace last symbol",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.backspace_last_symbol_2', "Backspace last symbol"),
 
                     onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
 
@@ -1027,13 +1209,13 @@ window.StemLab = window.StemLab || {
 
                   }, "\u232B"),
 
-                  React.createElement("button", { "aria-label": "Clear",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.clear_3', "Clear"),
 
                     onClick: function() { upd({ expression: '' }); },
 
                     className: "px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg transition-all text-sm"
 
-                  }, "Clear")
+                  }, t('stem.logiclab.clear_4', "Clear"))
 
                 ),
 
@@ -1072,7 +1254,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("span", { className: "font-black text-amber-800 text-sm flex-1" },
                     _t2.type === 'tautology' ? 'Always TRUE! You found a tautology!' : 'Always FALSE! You found a contradiction!'
                   ),
-                  React.createElement("button", { "aria-label": "Claim XP",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.claim_xp', "Claim XP"),
                     onClick: function() {
                       var xp = _t2.type === 'tautology' ? 10 : 5;
                       if (typeof awardStemXP === 'function') awardStemXP('logicLab', xp, 'Found '+_t2.type);
@@ -1081,7 +1263,7 @@ window.StemLab = window.StemLab || {
                     },
                     className: "px-4 py-2 text-xs font-black text-white rounded-xl",
                     style: { background: 'linear-gradient(135deg, #f59e0b, #fbbf24)', boxShadow: '0 2px 8px rgba(245,158,11,0.3)' }
-                  }, '\uD83C\uDF1F Claim XP')
+                  }, t('stem.logiclab.claim_xp_2', '\uD83C\uDF1F Claim XP'))
                 );
               })(),
 
@@ -1091,13 +1273,13 @@ window.StemLab = window.StemLab || {
 
                 var table = genTable(expr);
 
-                if (!table) return React.createElement("div", { className: "p-8 text-center text-slate-600 text-sm" }, "Enter an expression above to generate a truth table");
+                if (!table) return React.createElement("div", { className: "p-8 text-center text-slate-600 text-sm" }, t('stem.logiclab.enter_an_expression_above_to_generate_', "Enter an expression above to generate a truth table"));
 
-                var typeBadge = table.type === 'tautology' ? { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', label: '\u2705 Tautology (always true)', glow: '0 0 20px rgba(16,185,129,0.3)' }
+                var typeBadge = table.type === 'tautology' ? { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', label: t('stem.logiclab.tautology_always_true', '\u2705 Tautology (always true)'), glow: '0 0 20px rgba(16,185,129,0.3)' }
 
-                  : table.type === 'contradiction' ? { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300', label: '\u274C Contradiction (always false)', glow: '0 0 20px rgba(239,68,68,0.3)' }
+                  : table.type === 'contradiction' ? { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300', label: t('stem.logiclab.contradiction_always_false', '\u274C Contradiction (always false)'), glow: '0 0 20px rgba(239,68,68,0.3)' }
 
-                  : { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300', label: '\u26A0\uFE0F Contingency (sometimes true)', glow: 'none' };
+                  : { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300', label: t('stem.logiclab.contingency_sometimes_true', '\u26A0\uFE0F Contingency (sometimes true)'), glow: 'none' };
 
 
 
@@ -1107,11 +1289,11 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("div", { className: "px-5 py-3 flex items-center justify-between" },
 
-                    React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, "\uD83D\uDCCA Truth Table"),
+                    React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, t('stem.logiclab.truth_table', "\uD83D\uDCCA Truth Table")),
 
                     React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-black border " + typeBadge.bg + " " + typeBadge.text + " " + typeBadge.border, style: { boxShadow: typeBadge.glow } }, typeBadge.label),
 
-                    React.createElement("button", { "aria-label": "AI explain truth table expression",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.ai_explain_truth_table_expression', "AI explain truth table expression"),
 
                       onClick: function() {
 
@@ -1133,7 +1315,7 @@ window.StemLab = window.StemLab || {
 
                   aiExplain && React.createElement("div", { className: "mx-4 mb-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-sm text-purple-800 leading-relaxed" },
 
-                    React.createElement("span", { className: "font-bold" }, "\uD83E\uDD16 AI Explanation: "),
+                    React.createElement("span", { className: "font-bold" }, t('stem.logiclab.ai_explanation', "\uD83E\uDD16 AI Explanation: ")),
 
                     aiExplain
 
@@ -1145,7 +1327,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("table", { className: "w-full text-sm", style: { borderCollapse: 'separate', borderSpacing: '0 2px' } },
 
-                      React.createElement("caption", { className: "sr-only" }, "logiclab data table"), React.createElement("thead", null,
+                      React.createElement("caption", { className: "sr-only" }, t('stem.logiclab.logiclab_data_table', "logiclab data table")), React.createElement("thead", null,
 
                         React.createElement("tr", null,
 
@@ -1232,9 +1414,9 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("span", { style: { fontSize: '18px' } }, "\uD83C\uDFAF"),
 
-                  React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, "Proof Challenges"),
+                  React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, t('stem.logiclab.proof_challenges', "Proof Challenges")),
 
-                  proofComplete && React.createElement("span", { className: "ml-auto px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-black rounded-full border border-emerald-300" }, "\uD83C\uDF89 Complete!")
+                  proofComplete && React.createElement("span", { className: "ml-auto px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-black rounded-full border border-emerald-300" }, t('stem.logiclab.complete', "\uD83C\uDF89 Complete!"))
 
                 ),
 
@@ -1272,7 +1454,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("div", { className: "mt-3 flex items-center gap-2" },
 
-                  React.createElement("button", { "aria-label": "AI-Generate Proof Challenge",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate_proof_challenge', "AI-Generate Proof Challenge"),
 
                     onClick: function() {
 
@@ -1292,17 +1474,17 @@ window.StemLab = window.StemLab || {
 
                   'aria-busy': aiLoading
 
-                  }, "\uD83E\uDD16 AI-Generate Proof Challenge"),
+                  }, t('stem.logiclab.ai_generate_proof_challenge_2', "\uD83E\uDD16 AI-Generate Proof Challenge")),
 
                   aiLoading && React.createElement("span", { className: "text-xs text-violet-500 font-bold" }, "Generating..."),
 
-                  aiProof && React.createElement("button", { "aria-label": "Clear AI",
+                  aiProof && React.createElement("button", { "aria-label": t('stem.logiclab.clear_ai', "Clear AI"),
 
                     onClick: function() { upd({ aiProof: null, proofSteps: [], proofComplete: false }); },
 
                     className: "text-xs text-red-400 hover:text-red-600 font-bold"
 
-                  }, "\u2715 Clear AI")
+                  }, t('stem.logiclab.clear_ai_2', "\u2715 Clear AI"))
 
                 )
 
@@ -1322,13 +1504,13 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("div", { className: "p-4 rounded-2xl border-2 border-indigo-200 bg-indigo-50" },
 
-                    React.createElement("h4", { className: "text-xs font-black text-indigo-600 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Premises (Given)"),
+                    React.createElement("h4", { className: "text-xs font-black text-indigo-600 uppercase tracking-wider mb-2" }, t('stem.logiclab.premises_given', "\uD83D\uDCCB Premises (Given)")),
 
                     activeCh.premises.map(function(p, pi) {
 
                       var isSelected = (d.selectedSteps || []).indexOf('P' + pi) !== -1;
 
-                      return React.createElement("button", { "aria-label": "Drag or click to select",
+                      return React.createElement("button", { "aria-label": t('stem.logiclab.drag_or_click_to_select', "Drag or click to select"),
                         key: pi, draggable: true,
                         onDragStart: function(e) { _drag.proofKey = 'P'+pi; e.dataTransfer.effectAllowed='move'; },
                         onClick: function() {
@@ -1338,7 +1520,7 @@ window.StemLab = window.StemLab || {
                           upd({ selectedSteps: sel });
                         },
                         className: "flex items-center gap-3 w-full p-3 mb-1.5 rounded-xl text-left transition-all " + (isSelected ? "bg-indigo-200 ring-2 ring-indigo-500 shadow-md" : "bg-white hover:bg-indigo-100 border border-indigo-200"),
-                        title: "Drag or click to select"
+                        title: t('stem.logiclab.drag_or_click_to_select_2', "Drag or click to select")
                       },
 
                         React.createElement("span", { className: "text-xs font-black text-indigo-400 w-6" }, "P" + (pi + 1)),
@@ -1375,7 +1557,7 @@ window.StemLab = window.StemLab || {
 
                   proofSteps.length > 0 && React.createElement("div", { className: "p-4 rounded-2xl border-2 border-violet-200", style: { background: _gCard } },
 
-                    React.createElement("h4", { className: "text-xs font-black text-violet-600 uppercase tracking-wider mb-2" }, "\uD83D\uDD17 Derivation"),
+                    React.createElement("h4", { className: "text-xs font-black text-violet-600 uppercase tracking-wider mb-2" }, t('stem.logiclab.derivation', "\uD83D\uDD17 Derivation")),
 
                     proofSteps.map(function(step, si) {
 
@@ -1414,7 +1596,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-2" },
 
-                      React.createElement("button", { "aria-label": "Undo",
+                      React.createElement("button", { "aria-label": t('stem.logiclab.undo', "Undo"),
 
                         onClick: function() {
 
@@ -1428,15 +1610,15 @@ window.StemLab = window.StemLab || {
 
                         disabled: proofSteps.length === 0
 
-                      }, "\u21A9 Undo"),
+                      }, t('stem.logiclab.undo_2', "\u21A9 Undo")),
 
-                      React.createElement("button", { "aria-label": "Reset proof steps",
+                      React.createElement("button", { "aria-label": t('stem.logiclab.reset_proof_steps', "Reset proof steps"),
 
-                        onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [] }); },
+                        onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [], fallacyNote: null }); },
 
                         className: "px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-400 rounded-lg transition-all"
 
-                      }, "\uD83D\uDD04 Reset")
+                      }, t('stem.logiclab.reset', "\uD83D\uDD04 Reset"))
 
                     )
 
@@ -1446,7 +1628,7 @@ window.StemLab = window.StemLab || {
 
                   // Hint
 
-                  React.createElement("button", { "aria-label": "Toggle proof hint",
+                  React.createElement("button", { "aria-label": t('stem.logiclab.toggle_proof_hint', "Toggle proof hint"),
 
                     onClick: function() { upd({ showHint: !d.showHint }); },
 
@@ -1462,9 +1644,9 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("div", { className: "space-y-2" },
 
-                  React.createElement("h4", { className: "text-xs font-black text-violet-600 uppercase tracking-wider mb-1" }, "\uD83D\uDCDA Inference Rules"),
+                  React.createElement("h4", { className: "text-xs font-black text-violet-600 uppercase tracking-wider mb-1" }, t('stem.logiclab.inference_rules', "\uD83D\uDCDA Inference Rules")),
 
-                  RULES.map(function(rule) {
+                  RULES.filter(function(rule) { return ruleVisible(rule.id); }).map(function(rule) {
 
                     return React.createElement("button", { "aria-label": "Apply rule: " + rule.name,
 
@@ -1504,7 +1686,7 @@ window.StemLab = window.StemLab || {
 
                           var done = result === activeCh.conclusion;
 
-                          upd({ proofSteps: newSteps, selectedSteps: [], proofComplete: done });
+                          upd({ proofSteps: newSteps, selectedSteps: [], proofComplete: done, fallacyNote: null });
 
                           if (done) {
                             var _xp = 5 + (activeCh.level || 1) * 3;
@@ -1517,7 +1699,13 @@ window.StemLab = window.StemLab || {
 
                         } else {
 
-                          if (addToast) addToast('\u274C That rule doesn\'t apply to the selected statements.', 'warning');
+                          var fallacyMsg = diagnoseFallacy(selTexts);
+
+                          upd({ fallacyNote: fallacyMsg });
+
+                          if (fallacyMsg && typeof announceToSR === 'function') announceToSR(fallacyMsg);
+
+                          if (addToast) addToast(fallacyMsg ? '\uD83D\uDEAB Fallacy spotted \u2014 see the note below the rules.' : '\u274C That rule doesn\'t apply to the selected statements.', 'warning');
 
                         }
 
@@ -1535,7 +1723,35 @@ window.StemLab = window.StemLab || {
 
                     );
 
-                  })
+                  }),
+
+                  // Rule-palette toggle — visible only when the grade band hides rules
+                  (function() {
+                    var hiddenCount = RULES.filter(function(rule) { return !ruleVisible(rule.id); }).length;
+                    if (hiddenCount === 0 && !showAllRules) return null;
+                    if (showAllRules && _llBandRules !== null && !aiProof) {
+                      return React.createElement("button", {
+                        "aria-label": t('stem.logiclab.hide_advanced_rules', "Hide advanced rules"),
+                        onClick: function() { upd({ showAllRules: false }); },
+                        className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 border border-violet-300 hover:bg-violet-100 transition-all"
+                      }, "🎯 Focus mode: show fewer rules");
+                    }
+                    if (hiddenCount > 0) {
+                      return React.createElement("button", {
+                        "aria-label": t('stem.logiclab.show_all_rules', "Show all inference rules"),
+                        onClick: function() { upd({ showAllRules: true }); },
+                        className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-300 hover:bg-violet-50 transition-all"
+                      }, "🔓 Show " + hiddenCount + " advanced rule" + (hiddenCount > 1 ? "s" : ""));
+                    }
+                    return null;
+                  })(),
+
+                  // Fallacy note — appears when a failed rule application matches a
+                  // classic invalid move; cleared on the next valid step or reset.
+                  d.fallacyNote && React.createElement("div", { className: "p-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-[11px] leading-relaxed text-amber-900", role: "status" },
+                    React.createElement("span", { className: "font-black" }, "🚫 "),
+                    d.fallacyNote
+                  )
 
                 )
 
@@ -1557,7 +1773,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("span", { className: "font-black text-violet-800 text-sm" }, "Score: " + score),
                 React.createElement("span", { className: "text-violet-300 font-bold" }, "|"),
                 React.createElement("span", { className: "font-black text-amber-600 text-sm" }, "\uD83D\uDD25 Streak: " + streak + " (Best: " + bestStreak + ")"),
-                React.createElement("button", { "aria-label": "Reset challenge score", onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[11px] text-slate-600 hover:text-red-400 font-bold" }, "Reset")
+                React.createElement("button", { "aria-label": t('stem.logiclab.reset_challenge_score', "Reset challenge score"), onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[11px] text-slate-600 hover:text-red-400 font-bold" }, t('stem.logiclab.reset_2', "Reset"))
               ),
 
               // Challenge type tabs
@@ -1595,15 +1811,15 @@ window.StemLab = window.StemLab || {
 
                   onChange: function(e) { upd({ userTopic: e.target.value }); },
 
-                  placeholder: "Your interests (basketball, cooking, video games...)",
+                  placeholder: t('stem.logiclab.your_interests_basketball_cooking_vide', "Your interests (basketball, cooking, video games...)"),
 
-                  'aria-label': 'Your interests for AI personalization',
+                  'aria-label': t('stem.logiclab.your_interests_for_ai_personalization', 'Your interests for AI personalization'),
 
                   className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-200 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
 
                 }),
 
-                userTopic && React.createElement("span", { className: "text-[11px] font-bold text-violet-500" }, "AI will personalize \u2728")
+                userTopic && React.createElement("span", { className: "text-[11px] font-bold text-violet-500" }, t('stem.logiclab.ai_will_personalize', "AI will personalize \u2728"))
 
               ),
 
@@ -1611,9 +1827,9 @@ window.StemLab = window.StemLab || {
 
               aiLoading && React.createElement("div", { className: "flex items-center justify-center gap-2 p-3 bg-violet-100 rounded-xl border border-violet-200" },
 
-                React.createElement("div", { className: "animate-spin w-5 h-5 border-2 border-violet-600 border-t-transparent rounded-full", role: "status", "aria-label": "Loading AI content" }),
+                React.createElement("div", { className: "animate-spin w-5 h-5 border-2 border-violet-600 border-t-transparent rounded-full", role: "status", "aria-label": t('stem.logiclab.loading_ai_content', "Loading AI content") }),
 
-                React.createElement("span", { className: "text-xs font-bold text-violet-600" }, "Generating with AI...")
+                React.createElement("span", { className: "text-xs font-bold text-violet-600" }, t('stem.logiclab.generating_with_ai', "Generating with AI..."))
 
               ),
 
@@ -1631,7 +1847,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "text-2xl" }, "\uD83D\uDD0D"),
 
-                    React.createElement("h3", { className: "font-black text-violet-900" }, "Is this argument valid?"),
+                    React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.is_this_argument_valid', "Is this argument valid?")),
 
                     React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-400" }, (challengeIdx + 1) + " / " + FALLACIES.length)
 
@@ -1647,7 +1863,7 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Valid",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.valid', "Valid"),
                       onClick: function() {
                         var correct = f.valid === true;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
@@ -1658,9 +1874,9 @@ window.StemLab = window.StemLab || {
 
                       className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all hover:shadow-md text-sm"
 
-                    }, "\u2705 Valid"),
+                    }, t('stem.logiclab.valid_2', "\u2705 Valid")),
 
-                    React.createElement("button", { "aria-label": "Invalid (Fallacy)",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.invalid_fallacy', "Invalid (Fallacy)"),
                       onClick: function() {
                         var correct = f.valid === false;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
@@ -1671,7 +1887,7 @@ window.StemLab = window.StemLab || {
 
                       className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all hover:shadow-md text-sm"
 
-                    }, "\u274C Invalid (Fallacy)")
+                    }, t('stem.logiclab.invalid_fallacy_2', "\u274C Invalid (Fallacy)"))
 
                   ),
 
@@ -1692,15 +1908,15 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Next",
+                      React.createElement("button", { "aria-label": t('stem.logiclab.next', "Next"),
 
                         onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiFallacy: null }); },
 
                         className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all"
 
-                      }, "Next \u2192"),
+                      }, t('stem.logiclab.next_2', "Next \u2192")),
 
-                      React.createElement("button", { "aria-label": "AI Generate",
+                      React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate', "AI Generate"),
 
                         onClick: function() {
 
@@ -1718,7 +1934,7 @@ window.StemLab = window.StemLab || {
 
                       'aria-busy': aiLoading
 
-                      }, "\uD83E\uDD16 AI Generate")
+                      }, t('stem.logiclab.ai_generate_2', "\uD83E\uDD16 AI Generate"))
 
                     )
 
@@ -1740,9 +1956,9 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "text-2xl" }, "\uD83E\uDD16"),
 
-                    React.createElement("h3", { className: "font-black text-purple-900" }, "AI-Generated: Is this argument valid?"),
+                    React.createElement("h3", { className: "font-black text-purple-900" }, t('stem.logiclab.ai_generated_is_this_argument_valid', "AI-Generated: Is this argument valid?")),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, "\u2728 AI")
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai', "\u2728 AI"))
 
                   ),
 
@@ -1754,21 +1970,21 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Valid",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.valid_3', "Valid"),
 
                       onClick: function() { var c = af.valid === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
                       className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm"
 
-                    }, "\u2705 Valid"),
+                    }, t('stem.logiclab.valid_4', "\u2705 Valid")),
 
-                    React.createElement("button", { "aria-label": "Invalid (Fallacy)",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.invalid_fallacy_3', "Invalid (Fallacy)"),
 
                       onClick: function() { var c = af.valid === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
                       className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm"
 
-                    }, "\u274C Invalid (Fallacy)")
+                    }, t('stem.logiclab.invalid_fallacy_4', "\u274C Invalid (Fallacy)"))
 
                   ),
 
@@ -1784,7 +2000,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-600" }, af.explain),
 
-                    React.createElement("button", { "aria-label": "Generate Another",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.generate_another', "Generate Another"),
 
                       onClick: function() {
 
@@ -1802,7 +2018,7 @@ window.StemLab = window.StemLab || {
 
                     'aria-busy': aiLoading
 
-                    }, "\uD83E\uDD16 Generate Another")
+                    }, t('stem.logiclab.generate_another_2', "\uD83E\uDD16 Generate Another"))
 
                   )
 
@@ -1836,7 +2052,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "text-2xl" }, "\u23F1\uFE0F"),
 
-                    React.createElement("h3", { className: "font-black text-violet-900" }, "Fill the Result Column"),
+                    React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.fill_the_result_column', "Fill the Result Column")),
 
                     React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-400" }, ch.desc)
 
@@ -1846,7 +2062,7 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("table", { className: "w-full text-sm", style: { borderCollapse: 'separate', borderSpacing: '0 2px' } },
 
-                    React.createElement("caption", { className: "sr-only" }, "Fill the Result Column"), React.createElement("thead", null,
+                    React.createElement("caption", { className: "sr-only" }, t('stem.logiclab.fill_the_result_column_2', "Fill the Result Column")), React.createElement("thead", null,
 
                       React.createElement("tr", null,
 
@@ -1918,13 +2134,13 @@ window.StemLab = window.StemLab || {
 
                     allCorrect && (function() { if (typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Quick-fire completed'); return null; })(),
 
-                    React.createElement("button", { "aria-label": "Next Challenge",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.next_challenge', "Next Challenge"),
 
                       onClick: function() { upd({ challengeIdx: challengeIdx + 1, qfAnswers: {} }); },
 
                       className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all"
 
-                    }, "Next Challenge \u2192")
+                    }, t('stem.logiclab.next_challenge_2', "Next Challenge \u2192"))
 
                   )
 
@@ -1940,14 +2156,14 @@ window.StemLab = window.StemLab || {
 
                 var DETECTIVE = [
 
-                  { scenario: 'Detective Jones has three clues:\n1. If the butler did it, the window is broken.\n2. If the maid did it, there are footprints in the garden.\n3. The window is NOT broken.', question: 'Can we conclude the butler is innocent?', answer: true, rule: 'Modus Tollens', explain: 'Clue 1: Butler \u2192 Broken window. Clue 3: \u00ACBroken window. By Modus Tollens: \u00ACButler.' },
+                  { scenario: 'Detective Jones has three clues:\n1. If the butler did it, the window is broken.\n2. If the maid did it, there are footprints in the garden.\n3. The window is NOT broken.', question: t('stem.logiclab.can_we_conclude_the_butler_is_innocent', 'Can we conclude the butler is innocent?'), answer: true, rule: 'Modus Tollens', explain: 'Clue 1: Butler \u2192 Broken window. Clue 3: \u00ACBroken window. By Modus Tollens: \u00ACButler.' },
 
-                  { scenario: 'At the science fair:\n1. If the volcano project wins, it gets a trophy.\n2. If it gets a trophy, it goes in the display case.\n3. The volcano project wins!', question: 'Will it go in the display case?', answer: true, rule: 'Hypothetical Syllogism + MP', explain: 'Chain: Wins \u2192 Trophy \u2192 Display case. Wins is true. By HS: Wins \u2192 Display case. By MP: Display case.' },
+                  { scenario: 'At the science fair:\n1. If the volcano project wins, it gets a trophy.\n2. If it gets a trophy, it goes in the display case.\n3. The volcano project wins!', question: t('stem.logiclab.will_it_go_in_the_display_case', 'Will it go in the display case?'), answer: true, rule: 'Hypothetical Syllogism + MP', explain: 'Chain: Wins \u2192 Trophy \u2192 Display case. Wins is true. By HS: Wins \u2192 Display case. By MP: Display case.' },
 
-                  { scenario: 'Lunch options:\n1. We are having pizza OR pasta.\n2. The pizza oven is broken (no pizza).', question: 'Are we having pasta?', answer: true, rule: 'Disjunctive Syllogism', explain: 'Pizza\u2228Pasta, \u00ACPizza. By DS: Pasta. \u2714' },
-                  { scenario: 'Animal mystery:\n1. If the creature has wings, it can fly.\n2. If it can fly, we would see it in the sky.\n3. We did NOT see anything in the sky.', question: 'Can we conclude the creature has no wings?', answer: true, rule: 'HS + Modus Tollens', explain: 'Wings\u2192Fly\u2192Sky. HS: Wings\u2192Sky. MT with \u00ACSky: \u00ACWings. \u2714' },
-                  { scenario: 'Treasure hunt:\n1. Gold is in Cave A or Cave B.\n2. Explorers searched Cave A \u2014 no gold there.', question: 'Is the gold in Cave B?', answer: true, rule: 'Disjunctive Syllogism', explain: 'A\u2228B, \u00ACA. By DS: B. \u2714' },
-                  { scenario: 'Weather:\n1. If dark clouds, it will rain.\n2. If it rains, the picnic is cancelled.\n3. The picnic was NOT cancelled.', question: 'Can we conclude no dark clouds?', answer: true, rule: 'HS + Modus Tollens', explain: 'Clouds\u2192Rain\u2192Cancel. HS: Clouds\u2192Cancel. MT with \u00ACCancel: \u00ACClouds. \u2714' }
+                  { scenario: 'Lunch options:\n1. We are having pizza OR pasta.\n2. The pizza oven is broken (no pizza).', question: t('stem.logiclab.are_we_having_pasta', 'Are we having pasta?'), answer: true, rule: 'Disjunctive Syllogism', explain: 'Pizza\u2228Pasta, \u00ACPizza. By DS: Pasta. \u2714' },
+                  { scenario: 'Animal mystery:\n1. If the creature has wings, it can fly.\n2. If it can fly, we would see it in the sky.\n3. We did NOT see anything in the sky.', question: t('stem.logiclab.can_we_conclude_the_creature_has_no_wi', 'Can we conclude the creature has no wings?'), answer: true, rule: 'HS + Modus Tollens', explain: 'Wings\u2192Fly\u2192Sky. HS: Wings\u2192Sky. MT with \u00ACSky: \u00ACWings. \u2714' },
+                  { scenario: 'Treasure hunt:\n1. Gold is in Cave A or Cave B.\n2. Explorers searched Cave A \u2014 no gold there.', question: t('stem.logiclab.is_the_gold_in_cave_b', 'Is the gold in Cave B?'), answer: true, rule: 'Disjunctive Syllogism', explain: 'A\u2228B, \u00ACA. By DS: B. \u2714' },
+                  { scenario: 'Weather:\n1. If dark clouds, it will rain.\n2. If it rains, the picnic is cancelled.\n3. The picnic was NOT cancelled.', question: t('stem.logiclab.can_we_conclude_no_dark_clouds', 'Can we conclude no dark clouds?'), answer: true, rule: 'HS + Modus Tollens', explain: 'Clouds\u2192Rain\u2192Cancel. HS: Clouds\u2192Cancel. MT with \u00ACCancel: \u00ACClouds. \u2714' }
                 ];
 
                 var det = DETECTIVE[challengeIdx % DETECTIVE.length];
@@ -1958,7 +2174,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "text-2xl" }, "\uD83D\uDD75\uFE0F"),
 
-                    React.createElement("h3", { className: "font-black text-violet-900" }, "Real-World Reasoning")
+                    React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.real_world_reasoning', "Real-World Reasoning"))
 
                   ),
 
@@ -1968,11 +2184,11 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, "\u2705 Yes"),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, "\u274C No"),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no', "\u274C No")),
 
-                    React.createElement("button", { "aria-label": "Can't tell", onClick: function() { var c = 'wrong'; upd({ challengeAnswer: c }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
+                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell', "Can't tell"), onClick: function() { var c = 'wrong'; upd({ challengeAnswer: c }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_2', "\u2753 Can't tell"))
 
                   ),
 
@@ -1986,9 +2202,9 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, "Next \u2192"),
+                      React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, t('stem.logiclab.next_3', "Next \u2192")),
 
-                      React.createElement("button", { "aria-label": "AI Mystery",
+                      React.createElement("button", { "aria-label": t('stem.logiclab.ai_mystery', "AI Mystery"),
 
                         onClick: function() {
 
@@ -2006,7 +2222,7 @@ window.StemLab = window.StemLab || {
 
                       'aria-busy': aiLoading
 
-                      }, "\uD83D\uDD75\uFE0F AI Mystery")
+                      }, t('stem.logiclab.ai_mystery_2', "\uD83D\uDD75\uFE0F AI Mystery"))
 
                     )
 
@@ -2028,9 +2244,9 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "text-2xl" }, "\uD83D\uDD75\uFE0F"),
 
-                    React.createElement("h3", { className: "font-black text-purple-900" }, "AI Mystery"),
+                    React.createElement("h3", { className: "font-black text-purple-900" }, t('stem.logiclab.ai_mystery_3', "AI Mystery")),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, "\u2728 AI")
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai_2', "\u2728 AI"))
 
                   ),
 
@@ -2040,11 +2256,11 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, "\u2705 Yes"),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes_2', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, "\u274C No"),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no_2', "\u274C No")),
 
-                    React.createElement("button", { "aria-label": "Can't tell", onClick: function() { upd({ challengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
+                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell_3', "Can't tell"), onClick: function() { upd({ challengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_4', "\u2753 Can't tell"))
 
                   ),
 
@@ -2056,7 +2272,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-600" }, ad.explain),
 
-                    React.createElement("button", { "aria-label": "Generate Another",
+                    React.createElement("button", { "aria-label": t('stem.logiclab.generate_another_3', "Generate Another"),
 
                       onClick: function() {
 
@@ -2074,7 +2290,7 @@ window.StemLab = window.StemLab || {
 
                     'aria-busy': aiLoading
 
-                    }, "\uD83D\uDD75\uFE0F Generate Another")
+                    }, t('stem.logiclab.generate_another_4', "\uD83D\uDD75\uFE0F Generate Another"))
 
                   )
 
@@ -2091,8 +2307,13 @@ window.StemLab = window.StemLab || {
               React.createElement("div", { className: "p-5 rounded-2xl border-2 border-violet-200", style: { background: 'linear-gradient(135deg, #f5f3ff, #ede9fe, #f5f3ff)' } },
                 React.createElement("div", { className: "flex items-center gap-2 mb-4" },
                   React.createElement("span", { style: { fontSize: '20px' } }, "\u26A1\uFE0F"),
-                  React.createElement("h3", { className: "font-black text-violet-900" }, "Logic Gate Simulator"),
-                  React.createElement("span", { className: "text-xs text-violet-400 font-bold" }, "Toggle inputs to see the output live")
+                  React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.logic_gate_simulator', "Logic Gate Simulator")),
+                  React.createElement("span", { className: "text-xs text-violet-400 font-bold" }, t('stem.logiclab.toggle_inputs_to_see_the_output_live', "Toggle inputs to see the output live"))
+                ),
+                // Binary-state legend — clarifies what the 1s and 0s on the wires mean
+                React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[11px] font-bold" },
+                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-emerald-500 text-white text-center leading-4" }, "1"), React.createElement("span", { className: "text-emerald-700" }, t('stem.logiclab.high_true_on', "HIGH · true · on"))),
+                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-slate-300 text-slate-700 text-center leading-4" }, "0"), React.createElement("span", { className: "text-slate-500" }, t('stem.logiclab.low_false_off', "LOW · false · off")))
                 ),
                 // Gate selector
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
@@ -2127,8 +2348,30 @@ window.StemLab = window.StemLab || {
                   React.createElement("svg", { width: "120", height: "80", viewBox: "0 0 120 80" },
                     React.createElement("line", { x1:"0",y1:isUnaryGate?"40":"25",x2:"35",y2:isUnaryGate?"40":"25",stroke:gateInputs.A?"#059669":"#dc2626",strokeWidth:"3" }),
                     !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?"#059669":"#dc2626",strokeWidth:"3" }),
-                    React.createElement("rect", { x:"35",y:"15",width:"55",height:"50",rx:"8",fill:"#7c3aed",stroke:"#5b21b6",strokeWidth:"2" }),
-                    React.createElement("text", { x:"62",y:"46",textAnchor:"middle",fill:"white",fontWeight:"900",fontSize:"12" }, gateType),
+                    (function() {
+                      // Distinct IEEE gate shapes (was a generic rounded rect with the name typed inside).
+                      var inverting = gateType === 'NOT' || gateType === 'NAND' || gateType === 'NOR' || gateType === 'XNOR';
+                      var base = (gateType === 'AND' || gateType === 'NAND') ? 'and'
+                               : (gateType === 'OR' || gateType === 'NOR') ? 'or'
+                               : (gateType === 'XOR' || gateType === 'XNOR') ? 'xor' : 'not';
+                      var fill = '#7c3aed', stroke = '#5b21b6';
+                      var bx = inverting ? 82 : 88; // right edge of the body (bubble sits just past it)
+                      var shapes = [];
+                      if (base === 'and') {
+                        var midx = bx - 25;
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 L' + midx + ',15 A25,25 0 0 1 ' + midx + ',65 L35,65 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                      } else if (base === 'or') {
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 Q52,40 35,65 Q60,63 ' + bx + ',40 Q60,17 35,15 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                      } else if (base === 'xor') {
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M39,15 Q56,40 39,65 Q64,63 ' + bx + ',40 Q64,17 39,15 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                        shapes.push(React.createElement('path', { key: 'x', d: 'M32,15 Q49,40 32,65', fill: 'none', stroke: stroke, strokeWidth: 2 }));
+                      } else {
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M38,16 L' + bx + ',40 L38,64 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                      }
+                      if (inverting) shapes.push(React.createElement('circle', { key: 'bub', cx: bx + 5, cy: 40, r: 4, fill: 'white', stroke: stroke, strokeWidth: 2 }));
+                      shapes.push(React.createElement('text', { key: 't', x: base === 'not' ? 52 : 58, y: 44, textAnchor: 'middle', fill: 'white', fontWeight: '900', fontSize: '9' }, gateType));
+                      return shapes;
+                    })(),
                     React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?"#059669":"#dc2626",strokeWidth:"3", style:{ filter: gateOutput ? 'drop-shadow(0 0 3px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } }),
                     React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?"#059669":"#dc2626", style:{ filter: gateOutput ? 'drop-shadow(0 0 4px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } })
                   ),
@@ -2139,7 +2382,7 @@ window.StemLab = window.StemLab || {
                       className: "w-20 h-16 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-lg",
                       style: { background:gateOutput?'linear-gradient(135deg,#059669,#10b981)':'linear-gradient(135deg,#dc2626,#ef4444)', boxShadow:gateOutput?'0 8px 24px rgba(16,185,129,0.4)':'0 8px 24px rgba(239,68,68,0.3)', animation:'logicPop 0.2s ease-out' }
                     }, gateOutput?"1":"0"),
-                    React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Output"),
+                    React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t('stem.logiclab.output', "Output")),
                     React.createElement("span", { className: "text-sm font-black "+(gateOutput?"text-emerald-600":"text-red-500") }, gateOutput?"TRUE":"FALSE")
                   )
                 ),
@@ -2172,14 +2415,14 @@ window.StemLab = window.StemLab || {
                       React.createElement("code", { className: "text-xs font-mono font-black text-violet-700" },
                         gateType==='AND'?'P \u2227 Q':gateType==='OR'?'P \u2228 Q':gateType==='NOT'?'\u00AC P':gateType==='NAND'?'\u00AC (P \u2227 Q)':gateType==='NOR'?'\u00AC (P \u2228 Q)':gateType==='XOR'?'P \u2295 Q':'\u00AC (P \u2295 Q)'
                       ),
-                      React.createElement("button", { "aria-label": "Open in Truth Tables",
+                      React.createElement("button", { "aria-label": t('stem.logiclab.open_in_truth_tables', "Open in Truth Tables"),
                         onClick: function() {
                           var fml = gateType==='AND'?'P \u2227 Q':gateType==='OR'?'P \u2228 Q':gateType==='NOT'?'\u00AC P':gateType==='NAND'?'\u00AC (P \u2227 Q)':gateType==='NOR'?'\u00AC (P \u2228 Q)':gateType==='XOR'?'P \u2295 Q':'\u00AC (P \u2295 Q)';
                           upd({ mode:'truth', expression: fml });
                           if (addToast) addToast('Opened in Truth Table builder!','info');
                         },
                         className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-700 font-bold rounded-full text-[11px]"
-                      }, "\uD83D\uDCCA Open in Truth Tables \u2192")
+                      }, t('stem.logiclab.open_in_truth_tables_2', "\uD83D\uDCCA Open in Truth Tables \u2192"))
                     )
                   );
                 })()
@@ -2198,14 +2441,14 @@ window.StemLab = window.StemLab || {
               else if (pAnd < 5 && pOr < 5) state = 'contradiction';
               else state = 'inconclusive';
               var sm = {
-                bothCertain:   { label: '✅ Both certain (P∧Q likely)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-                pLikely:       { label: '🟡 P likely; Q uncertain', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-                contradiction: { label: '⚠️ Apparent contradiction', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                inconclusive:  { label: '🤔 Inconclusive', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' }
+                bothCertain:   { label: t('stem.logiclab.both_certain_p_q_likely', '✅ Both certain (P∧Q likely)'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+                pLikely:       { label: t('stem.logiclab.p_likely_q_uncertain', '🟡 P likely; Q uncertain'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                contradiction: { label: t('stem.logiclab.apparent_contradiction', '⚠️ Apparent contradiction'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                inconclusive:  { label: t('stem.logiclab.inconclusive', '🤔 Inconclusive'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' }
               }[state];
               return React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
-                React.createElement('h3', { className: 'text-sm font-black text-violet-700' }, '🎲 Probability logic discovery'),
-                React.createElement('p', { className: 'text-[12px] text-slate-700' }, 'Sliders for P, Q truth probabilities, confidence threshold. Discrete 4-state inference outcome. No score, no reveal.'),
+                React.createElement('h3', { className: 'text-sm font-black text-violet-700' }, t('stem.logiclab.probability_logic_discovery', '🎲 Probability logic discovery')),
+                React.createElement('p', { className: 'text-[12px] text-slate-700' }, t('stem.logiclab.sliders_for_p_q_truth_probabilities_co', 'Sliders for P, Q truth probabilities, confidence threshold. Discrete 4-state inference outcome. No score, no reveal.')),
                 React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   React.createElement('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'P(P)=' + iq.pTrue + '%, P(Q)=' + iq.qTrue + '%, P(P∧Q)=' + pAnd.toFixed(0) + '%, P(P∨Q)=' + pOr.toFixed(0) + '%')
@@ -2220,22 +2463,22 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pTrue, q: iq.qTrue, t: iq.threshold, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  React.createElement('button', { onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pTrue, q: iq.qTrue, t: iq.threshold, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.logiclab.log', '📋 Log')),
+                  React.createElement('button', { onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.logiclab.reset_3', '↺ Reset'))
                 ),
-                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does P(P∧Q) ≈ P(P)·P(Q)?',
+                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q', 'Hypothesis: When does P(P∧Q) ≈ P(P)·P(Q)?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.logiclab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
                   React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
-                    React.createElement('li', null, 'Independence vs correlation — when does each apply?'),
-                    React.createElement('li', null, 'How does threshold change inference outcome?'))),
+                    React.createElement('li', null, t('stem.logiclab.independence_vs_correlation_when_does_', 'Independence vs correlation — when does each apply?')),
+                    React.createElement('li', null, t('stem.logiclab.how_does_threshold_change_inference_ou', 'How does threshold change inference outcome?')))),
                 React.createElement('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain probability logic.',
+                  t('stem.logiclab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.logiclab.explain_probability_logic', 'Explain probability logic.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                React.createElement('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.')
+                React.createElement('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.logiclab.design_note_discrete_4_state_inference', 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.'))
               );
             })(),
 
@@ -2243,7 +2486,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-6" },
 
-              React.createElement("button", { "aria-label": "Toggle educational panel: What is Propositional Logic",
+              React.createElement("button", { "aria-label": t('stem.logiclab.toggle_educational_panel_what_is_propo', "Toggle educational panel: What is Propositional Logic"),
 
                 onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'First logic session'); },
 
@@ -2255,7 +2498,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("span", { className: "text-xl" }, "\uD83D\uDCD6"),
 
-                React.createElement("span", { className: "font-black text-violet-900 text-sm flex-1" }, "Learn: What is Propositional Logic?"),
+                React.createElement("span", { className: "font-black text-violet-900 text-sm flex-1" }, t('stem.logiclab.learn_what_is_propositional_logic', "Learn: What is Propositional Logic?")),
 
                 React.createElement("span", { className: "text-violet-400 font-bold text-xs" }, showEdu ? "\u25B2 Hide" : "\u25BC Show")
 
@@ -2265,19 +2508,19 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "font-black text-violet-800 mb-1" }, "What is Propositional Logic?"),
+                  React.createElement("h4", { className: "font-black text-violet-800 mb-1" }, t('stem.logiclab.what_is_propositional_logic', "What is Propositional Logic?")),
 
-                  React.createElement("p", null, "Propositional logic studies how the truth of complex statements depends on simpler ones. A ", React.createElement("strong", null, "proposition"), " is any statement that is either true or false \u2014 like \"It is raining\" or \"2 + 2 = 4\".")
+                  React.createElement("p", null, t('stem.logiclab.propositional_logic_studies_how_the_tr', "Propositional logic studies how the truth of complex statements depends on simpler ones. A "), React.createElement("strong", null, "proposition"), t('stem.logiclab.is_any_statement_that_is_either_true_o', " is any statement that is either true or false \u2014 like \"It is raining\" or \"2 + 2 = 4\"."))
 
                 ),
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "font-black text-violet-800 mb-1" }, "Connective Symbols"),
+                  React.createElement("h4", { className: "font-black text-violet-800 mb-1" }, t('stem.logiclab.connective_symbols', "Connective Symbols")),
 
                   React.createElement("table", { className: "w-full text-xs" },
 
-                    React.createElement("caption", { className: "sr-only" }, "Connective Symbols"), React.createElement("tbody", null,
+                    React.createElement("caption", { className: "sr-only" }, t('stem.logiclab.connective_symbols_2', "Connective Symbols")), React.createElement("tbody", null,
 
                       [['∧','AND','Both must be true'],['∨','OR','At least one true'],['¬','NOT','Flips truth value'],['→','IF...THEN','False only when P true, Q false'],['↔','IFF','True when both same'],['⊕','XOR','True when exactly one true']].map(function(r) {
 
@@ -2300,7 +2543,7 @@ window.StemLab = window.StemLab || {
                 ),
 
                 React.createElement("div", null,
-                  React.createElement("h4", { className: "font-black text-violet-800 mb-2" }, "Key Logical Laws"),
+                  React.createElement("h4", { className: "font-black text-violet-800 mb-2" }, t('stem.logiclab.key_logical_laws', "Key Logical Laws")),
                   React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2" },
                     [
                       ["De Morgan's 1","\u00AC(P\u2227Q) \u2261 \u00ACP\u2228\u00ACQ"],
@@ -2324,11 +2567,11 @@ window.StemLab = window.StemLab || {
                 ),
 
                 React.createElement("div", null,
-                  React.createElement("h4", { className: "font-black text-violet-800 mb-1" }, "Valid vs Invalid Arguments"),
+                  React.createElement("h4", { className: "font-black text-violet-800 mb-1" }, t('stem.logiclab.valid_vs_invalid_arguments', "Valid vs Invalid Arguments")),
 
-                  React.createElement("p", null, "A ", React.createElement("strong", null, "valid"), " argument guarantees the conclusion IF the premises are true. An ", React.createElement("strong", null, "invalid"), " argument (fallacy) has a logical gap \u2014 even if the premises are true, the conclusion doesn't necessarily follow."),
+                  React.createElement("p", null, "A ", React.createElement("strong", null, "valid"), t('stem.logiclab.argument_guarantees_the_conclusion_if_', " argument guarantees the conclusion IF the premises are true. An "), React.createElement("strong", null, "invalid"), t('stem.logiclab.argument_fallacy_has_a_logical_gap_eve', " argument (fallacy) has a logical gap \u2014 even if the premises are true, the conclusion doesn't necessarily follow.")),
 
-                  React.createElement("p", { className: "mt-1 text-violet-600 font-bold" }, "Common fallacies: Affirming the Consequent (P\u2192Q, Q \u2234 P\u2717), Denying the Antecedent (P\u2192Q, \u00ACP \u2234 \u00ACQ\u2717)")
+                  React.createElement("p", { className: "mt-1 text-violet-600 font-bold" }, t('stem.logiclab.common_fallacies_affirming_the_consequ', "Common fallacies: Affirming the Consequent (P\u2192Q, Q \u2234 P\u2717), Denying the Antecedent (P\u2192Q, \u00ACP \u2234 \u00ACQ\u2717)"))
 
                 )
 
@@ -2342,23 +2585,36 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-6 text-center" },
 
-              React.createElement("button", { "aria-label": "Back to Tools",
+              React.createElement("button", { "aria-label": t('stem.logiclab.back_to_tools', "Back to Tools"),
 
                 onClick: function() { setStemLabTool(null); },
 
                 className: "px-6 py-2.5 text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-xl transition-all"
 
-              }, "\u2190 Back to Tools")
+              }, t('stem.logiclab.back_to_tools_2', "\u2190 Back to Tools"))
 
             ),
 
             // \u2550\u2550\u2550 TRUTH TABLES \u2550\u2550\u2550
             React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-violet-300 bg-white p-3 shadow-sm' },
-              React.createElement('h4', { className: 'text-sm font-bold text-violet-700 mb-2' }, '\ud83d\udd0d Truth Tables \u2014 Boolean logic at a glance'),
-              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-violet-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
+              React.createElement('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
+                React.createElement('div', null,
+                  React.createElement('h4', { className: 'text-sm font-bold text-violet-700' }, t('stem.logiclab.truth_tables_boolean_logic_at_a_glance', '\ud83d\udd0d Truth Tables \u2014 Boolean logic at a glance')),
+                  React.createElement('p', { className: 'mt-1 text-xs font-semibold text-slate-600' }, t('stem.logiclab.truth_lab_hint', 'Open the animated gate view when you want an extra visual read on Boolean logic.'))
+                ),
+                React.createElement('button', {
+                  type: 'button',
+                  'aria-label': showTruthLab ? t('stem.logiclab.hide_truth_table_visual', 'Hide truth table visual') : t('stem.logiclab.open_truth_table_visual', 'Open truth table visual'),
+                  'aria-expanded': showTruthLab,
+                  onClick: function() { sfxLogiclClick(); upd({ showTruthLab: !showTruthLab }); },
+                  className: 'rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-black text-violet-700 transition-all hover:bg-violet-100'
+                }, showTruthLab ? t('stem.logiclab.hide_visual', 'Hide visual') : t('stem.logiclab.open_visual', 'Open visual'))
+              ),
+              showTruthLab && React.createElement('div', { className: 'mt-3 rounded-xl overflow-hidden border border-violet-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
                 React.createElement('canvas', {
                   role: 'img',
-                  'aria-label': 'Truth table visualization cycling through AND, OR, XOR, and NAND logic gates.',
+                  tabIndex: 0,
+                  'aria-label': t('stem.logiclab.truth_table_visualization_cycling_thro', 'Truth table visualization cycling through AND, OR, XOR, and NAND logic gates.'),
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._ttAnim) return;
@@ -2376,7 +2632,7 @@ window.StemLab = window.StemLab || {
                       { name: 'NAND', sym: '\u22bc', fn: function(a,b){return !(a&&b);}, color: '#fb7185' }
                     ];
                     function drawTt() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); return; }
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); if (cvEl._ttRO) cvEl._ttRO.disconnect(); return; }
                       var t = (performance.now() - start) / 1000;
                       var blink = Math.floor((t * 0.5) % ops.length);
                       // Content only changes when `blink` flips (~every 2s); skip the
@@ -2416,6 +2672,9 @@ window.StemLab = window.StemLab || {
                       var gx = W * 0.55, gy = H * 0.5;
                       c2.strokeStyle = op.color;
                       c2.lineWidth = 2;
+                      // Gate + signal paths glow in the op colour
+                      c2.save();
+                      c2.shadowColor = op.color; c2.shadowBlur = 12;
                       // Input lines
                       c2.beginPath();
                       c2.moveTo(gx - 60, gy - 12);
@@ -2424,7 +2683,7 @@ window.StemLab = window.StemLab || {
                       c2.lineTo(gx - 20, gy + 12);
                       c2.stroke();
                       // Gate body (AND/OR shape)
-                      c2.fillStyle = 'rgba(167,139,250,0.2)';
+                      c2.fillStyle = 'rgba(167,139,250,0.28)';
                       c2.beginPath();
                       if (op.name === 'AND' || op.name === 'NAND') {
                         c2.moveTo(gx - 20, gy - 18);
@@ -2452,6 +2711,7 @@ window.StemLab = window.StemLab || {
                       c2.moveTo(gx + (op.name === 'NAND' ? 25 : 20), gy);
                       c2.lineTo(gx + 60, gy);
                       c2.stroke();
+                      c2.restore();
                       // Labels
                       c2.fillStyle = '#fef3c7';
                       c2.font = 'bold 11px monospace';
@@ -2472,6 +2732,7 @@ window.StemLab = window.StemLab || {
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
                       lastBlink = -1; // force a repaint at the new size
                     });
+                    cvEl._ttRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                     ro.observe(cvEl);
                   },
                   style: { width: '100%', height: '100%', display: 'block' }

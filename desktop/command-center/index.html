@@ -1,0 +1,408 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AlloFlow Desktop</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#desktop-main">Skip to desktop controls</a>
+  <div class="shell">
+    <aside class="rail" aria-label="Desktop sections">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span>
+          <strong>AlloFlow</strong>
+          <small>Desktop</small>
+        </span>
+      </div>
+      <nav class="tabs" aria-label="Command center"><div role="tablist" aria-label="Desktop sections">
+        <button class="tab active" id="tab-app" data-tab="app" type="button" role="tab" aria-controls="pane-app" aria-selected="true" tabindex="0">App</button>
+        <button class="tab" id="tab-ai" data-tab="ai" type="button" role="tab" aria-controls="pane-ai" aria-selected="false" tabindex="-1">AI</button>
+        <button class="tab" id="tab-schoolbox" data-tab="schoolbox" type="button" role="tab" aria-controls="pane-schoolbox" aria-selected="false" tabindex="-1">Server</button>
+        <button class="tab" id="tab-settings" data-tab="settings" type="button" role="tab" aria-controls="pane-settings" aria-selected="false" tabindex="-1">Settings</button></div>
+      </nav>
+      <div class="runtime-pill" id="runtime-pill">Starting</div>
+    </aside>
+
+    <main class="workspace" id="desktop-main" tabindex="-1">
+      <section class="pane active" id="pane-app" role="tabpanel" tabindex="0" aria-labelledby="tab-app">
+        <header class="pane-header">
+          <div>
+            <h1>AlloFlow App</h1>
+            <p id="app-status">Checking local app</p>
+          </div>
+          <div class="toolbar">
+            <input id="app-url" type="url" aria-label="AlloFlow app URL">
+            <button id="save-app-url" type="button">Save</button>
+            <button id="start-app" type="button">Start App</button>
+            <button id="stop-app" type="button">Stop App</button>
+            <a id="open-app-link" class="button-link" target="_blank" rel="noreferrer">Open</a>
+            <button id="refresh-all" type="button">Refresh</button>
+            <button id="toggle-app-focus" type="button" aria-pressed="false">Full Screen</button>
+          </div>
+        </header>
+        <!-- Setup Health: one glance answers "is this machine actually ready?"
+             Field-test lesson (0.2.0â€“0.2.2): every failure so far LOOKED like
+             silence â€” engine unused, voice falling back, images impossible â€”
+             and testers had to infer state from an error chip. Each row shows
+             live truth and, where the runtime can act, a one-click fix. -->
+        <section class="panel health-card" id="setup-health" aria-label="Setup health">
+          <div class="health-item" id="health-engine">
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>AI Engine</strong><span data-text>Checkingâ€¦</span></div>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
+          </div>
+          <div class="health-item" id="health-voice">
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Reading voice</strong><span data-text>Checkingâ€¦</span></div>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
+          </div>
+          <div class="health-item" id="health-images">
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Local images</strong><span data-text>Checkingâ€¦</span></div>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
+          </div>
+          <div class="health-item" id="health-asr">
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Speech-to-text</strong><span data-text>Checkingâ€¦</span></div>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
+          </div>
+          <div class="health-item" id="health-mic">
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Microphone</strong><span data-text>Checkingâ€¦</span></div>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
+          </div>
+        </section>
+        <div class="app-grid">
+          <div class="app-frame-wrap">
+            <!-- Explicit permissions: same-origin iframes usually inherit, but
+                 read-aloud (autoplay), fluency/ASR (microphone), and Access
+                 Lens (camera) must never silently lose capability to a policy
+                 default change. -->
+            <iframe id="app-frame" title="AlloFlow application preview" allow="autoplay; microphone; camera; clipboard-write; fullscreen" allowfullscreen></iframe>
+          </div>
+          <aside class="panel app-side">
+            <h2>App Manager</h2>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="app-managed-status">-</dd>
+              <dt>Owner</dt><dd id="app-owner">-</dd>
+              <dt>Process</dt><dd id="app-pid">-</dd>
+            </dl>
+            <pre id="app-logs" class="result app-logs" aria-live="polite"></pre>
+          </aside>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-ai" role="tabpanel" tabindex="0" aria-labelledby="tab-ai">
+        <header class="pane-header">
+          <div>
+            <h1>AI Runtime</h1>
+            <p id="ai-status">Checking providers</p>
+          </div>
+          <button id="refresh-providers" type="button">Refresh</button>
+        </header>
+        <div class="split">
+          <section class="panel">
+            <h2>Providers</h2>
+            <div class="provider-list" id="provider-list"></div>
+          </section>
+          <section class="panel">
+            <h2>Provider Settings</h2>
+            <label for="provider-select">Active provider</label>
+            <select id="provider-select"></select>
+            <label for="provider-base-url">Server URL</label>
+            <input id="provider-base-url" type="url">
+            <label for="provider-api-key">API key</label>
+            <input id="provider-api-key" type="password" autocomplete="off">
+            <div class="button-row">
+              <button id="save-provider" type="button">Save</button>
+              <button id="test-provider" type="button">Test</button>
+            </div>
+            <pre id="provider-result" class="result" aria-live="polite"></pre>
+          </section>
+          <section class="panel voice-panel">
+            <h2>Voice Engine</h2>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="voice-status">-</dd>
+              <dt>Quality</dt><dd id="voice-quality">-</dd>
+              <dt>Voices</dt><dd id="voice-count">-</dd>
+            </dl>
+            <div class="button-row">
+              <button id="check-voice" type="button">Check</button>
+              <button id="download-kokoro" type="button">Download Kokoro</button>
+              <button id="test-voice" type="button">Test voice</button>
+            </div>
+            <pre id="voice-result" class="result" aria-live="polite">Kokoro loads locally in the bundled app view, then downloads the selected voice model once and caches it on this device.</pre>
+          </section>
+          <section class="panel images-panel">
+            <h2>Local Images (SD-Turbo)</h2>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="sd-status">-</dd>
+              <dt>Graphics</dt><dd id="sd-gpu">-</dd>
+            </dl>
+            <div class="button-row">
+              <button id="check-sd" type="button">Check</button>
+              <button id="download-sd" type="button">Download SD-Turbo</button>
+            </div>
+            <pre id="sd-result" class="result" aria-live="polite">Generates classroom images on this computer (about 2 GB, downloaded once). Used automatically when cloud image AI is unavailable or has no key.</pre>
+          </section>
+          <section class="panel engine-panel">
+            <h2>Built-in AI Engine</h2>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="engine-phase">-</dd>
+              <dt>Model</dt><dd id="engine-model">-</dd>
+              <dt>Context</dt><dd id="engine-context">-</dd>
+              <dt>Fallback</dt><dd id="engine-fallback-state">-</dd>
+              <dt>Disk free</dt><dd id="engine-disk">-</dd>
+            </dl>
+            <label for="engine-model-select">AI model</label>
+            <select id="engine-model-select">
+              <optgroup label="Light (any laptop)">
+                <option value="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf">Qwen 1.5B â€” 1.0 GB, fastest</option>
+              </optgroup>
+              <optgroup label="Balanced (8 GB+ RAM)">
+                <option value="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf" selected>Qwen 3B â€” 2.0 GB, recommended</option>
+                <option value="https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf">Llama 3.2 3B â€” 1.9 GB</option>
+                <option value="https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf">Gemma 3 4B â€” 2.3 GB</option>
+                <option value="https://huggingface.co/bartowski/microsoft_Phi-4-mini-instruct-GGUF/resolve/main/microsoft_Phi-4-mini-instruct-Q4_K_M.gguf">Phi-4 Mini â€” 2.3 GB</option>
+                <option value="https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf">Qwen3 4B â€” 2.3 GB, newer generation</option>
+              </optgroup>
+              <optgroup label="Strong (12 GB+ RAM)">
+                <option value="https://huggingface.co/ggml-org/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf">Gemma 4 E4B â€” 5.0 GB, newest Google open model</option>
+                <option value="https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf">Qwen 7B â€” 4.4 GB</option>
+                <option value="https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf">Mistral 7B â€” 4.1 GB</option>
+              </optgroup>
+              <optgroup label="Big (24 GB+ RAM / school machine)">
+                <option value="https://huggingface.co/bartowski/google_gemma-3-12b-it-GGUF/resolve/main/google_gemma-3-12b-it-Q4_K_M.gguf">Gemma 3 12B â€” 6.8 GB</option>
+              </optgroup>
+              <optgroup label="Server class (district GPU box, 32 GB+ )">
+                <option value="https://huggingface.co/bartowski/google_gemma-3-27b-it-GGUF/resolve/main/google_gemma-3-27b-it-Q4_K_M.gguf">Gemma 3 27B â€” 15.4 GB</option>
+                <option value="https://huggingface.co/Qwen/Qwen3-32B-GGUF/resolve/main/Qwen3-32B-Q4_K_M.gguf">Qwen3 32B â€” 18.4 GB</option>
+              </optgroup>
+              <optgroup label="Bring your own">
+                <option value="__custom">Customâ€¦ (URL, or a .gguf file on a USB drive)</option>
+              </optgroup>
+            </select>
+            <div id="engine-custom-row" hidden>
+              <label for="engine-custom-input">Custom model <span class="hint">(a direct .gguf URL, or a full path like E:\models\my-model.gguf)</span></label>
+              <div class="button-row">
+                <input id="engine-custom-input" type="text" placeholder="https://â€¦ or E:\models\my-model.gguf">
+                <button id="engine-custom-apply" type="button">Use it</button>
+                <button id="engine-custom-cancel" type="button">Cancel</button>
+              </div>
+            </div>
+            <label for="engine-model-dir">Model storage folder <span class="hint">(blank = this app's data folder; point at a USB drive to keep models off this PC)</span></label>
+            <div class="button-row">
+              <input id="engine-model-dir" type="text" placeholder="e.g. E:\alloflow-models">
+              <button id="engine-model-dir-save" type="button">Save folder</button>
+            </div>
+            <div class="button-row">
+              <button id="engine-start" type="button">Start engine</button>
+              <button id="engine-probe" type="button">Check local model</button>
+              <button id="engine-stop" type="button">Stop</button>
+            </div>
+            <label class="check-row" for="engine-cloud-fallback">
+              <input id="engine-cloud-fallback" type="checkbox">
+              <span>Use checked local model when cloud text AI hits rate limits</span>
+            </label>
+            <pre id="engine-result" class="result" aria-live="polite">Local text AI with nothing else to install: the runtime downloads llama-server plus a small model once (about 2 GB), then serves it privately on this device. Select the "AlloFlow Built-in Engine" provider to use it.</pre>
+          </section>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-schoolbox" role="tabpanel" tabindex="0" aria-labelledby="tab-schoolbox">
+        <header class="pane-header">
+          <div>
+            <h1>School Box Server</h1>
+            <p id="schoolbox-status">Checking optional server status</p>
+          </div>
+          <div class="toolbar">
+            <button id="refresh-schoolbox" type="button">Refresh</button>
+            <button id="setup-schoolbox" type="button">Prepare</button>
+            <button id="start-schoolbox" type="button">Start Server</button>
+            <button id="stop-schoolbox" type="button">Stop Server</button>
+            <a id="open-schoolbox-link" class="button-link" target="_blank" rel="noreferrer">Open Server</a>
+          </div>
+        </header>
+        <div class="schoolbox-grid">
+          <section class="panel live-session-panel">
+            <h2>Live Sessions</h2>
+            <dl class="kv">
+              <dt>Backend</dt><dd id="live-session-mode">-</dd>
+              <dt>Data location</dt><dd id="live-session-location">-</dd>
+              <dt>Cloud session docs</dt><dd id="live-session-cloud">-</dd>
+              <dt>Student joining</dt><dd id="live-session-joining">-</dd>
+              <dt>LAN bridge</dt><dd id="live-session-lan">-</dd>
+              <dt>Join base</dt><dd id="live-session-join-base">-</dd>
+            </dl>
+            <label for="live-session-mode-select">Live session backend</label>
+            <select id="live-session-mode-select">
+              <option value="schoolbox-lan">Desktop LAN / Local Network</option>
+              <option value="local-preview">Local Preview Only</option>
+              <option value="district-server">District Server (future)</option>
+              <option value="byo-firebase">Bring Your Own Firebase</option>
+              <option value="alloflow-demo-cloud">AlloFlow Demo Cloud</option>
+            </select>
+            <div class="button-row">
+              <button id="save-live-session" type="button">Save Live Session Mode</button>
+              <button id="start-lan-share" type="button">Start LAN Share</button>
+              <button id="stop-lan-share" type="button">Stop LAN Share</button>
+            </div>
+            <h3 class="subhead">Classroom join tools</h3>
+            <label for="lan-pin">Join PIN (optional)</label>
+            <div class="button-row">
+              <input id="lan-pin" type="text" maxlength="32" autocomplete="off" placeholder="e.g. 4217">
+              <button id="save-lan-pin" type="button">Save PIN</button>
+            </div>
+            <p class="lan-hint" id="lan-pin-hint">A PIN locks the join page and class data on the shared network. It takes effect when LAN sharing starts &mdash; if sharing is already on, stop and start it again.</p>
+            <label for="presenter-code">Class code</label>
+            <div class="button-row">
+              <input id="presenter-code" type="text" maxlength="24" autocomplete="off" placeholder="e.g. TIGERS1">
+              <button id="show-join-qr" type="button">Show QR</button>
+              <button id="copy-join-link" type="button">Copy join link</button>
+              <a id="open-presenter" class="button-link" target="_blank" rel="noreferrer">Presenter view</a>
+            </div>
+            <div id="join-qr" class="join-qr" role="img" aria-label="QR code for the class join link" hidden></div>
+            <div id="join-link" class="join-link" aria-live="polite"></div>
+            <h3 class="subhead">Network check</h3>
+            <ul id="lan-diagnostics" class="next-actions"></ul>
+            <ul id="live-session-next-actions" class="next-actions"></ul>
+            <pre id="live-session-result" class="result" aria-live="polite"></pre>
+          </section>
+          <section class="panel">
+            <h2>Classroom Setup Wizard</h2>
+            <p class="lan-hint">Local-first classroom in three steps. Student work stays on this computer and your school network.</p>
+            <ol id="classroom-wizard" class="setup-guide"></ol>
+            <div class="button-row">
+              <button id="run-classroom-check" type="button">Run classroom check</button>
+              <button id="copy-classroom-readiness" type="button">Copy classroom report</button>
+            </div>
+            <pre id="classroom-check-result" class="result" aria-live="polite"></pre>
+            <p class="lan-hint">AlloFlow Desktop is designed to support school-controlled, privacy-first deployments. Whether a deployment meets FERPA or district policy depends on how your school configures and uses it &mdash; this app avoids cloud student data by default, but compliance is an institutional decision.</p>
+          </section>
+          <section class="panel">
+            <h2>Optional Server Readiness</h2>
+            <dl class="kv">
+              <dt>Mode</dt><dd id="schoolbox-mode">-</dd>
+              <dt>Address</dt><dd id="schoolbox-address">-</dd>
+              <dt>Embedded</dt><dd id="schoolbox-embedded">-</dd>
+              <dt>Status</dt><dd id="schoolbox-state">-</dd>
+              <dt>Docker</dt><dd id="schoolbox-docker">-</dd>
+              <dt>Stack</dt><dd id="schoolbox-stack">-</dd>
+              <dt>Env</dt><dd id="schoolbox-env">-</dd>
+            </dl>
+            <ul id="schoolbox-next-actions" class="next-actions"></ul>
+          </section>
+          <section class="panel">
+            <h2>Server Setup Guide</h2>
+            <ol id="schoolbox-setup-guide" class="setup-guide"></ol>
+          </section>
+          <section class="panel">
+            <h2>Configuration</h2>
+            <label for="schoolbox-mode-select">Mode</label>
+            <select id="schoolbox-mode-select">
+              <option value="disabled">Disabled</option>
+              <option value="desktop-host">Docker Server Host</option>
+              <option value="district-server">District Server (future)</option>
+            </select>
+            <label for="schoolbox-port">Port</label>
+            <input id="schoolbox-port" type="number" min="1024" max="65535" step="1">
+            <label class="check-row" for="schoolbox-include-gpu">
+              <input id="schoolbox-include-gpu" type="checkbox">
+              <span>Image AI service</span>
+            </label>
+            <button id="save-schoolbox" type="button">Save</button>
+            <pre id="schoolbox-result" class="result" aria-live="polite"></pre>
+          </section>
+          <section class="panel services-panel">
+            <h2>Docker Services</h2>
+            <div class="service-list" id="schoolbox-services"></div>
+          </section>
+          <section class="panel logs-panel">
+            <h2>Logs</h2>
+            <pre id="schoolbox-logs" class="result schoolbox-logs" aria-live="polite"></pre>
+          </section>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-settings" role="tabpanel" tabindex="0" aria-labelledby="tab-settings">
+        <header class="pane-header">
+          <div>
+            <h1>Runtime Settings</h1>
+            <p id="settings-status">Ready</p>
+          </div>
+        </header>
+        <section class="panel wide">
+          <h2>Runtime</h2>
+          <dl class="kv">
+            <dt>Version</dt><dd id="runtime-version">-</dd>
+            <dt>Data directory</dt><dd id="runtime-data-dir">-</dd>
+            <dt>Config</dt><dd id="runtime-config-path">-</dd>
+            <dt>Command center</dt><dd id="runtime-command-dir">-</dd>
+          </dl>
+        </section>
+        <section class="panel wide">
+          <h2>Updates</h2>
+          <dl class="kv">
+            <dt>Installed</dt><dd id="update-current-version">-</dd>
+            <dt>Available</dt><dd id="update-available-version">-</dd>
+            <dt>Status</dt><dd id="update-status">-</dd>
+            <dt>Channel</dt><dd id="update-channel">-</dd>
+            <dt>Platform</dt><dd id="update-platform">-</dd>
+            <dt>Feed</dt><dd id="update-feed">-</dd>
+          </dl>
+          <label for="update-channel-select">Update channel</label>
+          <div class="button-row">
+            <select id="update-channel-select">
+              <option value="latest">Latest</option>
+              <option value="beta">Prerelease beta</option>
+            </select>
+            <button id="save-update-channel" type="button">Save Channel</button>
+          </div>
+          <div class="button-row">
+            <button id="check-updates" type="button">Check for Updates</button>
+            <button id="download-update" type="button">Download</button>
+            <button id="install-update" type="button">Install and Restart</button>
+          </div>
+          <pre id="update-result" class="result" aria-live="polite"></pre>
+        </section>
+        <section class="panel wide">
+          <h2>Diagnostics</h2>
+          <div class="button-row">
+            <button id="copy-readiness" type="button">Copy Readiness Report</button>
+            <button id="copy-diagnostics" type="button">Copy Diagnostics</button>
+          </div>
+          <pre id="readiness-result" class="result" aria-live="polite">Readiness checks local-first classroom features without changing settings.</pre>
+          <pre id="diagnostics-result" class="result" aria-live="polite">Diagnostics are redacted before copying.</pre>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <button id="exit-app-focus" class="focus-exit" type="button">Exit Full Screen</button>
+
+  <div class="setup-modal hidden" id="api-key-setup" role="dialog" aria-modal="true" aria-labelledby="api-key-title">
+    <section class="setup-dialog">
+      <header>
+        <span class="setup-kicker">First Run</span>
+        <h2 id="api-key-title">Connect Gemini</h2>
+        <p id="api-key-copy">Add your API key to enable cloud AI features in this desktop copy.</p>
+      </header>
+      <label for="setup-provider-select">Provider</label>
+      <select id="setup-provider-select"></select>
+      <label for="setup-api-key">API key</label>
+      <input id="setup-api-key" type="password" autocomplete="off" placeholder="Paste key">
+      <div class="button-row setup-actions">
+        <button id="setup-save-key" class="primary" type="button">Save Key</button>
+        <button id="setup-later" type="button">Later</button>
+      </div>
+      <p id="setup-result" class="inline-status" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <script src="./vendor/qrcode.js"></script>
+  <script src="./command-center.js"></script>
+</body>
+</html>

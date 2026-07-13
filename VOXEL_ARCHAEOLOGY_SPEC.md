@@ -1,5 +1,7 @@
 # STEM Lab Tool Spec: Voxel Archaeology (accessibility-first)
 
+> **Design snapshot note (2026-07-09):** This May 2026 spec is a proposed STEM Lab tool design, not proof of current implementation. Verify current STEM Lab registry state, tool availability, and accessibility conventions before treating the working id, file path, or acceptance gates below as active build guidance.
+
 **Status:** Design spec, not built. Authored 2026-05-31. Intended to be handed to a student (CS capstone) or built directly.
 **Working id:** `stem_tool_archaeology` (file: `stem_lab/stem_tool_archaeology.js`)
 
@@ -53,7 +55,7 @@ This satisfies UDL multiple-means-of-representation by design (plan + cross-sect
 
 - Fully **keyboard operable**: arrow keys move the grid cursor, Enter/Space excavate/record, a documented key map, visible focus ring.
 - **Screen-reader support**: each cell announces its position, current depth, material, and any exposed artifact via ARIA live regions; the canvas has a text-equivalent.
-- **No color-only encoding**: strata and states use labels/patterns plus color; all text meets WCAG 2.1 AA contrast using the shared `var(--allo-stem-*)` theme variables.
+- **No color-only encoding**: strata and states use labels/patterns plus color; text must meet WCAG 2.1 AA contrast using the shared `var(--allo-stem-*)` theme variables.
 - **Reduced motion**: honor the shared reduced-motion CSS (already injected by the STEM Lab); no essential animation.
 - **Mute + haptics**: respect the global mute; use the shared audio/haptic helpers; never rely on sound alone to convey state.
 - **Target sizes** large enough for motor accessibility; works on touch and pointer.

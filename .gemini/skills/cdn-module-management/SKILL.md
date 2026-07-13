@@ -1,66 +1,75 @@
 ---
 name: cdn-module-management
-description: Safe editing and deployment of the 4 CDN-loaded JavaScript modules (stem_lab, word_sounds, behavior_lens, report_writer)
+description: Safe editing and deployment of the CDN-loaded JavaScript feature modules (stem_lab, word_sounds, behavior_lens, report_writer, and ~250 others)
 ---
 
 # CDN Module Management Skill
 
 ## Context
-AlloFlow loads 4 heavy modules via CDN (`cdn.jsdelivr.net`) at runtime. They are **not bundled** into the React build — they run as standalone scripts that register themselves on `window`.
+AlloFlow loads its heavy feature modules via CDN at runtime instead of bundling
+them into the React build. They run as standalone scripts that register
+themselves on `window.AlloModules`. There are now **~250 such modules** at the
+repo root (`*_module.js`) plus the `stem_lab/` and `sel_hub/` plugin trees. The
+four largest/clinical ones are the canonical examples:
 
-| Module | File | Size | Port |
-|--------|------|------|------|
-| STEM Lab | `stem_lab_module.js` | ~2.3 MB | `window.__STEM_LAB_MODULE__` |
-| Word Sounds | `word_sounds_module.js` | ~935 KB | `window.__WORD_SOUNDS_MODULE__` |
-| BehaviorLens | `behavior_lens_module.js` | ~1.3 MB | `window.__BEHAVIOR_LENS_MODULE__` |
-| Report Writer | `report_writer_module.js` | ~166 KB | `window.__REPORT_WRITER_MODULE__` |
+| Module | File | Registers as |
+|--------|------|--------------|
+| STEM Lab host | `stem_lab/stem_lab_module.js` | `window.AlloModules.StemLab` |
+| Word Sounds | `word_sounds_module.js` | `window.AlloModules.WordSoundsModal` |
+| BehaviorLens | `behavior_lens_module.js` | `window.AlloModules.BehaviorLens` |
+| Report Writer | `report_writer_module.js` | `window.AlloModules.ReportWriter` |
+
+(There is no `window.__*_MODULE__` global — that pattern was removed. Every
+module registers on `window.AlloModules.<Name>`.)
 
 ## CDN URL Format
+The runtime CDN is **Cloudflare Pages**, served **hashless**:
 ```
-https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@{COMMIT_HASH}/{filename}
+https://alloflow-cdn.pages.dev/{filename}
 ```
-The commit hash is baked into `AlloFlowANTI.txt` during build via `build.js --mode=prod`.
+`build.js --mode=prod` rewrites `pluginCdnBase` (and every module URL) to this
+base automatically — **do not hand-edit CDN URLs in `AlloFlowANTI.txt`.**
+(jsDelivr was abandoned in 2026 because it started returning GitHub 429s; any
+`cdn.jsdelivr.net/gh/...@{hash}` strings left in `build.js`'s MODULES table are
+legacy and unused.)
 
 ## Safe Editing Workflow
 
-### 1. Edit the module file directly
+### 1. Edit the module file directly (at repo root)
+The `Edit`/`Write` tools handle these files directly (most are 1–3 MB). For
+large scripted/bulk edits a Python or Node script is optional, but not required.
+Always validate syntax after editing:
 ```bash
-# These files are at repo root — edit them with Python scripts
-# (they exceed the 4MB editor limit)
-python -c "
-with open('stem_lab_module.js', 'r', encoding='utf-8') as f:
-    text = f.read()
-# ... modifications ...
-with open('stem_lab_module.js', 'w', encoding='utf-8') as f:
-    f.write(text)
-"
+node -c stem_lab/stem_lab_module.js   # or node --check
 ```
 
-### 2. Copy to deploy directory
+### 2. Commit (deploy.sh handles the rest)
+The canonical deploy is a single command from the repo root:
 ```bash
-copy stem_lab_module.js prismflow-deploy\public\stem_lab_module.js
+./deploy.sh "fix: description of module change"
 ```
+This commits, pushes to `main`, runs `build.js --mode=prod --force` (which
+rewrites CDN URLs + mirrors module files into `prismflow-deploy/public/`),
+builds the React shell, stamps the service worker, deploys to Firebase, and
+runs post-deploy verification against Firebase + the Cloudflare CDN.
 
-### 3. Push to GitHub first (CDN pulls from GitHub)
-```bash
-git add stem_lab_module.js
-git commit -m "fix: description of module change"
-git push origin main
-```
-
-### 4. Build and deploy (updates the hash in App.jsx)
-```bash
-node build.js --mode=prod  # Updates CDN hash to latest commit
-npm run build              # In prismflow-deploy/
-# ... stamp SW and firebase deploy ...
-```
+If you must run steps manually, the order is: commit → push → `node build.js
+--mode=prod` → `npm run build` (in `prismflow-deploy/`) → stamp SW → `firebase
+deploy`. Commit before build so the `?v=<short-hash>` cache-buster is correct.
 
 ## Cache Invalidation
-- jsDelivr caches by commit hash, so pushing a new commit automatically busts cache
-- If you need to test with a specific hash: `@{hash}` in the URL
-- Browser-side: The service worker may cache modules — stamp `sw.js` with new timestamp
+- Cloudflare Pages rebuilds and invalidates on every push to `main`
+  (asynchronous, ~1–2 min).
+- A `?v=<short-commit-hash>` query param (`pluginCdnVersion`) is stamped at
+  build time as an extra cache-buster; `deploy.sh` Step 10 asserts the live
+  value matches HEAD.
+- Browser service worker may cache modules — `deploy.sh` stamps `sw.js` with a
+  fresh `__BUILD_TS__` to force an update.
 
 ## Common Gotchas
-- **Never edit `prismflow-deploy/public/*.js` directly** — it gets overwritten by copy step
-- **Module registration**: Each module must call `window.__MODULE_NAME__ = { render, ... }` at the end
-- **Console markers**: Look for `[CDN] ModuleName script executed. Registration: SUCCESS` to verify loading
+- **Never edit `prismflow-deploy/public/*.js` directly** — `build.js` overwrites
+  the mirror from the committed root copies on every prod build.
+- **Module registration**: each module must assign `window.AlloModules.<Name> =
+  ...` (a component or `{ render, ... }`) at the end of its IIFE.
+- **Verify a load**: check that `window.AlloModules.<Name>` is defined in the
+  console, and look for the module's `[CDN] <Name> ...` log lines.

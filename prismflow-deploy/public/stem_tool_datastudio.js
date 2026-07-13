@@ -47,9 +47,9 @@ window.StemLab = window.StemLab || {
 
 
   window.StemLab.registerTool('dataStudio', {
-    icon: '🔬',
-    label: 'dataStudio',
-    desc: '',
+    icon: "📊",
+    label: "Data Studio",
+    desc: "Build bar, pie, line, scatter, and histogram charts from your data and explore stats like mean, median, and trendlines.",
     color: 'slate',
     category: 'creative',
     render: function(ctx) {

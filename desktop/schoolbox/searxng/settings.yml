@@ -1,0 +1,16 @@
+use_default_settings: true
+
+server:
+  secret_key: "alloflow-schoolbox-local"
+  limiter: false
+
+search:
+  safe_search: 2
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json
+
+ui:
+  static_use_hash: true

@@ -788,9 +788,18 @@ function LiveResultsDashboard(p) {
   var conceptMasteryByUid = conceptMasteryState[0];
   var setConceptMasteryByUid = conceptMasteryState[1];
   var rosterKeysSig = Object.keys(roster).sort().join(',');
+  // FERPA refit 2026-07-01: mastery now arrives as a prop from the shell
+  // (live peer-to-peer snapshots + project-file imports; device-local
+  // model). The Firestore fetch below survives ONLY as a legacy fallback
+  // for older shells that don't pass the prop.
+  var propMastery = p.conceptMasteryByUid;
   React.useEffect(function () {
     if (mode !== 'review') {
       setConceptMasteryByUid(null);
+      return;
+    }
+    if (propMastery !== undefined && propMastery !== null) {
+      setConceptMasteryByUid(propMastery);
       return;
     }
     var fb = window.__alloFirebase;
@@ -828,7 +837,7 @@ function LiveResultsDashboard(p) {
     return function () {
       cancelled = true;
     };
-  }, [mode, rosterKeysSig, appId]);
+  }, [mode, rosterKeysSig, appId, propMastery]);
   var aiGradedState = React.useState({});
   var aiGradedCache = aiGradedState[0];
   var setAiGradedCache = aiGradedState[1];
@@ -1159,6 +1168,27 @@ function LiveResultsDashboard(p) {
   if (!aggResult || !aggResult.data) return null;
   var data = aggResult.data;
   var variant = aggResult.variant;
+  // Share an anonymous per-question aggregate to every connected student
+  // over the P2P quiz channel (shell hook; nothing stored, no names).
+  var canShareResults = typeof window !== 'undefined' && typeof window.__alloQuizShareResults === 'function' && variant === 'liveHeatmap' && Array.isArray(data.bars) && data.bars.some(function (b) {
+    return b.total > 0;
+  });
+  var shareResultsToClass = function () {
+    var items = data.bars.filter(function (b) {
+      return b.total > 0;
+    }).map(function (b) {
+      return {
+        label: 'Q' + (b.questionIdx + 1) + ' — ' + String(b.questionText || '').slice(0, 70),
+        count: b.correct + '/' + b.total,
+        percent: b.total > 0 ? Math.round(b.correct / b.total * 100) : 0
+      };
+    });
+    var ok = window.__alloQuizShareResults({
+      title: t('quiz.shared_results_title') || 'How the class did',
+      items: items
+    });
+    if (window.AlloFlowUX) window.AlloFlowUX.toast(ok ? t('quiz.results_shared') || 'Anonymous results shared with the class.' : t('quiz.results_share_failed') || 'Could not share — no students connected.', ok ? 'success' : 'error');
+  };
   var header = /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-3 flex-wrap"
   }, /*#__PURE__*/React.createElement("span", {
@@ -1176,7 +1206,14 @@ function LiveResultsDashboard(p) {
     title: inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI'
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "✨ "), 'AI grading ' + inFlightCount + '…'));
+  }, "✨ "), 'AI grading ' + inFlightCount + '…'), canShareResults && /*#__PURE__*/React.createElement("button", {
+    onClick: shareResultsToClass,
+    className: "ml-auto text-xs font-bold px-3 py-1 rounded-full border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 transition-colors",
+    title: t('quiz.share_results_tooltip') || 'Send anonymous per-question results to every connected student (peer-to-peer, nothing stored)',
+    "aria-label": t('quiz.share_results_aria') || 'Share anonymous results with the class'
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📢 "), t('quiz.share_results_btn') || 'Share anonymous results'));
   var hasAnyResponses = false;
   if (variant === 'gradebook') {
     hasAnyResponses = data.studentRows.some(function (r) {
@@ -2879,7 +2916,8 @@ function QuizView(props) {
     activeSessionCode: activeSessionCode,
     callGemini: props.callGemini,
     callTTS: props.callTTS,
-    gradeLevel: props.gradeLevel
+    gradeLevel: props.gradeLevel,
+    conceptMasteryByUid: props.conceptMasteryByUid
   }), /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Live quiz controls encountered an error. Refreshing..."
   }, /*#__PURE__*/React.createElement(TeacherLiveQuizControls, {

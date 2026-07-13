@@ -318,9 +318,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       choices: ['~30%', '~50%', '~75–85%', '~99%'],
       correct: 2, why: 'Pumped hydro recovers about 75–85% of the electricity used to pump water up. It’s old tech (1890s) and still ~95% of the world’s installed grid storage — batteries are catching up fast but pumped hydro dwarfs them in total MWh stored.' },
     { id: 'q11', icon: '🌐',
-      stem: 'The North American grid runs at exactly 60 Hz. If demand suddenly spikes and generation lags, what happens to grid frequency?',
+      stem: 'The North American grid operates near a nominal 60 Hz. If demand suddenly spikes and generation lags, what initially happens to grid frequency?',
       choices: ['It stays at 60 Hz — the grid auto-corrects instantly', 'It drops below 60 Hz', 'It rises above 60 Hz', 'It oscillates between 50 and 70 Hz'],
-      correct: 1, why: 'When demand exceeds supply, the spinning generators slow down slightly to compensate, dropping frequency. Operators must add generation (or shed load) within seconds. Batteries excel at this because they respond in milliseconds.' },
+      correct: 1, why: 'When demand exceeds supply, synchronized rotating machines initially slow and frequency tends to drop. Controls, reserves, storage, and sometimes load shedding respond on different timescales.' },
     { id: 'q12', icon: '🦆',
       stem: 'In a high-solar grid like California\'s, the daytime "net load" curve looks like a duck — solar floods the grid mid-day, then drops out at sunset just as demand peaks. What is this called and what fixes it?',
       choices: ['The "swan song" — fixed by more nuclear', 'The "duck curve" — fixed by storage, demand response, and load-shifting', 'The "death spiral" — fixed by removing solar', 'The "sunset wall" — fixed by more transmission'],
@@ -506,7 +506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     { term: 'COP (Coefficient of Performance)', def: 'For heat pumps: heat moved per unit of electricity used. Maine ground-source units typically run COP 3–5 — 3 to 5 units of heat for every unit of electricity.' },
     { term: 'Round-trip efficiency', def: 'For storage: energy you get OUT divided by energy you put IN. Li-ion: 85–95%. Pumped hydro: 75–85%. Green hydrogen: 30–40%.' },
     { term: 'Behind-the-meter', def: 'Generation or storage on the customer side of the utility meter (your rooftop solar, your home battery). The utility doesn\'t see the kWh — only the net.' },
-    { term: 'Frequency regulation', def: 'Sub-second adjustments to keep the grid at exactly 60 Hz. Batteries are uniquely good at this — they respond in milliseconds.' },
+    { term: 'Frequency regulation', def: 'Rapid adjustments that keep grid frequency close to its nominal value. Batteries can respond quickly, alongside other controls and resources.' },
     { term: 'Cost-per-kWh-stored', def: 'For batteries: $/kWh of capacity. Li-ion fell from ~$1100/kWh (2010) to ~$140/kWh (2024) — driving the storage boom.' }
   ];
 
@@ -1374,6 +1374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     tags: ['energy', 'physics', 'engineering', 'climate', 'renewables', 'solar', 'wind', 'hydro', 'geothermal', 'maine'],
 
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       try {
       var React = ctx.React;
       var h = React.createElement;
@@ -1496,11 +1497,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       function awardBadge(id, label) {
         if (badges[id]) return;
-        var nextBadges = Object.assign({}, badges);
-        nextBadges[id] = { earned: new Date().toISOString(), label: label };
-        upd('badges', nextBadges);
-        addToast('🏅 Badge: ' + label);
-        rnAnnounce('Badge earned: ' + label);
+        // Defer the state write + toast out of render: awardBadge is called inline during render in
+        // ~14 views, and upd()/addToast() during render is a React anti-pattern (warns, extra pass).
+        // The synchronous guard above still prevents scheduling a duplicate for an already-earned badge.
+        setTimeout(function () {
+          var nextBadges = Object.assign({}, badges);
+          nextBadges[id] = { earned: new Date().toISOString(), label: label };
+          upd('badges', nextBadges);
+          addToast('🏅 Badge: ' + label);
+          rnAnnounce('Badge earned: ' + label);
+        }, 0);
       }
 
       function markVisited(modId) {
@@ -1548,7 +1554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ),
           h('p', { style: { margin: '6px 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } }, s.oneLiner),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, fontSize: 11, color: T.dim } },
-            h('div', null, h('strong', { style: { color: T.text } }, 'Capacity factor: '), s.capacityFactor),
+            h('div', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.capacity_factor', 'Capacity factor: ')), s.capacityFactor),
             h('div', null, h('strong', { style: { color: T.text } }, 'LCOE: '), s.lcoe),
             h('div', { style: { gridColumn: '1 / -1' } }, h('strong', { style: { color: T.text } }, 'Trend: '), s.growth)
           )
@@ -1596,10 +1602,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       function backBar(title) {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
           h('button', { 'data-rn-focusable': true,
-            'aria-label': 'Back to Renewables Lab menu',
+            'aria-label': __alloT('stem.renewables.back_to_renewables_lab_menu', 'Back to Renewables Lab menu'),
             onClick: function() { upd('view', 'menu'); rnAnnounce('Back to menu'); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
-          }, '← Menu'),
+          }, __alloT('stem.renewables.menu', '← Menu')),
           h('h2', { style: { margin: 0, fontSize: 20, color: T.text } }, title)
         );
       }
@@ -1627,9 +1633,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       // Reusable: footer disclaimer + cite
       function footer() {
-        return h('div', { role: 'contentinfo', 'aria-label': 'Source attribution',
+        return h('div', { role: 'contentinfo', 'aria-label': __alloT('stem.renewables.source_attribution', 'Source attribution'),
           style: { marginTop: 18, padding: '10px 14px', borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 11, textAlign: 'center', lineHeight: 1.55 } },
-          'Numbers traced to ',
+          __alloT('stem.renewables.numbers_traced_to', 'Numbers traced to '),
           h('a', { href: 'https://www.nrel.gov', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'NREL'),
           ' · ',
           h('a', { href: 'https://www.iea.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'IEA'),
@@ -1637,7 +1643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('a', { href: 'https://www.irena.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'IRENA'),
           ' · ',
           h('a', { href: 'https://www.eia.gov', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'EIA'),
-          '. Sims are simplified — real plants involve additional losses (wake, transmission, parasitic load).'
+          __alloT('stem.renewables.sims_are_simplified_real_plants_involv', '. Sims are simplified — real plants involve additional losses (wake, transmission, parasitic load).')
         );
       }
 
@@ -1646,46 +1652,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // ─────────────────────────────────────────
       var MENU_TILES = [
         // Source modules (the "how does it work?" core)
-        { id: 'solarPv',     icon: '☀️',     label: 'Solar PV',          desc: 'Photovoltaic effect + irradiance × area sim.' },
-        { id: 'wind',        icon: '🌬️', label: 'Wind',              desc: 'Betz limit + cube-of-wind-speed power curve.' },
-        { id: 'hydro',       icon: '🌊',     label: 'Hydropower',        desc: 'Head × flow sim + Pelton / Francis / Kaplan.' },
-        { id: 'geothermal',  icon: '🌋',     label: 'Geothermal',        desc: 'Earth’s gradient + 3 plant types + GSHP.' },
-        { id: 'solarThermal',icon: '🔆',     label: 'Solar Thermal (CSP)',desc: 'Mirrors → molten salt → steam turbine.' },
-        { id: 'waveTidal',   icon: '🌀',     label: 'Wave & Tidal',      desc: 'Marine kinetic + tides predictable for decades.' },
-        { id: 'biomass',     icon: '🌾',     label: 'Biomass & Biogas',  desc: 'Combustion vs anaerobic digestion.' },
-        { id: 'storage',     icon: '🔋',     label: 'Storage',           desc: 'Li-ion / flow / pumped hydro / hydrogen.' },
+        { id: 'solarPv',     icon: '☀️',     label: __alloT('stem.renewables.solar_pv', 'Solar PV'),          desc: __alloT('stem.renewables.photovoltaic_effect_irradiance_area_si', 'Photovoltaic effect + irradiance × area sim.') },
+        { id: 'wind',        icon: '🌬️', label: __alloT('stem.renewables.wind', 'Wind'),              desc: __alloT('stem.renewables.betz_limit_cube_of_wind_speed_power_cu', 'Betz limit + cube-of-wind-speed power curve.') },
+        { id: 'hydro',       icon: '🌊',     label: __alloT('stem.renewables.hydropower', 'Hydropower'),        desc: __alloT('stem.renewables.head_flow_sim_pelton_francis_kaplan', 'Head × flow sim + Pelton / Francis / Kaplan.') },
+        { id: 'geothermal',  icon: '🌋',     label: __alloT('stem.renewables.geothermal', 'Geothermal'),        desc: __alloT('stem.renewables.earth_s_gradient_3_plant_types_gshp', 'Earth’s gradient + 3 plant types + GSHP.') },
+        { id: 'solarThermal',icon: '🔆',     label: __alloT('stem.renewables.solar_thermal_csp', 'Solar Thermal (CSP)'),desc: __alloT('stem.renewables.mirrors_molten_salt_steam_turbine', 'Mirrors → molten salt → steam turbine.') },
+        { id: 'waveTidal',   icon: '🌀',     label: __alloT('stem.renewables.wave_tidal', 'Wave & Tidal'),      desc: __alloT('stem.renewables.marine_kinetic_tides_predictable_for_d', 'Marine kinetic + tides predictable for decades.') },
+        { id: 'biomass',     icon: '🌾',     label: __alloT('stem.renewables.biomass_biogas', 'Biomass & Biogas'),  desc: __alloT('stem.renewables.combustion_vs_anaerobic_digestion', 'Combustion vs anaerobic digestion.') },
+        { id: 'storage',     icon: '🔋',     label: __alloT('stem.renewables.storage', 'Storage'),           desc: __alloT('stem.renewables.li_ion_flow_pumped_hydro_hydrogen', 'Li-ion / flow / pumped hydro / hydrogen.') },
         // Synthesis + applied
-        { id: 'compare',     icon: '📊',     label: 'Compare all sources',desc: 'Side-by-side table + capacity factor explainer.' },
-        { id: 'mix',         icon: '🎛️', label: 'Energy Mix Designer',  desc: 'Slide each source. See CO₂, reliability, storage need.' },
-        { id: 'homePayback', icon: '🏠',     label: 'Maine home solar calc',desc: 'Roof area + bill → kWh/yr, payback, CO₂ avoided.' },
-        { id: 'installerCo', icon: '☀️',     label: 'Solar Installer Co.', desc: '4-year campaign running a small Maine solar firm. Bid on contracts, pick suppliers, hire installers, manage cash flow. Workforce + business-scale view of clean energy.' },
-        { id: 'heatPump',    icon: '♨️',  label: 'Heat Pumps Deep Dive',desc: 'ASHP / GSHP / HPWH, COP, myths, integration. Maine leads US.' },
-        { id: 'plants',      icon: '🗺️', label: 'Plant Tour',           desc: '16 famous installations across all sources. Filter + browse.' },
+        { id: 'compare',     icon: '📊',     label: __alloT('stem.renewables.compare_all_sources', 'Compare all sources'),desc: __alloT('stem.renewables.side_by_side_table_capacity_factor_exp', 'Side-by-side table + capacity factor explainer.') },
+        { id: 'mix',         icon: '🎛️', label: __alloT('stem.renewables.energy_mix_designer', 'Energy Mix Designer'),  desc: __alloT('stem.renewables.slide_each_source_see_co_reliability_s', 'Slide each source. See CO₂, reliability, storage need.') },
+        { id: 'homePayback', icon: '🏠',     label: __alloT('stem.renewables.maine_home_solar_calc', 'Maine home solar calc'),desc: __alloT('stem.renewables.roof_area_bill_kwh_yr_payback_co_avoid', 'Roof area + bill → kWh/yr, payback, CO₂ avoided.') },
+        { id: 'installerCo', icon: '☀️',     label: __alloT('stem.renewables.solar_installer_co', 'Solar Installer Co.'), desc: __alloT('stem.renewables.4_year_campaign_running_a_small_maine_', '4-year campaign running a small Maine solar firm. Bid on contracts, pick suppliers, hire installers, manage cash flow. Workforce + business-scale view of clean energy.') },
+        { id: 'heatPump',    icon: '♨️',  label: __alloT('stem.renewables.heat_pumps_deep_dive', 'Heat Pumps Deep Dive'),desc: __alloT('stem.renewables.ashp_gshp_hpwh_cop_myths_integration_m', 'ASHP / GSHP / HPWH, COP, myths, integration. Maine leads US.') },
+        { id: 'plants',      icon: '🗺️', label: __alloT('stem.renewables.plant_tour', 'Plant Tour'),           desc: __alloT('stem.renewables.16_famous_installations_across_all_sou', '16 famous installations across all sources. Filter + browse.') },
         // Visual + applied practice
-        { id: 'diagrams',    icon: '🔬',     label: 'Diagrams',           desc: '9 labeled SVG schematics: PV cell, turbine, dam, CSP tower, GSHP, OWC, digester, pumped hydro.' },
-        { id: 'aiPractice',  icon: '🤖',     label: 'AI Practice',        desc: 'Design a system for 6 real scenarios. AI critiques against rubric.' },
-        { id: 'smartGrid',   icon: '🌐',     label: 'Smart Grid 101',     desc: 'How a real grid balances supply + demand. Frequency, demand response, V2G, duck curve.' },
-        { id: 'hydrogen',    icon: '💨',     label: 'Hydrogen Economy',   desc: 'Color codes (green/blue/gray/etc), production routes, end uses, controversy.' },
-        { id: 'justice',     icon: '⚖️',  label: 'Climate Justice',     desc: 'Energy burden, front-line communities, just transition, siting fights, Indigenous leadership.' },
-        { id: 'careers',     icon: '🧰',     label: 'Career Pathways',    desc: '14 careers — trades, engineering, policy, research. Maine training pipeline.' },
-        { id: 'teacher',     icon: '🎓',     label: 'Teacher Guide',      desc: 'NGSS alignment, discussion prompts, hands-on activities, unit pacing.' },
-        { id: 'printPack',   icon: '🖨',      label: 'Print Pack',         desc: 'Build a printable handout from selected sections. Worksheet, quiz, answer key.' },
-        { id: 'takeAction',  icon: '🌱',     label: 'Take Action',        desc: 'Concrete steps you can take at home, school, in community, civically.' },
+        { id: 'diagrams',    icon: '🔬',     label: __alloT('stem.renewables.diagrams', 'Diagrams'),           desc: __alloT('stem.renewables.9_labeled_svg_schematics_pv_cell_turbi', '9 labeled SVG schematics: PV cell, turbine, dam, CSP tower, GSHP, OWC, digester, pumped hydro.') },
+        { id: 'aiPractice',  icon: '🤖',     label: __alloT('stem.renewables.ai_practice', 'AI Practice'),        desc: __alloT('stem.renewables.design_a_system_for_6_real_scenarios_a', 'Design a system for 6 real scenarios. AI critiques against rubric.') },
+        { id: 'smartGrid',   icon: '🌐',     label: __alloT('stem.renewables.smart_grid_101', 'Smart Grid 101'),     desc: __alloT('stem.renewables.how_a_real_grid_balances_supply_demand', 'How a real grid balances supply + demand. Frequency, demand response, V2G, duck curve.') },
+        { id: 'hydrogen',    icon: '💨',     label: __alloT('stem.renewables.hydrogen_economy', 'Hydrogen Economy'),   desc: __alloT('stem.renewables.color_codes_green_blue_gray_etc_produc', 'Color codes (green/blue/gray/etc), production routes, end uses, controversy.') },
+        { id: 'justice',     icon: '⚖️',  label: __alloT('stem.renewables.climate_justice', 'Climate Justice'),     desc: __alloT('stem.renewables.energy_burden_front_line_communities_j', 'Energy burden, front-line communities, just transition, siting fights, Indigenous leadership.') },
+        { id: 'careers',     icon: '🧰',     label: __alloT('stem.renewables.career_pathways', 'Career Pathways'),    desc: __alloT('stem.renewables.14_careers_trades_engineering_policy_r', '14 careers — trades, engineering, policy, research. Maine training pipeline.') },
+        { id: 'teacher',     icon: '🎓',     label: __alloT('stem.renewables.teacher_guide', 'Teacher Guide'),      desc: __alloT('stem.renewables.ngss_alignment_discussion_prompts_hand', 'NGSS alignment, discussion prompts, hands-on activities, unit pacing.') },
+        { id: 'printPack',   icon: '🖨',      label: __alloT('stem.renewables.print_pack', 'Print Pack'),         desc: __alloT('stem.renewables.build_a_printable_handout_from_selecte', 'Build a printable handout from selected sections. Worksheet, quiz, answer key.') },
+        { id: 'takeAction',  icon: '🌱',     label: __alloT('stem.renewables.take_action', 'Take Action'),        desc: __alloT('stem.renewables.concrete_steps_you_can_take_at_home_sc', 'Concrete steps you can take at home, school, in community, civically.') },
         // Reference
-        { id: 'nuclear',     icon: '⚛️', label: 'Nuclear (low-C)',   desc: 'Not renewable, but always asked about. Honest pros/cons.' },
-        { id: 'glossary',    icon: '📖',     label: 'Glossary',          desc: '18 key terms — kW vs kWh, LCOE, dispatchable, etc.' },
-        { id: 'myths',       icon: '🧐',     label: 'Myths busted',      desc: '7 common misconceptions, sourced corrections.' },
+        { id: 'nuclear',     icon: '⚛️', label: __alloT('stem.renewables.nuclear_low_c', 'Nuclear (low-C)'),   desc: __alloT('stem.renewables.not_renewable_but_always_asked_about_h', 'Not renewable, but always asked about. Honest pros/cons.') },
+        { id: 'glossary',    icon: '📖',     label: __alloT('stem.renewables.glossary', 'Glossary'),          desc: __alloT('stem.renewables.18_key_terms_kw_vs_kwh_lcoe_dispatchab', '18 key terms — kW vs kWh, LCOE, dispatchable, etc.') },
+        { id: 'myths',       icon: '🧐',     label: __alloT('stem.renewables.myths_busted', 'Myths busted'),      desc: __alloT('stem.renewables.7_common_misconceptions_sourced_correc', '7 common misconceptions, sourced corrections.') },
         // Assessment
-        { id: 'quiz',        icon: '📝',     label: '18-question quiz',  desc: 'Test your understanding of all sources.' },
-        { id: 'mastery',     icon: '🏅',     label: 'Energy Mastery',     desc: 'Cross-attempt log of every quiz question you have nailed, rolled up by source.' },
-        { id: 'siteSelector', icon: '🕵️',  label: 'Site Selector',     desc: '10 location profiles. For each, pick the best renewable from 8 options (rooftop solar / utility solar / onshore wind / offshore wind / hydro / geothermal / wave-tidal / biomass). Maine + global scenarios; tests siting reasoning.' },
-        { id: 'resources',   icon: '📚',     label: 'Resources',         desc: 'Every org cited in this tool.' },
+        { id: 'quiz',        icon: '📝',     label: __alloT('stem.renewables.18_question_quiz', '18-question quiz'),  desc: __alloT('stem.renewables.test_your_understanding_of_all_sources', 'Test your understanding of all sources.') },
+        { id: 'mastery',     icon: '🏅',     label: __alloT('stem.renewables.energy_mastery', 'Energy Mastery'),     desc: __alloT('stem.renewables.cross_attempt_log_of_every_quiz_questi', 'Cross-attempt log of every quiz question you have nailed, rolled up by source.') },
+        { id: 'siteSelector', icon: '🕵️',  label: __alloT('stem.renewables.site_selector', 'Site Selector'),     desc: __alloT('stem.renewables.10_location_profiles_for_each_pick_the', '10 location profiles. For each, pick the best renewable from 8 options (rooftop solar / utility solar / onshore wind / offshore wind / hydro / geothermal / wave-tidal / biomass). Maine + global scenarios; tests siting reasoning.') },
+        { id: 'resources',   icon: '📚',     label: __alloT('stem.renewables.resources', 'Resources'),         desc: __alloT('stem.renewables.every_org_cited_in_this_tool', 'Every org cited in this tool.') },
         // Inquiry-pattern widget (H7b'' validated design)
-        { id: 'gridBalance', icon: '⚡',     label: 'Grid balance discovery', desc: 'Adjust generation, demand, storage. Discover the 3 regimes (blackout/balanced/curtailed). No score, no reveal — open inquiry.' }
+        { id: 'gridBalance', icon: '⚡',     label: __alloT('stem.renewables.grid_balance_discovery', 'Grid balance discovery'), desc: __alloT('stem.renewables.adjust_generation_demand_storage_disco', 'Compare generation, demand, storage duration, and state of charge across three classroom states.') }
       ];
 
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
+        var RENEWABLES_CORE_TILES = ['solarPv', 'wind', 'compare', 'mix', 'gridBalance', 'quiz'];
+        var showFullRenewablesMenu = !!d.showRenewablesLibrary;
+        var visibleRenewablesTiles = showFullRenewablesMenu ? MENU_TILES : MENU_TILES.filter(function(tile) {
+          return RENEWABLES_CORE_TILES.indexOf(tile.id) !== -1;
+        });
+        var renewablesLaunchTiles = ['solarPv', 'compare', 'mix', 'gridBalance'].map(function(id) {
+          return MENU_TILES.find(function(tile) { return tile.id === id; });
+        }).filter(Boolean);
         // Adaptive "Start Here" suggestion based on visited count.
         // Goal: reduce decision fatigue across 26 tiles.
         function startHereCard() {
@@ -1693,50 +1707,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           if (visitedCount === 0) {
             suggestion = {
               tone: 'fresh',
-              header: '👋 First time here? Try this 5-tile path:',
-              body: 'Start with ☀️ Solar PV (most familiar), then 🌬️ Wind (the formula trick), then 📊 Compare All Sources (the synthesis), then 🎛️ Energy Mix Designer (apply it), then 📝 the quiz. About 30–40 minutes.'
+              header: __alloT('stem.renewables.first_time_here_try_this_5_tile_path', '👋 First time here? Try this 5-tile path:'),
+              body: __alloT('stem.renewables.start_with_solar_pv_most_familiar_then', 'Start with ☀️ Solar PV (most familiar), then 🌬️ Wind (the formula trick), then 📊 Compare All Sources (the synthesis), then 🎛️ Energy Mix Designer (apply it), then 📝 the quiz. About 30–40 minutes.')
             };
           } else if (visitedCount < 4) {
             suggestion = {
               tone: 'progressing',
-              header: '👍 Already started — want a path through the rest?',
-              body: 'Pick 2 more source modules you haven\'t opened, then 🔬 Diagrams to ground the visuals, then 🌐 Smart Grid 101 to see how the grid actually integrates them.'
+              header: __alloT('stem.renewables.already_started_want_a_path_through_th', '👍 Already started — want a path through the rest?'),
+              body: __alloT('stem.renewables.pick_2_more_source_modules_you_haven_t', 'Pick 2 more source modules you haven\'t opened, then 🔬 Diagrams to ground the visuals, then 🌐 Smart Grid 101 to see how the grid actually integrates them.')
             };
           } else if (visitedCount < 8) {
             suggestion = {
               tone: 'engaged',
-              header: '🚀 You\'re moving — branch into applied + values:',
-              body: 'Try 🤖 AI Practice (design a system for a real scenario), 🏠 Maine Home Solar Calc (apply it to your house), and ⚖️ Climate Justice (the political half). Then 🌱 Take Action.'
+              header: __alloT('stem.renewables.you_re_moving_branch_into_applied_valu', '🚀 You\'re moving — branch into applied + values:'),
+              body: __alloT('stem.renewables.try_ai_practice_design_a_system_for_a_', 'Try 🤖 AI Practice (design a system for a real scenario), 🏠 Maine Home Solar Calc (apply it to your house), and ⚖️ Climate Justice (the political half). Then 🌱 Take Action.')
             };
           } else if (visitedCount < 16) {
             suggestion = {
               tone: 'deep',
-              header: '🎓 Deep mode: things often missed',
-              body: 'Most students skip these: 💨 Hydrogen Economy (color codes), 🧐 Myths Busted, 🗺️ Plant Tour, 🧰 Career Pathways, ♨️ Heat Pumps. Each is 3–5 minutes.'
+              header: __alloT('stem.renewables.deep_mode_things_often_missed', '🎓 Deep mode: things often missed'),
+              body: __alloT('stem.renewables.most_students_skip_these_hydrogen_econ', 'Most students skip these: 💨 Hydrogen Economy (color codes), 🧐 Myths Busted, 🗺️ Plant Tour, 🧰 Career Pathways, ♨️ Heat Pumps. Each is 3–5 minutes.')
             };
           } else {
             suggestion = {
               tone: 'comprehensive',
-              header: '🏁 You\'ve gone broad — capstone moves',
-              body: 'You\'ve seen most of it. 🌱 Take Action turns reading into doing, and 🎓 Teacher Guide is useful if you\'re prepping a unit. Try the 18-Q quiz if you haven\'t.'
+              header: __alloT('stem.renewables.you_ve_gone_broad_capstone_moves', '🏁 You\'ve gone broad — capstone moves'),
+              body: __alloT('stem.renewables.you_ve_seen_most_of_it_take_action_tur', 'You\'ve seen most of it. 🌱 Take Action turns reading into doing, and 🎓 Teacher Guide is useful if you\'re prepping a unit. Try the 18-Q quiz if you haven\'t.')
             };
           }
-          return h('div', { role: 'region', 'aria-label': 'Recommended path through the lab',
+          return h('div', { role: 'region', 'aria-label': __alloT('stem.renewables.recommended_path_through_the_lab', 'Recommended path through the lab'),
             style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, suggestion.header),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, suggestion.body)
           );
         }
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
-            h('h2', { style: { margin: 0, fontSize: 22 } }, '⚡ Renewables Lab'),
+            h('h2', { style: { margin: 0, fontSize: 22 } }, __alloT('stem.renewables.renewables_lab', '⚡ Renewables Lab')),
             h('div', { style: { fontSize: 12, color: T.dim } },
-              'Modules visited: ', h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 2)))
+              __alloT('stem.renewables.modules_visited', 'Modules visited: '), h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 2)))
           ),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'How does each renewable source actually generate electricity? This lab walks through the physics and engineering with live sliders. Pair with ',
-            h('strong', { style: { color: T.text } }, 'Climate Explorer'),
-            ' for the policy + mix-design side.'),
+            __alloT('stem.renewables.how_does_each_renewable_source_actuall', 'How does each renewable source actually generate electricity? This lab walks through the physics and engineering with live sliders. Pair with '),
+            h('strong', { style: { color: T.text } }, __alloT('stem.renewables.climate_explorer', 'Climate Explorer')),
+            __alloT('stem.renewables.for_the_policy_mix_design_side', ' for the policy + mix-design side.')),
+          h('section', { 'data-renewables-launch-panel': 'true',
+            style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,78,59,0.88), rgba(15,23,42,0.94))', border: '1px solid ' + T.accent + '77', marginBottom: 14, color: '#ecfdf5', boxShadow: '0 16px 38px rgba(2,8,23,0.22)' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(220px,0.8fr)', gap: 12 } },
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, 'Energy launch board'),
+                h('div', { style: { fontSize: 21, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, __alloT('stem.renewables.pick_a_useful_starting_route', 'Pick a useful starting route')),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+                  __alloT('stem.renewables.launch_panel_copy', 'Start with the physics, compare sources, design a mix, or test grid balance. Open the full module library when you want deeper topics.')),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8 } },
+                  renewablesLaunchTiles.map(function(tile) {
+                    var visited = !!modulesVisited[tile.id];
+                    return h('button', { key: tile.id, type: 'button', 'aria-label': tile.label + (visited ? ' visited' : ''),
+                      onClick: function() { upd('view', tile.id); markVisited(tile.id); rnAnnounce('Opening ' + tile.label); },
+                      style: { minHeight: 82, padding: 10, textAlign: 'left', borderRadius: 8, border: '1px solid ' + (visited ? T.accent : 'rgba(134,239,172,0.25)'), background: visited ? 'rgba(16,185,129,0.18)' : 'rgba(15,23,42,0.55)', color: '#ecfdf5', cursor: 'pointer' } },
+                      h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, tile.icon + ' ' + tile.label),
+                      h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#bbf7d0' } }, tile.desc)
+                    );
+                  })
+                )
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8, alignContent: 'start' } },
+                [
+                  { label: __alloT('stem.renewables.modules_seen', 'Seen'), value: visitedCount + '/' + (MENU_TILES.length - 2) },
+                  { label: __alloT('stem.renewables.library', 'Library'), value: showFullRenewablesMenu ? __alloT('stem.renewables.expanded', 'Expanded') : __alloT('stem.renewables.core', 'Core') },
+                  { label: __alloT('stem.renewables.quiz', 'Quiz'), value: ((d.quizMastery && Object.keys(d.quizMastery).length) || 0) + '/' + QUIZ.length },
+                  { label: __alloT('stem.renewables.badges', 'Badges'), value: Object.keys(badges).length }
+                ].map(function(card) {
+                  return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                    h('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                  );
+                }),
+                h('button', { type: 'button', 'aria-expanded': showFullRenewablesMenu ? 'true' : 'false',
+                  onClick: function() { upd('showRenewablesLibrary', !d.showRenewablesLibrary); },
+                  style: { gridColumn: '1 / -1', marginTop: 0, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(16,185,129,0.12)', color: '#bbf7d0', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                  showFullRenewablesMenu ? __alloT('stem.renewables.hide_full_module_library', 'Hide full module library') : __alloT('stem.renewables.show_full_module_library', 'Show full module library'))
+              )
+            )
+          ),
           startHereCard(),
           // ── Energy Mastery summary tile (clickable → Mastery view) ──
           (function () {
@@ -1758,10 +1811,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             },
               h('div', { style: { textAlign: 'center', minWidth: 90 } },
                 h('div', { style: { fontSize: 26, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, masteredCount2 + ' / ' + totalQ2),
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'Mastered')
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, __alloT('stem.renewables.mastered', 'Mastered'))
               ),
               h('div', { style: { flex: 1, minWidth: 200 } },
-                h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 4 } }, '🏅 Energy Source Mastery'),
+                h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 4 } }, __alloT('stem.renewables.energy_source_mastery', '🏅 Energy Source Mastery')),
                 h('div', { style: { height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden', marginBottom: 5 }, 'aria-hidden': 'true' },
                   h('div', { style: { width: pct2 + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
                 ),
@@ -1776,7 +1829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           })(),
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
-            MENU_TILES.map(function(tile) {
+            visibleRenewablesTiles.map(function(tile) {
               var visited = !!modulesVisited[tile.id];
               return h('button', { key: tile.id, role: 'listitem',
                 'data-rn-focusable': true,
@@ -1804,7 +1857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ),
           // Maine flavor card
           h('div', { style: { marginTop: 18, padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 8 } }, '🌲 Why Maine matters here'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 8 } }, __alloT('stem.renewables.why_maine_matters_here', '🌲 Why Maine matters here')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
               h('li', null, MAINE_RENEWABLES.offshore),
               h('li', null, MAINE_RENEWABLES.tidal),
@@ -1812,7 +1865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             )
           ),
           Object.keys(badges).length > 0 && h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, '🏅 Badges earned'),
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, __alloT('stem.renewables.badges_earned', '🏅 Badges earned')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               Object.keys(badges).map(function(bid) {
                 return h('span', { key: bid,
@@ -1865,7 +1918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           return (i === 0 ? 'M ' : 'L ') + xAt(p.hour).toFixed(1) + ' ' + yAt(p.watts).toFixed(1);
         }).join(' ');
         return h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', height: '100%',
-          role: 'img', 'aria-label': 'Solar power output curve over 24 hours; peaks near solar noon, zero before sunrise and after sunset',
+          role: 'img', 'aria-label': __alloT('stem.renewables.solar_power_output_curve_over_24_hours', 'Solar power output curve over 24 hours; peaks near solar noon, zero before sunrise and after sunset'),
           style: { background: '#0b1426', borderRadius: 8 } },
           // Axes
           h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#475569', strokeWidth: 1 }),
@@ -1890,8 +1943,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           // Curve line
           h('path', { d: pathD, fill: 'none', stroke: '#facc15', strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 4px rgba(250,204,21,0.55))' } }),
           // Title
-          h('text', { x: padL, y: 16, fill: '#cbe8e0', fontSize: 11 }, 'Power output (W) by hour of day'),
-          h('text', { x: padL + plotW, y: 16, fill: '#cbe8e0', fontSize: 10, textAnchor: 'end' }, '☀️ noon →')
+          h('text', { x: padL, y: 16, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.power_output_w_by_hour_of_day', 'Power output (W) by hour of day')),
+          h('text', { x: padL + plotW, y: 16, fill: '#cbe8e0', fontSize: 10, textAnchor: 'end' }, __alloT('stem.renewables.noon', '☀️ noon →'))
         );
       }
 
@@ -1929,73 +1982,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           sourceCard('solarPv'),
           goalBanner('Goal: maximize daily kWh per m² of roof. Try different tilt angles, irradiance levels, and panel efficiencies. The Maine Home Solar Calculator from the menu uses these same inputs to estimate real-world payback.'),
           // Mode tabs (calculator vs day curve)
-          h('div', { role: 'tablist', 'aria-label': 'Solar PV interactive views',
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.renewables.solar_pv_interactive_views', 'Solar PV interactive views'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
             tabBtn('calc', '🔬 Power calculator'),
             tabBtn('curve', '📈 Day curve')
           ),
           solarPvMode === 'curve' && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📈 Solar power across a day'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.solar_power_across_a_day', '📈 Solar power across a day')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              'Solar elevation angle drives clear-sky irradiance. Adjust latitude (where) and day-of-year (when) to see how the daily power curve changes shape. This is what "capacity factor" actually looks like.'),
-            slider({ id: 'sl-dlat', label: 'Latitude', value: simDayLat, min: 0, max: 70, step: 1, unit: '°N',
-              hint: 'Maine ~44°N. Florida 25°N. Equator 0°. Stockholm 59°N. UK 54°N.',
+              __alloT('stem.renewables.solar_elevation_angle_drives_clear_sky', 'Solar elevation angle drives clear-sky irradiance. Adjust latitude (where) and day-of-year (when) to see how the daily power curve changes shape. This is what "capacity factor" actually looks like.')),
+            slider({ id: 'sl-dlat', label: __alloT('stem.renewables.latitude', 'Latitude'), value: simDayLat, min: 0, max: 70, step: 1, unit: '°N',
+              hint: __alloT('stem.renewables.maine_44_n_florida_25_n_equator_0_stoc', 'Maine ~44°N. Florida 25°N. Equator 0°. Stockholm 59°N. UK 54°N.'),
               onChange: function(v) { upd('simDayLat', v); } }),
             slider({ id: 'sl-doy', label: 'Day of year (' + doyToLabel(simDayOfYear) + ')', value: simDayOfYear, min: 1, max: 365, step: 1, unit: '',
-              hint: 'Day 80 ≈ spring equinox. Day 172 ≈ summer solstice. Day 355 ≈ winter solstice.',
+              hint: __alloT('stem.renewables.day_80_spring_equinox_day_172_summer_s', 'Day 80 ≈ spring equinox. Day 172 ≈ summer solstice. Day 355 ≈ winter solstice.'),
               onChange: function(v) { upd('simDayOfYear', v); } }),
             h('div', { style: { width: '100%', maxWidth: 560, margin: '12px auto', aspectRatio: '560 / 220' } },
               svgDayCurve(dayCurve)),
             h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
-              h('div', null, h('strong', { style: { color: T.text } }, 'Solar declination today: '), dayCurve.declDeg.toFixed(1) + '°  ',
-                h('span', { style: { color: T.dim, fontSize: 11 } }, '(Earth\'s axis tilt projected onto the sun-Earth line)')),
-              h('div', { style: { marginTop: 4 } }, h('strong', { style: { color: T.text } }, 'Daily energy (clear sky): '),
+              h('div', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.solar_declination_today', 'Solar declination today: ')), dayCurve.declDeg.toFixed(1) + '°  ',
+                h('span', { style: { color: T.dim, fontSize: 11 } }, __alloT('stem.renewables.earth_s_axis_tilt_projected_onto_the_s', '(Earth\'s axis tilt projected onto the sun-Earth line)'))),
+              h('div', { style: { marginTop: 4 } }, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.daily_energy_clear_sky', 'Daily energy (clear sky): ')),
                 h('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, dayCurve.totalKWh.toFixed(2) + ' kWh')),
               h('div', { style: { marginTop: 4, fontSize: 11, color: T.dim } },
-                'Note: real-world output is lower because of clouds + soiling + system losses. Annual capacity factor in Maine: 16–20%.')
+                __alloT('stem.renewables.note_real_world_output_is_lower_becaus', 'Note: real-world output is lower because of clouds + soiling + system losses. Annual capacity factor in Maine: 16–20%.'))
             )
           ),
           solarPvMode === 'calc' && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'How it works — step by step'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.how_it_works_step_by_step', 'How it works — step by step')),
             h('ol', { style: { margin: '0 0 0 18px', padding: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } },
-              h('li', null, h('strong', { style: { color: T.text } }, 'Photons arrive'), ' — sunlight is a stream of photons, each carrying a tiny packet of energy.'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Photon hits silicon'), ' — if the photon has enough energy to cross silicon’s ', h('em', null, 'band gap'), ' (~1.12 eV), it knocks an outer-shell electron loose.'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'P-N junction sorts the charges'), ' — the panel is two layers of silicon doped with different impurities (boron / phosphorus). The electric field at their boundary pushes electrons one way, “holes” the other.'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Electrons flow as DC current'), ' — they travel through the external circuit (your house, an inverter, the grid).'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Inverter converts DC → AC'), ' — grid + most appliances run on alternating current.')
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.photons_arrive', 'Photons arrive')), __alloT('stem.renewables.sunlight_is_a_stream_of_photons_each_c', ' — sunlight is a stream of photons, each carrying a tiny packet of energy.')),
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.photon_hits_silicon', 'Photon hits silicon')), __alloT('stem.renewables.if_the_photon_has_enough_energy_to_cro', ' — if the photon has enough energy to cross silicon’s '), h('em', null, __alloT('stem.renewables.band_gap', 'band gap')), __alloT('stem.renewables.1_12_ev_it_knocks_an_outer_shell_elect', ' (~1.12 eV), it knocks an outer-shell electron loose.')),
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.p_n_junction_sorts_the_charges', 'P-N junction sorts the charges')), __alloT('stem.renewables.the_panel_is_two_layers_of_silicon_dop', ' — the panel is two layers of silicon doped with different impurities (boron / phosphorus). The electric field at their boundary pushes electrons one way, “holes” the other.')),
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.electrons_flow_as_dc_current', 'Electrons flow as DC current')), __alloT('stem.renewables.they_travel_through_the_external_circu', ' — they travel through the external circuit (your house, an inverter, the grid).')),
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.inverter_converts_dc_ac', 'Inverter converts DC → AC')), __alloT('stem.renewables.grid_most_appliances_run_on_alternatin', ' — grid + most appliances run on alternating current.'))
             )
           ),
           solarPvMode === 'calc' && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🔬 Try it: solar PV power calculator'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.try_it_solar_pv_power_calculator', '🔬 Try it: solar PV power calculator')),
             h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 10 } },
-              'Power = Irradiance × Area × Efficiency × cos(tilt error). Drag the sliders to see how each factor changes output.'),
-            slider({ id: 'sl-irr', label: 'Sunlight intensity (irradiance)', value: simSolarIrr, min: 100, max: 1000, step: 50, unit: 'W/m²',
-              hint: '~1000 W/m² at solar noon on a clear summer day. ~200 W/m² on overcast days.',
+              __alloT('stem.renewables.power_irradiance_area_efficiency_cos_t', 'Power = Irradiance × Area × Efficiency × cos(tilt error). Drag the sliders to see how each factor changes output.')),
+            slider({ id: 'sl-irr', label: __alloT('stem.renewables.sunlight_intensity_irradiance', 'Sunlight intensity (irradiance)'), value: simSolarIrr, min: 100, max: 1000, step: 50, unit: 'W/m²',
+              hint: __alloT('stem.renewables.1000_w_m_at_solar_noon_on_a_clear_summ', '~1000 W/m² at solar noon on a clear summer day. ~200 W/m² on overcast days.'),
               onChange: function(v) { upd('simSolarIrr', v); } }),
-            slider({ id: 'sl-area', label: 'Total panel area', value: simSolarArea, min: 1, max: 200, step: 1, unit: 'm²',
-              hint: 'A typical home rooftop array: 20–40 m². A megawatt utility array: ~5,000 m².',
+            slider({ id: 'sl-area', label: __alloT('stem.renewables.total_panel_area', 'Total panel area'), value: simSolarArea, min: 1, max: 200, step: 1, unit: 'm²',
+              hint: __alloT('stem.renewables.a_typical_home_rooftop_array_20_40_m_a', 'A typical home rooftop array: 20–40 m². A megawatt utility array: ~5,000 m².'),
               onChange: function(v) { upd('simSolarArea', v); } }),
-            slider({ id: 'sl-eff', label: 'Module efficiency', value: Math.round(simSolarEff * 100), min: 10, max: 28, step: 1, unit: '%',
-              hint: 'Commercial panels: 18–23%. Lab record (multi-junction): 47%. Cheap thin-film: 10–12%.',
+            slider({ id: 'sl-eff', label: __alloT('stem.renewables.module_efficiency', 'Module efficiency'), value: Math.round(simSolarEff * 100), min: 10, max: 28, step: 1, unit: '%',
+              hint: __alloT('stem.renewables.commercial_panels_18_23_lab_record_mul', 'Commercial panels: 18–23%. Lab record (multi-junction): 47%. Cheap thin-film: 10–12%.'),
               onChange: function(v) { upd('simSolarEff', v / 100); } }),
-            slider({ id: 'sl-tilt', label: 'Tilt error from optimal', value: simSolarTilt, min: 0, max: 80, step: 5, unit: '°',
-              hint: '0° = perfectly aimed at the sun. 90° = parallel to sunlight (zero output). Trackers cut this to near-zero.',
+            slider({ id: 'sl-tilt', label: __alloT('stem.renewables.tilt_error_from_optimal', 'Tilt error from optimal'), value: simSolarTilt, min: 0, max: 80, step: 5, unit: '°',
+              hint: __alloT('stem.renewables.0_perfectly_aimed_at_the_sun_90_parall', '0° = perfectly aimed at the sun. 90° = parallel to sunlight (zero output). Trackers cut this to near-zero.'),
               onChange: function(v) { upd('simSolarTilt', v); } }),
             powerBar('Instantaneous power output', fracOfPeak, kW.toFixed(2) + ' kW'),
             h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-              'A home consumes ~1 kW continuous on average. So this array could power roughly ',
+              __alloT('stem.renewables.a_home_consumes_1_kw_continuous_on_ave', 'A home consumes ~1 kW continuous on average. So this array could power roughly '),
               h('strong', { style: { color: T.accentHi } }, kW.toFixed(1) + ' homes'),
-              ' at this instant. Annual energy depends on capacity factor (typically 15–27%).')
+              __alloT('stem.renewables.at_this_instant_annual_energy_depends_', ' at this instant. Annual energy depends on capacity factor (typically 15–27%).'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, '🔌 Series vs parallel wiring'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.series_vs_parallel_wiring', '🔌 Series vs parallel wiring')),
             h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Series:'), ' voltages add, current stays the same. A weak / shaded panel limits the entire string.'),
+              h('strong', { style: { color: T.text } }, 'Series:'), __alloT('stem.renewables.voltages_add_current_stays_the_same_a_', ' voltages add, current stays the same. A weak / shaded panel limits the entire string.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Parallel:'), ' currents add, voltage stays the same. Shading one panel only loses that panel’s output. Most modern arrays use module-level optimizers / microinverters to get the best of both.')
+              h('strong', { style: { color: T.text } }, 'Parallel:'), __alloT('stem.renewables.currents_add_voltage_stays_the_same_sh', ' currents add, voltage stays the same. Shading one panel only loses that panel’s output. Most modern arrays use module-level optimizers / microinverters to get the best of both.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_reality', '🌲 Maine reality')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, MAINE_RENEWABLES.solar)
           ),
           footer()
@@ -2017,45 +2070,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           sourceCard('wind'),
           goalBanner('Goal: see how wind speed cubes (v³) drives turbine output. The Betz limit (Cp = 0.593) is a hard physics ceiling. Even a perfect blade cannot extract more than 59.3% of the wind\'s kinetic energy.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Why wind power scales with v³'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.why_wind_power_scales_with_v', 'Why wind power scales with v³')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Kinetic energy of moving air = ½ m v². The mass passing through a rotor per second is ρ·A·v (density × area × speed). Multiply: ',
-              h('strong', { style: { color: T.text } }, 'P = ½·ρ·A·v³'),
-              '. So wind power scales with the CUBE of wind speed.'),
+              __alloT('stem.renewables.kinetic_energy_of_moving_air_m_v_the_m', 'Kinetic energy of moving air = ½ m v². The mass passing through a rotor per second is ρ·A·v (density × area × speed). Multiply: '),
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.p_a_v', 'P = ½·ρ·A·v³')),
+              __alloT('stem.renewables.so_wind_power_scales_with_the_cube_of_', '. So wind power scales with the CUBE of wind speed.')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.text } }, 'Betz’s law:'),
-              ' the absolute maximum power any rotor can extract is ',
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.betz_s_law', 'Betz’s law:')),
+              __alloT('stem.renewables.the_absolute_maximum_power_any_rotor_c', ' the absolute maximum power any rotor can extract is '),
               h('strong', { style: { color: T.accentHi } }, '59.3%'),
-              ' of the wind’s kinetic energy. If you took 100%, the air behind would be motionless and no more air could flow through. Real turbines hit Cp ≈ 0.35–0.45.')
+              __alloT('stem.renewables.of_the_wind_s_kinetic_energy_if_you_to', ' of the wind’s kinetic energy. If you took 100%, the air behind would be motionless and no more air could flow through. Real turbines hit Cp ≈ 0.35–0.45.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🔬 Try it: wind turbine power'),
-            slider({ id: 'sl-wv', label: 'Wind speed', value: simWindV, min: 1, max: 25, step: 0.5, unit: 'm/s',
-              hint: 'Cut-in ~3 m/s. Rated ~12–15 m/s. Cut-out ~25 m/s (turbine pitches blades to feather and stops). 1 m/s ≈ 2.24 mph.',
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.try_it_wind_turbine_power', '🔬 Try it: wind turbine power')),
+            slider({ id: 'sl-wv', label: __alloT('stem.renewables.wind_speed', 'Wind speed'), value: simWindV, min: 1, max: 25, step: 0.5, unit: 'm/s',
+              hint: __alloT('stem.renewables.cut_in_3_m_s_rated_12_15_m_s_cut_out_2', 'Cut-in ~3 m/s. Rated ~12–15 m/s. Cut-out ~25 m/s (turbine pitches blades to feather and stops). 1 m/s ≈ 2.24 mph.'),
               onChange: function(v) { upd('simWindV', v); } }),
-            slider({ id: 'sl-wr', label: 'Rotor radius', value: simWindR, min: 5, max: 120, step: 1, unit: 'm',
-              hint: 'Small wind: 2–5 m. Modern utility onshore: 50–80 m. Offshore giants: 100–120 m+ (Haliade-X: 110 m).',
+            slider({ id: 'sl-wr', label: __alloT('stem.renewables.rotor_radius', 'Rotor radius'), value: simWindR, min: 5, max: 120, step: 1, unit: 'm',
+              hint: __alloT('stem.renewables.small_wind_2_5_m_modern_utility_onshor', 'Small wind: 2–5 m. Modern utility onshore: 50–80 m. Offshore giants: 100–120 m+ (Haliade-X: 110 m).'),
               onChange: function(v) { upd('simWindR', v); } }),
-            slider({ id: 'sl-wcp', label: 'Power coefficient (Cp)', value: Math.round(simWindCp * 100), min: 10, max: 59, step: 1, unit: '%',
-              hint: 'Real turbines: 35–45%. Betz limit: 59.3%. Higher Cp = better blade aerodynamics + control.',
+            slider({ id: 'sl-wcp', label: __alloT('stem.renewables.power_coefficient_cp', 'Power coefficient (Cp)'), value: Math.round(simWindCp * 100), min: 10, max: 59, step: 1, unit: '%',
+              hint: __alloT('stem.renewables.real_turbines_35_45_betz_limit_59_3_hi', 'Real turbines: 35–45%. Betz limit: 59.3%. Higher Cp = better blade aerodynamics + control.'),
               onChange: function(v) { upd('simWindCp', v / 100); } }),
             powerBar('Power output (vs same rotor at Betz max)', fracOfBetz, MW.toFixed(3) + ' MW'),
             h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-              'Swept area: ',
+              __alloT('stem.renewables.swept_area', 'Swept area: '),
               h('strong', { style: { color: T.accentHi } }, swept.toFixed(0) + ' m²'),
-              '. Doubling the rotor radius QUADRUPLES the swept area — that’s why turbines keep getting bigger.')
+              __alloT('stem.renewables.doubling_the_rotor_radius_quadruples_t', '. Doubling the rotor radius QUADRUPLES the swept area — that’s why turbines keep getting bigger.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, '🗼 Onshore vs offshore'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.onshore_vs_offshore', '🗼 Onshore vs offshore')),
             h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Onshore:'), ' cheaper to install + maintain. Land conflicts (viewsheds, wildlife). Capacity factor 35–45%.'),
+              h('strong', { style: { color: T.text } }, 'Onshore:'), __alloT('stem.renewables.cheaper_to_install_maintain_land_confl', ' cheaper to install + maintain. Land conflicts (viewsheds, wildlife). Capacity factor 35–45%.')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, 'Offshore:'), ' steadier wind + larger rotors. Saltwater corrosion + installation cost. Capacity factor 45–55%. Deep water (Gulf of Maine) requires ',
-                h('strong', { style: { color: T.accentHi } }, 'floating platforms'),
-                ' — a Maine specialty.')
+                h('strong', { style: { color: T.text } }, 'Offshore:'), __alloT('stem.renewables.steadier_wind_larger_rotors_saltwater_', ' steadier wind + larger rotors. Saltwater corrosion + installation cost. Capacity factor 45–55%. Deep water (Gulf of Maine) requires '),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.floating_platforms', 'floating platforms')),
+                __alloT('stem.renewables.a_maine_specialty', ' — a Maine specialty.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_reality_2', '🌲 Maine reality')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, MAINE_RENEWABLES.offshore)
           ),
           footer()
@@ -2075,36 +2128,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           sourceCard('hydro'),
           goalBanner('Goal: feel how head (height) and flow (volume) both matter. Pelton turbines want high head + low flow; Kaplan turbines run on low head + high flow. Pick the right turbine for the site.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'The hydro power formula'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_hydro_power_formula', 'The hydro power formula')),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#06281f', border: '1px solid ' + T.border, fontFamily: 'monospace', fontSize: 14, color: T.accentHi, textAlign: 'center', marginBottom: 8 } },
-              'P = ρ × g × h × Q × η'),
+              __alloT('stem.renewables.p_g_h_q', 'P = ρ × g × h × Q × η')),
             h('ul', { style: { margin: '0 0 0 18px', padding: 0, color: T.muted, fontSize: 12, lineHeight: 1.6 } },
-              h('li', null, h('strong', { style: { color: T.text } }, 'ρ (rho)'), ' = water density = 1000 kg/m³'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'g'), ' = gravity = 9.81 m/s²'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'h'), ' = head = vertical drop in meters'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Q'), ' = flow rate in m³/s'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'η (eta)'), ' = turbine efficiency, typically 0.85–0.95')
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.rho', 'ρ (rho)')), __alloT('stem.renewables.water_density_1000_kg_m', ' = water density = 1000 kg/m³')),
+              h('li', null, h('strong', { style: { color: T.text } }, 'g'), __alloT('stem.renewables.gravity_9_81_m_s', ' = gravity = 9.81 m/s²')),
+              h('li', null, h('strong', { style: { color: T.text } }, 'h'), __alloT('stem.renewables.head_vertical_drop_in_meters', ' = head = vertical drop in meters')),
+              h('li', null, h('strong', { style: { color: T.text } }, 'Q'), __alloT('stem.renewables.flow_rate_in_m_s', ' = flow rate in m³/s')),
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.eta', 'η (eta)')), __alloT('stem.renewables.turbine_efficiency_typically_0_85_0_95', ' = turbine efficiency, typically 0.85–0.95'))
             ),
             h('p', { style: { margin: '8px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
-              'Notice both head and flow appear ONCE — power is linear in each. Doubling either doubles the power; doubling both quadruples it.')
+              __alloT('stem.renewables.notice_both_head_and_flow_appear_once_', 'Notice both head and flow appear ONCE — power is linear in each. Doubling either doubles the power; doubling both quadruples it.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🔬 Try it: hydro plant calculator'),
-            slider({ id: 'sl-hh', label: 'Head (vertical drop)', value: simHydroHead, min: 1, max: 800, step: 1, unit: 'm',
-              hint: 'Run-of-river dam: 5–20 m. Medium dam: 30–100 m. High alpine plant: 500–1800 m.',
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.try_it_hydro_plant_calculator', '🔬 Try it: hydro plant calculator')),
+            slider({ id: 'sl-hh', label: __alloT('stem.renewables.head_vertical_drop', 'Head (vertical drop)'), value: simHydroHead, min: 1, max: 800, step: 1, unit: 'm',
+              hint: __alloT('stem.renewables.run_of_river_dam_5_20_m_medium_dam_30_', 'Run-of-river dam: 5–20 m. Medium dam: 30–100 m. High alpine plant: 500–1800 m.'),
               onChange: function(v) { upd('simHydroHead', v); } }),
-            slider({ id: 'sl-hq', label: 'Flow rate', value: simHydroFlow, min: 0.1, max: 200, step: 0.1, unit: 'm³/s',
-              hint: 'Mountain stream: 0.5–5 m³/s. Mid-sized river: 50–100 m³/s. Mississippi: ~17,000 m³/s.',
+            slider({ id: 'sl-hq', label: __alloT('stem.renewables.flow_rate', 'Flow rate'), value: simHydroFlow, min: 0.1, max: 200, step: 0.1, unit: 'm³/s',
+              hint: __alloT('stem.renewables.mountain_stream_0_5_5_m_s_mid_sized_ri', 'Mountain stream: 0.5–5 m³/s. Mid-sized river: 50–100 m³/s. Mississippi: ~17,000 m³/s.'),
               onChange: function(v) { upd('simHydroFlow', v); } }),
-            slider({ id: 'sl-he', label: 'Turbine efficiency (η)', value: Math.round(simHydroEff * 100), min: 60, max: 95, step: 1, unit: '%',
-              hint: 'Modern turbines: 90–95%. Older or poorly matched: 75–85%.',
+            slider({ id: 'sl-he', label: __alloT('stem.renewables.turbine_efficiency', 'Turbine efficiency (η)'), value: Math.round(simHydroEff * 100), min: 60, max: 95, step: 1, unit: '%',
+              hint: __alloT('stem.renewables.modern_turbines_90_95_older_or_poorly_', 'Modern turbines: 90–95%. Older or poorly matched: 75–85%.'),
               onChange: function(v) { upd('simHydroEff', v / 100); } }),
             powerBar('Power output (scale: small–mid plant)', fracOfRef, MW.toFixed(3) + ' MW'),
             h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-              'For comparison: Hoover Dam = 2,080 MW. A typical Maine hydro: 1–20 MW. A microhydro on a farm stream: 5–50 kW.')
+              __alloT('stem.renewables.for_comparison_hoover_dam_2_080_mw_a_t', 'For comparison: Hoover Dam = 2,080 MW. A typical Maine hydro: 1–20 MW. A microhydro on a farm stream: 5–50 kW.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Three turbine families — pick by site'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.three_turbine_families_pick_by_site', 'Three turbine families — pick by site')),
             HYDRO_TURBINES.map(function(t) {
               return h('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -2120,7 +2173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_reality_3', '🌲 Maine reality')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, MAINE_RENEWABLES.hydro)
           ),
           footer()
@@ -2134,40 +2187,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         var tempC = geoTempAtDepth_C(simGeoSurfC, simGeoGrad, simGeoDepth);
         // Plant suitability
         var plant;
-        if (tempC < 90) plant = { id: 'gshp', name: 'Too cool for electricity — use a ground-source heat pump for direct heating', color: T.warm };
-        else if (tempC < 180) plant = { id: 'binary', name: 'Binary cycle (~90–180°C)', color: T.accentHi };
-        else if (tempC < 235) plant = { id: 'flash', name: 'Flash steam (180–235°C)', color: T.accent };
-        else plant = { id: 'drySteam', name: 'Dry steam (≥ 235°C)', color: T.accentHi };
+        if (tempC < 90) plant = { id: 'gshp', name: __alloT('stem.renewables.too_cool_for_electricity_use_a_ground_', 'Too cool for electricity — use a ground-source heat pump for direct heating'), color: T.warm };
+        else if (tempC < 180) plant = { id: 'binary', name: __alloT('stem.renewables.binary_cycle_90_180_c', 'Binary cycle (~90–180°C)'), color: T.accentHi };
+        else if (tempC < 235) plant = { id: 'flash', name: __alloT('stem.renewables.flash_steam_180_235_c', 'Flash steam (180–235°C)'), color: T.accent };
+        else plant = { id: 'drySteam', name: __alloT('stem.renewables.dry_steam_235_c', 'Dry steam (≥ 235°C)'), color: T.accentHi };
         var fracOfMax = Math.min(1, tempC / 350);
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌋 Geothermal'),
           sourceCard('geothermal'),
           goalBanner('Goal: find the depth that gets you to flash-steam temperature (above 150°C). Below that, you fall back to binary cycle or ground-source heat pumps. Surface temp + thermal gradient + depth set the available energy.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Where does the heat come from?'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.where_does_the_heat_come_from', 'Where does the heat come from?')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Two sources: leftover heat from Earth’s formation 4.5 billion years ago, and ongoing radioactive decay of uranium, thorium, and potassium-40 in the mantle. The result: temperature climbs roughly ',
-              h('strong', { style: { color: T.accentHi } }, '25–30°C per kilometer'),
-              ' as you go down. In volcanic regions (Iceland, Yellowstone, Italy) the gradient is much steeper — 60–200°C/km.')
+              __alloT('stem.renewables.two_sources_leftover_heat_from_earth_s', 'Two sources: leftover heat from Earth’s formation 4.5 billion years ago, and ongoing radioactive decay of uranium, thorium, and potassium-40 in the mantle. The result: temperature climbs roughly '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.25_30_c_per_kilometer', '25–30°C per kilometer')),
+              __alloT('stem.renewables.as_you_go_down_in_volcanic_regions_ice', ' as you go down. In volcanic regions (Iceland, Yellowstone, Italy) the gradient is much steeper — 60–200°C/km.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🔬 Try it: how deep before you reach steam?'),
-            slider({ id: 'sl-gs', label: 'Surface temperature', value: simGeoSurfC, min: -10, max: 35, step: 1, unit: '°C',
-              hint: 'Maine annual avg ~7°C. Death Valley summer ~45°C. Antarctic interior − 50°C.',
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.try_it_how_deep_before_you_reach_steam', '🔬 Try it: how deep before you reach steam?')),
+            slider({ id: 'sl-gs', label: __alloT('stem.renewables.surface_temperature', 'Surface temperature'), value: simGeoSurfC, min: -10, max: 35, step: 1, unit: '°C',
+              hint: __alloT('stem.renewables.maine_annual_avg_7_c_death_valley_summ', 'Maine annual avg ~7°C. Death Valley summer ~45°C. Antarctic interior − 50°C.'),
               onChange: function(v) { upd('simGeoSurfC', v); } }),
-            slider({ id: 'sl-gg', label: 'Geothermal gradient', value: simGeoGrad, min: 15, max: 200, step: 5, unit: '°C/km',
-              hint: '25–30°C/km is normal continental crust. 60–100 in volcanic zones. 200+ at Iceland’s rift.',
+            slider({ id: 'sl-gg', label: __alloT('stem.renewables.geothermal_gradient', 'Geothermal gradient'), value: simGeoGrad, min: 15, max: 200, step: 5, unit: '°C/km',
+              hint: __alloT('stem.renewables.25_30_c_km_is_normal_continental_crust', '25–30°C/km is normal continental crust. 60–100 in volcanic zones. 200+ at Iceland’s rift.'),
               onChange: function(v) { upd('simGeoGrad', v); } }),
-            slider({ id: 'sl-gd', label: 'Drill depth', value: simGeoDepth, min: 0.1, max: 10, step: 0.1, unit: 'km',
-              hint: 'Most US oil wells: 1–3 km. Deepest geothermal: ~5 km. Kola Superdeep (research): 12.3 km.',
+            slider({ id: 'sl-gd', label: __alloT('stem.renewables.drill_depth', 'Drill depth'), value: simGeoDepth, min: 0.1, max: 10, step: 0.1, unit: 'km',
+              hint: __alloT('stem.renewables.most_us_oil_wells_1_3_km_deepest_geoth', 'Most US oil wells: 1–3 km. Deepest geothermal: ~5 km. Kola Superdeep (research): 12.3 km.'),
               onChange: function(v) { upd('simGeoDepth', v); } }),
             powerBar('Resource temperature reached (vs 350°C max)', fracOfMax, tempC.toFixed(0) + ' °C'),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + plant.color } },
-              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, 'Best matched plant type at this temperature:'),
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, __alloT('stem.renewables.best_matched_plant_type_at_this_temper', 'Best matched plant type at this temperature:')),
               h('div', { style: { fontSize: 14, fontWeight: 700, color: plant.color } }, plant.name))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Four plant designs'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.four_plant_designs', 'Four plant designs')),
             GEO_PLANT_TYPES.map(function(t) {
               return h('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -2180,7 +2233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_reality_4', '🌲 Maine reality')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, MAINE_RENEWABLES.heatPumps)
           ),
           footer()
@@ -2192,16 +2245,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // ─────────────────────────────────────────
       function renderSolarThermal() {
         var designs = [
-          { id: 'trough', icon: '🌞', name: 'Parabolic trough',
+          { id: 'trough', icon: '🌞', name: __alloT('stem.renewables.parabolic_trough', 'Parabolic trough'),
             how: 'Long curved mirrors focus sunlight onto a tube of synthetic oil. Oil heats to ~390°C, runs through a heat exchanger to make steam.',
             where: 'Andasol (Spain), Mojave Solar (US, 280 MW). The most-deployed CSP design.' },
-          { id: 'tower', icon: '🗼', name: 'Power tower (heliostat)',
+          { id: 'tower', icon: '🗼', name: __alloT('stem.renewables.power_tower_heliostat', 'Power tower (heliostat)'),
             how: 'Thousands of flat tracking mirrors (heliostats) focus light on a receiver atop a central tower. Molten salt circulates, hits 565°C.',
             where: 'Ivanpah (US, 392 MW), Crescent Dunes (US, 110 MW + 10h storage), Noor (Morocco).' },
-          { id: 'dish', icon: '🌎', name: 'Parabolic dish + Stirling engine',
+          { id: 'dish', icon: '🌎', name: __alloT('stem.renewables.parabolic_dish_stirling_engine', 'Parabolic dish + Stirling engine'),
             how: 'Single dish concentrates sunlight onto a Stirling engine at the focal point. Modular — each dish is a stand-alone generator.',
             where: 'Mostly demo / R&D. Highest known solar-to-electric efficiency (~30%+).' },
-          { id: 'fresnel', icon: '🔲', name: 'Linear Fresnel',
+          { id: 'fresnel', icon: '🔲', name: __alloT('stem.renewables.linear_fresnel', 'Linear Fresnel'),
             how: 'Like a parabolic trough but uses flat strips of mirrors at slight angles. Cheaper to build, slightly lower efficiency.',
             where: 'Several MW-scale plants in Spain, India, Australia.' }
         ];
@@ -2210,14 +2263,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           sourceCard('solarThermal'),
           goalBanner('Goal: balance mirror area against salt-tank storage hours. More storage equals more dispatchable power AFTER the sun goes down. The defining advantage of CSP over PV is exactly this overnight delivery.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'CSP vs PV — the big difference'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.csp_vs_pv_the_big_difference', 'CSP vs PV — the big difference')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.text } }, 'PV (Photovoltaic):'), ' photons → electrons directly, instantly. Cheaper. But you can’t store electrons in bulk — need separate batteries.'),
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.pv_photovoltaic', 'PV (Photovoltaic):')), __alloT('stem.renewables.photons_electrons_directly_instantly_c', ' photons → electrons directly, instantly. Cheaper. But you can’t store electrons in bulk — need separate batteries.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.text } }, 'CSP (Concentrated Solar Power):'), ' photons → heat → steam → electricity. More expensive. But heat is CHEAP to store in molten salt at 565°C — a CSP plant can run 6–10 hours after sunset on stored heat.')
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.csp_concentrated_solar_power', 'CSP (Concentrated Solar Power):')), __alloT('stem.renewables.photons_heat_steam_electricity_more_ex', ' photons → heat → steam → electricity. More expensive. But heat is CHEAP to store in molten salt at 565°C — a CSP plant can run 6–10 hours after sunset on stored heat.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Four CSP designs'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.four_csp_designs', 'Four CSP designs')),
             designs.map(function(d2) {
               return h('div', { key: d2.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -2229,11 +2282,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, 'Why CSP works in deserts but not Maine'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.why_csp_works_in_deserts_but_not_maine', 'Why CSP works in deserts but not Maine')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              'CSP needs ',
+              __alloT('stem.renewables.csp_needs', 'CSP needs '),
               h('strong', { style: { color: T.text } }, 'direct'),
-              ' sunlight — mirrors can’t focus diffuse cloudy light. The economic threshold is ~2000 kWh/m²/year of direct normal irradiance (DNI). Maine averages 1000–1400 kWh/m²/year DNI, well below the cutoff. Spain, Morocco, Nevada, Arizona, Australian outback get 2200–2800 — ideal CSP territory.')
+              __alloT('stem.renewables.sunlight_mirrors_can_t_focus_diffuse_c', ' sunlight — mirrors can’t focus diffuse cloudy light. The economic threshold is ~2000 kWh/m²/year of direct normal irradiance (DNI). Maine averages 1000–1400 kWh/m²/year DNI, well below the cutoff. Spain, Morocco, Nevada, Arizona, Australian outback get 2200–2800 — ideal CSP territory.'))
           ),
           footer()
         );
@@ -2248,16 +2301,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           sourceCard('waveTidal'),
           goalBanner('Goal: compare wave power (H² × period) to tidal power (v³, like wind but in 800× denser water). Tidal wins for predictability; wave wins for surface energy density. Both are still pre-commercial in most markets.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Wave vs tidal — different physics'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.wave_vs_tidal_different_physics', 'Wave vs tidal — different physics')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.text } }, 'Wave power'), ' comes from wind transferring energy to the ocean surface (waves are wind’s downstream effect). Wave heights are stochastic and depend on storms thousands of km away.'),
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.wave_power', 'Wave power')), __alloT('stem.renewables.comes_from_wind_transferring_energy_to', ' comes from wind transferring energy to the ocean surface (waves are wind’s downstream effect). Wave heights are stochastic and depend on storms thousands of km away.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.text } }, 'Tidal power'), ' comes from gravitational pull of the Moon and Sun. Predictable to the minute, ',
-              h('strong', { style: { color: T.accentHi } }, 'decades in advance'),
-              '. That predictability is incredibly valuable for grid operators.')
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.tidal_power', 'Tidal power')), __alloT('stem.renewables.comes_from_gravitational_pull_of_the_m', ' comes from gravitational pull of the Moon and Sun. Predictable to the minute, '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.decades_in_advance', 'decades in advance')),
+              __alloT('stem.renewables.that_predictability_is_incredibly_valu', '. That predictability is incredibly valuable for grid operators.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Four marine-energy designs'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.four_marine_energy_designs', 'Four marine-energy designs')),
             WAVE_TIDAL_TECH.map(function(t) {
               return h('div', { key: t.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -2270,7 +2323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_reality_5', '🌲 Maine reality')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, MAINE_RENEWABLES.tidal)
           ),
           footer()
@@ -2286,7 +2339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           sourceCard('biomass'),
           goalBanner('Goal: see why combustion of sustainably-grown biomass is treated as carbon-neutral, and why anaerobic digestion (manure -> biogas) is often the better climate move. Compare the two pathways side by side.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Three pathways from organic matter to electricity'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.three_pathways_from_organic_matter_to_', 'Three pathways from organic matter to electricity')),
             BIO_PATHS.map(function(p) {
               return h('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -2294,22 +2347,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('strong', { style: { color: T.text, fontSize: 14 } }, p.name)),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } }, p.what),
                 h('div', { style: { fontSize: 11, color: T.accentHi, marginBottom: 3 } }, h('strong', null, 'Efficiency: '), p.eff),
-                h('div', { style: { fontSize: 11, color: T.warm, fontStyle: 'italic', lineHeight: 1.5 } }, h('strong', null, '⚠ Caveat: '), p.caveat)
+                h('div', { style: { fontSize: 11, color: T.warm, fontStyle: 'italic', lineHeight: 1.5 } }, h('strong', null, __alloT('stem.renewables.caveat', '⚠ Caveat: ')), p.caveat)
               );
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, 'Is biomass really renewable?'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.is_biomass_really_renewable', 'Is biomass really renewable?')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'It depends on the timescale. Burning a tree releases CO₂ today; that carbon was pulled from the atmosphere over decades. If the next tree grows back at the same rate, the cycle is closed — ',
+              __alloT('stem.renewables.it_depends_on_the_timescale_burning_a_', 'It depends on the timescale. Burning a tree releases CO₂ today; that carbon was pulled from the atmosphere over decades. If the next tree grows back at the same rate, the cycle is closed — '),
               h('em', null, 'roughly'),
-              ' carbon-neutral. But if you cut faster than regrowth, it’s a net emitter for decades.'),
+              __alloT('stem.renewables.carbon_neutral_but_if_you_cut_faster_t', ' carbon-neutral. But if you cut faster than regrowth, it’s a net emitter for decades.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.accentHi } }, 'The strongest renewable case is anaerobic digestion of waste streams'),
-              ' — dairy manure, food waste, sewage, landfill gas. That methane was going to be released anyway; capturing and burning it converts CH₂ into CO₂ (much weaker greenhouse gas) AND yields useful electricity + heat.')
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.the_strongest_renewable_case_is_anaero', 'The strongest renewable case is anaerobic digestion of waste streams')),
+              __alloT('stem.renewables.dairy_manure_food_waste_sewage_landfil', ' — dairy manure, food waste, sewage, landfill gas. That methane was going to be released anyway; capturing and burning it converts CH₂ into CO₂ (much weaker greenhouse gas) AND yields useful electricity + heat.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_reality_6', '🌲 Maine reality')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, MAINE_RENEWABLES.biomass)
           ),
           footer()
@@ -2325,14 +2378,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           sourceCard('storage'),
           goalBanner('Goal: pick a storage tech for your use case. Li-ion is fast and portable; pumped hydro is huge and cheap but geography-locked; hydrogen is the only seasonal-scale option. The right answer depends on whether you need hours, days, or months of storage.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'The intermittency problem — and why storage solves it'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_intermittency_problem_and_why_stor', 'The intermittency problem — and why storage solves it')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Sun and wind don’t generate on demand. Solar peaks at noon; demand peaks 6–10 PM. Wind is windy when it’s windy. Without storage, a 100% wind-and-solar grid has hours of surplus and hours of nothing.'),
+              __alloT('stem.renewables.sun_and_wind_don_t_generate_on_demand_', 'Sun and wind don’t generate on demand. Solar peaks at noon; demand peaks 6–10 PM. Wind is windy when it’s windy. Without storage, a 100% wind-and-solar grid has hours of surplus and hours of nothing.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Storage moves energy across time — absorb the midday solar surplus, release it at the evening peak. Different storage tech handles different durations: batteries for hours, pumped hydro for days, hydrogen for seasons.')
+              __alloT('stem.renewables.storage_moves_energy_across_time_absor', 'Storage moves energy across time — absorb the midday solar surplus, release it at the evening peak. Different storage tech handles different durations: batteries for hours, pumped hydro for days, hydrogen for seasons.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Five storage technologies compared'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.five_storage_technologies_compared', 'Five storage technologies compared')),
             STORAGE_TYPES.map(function(s) {
               return h('div', { key: s.id, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
@@ -2342,18 +2395,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('div', null, h('strong', { style: { color: T.text } }, 'Duration: '), s.duration),
                   h('div', null, h('strong', { style: { color: T.text } }, 'Round-trip: '), s.rte)),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 6 } }, s.how),
-                h('div', { style: { fontSize: 11, color: T.accentHi, lineHeight: 1.5, marginBottom: 3 } }, h('strong', null, '✓ Pros: '), s.pros),
-                h('div', { style: { fontSize: 11, color: T.warm, lineHeight: 1.5 } }, h('strong', null, '⚠ Cons: '), s.cons)
+                h('div', { style: { fontSize: 11, color: T.accentHi, lineHeight: 1.5, marginBottom: 3 } }, h('strong', null, __alloT('stem.renewables.pros', '✓ Pros: ')), s.pros),
+                h('div', { style: { fontSize: 11, color: T.warm, lineHeight: 1.5 } }, h('strong', null, __alloT('stem.renewables.cons', '⚠ Cons: ')), s.cons)
               );
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, 'Which storage do you actually need?'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.which_storage_do_you_actually_need', 'Which storage do you actually need?')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
-              h('li', null, h('strong', { style: { color: T.text } }, 'Hours (1–6 h):'), ' Lithium-ion batteries. Daily solar shifting, peak shaving, frequency regulation.'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Days (10–100 h):'), ' Pumped hydro, flow batteries, compressed air.'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Seasons:'), ' Green hydrogen. Only economic option for storing summer solar to use in winter.'),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Heat for buildings:'), ' Hot-water tanks, ice storage, building thermal mass. Cheap, mature, underused.')
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.hours_1_6_h', 'Hours (1–6 h):')), __alloT('stem.renewables.lithium_ion_batteries_daily_solar_shif', ' Lithium-ion batteries. Daily solar shifting, peak shaving, frequency regulation.')),
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.days_10_100_h', 'Days (10–100 h):')), __alloT('stem.renewables.pumped_hydro_flow_batteries_compressed', ' Pumped hydro, flow batteries, compressed air.')),
+              h('li', null, h('strong', { style: { color: T.text } }, 'Seasons:'), __alloT('stem.renewables.green_hydrogen_only_economic_option_fo', ' Green hydrogen. Only economic option for storing summer solar to use in winter.')),
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.heat_for_buildings', 'Heat for buildings:')), __alloT('stem.renewables.hot_water_tanks_ice_storage_building_t', ' Hot-water tanks, ice storage, building thermal mass. Cheap, mature, underused.'))
             )
           ),
           footer()
@@ -2379,10 +2432,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'data-rn-focusable': true,
                 onClick: function() { upd('quizState', { idx: 0, score: 0, answered: false, lastChoice: null }); rnAnnounce('Quiz reset'); },
-                style: btn() }, '🔄 Try again'),
+                style: btn() }, __alloT('stem.renewables.try_again', '🔄 Try again')),
               h('button', { 'data-rn-focusable': true,
                 onClick: function() { upd('view', 'menu'); },
-                style: btnPrimary() }, '← Back to menu')),
+                style: btnPrimary() }, __alloT('stem.renewables.back_to_menu', '← Back to menu'))),
             (function() { if (pct >= 70) awardBadge('renewables_quiz_pass', 'Quiz Passed (70%+)'); return null; })(),
             (function() { if (pct >= 90) awardBadge('renewables_quiz_ace', 'Quiz Ace (90%+)'); return null; })(),
             footer()
@@ -2397,23 +2450,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             open: qIdx === 0,
             style: { marginBottom: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border }
           },
-            h('summary', { style: { cursor: 'pointer', padding: '8px 12px', fontSize: 12, fontWeight: 700, color: T.accentHi, listStyle: 'none' } }, '📜 What this quiz covers (click to toggle)'),
+            h('summary', { style: { cursor: 'pointer', padding: '8px 12px', fontSize: 12, fontWeight: 700, color: T.accentHi, listStyle: 'none' } }, __alloT('stem.renewables.what_this_quiz_covers_click_to_toggle', '📜 What this quiz covers (click to toggle)')),
             h('div', { style: { padding: '0 12px 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('p', { style: { margin: '0 0 6px' } }, QUIZ.length + ' questions spanning the 8 sources + storage + grid integration. ', 'Pass at 70% earns the Quiz Passed badge; 90% earns Quiz Ace.'),
+              h('p', { style: { margin: '0 0 6px' } }, QUIZ.length + ' questions spanning the 8 sources + storage + grid integration. ', __alloT('stem.renewables.pass_at_70_earns_the_quiz_passed_badge', 'Pass at 70% earns the Quiz Passed badge; 90% earns Quiz Ace.')),
               h('ul', { style: { margin: 0, paddingLeft: 18 } },
-                h('li', null, h('strong', { style: { color: T.text } }, 'Solar PV:'), ' irradiance, efficiency, tilt, capacity factor.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Wind:'), ' v³ law, Betz limit, capacity factor by class.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Hydro:'), ' head + flow, turbine types, pumped storage.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Geothermal:'), ' thermal gradient, flash vs binary vs GSHP.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Wave / Tidal:'), ' wave power formula, tidal vs water density.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Biomass:'), ' combustion, anaerobic digestion, carbon accounting.'),
-                h('li', null, h('strong', { style: { color: T.text } }, 'Storage + Grid:'), ' Li-ion vs flow vs pumped vs hydrogen, capacity factor, dispatchability.')
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.solar_pv_2', 'Solar PV:')), __alloT('stem.renewables.irradiance_efficiency_tilt_capacity_fa', ' irradiance, efficiency, tilt, capacity factor.')),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Wind:'), __alloT('stem.renewables.v_law_betz_limit_capacity_factor_by_cl', ' v³ law, Betz limit, capacity factor by class.')),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Hydro:'), __alloT('stem.renewables.head_flow_turbine_types_pumped_storage', ' head + flow, turbine types, pumped storage.')),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Geothermal:'), __alloT('stem.renewables.thermal_gradient_flash_vs_binary_vs_gs', ' thermal gradient, flash vs binary vs GSHP.')),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.wave_tidal_2', 'Wave / Tidal:')), __alloT('stem.renewables.wave_power_formula_tidal_vs_water_dens', ' wave power formula, tidal vs water density.')),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Biomass:'), __alloT('stem.renewables.combustion_anaerobic_digestion_carbon_', ' combustion, anaerobic digestion, carbon accounting.')),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.storage_grid', 'Storage + Grid:')), __alloT('stem.renewables.li_ion_vs_flow_vs_pumped_vs_hydrogen_c', ' Li-ion vs flow vs pumped vs hydrogen, capacity factor, dispatchability.'))
               )
             )
           ),
           h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 8 } },
-            'Question ', h('strong', { style: { color: T.text } }, (qIdx + 1) + ' of ' + QUIZ.length),
-            '  ·  Score: ', h('strong', { style: { color: T.accentHi } }, (quizState.score || 0))),
+            __alloT('stem.renewables.question', 'Question '), h('strong', { style: { color: T.text } }, (qIdx + 1) + ' of ' + QUIZ.length),
+            __alloT('stem.renewables.score', '  ·  Score: '), h('strong', { style: { color: T.accentHi } }, (quizState.score || 0))),
           h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 26 } }, q.icon),
@@ -2491,21 +2544,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // ─────────────────────────────────────────
       function renderSiteSelector() {
         var SOURCES = [
-          { id: 'roofPv',      label: 'Rooftop solar PV',     color: '#f59e0b', icon: '☀️',
+          { id: 'roofPv',      label: __alloT('stem.renewables.rooftop_solar_pv', 'Rooftop solar PV'),     color: '#f59e0b', icon: '☀️',
             def: 'Distributed, residential or commercial rooftop. ~5 kW typical. Payback 6-12 yrs. Limited by roof area + orientation.' },
-          { id: 'utilPv',      label: 'Utility solar farm',   color: '#fbbf24', icon: '🌞',
+          { id: 'utilPv',      label: __alloT('stem.renewables.utility_solar_farm', 'Utility solar farm'),   color: '#fbbf24', icon: '🌞',
             def: 'Centralized PV at scale (10-500 MW+). Needs flat open land + grid interconnect. Cheapest electricity in history per kWh.' },
-          { id: 'onshore',     label: 'Onshore wind',         color: '#22c55e', icon: '🌬️',
+          { id: 'onshore',     label: __alloT('stem.renewables.onshore_wind', 'Onshore wind'),         color: '#22c55e', icon: '🌬️',
             def: 'Land turbines, typically 2-5 MW each. Needs sustained 6-9 m/s winds + open terrain. Largest cumulative renewable installed in US.' },
-          { id: 'offshore',    label: 'Offshore wind',        color: '#0284c7', icon: '🌊',
+          { id: 'offshore',    label: __alloT('stem.renewables.offshore_wind', 'Offshore wind'),        color: '#0284c7', icon: '🌊',
             def: 'Marine turbines, typically 8-15 MW each. Higher capacity factor than onshore (~50% vs 35%); higher install cost. Continental shelf siting.' },
-          { id: 'hydro',       label: 'Hydropower',           color: '#0ea5e9', icon: '💧',
+          { id: 'hydro',       label: __alloT('stem.renewables.hydropower_2', 'Hydropower'),           color: '#0ea5e9', icon: '💧',
             def: 'Stored gravitational energy of water via dam or run-of-river. Needs vertical drop + steady flow. Dispatchable (unlike most renewables).' },
-          { id: 'geothermal',  label: 'Geothermal',           color: '#dc2626', icon: '🌋',
+          { id: 'geothermal',  label: __alloT('stem.renewables.geothermal_2', 'Geothermal'),           color: '#dc2626', icon: '🌋',
             def: 'Earth-internal heat (volcanic / hot-springs zones for power; ground-source heat pumps work everywhere for heating/cooling).' },
-          { id: 'waveTidal',   label: 'Wave / Tidal',         color: '#06b6d4', icon: '🌀',
+          { id: 'waveTidal',   label: __alloT('stem.renewables.wave_tidal_3', 'Wave / Tidal'),         color: '#06b6d4', icon: '🌀',
             def: 'Marine kinetic energy. Tidal streams predictable for decades. Less mature; high marine-environment cost.' },
-          { id: 'biomass',     label: 'Biomass / biogas',     color: '#84cc16', icon: '🌾',
+          { id: 'biomass',     label: __alloT('stem.renewables.biomass_biogas_2', 'Biomass / biogas'),     color: '#84cc16', icon: '🌾',
             def: 'Combustion of wood waste, agricultural residues, or anaerobic digestion of organic matter to methane. Best where waste streams already exist.' }
         ];
         var V = [
@@ -2572,13 +2625,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🕵️ Site Selector'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '10 location profiles — pick the best renewable'),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, __alloT('stem.renewables.10_location_profiles_pick_the_best_ren', '10 location profiles — pick the best renewable')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                'For each location, pick the best renewable energy source from 8 options. Vignettes mix Maine-specific (Aroostook wind, Bath tidal, paper-mill biomass) and global (Iceland geothermal, Mojave utility PV, North Sea offshore wind, PNW hydro). Coaching cites the resource match + the trade-offs against alternatives.')
+                __alloT('stem.renewables.for_each_location_pick_the_best_renewa', 'For each location, pick the best renewable energy source from 8 options. Vignettes mix Maine-specific (Aroostook wind, Bath tidal, paper-mill biomass) and global (Iceland geothermal, Mojave utility PV, North Sea offshore wind, PNW hydro). Coaching cites the resource match + the trade-offs against alternatives.'))
             ),
             goalBanner('Goal: "best" means lowest levelized cost of energy (LCOE) for THAT site, given its actual resource profile. The same source can be the right answer in one location and wrong in another. Different priorities (carbon, equity, reliability) can pick different winners; this game scores you against an engineering / resource-match rubric.'),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The 8 renewable sources'),
+              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, __alloT('stem.renewables.the_8_renewable_sources', 'The 8 renewable sources')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                 SOURCES.map(function(s) {
                   return h('div', { key: s.id, style: { padding: '8px 10px', borderRadius: 8, background: s.color + '15', border: '1px solid ' + s.color + '55' } },
@@ -2594,7 +2647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('button', {
               onClick: startRs,
               style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
-            }, '🕵️ Start — site 1 of 10')
+            }, __alloT('stem.renewables.start_site_1_of_10', '🕵️ Start — site 1 of 10'))
           );
         }
 
@@ -2608,17 +2661,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🕵️ Site Selector'),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.dim, marginBottom: 12 } },
-            h('span', null, 'Site ', h('strong', { style: { color: T.text } }, rsShown.length)),
-            h('span', null, 'Score ', h('strong', { style: { color: T.good || '#22c55e' } }, rsScore + ' / ' + rsRounds)),
-            rsRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link || '#0ea5e9' } }, pct + '%')),
-            h('span', null, 'Streak ', h('strong', { style: { color: T.warm || '#f59e0b' } }, rsStreak)),
-            h('span', null, 'Best ', h('strong', { style: { color: T.accentHi || '#fbbf24' } }, rsBest))
+            h('span', null, __alloT('stem.renewables.site', 'Site '), h('strong', { style: { color: T.text } }, rsShown.length)),
+            h('span', null, __alloT('stem.renewables.score_2', 'Score '), h('strong', { style: { color: T.good || '#22c55e' } }, rsScore + ' / ' + rsRounds)),
+            rsRounds > 0 && h('span', null, __alloT('stem.renewables.accuracy', 'Accuracy '), h('strong', { style: { color: T.link || '#0ea5e9' } }, pct + '%')),
+            h('span', null, __alloT('stem.renewables.streak', 'Streak '), h('strong', { style: { color: T.warm || '#f59e0b' } }, rsStreak)),
+            h('span', null, __alloT('stem.renewables.best', 'Best '), h('strong', { style: { color: T.accentHi || '#fbbf24' } }, rsBest))
           ),
           h('section', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent + '88', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Site ' + rsShown.length + ' of ' + V.length),
             h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, v.location)
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the best renewable for this site' },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': __alloT('stem.renewables.pick_the_best_renewable_for_this_site', 'Pick the best renewable for this site') },
             SOURCES.map(function(s) {
               var picked = rsAns && rsPick === s.id;
               var isRight = rsAns && s.id === v.correct;
@@ -2660,7 +2713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
             allDone
               ? h('div', { style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 sites complete'),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, __alloT('stem.renewables.all_10_sites_complete', '🏆 All 10 sites complete')),
                   h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.5 } },
                     'Final: ', h('strong', null, rsScore + ' / ' + V.length + ' (' + Math.round((rsScore / V.length) * 100) + '%)'),
                     rsScore === V.length ? ' — every siting decision correct. Ready for actual project siting work.' :
@@ -2671,12 +2724,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('button', {
                     onClick: function() { upd('rsIdx', -1); upd('rsShown', []); upd('rsScore', 0); upd('rsRounds', 0); upd('rsStreak', 0); },
                     style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                  }, '🔄 Restart')
+                  }, __alloT('stem.renewables.restart', '🔄 Restart'))
                 )
               : h('button', {
                   onClick: startRs,
                   style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
-                }, '➡️ Next site')
+                }, __alloT('stem.renewables.next_site', '➡️ Next site'))
           )
         );
       }
@@ -2705,7 +2758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📚 Resources'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Every organization cited in this tool. NREL is the single best free resource for capacity factors and cost trends; the Annual Technology Baseline (ATB) is updated yearly.'),
+            __alloT('stem.renewables.every_organization_cited_in_this_tool_', 'Every organization cited in this tool. NREL is the single best free resource for capacity factors and cost trends; the Annual Technology Baseline (ATB) is updated yearly.')),
           section('🌐 Primary data sources', RESOURCES.primary),
           section('⚡ Source-specific orgs', RESOURCES.sourceSpecific),
           section('🌲 Maine + regional', RESOURCES.maine),
@@ -2723,23 +2776,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           for (var i = 0; i < 5; i++) dots += i < n ? '●' : '○';
           return dots;
         }
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           backBar('📊 Compare All Sources'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'First — what is "capacity factor" and why does it matter?'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.first_what_is_capacity_factor_and_why_', 'First — what is "capacity factor" and why does it matter?')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.text } }, 'Capacity factor'),
-              ' = actual annual energy output ÷ what the plant would produce at 100% rated power 24/7/365.'),
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.capacity_factor_2', 'Capacity factor')),
+              __alloT('stem.renewables.actual_annual_energy_output_what_the_p', ' = actual annual energy output ÷ what the plant would produce at 100% rated power 24/7/365.')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Example: a 1 MW solar farm in Maine generates ~1.7 GWh per year. If it ran flat-out 24/7 it would produce 8.76 GWh. So its capacity factor is 1.7 / 8.76 ≈ ',
+              __alloT('stem.renewables.example_a_1_mw_solar_farm_in_maine_gen', 'Example: a 1 MW solar farm in Maine generates ~1.7 GWh per year. If it ran flat-out 24/7 it would produce 8.76 GWh. So its capacity factor is 1.7 / 8.76 ≈ '),
               h('strong', { style: { color: T.accentHi } }, '19%'),
               '.'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'This is why "1 GW of solar" and "1 GW of nuclear" are NOT equivalent — the nuclear plant runs near 90% CF, the solar farm near 20%. To match annual energy from 1 GW nuclear, you need ~4–5 GW of solar (plus storage to match dispatchability).')
+              __alloT('stem.renewables.this_is_why_1_gw_of_solar_and_1_gw_of_', 'This is why "1 GW of solar" and "1 GW of nuclear" are NOT equivalent — the nuclear plant runs near 90% CF, the solar farm near 20%. To match annual energy from 1 GW nuclear, you need ~4–5 GW of solar (plus storage to match dispatchability).'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Side-by-side comparison'),
-            h('table', { 'aria-label': 'Comparison table of renewable and reference electricity sources',
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.side_by_side_comparison', 'Side-by-side comparison')),
+            h('table', { 'aria-label': __alloT('stem.renewables.comparison_table_of_renewable_and_refe', 'Comparison table of renewable and reference electricity sources'),
               style: { width: '100%', minWidth: 720, borderCollapse: 'collapse', fontSize: 12 } },
               h('thead', null,
                 h('tr', { style: { background: T.cardAlt } },
@@ -2766,17 +2819,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               )
             ),
             h('div', { style: { marginTop: 10, fontSize: 10, color: T.dim, lineHeight: 1.5 } },
-              'Sources: NREL Annual Technology Baseline 2024 (LCOE, capacity factor); IPCC AR6 WG3 Annex III (lifecycle CO₂ medians); Macknick 2012 + NREL (water); Hertwich 2015 + DOE (land use). The two reference rows (red) are NOT renewables — included for honest comparison.')
+              __alloT('stem.renewables.sources_nrel_annual_technology_baselin', 'Sources: NREL Annual Technology Baseline 2024 (LCOE, capacity factor); IPCC AR6 WG3 Annex III (lifecycle CO₂ medians); Macknick 2012 + NREL (water); Hertwich 2015 + DOE (land use). The two reference rows (red) are NOT renewables — included for honest comparison.'))
           ),
           // Footnotes for rows that have a note
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'Important caveats'),
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.important_caveats', 'Important caveats')),
             COMPARE_TABLE.filter(function(r) { return r.note; }).map(function(r) {
               return h('div', { key: r.id, style: { fontSize: 11, color: T.muted, marginBottom: 6, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, r.icon + ' ' + r.name + ': '),
                 r.note);
             })
           ),
+          // Capacity-factor bar chart — the renewables-literacy crux: nameplate MW is misleading;
+          // what matters is the fraction of that nameplate actually delivered over a year. Typical
+          // values (consistent with the cf column ranges above; sources cited in the table footer).
+          (function() {
+            var CF = [
+              { icon: '☀️', name: __alloT('stem.renewables.solar_pv_3', 'Solar PV'), cf: 23, color: '#fbbf24' },
+              { icon: '🌬️', name: __alloT('stem.renewables.wind_2', 'Wind'), cf: 35, color: '#38bdf8' },
+              { icon: '🌊', name: __alloT('stem.renewables.hydro', 'Hydro'), cf: 40, color: '#22d3ee' },
+              { icon: '🌋', name: __alloT('stem.renewables.geothermal_3', 'Geothermal'), cf: 74, color: '#f97316' },
+              { icon: '🔥', name: __alloT('stem.renewables.gas_combined_cycle', 'Gas (combined-cycle)'), cf: 57, color: '#94a3b8' },
+              { icon: '⚛️', name: __alloT('stem.renewables.nuclear', 'Nuclear'), cf: 93, color: '#a78bfa' }
+            ];
+            var W = 290, rowH = 20, padT = 8, barX = 120, barW = 150;
+            var Hh = padT + CF.length * rowH + 4;
+            var sx = function(p) { return (p / 100) * barW; };
+            return h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 2 } }, __alloT('stem.renewables.capacity_factor_typical_of_nameplate_a', 'Capacity factor — typical % of nameplate actually delivered')),
+              h('div', { style: { fontSize: 10, color: T.muted, marginBottom: 6, lineHeight: 1.45 } }, __alloT('stem.renewables.a_1_mw_solar_farm_and_a_1_mw_nuclear_p', 'A 1 MW solar farm and a 1 MW nuclear plant have the same nameplate — but very different annual output. This is why nameplate MW alone is misleading.')),
+              h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Capacity factor by source: ' + CF.map(function(s) { return s.name + ' ' + s.cf + '%'; }).join(', ') + '.' },
+                CF.map(function(s, i) {
+                  var y = padT + i * rowH;
+                  return h('g', { key: s.name },
+                    h('text', { x: 2, y: y + 11, fontSize: 9, fill: T.text }, s.icon + ' ' + s.name),
+                    h('rect', { x: barX, y: y + 2, width: barW, height: 11, rx: 3, fill: 'rgba(148,163,184,0.18)' }),
+                    h('rect', { x: barX, y: y + 2, width: sx(s.cf), height: 11, rx: 3, fill: s.color }),
+                    h('text', { x: barX + sx(s.cf) + 4, y: y + 11, fontSize: 9, fontWeight: 700, fill: T.text }, s.cf + '%'));
+                })
+              )
+            );
+          })(),
           footer()
         );
       }
@@ -2825,7 +2908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           backBar('🎛️ Energy Mix Designer'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Design an electricity mix for a region. Slide each source. The remainder fills with coal (the dirtiest baseline). See lifecycle CO₂, reliability, and how much storage you would need.')
+              __alloT('stem.renewables.design_an_electricity_mix_for_a_region', 'Design an electricity mix for a region. Slide each source. The remainder fills with coal (the dirtiest baseline). See lifecycle CO₂, reliability, and how much storage you would need.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             mixSlider('mixSolar',   '☀️ Solar PV',     mixSolar,   '#facc15', 100, 'CF ~20%. Cheap. Variable. Daytime.'),
@@ -2840,23 +2923,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           mixGap > 0 && h('div', { style: { padding: 10, borderRadius: 8, background: '#3a1a1a', border: '1px solid ' + T.warn, color: T.warm, fontSize: 12, marginBottom: 12 } },
             '⚠ ' + mixGap + '% unfilled — defaulting to coal (820 g CO₂/kWh) for honest accounting.'),
           h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '📈 Your mix at a glance'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.your_mix_at_a_glance', '📈 Your mix at a glance')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'Lifecycle CO₂'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.lifecycle_co', 'Lifecycle CO₂')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: co2 < 100 ? T.accent : co2 < 300 ? T.warm : T.danger, fontFamily: 'monospace' } },
                   co2.toFixed(0) + ' g/kWh'),
                 h('div', { style: { fontSize: 10, color: T.dim } }, pctReduction + '% below coal baseline')),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'Reliability score'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.reliability_score', 'Reliability score')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: rel >= 3 ? T.accent : rel >= 2 ? T.warm : T.danger, fontFamily: 'monospace' } },
                   rel.toFixed(1) + ' / 5'),
-                h('div', { style: { fontSize: 10, color: T.dim } }, 'Higher = more dispatchable')),
+                h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.higher_more_dispatchable', 'Higher = more dispatchable'))),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'Renewable share'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.renewable_share', 'Renewable share')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } },
                   renewablesShare + '%'),
-                h('div', { style: { fontSize: 10, color: T.dim } }, 'Solar + wind + hydro + geo'))
+                h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.solar_wind_hydro_geo', 'Solar + wind + hydro + geo')))
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
               h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, '🔋 Storage outlook for ' + variableShare + '% variable share:'),
@@ -2867,27 +2950,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               onClick: function() {
                 updMulti({ mixSolar: 0, mixWind: 0, mixHydro: 7, mixGeo: 0, mixNuclear: 19, mixGas: 36 });
                 rnAnnounce('Loaded: 2024 US grid average');
-              }, style: btn() }, 'Load: 2024 US grid'),
+              }, style: btn() }, __alloT('stem.renewables.load_2024_us_grid', 'Load: 2024 US grid')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 30, mixWind: 35, mixHydro: 20, mixGeo: 5, mixNuclear: 5, mixGas: 5 });
                 rnAnnounce('Loaded: 2050 net-zero scenario');
-              }, style: btn() }, 'Load: 2050 net-zero'),
+              }, style: btn() }, __alloT('stem.renewables.load_2050_net_zero', 'Load: 2050 net-zero')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 0, mixWind: 56, mixHydro: 1, mixGeo: 0, mixNuclear: 0, mixGas: 9 });
                 rnAnnounce('Loaded: Denmark wind-heavy');
-              }, style: btn() }, 'Load: Denmark mix'),
+              }, style: btn() }, __alloT('stem.renewables.load_denmark_mix', 'Load: Denmark mix')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 0, mixWind: 0, mixHydro: 70, mixGeo: 30, mixNuclear: 0, mixGas: 0 });
                 rnAnnounce('Loaded: Iceland renewable');
-              }, style: btn() }, 'Load: Iceland'),
+              }, style: btn() }, __alloT('stem.renewables.load_iceland', 'Load: Iceland')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 30, mixWind: 30, mixHydro: 10, mixGeo: 5, mixNuclear: 10, mixGas: 15 });
                 rnAnnounce('Reset to default');
-              }, style: btn() }, '↺ Reset')
+              }, style: btn() }, __alloT('stem.renewables.reset', '↺ Reset'))
           ),
           (function() { if (renewablesShare >= 60) awardBadge('mix_designer', 'Mix Designer (60%+ renewable)'); return null; })(),
           (function() { if (renewablesShare >= 90 && co2 < 60) awardBadge('mix_master', 'Mix Master (90%+ renewable, <60g CO₂)'); return null; })(),
@@ -2908,12 +2991,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             // Calibrate so that if total share = 100 with average CF ~0.5 → matches demand
             // Simpler: just use share/100 directly as a multiplier for nameplate, then × profile
             var hours = [];
-            var batteryLevel = 0;
-            // Storage capacity in "kWh per kW peak demand-hours" — slider
+            // Storage capacity in peak-demand-hours. Start SOC is explicit so
+            // the midnight boundary does not silently assume an empty battery.
             var battCap = d.gridBattHrs != null ? d.gridBattHrs : 4;
-            var battEff = 0.92;
-            var summary = { totalSupply: 0, totalDemand: 0, unmetHrs: 0, curtailHrs: 0, battThroughput: 0 };
-            for (var hr = 0; hr < 24; hr++) {
+            var battStartSoc = d.gridBattStartSoc != null ? d.gridBattStartSoc : 50;
+            var battRoundTripEff = 0.90;
+            var battOneWayEff = Math.sqrt(battRoundTripEff);
+            var batteryLevel = battCap * battStartSoc / 100;
+            var summary = {
+              totalSupply: 0, totalDemand: 0, unmetHrs: 0, curtailHrs: 0,
+              battThroughput: 0, chargedInput: 0, dischargedOutput: 0, storageLoss: 0
+            };            for (var hr = 0; hr < 24; hr++) {
               var sUnits = (mixSolar / 100) * solarP[hr];
               var wUnits = (mixWind  / 100) * windP[hr];
               var bUnits = (mixHydro / 100) * 0.55 + (mixGeo / 100) * 0.85 + (mixNuclear / 100) * 0.92 + (mixGas / 100) * 0.55;
@@ -2924,26 +3012,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               // Battery dynamics
               var net = supply - dem;
               var battDelta = 0, served = supply, curtailed = 0;
-              if (net > 0) {
-                // Surplus — try to fill battery
-                var room = battCap - batteryLevel;
-                var stored = Math.min(net, room);
-                batteryLevel += stored * battEff;
-                curtailed = net - stored;
-                battDelta = stored;
+              if (net > 0 && battCap > 0) {
+                var room = Math.max(0, battCap - batteryLevel);
+                var chargeInput = Math.min(net, room / battOneWayEff);
+                var storedEnergy = chargeInput * battOneWayEff;
+                batteryLevel += storedEnergy;
+                curtailed = net - chargeInput;
+                battDelta = storedEnergy;
+                summary.chargedInput += chargeInput;
+                summary.battThroughput += chargeInput;
+                summary.storageLoss += chargeInput - storedEnergy;
                 if (curtailed > 0.01) summary.curtailHrs++;
-                summary.battThroughput += stored;
-              } else if (net < 0) {
-                // Deficit — try to drain battery
+              } else if (net < 0 && battCap > 0) {
                 var need = -net;
-                var drawn = Math.min(need, batteryLevel);
-                batteryLevel -= drawn;
-                served = supply + drawn;
-                if (drawn < need - 0.01) summary.unmetHrs++;
-                battDelta = -drawn;
-              }
-              hours.push({ hr: hr, sUnits: sUnits, wUnits: wUnits, bUnits: bUnits, supply: supply, demand: dem, served: served, batt: batteryLevel, battDelta: battDelta });
+                var delivered = Math.min(need, batteryLevel * battOneWayEff);
+                var withdrawn = delivered / battOneWayEff;
+                batteryLevel = Math.max(0, batteryLevel - withdrawn);
+                served = supply + delivered;
+                battDelta = -withdrawn;
+                summary.dischargedOutput += delivered;
+                summary.battThroughput += delivered;
+                summary.storageLoss += withdrawn - delivered;
+                if (delivered < need - 0.01) summary.unmetHrs++;
+              } else if (net > 0) {
+                curtailed = net;
+                if (curtailed > 0.01) summary.curtailHrs++;
+              } else if (net < 0) {
+                summary.unmetHrs++;
+              }              hours.push({ hr: hr, sUnits: sUnits, wUnits: wUnits, bUnits: bUnits, supply: supply, demand: dem, served: served, batt: batteryLevel, battDelta: battDelta });
             }
+            summary.endSocPct = battCap > 0 ? (batteryLevel / battCap) * 100 : 0;
             // SVG chart
             var W = 600, H = 240;
             var pad = { l: 36, r: 14, t: 18, b: 30 };
@@ -2967,25 +3065,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             var demPts = hours.map(function(p) { return [sx(p.hr), sy(p.demand)]; });
             var demLine = 'M ' + demPts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
             return h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '2px solid ' + T.accent, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '⚡ 24-hour grid balance'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.24_hour_grid_balance', '⚡ 24-hour grid balance')),
               h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                'Stacked supply (baseload + wind + solar) vs hourly demand for a residential grid. Adjust the storage slider to see how batteries smooth the gap.'),
+                __alloT('stem.renewables.stacked_supply_baseload_wind_solar_vs_', 'Stacked supply (baseload + wind + solar) vs hourly demand for a residential grid. Adjust the storage slider to see how batteries smooth the gap.')),
               // Storage slider
               h('div', { style: { marginBottom: 12 } },
                 h('label', { htmlFor: 'grid-batt', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } },
-                  h('span', null, '🔋 Battery capacity'),
+                  h('span', null, __alloT('stem.renewables.battery_capacity', '🔋 Battery capacity')),
                   h('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, battCap.toFixed(1) + ' h')
                 ),
                 h('input', { id: 'grid-batt', 'data-rn-focusable': true, type: 'range',
                   min: 0, max: 12, step: 0.5, value: battCap,
-                  'aria-label': 'Battery capacity in hours of peak demand',
+                  'aria-label': __alloT('stem.renewables.battery_capacity_in_hours_of_peak_dema', 'Battery capacity in hours of peak demand'),
                   onChange: function(e) { upd('gridBattHrs', parseFloat(e.target.value)); },
                   style: { width: '100%', accentColor: T.accent, cursor: 'pointer' }
                 }),
                 h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2 } },
-                  '0 h = no storage. 4 h ≈ typical Tesla Powerwall stack. 8+ h needed for high-renewable grids.')
+                  __alloT('stem.renewables.0_h_no_storage_4_h_typical_tesla_power', '0 h = no storage. 4 h ≈ typical Tesla Powerwall stack. 8+ h needed for high-renewable grids.'))
               ),
-              h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
+              h('div', { style: { marginBottom: 12, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                h('label', { htmlFor: 'grid-batt-soc', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } },
+                  h('span', null, 'Starting state of charge'),
+                  h('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, battStartSoc.toFixed(0) + '%')
+                ),
+                h('input', {
+                  id: 'grid-batt-soc', 'data-rn-focusable': true, type: 'range',
+                  min: 0, max: 100, step: 5, value: battStartSoc,
+                  'aria-label': 'Battery starting state of charge',
+                  'aria-valuetext': battStartSoc.toFixed(0) + ' percent charged at midnight',
+                  onChange: function(e) { upd('gridBattStartSoc', parseFloat(e.target.value)); },
+                  style: { width: '100%', accentColor: T.accent, cursor: 'pointer' }
+                }),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2 } },
+                  'Starting energy: ' + (battCap * battStartSoc / 100).toFixed(2) + ' peak-demand-hours. Change this to test how the midnight boundary affects results.'
+                )
+              ),              h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
                 role: 'img',
                 'aria-label': '24-hour grid balance chart. Total supply ' + summary.totalSupply.toFixed(1) + ' demand units, total demand ' + summary.totalDemand.toFixed(1) + '. Unmet hours: ' + summary.unmetHrs + '. Curtailed hours: ' + summary.curtailHrs + '.',
                 style: { background: '#0b1020', borderRadius: 8 } },
@@ -3014,44 +3128,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
                 // Legend
                 h('rect', { x: pad.l, y: 4, width: 10, height: 10, fill: '#a78bfa', opacity: 0.55 }),
-                h('text', { x: pad.l + 14, y: 13, fontSize: 10, fill: '#a78bfa' }, 'Baseload'),
+                h('text', { x: pad.l + 14, y: 13, fontSize: 10, fill: '#a78bfa' }, __alloT('stem.renewables.baseload', 'Baseload')),
                 h('rect', { x: pad.l + 70, y: 4, width: 10, height: 10, fill: '#7dd3fc', opacity: 0.65 }),
-                h('text', { x: pad.l + 84, y: 13, fontSize: 10, fill: '#7dd3fc' }, 'Wind'),
+                h('text', { x: pad.l + 84, y: 13, fontSize: 10, fill: '#7dd3fc' }, __alloT('stem.renewables.wind_3', 'Wind')),
                 h('rect', { x: pad.l + 124, y: 4, width: 10, height: 10, fill: '#facc15', opacity: 0.75 }),
-                h('text', { x: pad.l + 138, y: 13, fontSize: 10, fill: '#facc15' }, 'Solar'),
+                h('text', { x: pad.l + 138, y: 13, fontSize: 10, fill: '#facc15' }, __alloT('stem.renewables.solar', 'Solar')),
                 h('line', { x1: pad.l + 178, y1: 9, x2: pad.l + 198, y2: 9, stroke: '#f87171', strokeWidth: 2.5, strokeDasharray: '6 3' }),
-                h('text', { x: pad.l + 202, y: 13, fontSize: 10, fill: '#f87171' }, 'Demand')
+                h('text', { x: pad.l + 202, y: 13, fontSize: 10, fill: '#f87171' }, __alloT('stem.renewables.demand', 'Demand'))
               ),
               // Summary cards
               h('div', { style: { marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
                 h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
-                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Daily supply / demand'),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.daily_supply_demand', 'Daily supply / demand')),
                   h('div', { style: { fontSize: 16, fontWeight: 800, color: summary.totalSupply >= summary.totalDemand ? T.accent : T.warm, fontFamily: 'monospace' } },
                     summary.totalSupply.toFixed(1) + ' / ' + summary.totalDemand.toFixed(1)),
                   h('div', { style: { fontSize: 10, color: T.dim } }, summary.totalSupply >= summary.totalDemand ? 'Sufficient capacity' : 'Capacity shortfall')
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + (summary.unmetHrs > 0 ? T.danger : T.border) } },
-                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Hours of unmet demand'),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.hours_of_unmet_demand', 'Hours of unmet demand')),
                   h('div', { style: { fontSize: 22, fontWeight: 800, color: summary.unmetHrs > 0 ? T.danger : T.accent, fontFamily: 'monospace' } },
                     summary.unmetHrs + ' h'),
                   h('div', { style: { fontSize: 10, color: T.dim } }, summary.unmetHrs === 0 ? '✓ Always served' : 'Blackouts likely')
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
-                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Hours of curtailed surplus'),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.hours_of_curtailed_surplus', 'Hours of curtailed surplus')),
                   h('div', { style: { fontSize: 22, fontWeight: 800, color: summary.curtailHrs > 6 ? T.warm : T.text, fontFamily: 'monospace' } },
                     summary.curtailHrs + ' h'),
                   h('div', { style: { fontSize: 10, color: T.dim } }, summary.curtailHrs > 0 ? 'Energy wasted' : '✓ All used')
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
-                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Battery throughput / day'),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.battery_throughput_day', 'Battery throughput / day')),
                   h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } },
                     summary.battThroughput.toFixed(2)),
-                  h('div', { style: { fontSize: 10, color: T.dim } }, '× peak-demand-hours')
+                  h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.peak_demand_hours', '× peak-demand-hours'))
                 )
               ),
-              // Teaching notes
+              h('div', {
+                role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }
+              },
+                h('div', { style: { padding: 9, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Ending state of charge'),
+                  h('strong', { style: { display: 'block', color: T.accentHi, fontFamily: 'monospace', fontSize: 16 } }, summary.endSocPct.toFixed(1) + '%')
+                ),
+                h('div', { style: { padding: 9, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Storage conversion losses'),
+                  h('strong', { style: { display: 'block', color: T.warm, fontFamily: 'monospace', fontSize: 16 } }, summary.storageLoss.toFixed(2)),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'peak-demand-hours at 90% round-trip efficiency')
+                )
+              ),
+              h('div', { style: { marginTop: 8, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+                'Model boundary: fixed hourly profiles, no transmission constraints, reserves, degradation, or storage power limit. Results are scenario comparisons, not reliability forecasts.'
+              ),              // Teaching notes
               h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.bg, border: '1px dashed ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, 'What to notice: '),
+                h('strong', { style: { color: T.text } }, __alloT('stem.renewables.what_to_notice', 'What to notice: ')),
                 summary.unmetHrs > 0
                   ? 'Your grid has ' + summary.unmetHrs + ' hour(s) of blackout. Either add more dispatchable capacity (hydro / geo / nuclear) or scale up battery storage.'
                   : (summary.curtailHrs > 6
@@ -3094,69 +3224,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           backBar('🏠 Maine Home Solar Calculator'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Rough estimate for a Maine rooftop. Real quotes vary by orientation, shading, and contractor. Numbers below assume CMP territory + south-facing roof + 2024–25 incentive levels. Always get 3 quotes.')
+              __alloT('stem.renewables.rough_estimate_for_a_maine_rooftop_rea', 'Rough estimate for a Maine rooftop. Real quotes vary by orientation, shading, and contractor. Numbers below assume CMP territory + south-facing roof + 2024–25 incentive levels. Always get 3 quotes.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            slider({ id: 'mh-roof', label: '🏠 Usable south-facing roof area', value: mhRoofM2, min: 5, max: 100, step: 1, unit: 'm²',
-              hint: 'A typical Maine 2-story has 30–60 m² of usable south slope. 1 m² ≈ 10.8 ft².',
+            slider({ id: 'mh-roof', label: __alloT('stem.renewables.usable_south_facing_roof_area', '🏠 Usable south-facing roof area'), value: mhRoofM2, min: 5, max: 100, step: 1, unit: 'm²',
+              hint: __alloT('stem.renewables.a_typical_maine_2_story_has_30_60_m_of', 'A typical Maine 2-story has 30–60 m² of usable south slope. 1 m² ≈ 10.8 ft².'),
               onChange: function(v) { upd('mhRoofM2', v); } }),
-            slider({ id: 'mh-bill', label: '💵 Average monthly electric bill', value: mhBillMo, min: 50, max: 500, step: 10, unit: '$/mo',
-              hint: 'Maine residential average ~$130/mo (2024). Heat-pump homes run $200–400/mo in winter.',
+            slider({ id: 'mh-bill', label: __alloT('stem.renewables.average_monthly_electric_bill', '💵 Average monthly electric bill'), value: mhBillMo, min: 50, max: 500, step: 10, unit: '$/mo',
+              hint: __alloT('stem.renewables.maine_residential_average_130_mo_2024_', 'Maine residential average ~$130/mo (2024). Heat-pump homes run $200–400/mo in winter.'),
               onChange: function(v) { upd('mhBillMo', v); } }),
-            slider({ id: 'mh-itc', label: '🇺🇸 Federal Investment Tax Credit', value: mhRebatePct, min: 0, max: 30, step: 1, unit: '%',
-              hint: '30% through 2032 under current law. 26% if installed before 2022 or if law changes.',
+            slider({ id: 'mh-itc', label: __alloT('stem.renewables.federal_investment_tax_credit', '🇺🇸 Federal Investment Tax Credit'), value: mhRebatePct, min: 0, max: 30, step: 1, unit: '%',
+              hint: __alloT('stem.renewables.30_through_2032_under_current_law_26_i', '30% through 2032 under current law. 26% if installed before 2022 or if law changes.'),
               onChange: function(v) { upd('mhRebatePct', v); } })
           ),
           h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '📊 Estimated outcome'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.estimated_outcome', '📊 Estimated outcome')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 } },
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'Annual generation'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.annual_generation', 'Annual generation')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } },
                   annualKWh.toFixed(0) + ' kWh'),
                 h('div', { style: { fontSize: 10, color: T.dim } }, '~' + pctOfBill.toFixed(0) + '% of your usage')),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'Annual savings'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.annual_savings', 'Annual savings')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accent, fontFamily: 'monospace' } },
                   '$' + annualSavings.toFixed(0)),
                 h('div', { style: { fontSize: 10, color: T.dim } }, 'at $' + ELECTRIC_RATE.toFixed(2) + '/kWh')),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'After-incentive cost'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.after_incentive_cost', 'After-incentive cost')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: T.warm, fontFamily: 'monospace' } },
                   '$' + afterMaine.toFixed(0)),
                 h('div', { style: { fontSize: 10, color: T.dim } }, 'Gross $' + grossCost.toFixed(0) + ' − ITC − $800 EM rebate')),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'Payback time'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.payback_time', 'Payback time')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: paybackYrs < 10 ? T.accent : paybackYrs < 15 ? T.warm : T.danger, fontFamily: 'monospace' } },
                   paybackYrs.toFixed(1) + ' yr'),
-                h('div', { style: { fontSize: 10, color: T.dim } }, '25-yr panel lifespan')),
+                h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.25_yr_panel_lifespan', '25-yr panel lifespan'))),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, '25-yr net savings'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.25_yr_net_savings', '25-yr net savings')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: lifetime > 0 ? T.accent : T.danger, fontFamily: 'monospace' } },
                   '$' + lifetime.toFixed(0)),
-                h('div', { style: { fontSize: 10, color: T.dim } }, 'Excludes electricity-rate inflation (typically +)')),
+                h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.excludes_electricity_rate_inflation_ty', 'Excludes electricity-rate inflation (typically +)'))),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: T.dim } }, 'CO₂ avoided / yr'),
+                h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.co_avoided_yr', 'CO₂ avoided / yr')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } },
                   co2Avoided.toFixed(0) + ' kg'),
                 h('div', { style: { fontSize: 10, color: T.dim } }, '~' + (co2Avoided / 4600).toFixed(2) + ' cars/yr equiv.'))
             )
           ),
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine-specific notes'),
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_specific_notes', '🌲 Maine-specific notes')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: T.muted, lineHeight: 1.6 } },
-              h('li', null, 'Cold + sun = high efficiency. Maine winter sun is short but the cold actually boosts panel output.'),
-              h('li', null, 'Net metering rules in Maine have shifted multiple times. Current law gives ~retail rate credit; check the PUC for the current arrangement before signing.'),
-              h('li', null, 'Snow on panels: tilt ≥ 30° lets snow slide off. Bifacial panels can pick up reflected light from snow on the ground.'),
-              h('li', null, 'Pair with a heat pump for biggest impact: summer solar runs the heat pump in shoulder seasons; you also free up oil dollars.'),
-              h('li', null, 'Efficiency Maine offers 0% loans up to $15,000 for solar + heat pump combos.')
+              h('li', null, __alloT('stem.renewables.cold_sun_high_efficiency_maine_winter_', 'Cold + sun = high efficiency. Maine winter sun is short but the cold actually boosts panel output.')),
+              h('li', null, __alloT('stem.renewables.net_metering_rules_in_maine_have_shift', 'Net metering rules in Maine have shifted multiple times. Current law gives ~retail rate credit; check the PUC for the current arrangement before signing.')),
+              h('li', null, __alloT('stem.renewables.snow_on_panels_tilt_30_lets_snow_slide', 'Snow on panels: tilt ≥ 30° lets snow slide off. Bifacial panels can pick up reflected light from snow on the ground.')),
+              h('li', null, __alloT('stem.renewables.pair_with_a_heat_pump_for_biggest_impa', 'Pair with a heat pump for biggest impact: summer solar runs the heat pump in shoulder seasons; you also free up oil dollars.')),
+              h('li', null, __alloT('stem.renewables.efficiency_maine_offers_0_loans_up_to_', 'Efficiency Maine offers 0% loans up to $15,000 for solar + heat pump combos.'))
             )
           ),
           h('div', { style: { marginTop: 12, padding: 10, borderRadius: 10, background: T.card, border: '1px dashed ' + T.accent, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, '🔗 Adding an EV?'),
-            ' Layer in EV charging math from AlloFlow ',
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.adding_an_ev', '🔗 Adding an EV?')),
+            __alloT('stem.renewables.layer_in_ev_charging_math_from_alloflo', ' Layer in EV charging math from AlloFlow '),
             h('strong', { style: { color: T.text } }, 'RoadReady'),
-            '. A typical Maine commute (~30 mi/day) adds ~7–10 kWh/day to your home load — significant for solar sizing, and EVs unlock V2G later.'),
+            __alloT('stem.renewables.a_typical_maine_commute_30_mi_day_adds', '. A typical Maine commute (~30 mi/day) adds ~7–10 kWh/day to your home load — significant for solar sizing, and EVs unlock V2G later.')),
           footer()
         );
       }
@@ -3182,54 +3312,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // ─────────────────────────────────────────
 
       var INSTALLER_AREAS = [
-        { id: 'portland', icon: '🏙', name: 'Portland Metro',
-          desc: 'Dense urban + suburb. Lots of roofs, but more competing firms. Average household electric bill $145/mo.',
+        { id: 'portland', icon: '🏙', name: __alloT('stem.renewables.portland_metro', 'Portland Metro'),
+          desc: __alloT('stem.renewables.dense_urban_suburb_lots_of_roofs_but_m', 'Dense urban + suburb. Lots of roofs, but more competing firms. Average household electric bill $145/mo.'),
           competition: 1.30,      // bid-win multiplier (higher = harder to win)
           drive: 1.0,             // labor-time multiplier
           billAvg: 145, leadVolume: 10, premiumPct: 0.20 },
-        { id: 'midcoast', icon: '⛵', name: 'Midcoast Maine',
-          desc: 'Mix of year-round homes + summer-only camps. Premium roofs (slate, complex). Tourist economy seasonality. Average bill $160/mo.',
+        { id: 'midcoast', icon: '⛵', name: __alloT('stem.renewables.midcoast_maine', 'Midcoast Maine'),
+          desc: __alloT('stem.renewables.mix_of_year_round_homes_summer_only_ca', 'Mix of year-round homes + summer-only camps. Premium roofs (slate, complex). Tourist economy seasonality. Average bill $160/mo.'),
           competition: 1.10,
           drive: 1.15,
           billAvg: 160, leadVolume: 8, premiumPct: 0.45 },
-        { id: 'rural',   icon: '🌲', name: 'Rural Northern Maine',
-          desc: 'Low population density, long drives between jobs. Lower price ceiling but grid-resilience + winter demand high. Average bill $175/mo.',
+        { id: 'rural',   icon: '🌲', name: __alloT('stem.renewables.rural_northern_maine', 'Rural Northern Maine'),
+          desc: __alloT('stem.renewables.low_population_density_long_drives_bet', 'Low population density, long drives between jobs. Lower price ceiling but grid-resilience + winter demand high. Average bill $175/mo.'),
           competition: 0.85,
           drive: 1.40,
           billAvg: 175, leadVolume: 7, premiumPct: 0.15 }
       ];
 
       var INSTALLER_SUPPLIERS = [
-        { id: 'tier1', icon: '⭐', name: 'Tier-1 (Maxeon / REC)', costPerW: 2.20, warrantyYears: 25, claimRate: 0.02, satBoost: +5,
-          desc: 'Premium panels. Higher upfront cost, 25-yr power warranty, low warranty-claim rate. Customers notice the brand.' },
-        { id: 'tier2', icon: '💰', name: 'Tier-2 (mid-Chinese)', costPerW: 1.50, warrantyYears: 12, claimRate: 0.08, satBoost: -3,
-          desc: 'Lower cost panels. 12-yr warranty + higher claim rate. Margin advantage if quality holds; reputation risk if it does not.' }
+        { id: 'tier1', icon: '⭐', name: __alloT('stem.renewables.tier_1_maxeon_rec', 'Tier-1 (Maxeon / REC)'), costPerW: 2.20, warrantyYears: 25, claimRate: 0.02, satBoost: +5,
+          desc: __alloT('stem.renewables.premium_panels_higher_upfront_cost_25_', 'Premium panels. Higher upfront cost, 25-yr power warranty, low warranty-claim rate. Customers notice the brand.') },
+        { id: 'tier2', icon: '💰', name: __alloT('stem.renewables.tier_2_mid_chinese', 'Tier-2 (mid-Chinese)'), costPerW: 1.50, warrantyYears: 12, claimRate: 0.08, satBoost: -3,
+          desc: __alloT('stem.renewables.lower_cost_panels_12_yr_warranty_highe', 'Lower cost panels. 12-yr warranty + higher claim rate. Margin advantage if quality holds; reputation risk if it does not.') }
       ];
 
       var INSTALLER_LEAD_TYPES = [
-        { id: 'resPriceSens',  icon: '🏠', label: 'Residential · price-sensitive',
+        { id: 'resPriceSens',  icon: '🏠', label: __alloT('stem.renewables.residential_price_sensitive', 'Residential · price-sensitive'),
           kwAvg: 7, kwSpread: 2, bidSensitivity: 1.4, satMod: 0,
           notes: 'Family of 4, wants quickest payback. Will switch to the lowest bid.' },
-        { id: 'resQuality',    icon: '🏡', label: 'Residential · quality-driven',
+        { id: 'resQuality',    icon: '🏡', label: __alloT('stem.renewables.residential_quality_driven', 'Residential · quality-driven'),
           kwAvg: 10, kwSpread: 3, bidSensitivity: 0.8, satMod: +3,
           notes: 'Bigger budget, wants tier-1 panels, expects clean install. Less price-sensitive.' },
-        { id: 'commSmall',     icon: '🏢', label: 'Small commercial',
+        { id: 'commSmall',     icon: '🏢', label: __alloT('stem.renewables.small_commercial', 'Small commercial'),
           kwAvg: 30, kwSpread: 10, bidSensitivity: 1.0, satMod: +1,
           notes: 'Local business / nonprofit. Mid-range price sensitivity. Big single contract.' },
-        { id: 'commMunicipal', icon: '🏛', label: 'Municipal',
+        { id: 'commMunicipal', icon: '🏛', label: __alloT('stem.renewables.municipal', 'Municipal'),
           kwAvg: 60, kwSpread: 20, bidSensitivity: 1.2, satMod: +2,
           notes: 'School / town hall / library. Procurement process; lowest-responsive-bid rules. Huge if you win it.' }
       ];
 
       var INSTALLER_EVENTS = [
-        { id: 'itcChange',     icon: '📋', headline: 'Federal ITC steps down', text: 'Congress passed a step-down: the 30% ITC drops to 26% starting next year. Customer demand softens; expect ~10% fewer leads next year.',     effect: { leadMult: 0.9 } },
-        { id: 'panelDelay',    icon: '🚢', headline: 'Supply-chain delay', text: 'Panels stuck at port for 6 weeks. Half this year\'s installs slip into next year. Cash hit but no permanent damage.',                            effect: { revMult: 0.5 } },
-        { id: 'badWinter',     icon: '❄', headline: 'Brutal winter slows installs',  text: 'Three feet of snow in March pushed installs back. Labor hours up 20%, no extra revenue.',                                            effect: { laborMult: 1.2 } },
-        { id: 'competitor',    icon: '⚔', headline: 'Competitor undercuts',  text: 'A big out-of-state firm entered your market with aggressive pricing. Win-rate drops 15% this year only.',                                    effect: { winMult: 0.85 } },
-        { id: 'referral',      icon: '🎉', headline: 'Customer-referral cascade', text: 'Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.',                          effect: { leadMult: 1.15, satBoost: +5 } },
-        { id: 'inflationCost', icon: '💸', headline: 'Inflation hits inventory', text: 'Panel + inverter prices up 8% mid-year. COGS rises until you sign new supplier contracts next year.',                                    effect: { cogsMult: 1.08 } },
-        { id: 'permitOk',      icon: '✅', headline: 'Permitting streamlined', text: 'State rolled out a one-page interconnection form. Permit costs drop $200 per install; labor 0.5 day shorter.',                              effect: { permitCut: 200, laborMult: 0.95 } },
-        { id: 'workerWin',     icon: '🏆', headline: 'IBEW apprentice grad', text: 'Three apprentices from EMCC finish their hours this quarter. You can hire any of them at the lower trainee rate.',                            effect: { laborMult: 0.93 } }
+        { id: 'itcChange',     icon: '📋', headline: 'Federal ITC steps down', text: __alloT('stem.renewables.congress_passed_a_step_down_the_30_itc', 'Congress passed a step-down: the 30% ITC drops to 26% starting next year. Customer demand softens; expect ~10% fewer leads next year.'),     effect: { leadMult: 0.9 } },
+        { id: 'panelDelay',    icon: '🚢', headline: 'Supply-chain delay', text: __alloT('stem.renewables.panels_stuck_at_port_for_6_weeks_half_', 'Panels stuck at port for 6 weeks. Half this year\'s installs slip into next year. Cash hit but no permanent damage.'),                            effect: { revMult: 0.5 } },
+        { id: 'badWinter',     icon: '❄', headline: 'Brutal winter slows installs',  text: __alloT('stem.renewables.three_feet_of_snow_in_march_pushed_ins', 'Three feet of snow in March pushed installs back. Labor hours up 20%, no extra revenue.'),                                            effect: { laborMult: 1.2 } },
+        { id: 'competitor',    icon: '⚔', headline: 'Competitor undercuts',  text: __alloT('stem.renewables.a_big_out_of_state_firm_entered_your_m', 'A big out-of-state firm entered your market with aggressive pricing. Win-rate drops 15% this year only.'),                                    effect: { winMult: 0.85 } },
+        { id: 'referral',      icon: '🎉', headline: 'Customer-referral cascade', text: __alloT('stem.renewables.your_last_six_customers_loved_you_thre', 'Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.'),                          effect: { leadMult: 1.15, satBoost: +5 } },
+        { id: 'inflationCost', icon: '💸', headline: 'Inflation hits inventory', text: __alloT('stem.renewables.panel_inverter_prices_up_8_mid_year_co', 'Panel + inverter prices up 8% mid-year. COGS rises until you sign new supplier contracts next year.'),                                    effect: { cogsMult: 1.08 } },
+        { id: 'permitOk',      icon: '✅', headline: 'Permitting streamlined', text: __alloT('stem.renewables.state_rolled_out_a_one_page_interconne', 'State rolled out a one-page interconnection form. Permit costs drop $200 per install; labor 0.5 day shorter.'),                              effect: { permitCut: 200, laborMult: 0.95 } },
+        { id: 'workerWin',     icon: '🏆', headline: 'IBEW apprentice grad', text: __alloT('stem.renewables.three_apprentices_from_emcc_finish_the', 'Three apprentices from EMCC finish their hours this quarter. You can hire any of them at the lower trainee rate.'),                            effect: { laborMult: 0.93 } }
       ];
 
       function defaultInstallerState() {
@@ -3492,34 +3622,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             backBar('☀️ Solar Installer Co.'),
             // ── Pre-game brief ──
             h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, '📜 How the sim works'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, __alloT('stem.renewables.how_the_sim_works', '📜 How the sim works')),
               h('p', { style: { margin: '0 0 8px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
                 'You are running a small solar installation firm in Maine. ',
-                h('strong', { style: { color: T.text } }, '4 years. 4 decisions per year. Survive AND grow to 100+ installs to win.')),
+                h('strong', { style: { color: T.text } }, __alloT('stem.renewables.4_years_4_decisions_per_year_survive_a', '4 years. 4 decisions per year. Survive AND grow to 100+ installs to win.'))),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 8 } },
                 h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎯 Each year you decide'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.renewables.each_year_you_decide', '🎯 Each year you decide')),
                   h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                    h('li', null, 'Which leads to bid on'),
-                    h('li', null, 'Bid price per watt'),
-                    h('li', null, 'Tier-1 vs tier-2 panel supplier'),
-                    h('li', null, 'Hire / fire installers, inspectors, sales')
+                    h('li', null, __alloT('stem.renewables.which_leads_to_bid_on', 'Which leads to bid on')),
+                    h('li', null, __alloT('stem.renewables.bid_price_per_watt', 'Bid price per watt')),
+                    h('li', null, __alloT('stem.renewables.tier_1_vs_tier_2_panel_supplier', 'Tier-1 vs tier-2 panel supplier')),
+                    h('li', null, __alloT('stem.renewables.hire_fire_installers_inspectors_sales', 'Hire / fire installers, inspectors, sales'))
                   )
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '⚠ Failure modes'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.renewables.failure_modes', '⚠ Failure modes')),
                   h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                    h('li', null, 'Cash < $0 for two years in a row → bankruptcy'),
-                    h('li', null, 'Customer satisfaction < 50 → reputation collapse, leads dry up'),
-                    h('li', null, 'Year 4 ends + fewer than 100 cumulative installs → short of target')
+                    h('li', null, __alloT('stem.renewables.cash_0_for_two_years_in_a_row_bankrupt', 'Cash < $0 for two years in a row → bankruptcy')),
+                    h('li', null, __alloT('stem.renewables.customer_satisfaction_50_reputation_co', 'Customer satisfaction < 50 → reputation collapse, leads dry up')),
+                    h('li', null, __alloT('stem.renewables.year_4_ends_fewer_than_100_cumulative_', 'Year 4 ends + fewer than 100 cumulative installs → short of target'))
                   )
                 )
               ),
               h('p', { style: { margin: 0, fontSize: 12, color: T.dim, lineHeight: 1.55, fontStyle: 'italic' } },
-                'Numbers are Maine-realistic: panel cost ~$1.50 to $2.20/W wholesale, installs sold at $3 to $4/W, typical firm does 50 to 200 installs/yr. Carries some randomness (events, win-rolls) so two runs are not identical.')
+                __alloT('stem.renewables.numbers_are_maine_realistic_panel_cost', 'Numbers are Maine-realistic: panel cost ~$1.50 to $2.20/W wholesale, installs sold at $3 to $4/W, typical firm does 50 to 200 installs/yr. Carries some randomness (events, win-rolls) so two runs are not identical.'))
             ),
             // ── Area picker ──
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, '🗺 Pick your service area'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.pick_your_service_area', '🗺 Pick your service area')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
               INSTALLER_AREAS.map(function(area) {
                 return h('button', { key: area.id, 'data-rn-focusable': true,
@@ -3562,7 +3692,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               )
             ),
             lastEvent && lastEvent.year === lastYear.year && h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Event this year'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, __alloT('stem.renewables.event_this_year', 'Event this year')),
               h('div', { style: { fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4 } }, lastEvent.headline),
               h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, lastEvent.text)
             ),
@@ -3579,10 +3709,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         // ─────────────────────────────────────────
         if (inst.phase === 'debrief') {
           var outcome = inst.finalOutcome || 'shortfall';
-          var outcomeMeta = outcome === 'win'        ? { color: T.accent,    title: '🏆 Successful firm · 4 years, ' + inst.installs + ' installs', body: 'You hit the 100+ install target without going bankrupt or losing reputation. Real-world equivalent: a small Maine firm running profitable, employing local labor, building grid-scale capacity one rooftop at a time.' }
-                            : outcome === 'bankrupt'   ? { color: T.danger,    title: '💸 Bankruptcy · cash hit $0 two years running', body: 'Two consecutive negative-cash years closed the firm. Common causes: under-bidding leads, over-hiring before revenue ramps, or eating warranty claims from a low-quality supplier. Try again with tighter bids or a smaller workforce.' }
-                            : outcome === 'collapse'   ? { color: T.warm,      title: '📉 Reputation collapse · customer satisfaction fell below 50', body: 'Word got around. Leads dried up. Often caused by tier-2 panels failing under warranty, or over-loaded installers cutting corners. The math: customer-sat compounds across years. Stay above 60 to compound positively.' }
-                            :                            { color: T.warm,      title: '📊 Survived 4 years · ' + inst.installs + ' installs (target 100)', body: 'You stayed solvent and kept your reputation, but did not reach 100 cumulative installs. The firm exists, but did not scale enough to call it a strong outcome. Try a bigger workforce or a higher-volume service area.' };
+          var outcomeMeta = outcome === 'win'        ? { color: T.accent,    title: '🏆 Successful firm · 4 years, ' + inst.installs + ' installs', body: __alloT('stem.renewables.you_hit_the_100_install_target_without', 'You hit the 100+ install target without going bankrupt or losing reputation. Real-world equivalent: a small Maine firm running profitable, employing local labor, building grid-scale capacity one rooftop at a time.') }
+                            : outcome === 'bankrupt'   ? { color: T.danger,    title: __alloT('stem.renewables.bankruptcy_cash_hit_0_two_years_runnin', '💸 Bankruptcy · cash hit $0 two years running'), body: __alloT('stem.renewables.two_consecutive_negative_cash_years_cl', 'Two consecutive negative-cash years closed the firm. Common causes: under-bidding leads, over-hiring before revenue ramps, or eating warranty claims from a low-quality supplier. Try again with tighter bids or a smaller workforce.') }
+                            : outcome === 'collapse'   ? { color: T.warm,      title: __alloT('stem.renewables.reputation_collapse_customer_satisfact', '📉 Reputation collapse · customer satisfaction fell below 50'), body: __alloT('stem.renewables.word_got_around_leads_dried_up_often_c', 'Word got around. Leads dried up. Often caused by tier-2 panels failing under warranty, or over-loaded installers cutting corners. The math: customer-sat compounds across years. Stay above 60 to compound positively.') }
+                            :                            { color: T.warm,      title: '📊 Survived 4 years · ' + inst.installs + ' installs (target 100)', body: __alloT('stem.renewables.you_stayed_solvent_and_kept_your_reput', 'You stayed solvent and kept your reputation, but did not reach 100 cumulative installs. The firm exists, but did not scale enough to call it a strong outcome. Try a bigger workforce or a higher-volume service area.') };
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('☀️ Solar Installer Co.'),
             h('div', { style: { padding: 18, borderRadius: 14, background: T.card, border: '2px solid ' + outcomeMeta.color, marginBottom: 14, textAlign: 'center' } },
@@ -3597,7 +3727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             ),
             // Year-by-year history table
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '📋 Year-by-year'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, __alloT('stem.renewables.year_by_year', '📋 Year-by-year')),
               h('table', { style: { width: '100%', fontSize: 11, color: T.muted } },
                 h('thead', null,
                   h('tr', null,
@@ -3624,7 +3754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('button', { 'data-rn-focusable': true,
               onClick: resetInstaller,
               style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#053920', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '🔁 Run a new campaign'),
+              __alloT('stem.renewables.run_a_new_campaign', '🔁 Run a new campaign')),
             footer()
           );
         }
@@ -3653,7 +3783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           // ── Lead pipeline ──
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 } },
-              h('h3', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, '📞 Incoming leads — pick which to bid on'),
+              h('h3', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, __alloT('stem.renewables.incoming_leads_pick_which_to_bid_on', '📞 Incoming leads — pick which to bid on')),
               h('div', { style: { fontSize: 12, color: T.muted, fontFamily: 'monospace' } }, 'Bids picked: ' + pickedCount + ' / ' + bidCap)
             ),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, color: T.dim, lineHeight: 1.55 } },
@@ -3683,18 +3813,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
             // Bid price slider
             h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '💵 Bid price'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.renewables.bid_price', '💵 Bid price')),
               h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-                'Charge per watt. Competitors bid $2.80–$3.60/W. Low = more wins, lower margin. High = fewer wins, fatter margin.'),
+                __alloT('stem.renewables.charge_per_watt_competitors_bid_2_80_3', 'Charge per watt. Competitors bid $2.80–$3.60/W. Low = more wins, lower margin. High = fewer wins, fatter margin.')),
               h('input', { type: 'range', min: 2.50, max: 4.50, step: 0.05, value: inst.bidPricePerW,
                 onChange: function(e) { setBidPrice(parseFloat(e.target.value)); },
-                'aria-label': 'Bid price per watt',
+                'aria-label': __alloT('stem.renewables.bid_price_per_watt_2', 'Bid price per watt'),
                 style: { width: '100%' } }),
               h('div', { style: { textAlign: 'center', fontFamily: 'monospace', fontSize: 16, fontWeight: 800, color: T.accentHi } }, '$' + inst.bidPricePerW.toFixed(2) + ' / W')
             ),
             // Supplier picker
             h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏭 Panel supplier'),
+              h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.renewables.panel_supplier', '🏭 Panel supplier')),
               INSTALLER_SUPPLIERS.map(function(s) {
                 var picked = s.id === inst.supplierId;
                 return h('button', { key: s.id, 'data-rn-focusable': true,
@@ -3710,9 +3840,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ),
           // ── Workforce ──
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '👷 Workforce'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.renewables.workforce', '👷 Workforce')),
             h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-              'Installers do the work. Inspectors handle QA. Sales staff expands your bid bandwidth. Each annual headcount has a salary. Hiring costs $3K–$5K up front.'),
+              __alloT('stem.renewables.installers_do_the_work_inspectors_hand', 'Installers do the work. Inspectors handle QA. Sales staff expands your bid bandwidth. Each annual headcount has a salary. Hiring costs $3K–$5K up front.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
               workforceCtrl('installers', '🔧 Installers', '$50K/yr salary. Aim for ~10 installs / installer per year.', inst.installers, adjustWorkforce),
               workforceCtrl('inspectors', '🔍 Inspectors', '$45K/yr salary. 1 per 30 installs keeps QA tight.', inst.inspectors, adjustWorkforce),
@@ -3721,7 +3851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ),
           // ── Event log (if any) ──
           (inst.events && inst.events.length > 0) && h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '📋 Recent events'),
+            h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, __alloT('stem.renewables.recent_events', '📋 Recent events')),
             inst.events.slice(-3).reverse().map(function(ev, i) {
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: T.card, marginBottom: 4, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.text } }, 'Yr ' + ev.year + ' · ' + ev.headline), ' — ', ev.text);
@@ -3730,7 +3860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           // ── Advance Year button ──
           pickedCount === 0
             ? h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.warm, color: T.warm, textAlign: 'center', fontSize: 12 } },
-                '⚠ Pick at least one lead to bid on before advancing the year.')
+                __alloT('stem.renewables.pick_at_least_one_lead_to_bid_on_befor', '⚠ Pick at least one lead to bid on before advancing the year.'))
             : h('button', { 'data-rn-focusable': true,
                 onClick: advanceYear,
                 style: { width: '100%', padding: '14px 18px', borderRadius: 12, border: 'none', background: T.accent, color: '#053920', fontSize: 15, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.3)' } },
@@ -3771,7 +3901,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📖 Glossary'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Terms used throughout this lab — and throughout any conversation about energy. Skim before reading the news; come back when something is fuzzy.'),
+            __alloT('stem.renewables.terms_used_throughout_this_lab_and_thr', 'Terms used throughout this lab — and throughout any conversation about energy. Skim before reading the news; come back when something is fuzzy.')),
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 } },
             GLOSSARY.map(function(g, i) {
@@ -3794,13 +3924,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🧐 Common myths — corrected'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Seven misconceptions you will hear in news, comment threads, or family arguments. Each correction is sourced — bring receipts.'),
+            __alloT('stem.renewables.seven_misconceptions_you_will_hear_in_', 'Seven misconceptions you will hear in news, comment threads, or family arguments. Each correction is sourced — bring receipts.')),
           MYTHS.map(function(m, i) {
             return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
               h('div', { style: { fontSize: 13, fontWeight: 700, color: T.warm, marginBottom: 6 } },
-                '❌ Myth: ', h('span', { style: { color: T.text } }, m.myth)),
+                __alloT('stem.renewables.myth', '❌ Myth: '), h('span', { style: { color: T.text } }, m.myth)),
               h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, marginBottom: 6 } },
-                h('strong', { style: { color: T.accentHi } }, '✓ What\'s actually true: '),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.what_s_actually_true', '✓ What\'s actually true: ')),
                 m.truth),
               h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } },
                 'Source: ', m.source)
@@ -3818,36 +3948,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('⚛️ Nuclear (low-carbon, not renewable)'),
           h('div', { style: { padding: 14, borderRadius: 12, background: '#3a1a1a', border: '1px solid ' + T.warn, marginBottom: 14 } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.warm, marginBottom: 6 } }, '⚠ A note on scope'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.warm, marginBottom: 6 } }, __alloT('stem.renewables.a_note_on_scope', '⚠ A note on scope')),
             h('p', { style: { margin: 0, fontSize: 12, color: '#fde2e2', lineHeight: 1.55 } }, n.why)
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, n.icon),
               h('div', null,
-                h('div', { style: { fontWeight: 700, fontSize: 17, color: T.text } }, 'Nuclear fission'),
+                h('div', { style: { fontWeight: 700, fontSize: 17, color: T.text } }, __alloT('stem.renewables.nuclear_fission', 'Nuclear fission')),
                 h('div', { style: { fontSize: 12, color: T.accentHi } }, 'Principle: ' + n.principle))),
             h('p', { style: { margin: '6px 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, n.oneLiner),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, fontSize: 11, color: T.dim } },
-              h('div', null, h('strong', { style: { color: T.text } }, 'Capacity factor: '), n.capacityFactor),
+              h('div', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.capacity_factor_3', 'Capacity factor: ')), n.capacityFactor),
               h('div', null, h('strong', { style: { color: T.text } }, 'LCOE: '), n.lcoe),
-              h('div', null, h('strong', { style: { color: T.text } }, 'Lifecycle CO₂: '), n.co2)
+              h('div', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.lifecycle_co_2', 'Lifecycle CO₂: ')), n.co2)
             )
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 } },
             h('div', { style: { padding: 12, borderRadius: 10, background: '#064e3b', border: '1px solid ' + T.accent } },
-              h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 8 } }, '✓ Pros'),
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 8 } }, __alloT('stem.renewables.pros_2', '✓ Pros')),
               h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: '#dcfce7', lineHeight: 1.6 } },
                 n.pros.map(function(p, i) { return h('li', { key: i }, p); }))
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: '#3a1a1a', border: '1px solid ' + T.danger } },
-              h('div', { style: { fontSize: 13, fontWeight: 700, color: T.warm, marginBottom: 8 } }, '⚠ Cons'),
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: T.warm, marginBottom: 8 } }, __alloT('stem.renewables.cons_2', '⚠ Cons')),
               h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: '#fde2e2', lineHeight: 1.6 } },
                 n.cons.map(function(p, i) { return h('li', { key: i }, p); }))
             )
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Reactor designs'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.reactor_designs', 'Reactor designs')),
             n.designs.map(function(d2, i) {
               return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('strong', { style: { color: T.text, fontSize: 13 } }, d2.name),
@@ -3856,7 +3986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 6 } }, '🔬 What about fusion?'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 6 } }, __alloT('stem.renewables.what_about_fusion', '🔬 What about fusion?')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, n.fusion)
           ),
           footer()
@@ -3929,16 +4059,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           backBar('🤖 AI Practice — design a system'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'Pick a scenario. Write 4–8 sentences describing how you would design the electricity system. ',
-              h('strong', { style: { color: T.accentHi } }, 'AI critiques your reasoning'),
-              ' against an engineering rubric and the same ground-truth facts you read in the source modules.')
+              __alloT('stem.renewables.pick_a_scenario_write_4_8_sentences_de', 'Pick a scenario. Write 4–8 sentences describing how you would design the electricity system. '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.ai_critiques_your_reasoning', 'AI critiques your reasoning')),
+              __alloT('stem.renewables.against_an_engineering_rubric_and_the_', ' against an engineering rubric and the same ground-truth facts you read in the source modules.'))
           ),
           // Rubric framing — students should know what a "good answer"
           // looks like before they write. Same pattern as the BehaviorLab
           // Function Sleuth four-functions primer.
           goalBanner('A strong answer (1) cites a real number from one of the source sims (kWh, capacity factor, dollars per kW), (2) names at least one trade-off (cost vs reliability, footprint vs output, dispatchability vs intermittency), and (3) considers feasibility for the specific scenario (climate, geography, grid context). The AI weighs all three.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.text } }, '📋 Pick a scenario'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.pick_a_scenario', '📋 Pick a scenario')),
             h('div', { role: 'list',
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
               AI_SCENARIOS.map(function(s) {
@@ -3967,21 +4097,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, scenario.icon + ' ' + scenario.title),
             h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.6 } }, scenario.prompt),
             h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px dashed ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.warm } }, '💡 Hint: '), scenario.hint)
+              h('strong', { style: { color: T.warm } }, __alloT('stem.renewables.hint', '💡 Hint: ')), scenario.hint)
           ),
           scenario && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('label', { htmlFor: 'rn-ai-response', style: { display: 'block', fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 6 } },
-              '✏️ Your design (4–8 sentences)'),
+              __alloT('stem.renewables.your_design_4_8_sentences', '✏️ Your design (4–8 sentences)')),
             h('textarea', { id: 'rn-ai-response', 'data-rn-focusable': true,
               value: aiResponse,
               onChange: function(e) { upd('aiResponse', e.target.value); },
-              placeholder: 'Walk through your system. Which sources? Why? What storage? What backup? Any failure modes you would address?',
-              'aria-label': 'Your renewable energy system design',
+              placeholder: __alloT('stem.renewables.walk_through_your_system_which_sources', 'Walk through your system. Which sources? Why? What storage? What backup? Any failure modes you would address?'),
+              'aria-label': __alloT('stem.renewables.your_renewable_energy_system_design', 'Your renewable energy system design'),
               rows: 6,
               style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 13, lineHeight: 1.55, fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }
             }),
             h('div', { style: { marginTop: 6, fontSize: 11, color: T.dim, marginBottom: 10 } },
-              aiResponse.length, ' characters. Aim for ~300–800.'),
+              aiResponse.length, __alloT('stem.renewables.characters_aim_for_300_800', ' characters. Aim for ~300–800.')),
             h('button', { 'data-rn-focusable': true,
               'aria-label': aiLoadingCritique ? 'Getting critique' : 'Get critique of your design',
               'aria-busy': aiLoadingCritique ? 'true' : 'false',
@@ -3991,7 +4121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             }, aiLoadingCritique ? '⏳ Critiquing...' : (callGemini ? '🎓 Get AI critique' : '📋 Local rubric check'))
           ),
           aiCritique && h('div', { style: { padding: 14, borderRadius: 10, background: '#0d2a4a', border: '1px solid #1e40af', color: '#dbeafe', marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: '#bfdbfe' } }, '🎓 Critique'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: '#bfdbfe' } }, __alloT('stem.renewables.critique', '🎓 Critique')),
             h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.6 } }, aiCritique.text),
             h('div', { style: { marginTop: 10, fontSize: 10, opacity: 0.75, fontStyle: 'italic' } },
               aiCritique.source === 'ai' ? 'Critique from AI; constrained against the source-module ground-truth.' : 'Local rubric check (AI unavailable).')
@@ -4006,25 +4136,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // ground-source heat pump cycle. Hand-drawn inline SVG with text labels.
       // ─────────────────────────────────────────
       var DIAGRAM_TABS = [
-        { id: 'solarPv',    icon: '☀️', label: 'Solar PV cell' },
-        { id: 'wind',       icon: '🌬️', label: 'Wind turbine' },
-        { id: 'hydro',      icon: '🌊', label: 'Hydro dam' },
-        { id: 'geothermal', icon: '🌋', label: 'Geothermal flash plant' },
-        { id: 'csp',        icon: '🔆', label: 'CSP power tower' },
-        { id: 'gshp',       icon: '🏠', label: 'Ground-source heat pump' },
-        { id: 'owc',        icon: '🌀', label: 'Wave OWC' },
-        { id: 'digester',   icon: '🌾', label: 'Anaerobic digester' },
-        { id: 'pumpedHydro',icon: '⛰️', label: 'Pumped hydro storage' }
+        { id: 'solarPv',    icon: '☀️', label: __alloT('stem.renewables.solar_pv_cell', 'Solar PV cell') },
+        { id: 'wind',       icon: '🌬️', label: __alloT('stem.renewables.wind_turbine', 'Wind turbine') },
+        { id: 'hydro',      icon: '🌊', label: __alloT('stem.renewables.hydro_dam', 'Hydro dam') },
+        { id: 'geothermal', icon: '🌋', label: __alloT('stem.renewables.geothermal_flash_plant', 'Geothermal flash plant') },
+        { id: 'csp',        icon: '🔆', label: __alloT('stem.renewables.csp_power_tower', 'CSP power tower') },
+        { id: 'gshp',       icon: '🏠', label: __alloT('stem.renewables.ground_source_heat_pump', 'Ground-source heat pump') },
+        { id: 'owc',        icon: '🌀', label: __alloT('stem.renewables.wave_owc', 'Wave OWC') },
+        { id: 'digester',   icon: '🌾', label: __alloT('stem.renewables.anaerobic_digester', 'Anaerobic digester') },
+        { id: 'pumpedHydro',icon: '⛰️', label: __alloT('stem.renewables.pumped_hydro_storage', 'Pumped hydro storage') }
       ];
       function svgSolarPvCell() {
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-solarpv-title svg-solarpv-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-solarpv-title' }, 'Cross-section of a silicon photovoltaic cell'),
-          h('desc', { id: 'svg-solarpv-desc' }, 'Photons arrive from above, hit silicon, knock electrons loose. The P-N junction sorts charges. Electrons flow through an external circuit as DC current.'),
+          h('title', { id: 'svg-solarpv-title' }, __alloT('stem.renewables.cross_section_of_a_silicon_photovoltai', 'Cross-section of a silicon photovoltaic cell')),
+          h('desc', { id: 'svg-solarpv-desc' }, __alloT('stem.renewables.photons_arrive_from_above_hit_silicon_', 'Photons arrive from above, hit silicon, knock electrons loose. The P-N junction sorts charges. Electrons flow through an external circuit as DC current.')),
           // Sun
           h('circle', { cx: 80, cy: 50, r: 24, fill: '#facc15' }),
-          h('text', { x: 80, y: 28, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, 'Sunlight'),
+          h('text', { x: 80, y: 28, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.sunlight', 'Sunlight')),
           // Photon arrows
           [120, 180, 240, 300, 360, 420].map(function(x, i) {
             return h('g', { key: 'p' + i },
@@ -4034,13 +4164,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           }),
           // N-type silicon layer
           h('rect', { x: 80, y: 100, width: 440, height: 40, fill: '#3b82f6', stroke: '#1e3a8a', strokeWidth: 2 }),
-          h('text', { x: 300, y: 125, fill: '#fff', fontSize: 13, fontWeight: 700, textAnchor: 'middle' }, 'N-type silicon (extra electrons)'),
+          h('text', { x: 300, y: 125, fill: '#fff', fontSize: 13, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.renewables.n_type_silicon_extra_electrons', 'N-type silicon (extra electrons)')),
           // P-N junction line
           h('line', { x1: 80, y1: 140, x2: 520, y2: 140, stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '6,3' }),
-          h('text', { x: 540, y: 144, fill: '#fbbf24', fontSize: 11 }, 'P-N junction'),
+          h('text', { x: 540, y: 144, fill: '#fbbf24', fontSize: 11 }, __alloT('stem.renewables.p_n_junction', 'P-N junction')),
           // P-type silicon layer
           h('rect', { x: 80, y: 140, width: 440, height: 60, fill: '#1e40af', stroke: '#1e3a8a', strokeWidth: 2 }),
-          h('text', { x: 300, y: 175, fill: '#fff', fontSize: 13, fontWeight: 700, textAnchor: 'middle' }, 'P-type silicon (electron "holes")'),
+          h('text', { x: 300, y: 175, fill: '#fff', fontSize: 13, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.renewables.p_type_silicon_electron_holes', 'P-type silicon (electron "holes")')),
           // Electron flow arrow (top)
           h('line', { x1: 80, y1: 90, x2: 30, y2: 90, stroke: '#22c55e', strokeWidth: 2.5 }),
           h('polygon', { points: '32,90 38,86 38,94', fill: '#22c55e' }),
@@ -4050,26 +4180,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('line', { x1: 30, y1: 250, x2: 280, y2: 250, stroke: '#22c55e', strokeWidth: 2.5 }),
           h('circle', { cx: 300, cy: 250, r: 22, fill: 'none', stroke: '#facc15', strokeWidth: 3 }),
           h('text', { x: 300, y: 256, fill: '#facc15', fontSize: 18, textAnchor: 'middle' }, '💡'),
-          h('text', { x: 300, y: 290, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, 'External circuit (lamp, home)'),
+          h('text', { x: 300, y: 290, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.external_circuit_lamp_home', 'External circuit (lamp, home)')),
           h('line', { x1: 320, y1: 250, x2: 570, y2: 250, stroke: '#22c55e', strokeWidth: 2.5 }),
           h('line', { x1: 570, y1: 250, x2: 570, y2: 200, stroke: '#22c55e', strokeWidth: 2.5 }),
           h('line', { x1: 570, y1: 200, x2: 520, y2: 200, stroke: '#22c55e', strokeWidth: 2.5 }),
           h('polygon', { points: '525,200 531,196 531,204', fill: '#22c55e' }),
           // Caption labels
-          h('text', { x: 300, y: 330, fill: '#cbe8e0', fontSize: 12, textAnchor: 'middle' }, '1. Photon arrives  →  2. Knocks electron loose  →  3. P-N junction sorts charges  →  4. Electrons flow as DC current')
+          h('text', { x: 300, y: 330, fill: '#cbe8e0', fontSize: 12, textAnchor: 'middle' }, __alloT('stem.renewables.1_photon_arrives_2_knocks_electron_loo', '1. Photon arrives  →  2. Knocks electron loose  →  3. P-N junction sorts charges  →  4. Electrons flow as DC current'))
         );
       }
       function svgWindTurbine() {
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-wind-title svg-wind-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-wind-title' }, 'Wind turbine cutaway'),
-          h('desc', { id: 'svg-wind-desc' }, 'Wind spins the rotor blades, which turn a low-speed shaft connected to a gearbox, which spins a high-speed shaft into the generator. The generator produces electricity. The yaw drive points the turbine into the wind. Cables carry power down through the tower to the grid.'),
+          h('title', { id: 'svg-wind-title' }, __alloT('stem.renewables.wind_turbine_cutaway', 'Wind turbine cutaway')),
+          h('desc', { id: 'svg-wind-desc' }, __alloT('stem.renewables.wind_spins_the_rotor_blades_which_turn', 'Wind spins the rotor blades, which turn a low-speed shaft connected to a gearbox, which spins a high-speed shaft into the generator. The generator produces electricity. The yaw drive points the turbine into the wind. Cables carry power down through the tower to the grid.')),
           // Sky/ground
           h('rect', { x: 0, y: 280, width: 600, height: 80, fill: '#1f2937' }),
           // Tower
           h('polygon', { points: '290,300 310,300 320,90 280,90', fill: '#94a3b8' }),
-          h('text', { x: 200, y: 250, fill: '#94a3b8', fontSize: 12 }, 'Tower (80–120 m tall)'),
+          h('text', { x: 200, y: 250, fill: '#94a3b8', fontSize: 12 }, __alloT('stem.renewables.tower_80_120_m_tall', 'Tower (80–120 m tall)')),
           // Nacelle (the box at the top)
           h('rect', { x: 250, y: 70, width: 130, height: 40, fill: '#475569', stroke: '#1f2937', strokeWidth: 2 }),
           // Rotor hub
@@ -4080,9 +4210,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('polygon', { points: '240,90 350,140 320,100 240,90', fill: '#cbd5e1', stroke: '#475569', strokeWidth: 1 }),
           // Internals labels (gearbox + generator)
           h('rect', { x: 270, y: 78, width: 30, height: 24, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 1 }),
-          h('text', { x: 285, y: 93, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Gear'),
+          h('text', { x: 285, y: 93, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.gear', 'Gear')),
           h('rect', { x: 320, y: 78, width: 50, height: 24, fill: '#22c55e', stroke: '#166534', strokeWidth: 1 }),
-          h('text', { x: 345, y: 93, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Generator'),
+          h('text', { x: 345, y: 93, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.generator', 'Generator')),
           // Wind arrows
           [50, 80, 120, 160].map(function(y, i) {
             return h('g', { key: 'w' + i },
@@ -4090,92 +4220,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               h('polygon', { points: '102,' + y + ' 95,' + (y - 4) + ' 95,' + (y + 4), fill: '#7dd3fc' })
             );
           }),
-          h('text', { x: 60, y: 30, fill: '#7dd3fc', fontSize: 12, fontWeight: 700 }, 'Wind →'),
+          h('text', { x: 60, y: 30, fill: '#7dd3fc', fontSize: 12, fontWeight: 700 }, __alloT('stem.renewables.wind_4', 'Wind →')),
           // Cable down tower
           h('line', { x1: 300, y1: 110, x2: 300, y2: 280, stroke: '#facc15', strokeWidth: 2, strokeDasharray: '4,3' }),
-          h('text', { x: 380, y: 200, fill: '#facc15', fontSize: 11 }, 'Power cable'),
-          h('text', { x: 380, y: 215, fill: '#facc15', fontSize: 11 }, 'to grid'),
+          h('text', { x: 380, y: 200, fill: '#facc15', fontSize: 11 }, __alloT('stem.renewables.power_cable', 'Power cable')),
+          h('text', { x: 380, y: 215, fill: '#facc15', fontSize: 11 }, __alloT('stem.renewables.to_grid', 'to grid')),
           // Component labels with arrows
-          h('text', { x: 130, y: 30, fill: '#cbe8e0', fontSize: 11 }, '1. Blades capture kinetic energy'),
-          h('text', { x: 410, y: 65, fill: '#cbe8e0', fontSize: 11 }, '2. Hub + low-speed shaft'),
-          h('text', { x: 410, y: 80, fill: '#fbbf24', fontSize: 11 }, '3. Gearbox (× ~80)'),
-          h('text', { x: 410, y: 95, fill: '#22c55e', fontSize: 11 }, '4. Generator'),
-          h('text', { x: 410, y: 115, fill: '#cbe8e0', fontSize: 11 }, '5. Yaw drive aims at wind'),
+          h('text', { x: 130, y: 30, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.1_blades_capture_kinetic_energy', '1. Blades capture kinetic energy')),
+          h('text', { x: 410, y: 65, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.2_hub_low_speed_shaft', '2. Hub + low-speed shaft')),
+          h('text', { x: 410, y: 80, fill: '#fbbf24', fontSize: 11 }, __alloT('stem.renewables.3_gearbox_80', '3. Gearbox (× ~80)')),
+          h('text', { x: 410, y: 95, fill: '#22c55e', fontSize: 11 }, __alloT('stem.renewables.4_generator', '4. Generator')),
+          h('text', { x: 410, y: 115, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.5_yaw_drive_aims_at_wind', '5. Yaw drive aims at wind')),
           // Caption
-          h('text', { x: 300, y: 335, fill: '#cbe8e0', fontSize: 12, textAnchor: 'middle' }, 'Power scales with v³ (cube of wind speed). Betz limit: max 59.3% extractable.')
+          h('text', { x: 300, y: 335, fill: '#cbe8e0', fontSize: 12, textAnchor: 'middle' }, __alloT('stem.renewables.power_scales_with_v_cube_of_wind_speed', 'Power scales with v³ (cube of wind speed). Betz limit: max 59.3% extractable.'))
         );
       }
       function svgGeothermalFlash() {
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-geo-title svg-geo-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-geo-title' }, 'Flash-steam geothermal power plant'),
-          h('desc', { id: 'svg-geo-desc' }, 'Hot pressurized water is pumped up the production well. Pressure drops in the flash tank, instantly vaporizing most of it to steam. The steam spins a turbine. After condensing, the cooled water is reinjected to the reservoir.'),
+          h('title', { id: 'svg-geo-title' }, __alloT('stem.renewables.flash_steam_geothermal_power_plant', 'Flash-steam geothermal power plant')),
+          h('desc', { id: 'svg-geo-desc' }, __alloT('stem.renewables.hot_pressurized_water_is_pumped_up_the', 'Hot pressurized water is pumped up the production well. Pressure drops in the flash tank, instantly vaporizing most of it to steam. The steam spins a turbine. After condensing, the cooled water is reinjected to the reservoir.')),
           // Surface
           h('rect', { x: 0, y: 180, width: 600, height: 180, fill: '#1f2937' }),
-          h('text', { x: 10, y: 170, fill: '#94a3b8', fontSize: 11 }, 'Surface'),
+          h('text', { x: 10, y: 170, fill: '#94a3b8', fontSize: 11 }, __alloT('stem.renewables.surface', 'Surface')),
           // Hot rock
           h('rect', { x: 0, y: 280, width: 600, height: 80, fill: '#7f1d1d' }),
-          h('text', { x: 300, y: 330, fill: '#fde047', fontSize: 12, textAnchor: 'middle', fontWeight: 700 }, 'Hot rock reservoir (180–300 °C)'),
+          h('text', { x: 300, y: 330, fill: '#fde047', fontSize: 12, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.hot_rock_reservoir_180_300_c', 'Hot rock reservoir (180–300 °C)')),
           // Production well (left)
           h('rect', { x: 110, y: 180, width: 14, height: 160, fill: '#dc2626' }),
-          h('text', { x: 70, y: 240, fill: '#fca5a5', fontSize: 10 }, 'Hot water'),
+          h('text', { x: 70, y: 240, fill: '#fca5a5', fontSize: 10 }, __alloT('stem.renewables.hot_water', 'Hot water')),
           h('text', { x: 70, y: 252, fill: '#fca5a5', fontSize: 10 }, 'up'),
           h('polygon', { points: '117,170 110,180 124,180', fill: '#dc2626' }),
           // Flash tank
           h('rect', { x: 100, y: 110, width: 90, height: 60, fill: '#1e3a8a', stroke: '#3b82f6', strokeWidth: 2 }),
-          h('text', { x: 145, y: 135, fill: '#fff', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Flash'),
+          h('text', { x: 145, y: 135, fill: '#fff', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.flash', 'Flash')),
           h('text', { x: 145, y: 150, fill: '#fff', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'tank'),
           // Steam pipe to turbine
           h('line', { x1: 190, y1: 130, x2: 290, y2: 130, stroke: '#cbe8e0', strokeWidth: 4 }),
-          h('text', { x: 235, y: 120, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, 'Steam'),
+          h('text', { x: 235, y: 120, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.steam', 'Steam')),
           // Turbine
           h('circle', { cx: 320, cy: 130, r: 24, fill: '#facc15', stroke: '#92400e', strokeWidth: 2 }),
-          h('text', { x: 320, y: 135, fill: '#000', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Turbine'),
+          h('text', { x: 320, y: 135, fill: '#000', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.turbine', 'Turbine')),
           // Generator
           h('rect', { x: 360, y: 110, width: 60, height: 40, fill: '#22c55e', stroke: '#166534', strokeWidth: 2 }),
-          h('text', { x: 390, y: 135, fill: '#000', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Generator'),
+          h('text', { x: 390, y: 135, fill: '#000', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.generator_2', 'Generator')),
           // Power lines out
           h('line', { x1: 420, y1: 130, x2: 480, y2: 130, stroke: '#facc15', strokeWidth: 2.5 }),
           h('polygon', { points: '482,130 475,126 475,134', fill: '#facc15' }),
-          h('text', { x: 510, y: 135, fill: '#facc15', fontSize: 11 }, 'To grid'),
+          h('text', { x: 510, y: 135, fill: '#facc15', fontSize: 11 }, __alloT('stem.renewables.to_grid_2', 'To grid')),
           // Condenser cooling
           h('line', { x1: 320, y1: 154, x2: 320, y2: 200, stroke: '#7dd3fc', strokeWidth: 3 }),
           h('rect', { x: 295, y: 200, width: 50, height: 30, fill: '#0e7490', stroke: '#155e75', strokeWidth: 2 }),
-          h('text', { x: 320, y: 220, fill: '#fff', fontSize: 10, textAnchor: 'middle' }, 'Condenser'),
+          h('text', { x: 320, y: 220, fill: '#fff', fontSize: 10, textAnchor: 'middle' }, __alloT('stem.renewables.condenser', 'Condenser')),
           // Injection well (right)
           h('rect', { x: 470, y: 180, width: 14, height: 160, fill: '#0e7490' }),
-          h('text', { x: 495, y: 240, fill: '#7dd3fc', fontSize: 10 }, 'Cool water'),
+          h('text', { x: 495, y: 240, fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.renewables.cool_water', 'Cool water')),
           h('text', { x: 495, y: 252, fill: '#7dd3fc', fontSize: 10 }, 'reinjected'),
           h('line', { x1: 345, y1: 215, x2: 470, y2: 215, stroke: '#7dd3fc', strokeWidth: 2.5 }),
           // Step labels
-          h('text', { x: 30, y: 30, fill: '#fde047', fontSize: 11 }, '1. Production well →'),
-          h('text', { x: 30, y: 45, fill: '#fde047', fontSize: 11 }, '2. Flash to steam'),
-          h('text', { x: 30, y: 60, fill: '#fde047', fontSize: 11 }, '3. Spin turbine'),
-          h('text', { x: 30, y: 75, fill: '#fde047', fontSize: 11 }, '4. Condense + reinject'),
-          h('text', { x: 300, y: 95, fill: '#cbe8e0', fontSize: 12, textAnchor: 'middle', fontWeight: 700 }, 'Flash-steam plant')
+          h('text', { x: 30, y: 30, fill: '#fde047', fontSize: 11 }, __alloT('stem.renewables.1_production_well', '1. Production well →')),
+          h('text', { x: 30, y: 45, fill: '#fde047', fontSize: 11 }, __alloT('stem.renewables.2_flash_to_steam', '2. Flash to steam')),
+          h('text', { x: 30, y: 60, fill: '#fde047', fontSize: 11 }, __alloT('stem.renewables.3_spin_turbine', '3. Spin turbine')),
+          h('text', { x: 30, y: 75, fill: '#fde047', fontSize: 11 }, __alloT('stem.renewables.4_condense_reinject', '4. Condense + reinject')),
+          h('text', { x: 300, y: 95, fill: '#cbe8e0', fontSize: 12, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.flash_steam_plant', 'Flash-steam plant'))
         );
       }
       function svgGshp() {
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-gshp-title svg-gshp-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-gshp-title' }, 'Ground-source heat pump cycle'),
-          h('desc', { id: 'svg-gshp-desc' }, 'A refrigeration cycle that moves heat between the constant-temperature ground and a home. In winter, evaporator absorbs heat from the ground loop; compressor raises temperature; condenser releases heat to the home; expansion valve resets the cycle. COP 3 to 5 means 3 to 5 units of heat moved per unit of electricity used.'),
+          h('title', { id: 'svg-gshp-title' }, __alloT('stem.renewables.ground_source_heat_pump_cycle', 'Ground-source heat pump cycle')),
+          h('desc', { id: 'svg-gshp-desc' }, __alloT('stem.renewables.a_refrigeration_cycle_that_moves_heat_', 'A refrigeration cycle that moves heat between the constant-temperature ground and a home. In winter, evaporator absorbs heat from the ground loop; compressor raises temperature; condenser releases heat to the home; expansion valve resets the cycle. COP 3 to 5 means 3 to 5 units of heat moved per unit of electricity used.')),
           // House outline
           h('polygon', { points: '60,160 60,80 110,40 160,80 160,160', fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 2 }),
           h('rect', { x: 80, y: 100, width: 60, height: 60, fill: '#334155' }),
-          h('text', { x: 110, y: 175, fill: '#fff', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Home'),
+          h('text', { x: 110, y: 175, fill: '#fff', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.home', 'Home')),
           // Ground line
           h('line', { x1: 0, y1: 200, x2: 600, y2: 200, stroke: '#92400e', strokeWidth: 2 }),
           h('rect', { x: 0, y: 200, width: 600, height: 160, fill: '#451a03' }),
-          h('text', { x: 540, y: 215, fill: '#d97706', fontSize: 10 }, 'Ground (~10°C)'),
+          h('text', { x: 540, y: 215, fill: '#d97706', fontSize: 10 }, __alloT('stem.renewables.ground_10_c', 'Ground (~10°C)')),
           // Ground loop pipe (U-shape buried)
           h('path', { d: 'M 250 200 L 250 320 L 350 320 L 350 200', stroke: '#7dd3fc', strokeWidth: 4, fill: 'none' }),
-          h('text', { x: 300, y: 340, fill: '#7dd3fc', fontSize: 11, textAnchor: 'middle' }, 'Ground loop (water + antifreeze)'),
+          h('text', { x: 300, y: 340, fill: '#7dd3fc', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.ground_loop_water_antifreeze', 'Ground loop (water + antifreeze)')),
           // Heat pump unit (the box with the cycle)
           h('rect', { x: 220, y: 80, width: 200, height: 90, fill: '#0f172a', stroke: '#22c55e', strokeWidth: 2 }),
-          h('text', { x: 320, y: 70, fill: '#22c55e', fontSize: 12, textAnchor: 'middle', fontWeight: 700 }, 'Heat pump unit'),
+          h('text', { x: 320, y: 70, fill: '#22c55e', fontSize: 12, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.heat_pump_unit', 'Heat pump unit')),
           // Cycle inside: evaporator, compressor, condenser, expansion valve
           // Evaporator (left, cold)
           h('rect', { x: 230, y: 130, width: 50, height: 30, fill: '#0e7490', stroke: '#155e75', strokeWidth: 1 }),
@@ -4199,15 +4329,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('line', { x1: 350, y1: 200, x2: 280, y2: 200, stroke: '#7dd3fc', strokeWidth: 2.5 }),
           // Connection: condenser -> home
           h('line', { x1: 360, y1: 145, x2: 160, y2: 145, stroke: '#dc2626', strokeWidth: 2.5 }),
-          h('text', { x: 200, y: 138, fill: '#fca5a5', fontSize: 10 }, 'Warm air'),
-          h('text', { x: 200, y: 158, fill: '#fca5a5', fontSize: 10 }, 'to home'),
+          h('text', { x: 200, y: 138, fill: '#fca5a5', fontSize: 10 }, __alloT('stem.renewables.warm_air', 'Warm air')),
+          h('text', { x: 200, y: 158, fill: '#fca5a5', fontSize: 10 }, __alloT('stem.renewables.to_home', 'to home')),
           // Electricity input
           h('line', { x1: 320, y1: 30, x2: 320, y2: 80, stroke: '#facc15', strokeWidth: 2 }),
           h('polygon', { points: '320,82 316,75 324,75', fill: '#facc15' }),
-          h('text', { x: 330, y: 50, fill: '#facc15', fontSize: 11 }, '⚡ Electricity in'),
+          h('text', { x: 330, y: 50, fill: '#facc15', fontSize: 11 }, __alloT('stem.renewables.electricity_in', '⚡ Electricity in')),
           // Caption
-          h('text', { x: 300, y: 25, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'Heat pump MOVES heat — it does not generate it'),
-          h('text', { x: 300, y: 360, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, 'COP 3–5: every 1 unit of electricity moves 3–5 units of heat into the home')
+          h('text', { x: 300, y: 25, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.heat_pump_moves_heat_it_does_not_gener', 'Heat pump MOVES heat — it does not generate it')),
+          h('text', { x: 300, y: 360, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.cop_3_5_every_1_unit_of_electricity_mo', 'COP 3–5: every 1 unit of electricity moves 3–5 units of heat into the home'))
         );
       }
 
@@ -4216,46 +4346,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-hydro-title svg-hydro-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-hydro-title' }, 'Hydroelectric dam cross-section'),
-          h('desc', { id: 'svg-hydro-desc' }, 'A reservoir behind a concrete dam stores water at high elevation. Water flows down through the penstock, spins a turbine, drives a generator, and exits the tailrace. Power equals density times gravity times head times flow times efficiency.'),
+          h('title', { id: 'svg-hydro-title' }, __alloT('stem.renewables.hydroelectric_dam_cross_section', 'Hydroelectric dam cross-section')),
+          h('desc', { id: 'svg-hydro-desc' }, __alloT('stem.renewables.a_reservoir_behind_a_concrete_dam_stor', 'A reservoir behind a concrete dam stores water at high elevation. Water flows down through the penstock, spins a turbine, drives a generator, and exits the tailrace. Power equals density times gravity times head times flow times efficiency.')),
           // Sky
           h('rect', { x: 0, y: 0, width: 600, height: 280, fill: '#0f172a' }),
           // Dam body
           h('polygon', { points: '230,80 310,80 350,300 220,300', fill: '#94a3b8', stroke: '#475569', strokeWidth: 2 }),
           // Reservoir water (left side, high)
           h('rect', { x: 0, y: 100, width: 230, height: 200, fill: '#1e40af' }),
-          h('text', { x: 100, y: 160, fill: '#dbeafe', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'Reservoir'),
-          h('text', { x: 100, y: 180, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle' }, '(potential energy)'),
+          h('text', { x: 100, y: 160, fill: '#dbeafe', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.reservoir', 'Reservoir')),
+          h('text', { x: 100, y: 180, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.potential_energy', '(potential energy)')),
           // Head height arrow
           h('line', { x1: 30, y1: 110, x2: 30, y2: 290, stroke: '#facc15', strokeWidth: 1.5, strokeDasharray: '4,3' }),
           h('polygon', { points: '30,110 26,118 34,118', fill: '#facc15' }),
           h('polygon', { points: '30,290 26,282 34,282', fill: '#facc15' }),
-          h('text', { x: 40, y: 200, fill: '#facc15', fontSize: 12, fontWeight: 700 }, 'Head (h)'),
+          h('text', { x: 40, y: 200, fill: '#facc15', fontSize: 12, fontWeight: 700 }, __alloT('stem.renewables.head_h', 'Head (h)')),
           // Penstock — diagonal pipe down through the dam
           h('polygon', { points: '255,140 280,140 320,290 295,290', fill: '#0e7490', stroke: '#155e75', strokeWidth: 2 }),
-          h('text', { x: 220, y: 200, fill: '#7dd3fc', fontSize: 11 }, 'Penstock'),
+          h('text', { x: 220, y: 200, fill: '#7dd3fc', fontSize: 11 }, __alloT('stem.renewables.penstock', 'Penstock')),
           // Turbine
           h('circle', { cx: 320, cy: 290, r: 18, fill: '#facc15', stroke: '#92400e', strokeWidth: 2 }),
-          h('text', { x: 320, y: 295, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Turbine'),
+          h('text', { x: 320, y: 295, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.turbine_2', 'Turbine')),
           // Generator
           h('rect', { x: 350, y: 270, width: 70, height: 40, fill: '#22c55e', stroke: '#166534', strokeWidth: 2 }),
-          h('text', { x: 385, y: 295, fill: '#000', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Generator'),
+          h('text', { x: 385, y: 295, fill: '#000', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.generator_3', 'Generator')),
           // Power lines
           h('line', { x1: 420, y1: 290, x2: 580, y2: 290, stroke: '#facc15', strokeWidth: 2.5 }),
           h('polygon', { points: '582,290 575,286 575,294', fill: '#facc15' }),
-          h('text', { x: 500, y: 282, fill: '#facc15', fontSize: 11 }, 'To grid'),
+          h('text', { x: 500, y: 282, fill: '#facc15', fontSize: 11 }, __alloT('stem.renewables.to_grid_3', 'To grid')),
           // Tailrace water (right, low)
           h('rect', { x: 350, y: 310, width: 250, height: 50, fill: '#1e3a8a' }),
-          h('text', { x: 470, y: 340, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle' }, 'Tailrace (low elevation)'),
+          h('text', { x: 470, y: 340, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.tailrace_low_elevation', 'Tailrace (low elevation)')),
           // River bed (left ground)
           h('rect', { x: 0, y: 300, width: 230, height: 60, fill: '#451a03' }),
           // Step labels
-          h('text', { x: 30, y: 30, fill: '#fde047', fontSize: 11, fontWeight: 700 }, 'Hydro power: P = ρ · g · h · Q · η'),
-          h('text', { x: 30, y: 48, fill: '#cbe8e0', fontSize: 11 }, '1. Reservoir holds water at high elevation (potential energy)'),
-          h('text', { x: 30, y: 62, fill: '#cbe8e0', fontSize: 11 }, '2. Penstock pipes water down — gains kinetic energy'),
-          h('text', { x: 30, y: 76, fill: '#cbe8e0', fontSize: 11 }, '3. Turbine + generator convert to electricity'),
+          h('text', { x: 30, y: 30, fill: '#fde047', fontSize: 11, fontWeight: 700 }, __alloT('stem.renewables.hydro_power_p_g_h_q', 'Hydro power: P = ρ · g · h · Q · η')),
+          h('text', { x: 30, y: 48, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.1_reservoir_holds_water_at_high_elevat', '1. Reservoir holds water at high elevation (potential energy)')),
+          h('text', { x: 30, y: 62, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.2_penstock_pipes_water_down_gains_kine', '2. Penstock pipes water down — gains kinetic energy')),
+          h('text', { x: 30, y: 76, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.3_turbine_generator_convert_to_electri', '3. Turbine + generator convert to electricity')),
           // Caption
-          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, 'Doubling either head OR flow doubles the power output')
+          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.doubling_either_head_or_flow_doubles_t', 'Doubling either head OR flow doubles the power output'))
         );
       }
 
@@ -4264,8 +4394,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-csp-title svg-csp-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-csp-title' }, 'Concentrated Solar Power tower with molten salt storage'),
-          h('desc', { id: 'svg-csp-desc' }, 'A field of mirrors called heliostats focuses sunlight onto a central tower receiver. Molten salt circulates through the receiver, heating to 565 degrees Celsius. Hot salt is stored in an insulated tank. Demand-side, hot salt flows through a heat exchanger to make steam, which spins a turbine and generator. Cold salt returns to a second tank to be reheated.'),
+          h('title', { id: 'svg-csp-title' }, __alloT('stem.renewables.concentrated_solar_power_tower_with_mo', 'Concentrated Solar Power tower with molten salt storage')),
+          h('desc', { id: 'svg-csp-desc' }, __alloT('stem.renewables.a_field_of_mirrors_called_heliostats_f', 'A field of mirrors called heliostats focuses sunlight onto a central tower receiver. Molten salt circulates through the receiver, heating to 565 degrees Celsius. Hot salt is stored in an insulated tank. Demand-side, hot salt flows through a heat exchanger to make steam, which spins a turbine and generator. Cold salt returns to a second tank to be reheated.')),
           // Sky + sun
           h('rect', { x: 0, y: 0, width: 600, height: 240, fill: '#0f172a' }),
           h('circle', { cx: 80, cy: 60, r: 22, fill: '#facc15' }),
@@ -4284,25 +4414,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             return h('line', { key: 'ray' + i,
               x1: x, y1: 80, x2: 470, y2: 110, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '3,2', opacity: 0.7 });
           }),
-          h('text', { x: 220, y: 90, fill: '#fde047', fontSize: 11, fontWeight: 700 }, 'Heliostat field (1000s of mirrors)'),
+          h('text', { x: 220, y: 90, fill: '#fde047', fontSize: 11, fontWeight: 700 }, __alloT('stem.renewables.heliostat_field_1000s_of_mirrors', 'Heliostat field (1000s of mirrors)')),
           // Tower
           h('rect', { x: 460, y: 100, width: 20, height: 180, fill: '#94a3b8', stroke: '#475569', strokeWidth: 2 }),
           // Receiver at top of tower
           h('circle', { cx: 470, cy: 100, r: 16, fill: '#ef4444', stroke: '#7f1d1d', strokeWidth: 2 }),
           h('text', { x: 470, y: 105, fill: '#fff', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, '565°C'),
-          h('text', { x: 470, y: 80, fill: '#fca5a5', fontSize: 11, textAnchor: 'middle' }, 'Receiver'),
+          h('text', { x: 470, y: 80, fill: '#fca5a5', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.receiver', 'Receiver')),
           // Hot salt tank (right side, red)
           h('rect', { x: 510, y: 140, width: 60, height: 50, fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 2 }),
-          h('text', { x: 540, y: 165, fill: '#fff', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Hot salt'),
+          h('text', { x: 540, y: 165, fill: '#fff', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.hot_salt', 'Hot salt')),
           h('text', { x: 540, y: 180, fill: '#fff', fontSize: 9, textAnchor: 'middle' }, '(storage)'),
           // Cold salt tank (right side, blue)
           h('rect', { x: 510, y: 210, width: 60, height: 50, fill: '#1e3a8a', stroke: '#1e40af', strokeWidth: 2 }),
-          h('text', { x: 540, y: 235, fill: '#fff', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Cold salt'),
+          h('text', { x: 540, y: 235, fill: '#fff', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.cold_salt', 'Cold salt')),
           // Connection: receiver → hot tank
           h('line', { x1: 480, y1: 110, x2: 510, y2: 150, stroke: '#dc2626', strokeWidth: 2.5 }),
           // Heat exchanger
           h('rect', { x: 350, y: 250, width: 60, height: 40, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 2 }),
-          h('text', { x: 380, y: 268, fill: '#000', fontSize: 9, textAnchor: 'middle' }, 'Heat'),
+          h('text', { x: 380, y: 268, fill: '#000', fontSize: 9, textAnchor: 'middle' }, __alloT('stem.renewables.heat', 'Heat')),
           h('text', { x: 380, y: 280, fill: '#000', fontSize: 9, textAnchor: 'middle' }, 'exchanger'),
           // Hot salt pipe to heat exchanger
           h('line', { x1: 510, y1: 165, x2: 410, y2: 260, stroke: '#dc2626', strokeWidth: 2 }),
@@ -4310,19 +4440,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('line', { x1: 410, y1: 280, x2: 510, y2: 230, stroke: '#1e3a8a', strokeWidth: 2 }),
           // Turbine + generator
           h('circle', { cx: 250, cy: 270, r: 18, fill: '#facc15', stroke: '#92400e', strokeWidth: 2 }),
-          h('text', { x: 250, y: 274, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Turbine'),
+          h('text', { x: 250, y: 274, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.turbine_3', 'Turbine')),
           h('rect', { x: 180, y: 250, width: 50, height: 40, fill: '#22c55e', stroke: '#166534', strokeWidth: 2 }),
           h('text', { x: 205, y: 275, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Gen.'),
           // Steam line
           h('line', { x1: 350, y1: 270, x2: 270, y2: 270, stroke: '#cbe8e0', strokeWidth: 3 }),
-          h('text', { x: 310, y: 260, fill: '#cbe8e0', fontSize: 10, textAnchor: 'middle' }, 'Steam'),
+          h('text', { x: 310, y: 260, fill: '#cbe8e0', fontSize: 10, textAnchor: 'middle' }, __alloT('stem.renewables.steam_2', 'Steam')),
           // Power out
           h('line', { x1: 180, y1: 270, x2: 80, y2: 270, stroke: '#facc15', strokeWidth: 2.5 }),
           h('polygon', { points: '78,270 85,266 85,274', fill: '#facc15' }),
-          h('text', { x: 120, y: 262, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, 'To grid'),
+          h('text', { x: 120, y: 262, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.to_grid_4', 'To grid')),
           // Caption
-          h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'CSP power tower with thermal energy storage'),
-          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, 'Hot salt can run the turbine for 6–10 hours after sunset')
+          h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.csp_power_tower_with_thermal_energy_st', 'CSP power tower with thermal energy storage')),
+          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.hot_salt_can_run_the_turbine_for_6_10_', 'Hot salt can run the turbine for 6–10 hours after sunset'))
         );
       }
 
@@ -4331,8 +4461,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-owc-title svg-owc-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-owc-title' }, 'Oscillating water column wave-energy converter'),
-          h('desc', { id: 'svg-owc-desc' }, 'A partly submerged chamber traps a column of air above the rising and falling sea surface. As waves push the water up and down inside the chamber, the trapped air is forced in and out through a Wells turbine — which spins the same direction regardless of which way the air flows. The turbine drives a generator.'),
+          h('title', { id: 'svg-owc-title' }, __alloT('stem.renewables.oscillating_water_column_wave_energy_c', 'Oscillating water column wave-energy converter')),
+          h('desc', { id: 'svg-owc-desc' }, __alloT('stem.renewables.a_partly_submerged_chamber_traps_a_col', 'A partly submerged chamber traps a column of air above the rising and falling sea surface. As waves push the water up and down inside the chamber, the trapped air is forced in and out through a Wells turbine — which spins the same direction regardless of which way the air flows. The turbine drives a generator.')),
           // Sky
           h('rect', { x: 0, y: 0, width: 600, height: 200, fill: '#0f172a' }),
           // Sea surface (left, outside chamber)
@@ -4352,34 +4482,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('polygon', { points: '330,200 326,208 334,208', fill: '#fde047' }),
           h('line', { x1: 320, y1: 200, x2: 320, y2: 250, stroke: '#fde047', strokeWidth: 2 }),
           h('polygon', { points: '320,250 316,242 324,242', fill: '#fde047' }),
-          h('text', { x: 300, y: 175, fill: '#fde047', fontSize: 11, fontWeight: 700 }, 'Water rises/falls'),
+          h('text', { x: 300, y: 175, fill: '#fde047', fontSize: 11, fontWeight: 700 }, __alloT('stem.renewables.water_rises_falls', 'Water rises/falls')),
           // Air column above water
           h('rect', { x: 280, y: 80, width: 100, height: 150, fill: 'none', stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4,3' }),
-          h('text', { x: 330, y: 130, fill: '#cbd5e1', fontSize: 10, textAnchor: 'middle' }, 'Air column'),
+          h('text', { x: 330, y: 130, fill: '#cbd5e1', fontSize: 10, textAnchor: 'middle' }, __alloT('stem.renewables.air_column', 'Air column')),
           h('text', { x: 330, y: 145, fill: '#cbd5e1', fontSize: 10, textAnchor: 'middle' }, '(compressed)'),
           // Wells turbine in roof
           h('circle', { cx: 330, cy: 70, r: 18, fill: '#22c55e', stroke: '#166534', strokeWidth: 2 }),
-          h('text', { x: 330, y: 65, fill: '#000', fontSize: 8, textAnchor: 'middle', fontWeight: 700 }, 'Wells'),
+          h('text', { x: 330, y: 65, fill: '#000', fontSize: 8, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.wells', 'Wells')),
           h('text', { x: 330, y: 78, fill: '#000', fontSize: 8, textAnchor: 'middle', fontWeight: 700 }, 'turbine'),
           // Air flow arrows in/out turbine
           h('line', { x1: 330, y1: 80, x2: 330, y2: 50, stroke: '#7dd3fc', strokeWidth: 2 }),
           h('polygon', { points: '330,50 326,58 334,58', fill: '#7dd3fc' }),
-          h('text', { x: 350, y: 50, fill: '#7dd3fc', fontSize: 10 }, 'Air ↕'),
+          h('text', { x: 350, y: 50, fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.renewables.air', 'Air ↕')),
           // Generator
           h('rect', { x: 410, y: 60, width: 60, height: 30, fill: '#facc15', stroke: '#92400e', strokeWidth: 2 }),
-          h('text', { x: 440, y: 80, fill: '#000', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Generator'),
+          h('text', { x: 440, y: 80, fill: '#000', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.generator_4', 'Generator')),
           h('line', { x1: 348, y1: 70, x2: 410, y2: 75, stroke: '#cbd5e1', strokeWidth: 2 }),
           // Power line
           h('line', { x1: 470, y1: 75, x2: 580, y2: 75, stroke: '#facc15', strokeWidth: 2.5 }),
           h('polygon', { points: '582,75 575,71 575,79', fill: '#facc15' }),
-          h('text', { x: 525, y: 67, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, 'To grid'),
+          h('text', { x: 525, y: 67, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.to_grid_5', 'To grid')),
           // Wave coming in arrow
           h('line', { x1: 30, y1: 240, x2: 180, y2: 240, stroke: '#7dd3fc', strokeWidth: 2 }),
           h('polygon', { points: '182,240 175,236 175,244', fill: '#7dd3fc' }),
-          h('text', { x: 100, y: 230, fill: '#7dd3fc', fontSize: 11 }, 'Incoming wave →'),
+          h('text', { x: 100, y: 230, fill: '#7dd3fc', fontSize: 11 }, __alloT('stem.renewables.incoming_wave', 'Incoming wave →')),
           // Caption
-          h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'Oscillating water column (OWC)'),
-          h('text', { x: 300, y: 340, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, 'Wells turbine spins the SAME direction whether air flows in OR out — clever bidirectional design')
+          h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.oscillating_water_column_owc', 'Oscillating water column (OWC)')),
+          h('text', { x: 300, y: 340, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.wells_turbine_spins_the_same_direction', 'Wells turbine spins the SAME direction whether air flows in OR out — clever bidirectional design'))
         );
       }
 
@@ -4388,22 +4518,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-dig-title svg-dig-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-dig-title' }, 'Anaerobic digester biogas system'),
-          h('desc', { id: 'svg-dig-desc' }, 'Food waste, manure, or sewage enters a sealed tank where bacteria break it down without oxygen. The tank produces biogas — about 60 percent methane — which is burned in a generator or upgraded to pipeline-grade renewable natural gas. The leftover digestate is high-quality fertilizer.'),
+          h('title', { id: 'svg-dig-title' }, __alloT('stem.renewables.anaerobic_digester_biogas_system', 'Anaerobic digester biogas system')),
+          h('desc', { id: 'svg-dig-desc' }, __alloT('stem.renewables.food_waste_manure_or_sewage_enters_a_s', 'Food waste, manure, or sewage enters a sealed tank where bacteria break it down without oxygen. The tank produces biogas — about 60 percent methane — which is burned in a generator or upgraded to pipeline-grade renewable natural gas. The leftover digestate is high-quality fertilizer.')),
           // Ground
           h('rect', { x: 0, y: 280, width: 600, height: 80, fill: '#451a03' }),
           // Feedstock pile (left)
           h('polygon', { points: '40,280 100,280 90,230 50,230', fill: '#92400e', stroke: '#451a03', strokeWidth: 2 }),
-          h('text', { x: 70, y: 220, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle' }, 'Feedstock'),
+          h('text', { x: 70, y: 220, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle' }, __alloT('stem.renewables.feedstock', 'Feedstock')),
           h('text', { x: 70, y: 232, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, '(food/manure)'),
           // Input pipe to digester
           h('line', { x1: 100, y1: 250, x2: 200, y2: 200, stroke: '#7dd3fc', strokeWidth: 4 }),
           h('polygon', { points: '202,200 195,196 195,206', fill: '#7dd3fc' }),
           // Digester tank (large dome)
           h('ellipse', { cx: 290, cy: 200, rx: 100, ry: 80, fill: '#16a34a', stroke: '#14532d', strokeWidth: 3 }),
-          h('text', { x: 290, y: 195, fill: '#dcfce7', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'Sealed digester tank'),
-          h('text', { x: 290, y: 215, fill: '#dcfce7', fontSize: 11, textAnchor: 'middle' }, '(no oxygen)'),
-          h('text', { x: 290, y: 232, fill: '#dcfce7', fontSize: 9, textAnchor: 'middle', fontStyle: 'italic' }, 'Bacteria + 35–55 °C'),
+          h('text', { x: 290, y: 195, fill: '#dcfce7', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.sealed_digester_tank', 'Sealed digester tank')),
+          h('text', { x: 290, y: 215, fill: '#dcfce7', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.no_oxygen', '(no oxygen)')),
+          h('text', { x: 290, y: 232, fill: '#dcfce7', fontSize: 9, textAnchor: 'middle', fontStyle: 'italic' }, __alloT('stem.renewables.bacteria_35_55_c', 'Bacteria + 35–55 °C')),
           // Bubble decoration showing methane production
           h('circle', { cx: 250, cy: 170, r: 4, fill: '#facc15' }),
           h('circle', { cx: 280, cy: 160, r: 5, fill: '#facc15' }),
@@ -4411,7 +4541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('circle', { cx: 330, cy: 175, r: 4, fill: '#facc15' }),
           // Biogas pipe up
           h('line', { x1: 290, y1: 120, x2: 290, y2: 60, stroke: '#facc15', strokeWidth: 4 }),
-          h('text', { x: 310, y: 90, fill: '#facc15', fontSize: 11, fontWeight: 700 }, 'Biogas (~60% CH₄)'),
+          h('text', { x: 310, y: 90, fill: '#facc15', fontSize: 11, fontWeight: 700 }, __alloT('stem.renewables.biogas_60_ch', 'Biogas (~60% CH₄)')),
           // Generator
           h('rect', { x: 360, y: 40, width: 80, height: 40, fill: '#22c55e', stroke: '#166534', strokeWidth: 2 }),
           h('text', { x: 400, y: 65, fill: '#000', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Gen-set'),
@@ -4419,21 +4549,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           // Power out
           h('line', { x1: 440, y1: 60, x2: 570, y2: 60, stroke: '#fde047', strokeWidth: 2.5 }),
           h('polygon', { points: '572,60 565,56 565,64', fill: '#fde047' }),
-          h('text', { x: 505, y: 50, fill: '#fde047', fontSize: 11, textAnchor: 'middle' }, 'Electricity + heat'),
+          h('text', { x: 505, y: 50, fill: '#fde047', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.electricity_heat', 'Electricity + heat')),
           // Digestate output
           h('line', { x1: 380, y1: 260, x2: 480, y2: 280, stroke: '#92400e', strokeWidth: 4 }),
           h('polygon', { points: '480,278 480,290 472,283', fill: '#92400e' }),
           h('rect', { x: 480, y: 280, width: 80, height: 30, fill: '#a16207', stroke: '#78350f', strokeWidth: 1 }),
-          h('text', { x: 520, y: 300, fill: '#fff', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Digestate'),
+          h('text', { x: 520, y: 300, fill: '#fff', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.digestate', 'Digestate')),
           h('text', { x: 520, y: 325, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, '(fertilizer)'),
           // Step labels
-          h('text', { x: 30, y: 30, fill: '#fde047', fontSize: 11, fontWeight: 700 }, 'Anaerobic digestion: capture methane that would otherwise leak'),
-          h('text', { x: 30, y: 48, fill: '#cbe8e0', fontSize: 11 }, '1. Feedstock in (food waste, manure, sewage)'),
-          h('text', { x: 30, y: 62, fill: '#cbe8e0', fontSize: 11 }, '2. Bacteria digest in sealed warm tank'),
-          h('text', { x: 30, y: 76, fill: '#cbe8e0', fontSize: 11 }, '3. Biogas → generator OR upgrade to pipeline gas'),
-          h('text', { x: 30, y: 90, fill: '#cbe8e0', fontSize: 11 }, '4. Digestate out as fertilizer'),
+          h('text', { x: 30, y: 30, fill: '#fde047', fontSize: 11, fontWeight: 700 }, __alloT('stem.renewables.anaerobic_digestion_capture_methane_th', 'Anaerobic digestion: capture methane that would otherwise leak')),
+          h('text', { x: 30, y: 48, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.1_feedstock_in_food_waste_manure_sewag', '1. Feedstock in (food waste, manure, sewage)')),
+          h('text', { x: 30, y: 62, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.2_bacteria_digest_in_sealed_warm_tank', '2. Bacteria digest in sealed warm tank')),
+          h('text', { x: 30, y: 76, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.3_biogas_generator_or_upgrade_to_pipel', '3. Biogas → generator OR upgrade to pipeline gas')),
+          h('text', { x: 30, y: 90, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.4_digestate_out_as_fertilizer', '4. Digestate out as fertilizer')),
           // Caption
-          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, 'Methane is ~84× worse than CO₂ over 20 yr — burning it is a NET WIN')
+          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.methane_is_84_worse_than_co_over_20_yr', 'Methane is ~84× worse than CO₂ over 20 yr — burning it is a NET WIN'))
         );
       }
 
@@ -4442,8 +4572,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('svg', { viewBox: '0 0 600 360', width: '100%', height: '100%',
           role: 'img', 'aria-labelledby': 'svg-ph-title svg-ph-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
-          h('title', { id: 'svg-ph-title' }, 'Pumped hydro energy storage'),
-          h('desc', { id: 'svg-ph-desc' }, 'Pumped hydro stores electricity by pumping water from a low reservoir up to a high reservoir when power is cheap. When power is needed, the water flows back down through a reversible pump-turbine that drives a generator. Round-trip efficiency 75 to 85 percent. About 95 percent of the world installed grid storage is pumped hydro.'),
+          h('title', { id: 'svg-ph-title' }, __alloT('stem.renewables.pumped_hydro_energy_storage', 'Pumped hydro energy storage')),
+          h('desc', { id: 'svg-ph-desc' }, __alloT('stem.renewables.pumped_hydro_stores_electricity_by_pum', 'Pumped hydro stores electricity by pumping water from a low reservoir up to a high reservoir when power is cheap. When power is needed, the water flows back down through a reversible pump-turbine that drives a generator. Round-trip efficiency 75 to 85 percent. About 95 percent of the world installed grid storage is pumped hydro.')),
           // Sky
           h('rect', { x: 0, y: 0, width: 600, height: 360, fill: '#0f172a' }),
           // Mountain (the geographic asset)
@@ -4451,39 +4581,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           // Upper reservoir (top)
           h('rect', { x: 270, y: 80, width: 120, height: 30, fill: '#1e3a8a' }),
           h('path', { d: 'M 270 85 Q 300 78 330 85 Q 360 92 390 85', stroke: '#7dd3fc', strokeWidth: 1.5, fill: 'none' }),
-          h('text', { x: 330, y: 75, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Upper reservoir'),
+          h('text', { x: 330, y: 75, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.upper_reservoir', 'Upper reservoir')),
           // Lower reservoir (bottom)
           h('rect', { x: 80, y: 290, width: 440, height: 50, fill: '#1e40af' }),
           h('path', { d: 'M 80 295 Q 150 285 220 295 Q 290 305 360 295 Q 430 285 520 295', stroke: '#7dd3fc', strokeWidth: 1.5, fill: 'none' }),
-          h('text', { x: 300, y: 320, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Lower reservoir'),
+          h('text', { x: 300, y: 320, fill: '#bfdbfe', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.lower_reservoir', 'Lower reservoir')),
           // Penstock (diagonal pipe through mountain)
           h('polygon', { points: '320,110 360,110 460,290 420,290', fill: '#0e7490', stroke: '#155e75', strokeWidth: 2 }),
           // Reversible pump-turbine
           h('circle', { cx: 440, cy: 290, r: 22, fill: '#facc15', stroke: '#92400e', strokeWidth: 2 }),
-          h('text', { x: 440, y: 287, fill: '#000', fontSize: 8, textAnchor: 'middle', fontWeight: 700 }, 'Reversible'),
+          h('text', { x: 440, y: 287, fill: '#000', fontSize: 8, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.reversible', 'Reversible')),
           h('text', { x: 440, y: 297, fill: '#000', fontSize: 8, textAnchor: 'middle', fontWeight: 700 }, 'pump-turbine'),
           // Generator/motor
           h('rect', { x: 470, y: 270, width: 70, height: 40, fill: '#22c55e', stroke: '#166534', strokeWidth: 2 }),
-          h('text', { x: 505, y: 287, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'Motor /'),
+          h('text', { x: 505, y: 287, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.motor', 'Motor /')),
           h('text', { x: 505, y: 298, fill: '#000', fontSize: 9, textAnchor: 'middle', fontWeight: 700 }, 'generator'),
           // CHARGING arrows (water flows UP)
           h('line', { x1: 360, y1: 270, x2: 340, y2: 130, stroke: '#7dd3fc', strokeWidth: 2.5, strokeDasharray: '5,3' }),
           h('polygon', { points: '340,130 336,140 344,140', fill: '#7dd3fc' }),
           h('text', { x: 220, y: 175, fill: '#7dd3fc', fontSize: 11, fontWeight: 700 }, 'CHARGING:'),
-          h('text', { x: 220, y: 190, fill: '#7dd3fc', fontSize: 10 }, '(cheap solar @ noon)'),
-          h('text', { x: 220, y: 205, fill: '#7dd3fc', fontSize: 10 }, 'Pump water UP'),
+          h('text', { x: 220, y: 190, fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.renewables.cheap_solar_noon', '(cheap solar @ noon)')),
+          h('text', { x: 220, y: 205, fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.renewables.pump_water_up', 'Pump water UP')),
           // DISCHARGING arrows (water flows DOWN)
           h('line', { x1: 360, y1: 145, x2: 380, y2: 285, stroke: '#facc15', strokeWidth: 2.5 }),
           h('polygon', { points: '380,285 376,275 384,275', fill: '#facc15' }),
           h('text', { x: 460, y: 175, fill: '#facc15', fontSize: 11, fontWeight: 700 }, 'DISCHARGING:'),
-          h('text', { x: 460, y: 190, fill: '#facc15', fontSize: 10 }, '(evening peak demand)'),
-          h('text', { x: 460, y: 205, fill: '#facc15', fontSize: 10 }, 'Water flows DOWN'),
+          h('text', { x: 460, y: 190, fill: '#facc15', fontSize: 10 }, __alloT('stem.renewables.evening_peak_demand', '(evening peak demand)')),
+          h('text', { x: 460, y: 205, fill: '#facc15', fontSize: 10 }, __alloT('stem.renewables.water_flows_down', 'Water flows DOWN')),
           // Power line
           h('line', { x1: 540, y1: 290, x2: 590, y2: 290, stroke: '#fde047', strokeWidth: 2.5 }),
-          h('text', { x: 555, y: 280, fill: '#fde047', fontSize: 11 }, 'Grid'),
+          h('text', { x: 555, y: 280, fill: '#fde047', fontSize: 11 }, __alloT('stem.renewables.grid', 'Grid')),
           // Caption
-          h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, 'Pumped hydro storage — the original grid battery'),
-          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, 'Round-trip efficiency 75–85%. ~95% of the world\'s installed grid storage.')
+          h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.pumped_hydro_storage_the_original_grid', 'Pumped hydro storage — the original grid battery')),
+          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.round_trip_efficiency_75_85_95_of_the_', 'Round-trip efficiency 75–85%. ~95% of the world\'s installed grid storage.'))
         );
       }
 
@@ -4522,8 +4652,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('🔬 Diagrams'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Labeled cross-sections of how four common renewable systems actually work. Switch tabs to compare designs.'),
-          h('div', { role: 'tablist', 'aria-label': 'Schematic diagrams',
+            __alloT('stem.renewables.labeled_cross_sections_of_how_four_com', 'Labeled cross-sections of how four common renewable systems actually work. Switch tabs to compare designs.')),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.renewables.schematic_diagrams', 'Schematic diagrams'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
             DIAGRAM_TABS.map(function(t) {
               var picked = current === t.id;
@@ -4547,7 +4677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('p', { style: { margin: '12px 4px 0', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, caption)
           ),
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-            'These are simplified schematics for learning. Real plants have additional safety, control, and efficiency systems (cooling, lubrication, transformers, switchgear, protection relays, SCADA). Use these to build intuition; consult engineering references for design.'),
+            __alloT('stem.renewables.these_are_simplified_schematics_for_le', 'These are simplified schematics for learning. Real plants have additional safety, control, and efficiency systems (cooling, lubrication, transformers, switchgear, protection relays, SCADA). Use these to build intuition; consult engineering references for design.')),
           (function() { awardBadge('diagrams_viewed', 'Read the Diagrams'); return null; })(),
           footer()
         );
@@ -4560,14 +4690,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌐 Smart Grid 101'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'The bedrock fact about electricity'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_bedrock_fact_about_electricity', 'The bedrock fact about electricity')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.accentHi } }, 'Generation must equal consumption every single second.'),
-              ' Electricity in the grid travels at ~⅔ the speed of light and there is essentially no buffer. If a power plant trips offline, frequency drops within seconds; if a city loses load, frequency rises. Grid operators run a perpetual real-time balancing act.'),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.generation_must_equal_consumption_ever', 'Generation must equal consumption every single second.')),
+              __alloT('stem.renewables.electricity_in_the_grid_travels_at_the', ' Electrical disturbances propagate quickly, while the bulk network itself stores little usable energy. Inertia, storage, responsive generation, demand response, and protection systems help operators balance supply and demand across multiple timescales.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'For most of grid history, "balancing" meant adjusting a few large dispatchable plants. As wind + solar grow, the grid is becoming a million-piece orchestra instead of a string quartet — and ',
-              h('strong', { style: { color: T.text } }, 'smart-grid technology'),
-              ' is the conductor.')
+              __alloT('stem.renewables.for_most_of_grid_history_balancing_mea', 'For most of grid history, "balancing" meant adjusting a few large dispatchable plants. As wind + solar grow, the grid is becoming a million-piece orchestra instead of a string quartet — and '),
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.smart_grid_technology', 'smart-grid technology')),
+              __alloT('stem.renewables.is_the_conductor', ' is the conductor.'))
           ),
           SMART_GRID_CONCEPTS.map(function(c) {
             return h('div', { key: c.id, style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10 } },
@@ -4575,17 +4705,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, c.icon),
                 h('h3', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, c.title)),
               h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6, marginBottom: 6 } },
-                h('strong', { style: { color: T.text } }, 'What it is: '), c.what),
+                h('strong', { style: { color: T.text } }, __alloT('stem.renewables.what_it_is', 'What it is: ')), c.what),
               h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6, marginBottom: 6 } },
-                h('strong', { style: { color: T.text } }, 'Who runs it: '), c.who),
+                h('strong', { style: { color: T.text } }, __alloT('stem.renewables.who_runs_it', 'Who runs it: ')), c.who),
               h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
-                h('strong', { style: { color: T.accentHi } }, 'Why it matters: '), c.why)
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.why_it_matters', 'Why it matters: ')), c.why)
             );
           }),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px dashed ' + T.accent, marginTop: 10 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, '🎯 Big takeaway'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.big_takeaway', '🎯 Big takeaway')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
-              'A high-renewable future depends just as much on smart-grid software, transmission, and demand-side flexibility as it does on the next solar farm or wind turbine. The "boring" infrastructure pieces are where most of the engineering happens.')
+              __alloT('stem.renewables.a_high_renewable_future_depends_just_a', 'A high-renewable future depends just as much on smart-grid software, transmission, and demand-side flexibility as it does on the next solar farm or wind turbine. The "boring" infrastructure pieces are where most of the engineering happens.'))
           ),
           (function() { awardBadge('smart_grid', 'Smart Grid 101 read'); return null; })(),
           footer()
@@ -4605,7 +4735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           backBar('🧰 Career Pathways'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Renewable energy spans every level of training: high-school cert programs, 2-year community college, apprenticeships, 4-year engineering degrees, graduate research, policy work. Salaries from BLS OEWS 2024 medians; growth projections from BLS 2022–2032 outlook. Local Maine pipelines highlighted.')
+              __alloT('stem.renewables.renewable_energy_spans_every_level_of_', 'Renewable energy spans every level of training: high-school cert programs, 2-year community college, apprenticeships, 4-year engineering degrees, graduate research, policy work. Salaries from BLS OEWS 2024 medians; growth projections from BLS 2022–2032 outlook. Local Maine pipelines highlighted.'))
           ),
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 } },
@@ -4618,18 +4748,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', marginBottom: 8 } },
                   c.tags.map(function(t) { return tagPill(t); })),
                 h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } },
-                  h('strong', { style: { color: T.accent } }, '💵 Salary: '), c.salary),
+                  h('strong', { style: { color: T.accent } }, __alloT('stem.renewables.salary', '💵 Salary: ')), c.salary),
                 h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } },
-                  h('strong', { style: { color: T.warm } }, '📈 Outlook: '), c.growth),
+                  h('strong', { style: { color: T.warm } }, __alloT('stem.renewables.outlook', '📈 Outlook: ')), c.growth),
                 h('div', { style: { fontSize: 11, color: T.muted, marginBottom: 4, lineHeight: 1.55 } },
-                  h('strong', { style: { color: T.text } }, '🎓 How to get there: '), c.edu),
+                  h('strong', { style: { color: T.text } }, __alloT('stem.renewables.how_to_get_there', '🎓 How to get there: ')), c.edu),
                 h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-                  h('strong', { style: { color: T.text } }, '📍 Where: '), c.where)
+                  h('strong', { style: { color: T.text } }, __alloT('stem.renewables.where', '📍 Where: ')), c.where)
               );
             })
           ),
           h('div', { style: { marginTop: 18, padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🌲 Maine training pipeline'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.maine_training_pipeline', '🌲 Maine training pipeline')),
             MAINE_TRAINING.map(function(m) {
               return h('div', { key: m.name, style: { padding: '8px 0', borderBottom: '1px solid ' + T.border, fontSize: 12 } },
                 h('a', { href: m.url, target: '_blank', rel: 'noopener',
@@ -4640,10 +4770,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.card, border: '1px dashed ' + T.accent } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, '🔗 Pair with'),
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, __alloT('stem.renewables.pair_with', '🔗 Pair with')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              'AlloFlow ', h('strong', { style: { color: T.text } }, 'AlloBot Sage'),
-              ' uses retrieval-practice combat to drill terminology + facts from this tool — useful for kids who want career-skill "credits" before transcripts catch up.')
+              'AlloFlow ', h('strong', { style: { color: T.text } }, __alloT('stem.renewables.allobot_sage', 'AlloBot Sage')),
+              __alloT('stem.renewables.uses_retrieval_practice_combat_to_dril', ' uses retrieval-practice combat to drill terminology + facts from this tool — useful for kids who want career-skill "credits" before transcripts catch up.'))
           ),
           (function() { awardBadge('careers', 'Career-curious'); return null; })(),
           footer()
@@ -4658,15 +4788,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🏠 Heat Pumps Deep Dive'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Heat pumps don\'t generate heat — they MOVE it'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.heat_pumps_don_t_generate_heat_they_mo', 'Heat pumps don\'t generate heat — they MOVE it')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } }, hp.intro)
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '⚡ The COP magic trick'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.renewables.the_cop_magic_trick', '⚡ The COP magic trick')),
             h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } }, hp.cop)
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, 'Four flavors of heat pump'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.four_flavors_of_heat_pump', 'Four flavors of heat pump')),
             hp.types.map(function(t) {
               return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10 } },
                 h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, t.name),
@@ -4676,28 +4806,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('div', null, h('strong', { style: { color: T.warm } }, 'COP: '), t.cop),
                   h('div', null, h('strong', { style: { color: T.accent } }, 'Cost: '), t.cost)),
                 h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic' } },
-                  h('strong', { style: { color: T.text, fontStyle: 'normal' } }, 'Best for: '), t.best)
+                  h('strong', { style: { color: T.text, fontStyle: 'normal' } }, __alloT('stem.renewables.best_for', 'Best for: ')), t.best)
               );
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🧐 Common myths'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.common_myths', '🧐 Common myths')),
             hp.myths.map(function(m, i) {
               return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: T.warm, marginBottom: 4 } }, '❌ ', h('span', { style: { color: T.text } }, m.myth)),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                  h('strong', { style: { color: T.accentHi } }, '✓ Truth: '), m.truth)
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.truth', '✓ Truth: ')), m.truth)
               );
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🔌 Pairing with renewables'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.pairing_with_renewables', '🔌 Pairing with renewables')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
               hp.integration.map(function(line, i) { return h('li', { key: i, style: { marginBottom: 4 } }, line); })
             )
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 8 } }, '🌲 Maine: the heat-pump capital'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 8 } }, __alloT('stem.renewables.maine_the_heat_pump_capital', '🌲 Maine: the heat-pump capital')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
               hp.maine.map(function(line, i) { return h('li', { key: i, style: { marginBottom: 4 } }, line); })
             )
@@ -4717,8 +4847,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('🗺️ Real-World Plant Tour'),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            '16 famous renewable installations across all 8 sources. Capacities are nameplate (rated max). Filter to compare across one source or browse all.'),
-          h('div', { role: 'group', 'aria-label': 'Filter plants by source type',
+            __alloT('stem.renewables.16_famous_renewable_installations_acro', '16 famous renewable installations across all 8 sources. Capacities are nameplate (rated max). Filter to compare across one source or browse all.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.renewables.filter_plants_by_source_type', 'Filter plants by source type'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
             PLANT_FILTERS.map(function(f) {
               var active = plantFilter === f.id;
@@ -4737,7 +4867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 } },
             visible.length === 0
-              ? [h('div', { key: 'empty', style: { padding: 24, color: T.dim, fontStyle: 'italic', textAlign: 'center', gridColumn: '1 / -1' } }, 'No plants in this filter.')]
+              ? [h('div', { key: 'empty', style: { padding: 24, color: T.dim, fontStyle: 'italic', textAlign: 'center', gridColumn: '1 / -1' } }, __alloT('stem.renewables.no_plants_in_this_filter', 'No plants in this filter.'))]
               : visible.map(function(p) {
                   return h('div', { key: p.id, role: 'listitem',
                     style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border } },
@@ -4763,19 +4893,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('💨 Hydrogen Economy'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Hydrogen 101'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.hydrogen_101', 'Hydrogen 101')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Hydrogen (H₂) is an energy ',
+              __alloT('stem.renewables.hydrogen_h_is_an_energy', 'Hydrogen (H₂) is an energy '),
               h('strong', { style: { color: T.text } }, 'carrier'),
-              ', not an energy ',
+              __alloT('stem.renewables.not_an_energy', ', not an energy '),
               h('strong', { style: { color: T.text } }, 'source'),
-              '. You spend energy to make it; you get energy back when you burn it or run it through a fuel cell. Whether that\'s clean depends entirely on HOW you made it — hence the color codes.'),
+              __alloT('stem.renewables.you_spend_energy_to_make_it_you_get_en', '. You spend energy to make it; you get energy back when you burn it or run it through a fuel cell. Whether that\'s clean depends entirely on HOW you made it — hence the color codes.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.accentHi } }, 'Critical fact: '),
-              '~95% of hydrogen produced today is "gray" — made from natural gas with NO carbon capture. The "hydrogen economy" pitch usually means switching to GREEN hydrogen, which is a much smaller current reality.')
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.critical_fact', 'Critical fact: ')),
+              __alloT('stem.renewables.95_of_hydrogen_produced_today_is_gray_', '~95% of hydrogen produced today is "gray" — made from natural gas with NO carbon capture. The "hydrogen economy" pitch usually means switching to GREEN hydrogen, which is a much smaller current reality.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🎨 The color taxonomy'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_color_taxonomy', '🎨 The color taxonomy')),
             HYDROGEN_COLORS.map(function(c) {
               return h('div', { key: c.id, style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
@@ -4787,12 +4917,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('div', null, h('strong', { style: { color: T.warm } }, 'CO₂: '), c.co2),
                   h('div', null, h('strong', { style: { color: T.accent } }, 'Cost: '), c.cost)),
                 h('div', { style: { fontSize: 11, color: T.accentHi, fontStyle: 'italic', lineHeight: 1.5 } },
-                  h('strong', null, '⚖ Verdict: '), c.verdict)
+                  h('strong', null, __alloT('stem.renewables.verdict', '⚖ Verdict: ')), c.verdict)
               );
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🎯 Where hydrogen actually makes sense'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.where_hydrogen_actually_makes_sense', '🎯 Where hydrogen actually makes sense')),
             HYDROGEN_USES.map(function(u) {
               return h('div', { key: u.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -4806,7 +4936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px dashed ' + T.accent } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, '💡 Five things worth remembering'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.five_things_worth_remembering', '💡 Five things worth remembering')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
               HYDROGEN_KEYS.map(function(k, i) { return h('li', { key: i, style: { marginBottom: 4 } }, k); })
             )
@@ -4823,13 +4953,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('⚖️ Climate Justice'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'The energy transition is technical AND political'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_energy_transition_is_technical_and', 'The energy transition is technical AND political')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Every other module in this lab focuses on the engineering — the physics of how each source generates electricity. This page asks the harder questions: ',
-              h('strong', { style: { color: T.accentHi } }, 'who pays, who profits, who loses, who decides.'),
-              ' These outcomes are not natural consequences of physics. They are choices, made by people, with very different stakes for different communities.'),
+              __alloT('stem.renewables.every_other_module_in_this_lab_focuses', 'Every other module in this lab focuses on the engineering — the physics of how each source generates electricity. This page asks the harder questions: '),
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.who_pays_who_profits_who_loses_who_dec', 'who pays, who profits, who loses, who decides.')),
+              __alloT('stem.renewables.these_outcomes_are_not_natural_consequ', ' These outcomes are not natural consequences of physics. They are choices, made by people, with very different stakes for different communities.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'The transition CAN be designed to reduce the historical injustices of the fossil economy. Or it can repeat them. Both paths are technically possible.')
+              __alloT('stem.renewables.the_transition_can_be_designed_to_redu', 'The transition CAN be designed to reduce the historical injustices of the fossil economy. Or it can repeat them. Both paths are technically possible.'))
           ),
           JUSTICE_TOPICS.map(function(t) {
             return h('div', { key: t.id, style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 12 } },
@@ -4837,21 +4967,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, t.icon),
                 h('h3', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, t.title)),
               h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, marginBottom: 8 } },
-                h('strong', { style: { color: T.text } }, '⓵ What it is: '), t.what),
+                h('strong', { style: { color: T.text } }, __alloT('stem.renewables.what_it_is_2', '⓵ What it is: ')), t.what),
               h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, marginBottom: 8 } },
-                h('strong', { style: { color: T.text } }, '⓶ Who is affected: '), t.who),
+                h('strong', { style: { color: T.text } }, __alloT('stem.renewables.who_is_affected', '⓶ Who is affected: ')), t.who),
               h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, marginBottom: 6 } },
-                h('strong', { style: { color: T.accent } }, '⓷ What action looks like: '), t.action),
+                h('strong', { style: { color: T.accent } }, __alloT('stem.renewables.what_action_looks_like', '⓷ What action looks like: ')), t.action),
               h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } },
                 'Source: ', t.source)
             );
           }),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px dashed ' + T.accent, marginTop: 6 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, '🌐 Cross-link: this is connected to'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.cross_link_this_is_connected_to', '🌐 Cross-link: this is connected to')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
-              h('li', null, 'AlloFlow ', h('strong', { style: { color: T.accentHi } }, 'Climate Explorer'), ' — the climate-justice map and the design-a-renewable-mix sim go deeper on policy + impact.'),
-              h('li', null, 'AlloFlow ', h('strong', { style: { color: T.accentHi } }, 'Civic Action / Rights & Dissent'), ' — when these issues escalate to policy, civic engagement is how decisions get made.'),
-              h('li', null, 'AlloFlow ', h('strong', { style: { color: T.accentHi } }, 'Fire Ecology'), ' — Indigenous fire stewardship is a model for how Indigenous-led environmental management actually works.')
+              h('li', null, 'AlloFlow ', h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.climate_explorer_2', 'Climate Explorer')), __alloT('stem.renewables.the_climate_justice_map_and_the_design', ' — the climate-justice map and the design-a-renewable-mix sim go deeper on policy + impact.')),
+              h('li', null, 'AlloFlow ', h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.civic_action_rights_dissent', 'Civic Action / Rights & Dissent')), __alloT('stem.renewables.when_these_issues_escalate_to_policy_c', ' — when these issues escalate to policy, civic engagement is how decisions get made.')),
+              h('li', null, 'AlloFlow ', h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.fire_ecology', 'Fire Ecology')), __alloT('stem.renewables.indigenous_fire_stewardship_is_a_model', ' — Indigenous fire stewardship is a model for how Indigenous-led environmental management actually works.'))
             )
           ),
           (function() { awardBadge('justice_lens', 'Climate Justice lens'); return null; })(),
@@ -4863,21 +4993,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // TEACHER GUIDE
       // ─────────────────────────────────────────
       function renderTeacher() {
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           backBar('🎓 Teacher Guide'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'This is a resource page for educators. NGSS alignment per source, discussion prompts, hands-on activities, and pacing suggestions for unit planning.')
+              __alloT('stem.renewables.this_is_a_resource_page_for_educators_', 'This is a resource page for educators. NGSS alignment per source, discussion prompts, hands-on activities, and pacing suggestions for unit planning.'))
           ),
           // NGSS alignment table
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📐 NGSS standards alignment'),
-            h('table', { 'aria-label': 'NGSS standards alignment per module',
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.ngss_standards_alignment', '📐 NGSS standards alignment')),
+            h('table', { 'aria-label': __alloT('stem.renewables.ngss_standards_alignment_per_module', 'NGSS standards alignment per module'),
               style: { width: '100%', minWidth: 540, borderCollapse: 'collapse', fontSize: 12 } },
               h('thead', null,
                 h('tr', { style: { background: T.cardAlt } },
-                  h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: T.accentHi, borderBottom: '2px solid ' + T.border } }, 'Module'),
-                  h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: T.accentHi, borderBottom: '2px solid ' + T.border } }, 'Standards'))),
+                  h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: T.accentHi, borderBottom: '2px solid ' + T.border } }, __alloT('stem.renewables.module', 'Module')),
+                  h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: T.accentHi, borderBottom: '2px solid ' + T.border } }, __alloT('stem.renewables.standards', 'Standards')))),
               h('tbody', null,
                 NGSS_ALIGNMENT.map(function(r, i) {
                   return h('tr', { key: i, style: { background: i % 2 === 0 ? T.cardAlt : T.card, borderBottom: '1px solid ' + T.border } },
@@ -4889,7 +5019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ),
           // Discussion prompts
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '💬 Discussion prompts'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.discussion_prompts', '💬 Discussion prompts')),
             DISCUSSION_PROMPTS.map(function(p) {
               return h('div', { key: p.source, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, p.source),
@@ -4901,7 +5031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ),
           // Hands-on activities
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🛠️ Hands-on activities'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.hands_on_activities', '🛠️ Hands-on activities')),
             h('div', { role: 'list',
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
               HANDS_ON_ACTIVITIES.map(function(a) {
@@ -4913,13 +5043,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.55, marginBottom: 4 } }, a.what),
                   a.url && h('a', { href: a.url, target: '_blank', rel: 'noopener',
                     style: { color: T.link, fontSize: 11, textDecoration: 'underline' },
-                    'aria-label': a.name + ' resource link (opens in new tab)' }, '→ Open resource'));
+                    'aria-label': a.name + ' resource link (opens in new tab)' }, __alloT('stem.renewables.open_resource', '→ Open resource')));
               })
             )
           ),
           // Pacing suggestions
           h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '🗓️ Suggested pacing'),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.suggested_pacing', '🗓️ Suggested pacing')),
             TEACHER_PACING.map(function(p) {
               return h('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border, marginBottom: 8 } },
                 h('strong', { style: { color: T.accentHi, fontSize: 13 } }, p.label),
@@ -4928,13 +5058,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px dashed ' + T.border } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '📚 More teacher resources'),
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.more_teacher_resources', '📚 More teacher resources')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
-              h('li', null, h('a', { href: 'https://www.need.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'NEED Project'), ' — free K-12 energy curriculum + teacher PD'),
-              h('li', null, h('a', { href: 'https://www.kidwind.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'KidWind'), ' — turbine kits, lesson plans, annual challenge competition'),
-              h('li', null, h('a', { href: 'https://www.pbslearningmedia.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'PBS LearningMedia — Energy'), ' — standards-aligned video + activities'),
-              h('li', null, h('a', { href: 'https://www.energy.gov/eere/education/energy-literacy-essential-principles-energy-education', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'DOE Energy Literacy'), ' — 7 essential principles framework'),
-              h('li', null, h('a', { href: 'https://www.maine.gov/education/learning/standards', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'Maine Learning Results'), ' — Maine\'s state science standards (MLR adopt NGSS as a base)')
+              h('li', null, h('a', { href: 'https://www.need.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.need_project', 'NEED Project')), __alloT('stem.renewables.free_k_12_energy_curriculum_teacher_pd', ' — free K-12 energy curriculum + teacher PD')),
+              h('li', null, h('a', { href: 'https://www.kidwind.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'KidWind'), __alloT('stem.renewables.turbine_kits_lesson_plans_annual_chall', ' — turbine kits, lesson plans, annual challenge competition')),
+              h('li', null, h('a', { href: 'https://www.pbslearningmedia.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.pbs_learningmedia_energy', 'PBS LearningMedia — Energy')), __alloT('stem.renewables.standards_aligned_video_activities', ' — standards-aligned video + activities')),
+              h('li', null, h('a', { href: 'https://www.energy.gov/eere/education/energy-literacy-essential-principles-energy-education', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.doe_energy_literacy', 'DOE Energy Literacy')), __alloT('stem.renewables.7_essential_principles_framework', ' — 7 essential principles framework')),
+              h('li', null, h('a', { href: 'https://www.maine.gov/education/learning/standards', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.maine_learning_results', 'Maine Learning Results')), __alloT('stem.renewables.maine_s_state_science_standards_mlr_ad', ' — Maine\'s state science standards (MLR adopt NGSS as a base)'))
             )
           ),
           (function() { awardBadge('teacher_guide', 'Teacher Guide read'); return null; })(),
@@ -4958,22 +5088,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, a.icon),
                   h('strong', { style: { color: T.text, fontSize: 13, flex: 1 } }, a.what)),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } },
-                  h('strong', { style: { color: T.text } }, '⓵ How: '), a.how),
+                  h('strong', { style: { color: T.text } }, __alloT('stem.renewables.how', '⓵ How: ')), a.how),
                 h('div', { style: { fontSize: 12, color: T.accentHi, lineHeight: 1.55, marginBottom: a.url ? 4 : 0 } },
-                  h('strong', null, '⓶ Why it matters: '), a.impact),
+                  h('strong', null, __alloT('stem.renewables.why_it_matters_2', '⓶ Why it matters: ')), a.impact),
                 a.url && h('a', { href: a.url, target: '_blank', rel: 'noopener',
                   style: { color: T.link, fontSize: 11, textDecoration: 'underline' },
-                  'aria-label': a.what + ' — open resource (new tab)' }, '→ Open resource')
+                  'aria-label': a.what + ' — open resource (new tab)' }, __alloT('stem.renewables.open_resource_2', '→ Open resource'))
               );
             })
           );
         }
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           backBar('🌱 Take Action'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'From knowledge to agency'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.from_knowledge_to_agency', 'From knowledge to agency')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Knowing how solar panels work doesn\'t change anything by itself. The transition happens when millions of people make small decisions in the same direction. Here are concrete actions at four scales — pick what fits your time and energy.'),
+              __alloT('stem.renewables.knowing_how_solar_panels_work_doesn_t_', 'Knowing how solar panels work doesn\'t change anything by itself. The transition happens when millions of people make small decisions in the same direction. Here are concrete actions at four scales — pick what fits your time and energy.')),
             h('p', { style: { margin: 0, color: T.warm, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } }, ACTION_BANNERS.starter)
           ),
           actionList('🏠 At home', 'Where you live, every day. Smallest unit; quickest feedback.', TAKE_ACTION.home),
@@ -4981,20 +5111,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           actionList('🌲 In your community', null, TAKE_ACTION.community),
           actionList('🏛️ In civic life', 'Public-comment periods + ballots are the low-traffic ways most decisions get made.', TAKE_ACTION.civic),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px dashed ' + T.accent } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, '🎯 Maine students: a starter combo'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, __alloT('stem.renewables.maine_students_a_starter_combo', '🎯 Maine students: a starter combo')),
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
-              'Pick ONE from each scale: ',
-              h('strong', { style: { color: T.text } }, 'home'), ': swap to LEDs + smart strips. ',
-              h('strong', { style: { color: T.text } }, 'school'), ': join (or start) the environment club + propose a Kill-A-Watt audit. ',
-              h('strong', { style: { color: T.text } }, 'community'), ': your family books an Efficiency Maine assessment. ',
-              h('strong', { style: { color: T.text } }, 'civic'), ': pick ONE Maine PUC docket per semester and file a 1-paragraph comment. ',
-              'Cumulative effect over 4 years: a measurable carbon footprint, a transcript-worthy STEM track, and a civic muscle most adults never build.')
+              __alloT('stem.renewables.pick_one_from_each_scale', 'Pick ONE from each scale: '),
+              h('strong', { style: { color: T.text } }, 'home'), __alloT('stem.renewables.swap_to_leds_smart_strips', ': swap to LEDs + smart strips. '),
+              h('strong', { style: { color: T.text } }, 'school'), __alloT('stem.renewables.join_or_start_the_environment_club_pro', ': join (or start) the environment club + propose a Kill-A-Watt audit. '),
+              h('strong', { style: { color: T.text } }, 'community'), __alloT('stem.renewables.your_family_books_an_efficiency_maine_', ': your family books an Efficiency Maine assessment. '),
+              h('strong', { style: { color: T.text } }, 'civic'), __alloT('stem.renewables.pick_one_maine_puc_docket_per_semester', ': pick ONE Maine PUC docket per semester and file a 1-paragraph comment. '),
+              __alloT('stem.renewables.cumulative_effect_over_4_years_a_measu', 'Cumulative effect over 4 years: a measurable carbon footprint, a transcript-worthy STEM track, and a civic muscle most adults never build.'))
           ),
           h('div', { style: { marginTop: 10, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, '🔗 Want depth on civic action?'),
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.want_depth_on_civic_action', '🔗 Want depth on civic action?')),
             ' AlloFlow ',
-            h('strong', { style: { color: T.text } }, 'Civic Action / Rights & Dissent'),
-            ' goes deeper on how to write effective public comments, plan a school-board ask, run a campaign, and what counts as protected speech vs. trespass. Useful before your first PUC filing or board appearance.'),
+            h('strong', { style: { color: T.text } }, __alloT('stem.renewables.civic_action_rights_dissent_2', 'Civic Action / Rights & Dissent')),
+            __alloT('stem.renewables.goes_deeper_on_how_to_write_effective_', ' goes deeper on how to write effective public comments, plan a school-board ask, run a campaign, and what counts as protected speech vs. trespass. Useful before your first PUC filing or board appearance.')),
           (function() { awardBadge('take_action', 'Take Action'); return null; })(),
           footer()
         );
@@ -5040,15 +5170,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🖨 Print Pack'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Build a printable handout'),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.build_a_printable_handout', 'Build a printable handout')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              'Pick what you want included. The "Generate" button opens a clean printable HTML view in a new browser tab — use your browser\'s ',
-              h('strong', { style: { color: T.text } }, 'File → Print'),
-              ' menu to print or save as PDF. Useful for sub-day worksheets, lesson handouts, or quiz / answer-key bundles.')
+              __alloT('stem.renewables.pick_what_you_want_included_the_genera', 'Pick what you want included. The "Generate" button opens a clean printable HTML view in a new browser tab — use your browser\'s '),
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.file_print', 'File → Print')),
+              __alloT('stem.renewables.menu_to_print_or_save_as_pdf_useful_fo', ' menu to print or save as PDF. Useful for sub-day worksheets, lesson handouts, or quiz / answer-key bundles.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.text } }, '✅ Sections to include'),
-            h('div', { role: 'group', 'aria-label': 'Sections to include in print pack' },
+            h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.sections_to_include', '✅ Sections to include')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.renewables.sections_to_include_in_print_pack', 'Sections to include in print pack') },
               PRINT_OPTIONS.map(function(o) {
                 var checked = !!printSel[o.kind];
                 return h('label', { key: o.id, htmlFor: 'print-' + o.id,
@@ -5074,7 +5204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   rnAnnounce('All sections selected');
                 },
                 style: btn({ padding: '6px 12px', fontSize: 12 })
-              }, 'Select all'),
+              }, __alloT('stem.renewables.select_all', 'Select all')),
               h('button', { 'data-rn-focusable': true,
                 onClick: function() {
                   var allOff = {};
@@ -5083,22 +5213,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   rnAnnounce('All sections cleared');
                 },
                 style: btn({ padding: '6px 12px', fontSize: 12 })
-              }, 'Clear all')
+              }, __alloT('stem.renewables.clear_all', 'Clear all'))
             )
           ),
           h('button', { 'data-rn-focusable': true,
-            'aria-label': 'Generate print pack with selected sections',
+            'aria-label': __alloT('stem.renewables.generate_print_pack_with_selected_sect', 'Generate print pack with selected sections'),
             disabled: !anySelected,
             onClick: generatePack,
             style: btnPrimary({ width: '100%', padding: '12px 16px', fontSize: 14, opacity: anySelected ? 1 : 0.6 })
-          }, '🖨 Generate Print Pack'),
+          }, __alloT('stem.renewables.generate_print_pack', '🖨 Generate Print Pack')),
           h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, fontSize: 12, color: T.dim, lineHeight: 1.6 } },
-            h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, 'Print pack tips'),
+            h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, __alloT('stem.renewables.print_pack_tips', 'Print pack tips')),
             h('ul', { style: { margin: 0, paddingLeft: 18 } },
-              h('li', null, 'For a sub-day handout: pick "Source-module key facts" + "Comparison table" + "Quiz" — fits on 4–6 pages.'),
-              h('li', null, 'For a unit kickoff: add "NGSS alignment" + "Activities" — gives co-teachers a quick orientation.'),
-              h('li', null, 'For a review session: pick just "Quiz" + "Answer key" — print double-sided.'),
-              h('li', null, 'If your pop-up blocker prevents the new tab, the HTML auto-copies to your clipboard — paste into a Google Doc + print from there.')
+              h('li', null, __alloT('stem.renewables.for_a_sub_day_handout_pick_source_modu', 'For a sub-day handout: pick "Source-module key facts" + "Comparison table" + "Quiz" — fits on 4–6 pages.')),
+              h('li', null, __alloT('stem.renewables.for_a_unit_kickoff_add_ngss_alignment_', 'For a unit kickoff: add "NGSS alignment" + "Activities" — gives co-teachers a quick orientation.')),
+              h('li', null, __alloT('stem.renewables.for_a_review_session_pick_just_quiz_an', 'For a review session: pick just "Quiz" + "Answer key" — print double-sided.')),
+              h('li', null, __alloT('stem.renewables.if_your_pop_up_blocker_prevents_the_ne', 'If your pop-up blocker prevents the new tab, the HTML auto-copies to your clipboard — paste into a Google Doc + print from there.'))
             )
           ),
           footer()
@@ -5124,18 +5254,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           '🦆': 'mix',      '🌐': 'mix',     '💨': 'hydrogen',  '🏠': 'homePayback', '⚖️': 'justice'
         };
         var CLUSTERS = [
-          { id: 'solarPv',      label: '☀️ Solar PV',          color: '#fbbf24' },
-          { id: 'wind',         label: '🌬️ Wind',              color: '#06b6d4' },
-          { id: 'hydro',        label: '🌊 Hydropower',        color: '#0ea5e9' },
-          { id: 'geothermal',   label: '🌋 Geothermal',        color: '#dc2626' },
-          { id: 'solarThermal', label: '🔆 Solar Thermal',     color: '#f59e0b' },
-          { id: 'waveTidal',    label: '🌀 Wave & Tidal',      color: '#3b82f6' },
-          { id: 'biomass',      label: '🌾 Biomass & Biogas',  color: '#84cc16' },
-          { id: 'storage',      label: '🔋 Storage',           color: '#a855f7' },
-          { id: 'mix',          label: '🌐 Grid + Mix',        color: '#22c55e' },
-          { id: 'hydrogen',     label: '💨 Hydrogen',          color: '#0891b2' },
-          { id: 'homePayback',  label: '🏠 Heat pumps + home', color: '#10b981' },
-          { id: 'justice',      label: '⚖️ Climate justice',  color: '#8b5cf6' }
+          { id: 'solarPv',      label: __alloT('stem.renewables.solar_pv_4', '☀️ Solar PV'),          color: '#fbbf24' },
+          { id: 'wind',         label: __alloT('stem.renewables.wind_5', '🌬️ Wind'),              color: '#06b6d4' },
+          { id: 'hydro',        label: __alloT('stem.renewables.hydropower_3', '🌊 Hydropower'),        color: '#0ea5e9' },
+          { id: 'geothermal',   label: __alloT('stem.renewables.geothermal_4', '🌋 Geothermal'),        color: '#dc2626' },
+          { id: 'solarThermal', label: __alloT('stem.renewables.solar_thermal', '🔆 Solar Thermal'),     color: '#f59e0b' },
+          { id: 'waveTidal',    label: __alloT('stem.renewables.wave_tidal_4', '🌀 Wave & Tidal'),      color: '#3b82f6' },
+          { id: 'biomass',      label: __alloT('stem.renewables.biomass_biogas_3', '🌾 Biomass & Biogas'),  color: '#84cc16' },
+          { id: 'storage',      label: __alloT('stem.renewables.storage_2', '🔋 Storage'),           color: '#a855f7' },
+          { id: 'mix',          label: __alloT('stem.renewables.grid_mix', '🌐 Grid + Mix'),        color: '#22c55e' },
+          { id: 'hydrogen',     label: __alloT('stem.renewables.hydrogen', '💨 Hydrogen'),          color: '#0891b2' },
+          { id: 'homePayback',  label: __alloT('stem.renewables.heat_pumps_home', '🏠 Heat pumps + home'), color: '#10b981' },
+          { id: 'justice',      label: __alloT('stem.renewables.climate_justice_2', '⚖️ Climate justice'),  color: '#8b5cf6' }
         ];
         function fmtDate(iso) {
           if (!iso) return '';
@@ -5158,15 +5288,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
               h('div', { style: { textAlign: 'center', minWidth: 110 } },
                 h('div', { style: { fontSize: 38, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, masteredCount + ' / ' + totalQ),
-                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, __alloT('stem.renewables.quiz_questions_mastered', 'Quiz questions mastered'))
               ),
               h('div', { style: { flex: 1, minWidth: 240 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
-                  h('h3', { style: { margin: 0, fontSize: 17, color: T.text, fontWeight: 800 } }, 'Energy Source Mastery')
+                  h('h3', { style: { margin: 0, fontSize: 17, color: T.text, fontWeight: 800 } }, __alloT('stem.renewables.energy_source_mastery_2', 'Energy Source Mastery'))
                 ),
                 h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                  'Every quiz question you nail at least once locks in here permanently. Quiz attempts give you per-attempt scores; this view shows what you have demonstrated across every attempt — by source.'
+                  __alloT('stem.renewables.every_quiz_question_you_nail_at_least_', 'Every quiz question you nail at least once locks in here permanently. Quiz attempts give you per-attempt scores; this view shows what you have demonstrated across every attempt — by source.')
                 ),
                 h('div', { style: { height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
                   h('div', { style: { width: pctOverall + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
@@ -5246,7 +5376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                               display: 'flex', alignItems: 'center', gap: 12 } },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, renCeleb.icon),
             h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Concept locked in'),
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, __alloT('stem.renewables.concept_locked_in', 'Concept locked in')),
               h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, renCeleb.stem.length > 90 ? (renCeleb.stem.substring(0, 87) + '…') : renCeleb.stem),
               h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, renCeleb.total + ' / ' + QUIZ.length + ' questions mastered')
             )
@@ -5256,10 +5386,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       // === H7b'' inquiry widget: grid balance discovery ===
       function renderGridBalance() {
-        var iq = d.gridHunt || { gen: 1000, demand: 1000, storage: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = d.gridHunt || { gen: 1000, demand: 1000, storage: 200, duration: 2, soc: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd('gridHunt', Object.assign({}, iq, patch)); }
         var imbalance = iq.gen - iq.demand;
-        var bufferCapacity = iq.storage * 10; // MW absorbed/released
+        var storageDuration = Math.max(0.5, iq.duration || 2);
+        var storageSocPct = iq.soc != null ? iq.soc : 50;
+        var storagePowerMW = iq.storage / storageDuration;
+        var storageCanAct = imbalance < 0 ? storageSocPct > 0 : imbalance > 0 ? storageSocPct < 100 : true;
+        var bufferCapacity = storageCanAct ? storagePowerMW : 0;
         var absImbalance = Math.abs(imbalance);
         var bufferedImbalance = Math.max(0, absImbalance - bufferCapacity);
         var state;
@@ -5267,73 +5401,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         else if (imbalance < 0) state = 'blackout';
         else state = 'curtailed';
         var stateMeta = {
-          balanced:  { label: '🟢 Grid balanced', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Supply meets demand within buffer tolerance. Frequency stable.' },
-          blackout:  { label: '🔴 Brownout / blackout risk', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Demand exceeds generation + storage discharge. Frequency falling.' },
-          curtailed: { label: '🟡 Excess generation curtailed', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Generation exceeds demand + storage absorption. Renewables shut off.' }
+          balanced:  { label: __alloT('stem.renewables.grid_balanced', '🟢 Within modeled balance band'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.renewables.supply_meets_demand_within_buffer_tole', 'Residual imbalance is within this activity\'s arbitrary 50 MW band; no frequency is calculated.') },
+          blackout:  { label: __alloT('stem.renewables.brownout_blackout_risk', '🔴 Modeled demand shortage'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.renewables.demand_exceeds_generation_storage_disc', 'Modeled demand shortage remains after the available storage power is applied.') },
+          curtailed: { label: __alloT('stem.renewables.excess_generation_curtailed', '🟡 Modeled supply surplus'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.renewables.generation_exceeds_demand_storage_abso', 'Modeled supply surplus remains after available charging power; real operators may curtail, export, or shift demand.') }
         }[state];
         function logObs() {
-          setIQ({ log: (iq.log || []).concat([{ g: iq.gen, d: iq.demand, s: iq.storage, st: state }]).slice(-8) });
+          setIQ({ log: (iq.log || []).concat([{ g: iq.gen, d: iq.demand, s: iq.storage, p: Math.round(storagePowerMW), soc: storageSocPct, st: state }]).slice(-8) });
         }
         return h('div', { className: 'p-4 rounded-xl bg-white border border-emerald-200 shadow-sm' },
-          h('h3', { className: 'text-sm font-black text-emerald-700 mb-1' }, '⚡ Grid balance discovery'),
+          h('h3', { className: 'text-sm font-black text-emerald-700 mb-1' }, __alloT('stem.renewables.grid_balance_discovery_2', '⚡ Grid balance discovery')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'You are a grid operator. Adjust generation, demand, and storage capacity. The grid will show one of three discrete states: balanced / blackout / curtailed. No score, no reveal — sweep and notice.'),
-          h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+            'Compare generation and demand with a simplified storage system. Energy capacity (MWh), duration (h), and state of charge determine available power (MW). The three labels are classroom categories, not grid forecasts.'),
+          h('div', { className: 'mb-3 p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
             h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
             h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
           ),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+          h('div', { className: 'mb-3 p-2 rounded bg-slate-50 border border-slate-200 text-[11px] text-slate-700' },
+            h('strong', null, 'Storage rating: '), Math.round(storagePowerMW) + ' MW = ' + iq.storage + ' MWh / ' + storageDuration + ' h. ' +
+            'Current stored energy: ' + (iq.storage * storageSocPct / 100).toFixed(1) + ' MWh at ' + storageSocPct + '% state of charge.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-5 gap-3 mb-3' },
             [
-              { key: 'gen',     label: 'Generation (MW)', val: iq.gen,     min: 0,    max: 2500, step: 50 },
-              { key: 'demand',  label: 'Demand (MW)',     val: iq.demand,  min: 0,    max: 2500, step: 50 },
-              { key: 'storage', label: 'Storage (MWh)',   val: iq.storage, min: 0,    max: 200,  step: 5  }
+              { key: 'gen',      label: __alloT('stem.renewables.generation_mw', 'Generation (MW)'), val: iq.gen, min: 0, max: 2500, step: 50 },
+              { key: 'demand',   label: __alloT('stem.renewables.demand_mw', 'Demand (MW)'), val: iq.demand, min: 0, max: 2500, step: 50 },
+              { key: 'storage',  label: 'Storage energy capacity (MWh)', val: iq.storage, min: 0, max: 800, step: 25 },
+              { key: 'duration', label: 'Storage duration at rated power (h)', val: storageDuration, min: 0.5, max: 8, step: 0.5 },
+              { key: 'soc',      label: 'State of charge (%)', val: storageSocPct, min: 0, max: 100, step: 5 }
             ].map(function(s) {
               return h('div', { key: s.key },
                 h('label', { htmlFor: 'gb-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
                   s.label + ': ', h('span', { className: 'font-mono text-emerald-700' }, s.val)),
                 h('input', { id: 'gb-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
-                  onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                  onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
                   className: 'w-full', 'aria-label': s.label }));
             })
           ),
           h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-            h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-            h('button', { onClick: function() { setIQ({ gen: 1000, demand: 1000, storage: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-              className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+            h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.renewables.log', '📋 Log')),
+            h('button', { onClick: function() { setIQ({ gen: 1000, demand: 1000, storage: 200, duration: 2, soc: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+              className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.renewables.reset_2', '↺ Reset')),
             (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
           ),
-          (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3' },
+          (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3', 'aria-label': 'Logged grid balance comparisons' },
             h('thead', null, h('tr', { className: 'bg-slate-100' },
-              ['gen MW', 'demand MW', 'storage MWh', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+              ['gen MW', 'demand MW', 'energy MWh', 'power MW', 'SoC %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
             h('tbody', null, iq.log.map(function(o, idx) {
               return h('tr', { key: 'lr' + idx },
                 h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.g),
                 h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.d),
                 h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
+                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p != null ? o.p : '—'),
+                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.soc != null ? o.soc : '—'),
                 h('td', { className: 'px-1 border border-slate-200' }, o.st));
             }))
           ),
           h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-            placeholder: 'Hypothesis (free text): How much storage offsets a given gen-demand mismatch?',
+            placeholder: __alloT('stem.renewables.hypothesis_free_text_how_much_storage_', 'Hypothesis: How do energy capacity, duration, and state of charge limit the power available for a mismatch?'),
             className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
             className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' },
-            '🤔 Stuck — show open prompts'),
+            __alloT('stem.renewables.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
-              h('li', null, 'Hold two sliders steady. Move the third. Watch.'),
-              h('li', null, 'Find two settings that produce the same state. What do they share?'),
-              h('li', null, 'Renewables are intermittent. Investigate how storage size affects the band.'),
-              h('li', null, 'Real grids run at ±1% frequency. Why might that be?'))),
+              h('li', null, __alloT('stem.renewables.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch.')),
+              h('li', null, __alloT('stem.renewables.find_two_settings_that_produce_the_sam', 'Find two settings that produce the same state. What do they share?')),
+              h('li', null, __alloT('stem.renewables.renewables_are_intermittent_investigat', 'Wind and solar output are variable. Investigate how storage power and energy ratings affect the modeled band.')),
+              h('li', null, __alloT('stem.renewables.real_grids_run_at_1_frequency_why_migh', 'Real grids operate near a nominal frequency within tight reliability limits. What controls help keep them there?')))),
           h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
             h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-              'I think I understand — let me explain'),
+              __alloT('stem.renewables.i_think_i_understand_let_me_explain', 'I think I understand — let me explain')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-              placeholder: 'Explain how generation, demand, and storage interact to determine grid state.',
+              placeholder: __alloT('stem.renewables.explain_how_generation_demand_and_stor', 'Explain how generation, demand, and storage interact to determine grid state.'),
               className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
-            'Design note: discrete 3-state outcome; no numeric stability score; no reveal — discourages optimization-gaming.')
+            __alloT('stem.renewables.design_note_discrete_3_state_outcome_n', 'Model limit: one-instant classroom classifier with an arbitrary 50 MW tolerance. It omits network constraints, reserves, ramp rates, losses, state evolution, market dispatch, protection systems, and actual frequency dynamics; labels are prompts, not predictions.'))
         );
       }
 

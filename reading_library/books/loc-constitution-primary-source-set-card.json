@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-constitution-primary-source-set-card",
+  "title": "Library of Congress: Constitution Primary Sources",
+  "description": "A LOC source card for Constitution-related primary sources and civic reading.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Constitution",
+    "Civics",
+    "Primary sources",
+    "U.S. history"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/constitution/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Library of Congress Constitution materials help students examine founding documents, debate, ratification, amendments, and the changing meaning of civic principles."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for close reading, vocabulary work, claim-evidence reasoning, and connecting constitutional ideas to later historical debates."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Many founding-era documents are public domain, but LOC item pages should still be checked for rights, transcription notes, and image-use guidance."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

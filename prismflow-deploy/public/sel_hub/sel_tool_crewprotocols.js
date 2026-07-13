@@ -412,6 +412,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
     color: 'sky',
     category: 'relationship-skills',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _cpT = (ctx && ctx.theme) || {};
+      var _cpHC = !!_cpT.isContrast, _cpL = !_cpHC && !_cpT.isDark;
+      var _cp_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _cp_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000'};
+      var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _cp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _cp_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#0284c7':'#ffff00','#f59e0b':'#ffff00'};
+      var _cpBg = function(h){ return _cpHC ? (_cp_BGH[h]||h) : (_cpL ? (_cp_BGL[h]||h) : h); };
+      var _cpFg = function(h){ return _cpHC ? (_cp_FGH[h]||h) : (_cpL ? (_cp_FGL[h]||h) : h); };
+      var _cpBd = function(h){ return _cpHC ? (_cp_BDH[h]||h) : (_cpL ? (_cp_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -436,10 +445,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#7dd3fc', fontSize: 22, fontWeight: 900 } }, '🪑 Crew Protocols'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'A library of structured group formats for Crew, advisory, and homeroom.')
+            h('h2', { style: { margin: 0, color: _cpFg('#7dd3fc'), fontSize: 22, fontWeight: 900 } }, '🪑 Crew Protocols'),
+            h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A library of structured group formats for Crew, advisory, and homeroom.')
           )
         );
       }
@@ -460,8 +469,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#0ea5e9' : '#334155'),
-                background: active ? 'rgba(14,165,233,0.18)' : '#1e293b',
-                color: active ? '#bae6fd' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'),
+                color: active ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -469,7 +478,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _cpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Crew protocols are facilitator tools. Restorative circles and hard-conversation formats require training or a trained adult; do not improvise these.'
         );
@@ -481,8 +490,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       function renderHome() {
         return h('div', null,
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(14,165,233,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(14,165,233,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, 'Crew is built. It is not assumed.'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _cpFg('#bae6fd'), marginBottom: 4 } }, 'Crew is built. It is not assumed.'),
+            h('p', { style: { margin: 0, color: _cpFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'A class that meets for an hour every day is not automatically a community. Community is built through specific rituals practiced over time. These protocols are the rituals.'
             )
           ),
@@ -495,18 +504,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               return h('button', { key: catId,
                 onClick: function() { setCP({ filter: catId, view: 'browse' }); },
                 'aria-label': 'Browse ' + cat.label,
-                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + cat.color + '66', borderLeft: '4px solid ' + cat.color, background: '#0f172a', cursor: 'pointer', color: '#e2e8f0' } },
+                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + cat.color + '66', borderLeft: '4px solid ' + cat.color, background: _cpBg('#0f172a'), cursor: 'pointer', color: _cpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                   h('span', { style: { fontSize: 22 } }, cat.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, color: cat.color, flex: 1 } }, cat.label),
                   h('span', { style: { fontSize: 10, color: cat.color, fontWeight: 700 } }, count + ' format' + (count === 1 ? '' : 's'))
                 ),
-                h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, cat.blurb)
+                h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), lineHeight: 1.55 } }, cat.blurb)
               );
             })
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65, marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.65, marginBottom: 10 } },
             h('strong', null, '💬 Plus: '),
             'the "Crew prompts" tab pulls ALL the Crew-time prompts from across the SEL Hub — each one is a 5-15 minute Crew that points to a specific evidence-based tool. ',
             gatherCrewPrompts().length + ' prompts collected so far.'
@@ -526,13 +535,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           // Filter chips
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             h('button', { onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all',
-              style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (d.filter === null ? '#0ea5e9' : '#334155'), background: d.filter === null ? 'rgba(14,165,233,0.18)' : '#1e293b', color: d.filter === null ? '#bae6fd' : '#cbd5e1', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
+              style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (d.filter === null ? '#0ea5e9' : '#334155'), background: d.filter === null ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'), color: d.filter === null ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
             Object.keys(CATEGORIES).map(function(catId) {
               var cat = CATEGORIES[catId];
               var count = PROTOCOLS.filter(function(p) { return p.category === catId; }).length;
               var active = d.filter === catId;
               return h('button', { key: catId, onClick: function() { setCP({ filter: catId }); }, 'aria-label': 'Filter by ' + cat.label, 'aria-pressed': active,
-                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (active ? cat.color : '#334155'), background: active ? cat.color + '22' : '#1e293b', color: active ? cat.color : '#cbd5e1', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
+                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (active ? cat.color : '#334155'), background: active ? cat.color + '22' : _cpBg('#1e293b'), color: active ? cat.color : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
             })
           ),
 
@@ -540,31 +549,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           protocols.map(function(p) {
             var cat = CATEGORIES[p.category];
             var isPlanned = (d.planned || []).some(function(x) { return x.protocolId === p.id; });
-            return h('div', { key: p.id, style: { padding: 16, borderRadius: 12, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + cat.color, marginBottom: 12 } },
+            return h('div', { key: p.id, style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + cat.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 22 } }, cat.icon),
-                h('span', { style: { fontSize: 16, fontWeight: 800, color: '#e2e8f0', flex: 1 } }, p.title),
+                h('span', { style: { fontSize: 16, fontWeight: 800, color: _cpFg('#e2e8f0'), flex: 1 } }, p.title),
                 h('span', { style: { fontSize: 10, color: cat.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
               ),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 10, fontSize: 11, color: '#94a3b8' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 10, fontSize: 11, color: _cpFg('#94a3b8') } },
                 h('span', null, '⏱ ' + p.time),
                 h('span', null, '👥 ' + p.groupSize),
                 h('span', null, '📦 ' + p.materials)
               ),
-              h('div', { style: { padding: 10, borderRadius: 6, background: '#1e293b', marginBottom: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 6, background: _cpBg('#1e293b'), marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, color: cat.color, fontWeight: 700, marginBottom: 4 } }, 'Purpose'),
-                h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } }, p.purpose)
+                h('p', { style: { margin: 0, color: _cpFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, p.purpose)
               ),
               h('div', { style: { marginBottom: 10 } },
                 h('div', { style: { fontSize: 11, color: cat.color, fontWeight: 700, marginBottom: 4 } }, 'Steps'),
-                h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+                h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: _cpFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
                   p.steps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 4 } }, s); })
                 )
               ),
-              h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', marginBottom: 8, fontSize: 12, color: '#e9d5ff', lineHeight: 1.6 } },
+              h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', marginBottom: 8, fontSize: 12, color: _cpFg('#e9d5ff'), lineHeight: 1.6 } },
                 h('strong', null, '💡 Tip: '), p.tips
               ),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontSize: 11, color: _cpFg('#94a3b8'), fontStyle: 'italic', marginBottom: 10, lineHeight: 1.5 } },
                 h('strong', null, 'Source: '), p.source
               ),
               h('button', { onClick: function() {
@@ -593,22 +602,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         var prompts = gatherCrewPrompts();
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: '#bae6fd', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.65 } },
             h('strong', null, '💬 ' + prompts.length + ' Crew prompts '),
             'collected from across the SEL Hub. Each one points to a specific evidence-based tool and gives you a 5-15 minute Crew format you can run with little prep. Tap a prompt to open the underlying tool.'
           ),
 
           prompts.length > 0
             ? prompts.map(function(p, i) {
-                return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 8 } },
+                return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 8 } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
-                    h('span', { style: { fontSize: 11, color: '#10b981', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, p.toolId)
+                    h('span', { style: { fontSize: 11, color: _cpFg('#10b981'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, p.toolId)
                   ),
-                  h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic', lineHeight: 1.55 } }, p.construct),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } }, p.prompt)
+                  h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.55 } }, p.construct),
+                  h('p', { style: { margin: 0, color: _cpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } }, p.prompt)
                 );
               })
-            : h('div', { style: { padding: 14, fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'No Crew prompts available yet.'),
+            : h('div', { style: { padding: 14, fontSize: 12, color: _cpFg('#94a3b8'), fontStyle: 'italic' } }, 'No Crew prompts available yet.'),
 
           softPointer()
         );
@@ -622,12 +631,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
         if (planned.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📅'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 14, marginBottom: 4 } }, 'Your Crew plan is empty'),
-              h('div', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Browse protocols and tap "Save to my Crew plan" to build your week.'),
+              h('div', { style: { color: _cpFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Your Crew plan is empty'),
+              h('div', { style: { color: _cpFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Browse protocols and tap "Save to my Crew plan" to build your week.'),
               h('button', { onClick: function() { goto('browse'); }, 'aria-label': 'Browse protocols',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #0ea5e9', background: 'rgba(14,165,233,0.18)', color: '#bae6fd', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Browse protocols')
+                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #0ea5e9', background: 'rgba(14,165,233,0.18)', color: _cpFg('#bae6fd'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Browse protocols')
             )
           );
         }
@@ -644,34 +653,34 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         }
 
         return h('div', null,
-          h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 10 } }, planned.length + ' protocol' + (planned.length === 1 ? '' : 's') + ' in your plan'),
+          h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 10 } }, planned.length + ' protocol' + (planned.length === 1 ? '' : 's') + ' in your plan'),
 
           planned.map(function(entry, i) {
             var p = PROTOCOLS.find(function(pr) { return pr.id === entry.protocolId; });
             if (!p) return null;
             var cat = CATEGORIES[p.category];
-            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 10 } },
+            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 18 } }, cat.icon),
-                h('span', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', flex: 1 } }, p.title),
-                h('span', { style: { fontSize: 10, color: '#94a3b8' } }, '⏱ ' + p.time),
+                h('span', { style: { fontSize: 14, fontWeight: 700, color: _cpFg('#e2e8f0'), flex: 1 } }, p.title),
+                h('span', { style: { fontSize: 10, color: _cpFg('#94a3b8') } }, '⏱ ' + p.time),
                 h('button', { onClick: function() { remove(i); }, 'aria-label': 'Remove from plan',
-                  style: { background: 'transparent', border: '1px solid #475569', color: '#94a3b8', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  style: { background: 'transparent', border: '1px solid #475569', color: _cpFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
                 h('div', null,
-                  h('label', { htmlFor: 'cp-date-' + i, style: { display: 'block', fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } }, 'When'),
+                  h('label', { htmlFor: 'cp-date-' + i, style: { display: 'block', fontSize: 10, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'When'),
                   h('input', { id: 'cp-date-' + i, type: 'text', value: entry.date || '',
                     placeholder: 'e.g. Mon Sep 15',
                     onChange: function(e) { setEntry(i, { date: e.target.value }); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12 } })
+                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
                 ),
                 h('div', null,
-                  h('label', { htmlFor: 'cp-notes-' + i, style: { display: 'block', fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } }, 'Notes'),
+                  h('label', { htmlFor: 'cp-notes-' + i, style: { display: 'block', fontSize: 10, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Notes'),
                   h('input', { id: 'cp-notes-' + i, type: 'text', value: entry.notes || '',
                     placeholder: 'Specific framing, who to focus on, etc.',
                     onChange: function(e) { setEntry(i, { notes: e.target.value }); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12 } })
+                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
                 )
               )
             );
@@ -679,7 +688,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print my plan',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)', color: _cpFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🖨 Print my plan')
           ),
 
@@ -694,17 +703,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         var planned = d.planned || [];
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(14,165,233,0.10)', borderRadius: 8, border: '1px solid rgba(14,165,233,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#bae6fd', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my Crew plan.')),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)', color: _cpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('planner'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _cpBg('#1e293b'), color: _cpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'crew-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _cpBg('#fff'), color: _cpFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -715,9 +724,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #0284c7' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Crew Protocols · Plan'),
+              h('div', { style: { fontSize: 10, color: _cpFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Crew Protocols · Plan'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, 'My Crew plan'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _cpFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             planned.length > 0
@@ -727,19 +736,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                   return h('div', { key: i, style: { marginBottom: 16, pageBreakInside: 'avoid' } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                       h('strong', { style: { fontSize: 13 } }, p.title),
-                      h('span', { style: { fontSize: 10, color: '#64748b' } }, '·  ' + p.time + '  ·  ' + p.groupSize)
+                      h('span', { style: { fontSize: 10, color: _cpFg('#64748b') } }, '·  ' + p.time + '  ·  ' + p.groupSize)
                     ),
-                    entry.date ? h('div', { style: { fontSize: 11, color: '#475569', marginBottom: 4 } }, 'When: ' + entry.date) : null,
-                    entry.notes ? h('div', { style: { fontSize: 11, color: '#475569', marginBottom: 4, fontStyle: 'italic' } }, 'Notes: ' + entry.notes) : null,
-                    h('div', { style: { fontSize: 12, color: '#0f172a', marginTop: 4 } }, p.purpose),
-                    h('ol', { style: { margin: '6px 0 0', padding: '0 0 0 24px', color: '#0f172a', fontSize: 12, lineHeight: 1.65 } },
+                    entry.date ? h('div', { style: { fontSize: 11, color: _cpFg('#475569'), marginBottom: 4 } }, 'When: ' + entry.date) : null,
+                    entry.notes ? h('div', { style: { fontSize: 11, color: _cpFg('#475569'), marginBottom: 4, fontStyle: 'italic' } }, 'Notes: ' + entry.notes) : null,
+                    h('div', { style: { fontSize: 12, color: _cpFg('#0f172a'), marginTop: 4 } }, p.purpose),
+                    h('ol', { style: { margin: '6px 0 0', padding: '0 0 0 24px', color: _cpFg('#0f172a'), fontSize: 12, lineHeight: 1.65 } },
                       p.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s); })
                     )
                   );
                 })
-              : h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'No protocols in plan yet.'),
+              : h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), fontStyle: 'italic' } }, 'No protocols in plan yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _cpFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'Crew protocols drawn from EL Education, Restorative Practices (IIRP), Tribes Learning Communities, Responsive Classroom. ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -756,18 +765,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('crewProtocols', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#7dd3fc', fontSize: 16 } }, 'What this tool is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _cpFg('#7dd3fc'), fontSize: 16 } }, 'What this tool is'),
+            h('p', { style: { margin: '0 0 10px', color: _cpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'A working library of structured group formats. Each protocol is a specific recipe with a purpose, time, group size, materials, and step-by-step script. The protocols come from established frameworks: EL Education Crew, Restorative Practices, Tribes Learning Communities, Responsive Classroom, and a few other lineages.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _cpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'The Crew Prompts tab consolidates all the Crew-time prompts from the rest of the SEL Hub — each one tied to a specific evidence-based tool. Use them as 5-15 minute Crews when you want a structured activity that points students toward a tool.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#7dd3fc', fontSize: 16 } }, '📚 Sources and learn more'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _cpFg('#7dd3fc'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('EL Education', 'eleducation.org', 'The foundational source for Crew as a school structure. Free protocols and guidance.', 'https://eleducation.org/'),
             sourceCard('International Institute for Restorative Practices (IIRP)', 'iirp.edu', 'Standards body for restorative circles and conferences in schools.', 'https://www.iirp.edu/'),
             sourceCard('Gibbs, J. (2014)', 'Reaching All by Creating Tribes Learning Communities (4th ed.)', 'The Tribes framework. Long-running source for community-building protocols.', null),
@@ -777,8 +786,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _cpFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _cpFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Protocols are scaffolding, not magic. A protocol run by an adult who has not built trust with the group will feel performative.'),
               h('li', null, 'Restorative circles and hard-conversation formats require training. Do NOT improvise these the first time. If your school does not have someone trained, bring in a trainer from IIRP or a local restorative-justice organization.'),
               h('li', null, 'These protocols are largely from Western and US educational lineages. Many cultural traditions have their own deep practices for community-building and repair (Indigenous talking circles, African palaver, etc.). Honor the lineage you are working in.'),
@@ -787,7 +796,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For a new Crew, start with: Community Agreement (Week 1), then daily One-Word Check-in for two weeks until students have the rhythm. Add a weekly Rose/Thorn/Bud or Appreciation Circle. Only after 4-6 weeks of established Crew should you attempt deeper formats. Rushing depth before community is built is the most common failure mode.'
           ),
@@ -797,13 +806,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _cpBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _cpFg('#7dd3fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#bae6fd', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#bae6fd', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _cpFg('#bae6fd'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _cpFg('#bae6fd'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _cpFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 

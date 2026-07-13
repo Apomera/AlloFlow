@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-conservation-movement-primary-source-set-card",
+  "title": "Library of Congress Conservation Movement Primary Sources",
+  "description": "A LOC source card for primary sources about conservation and environmental history.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Environmental history",
+    "Conservation",
+    "Primary sources",
+    "U.S. history"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/primary-source-sets/conservation-movement/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Library of Congress conservation movement source set supports inquiry into national parks, resource use, public lands, reform, and changing ideas about nature."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for comparing historical arguments about preservation, development, science, recreation, and public responsibility."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress source sets include public-domain and rights-unknown primary sources. Use the item pages to confirm rights before mirroring individual documents."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

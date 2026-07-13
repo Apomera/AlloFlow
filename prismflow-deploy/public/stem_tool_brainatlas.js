@@ -5,9 +5,9 @@
 
   // ═══ 🔬 brainAtlas (brainAtlas) ═══
   window.StemLab.registerTool('brainAtlas', {
-    icon: '🔬',
-    label: 'brainAtlas',
-    desc: '',
+    icon: "🧠",
+    label: "Brain Atlas Explorer",
+    desc: "Explore an interactive brain model: regions, functions, neurotransmitter synapses, EEG waves, and a labeling quiz.",
     color: 'slate',
     category: 'science',
     render: function(ctx) {

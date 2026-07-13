@@ -1,11 +1,18 @@
 # AlloFlow Architecture
 
-*Last meaningful update: May 10, 2026. Reflects the post-Phase-2 state where
-cross-cutting state moved to React Contexts and 80+ self-contained CDN view
-modules host the rendered UI.*
+*Last meaningful update: July 9, 2026. Reflects the July codebase review,
+Desktop/local-first clarification, and the much larger CDN/plugin surface that
+hosts the rendered UI.*
+
+> **2026-07-03 scale audit:** the live workspace contains 151 top-level
+> `build.js` module definitions, 111 STEM tool files with 116 registered STEM
+> plugin IDs, 70 SEL tool files, 111 root `*_source.jsx` / `*_module.js` pairs,
+> 413 test files, and about 2.70M canonical-ish source lines after excluding
+> deploy mirrors and generated source/module pairs. See
+> [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md).
 
 > **Companion document:** This file describes *how* the codebase is structured.
-> For the catalog of *what* the codebase actually does (520+ user-facing
+> For the catalog of *what* the codebase actually does (720+ documented user-facing
 > features, every STEM tool, every SEL tool, discoverability paths), see
 > [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md). The two documents pair
 > deliberately: architecture for engineering review, feature inventory for
@@ -18,10 +25,21 @@ split at scale**. One large container component (`AlloFlowContent` inside
 `AlloFlowANTI.txt`) owns all application state. Over 80 self-contained CDN
 view modules accept state via props or React Context and render the actual
 UI. Heavy feature modules load dynamically at runtime, keeping the initial
-payload small enough to run on school Chromebooks.
+payload small enough to run on school Chromebooks and inside Gemini Canvas.
+
+The current architecture is best understood as three layers:
+
+1. **Canvas host / orchestrator:** `AlloFlowANTI.txt`, compiled to
+   `prismflow-deploy/src/App.jsx`, owns state, role gates, AI bridges,
+   contexts, and routing.
+2. **Top-level CDN modules:** `build.js` currently manages 151 module
+   definitions, including Doc Pipeline, BehaviorLens, AlloHaven, Video Studio,
+   AlloStudio, Open Groove Studio, Teacher, StoryForge, and view modules.
+3. **Plugin families:** STEM, SEL, psychometric probe JSONs, TTS loaders, and
+   other lazily loaded plugin files self-register at runtime.
 
 ```
-AlloFlowANTI.txt / App.jsx          ← Container (~24K lines, all state)
+AlloFlowANTI.txt / App.jsx          ← Container (~31K deployed lines, cross-cutting state)
 │
 ├── 4 React Contexts                  ← Cross-cutting state to descendants
 │   ├── LanguageContext               ← Translation function t() + i18n
@@ -34,13 +52,13 @@ AlloFlowANTI.txt / App.jsx          ← Container (~24K lines, all state)
 │   ├── csState (concept-sort game)
 │   └── adventureState (adventure mode)
 │
-├── 80+ CDN view + helper modules     ← Loaded dynamically via loadModule()
+├── 151 top-level CDN modules         ← Loaded dynamically via loadModule() / build.js map
 │   ├── view_header_module.js         ← Header bar (Phase 2 context consumer)
 │   ├── view_history_panel_module.js  ← History sidebar (522 lines extracted)
 │   ├── view_kokoro_offer_modal.js    ← Modals, panels, toolbars
 │   ├── view_*_module.js              ← (~30 view modules total)
-│   ├── stem_lab_module.js            ← STEM Lab host + ~94 plugin tools
-│   ├── sel_hub_module.js             ← SEL Hub host + 32 plugin tools + 1 shared safety layer
+│   ├── stem_lab_module.js            ← STEM Lab host + 111 tool files / 116 registered IDs
+│   ├── sel_hub_module.js             ← SEL Hub host + 70 tools + safety/standards layers
 │   ├── behavior_lens_module.js       ← Clinical FBA/BIP suite
 │   ├── report_writer_module.js       ← Psychoeducational report wizard
 │   ├── symbol_studio_module.js       ← AI AAC boards
@@ -58,7 +76,7 @@ AlloFlowANTI.txt / App.jsx          ← Container (~24K lines, all state)
 ## How the codebase got here
 
 This codebase has been progressively refactored from a ~60K-line monolith
-(April 2026) to the current ~24K-line container. The shape evolved through
+(April 2026) to the current ~31K-line deployed container. The shape evolved through
 five overlapping phases:
 
 1. **Helper extraction** (early): isolate pure utility code into modules
@@ -257,12 +275,14 @@ And rendered inside `AlloFlowContent`'s JSX:
 
 `build.js` keeps a `MODULES` array listing every CDN module's name and
 filename. The build step writes the pinned-hash URL into the compiled
-`App.jsx`. As of May 2026 there are 90+ registered modules.
+`App.jsx`. As of the July 3, 2026 audit there are 151 top-level
+entries, plus large plugin families for STEM, SEL, psychometric probes,
+and TTS loaders.
 
 ### `loadModule()` flow
 
 At app startup, `AlloFlowContent` calls `loadModule(name, url)` for each
-CDN module that's not deferred (~110 of ~127). The function injects a
+top-level CDN module that is not deferred. The function injects a
 `<script>` tag and waits for the IIFE to register on `window.AlloModules.X`.
 
 Two failure paths are wired:
@@ -281,15 +301,14 @@ Two failure paths are wired:
 If both primary and fallback fail, the monolith-side shim returns its
 default (typically `null`), keeping the app functional in a degraded mode.
 
-**Lazy-load variant** (May 12 2026): about 17 modules wrap their
-`loadModule(...)` call inside a fire-once closure exposed as
-`window.__alloLazy<Name>`. The corresponding `setShow<Name>` React setter
+**Lazy-load variant** (introduced May 12 2026 and expanded since): selected
+modules wrap their `loadModule(...)` call inside a fire-once closure exposed
+as `window.__alloLazy<Name>`. The corresponding `setShow<Name>` React setter
 is wrapped via `React.useCallback` to invoke that closure on first true,
-deferring the script fetch until the user opens the feature. Reduces
-cold-load request count from 127 to ~110. Lazy candidates are pure modal
-modules (HintsModal, XPModal, etc.) and standalone feature hubs
-(AlloHaven, SymbolStudio, StoryForge, LitLab, PoetTree, EducatorHubModal,
-LearningHubModal, VisualSupportsModal).
+deferring the script fetch until the user opens the feature. Lazy candidates
+are pure modal modules and standalone feature hubs such as AlloHaven,
+SymbolStudio, StoryForge, LitLab, PoetTree, EducatorHubModal,
+LearningHubModal, VisualSupportsModal, and studio surfaces.
 
 ## STEM Lab Plugin Architecture
 
@@ -297,10 +316,13 @@ STEM Lab is a secondary plugin host: `stem_lab_module.js` registers as
 a CDN module, then each tool is a self-contained IIFE registered via
 `window.StemLab.registerTool(id, config)`.
 
-As of May 2026 there are ~94 STEM Lab tools across 9 subject areas: math
-fundamentals, advanced math, life science, earth science, physics,
-chemistry, computer science, music + art, and vocational labs (welding,
-auto repair, road safety, first response, swim safety, etc).
+As of the July 3, 2026 code review there are 111 `stem_tool_*.js` files
+with 116 registered plugin IDs. The count difference is intentional: some
+files preserve aliases or paired IDs. The tools span math fundamentals,
+advanced math, life science, earth science, physics, chemistry, computer
+science, music + art, and vocational/applied labs such as welding, auto
+repair, road safety, first response, swim safety, aviation, fisheries,
+nutrition, birds, and weather.
 
 For the full per-tool catalog (display names, purposes, grade bands,
 notes), see [FEATURE_INVENTORY.md § 4](FEATURE_INVENTORY.md#4-stem-lab-tools).
@@ -339,12 +361,16 @@ This section covers the plugin *pattern* only.
 
 ## SEL Hub Plugin Architecture
 
-Same pattern as STEM Lab. `sel_hub_module.js` hosts **32 tools + 1 shared
-safety layer** across the CASEL 5 social-emotional competency framework
-plus a "Civic & Hope" bucket. Each tool registers via
+Same pattern as STEM Lab. `sel_hub_module.js` hosts **70 tools plus shared
+safety/standards infrastructure** across the CASEL 5 social-emotional
+competency framework plus Civic & Hope, restorative practices, regulation,
+digital citizenship, and personalized student-kit flows. Each tool registers via
 `window.SelHub.registerTool(id, config)`.
 
-CASEL 5 + Civic & Hope coverage (May 2026):
+CASEL 5 + Civic & Hope coverage has expanded since the May 2026 snapshot
+below. Treat this table as historical; use [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
+and [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md)
+for the current 70-tool count.
 
 | Competency | Tools | Count |
 |---|---|---|
@@ -443,8 +469,8 @@ isolation from UI. Run with `node tests/clinical_tests.js`.
 ### End-to-end tests (`tests/e2e/`)
 
 Fourteen Playwright spec files (~65 tests) run against the deployed
-Firebase mirror (`https://prismflow-911fe.web.app` by default, overridable
-via `PW_BASE_URL`):
+Cloudflare student shell (`https://alloflow-cdn.pages.dev/app/` by default,
+overridable via `PW_BASE_URL`):
 
 | Spec | Scope |
 |---|---|
@@ -513,8 +539,8 @@ The full deploy is a 9-step orchestrator at the repo root:
    starts its own build in parallel (~30-60 sec); see "CDN Hosting" below.
 3. **Run build.js** (regenerate `App.jsx` with Cloudflare Pages URLs)
 4. **npm run build** (CRA build to `prismflow-deploy/build/`)
-5. **Firebase deploy** (static hosting for the local-test mirror at
-   `prismflow-911fe.web.app`; Canvas users do NOT fetch from here)
+5. **Optional district Firebase deploy** (only when a school-owned project is
+   explicitly configured; otherwise the Cloudflare `/app/` shell is used)
 6. **Post-deploy commit** (mostly a no-op now that URLs don't include
    a hash; still re-runs build.js to catch any drift)
 7. **Push post-deploy commit to origin**
@@ -529,8 +555,8 @@ race — verify your specific commit landed via `git log --oneline -5`.
 
 ## CDN Hosting
 
-The runtime fetch chain for the ~127 CDN modules has two tiers as of
-May 12 2026:
+The runtime fetch chain for the 151 build-managed top-level CDN modules plus
+large plugin families has two tiers as of July 2026:
 
 **Primary: Cloudflare Pages** — `https://alloflow-cdn.pages.dev/<file>.js`.
 A Pages project (`alloflow-cdn`) on Aaron's Cloudflare account is linked
@@ -590,10 +616,23 @@ npm run build
 firebase deploy
 ```
 
-Or invoke the full `./deploy.sh` from the repo root. Firebase hosts only
-static files; no student data crosses the network.
+Or invoke the full `./deploy.sh` from the repo root. Firebase Hosting serves
+the static app; live-session and AI data flow depends on the selected backend,
+provider, and deployment mode.
 
-### 3. School Box (local Docker)
+### 3. AlloFlow Desktop (local-first app)
+
+```powershell
+npm.cmd run desktop:check
+npm.cmd run desktop:smoke
+npm.cmd run desktop
+```
+
+Desktop runs the local runtime bridge, serves the bundled app, manages local
+provider configuration and keys, supports the built-in local engine, and can
+host Desktop LAN / Local Network classroom sessions without Docker.
+
+### 4. Optional School Box Server (Docker)
 
 ```bash
 git clone https://github.com/apomera/AlloFlow.git
@@ -602,8 +641,10 @@ docker-compose up -d
 
 Services: Ollama (LLM inference), PocketBase (local DB), Piper / Edge
 TTS (offline speech), SearXNG (local search), Nginx (reverse proxy +
-SSL). Status of the School Box image as of May 2026: under active
-development, not yet operational.
+SSL), and related optional local helpers. This stack is no longer the
+default classroom path; it is the server/appliance packaging path for
+schools that need a district-owned host, persistence, TLS, or heavier
+air-gapped infrastructure.
 
 ## Canvas Mode + API Key Configuration
 
@@ -649,23 +690,23 @@ const _isCanvasEnv = (() => {
 Every interactive element (including all STEM tools and games) is keyboard
 operable (Tab / Enter / Arrow). ARIA labels are required everywhere.
 
-TTS is in-browser, never cloud:
-- **Kokoro** (English, 30+ neural voices)
-- **Piper** (40+ languages, WebAssembly)
-
-Audio never leaves the device.
+Voice output is provider-dependent:
+- **Desktop/local engines** such as Kokoro keep generation on the user's device
+  when installed and selected.
+- **Browser/system speech** can serve as a local fallback.
+- **Cloud voices** are explicit provider choices for deployments that enable them.
 
 ### STEM tool theme + contrast
 
-STEM tools (~104) intentionally use an immersive dark palette regardless of
+STEM tools intentionally use an immersive dark palette regardless of
 the host app's `theme === 'light'` / `dark` setting — the dark canvas is
 a deliberate lab-mode aesthetic (glare reduction, spectral color visibility,
 "you are in a lab" psychological signal). Forcing all of them to flip with
 the host theme would erase that design choice.
 
-What IS wired up across all 101 hardcoded-palette tools (2026-05-19):
+What IS wired up across the hardcoded-palette STEM tools:
 
-- **CSS variables** at `AlloFlowANTI.txt:22016` define `--allo-stem-canvas`,
+- **CSS variables** in the STEM theme block of `AlloFlowANTI.txt` define `--allo-stem-canvas`,
   `--allo-stem-panel`, `--allo-stem-deeper`, `--allo-stem-text`,
   `--allo-stem-text-soft`, `--allo-stem-border`, `--allo-stem-button-*`.
   Three theme variants: light (`:root`/`.theme-default`), dark (`.theme-dark`),
@@ -675,7 +716,7 @@ What IS wired up across all 101 hardcoded-palette tools (2026-05-19):
   `window.AlloStemTheme.palette([themeName])` returns plain hex strings for
   canvas / SVG / dynamic-style consumers that can't use CSS variables.
   `window.AlloStemTheme.onChange(cb)` for tools that need a repaint signal.
-- **High-contrast override stylesheet** at `AlloFlowANTI.txt:22057+` —
+- **High-contrast override stylesheet** in the same STEM theme block —
   attribute-selector CSS that catches inline `background: '#0f172a'` /
   `rgba(15,23,42,*)` / similar dark patterns and swaps them to `#000`
   when `.theme-contrast` is active. Same for common light text colors
@@ -700,7 +741,7 @@ extended rationale.
 | On-device storage | All session data in `localStorage`; no cloud writes |
 | TeacherGate | Clinical tools and answer keys gated behind educator verification |
 | Fact-Chunk pipeline | PII-scrubbing layer applied before report generation to prevent AI hallucination of sensitive data |
-| Air-gap option | School Box deployment operates with no external API calls |
+| Local-first options | AlloFlow Desktop supports same-device and same-room LAN use without Docker; optional School Box Server deployments can run selected services without external API calls |
 
 ## Development Notes
 
@@ -715,7 +756,7 @@ During local dev, stale assets are sometimes served. Two common causes:
 
 | Property | `AlloFlowANTI.txt` | `stem_lab_module.js` |
 |---|---|---|
-| Approx size | 1.2 MB / ~24K lines (down from 4.3 MB / 67K in April) | varies |
+| Approx size | 1.7 MB / ~31K deployed lines in `App.jsx`; source `AlloFlowANTI.txt` is ~1.7 MB locally (down from 4.3 MB / 67K in April) | varies |
 | Line endings | CRLF (pure) | CRLF (pure) |
 | BOM | None | None |
 | Non-ASCII | ~6 KB of emoji | ~14 KB of emoji |
@@ -796,8 +837,11 @@ catalogs, and a11y baselines. Not covered:
   actually updates (would catch manifest/pack-load issues).
 - **RTL rendering.** Arabic/Hebrew packs exist and `dir="rtl"` is wired,
   but no test confirms it propagates and `ms-*`/`me-*` classes behave.
-- **PDF pipeline output validation.** `check_pdf_pipeline.cjs` static check
-  exists; no test generates a PDF and asserts non-empty/non-corrupt output.
+- **PDF pipeline output validation.** Now well covered: `check_pdf_pipeline.cjs`
+  static check plus a large `tests/doc_pipeline_*.test.js` suite and e2e golden
+  masters (`tests/e2e/pdf_tag_tree_golden.spec.ts`,
+  `tests/e2e/pdf_validator_golden.spec.ts`, `tests/compare_tagged_pdf_perf.test.js`)
+  that assert tagged-PDF structure and PDF/UA output.
 - **React state propagation across Context boundaries** (jsdom unit-level).
 - **CDN fallback chain.** Cloudflare → GitHub raw fallback path is not
   exercised under failure conditions.
@@ -827,10 +871,10 @@ clinical impact.
 ├── *_module.js                   ← Other CDN modules (~50 files)
 ├── stem_lab/
 │   ├── stem_lab_module.js        ← STEM Lab host
-│   └── stem_tool_*.js            ← 95 plugin tools (May 2026)
+│   └── stem_tool_*.js            ← 111 tool files / 116 registered IDs (July 2026)
 ├── sel_hub/
 │   ├── sel_hub_module.js         ← SEL Hub host
-│   └── sel_tool_*.js             ← 49 plugin tools (May 2026)
+│   └── sel_tool_*.js             ← 70 tools (July 2026)
 ├── tests/
 │   ├── setup.js                  ← vitest fixture
 │   └── *.test.js                 ← 5 helper module test files

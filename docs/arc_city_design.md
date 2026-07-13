@@ -1,5 +1,7 @@
 # Arc City
 
+> **Design snapshot note (2026-07-09):** This is a planning/design artifact for a proposed or staged STEM Lab tool. Verify the current `stem_lab/stem_tool_arccity.js`, pilot scope, and accessibility/gameplay implementation before treating v1 target language or section references as shipped behavior.
+
 > STEM Lab tool · `id: arccity` · file `stem_lab/stem_tool_arccity.js` · single hand-maintained module, no build step · v1 target: King Middle 2026–2027 pilot (8th grade)
 
 ## Executive Summary
@@ -275,7 +277,7 @@ A single **Play** button drops straight into Tutorial Grid with sane defaults (s
 
 ### 8.5 i18n scope (decisive)
 
-All user-facing strings (including dynamic narration and the teacher summary) use `ctx.t(key)` with interpolated numbers, registered up front so `check_translation_keys.cjs` and `check_lang_json.cjs` pass. **v1 is English-first**; the ~56 language packs receive these keys staged for post-pilot human translation. **Spatial/quantity narration ("1.5 units above") needs per-language template review, not mechanical key substitution**, and is explicitly flagged as *not* covered by the existing pack sweep.
+All user-facing strings (including dynamic narration and the teacher summary) use `ctx.t(key)` with interpolated numbers, registered up front so `check_translation_keys.cjs` and `check_lang_json.cjs` pass. **v1 is English-first**; the current 63 mirrored language-pack files should receive the new keys for checker coverage, with post-pilot human translation/review still required. **Spatial/quantity narration ("1.5 units above") needs per-language template review, not mechanical key substitution**, and is explicitly flagged as *not* covered by the existing pack sweep.
 
 ---
 

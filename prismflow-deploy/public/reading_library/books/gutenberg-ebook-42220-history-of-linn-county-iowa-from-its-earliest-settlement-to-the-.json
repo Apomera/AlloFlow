@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-42220-history-of-linn-county-iowa-from-its-earliest-settlement-to-the-",
+  "title": "History of Linn County Iowa: From Its Earliest Settlement to the Present Time [1911]",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Linn County (Iowa) -- Biography",
+    "Linn County (Iowa) -- History",
+    "Registers of births, etc. -- Iowa -- Linn County"
+  ],
+  "authors": [
+    "Brewer, Luther Albertus",
+    "Wick, Barthinius L. (Barthinius Larson)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/42220"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/42220/pg42220.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"History of Linn County Iowa: From Its Earliest Settlement to the Present Time [1911]\" by Brewer, Luther Albertus, Wick, Barthinius L. (Barthinius Larson). Metadata tags include: Linn County (Iowa) -- Biography; Linn County (Iowa) -- History; Registers of births, etc. -- Iowa -- Linn County."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 95
+  }
+}

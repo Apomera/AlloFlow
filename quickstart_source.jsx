@@ -4,7 +4,7 @@
 // IIFE-load time. Fixed the original QuickStart Fetch bug class
 // (April 26 2026, feedback_iife_lazy_lookup.md) where eager snapshotting
 // captured the fallback before UtilsPure had loaded.
-// Keep these in sync with quickstart_module.js until a build script exists.
+// _build_quickstart_module.js compiles this source and synchronizes both runtime copies.
 var fetchAndCleanUrl = function() {
   var u = window.AlloModules && window.AlloModules.UtilsPure;
   var fn = (u && u.fetchAndCleanUrl) || (window.__alloUtils && window.__alloUtils.fetchAndCleanUrl);
@@ -15,11 +15,244 @@ var isGoogleRedirect = function() {
   var fn = (u && u.isGoogleRedirect) || (window.__alloUtils && window.__alloUtils.isGoogleRedirect);
   return fn ? fn.apply(this, arguments) : false;
 };
-const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode }) => {
+// Reading Catalog picker (Quick Start to Reading Library bridge).
+// Compact picker over the same mirrored Reading Library catalog data
+// (allo-reading-library-index@1). Deliberately dependency-free (plain
+// createElement, own fetch chain) so the wizard works even when the
+// ReadingLibrary module has not loaded. Kept byte-identical in
+// quickstart_source.jsx and generated into quickstart_module.js.
+var STORYBOOK_BASES = [
+  'https://alloflow-cdn.pages.dev/reading_library/',
+  'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
+  './reading_library/',
+];
+// Reading levels are approximate grade bands. Used to label and
+// pre-select the picker's level filter from the grade chosen in wizard step 1.
+var STORYBOOK_LEVELS = {
+  '1': 'Level 1 - First words (K-1)',
+  '2': 'Level 2 - First sentences (Gr 1-2)',
+  '3': 'Level 3 - Reading on my own (Gr 2-3)',
+  '4': 'Level 4 - Longer stories (Gr 3-5)',
+  '5': 'Level 5 - Middle-grade nonfiction (Gr 6-8)',
+  '6': 'Level 6 - Upper-grade source text (Gr 9-12)',
+};
+var CATALOG_SOURCE_LABELS = {
+  storyweaver: 'StoryWeaver',
+  frontiers: 'Frontiers for Young Minds',
+  nasa: 'NASA',
+  noaa: 'NOAA',
+  usgs: 'USGS',
+  wikisource: 'Wikisource',
+  loc: 'Library of Congress',
+  gutenberg: 'Project Gutenberg',
+  openstax: 'OpenStax',
+  libretexts: 'LibreTexts',
+  ck12: 'CK-12',
+  unknown: 'Other source',
+};
+function catalogSourceLabel(id) {
+  return CATALOG_SOURCE_LABELS[id] || id || CATALOG_SOURCE_LABELS.unknown;
+}
+function catalogSourceId(book) {
+  if (book && book.sourceId) return String(book.sourceId).toLowerCase();
+  if (book && book.source && book.source.id) return String(book.source.id).toLowerCase();
+  var raw = [
+    book && book.source && book.source.name,
+    book && book.source && book.source.url,
+    book && book.publisher,
+  ].join(' ').toLowerCase();
+  if (raw.indexOf('storyweaver') !== -1 || raw.indexOf('pratham') !== -1) return 'storyweaver';
+  if (raw.indexOf('frontiers') !== -1) return 'frontiers';
+  if (raw.indexOf('nasa') !== -1) return 'nasa';
+  if (raw.indexOf('noaa') !== -1) return 'noaa';
+  if (raw.indexOf('usgs') !== -1) return 'usgs';
+  if (raw.indexOf('wikisource') !== -1) return 'wikisource';
+  if (raw.indexOf('loc.gov') !== -1 || raw.indexOf('library of congress') !== -1) return 'loc';
+  if (raw.indexOf('gutenberg') !== -1) return 'gutenberg';
+  if (raw.indexOf('openstax') !== -1) return 'openstax';
+  if (raw.indexOf('libretexts') !== -1) return 'libretexts';
+  if (raw.indexOf('ck-12') !== -1 || raw.indexOf('ck12') !== -1) return 'ck12';
+  return 'unknown';
+}
+function catalogAttributionLine(book) {
+  var sourceId = catalogSourceId(book);
+  var sourceName = (book && book.source && book.source.name) || (book && book.publisher) || catalogSourceLabel(sourceId);
+  var license = book && book.license ? book.license : (sourceId === 'storyweaver' ? 'CC BY 4.0' : '');
+  return [sourceName, license].filter(Boolean).join(' - ');
+}
+function catalogCover(book) {
+  if (!book || !book.cover) return null;
+  if (typeof book.cover === 'string') return book.cover;
+  return book.cover.card || book.cover.url || book.cover.full || null;
+}
+function storybookGradeToLevel(grade) {
+  var g = String(grade || '').toLowerCase();
+  if (g.indexOf('kinder') !== -1 || /\b(pre-?k|1st)\b/.test(g)) return '1';
+  if (/\b2nd\b/.test(g)) return '2';
+  if (/\b3rd\b/.test(g)) return '3';
+  if (/\b(4th|5th)\b/.test(g)) return '4';
+  if (/\b(6th|7th|8th)\b/.test(g)) return '5';
+  if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1) return '6';
+  return '';
+}
+function StorybookPicker(props) {
+  var e = React.createElement;
+  var _idx = React.useState(null); var idx = _idx[0], setIdx = _idx[1];
+  var _err = React.useState(false); var err = _err[0], setErr = _err[1];
+  var _lang = React.useState(''); var lang = _lang[0], setLang = _lang[1];
+  var _lvl = React.useState(function () { return storybookGradeToLevel(props.grade); }); var level = _lvl[0], setLevel = _lvl[1];
+  var _q = React.useState(''); var q = _q[0], setQ = _q[1];
+  var _busy = React.useState(null); var busy = _busy[0], setBusy = _busy[1];
+  var baseRef = React.useRef(STORYBOOK_BASES[0]);
+  var wt = function (k, fb) { try { var r = props.t(k); return (r && r !== k) ? r : fb; } catch (_) { return fb; } };
+  React.useEffect(function () {
+    var alive = true;
+    var tryBase = function (i) {
+      if (i >= STORYBOOK_BASES.length) { if (alive) setErr(true); return; }
+      var bust = STORYBOOK_BASES[i].indexOf('http') === 0 ? '?t=' + Date.now() : '';
+      fetch(STORYBOOK_BASES[i] + 'index.json' + bust)
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+          if (!alive) return;
+          if (!data || !Array.isArray(data.books)) throw new Error('bad shape');
+          baseRef.current = STORYBOOK_BASES[i];
+          setIdx(data);
+        })
+        .catch(function () { tryBase(i + 1); });
+    };
+    tryBase(0);
+    return function () { alive = false; };
+  }, []);
+  var pick = function (entry) {
+    if (busy) return;
+    setBusy(entry.slug);
+    var bust = baseRef.current.indexOf('http') === 0 ? '?t=' + Date.now() : '';
+    fetch(baseRef.current + entry.file + bust)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (book) {
+        setBusy(null);
+        var pages = Array.isArray(book.pages) ? book.pages : [];
+        var parts = [book.title || ''];
+        pages.forEach(function (p) {
+          if (typeof p === 'string' && p.trim()) parts.push(p);
+          else if (p && p.text) parts.push(p.text);
+        });
+        var attribution = catalogAttributionLine(book);
+        var sourceId = catalogSourceId(book);
+        // 3rd arg = compact book ref, shape-matched to the reader's
+        // save-to-lesson item so the host can add it to the resource pack.
+        props.onPicked(parts.join('\n\n').trim(), {
+          title: book.title,
+          description: attribution,
+        }, {
+          slug: book.slug,
+          title: book.title,
+          language: book.language,
+          langCode: book.langCode,
+          level: book.level,
+          cover: entry.cover || catalogCover(book),
+          hasAudio: !!book.audio,
+          pageCount: pages.length,
+          description: book.description || '',
+          attribution: attribution,
+          sourceId: sourceId,
+          sourceName: catalogSourceLabel(sourceId),
+          license: book.license || '',
+        });
+      })
+      .catch(function () {
+        setBusy(null);
+        if (props.addToast) props.addToast(wt('wizard.storybook_failed', 'Could not open that resource right now.'), 'error');
+      });
+  };
+  if (err) return e('p', { className: 'text-sm text-red-600' }, wt('wizard.storybook_unavailable', 'The book library is not reachable right now — try another source option.'));
+  if (!idx) return e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_loading', 'Loading the library…'));
+  var levels = Array.from(new Set((idx.books || []).map(function (b) { return String(b.level || ''); }).filter(Boolean))).sort(function (a, b) {
+    return (Number(a) - Number(b)) || String(a).localeCompare(String(b));
+  });
+  var matches = idx.books.filter(function (b) {
+    if (lang && b.language !== lang) return false;
+    if (level && String(b.level) !== level) return false;
+    if (q) {
+      var hay = [
+        b.title,
+        (b.authors || []).join(' '),
+        b.description,
+        b.sourceId,
+        b.source && b.source.name,
+        (b.subjects || []).join(' '),
+      ].join(' ').toLowerCase();
+      if (hay.indexOf(q.toLowerCase()) === -1) return false;
+    }
+    return true;
+  }).sort(function (a, b) {
+    // Predictable browse order: easiest reading level first, then A-Z.
+    return (Number(a.level || 99) - Number(b.level || 99)) || String(a.title).localeCompare(String(b.title));
+  });
+  return e('div', null,
+    e('div', { className: 'flex flex-wrap gap-2 mb-2' },
+      e('select', {
+        className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+        value: level, onChange: function (ev) { setLevel(ev.target.value); },
+        'aria-label': wt('wizard.storybook_level', 'Reading level'),
+      },
+        e('option', { value: '' }, wt('wizard.storybook_all_levels', 'All levels')),
+        levels.map(function (lv) { return e('option', { key: lv, value: lv }, STORYBOOK_LEVELS[lv] || ('Level ' + lv)); })
+      ),
+      e('select', {
+        className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+        value: lang, onChange: function (ev) { setLang(ev.target.value); },
+        'aria-label': wt('wizard.storybook_language', 'Language'),
+      },
+        e('option', { value: '' }, wt('wizard.storybook_all_langs', 'All languages')),
+        (idx.languages || []).map(function (l) { return e('option', { key: l.name, value: l.name }, l.name + ' (' + l.count + ')'); })
+      ),
+      e('input', {
+        dir: 'auto',
+        className: 'flex-grow min-w-0 p-2 border-2 border-slate-200 rounded-xl text-sm',
+        placeholder: wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
+        value: q, onChange: function (ev) { setQ(ev.target.value); },
+        'aria-label': wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
+      })
+    ),
+    level && level === storybookGradeToLevel(props.grade) ? e('p', { className: 'text-[11px] text-amber-700 mb-2' },
+      wt('wizard.storybook_grade_note', 'Showing resources matched to your grade - choose All levels to see everything.')) : null,
+    e('p', { className: 'text-[11px] font-semibold text-slate-500 mb-1' },
+      matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'resource') : wt('wizard.storybook_many', 'resources'))),
+    matches.length === 0 ? e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_none', 'No resources match - try different filters.')) : null,
+    e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[46vh] overflow-y-auto pr-1' },
+      matches.map(function (b) {
+        return e('button', {
+          key: b.slug,
+          onClick: function () { pick(b); },
+          disabled: !!busy,
+          className: 'flex items-start gap-3 p-2 rounded-xl border-2 border-slate-100 hover:border-amber-400 hover:bg-amber-50 transition-all bg-white text-start disabled:opacity-60',
+        },
+          b.cover ? e('img', { src: b.cover, alt: '', loading: 'lazy', className: 'w-14 h-14 rounded-lg object-cover bg-slate-100 flex-shrink-0' }) : e('span', { className: 'w-14 h-14 rounded-lg bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📖'),
+          e('span', { className: 'min-w-0' },
+            e('span', { className: 'block font-bold text-slate-700 text-sm leading-snug', dir: 'auto' }, (busy === b.slug ? '⏳ ' : '') + b.title),
+            e('span', { className: 'block text-[11px] text-slate-500 mb-0.5' }, catalogSourceLabel(catalogSourceId(b)) + ' - ' + b.language + (b.level ? ' - L' + b.level : '') + (b.hasAudio ? ' - audio' : '')),
+            b.description ? e('span', { className: 'block text-[11px] text-slate-500 line-clamp-2', dir: 'auto' }, b.description) : null
+          )
+        );
+      })
+    ),
+    e('p', { className: 'text-[11px] text-slate-500 mt-2' },
+      wt('wizard.storybook_credit', 'Reading Catalog resources come from StoryWeaver and other open/public educational sources. Check each item for its license.'))
+  );
+}
+const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
+  // Guarded fallback for keys newer than the lang packs (raw-key echo counts
+  // as missing — same convention as the Reading Library module).
+  const wt = (k, fb) => { try { const r = t(k); return (r && r !== k) ? r : fb; } catch (_) { return fb; } };
   const wizardRef = useRef(null);
-  useFocusTrap(wizardRef, isOpen);
+  const handleClose = useCallback(() => {
+    setIsHelpMode(false);
+    onClose();
+  }, [setIsHelpMode, onClose]);
+  useFocusTrap(wizardRef, isOpen, handleClose);
   const [localData, setLocalData] = useState({
       topic: '',
       grade: '3rd Grade',
@@ -61,6 +294,19 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
     3: { title: 'Step 3: Standards & Customization', text: 'Align your content to academic standards (Common Core, NGSS, state-specific). You can search by AI or enter codes manually. Also set DOK level, output format, writing tone, languages, and student interests for personalized content.' },
     4: { title: 'Step 4: Review & Personalize', text: 'Final review of your settings. Add vocabulary terms, a learning goal, citation preferences, and any custom instructions for the AI. Click Finish to generate your lesson with all configured options applied.' },
   };
+  // On open: deep-link straight to a source step when the host asked for one
+  // (e.g. the idle-panel "Find a resource online" jumps to Find-on-the-Web),
+  // otherwise start fresh at step 1. Consumed once so the next open is normal.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (initialSourceMode) {
+      setLocalData(prev => ({ ...prev, sourceMode: initialSourceMode }));
+      setStep(3);
+      if (onInitialModeConsumed) onInitialModeConsumed();
+    } else {
+      setStep(1);
+    }
+  }, [isOpen]);
   if (!isOpen) return null;
   const handleSkip = () => {
     safeSetItem('allo_wizard_completed', 'true');
@@ -161,6 +407,17 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       } finally {
           setIsFetching(false);
       }
+  };
+  // Merged "Find on the Web" entry point: a pasted link imports directly,
+  // anything else goes through AI search. (The Paste URL and AI Auto-Search
+  // cards overlapped — one card, one input, smart dispatch.)
+  const handleWizardWebFind = () => {
+      const q = (localData.searchQuery || '').trim();
+      if (/^(https?:\/\/|www\.)\S+$/i.test(q)) {
+          handleWizardUrlFetch(q.indexOf('www.') === 0 ? 'https://' + q : q);
+          return;
+      }
+      handleWizardAiSearch();
   };
   const handleWizardAiSearch = async () => {
       if (!localData.searchQuery.trim()) return;
@@ -272,17 +529,19 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
         role="dialog"
         aria-modal="true"
         aria-labelledby="quickstart-wizard-title"
+        aria-describedby="quickstart-step-status"
         className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
     >
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]">
+      <div className={`bg-white w-full ${localData.sourceMode === 'storybook' && step === 3 ? 'max-w-4xl' : 'max-w-xl'} rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]`}>
           <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
               <div>
                   <h2 id="quickstart-wizard-title" className="text-xl font-black text-slate-800 flex items-center gap-2">
                     <Sparkles className="text-yellow-500 fill-current" size={20} /> {t('wizard.title')}
                   </h2>
-                  <div className="flex gap-1 mt-2">
+                  <p id="quickstart-step-status" role="status" aria-live="polite" aria-atomic="true" className="text-xs font-bold text-slate-600 mt-1">{wt('wizard.step_status', 'Step')} {step} {wt('wizard.step_of', 'of')} 4</p>
+                  <div className="flex gap-1 mt-2" role="progressbar" aria-label={wt('wizard.progress', 'Quick Start progress')} aria-valuemin={1} aria-valuemax={4} aria-valuenow={step} aria-valuetext={`Step ${step} of 4`}>
                       {[1, 2, 3, 4].map(s => (
-                          <div key={s} className={`h-1.5 w-5 rounded-full transition-colors ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+                          <div key={s} aria-hidden="true" className={`h-1.5 w-5 rounded-full transition-colors ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
                       ))}
                   </div>
               </div>
@@ -291,11 +550,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       aria-label={t('common.skip')}
                     data-help-ignore="true"
                     onClick={handleSkip}
-                    className="text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors uppercase tracking-wider"
+                    className="inline-flex min-h-6 items-center px-1 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors uppercase tracking-wider"
                   >
                     {t('common.skip')}
                   </button>
-                  <button data-help-ignore="true" onClick={() => { setIsHelpMode(false); onClose(); }} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close_wizard')}><X size={24}/></button>
+                  <button data-help-ignore="true" onClick={handleClose} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close_wizard')}><X size={24}/></button>
               </div>
           </div>
           {isHelpMode && wizardStepHelp[step] && (
@@ -307,7 +566,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   <p className="text-xs text-indigo-700 mt-1 leading-relaxed">{wizardStepHelp[step].text}</p>
                   <p className="text-xs text-indigo-500 mt-2 italic">💡 Click any element below for a detailed explanation</p>
                 </div>
-                <button onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 p-1"><X size={14}/></button>
+                <button onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 min-w-6 min-h-6 inline-flex items-center justify-center"><X size={14}/></button>
               </div>
             </div>
           )}
@@ -425,19 +684,6 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <span className="font-bold text-slate-700 group-hover:text-indigo-700 text-lg">{t('wizard.upload_file')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{t('wizard.upload_desc')}</span>
                               </button>
-                              <button data-help-key="wizard_url_source"
-                                onClick={() => {
-                                    setLocalData(prev => ({ ...prev, sourceMode: 'url' }));
-                                    setStep(3);
-                                }}
-                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all group bg-white active:scale-95 h-40"
-                              >
-                                <div className="bg-blue-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
-                                    <Link size={32} className="text-blue-600"/>
-                                </div>
-                                <span className="font-bold text-slate-700 group-hover:text-blue-700 text-lg">{t('wizard.paste_url')}</span>
-                                <span className="text-xs text-slate-600 mt-1">{t('wizard.url_desc')}</span>
-                              </button>
                               <button data-help-key="wizard_search_source"
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'search' }));
@@ -448,8 +694,21 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <div className="bg-teal-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
                                     <Globe size={32} className="text-teal-600"/>
                                 </div>
-                                <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{t('wizard.ai_search')}</span>
-                                <span className="text-xs text-slate-600 mt-1">{t('wizard.search_desc')}</span>
+                                <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{wt('wizard.find_web', 'Find on the Web')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{wt('wizard.find_web_desc', 'Paste a link or let AI search for you')}</span>
+                              </button>
+                              <button data-help-key="wizard_storybook_source"
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'storybook' }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50 transition-all group bg-white active:scale-95 h-40"
+                              >
+                                <div className="bg-amber-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                    <span className="text-[32px] leading-none" aria-hidden="true">📖</span>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-amber-700 text-lg">{wt('wizard.storybooks', 'Reading Catalog')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{wt('wizard.storybooks_desc', 'Books, articles, and primary sources')}</span>
                               </button>
                               <button data-help-key="wizard_generate_source"
                                   aria-label={t('common.generate')}
@@ -521,22 +780,22 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       )}
                       {localData.sourceMode === 'search' && (
                           <div>
-                              <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.ai_search')}</label>
-                              <p className="text-slate-600 mb-4 text-sm">{t('wizard.search_helper')}</p>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">{wt('wizard.find_web', 'Find on the Web')}</label>
+                              <p className="text-slate-600 mb-4 text-sm">{wt('wizard.find_web_helper', 'Paste a link to import that page, or describe what you need and AI will find options.')}</p>
                               <div className="flex gap-2 mb-6">
                                   <input dir="auto" aria-label={t('common.enter_local_data')}
                                       type="text"
                                       value={localData.searchQuery}
                                       onChange={(e) => setLocalData(prev => ({ ...prev, searchQuery: e.target.value }))}
                                       data-help-key="wizard_search_input"
-                                      placeholder={t('wizard.search_placeholder')}
+                                      placeholder={wt('wizard.find_web_placeholder', 'Paste a URL, or describe a topic…')}
                                       className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-500/30 outline-none transition-all"
-                                      onKeyDown={(e) => e.key === 'Enter' && handleWizardAiSearch()}
+                                      onKeyDown={(e) => e.key === 'Enter' && handleWizardWebFind()}
                                       autoFocus
                                   />
                                   <button aria-label={t('common.search_with_ai')}
                                       data-help-key="wizard_search_btn"
-                                      onClick={handleWizardAiSearch}
+                                      onClick={handleWizardWebFind}
                                       disabled={isFetching || !localData.searchQuery}
                                       aria-busy={isFetching}
                                       className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
@@ -607,6 +866,47 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                             className="px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
                                           >
                                               {t('wizard.back_to_results')}
+                                          </button>
+                                          <button
+                                              aria-label={t('common.continue')}
+                                              onClick={() => setStep(4)}
+                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                                          >
+                                              {t('common.next')} <ArrowRight size={18} />
+                                          </button>
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
+                      )}
+                      {localData.sourceMode === 'storybook' && (
+                          <div>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">📖 {wt('wizard.storybooks_title', 'Pick from the reading catalog')}</label>
+                              <p className="text-slate-600 mb-4 text-sm">{wt('wizard.storybooks_helper', 'Open books, articles, primary sources, and picture books from the Reading Catalog. The selected text becomes your source material for every tool.')}</p>
+                              {!(typeof localData.fetchedContent === 'string' && localData.fetchedContent) && (
+                                  <StorybookPicker t={t} grade={localData.grade} addToast={addToast} onPicked={(text, meta, ref) => setLocalData(prev => ({ ...prev, fetchedContent: text, resourceMeta: meta, searchQuery: meta.title, storybookRef: ref }))} />
+                              )}
+                              {typeof localData.fetchedContent === 'string' && localData.fetchedContent && (
+                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
+                                      <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
+                                          <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
+                                      </div>
+                                      {localData.resourceMeta && (
+                                          <div className="mb-3 pb-3 border-b border-green-200/50">
+                                              <h4 className="font-bold text-green-900 text-sm" dir="auto">{localData.resourceMeta.title}</h4>
+                                              <p className="text-xs text-green-700 italic">{localData.resourceMeta.description}</p>
+                                          </div>
+                                      )}
+                                      <p className="text-xs text-green-700 mb-4 line-clamp-3 opacity-80 bg-white/50 p-2 rounded border border-green-100" dir="auto">
+                                          {localData.fetchedContent.substring(0, 300)}...
+                                      </p>
+                                      <div className="flex gap-2">
+                                          <button
+                                              aria-label={t('common.continue')}
+                                              onClick={() => setLocalData(prev => ({ ...prev, fetchedContent: '', resourceMeta: null }))}
+                                              className="px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
+                                          >
+                                              {wt('wizard.back_to_books', 'Choose another resource')}
                                           </button>
                                           <button
                                               aria-label={t('common.continue')}
@@ -956,10 +1256,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               </p>
                               <button
                                   aria-label={t('common.upload')}
-                                  onClick={() => {
-                                      onUpload();
-                                      onClose();
-                                  }}
+                                  onClick={() => onComplete({ ...localData, sourceMode: 'file', materialType: 'file' })}
                                   className="bg-indigo-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-700 transition-transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
                               >
                                   <Upload size={20}/> {t('wizard.select_file')}
@@ -1040,7 +1337,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   aria-label={t('common.close')}
                                                   data-help-key="wizard_lang_remove_btn"
                                                   onClick={() => removeWizLanguage(lang)}
-                                                  className="hover:text-indigo-900 ms-1"
+                                                  className="hover:text-indigo-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
                                               >
                                                   <X size={12} />
                                               </button>
@@ -1079,7 +1376,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   aria-label={t('common.close')}
                                                   data-help-key="wizard_interest_remove_btn"
                                                   onClick={() => removeWizInterest(interest)}
-                                                  className="hover:text-pink-900 ms-1"
+                                                  className="hover:text-pink-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
                                               >
                                                   <X size={12} />
                                               </button>
@@ -1092,7 +1389,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                           </div>
                           <div className="flex justify-between pt-4 mt-4 border-t border-slate-100">
                               <button
-                                  aria-label={t('common.check')}
+                                  aria-label={t('common.back')}
                                 data-help-key="wizard_prev_btn"
                                 onClick={() => setStep(s => s - 1)}
                                 className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2"
@@ -1100,7 +1397,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
                               </button>
                               <button
-                                  aria-label={t('common.check')}
+                                  aria-label={t('common.finish')}
                                 data-help-key="wizard_complete_btn"
                                 onClick={() => onComplete(localData)}
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all active:scale-95 flex items-center gap-2"
@@ -1116,7 +1413,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
               <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
                   {step > 1 ? (
                       <button
-                          aria-label={t('common.continue')}
+                          aria-label={t('common.back')}
                         onClick={() => setStep(s => s - 1)}
                         className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors"
                       >

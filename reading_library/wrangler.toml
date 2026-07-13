@@ -1,0 +1,23 @@
+# Cloudflare Worker config for the AlloFlow Reading Library import proxy.
+#
+# One-time deploy:
+#   npm i -g wrangler        # if you don't have it
+#   cd reading_library
+#   wrangler login
+#   wrangler deploy
+#
+# Wrangler prints a URL like https://alloflow-reading-import.<you>.workers.dev
+# Point the reader at it by setting either:
+#   - GUTENBERG_IMPORT_ENDPOINT in reading_library_module.js, or
+#   - window.__alloReadingImportEndpoint at runtime
+# to that URL. That turns "Request import" into one-click "Add now".
+#
+# The Worker is keyless and stateless (it stores nothing). To restrict who can
+# call it, change ALLOW_ORIGIN in import_worker.js from "*" to your domain(s).
+
+name = "alloflow-reading-import"
+main = "import_worker.js"
+compatibility_date = "2025-01-01"
+
+# Free plan is plenty; each import is a couple of outbound fetches.
+# workers_dev = true   # (default) serves on *.workers.dev

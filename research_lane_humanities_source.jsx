@@ -81,16 +81,33 @@
  *     Sum=8 hits global cap exactly. Lane-rotation honored via UI: each lane
  *     only renders its own touchpoint buttons.
  */
-(function () {
+(function initResearchLaneHumanities(retriesLeft) {
   'use strict';
+  // Loader visibility: the host's loadModule() checks window.AlloModules[name]
+  // at script onload to decide SUCCESS vs FAILED. Stamp a key immediately
+  // (upgraded to __tier 2 at registration) so a legitimate defer isn't
+  // misread as a failed load — which used to trigger a pointless GitHub-raw
+  // double-fetch on every page load.
+  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules.ResearchLaneHumanities) window.AlloModules.ResearchLaneHumanities = { __pending: true };
   if (window.ResearchHub && window.ResearchHub._lanes && window.ResearchHub._lanes.humanities
       && window.ResearchHub._lanes.humanities.__tier >= 2) {
     console.log('[CDN] ResearchLaneHumanities already registered, skipping');
     return;
   }
   if (!window.ResearchHub || typeof window.ResearchHub.registerLane !== 'function') {
+    // The hub and its lanes load concurrently, so completion order is
+    // network-dependent. NOTE: this branch used `arguments.callee`, which
+    // THROWS in the strict-mode build the moment a lane beats the hub —
+    // recurse via the named IIFE instead, bounded so a permanently missing
+    // hub can't spin forever.
+    if (retriesLeft === undefined) retriesLeft = 50; // ≈10s at 200ms
+    if (retriesLeft <= 0) {
+      console.error('[ResearchLaneHumanities] window.ResearchHub never became available — giving up');
+      return;
+    }
     console.warn('[ResearchLaneHumanities] window.ResearchHub not yet available — deferring');
-    setTimeout(arguments.callee || function(){}, 200);
+    setTimeout(function () { initResearchLaneHumanities(retriesLeft - 1); }, 200);
     return;
   }
 
@@ -3994,5 +4011,7 @@
     __tier: 2,
   });
 
+  // Upgrade the loader-visibility stamp now that the lane is really in.
+  window.AlloModules.ResearchLaneHumanities = { __tier: 2, lane: 'humanities' };
   console.log('[CDN] ResearchLaneHumanities registered (Tier 2)');
 })();

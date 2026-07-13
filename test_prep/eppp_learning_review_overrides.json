@@ -1,0 +1,636 @@
+{
+  "schemaVersion": 1,
+  "memoryAids": {
+    "Limits of Confidentiality": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code/manual-updates.html"
+      ],
+      "reviewNote": "Rewritten to distinguish consent, mandated/permitted disclosure, jurisdictional duties, minimum-necessary reasoning, subpoenas, and court orders."
+    },
+    "Research Design Hierarchy": {
+      "reviewStatus": "editorial-reviewed-source-pending",
+      "references": [],
+      "reviewNote": "Removed the universal evidence ladder and separated causal, synthesis, contextual, and qualitative inference."
+    },
+    "Maslow's Hierarchy of Needs": {
+      "reviewStatus": "editorial-reviewed-source-pending",
+      "references": [
+        "https://doi.org/10.1037/h0054346"
+      ],
+      "reviewNote": "Reframed as a historical humanistic model rather than a rigid or culturally universal prerequisite pyramid."
+    },
+    "Ainsworth Strange Situation": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+      ],
+      "reviewNote": "Removed deterministic caregiver labels and prevalence claims; clarified relationship-specific observational classification."
+    },
+    "Record Keeping & Retention": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/0003-066X.62.9.993",
+        "https://www.apa.org/ethics/code/manual-updates.html"
+      ],
+      "reviewNote": "Removed universal retention periods and distinguished guidance from jurisdictional, institutional, payer, and litigation requirements."
+    },
+    "Telehealth Ethics & Practice": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/a0035001"
+      ],
+      "reviewNote": "Removed product-compliance shorthand and universal licensure claims; added risk assessment, authority-to-practice, emergency, and consent context."
+    },
+    "Autism Spectrum Disorder": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.cdc.gov/autism/about/index.html",
+        "https://www.cdc.gov/autism/data-research/"
+      ],
+      "reviewNote": "Removed stale prevalence and deterministic support-level language; retained current surveillance context and diagnostic-domain distinctions."
+    },
+    "Intellectual Disability": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability"
+      ],
+      "reviewNote": "Removed obsolete IQ severity bands and assumed school/work outcomes; emphasized adaptive functioning, context, measurement error, and supports."
+    },
+    "ADHD — DSM-5 Presentations": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know"
+      ],
+      "reviewNote": "Removed paradoxical-calming and universally-best-treatment claims; added differential assessment and individualized multimodal care."
+    },
+    "BPD Criteria": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder"
+      ],
+      "reviewNote": "Removed a universal gold-standard claim and clarified that multiple structured psychotherapies have evidence."
+    }
+  },
+  "flashcards": {
+    "Which medications can be associated with tardive dyskinesia?": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/31420757/"
+      ],
+      "reviewNote": "Expanded beyond typical antipsychotics and removed deterministic irreversibility."
+    },
+    "Psychoneuroimmunology (PNI)": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/11818582/"
+      ],
+      "reviewNote": "Reframed immune effects as bidirectional and context-dependent."
+    },
+    "What is tardive dyskinesia and how may it be managed?": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/31420757/"
+      ],
+      "reviewNote": "Separated syndrome recognition from individualized regimen review and VMAT2 treatment options."
+    },
+    "Stimulant medications for ADHD": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know"
+      ],
+      "reviewNote": "Removed paradoxical-calming and universally-most-effective claims."
+    },
+    "How do assimilation and accommodation differ in Piaget's theory?": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ],
+      "reviewNote": "Converted a duplicate into an atomic process distinction."
+    },
+    "Acculturation strategies in Berry's bidimensional framework": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x"
+      ],
+      "reviewNote": "Removed universal best/worst outcome claims and added receiving-context factors."
+    },
+    "How do common parenting-style dimensions differ?": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/h0030372"
+      ],
+      "reviewNote": "Removed deterministic child outcomes and culturally universal ranking."
+    },
+    "What is equilibration in Piaget's theory?": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ],
+      "reviewNote": "Diversified a duplicate into the higher-order regulatory process."
+    },
+    "Clozapine: major indications and monitoring": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.fda.gov/drugs/risk-evaluation-and-mitigation-strategies-rems/frequently-asked-questions-clozapine-rems-modification"
+      ],
+      "reviewNote": "Updated for removal of the U.S. Clozapine REMS while retaining label-based ANC monitoring and major risks."
+    }
+  },
+  "chapters": {
+    "ch-12": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html",
+        "https://www.hhs.gov/ohrp/regulations-and-policy/regulations/45-cfr-46/index.html",
+        "https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46",
+        "https://www.apa.org/ethics/code"
+      ],
+      "reviewNote": "Corrected Common Rule scope and review-route shortcuts, Standard 8 consent/debriefing/authorship claims, Subparts B-D summaries, historical overclaims, and speculative AI assertions; added an accessible Belmont application diagram.",
+      "checks": {
+        "source-support": "editorial-pass-primary-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass",
+        "accessibility": "shared-renderer-pass",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-review"
+      }
+    },
+    "ch-9": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html",
+        "https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/minimum-necessary-requirement/index.html",
+        "https://studentprivacy.ed.gov/ferpa",
+        "https://sites.ed.gov/idea/regs/b/b/300.101/c",
+        "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/",
+        "https://www.ada.gov/law-and-regs/ada/",
+        "https://www.apa.org/ethics/code"
+      ],
+      "reviewNote": "Removed unstable licensure and prescribing lists, unsupported malpractice rankings, HIPAA absolutes, IDEA/504 eligibility shortcuts, universal Tarasoff and reporting rules, and unsafe subpoena/court-order instructions; added an accessible legal-demand response diagram and grounded AI-accountability extension.",
+      "checks": {
+        "source-support": "editorial-pass-primary-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass",
+        "accessibility": "shared-renderer-pass",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-legal-review"
+      }
+    },
+    "ch-7": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code",
+        "https://www.apa.org/ethics/code/manual-updates.html",
+        "https://www.apa.org/science/programs/research/codes.html"
+      ],
+      "reviewNote": "Corrected Code scope and enforcement, Principle B, competence, testimonials, education, test-data, former-client, consent, confidentiality, legal-process, law-conflict, and ethics-violation shortcuts; grounded the AI extension and added a confidentiality-aware Standards 1.04/1.05 knowledge check.",
+      "checks": {
+        "source-support": "editorial-pass-primary-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11-current-code-not-draft",
+        "instructional-quality": "editorial-pass",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-ethics-review"
+      }
+    },
+    "ch-8": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code",
+        "https://www.apa.org/ethics/code/manual-updates.html",
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+        "https://www.apa.org/topics/artificial-intelligence-machine-learning/ethical-guidance-ai-professional-practice.html"
+      ],
+      "reviewNote": "Corrected impairment thresholds, colleague-response shortcuts, automatic supervisory-liability claims, supervision-model certainty, cultural competence/humility false dichotomy, unstable CE totals, and speculative AI analogies; added labelled IDM semantics and a delegation-versus-liability knowledge check.",
+      "checks": {
+        "source-support": "editorial-pass-primary-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-supervision-review"
+      }
+    },
+    "ch-10": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code",
+        "https://www.apa.org/ethics/code/manual-updates.html",
+        "https://www.testingstandards.net/",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+        "https://www.apa.org/topics/artificial-intelligence-machine-learning/ethical-guidance-ai-professional-practice.html"
+      ],
+      "reviewNote": "Corrected no-examination, assessment-consent, test-data, test-material, result-explanation, diverse-population, automated-service, and Testing Standards authority overclaims; rebuilt the data/material decision diagram and scenario around conditional legal and ethical pathways; grounded AI assessment guidance.",
+      "checks": {
+        "source-support": "editorial-pass-primary-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11-2014-standards-current-revision-underway",
+        "instructional-quality": "editorial-pass",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-assessment-review"
+      }
+    },
+    "ch-11": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code",
+        "https://www.apa.org/topics/artificial-intelligence-machine-learning/ethical-guidance-ai-professional-practice.html",
+        "https://psypact.gov/page/PracticeRegulations",
+        "https://www.hhs.gov/hipaa/for-professionals/special-topics/health-information-technology/cloud-computing/index.html",
+        "https://www.hhs.gov/hipaa/for-professionals/security/guidance/guidance-risk-analysis/index.html",
+        "https://www.who.int/news/item/28-05-2019-burn-out-an-occupational-phenomenon-international-classification-of-diseases",
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ],
+      "reviewNote": "Corrected telepsychology authority and HIPAA product shorthand, social-media absolutes, static prescribing lists, integration-model certainty, self-care and compassion-fatigue claims, universal seven-year retention advice, advocacy mandates, and outdated AI-framework assertions; labelled the integration continuum and added a retention decision check.",
+      "checks": {
+        "source-support": "editorial-pass-primary-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-practice-review"
+      }
+    },
+    "ch-47": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-for-the-antipsychotic-drug-clozapine",
+        "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d5c8a456-6f3c-4963-b321-4ed746f690e4",
+        "https://www.dailymed.nlm.nih.gov/dailymed/getFile.cfm?setid=09fb3100-1e06-4cdc-8016-7e4f5d097490&type=pdf",
+        "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fcdb94a8-33be-6375-98ef-6933999d157f&type=display",
+        "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=07a789a9-c9e8-4737-a56d-7d5405fe8100&version=5",
+        "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=35744538-1704-4ee0-954d-52710cf3456d"
+      ],
+      "reviewNote": "Corrected antipsychotic class guarantees, clozapine REMS and neutropenia terminology, antidepressant and MAOI absolutes, serotonin-toxicity pattern, lithium renal/monitoring claims, lamotrigine rash context, benzodiazepine/buspirone absolutes, stimulant growth/tic determinism, and invalid AI-clinical metaphors; added an accessible medication-safety recognition map.",
+      "checks": {
+        "source-support": "editorial-pass-current-fda-labels",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-recognition-not-prescribing",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-psychopharmacology-review"
+      }
+    },
+    "ch-49": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/introduction-behavioral-neuroscience/pages/3-1-general-neurochemistry-principles",
+        "https://openstax.org/books/biology/pages/35-2-how-neurons-communicate",
+        "https://www.ncbi.nlm.nih.gov/books/NBK554498/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK557744/",
+        "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=0a2787f9-0166-4fa7-9f02-7d355609dabf&type=display"
+      ],
+      "reviewNote": "Corrected the synapse model and broken SVG marker, qualified SSRI mechanism, defined elimination half-life and the 4â€“5-half-life approximation with assumptions, removed generic washout advice, corrected fluoxetine label context, rejected AI/pharmacology equivalence, and added an explicit first-order calculation check.",
+      "checks": {
+        "source-support": "editorial-pass-official-label-and-open-texts",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-assumptions-explicit",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-clinical-pharmacology-review"
+      }
+    },
+    "ch-16": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://dictionary.apa.org/evidence-based-practice",
+        "https://digital.apa.org/accreditation-files/policies_procedures/glossary_final.pdf",
+        "https://www.accessdata.fda.gov/drugsatfda_docs/label/2014/071443s028lbl.pdf",
+        "https://www.fda.gov/drugs/drug-safety-and-availability/fda-requiring-boxed-warning-updated-improve-safe-use-benzodiazepine-drug-class",
+        "https://www.nimh.nih.gov/health/topics/mental-health-medications",
+        "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know",
+        "https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-for-the-antipsychotic-drug-clozapine"
+      ],
+      "reviewNote": "Corrected EBPP component misuse, EST reasoning, Dodo-bird and Lambert percentage overclaims, alliance causality, fixed dose-response/deterioration estimates, antidepressant response and warning language, and psychotropic class absolutes; updated clozapine REMS, stimulant, buspirone, lithium, and lamotrigine guidance; rebuilt the common-factors check and grounded AI evaluation in EBPP.",
+      "checks": {
+        "source-support": "editorial-pass-policy-labels-and-primary-guidance",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-no-prescribing-shortcuts",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-treatment-and-pharmacology-review"
+      }
+    },
+    "ch-18": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-ed/adult-emergency-department-brief-suicide-safety-assessment-guide",
+        "https://www.nimh.nih.gov/sites/default/files/documents/research/research-conducted-at-nimh/asq-toolkit-materials/adult-outpatient/bssa-outpatient-adult-asq-nimh-toolkit.pdf",
+        "https://www.cdc.gov/suicide/risk-factors/",
+        "https://www.nctsn.org/treatments-and-practices/psychological-first-aid-and-skills-for-psychological-recovery/about-pfa",
+        "https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG-Edited-11162024.pdf"
+      ],
+      "reviewNote": "Corrected rigid crisis sequencing and session counts, demographic suicide scoring and single-best-factor claims, means-restriction-only response, PFA/debriefing causality, PTSD protocol and EMDR mechanism overclaims, simplistic CPT-versus-PE matching, and unsafe AI crisis assertions; labelled the crisis framework and added a compulsory-debriefing knowledge check.",
+      "checks": {
+        "source-support": "editorial-pass-current-federal-and-nctsn-guidance",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-multifactorial-safety-reasoning",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass-demographic-stereotypes-removed",
+        "expert-review": "pending-independent-suicide-prevention-and-trauma-review"
+      }
+    },
+    "ch-5": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.psychiatry.org/psychiatrists/practice/dsm/educational-resources/dsm-5-tr-fact-sheets",
+        "https://www.psychiatry.org/psychiatrists/practice/dsm/educational-resources/assessment-measures",
+        "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/APA_DSM-5-Section-III.pdf",
+        "https://www.psychiatry.org/getmedia/b68a5776-f88c-45c7-9535-fd219d7aa5cb/APA-DSM5TR-Update-September-2025.pdf",
+        "https://www.psychiatry.org/patients-families/what-is-the-dsm",
+        "https://www.who.int/publications/i/item/9789240077263"
+      ],
+      "reviewNote": "Corrected interview-structure absolutes, MSE objectivity and case inference, DSM update and treatment implications, Z-code overreach, fixed malingering-first differential hierarchy, oversimplified diagnostic pairs, dimensional-model guarantees, AMPD status, incorrect CFI domains and othering, and AI diagnosis analogies; rebuilt the differential diagram and added a CFI application check.",
+      "checks": {
+        "source-support": "editorial-pass-current-apa-and-who-primary-guidance",
+        "accuracy-and-currency": "editorial-pass-2026-07-11-including-2025-dsm-update",
+        "instructional-quality": "editorial-pass-iterative-hypothesis-reasoning",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled",
+        "bias-and-context": "editorial-pass-cultural-othering-and-demographic-inference-corrected",
+        "expert-review": "pending-independent-diagnostic-assessment-review"
+      }
+    },
+    "ch-6": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/practice/guidelines/forensic-psychology",
+        "https://www.justice.gov/archives/usam/criminal-resource-manual-637-insanity-present-statutory-test-18-usc-17a",
+        "https://publications.aap.org/pediatrics/article/145/1/e20193447/36917/Identification-Evaluation-and-Management-of",
+        "https://www.cdc.gov/autism/diagnosis/index.html"
+      ],
+      "reviewNote": "Corrected evaluator-versus-court roles, jurisdiction-specific competency/insanity standards and dispositions, response-validity and violence-risk certainty, rigid battery distinctions, single-test lesion localization, pediatric rating-scale diagnosis shortcuts, and ASD gold-standard/confirmation claims; rebuilt the legal-timeframe diagram, added an ASD evidence-integration check, and grounded AI use in accountable assist-verify-integrate safeguards.",
+      "checks": {
+        "source-support": "editorial-pass-primary-legal-and-clinical-guidance",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-construct-and-evidence-integration",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled",
+        "bias-and-context": "editorial-pass-jurisdiction-language-culture-and-access-context",
+        "expert-review": "pending-independent-forensic-neuropsychological-and-pediatric-review"
+      }
+    },
+    "ch-13": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/h0045357",
+        "https://dictionary.apa.org/empty-chair-technique",
+        "https://www.apa.org/pubs/videos/4310703",
+        "https://doi.org/10.1037/a0018378",
+        "https://doi.org/10.1177/00030651000480040801"
+      ],
+      "reviewNote": "Separated historical psychoanalytic theory from established development; corrected Electra attribution, deterministic fixation, transference/countertransference and resistance shortcuts, Mahler’s discarded normal-autistic-phase claim and causal BPD link, diagnosis-by-splitting, the Kohut-versus-Kernberg empathy/confrontation caricature, Rogers’s six versus three conditions, existential absolutes, and technique-only Gestalt framing; added an accessible Rogers pathway diagram and application check and replaced speculative AI consciousness claims with theory/evidence/context safeguards.",
+      "checks": {
+        "source-support": "editorial-pass-primary-theory-and-apa-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-theory-versus-evidence-explicit",
+        "accessibility": "shared-renderer-pass-new-svg-labelled",
+        "bias-and-context": "editorial-pass-caregiver-gender-culture-and-diagnosis-shortcuts-corrected",
+        "expert-review": "pending-independent-psychodynamic-humanistic-review"
+      }
+    },
+    "ch-14": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ptsd-guideline",
+        "https://www.ptsd.va.gov/professional/treat/txessentials/prolonged_exposure_pro.asp",
+        "https://www.nice.org.uk/guidance/cg31",
+        "https://doi.org/10.1016/j.brat.2014.04.006",
+        "https://pubmed.ncbi.nlm.nih.gov/38615492/"
+      ],
+      "reviewNote": "Corrected one-way cognitive causation, Beck-versus-Ellis style caricatures, DBT-equals-BPD and ACT-versus-CBT binaries, exposure-for-all-anxiety and habituation-only accounts, flooding/PE conflation, fixed gold-standard and comparative-efficacy claims, relaxation prohibition, guaranteed extinction bursts, and anthropomorphic AI therapy analogies; added a labelled exposure-learning cycle and an ERP learning-outcome check.",
+      "checks": {
+        "source-support": "editorial-pass-current-guidelines-and-foundational-models",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-procedure-mechanism-and-context-separated",
+        "accessibility": "shared-renderer-pass-new-svg-labelled",
+        "bias-and-context": "editorial-pass-consent-culture-access-and-safety-explicit",
+        "expert-review": "pending-independent-cbt-dbt-act-and-exposure-review"
+      }
+    },
+    "ch-15": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1111/jmft.12336",
+        "https://doi.org/10.1111/j.1741-3737.2001.00473.x",
+        "https://www.apa.org/about/policy/multicultural-guidelines",
+        "https://www.ncbi.nlm.nih.gov/books/NBK549812/"
+      ],
+      "reviewNote": "Corrected structural-family causation and universal hierarchy/boundary norms, unsafe strategic and ordeal shortcuts, Bowenian blame and birth-order/transmission determinism, Gottman divorce-prediction and contempt-ranking certainty, EFT superiority, fixed Yalom factor rankings, and individual-only narrative framing; rebuilt the boundary diagram as a labelled contextual theory continuum, added a non-blaming systems-formulation check, revised the Gottman check to identify behavior rather than predict divorce, and replaced AI-as-family-member speculation with privacy, consent, coercion, and role safeguards.",
+      "checks": {
+        "source-support": "editorial-pass-primary-models-meta-analysis-and-professional-guidance",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-theory-association-versus-causal-claim-separated",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled",
+        "bias-and-context": "editorial-pass-culture-family-form-gender-power-and-child-agency",
+        "expert-review": "pending-independent-family-couples-and-group-therapy-review"
+      }
+    },
+    "ch-17": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.17226/12480",
+        "https://store.samhsa.gov/sites/default/files/selecting-best-fit-programs-pep19-02.pdf",
+        "https://www.cdc.gov/evaluation/php/evaluation-framework/index.html",
+        "https://www.apa.org/ethics/code/manual-updates.html"
+      ],
+      "reviewNote": "Corrected ambiguous cross-framework screening classification, indicated-as-presymptomatic error, guaranteed prevalence reduction, prevention-over-treatment framing, disempowering expert-led community language, consultation diagnosis and responsibility absolutes, theme-interference certainty, and consent-free AI surveillance proposals; rebuilt and labelled the Caplan continuum, clarified that one program can be Caplan-secondary and IOM-universal, added a consultation-accountability check, and grounded community work in shared governance, equity, evaluation, privacy, and follow-up.",
+      "checks": {
+        "source-support": "editorial-pass-national-academies-samhsa-cdc-and-apa-guidance",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-framework-first-classification",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-and-encoding-clean",
+        "bias-and-context": "editorial-pass-community-power-data-governance-and-equity",
+        "expert-review": "pending-independent-prevention-community-and-consultation-review"
+      }
+    },
+    "ch-19": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.motivationalinterviewing.org/sites/default/files/elfinder_uploads/ColleenMarshall/Glossary%20of%20MI%20Terms.pdf",
+        "https://doi.org/10.1542/peds.2024-066326",
+        "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+        "https://www.nia.nih.gov/health/memory-loss-and-forgetfulness/what-mild-cognitive-impairment"
+      ],
+      "reviewNote": "Corrected TTM resistance labels and guaranteed stage matching, relapse inevitability, MI intrinsic-motivation and sustain-talk/discord conflation, rigid multicultural first-step rules, play-therapy-by-age and child verbal-capacity claims, underspecified adolescent confidentiality, older-adult stereotypes, MCI-to-dementia implication, and reversible-pseudodementia shortcut; rebuilt and labelled the TTM diagram with non-stigmatizing return/reassessment paths, added a later-life cognitive differential check, updated the AI coda for autonomy and privacy, and grounded developmental adaptations in individualized assessment.",
+      "checks": {
+        "source-support": "editorial-pass-current-mi-aap-and-nia-guidance",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-heuristics-not-identities-or-treatment-rules",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-and-ids-scoped",
+        "bias-and-context": "editorial-pass-age-culture-development-language-and-autonomy",
+        "expert-review": "pending-independent-mi-multicultural-developmental-and-geropsychology-review"
+      }
+    },
+    "ch-20": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12928379/",
+        "https://pubmed.ncbi.nlm.nih.gov/19690094/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK10940/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK542184/",
+        "https://doi.org/10.1371/journal.pbio.1001767"
+      ],
+      "reviewNote": "Corrected one-symptom/one-lesion reasoning, fixed-voltage neuron absolutes, lobe-to-deficit certainty, intact-comprehension and absent-awareness aphasia claims, arcuate-only conduction aphasia, hippocampal short-to-long conversion, amygdala fear-center and preconscious-detector claims, medulla-damage-equals-death, simplified H.M. anatomy and memory conclusions, split-brain independence, and logical-left/holistic-right myths; rebuilt and labelled the language diagram with a network caveat, added a lateralization myth check, and replaced AI-brain analogies with network-first localization safeguards.",
+      "checks": {
+        "source-support": "editorial-pass-neuroscience-texts-nlm-and-primary-reviews",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-classic-associations-qualified-by-network-models",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled",
+        "bias-and-context": "editorial-pass-language-variation-disability-and-personhood",
+        "expert-review": "pending-independent-neurology-neuropsychology-review"
+      }
+    },
+    "ch-21": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1176/appi.ajp.2018.18070881",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5628077/",
+        "https://www.genome.gov/genetics-glossary/Heritability",
+        "https://www.ncbi.nlm.nih.gov/books/NBK19956/"
+      ],
+      "reviewNote": "Corrected one-neurotransmitter/one-disorder and too-low/too-high tables, global dopamine schizophrenia claims, pituitary hormone-origin errors, categorical cortisol/hippocampus injury and universal thyroid-testing rules, fixed twin/concordance/IQ estimates, deterministic adoption inference, contested 5-HTTLPR example, simplistic epigenetic on/off and human transgenerational inheritance, REM-beta and fixed-cycle claims, and absolute parasomnia distinctions; rebuilt and labelled the dopamine diagram, added a heritability interpretation check, and replaced substrate analogies with mechanism-association-inference safeguards.",
+      "checks": {
+        "source-support": "editorial-pass-neuroscience-genomics-sleep-and-primary-meta-analysis",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-mechanism-association-clinical-inference-separated",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled",
+        "bias-and-context": "editorial-pass-genetic-determinism-ancestry-population-and-clinical-stigma",
+        "expert-review": "pending-independent-neuroscience-endocrinology-genetics-and-sleep-review"
+      }
+    },
+    "ch-22": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nia.nih.gov/health/lewy-body-dementia/how-lewy-body-dementia-treated-and-managed",
+        "https://www.niaaa.nih.gov/publications/brochures-and-fact-sheets/wernicke-korsakoff-syndrome",
+        "https://www.ilae.org/guidelines/definition-and-classification/operational-classification-2017",
+        "https://www.cdc.gov/traumatic-brain-injury/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK442001/"
+      ],
+      "reviewNote": "Corrected intact-sensory/motor absolutes in agnosia/apraxia, right-parietal-only anosognosia, hippocampus-only amnesia and H.M. simplifications, alcohol-exclusive Korsakoff framing, TGA-as-ischemia and no-lasting-effects certainty, dementia prevalence/ranking and signature-course absolutes, reversible pseudodementia and delirium claims, no-antipsychotics-ever DLB guidance, fixed Parkinson/Huntington outcomes, obsolete seizure terminology, worst-prognosis DAI, and AI lesion/confabulation equivalence; added an accessible onset/course cognitive-change triage diagram and replaced the coda with urgent-differential and validity safeguards.",
+      "checks": {
+        "source-support": "editorial-pass-nia-niaaa-ilae-cdc-and-neurology-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-11",
+        "instructional-quality": "editorial-pass-onset-course-function-and-differential-reasoning",
+        "accessibility": "shared-renderer-pass-new-svg-labelled",
+        "bias-and-context": "editorial-pass-alcohol-stigma-aging-disability-language-and-mixed-pathology",
+        "expert-review": "pending-independent-neurology-neuropsychology-and-geriatric-review"
+      }
+    },
+    "ch-23": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ninds.nih.gov/health-information/patient-caregiver-education/brain-basics-life-and-death-neuron",
+        "https://www.ncbi.nlm.nih.gov/books/NBK538516/",
+        "https://aasm.org/coding-quarterly-cognitive-behavioral-therapy-for-insomnia/",
+        "https://doi.org/10.1016/S0140-6736(10)61460-9",
+        "https://doi.org/10.1111/joa.13446"
+      ],
+      "reviewNote": "Corrected brain-wide pruning peaks and adolescent-behavior reductionism, LTP-as-complete-basis, settled adult-human olfactory and hippocampal neurogenesis, literal equipotentiality, age-only injury recovery and simple cortical takeover, Romanian-adoptee causal cutoffs, sympathetic-equals-NE shorthand, polyvagal claims presented as settled anatomy, categorical insomnia medication exclusion, universal cataplexy/orexin claims, apnea risk and treatment simplifications, absent parasomnia recall, REM behavior disorder as diagnostic, and AI consciousness self-report; added an accessible autonomic two-neuron pathway diagram and transmitter-exception check, and emphasized variability, differential assessment, and theory-versus-evidence boundaries.",
+      "checks": {
+        "source-support": "editorial-pass-ninds-ncbi-aasm-primary-developmental-and-anatomy-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-mechanisms-qualified-and-exceptions-tested",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-and-described",
+        "bias-and-context": "editorial-pass-developmental-variability-disability-and-nondeterminism",
+        "expert-review": "pending-independent-neuroscience-sleep-developmental-and-psychophysiology-review"
+      }
+    },
+    "ch-24": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/h0087356",
+        "https://doi.org/10.1016/j.brat.2008.10.014",
+        "https://doi.org/10.1037/0033-295X.84.2.191",
+        "https://www.bacb.com/wp-content/uploads/2022/01/Ethics-Code-for-Behavior-Analysts-240830-a.pdf"
+      ],
+      "reviewNote": "Corrected extinction-as-proven-suppression, one-trial and unique taste-aversion absolutes, mutually exclusive relaxation/anxiety, universal reinforcement-schedule rankings, extinction-burst inevitability and inferred variable-ratio reinforcement, self-efficacy as a universal strongest predictor, learned helplessness as a complete depression foundation, preparedness as a single phobia explanation, and literal operant/observational analogies for AI training; added safety and alternative-reinforcement safeguards for extinction, rebuilt the operant matrix with clean encoding and a full text alternative, and retained the existing scenario check with a qualified rationale.",
+      "checks": {
+        "source-support": "editorial-pass-primary-learning-theory-exposure-review-and-bacb-ethics",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-functional-relations-boundary-conditions-and-safe-application",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-and-encoding-clean",
+        "bias-and-context": "editorial-pass-context-individual-variation-and-noncoercive-support",
+        "expert-review": "pending-independent-learning-behavior-analysis-and-clinical-review"
+      }
+    },
+    "ch-25": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1017/S0140525X01003922",
+        "https://doi.org/10.1037/h0047857",
+        "https://doi.org/10.1101/lm.94705",
+        "https://doi.org/10.1037/0033-295X.86.5.420",
+        "https://doi.org/10.1016/j.neuropsychologia.2006.04.021"
+      ],
+      "reviewNote": "Corrected 7±2 and 18–30-second values as universal STM limits, mechanical rehearsal transfer, unlimited/permanent LTM, one-region memory tables, all-implicit-memory-preserved amnesia, hippocampus-as-STM-to-LTM switch, uniformly intact H.M. remote memory and lesion description, central-executive hierarchy, deepest/dual coding/encoding-match absolutes, advice to recreate intoxicated states, recognition-always-easier, repression as established forgetting, a universal Ebbinghaus curve, suggestion as deterministic memory implantation, universal prospective-memory aging decline, and literal AI/H.M./misinformation-effect equivalence; removed encoding corruption and emphasized task conditions, distributed systems, retrieval support, and individual-case uncertainty.",
+      "checks": {
+        "source-support": "editorial-pass-primary-working-memory-hm-eyewitness-and-retrieval-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-historical-models-qualified-by-modern-evidence",
+        "accessibility": "shared-renderer-pass-encoding-clean-and-auto-memory-diagram-text-alternative",
+        "bias-and-context": "editorial-pass-aging-trauma-disability-and-individual-memory-claims",
+        "expert-review": "pending-independent-cognitive-neuropsychology-and-forensic-memory-review"
+      }
+    },
+    "ch-26": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1126/science.185.4157.1124",
+        "https://doi.org/10.1037/0033-2909.126.1.17",
+        "https://doi.org/10.1016/j.cognition.2011.01.001",
+        "https://doi.org/10.1037/h0041593",
+        "https://doi.org/10.1177/1745691617693056"
+      ],
+      "reviewNote": "Corrected confirmation bias as uniquely most clinically relevant, an ASD-stereotype/base-rate question, dual-process modes as literal good-versus-bad modules, System 1 as the source of most bias, broad depletion claims, structured methods as System 2, clinical-versus-actuarial prediction as an identical debate, sleep-onset experience as a definitive diagnosis, universal structured superiority for every diagnostic task, guaranteed algorithms, confirmation as only seeking, dissonance as uniform discomfort, and less-reward/more-change as a universal law; rebuilt the corrupted diagram as an accessible interacting-modes and structured-cross-check model, qualified classic findings, and replaced literal AI bias/dissonance mechanisms with testable engineering distinctions.",
+      "checks": {
+        "source-support": "editorial-pass-primary-heuristics-clinical-prediction-dual-process-and-dissonance-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-probabilistic-reasoning-and-structured-cross-checks",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-autism-stereotype-removed-client-context-and-cultural-assessment",
+        "expert-review": "pending-independent-cognitive-clinical-and-decision-science-review"
+      }
+    },
+    "ch-27": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1080/02699939208411068",
+        "https://doi.org/10.1177/0956797614561041",
+        "https://doi.org/10.1037/0033-295X.84.2.191",
+        "https://doi.org/10.1207/S15327965PLI1104_01",
+        "https://doi.org/10.1001/archinte.2007.31",
+        "https://doi.org/10.1037/0033-295X.93.2.206"
+      ],
+      "reviewNote": "Corrected emotion theories as literal current neural sequences, six facial expressions as uniformly universal, facial feedback as deterministic, the bridge study as causal proof, Maslow needs as invariant prerequisites, autonomy as unrestricted control, all rewards as undermining interest, Yerkes–Dodson as a universal moderate-arousal law, fixed coping prescriptions, internal control as inherently healthier, hardiness as a universal buffer, and hostility as the singular toxic cause of coronary disease; added an accessible conditional arousal–performance diagram, qualified the reward vignette, reframed cardiac recovery as multifactorial, and removed literal AI emotion and intrinsic-motivation inference.",
+      "checks": {
+        "source-support": "editorial-pass-primary-emotion-motivation-arousal-coping-and-health-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-classic-theories-separated-from-current-boundaries",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-culture-control-social-conditions-and-cardiac-stigma",
+        "expert-review": "pending-independent-affective-motivation-and-health-psychology-review"
+      }
+    },
+    "ch-28": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.asha.org/practice-portal/professional-issues/bilingual-service-delivery/",
+        "https://www.asha.org/policy/pi2017-00119/",
+        "https://www.aaidd.org/intellectual-disability/definition",
+        "https://doi.org/10.1177/1529100614522901",
+        "https://doi.org/10.1177/0956797614527860",
+        "https://doi.org/10.1016/j.cognition.2018.10.018"
+      ],
+      "reviewNote": "Corrected infants as producing all phonemes, universal vocabulary explosion, LAD as an identified neural mechanism, one critique as disproving learning accounts, a broadly supported weak Sapir–Whorf version, puberty as a hard language deadline, Chomsky as settled dominant theory, overregularization as unique proof of nativism, g as psychology’s most validated construct, fixed Gf/Gc aging, CHC as a pure mapping onto named tests, a universal three-point Flynn effect, IQ-cutoff definitions of intellectual disability and giftedness, focal navigation loss as normal aging, bilingual executive and dementia advantages as settled, nonverbal tests as culture-free, and mandatory one-dominant-language assessment; added an accessible multilingual assessment workflow, rewrote the overregularization check, and reframed the older-adult case as a potentially urgent differential.",
+      "checks": {
+        "source-support": "editorial-pass-asha-aaidd-primary-language-bilingual-and-cognitive-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-competing-models-validity-and-multimethod-assessment",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-multilingual-culture-disability-aging-and-opportunity",
+        "expert-review": "pending-independent-language-development-psychometrics-and-bilingual-assessment-review"
+      }
+    }
+  }
+}

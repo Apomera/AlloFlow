@@ -259,16 +259,59 @@ const handleFileUpload = async (e, deps) => {
 };
 
 const handleLoadProject = (e, deps) => {
-  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers } = deps;
+  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleLoadProject fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
         try {
-            const rawData = JSON.parse(event.target.result);
+            let rawData = JSON.parse(event.target.result);
+            // Encrypted educator project: ask for the password and decrypt before anything else.
+            // Without it the file is just ciphertext; a wrong password or tampering fails the
+            // authenticated GCM check and we stop rather than load garbage.
+            if (window.AlloModules && window.AlloModules.AlloCrypto && window.AlloModules.AlloCrypto.isEncryptedEnvelope(rawData)) {
+                const _pw = (window.AlloFlowUX && window.AlloFlowUX.prompt)
+                    ? await window.AlloFlowUX.prompt(t('save.enter_password') || 'This project is password-protected. Enter the password to open it.', '', { inputType: 'password', title: t('save.encrypted_title') || 'Encrypted project' })
+                    : ((typeof window !== 'undefined' && window.prompt) ? window.prompt(t('save.enter_password') || 'Enter the password:') : null);
+                if (!_pw) { return; }
+                try { rawData = await window.AlloModules.AlloCrypto.decryptJSON(rawData, _pw); }
+                catch (_e) { if (addToast) addToast(t('save.decrypt_failed') || 'Wrong password, or the file is corrupt.', 'error'); return; }
+            }
             if (rawData.progressLog && Array.isArray(rawData.progressLog)) {
                 setStudentProgressLog(rawData.progressLog);
+            }
+            if (rawData.studentProgressSummary && typeof rawData.studentProgressSummary === 'object') {
+                try {
+                    window.__alloflowStudentProgressSummary = rawData.studentProgressSummary;
+                    try { localStorage.setItem('alloflow_student_progress_summary', JSON.stringify(rawData.studentProgressSummary)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-student-progress-summary-restored'));
+                } catch (e) { warnLog && warnLog('Student progress summary restore failed:', e); }
+            }
+            // Guided-tour resume: a teacher who saved mid-tutorial drops back in at their
+            // step (Canvas has no cross-session storage, so progress rides the project file).
+            // Hardened restore: (1) restore selectedIds UNCONDITIONALLY — null is the valid
+            // "all steps" default that Array.isArray would wrongly skip, leaving the restored
+            // step index applied against whatever tool set the session already had (lands the
+            // teacher on the wrong tool / an out-of-range step); (2) clamp the step into range;
+            // (3) gate on the saved schema version so a newer file doesn't restore garbage.
+            const _gtp = rawData.guidedTourProgress;
+            if (_gtp && typeof _gtp.guidedStep === 'number') {
+                if (_gtp.version == null || _gtp.version === 1) {
+                    if (deps.setGuidedSelectedIds) deps.setGuidedSelectedIds(Array.isArray(_gtp.selectedIds) ? _gtp.selectedIds : null);
+                    const _sel = _gtp.selectedIds;
+                    // source-input is always an active step; estimate the active-step count to clamp against.
+                    const _activeLen = Array.isArray(_sel) ? (_sel.indexOf('source-input') === -1 ? _sel.length + 1 : _sel.length) : 22;
+                    const _step = Math.max(0, Math.min(_gtp.guidedStep, Math.max(0, _activeLen - 1)));
+                    if (deps.setGuidedStep) deps.setGuidedStep(_step);
+                    // Real per-step completions (which steps produced output) — powers the
+                    // banner's ✅ so revisiting a completed step doesn't lose its done state.
+                    if (deps.setGuidedCompletedIds) deps.setGuidedCompletedIds(Array.isArray(_gtp.completedSteps) ? _gtp.completedSteps : []);
+                    if (deps.setGuidedMode) deps.setGuidedMode(true);
+                    if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
+                } else if (addToast) {
+                    addToast(t('guided.resume_version_skip') || 'This saved tutorial progress is from a newer version and was not restored.', 'info');
+                }
             }
             let loadedHistory = [];
             let isStudentSave = false;
@@ -287,6 +330,7 @@ const handleLoadProject = (e, deps) => {
                 }
                 if (rawData.settings) {
                     setStudentProjectSettings({
+                        hideStudentAiFeatures: rawData.settings.hideStudentAiFeatures ?? false,
                         allowDictation: rawData.settings.allowDictation ?? true,
                         allowSocraticTutor: rawData.settings.allowSocraticTutor ?? true,
                         allowFreeResponse: rawData.settings.allowFreeResponse ?? true,
@@ -315,6 +359,7 @@ const handleLoadProject = (e, deps) => {
                     }
                 } else {
                     setStudentProjectSettings({
+                        hideStudentAiFeatures: false,
                         allowDictation: true,
                         allowSocraticTutor: true,
                         allowFreeResponse: true,
@@ -370,14 +415,13 @@ const handleLoadProject = (e, deps) => {
                      if (rawData.gameCompletions) setGameCompletions(rawData.gameCompletions);
                      if (rawData.labelChallengeResults) setLabelChallengeResults(rawData.labelChallengeResults);
                      if (rawData.socraticChatHistory?.messages) setSocraticMessages(rawData.socraticChatHistory.messages);
-                     if (rawData.wordSoundsState) {
-                         if (rawData.wordSoundsState.history) setWordSoundsHistory(rawData.wordSoundsState.history);
-                         if (rawData.wordSoundsState.families) setWordSoundsFamilies(rawData.wordSoundsState.families);
-                         if (rawData.wordSoundsState.audioLibrary) setWordSoundsAudioLibrary(rawData.wordSoundsState.audioLibrary);
-                         if (rawData.wordSoundsState.badges) setWordSoundsBadges(rawData.wordSoundsState.badges);
-                         if (rawData.wordSoundsState.phonemeMastery) setPhonemeMastery(rawData.wordSoundsState.phonemeMastery);
-                         if (rawData.wordSoundsState.dailyProgress) setWordSoundsDailyProgress(rawData.wordSoundsState.dailyProgress);
-                         if (rawData.wordSoundsState.confusionPatterns) setWordSoundsConfusionPatterns(rawData.wordSoundsState.confusionPatterns);
+                     if (rawData.conceptMastery && rawData.conceptMastery.attempts) {
+                         // Student re-loading their own work: restore device-local mastery.
+                         if (typeof setConceptMasteryLocal === 'function') setConceptMasteryLocal({ attempts: rawData.conceptMastery.attempts });
+                         // Teacher importing a submitted file: bank it (keyed by the
+                         // student's uid when present) so the retention dashboard can
+                         // read mastery from files instead of any cloud store.
+                         if (typeof bankImportedConceptMastery === 'function') bankImportedConceptMastery(rawData.conceptMastery);
                      }
                      if (rawData.fluencyAssessments) setFluencyAssessments(rawData.fluencyAssessments);
                      if (rawData.flashcardEngagement) setFlashcardEngagement(rawData.flashcardEngagement);
@@ -389,6 +433,20 @@ const handleLoadProject = (e, deps) => {
                               setCompletedActivities(new Map(rawData.completedActivities));
                           } catch(e) { warnLog("Failed to restore completed activities", e); }
                      }
+                }
+                // Word Sounds state restores for BOTH save modes (was inside the
+                // isStudentSave guard, which silently dropped it from teacher-mode
+                // projects — the common K-2 RTI setup where the interventionist
+                // runs Word Sounds on the teacher device; the teacher save now
+                // persists it too, see phase_k_helpers saveType === 'teacher').
+                if (rawData.wordSoundsState) {
+                    if (rawData.wordSoundsState.history) setWordSoundsHistory(rawData.wordSoundsState.history);
+                    if (rawData.wordSoundsState.families) setWordSoundsFamilies(rawData.wordSoundsState.families);
+                    if (rawData.wordSoundsState.audioLibrary) setWordSoundsAudioLibrary(rawData.wordSoundsState.audioLibrary);
+                    if (rawData.wordSoundsState.badges) setWordSoundsBadges(rawData.wordSoundsState.badges);
+                    if (rawData.wordSoundsState.phonemeMastery) setPhonemeMastery(rawData.wordSoundsState.phonemeMastery);
+                    if (rawData.wordSoundsState.dailyProgress) setWordSoundsDailyProgress(rawData.wordSoundsState.dailyProgress);
+                    if (rawData.wordSoundsState.confusionPatterns) setWordSoundsConfusionPatterns(rawData.wordSoundsState.confusionPatterns);
                 }
                 if (rawData.probeHistory) setProbeHistory(rawData.probeHistory);
                 if (rawData.interventionLogs) setInterventionLogs(rawData.interventionLogs);
@@ -566,6 +624,23 @@ const handleLoadProject = (e, deps) => {
                     window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-restored'));
                 } catch (e) { warnLog && warnLog('SEL tool data restore failed:', e); }
             }
+            if (Array.isArray(rawData.selSnapshots)) {
+                try {
+                    window.__alloflowSelSnapshots = rawData.selSnapshots;
+                    try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(rawData.selSnapshots)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-snapshots-restored'));
+                } catch (e) { warnLog && warnLog('SEL snapshots restore failed:', e); }
+            }
+            // Student-authored permanent products (SEL Share Packets and future
+            // module exports). AlloHaven renders these read-only, so clear the
+            // slot on older files instead of showing stale artifacts from a
+            // previous project.
+            try {
+                const restoredStudentArtifacts = Array.isArray(rawData.studentArtifacts) ? rawData.studentArtifacts : [];
+                window.__alloflowStudentArtifacts = restoredStudentArtifacts;
+                try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(restoredStudentArtifacts)); } catch (e) {}
+                window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-restored'));
+            } catch (e) { warnLog && warnLog('Student artifacts restore failed:', e); }
             // Rehydrate sticker overlays. Stickers are saved into the
             // project JSON by phase_k_helpers.executeSaveFile so a teacher's
             // feedback or a student's marks survive reload. Falls back to
@@ -574,7 +649,14 @@ const handleLoadProject = (e, deps) => {
                 setStickers(Array.isArray(rawData.stickers) ? rawData.stickers : []);
             }
             if (Array.isArray(loadedHistory)) {
-                setHistory(hydrateHistory(loadedHistory));
+                const hydratedHistory = hydrateHistory(loadedHistory);
+                setHistory(hydratedHistory);
+                // Restore only after the loaded resource list is known. The
+                // host validates the draft envelope against this exact history,
+                // sanitizes imported HTML, and clears any previous-project draft.
+                if (typeof deps.restoreBuilderDraft === 'function') {
+                    deps.restoreBuilderDraft(rawData && rawData.builderDraft, hydratedHistory);
+                }
                 if (isStudentSave) {
                     setIsStudentLinkMode(true);
                     setIsTeacherMode(false);

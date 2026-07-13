@@ -48,6 +48,7 @@ function HeaderBar(props) {
   const RefreshCw = window.RefreshCw || noop;
   const School = window.School || noop;
   const Send = window.Send || noop;
+  const Share2 = window.Share2 || noop;
   const Smile = window.Smile || noop;
   const Sparkles = window.Sparkles || noop;
   const Sun = window.Sun || noop;
@@ -80,7 +81,7 @@ function HeaderBar(props) {
     APP_CONFIG, AnimatedNumber, EDGE_TTS_VOICES, FONT_OPTIONS, GEMINI_VOICES,
     GlobalMuteButton, KOKORO_VOICES, UiLanguageSelector, _isCanvasEnv, activeSessionCode,
     addToast, ai, appId, currentLevelXP,
-    customExportCSS, dismissHelpOnboarding,
+    customExportCSS, createHomeworkAssignmentLink, dismissHelpOnboarding,
     focusNarrationEnabled, generatedContent, globalLevel, globalProgress, globalXPNext,
     handleCloudToggleClick, handleExportIMS, handleExportQTI, handleRestoreView,
     handleSetActiveViewToDashboard, handleSetIsJoinPopoverOpenToFalse,
@@ -98,9 +99,10 @@ function HeaderBar(props) {
     resetFontSize, safeRemoveItem, selectedVoice, sessionData,
     sessionUnsubscribeRef, setActiveSessionCode, setHistory,
     setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
-    setPendingRole, setRunTour,
+    setPendingRole, setRunTour, setGuidedMode, setGuidedStep, setGuidedSelectedIds,
+    guidedStep, guidedMode, resetGuidedProgress,
     setSelectedVoice, setSessionData, setShowAIBackendModal,
-    setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
+    setBridgeSendOpen, setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
     setSliderFontSize, setSpotlightMessage, setTourStep, setVoiceSpeed, setVoiceVolume,
     showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings,
@@ -108,8 +110,67 @@ function HeaderBar(props) {
     voiceSpeed, voiceVolume,
   } = props;
 
+  const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  const _setupMenuRef = React.useRef(null);
+  const _setupMenuReturnRef = React.useRef(null);
+  // Setup-path dialog a11y: trap focus inside the dialog, close on Escape from anywhere
+  // (not just the backdrop), and restore focus to the opener — matching the full-lesson
+  // modal pattern in the Guided banner.
+  React.useEffect(() => {
+    if (!showSetupPathMenu) return;
+    _setupMenuReturnRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
+    const root = _setupMenuRef.current;
+    try { if (root) { const f = root.querySelector('button, a[href], [tabindex]:not([tabindex="-1"])'); (f || root).focus(); } } catch (_) {}
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.stopPropagation(); setShowSetupPathMenu(false); return; }
+      if (e.key === 'Tab' && root) {
+        const items = root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); try { last.focus(); } catch (_) {} }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); try { first.focus(); } catch (_) {} }
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('keydown', onKey, true);
+      try { const r = _setupMenuReturnRef.current; if (r && r.focus && document.contains(r)) r.focus(); } catch (_) {}
+    };
+  }, [showSetupPathMenu]);
+  const openQuickStartSetup = () => {
+    try { if (safeRemoveItem) safeRemoveItem('allo_wizard_completed'); } catch (_) {}
+    setShowSetupPathMenu(false);
+    setShowWizard(true);
+  };
+  // Header entry used to silently reset the tour to step 0 while the LaunchPad/coach
+  // entries resumed the preserved step. Now: resume when there's progress, with an
+  // explicit "Start over" secondary action; fresh start otherwise.
+  const _guidedHasProgress = typeof guidedStep === 'number' && guidedStep > 0;
+  const restartGuidedModeFromHeader = () => {
+    if (typeof resetGuidedProgress === 'function') resetGuidedProgress();
+    else {
+      if (typeof setGuidedSelectedIds === 'function') setGuidedSelectedIds(null);
+      if (typeof setGuidedStep === 'function') setGuidedStep(0);
+    }
+    if (typeof setGuidedMode === 'function') setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === 'function') addToast(t('guided.started_from_header') || 'Guided Mode started.', 'success');
+  };
+  const startGuidedModeFromHeader = () => {
+    if (!_guidedHasProgress) { restartGuidedModeFromHeader(); return; }
+    if (typeof setGuidedMode === 'function') setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === 'function') addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
+  };
+  const isDesktopBundledApp = typeof window !== 'undefined' && !!window._isDesktopBundledApp;
+  const isLocalVoiceMode = ai?._ttsProvider === 'local'
+    || (ai?._ttsProvider !== 'gemini' && ai?._ttsProvider !== 'browser' && (ai?.backend === 'ollama' || ai?.backend === 'localai' || ai?.backend === 'lmstudio'));
+  const canUseKokoroVoicePicker = _isCanvasEnv || isDesktopBundledApp;
+
   return (
-      <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
+      <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
         <div className="w-full max-w-[98%] mx-auto relative">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>
@@ -147,8 +208,8 @@ function HeaderBar(props) {
                 </span>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-4 w-full lg:w-auto">
-                <div className="flex items-center gap-4 flex-wrap justify-end relative">
+            <div className="flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0">
+                <div className="w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0">
                     <button
                         onClick={handleSetShowXPModalToTrue}
                         data-help-key="xp_modal_trigger"
@@ -172,7 +233,7 @@ function HeaderBar(props) {
                              </div>
                         </div>
                     </button>
-                    <div id="tour-header-settings" className={`relative z-[60] flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                    <div id="tour-header-settings" className={`relative z-[60] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         <GlobalMuteButton className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`} />
                         <button
                             onClick={() => setShowReadThisPage(prev => !prev)}
@@ -347,9 +408,9 @@ function HeaderBar(props) {
                                                     onChange={(e) => {
                                                       const voice = e.target.value;
                                                       setSelectedVoice(voice);
-                                                      if (_isCanvasEnv && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
+                                                      if (canUseKokoroVoicePicker && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
                                                         window.__kokoroTTSDownloading = true;
-                                                        addToast('Downloading Kokoro voice model (~40MB)...', 'info');
+                                                        addToast('Downloading Kokoro voice model (~88MB, one time)...', 'info');
                                                         window.__loadKokoroTTS().then(ok => {
                                                           window.__kokoroTTSDownloading = false;
                                                           if (ok) addToast('Kokoro voice ready!', 'success');
@@ -367,7 +428,7 @@ function HeaderBar(props) {
                                                                     <option key={v.id} value={v.id}>{v.label || v.id}</option>
                                                                 ))}
                                                             </optgroup>
-                                                            <optgroup label={window._kokoroTTS?.ready ? "🎤 Kokoro (Ready)" : "🎤 Kokoro (tap to download ~40MB)"}>
+                                                            <optgroup label={window._kokoroTTS?.ready ? "🎤 Kokoro (Ready)" : "🎤 Kokoro (tap to download ~88MB)"}>
                                                                 {KOKORO_VOICES.map(v => (
                                                                     <option key={v.id} value={v.id}>{v.label}{!window._kokoroTTS?.ready ? ' ⬇' : ''}</option>
                                                                 ))}
@@ -376,8 +437,15 @@ function HeaderBar(props) {
                                                                 <option value="browser">{t('header.voice_browser_default') || 'Browser Default'}</option>
                                                             </optgroup>
                                                         </>
-                                                    ) : (ai?._ttsProvider === 'local' || (ai?._ttsProvider !== 'gemini' && ai?._ttsProvider !== 'browser' && (ai?.backend === 'ollama' || ai?.backend === 'localai'))) ? (
+                                                    ) : isLocalVoiceMode ? (
                                                         <>
+                                                            {isDesktopBundledApp && (
+                                                                <optgroup label={window._kokoroTTS?.ready ? "🎤 Kokoro (Ready)" : "🎤 Kokoro (loading/local)"}>
+                                                                    {KOKORO_VOICES.map(v => (
+                                                                        <option key={v.id} value={v.id}>{v.label}</option>
+                                                                    ))}
+                                                                </optgroup>
+                                                            )}
                                                             <optgroup label="🎤 Edge TTS Voices">
                                                                 {EDGE_TTS_VOICES.map(v => (
                                                                     <option key={v.id} value={v.id}>{v.label}</option>
@@ -393,33 +461,18 @@ function HeaderBar(props) {
                                                         ))
                                                     )}
                                                 </select>
-                                                {/* ── Kokoro Quality Toggle (only visible for Kokoro voices) ── */}
-                                                {_isCanvasEnv && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
+                                                {/* ── Kokoro model info (2026-07-06): the old Fast(q4)/High(q8)
+                                                    toggle was retired — the q4 file is really ~291MB (not 43MB),
+                                                    sounds worse, and benched no faster on wasm CPU. One honest
+                                                    tier now: q8, ~88MB, downloaded once + cached on device. ── */}
+                                                {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
                                                     <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600">
-                                                        <label className={`text-[11px] uppercase font-bold ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} block mb-1.5`}>{t('header.voice_quality_label') || 'Voice Quality'}</label>
-                                                        <div className="flex gap-1">
-                                                            <button
-                                                                onClick={() => { window._kokoroTTS.setQuality('fast'); }}
-                                                                className={`flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${
-                                                                    !window._kokoroTTS.quality || window._kokoroTTS.quality === 'fast'
-                                                                        ? 'bg-indigo-500 text-white shadow-sm'
-                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300'
-                                                                }`}
-                                                            >
-                                                                ⚡ Fast (~43MB)
-                                                            </button>
-                                                            <button
-                                                                onClick={() => { window._kokoroTTS.setQuality('high'); }}
-                                                                className={`flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${
-                                                                    window._kokoroTTS.quality === 'high'
-                                                                        ? 'bg-emerald-700 text-white shadow-sm'
-                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300'
-                                                                }`}
-                                                            >
-                                                                🎵 High Quality (~86MB)
-                                                            </button>
-                                                        </div>
-                                                        <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mt-1`}>{t('header.voice_quality_desc') || 'Fast uses a smaller model for quicker response. High Quality is richer but slower.'}</p>
+                                                        <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} m-0`}>
+                                                            <span className="font-bold">{t('header.voice_model_label') || 'Voice model'}:</span>{' '}
+                                                            {window._kokoroTTS.ready
+                                                                ? (t('header.voice_model_ready') || 'Kokoro (~88MB) — ready on this device. Downloaded once; reads offline.')
+                                                                : (t('header.voice_model_preparing') || 'Kokoro (~88MB) — preparing… a temporary voice reads aloud until it finishes.')}
+                                                        </p>
                                                     </div>
                                                 )}
                                                 {/* ── Browser-TTS Fallback Toggle ──
@@ -586,7 +639,7 @@ function HeaderBar(props) {
                             </>
                         )}
                     </div>
-                    <div id="tour-header-utils" className={`relative z-[100] flex items-center gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                    <div id="tour-header-utils" className={`relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         {isTeacherMode && (
                             <button
                                 onClick={handleSetShowHintsModalToTrue}
@@ -657,11 +710,11 @@ function HeaderBar(props) {
                               <MapIcon size={20} />
                             </button>
                             <button
-                              onClick={() => { safeRemoveItem('allo_wizard_completed'); setShowWizard(true); }}
+                              onClick={() => setShowSetupPathMenu(true)}
                               data-help-key="header_rerun_wizard"
                               className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
-                              title={t('toolbar.rerun_wizard') || 'Re-run Setup Wizard'}
-                              aria-label={t('toolbar.rerun_wizard_aria') || 'Re-run the QuickStart setup wizard'}
+                              title={t('toolbar.setup_options') || 'Setup and Guided Mode'}
+                              aria-label={t('toolbar.setup_options_aria') || 'Open setup and Guided Mode options'}
                             >
                               <Sparkles size={20} />
                             </button>
@@ -678,13 +731,13 @@ function HeaderBar(props) {
                         </button>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 justify-end relative z-10 mt-2">
-                    <div id="tour-header-actions" className={`flex items-center gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
-                        <div className="flex flex-col items-end sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10">
+                <div className="w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0">
+                    <div id="tour-header-actions" className={`w-full flex flex-wrap items-center justify-start gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                        <div className="w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10">
                             <span className="text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight">
                                 {t('header.app_language')}
                             </span>
-                            <div className="scale-90 origin-right sm:origin-center" data-help-key="header_language">
+                            <div className="max-w-full scale-90 origin-left sm:origin-center" data-help-key="header_language">
                                 <UiLanguageSelector />
                             </div>
                         </div>
@@ -738,6 +791,18 @@ function HeaderBar(props) {
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🧠</span>
                           <span className="hidden lg:inline">Learn</span>
+                        </button>
+                        )}
+                        {isTeacherMode && !isIndependentMode && setBridgeSendOpen && (
+                        <button
+                          onClick={() => setBridgeSendOpen(true)}
+                          data-help-key="header_bridge"
+                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
+                          title={t('header.bridge_tooltip') || 'Family Bridge: live translation to talk with multilingual families & students'}
+                          aria-label={t('header.bridge_aria') || 'Family Bridge translation'}
+                        >
+                          <span style={{fontSize:'14px',lineHeight:1}}>🌐</span>
+                          <span className="hidden lg:inline">Bridge</span>
                         </button>
                         )}
                         <div className="w-px h-5 bg-white/10 mx-0.5"></div>
@@ -811,7 +876,7 @@ function HeaderBar(props) {
                                                                     onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
                                                                     onKeyDown={(e) => e.key === 'Enter' && joinClassSession(joinCodeInput)}
                                                                     placeholder={t('session.code_placeholder')}
-                                                                    maxLength={4}
+                                                                    maxLength={5}
                                                                     className="w-full text-center font-mono font-bold text-lg border border-slate-400 rounded p-1 uppercase focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
                                                                 />
                                                                 <button
@@ -899,6 +964,15 @@ function HeaderBar(props) {
                                         {!pptxLoaded ? <RefreshCw size={14} className="animate-spin"/> : <MonitorPlay size={14} />}
                                         {t('export_menu.slides')}
                                     </button>
+                                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">Student QR</div>
+                                    <button role="menuitem"
+                                        onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
+                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors"
+                                        data-help-key="homework_qr"
+                                    >
+                                        <Share2 size={14} /> Homework QR
+                                    </button>
+                                    <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">Teacher-prepared resources open for students with AI generation off.</p>
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
                                     {activeView === 'quiz' && !isIndependentMode && (
                                         <button role="menuitem"
@@ -923,6 +997,7 @@ function HeaderBar(props) {
                             {showExportMenu && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
                         </div>
                         )}
+                            {isTeacherMode && (
                             <button
                                 onClick={() => setShowClassAnalytics(true)}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
@@ -931,6 +1006,7 @@ function HeaderBar(props) {
                             >
                                 <ClipboardList size={14} /> <span className="hidden lg:inline">{t('common.assessment_center') || 'Assessment Center'}</span>
                             </button>
+                            )}
                         {!isTeacherMode && (
                             <button
                                 onClick={handleSetShowSubmitModalToTrue}
@@ -946,6 +1022,66 @@ function HeaderBar(props) {
             </div>
           </div>
         </div>
+        {showSetupPathMenu && (
+          <div
+            className="fixed inset-0 z-[12000] bg-slate-950/70 backdrop-blur-sm flex items-start justify-end p-4 md:p-8"
+            onClick={() => setShowSetupPathMenu(false)}
+          >
+            <div
+              ref={_setupMenuRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="header-setup-options-title"
+              className="w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden outline-none"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3">
+                <div>
+                  <h2 id="header-setup-options-title" className="text-sm font-black">{t('toolbar.setup_options_title') || 'Choose a setup path'}</h2>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{t('toolbar.setup_options_desc') || 'Restart the setup wizard or turn on Guided Mode for step-by-step lesson building.'}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowSetupPathMenu(false)}
+                  className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label={t('common.close') || 'Close'}
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+              </div>
+              <div className="p-4 space-y-3">
+                <button
+                  type="button"
+                  onClick={openQuickStartSetup}
+                  data-help-key="header_quickstart_setup"
+                  className="w-full text-start rounded-xl border border-indigo-300/30 bg-indigo-500/15 hover:bg-indigo-500/25 px-4 py-3 transition-colors"
+                >
+                  <span className="flex items-center gap-2 text-sm font-black"><Sparkles size={16} />{t('toolbar.rerun_wizard') || 'Re-run Setup Wizard'}</span>
+                  <span className="block text-xs text-indigo-100 mt-1 leading-relaxed">{t('toolbar.quickstart_setup_desc') || 'Set grade, source material, standards, languages, and personalization.'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={startGuidedModeFromHeader}
+                  data-help-key="header_guided_mode_start"
+                  className="w-full text-start rounded-xl border border-emerald-300/30 bg-emerald-500/15 hover:bg-emerald-500/25 px-4 py-3 transition-colors"
+                >
+                  <span className="flex items-center gap-2 text-sm font-black"><MapIcon size={16} />{_guidedHasProgress ? (t('toolbar.guided_mode_resume') || 'Resume Guided Mode') : (t('launch_pad.guided_title') || 'Guided Mode')}</span>
+                  <span className="block text-xs text-emerald-100 mt-1 leading-relaxed">{_guidedHasProgress ? (t('toolbar.guided_mode_resume_desc') || 'Pick the tour back up where you left off.') : (t('toolbar.guided_mode_setup_desc') || 'Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.')}</span>
+                </button>
+                {_guidedHasProgress && (
+                  <button
+                    type="button"
+                    onClick={restartGuidedModeFromHeader}
+                    className="w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
+                  >
+                    <span className="text-xs font-bold text-slate-200">{t('toolbar.guided_mode_start_over') || 'Start the tour over from step 1'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </header>
   );
 }

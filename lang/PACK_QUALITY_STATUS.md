@@ -1,6 +1,37 @@
 # Language Pack Quality Status
 
-**Last updated:** 2026-05-31 (Phases T–AA)
+> **Status note, July 9, 2026:** This log documents the major 56-pack quality wave. The repo currently has 63 `lang/*.js` pack files mirrored to `prismflow-deploy/public/lang/`; run the current i18n verification tools before applying the 56-pack quality summary to newer packs or the PPS cluster.
+
+**Last updated:** 2026-06-20 (June i18n wave — see entry below)
+
+## 2026-06 — Spanglish elimination, content sweep, behavior_lens, and new-key coverage
+
+A multi-session i18n wave brought all 56 packs to high completeness. Headline work
+(all applied; `check_lang_json` 56/56 valid throughout):
+
+- **Half-translated "Spanglish" eliminated in safety strings.** A 56-pack native
+  review found `alerts.*`/`confirms.*` strings with English embedded in native text
+  that the exact-match passthrough metric had masked. Fixed ~913 keys across 31
+  packs (242 → 0 structural-Spanglish). A **blocking CI guard**,
+  `dev-tools/i18n/check_safety_string_spanglish.cjs` (`npm run verify:spanglish`),
+  now prevents regressions.
+- **Findings 2–6 + additional-errors pass** — common.* errors, corruption, dialect
+  bleed (PT-PT/Angola/BR), and ~186 newer untranslated keys fixed across 31–52 packs.
+- **Content-module sweep** — ~5,791 partial-translation keys finished across content
+  modules (adventure/quiz/toasts/tour/games/…); residue 8,119 → 2,746 (the remainder
+  is the legitimate kept-term floor: brand/feature names, pedagogical proper nouns,
+  standards/acronyms).
+- **behavior_lens** — full coverage pass, 577 keys translated across 49 packs.
+- **New-key sweep (Phase 2)** — all 49 non-PPS packs filled for previously-English
+  UI keys: 6,390 keys translated (~87%), with honest English-keeps for international
+  scientific/Latin nomenclature + brand/format tokens, 0 placeholder rejects.
+- **Community corrections channel** — `translation_feedback_module.js` → Cloudflare
+  worker `/submitTranslation` → `dev-tools/i18n/ingest_translation_feedback.cjs`
+  (manual review gate before any change is applied).
+
+PPS cluster (acholi, karen, chin_hakha, chin_falam, marshallese, lao, maay_maay) is
+intentional English passthrough; `maay_maay` is a pending human decision (the current
+pack is Standard Somali, not Af-Maay).
 
 ## 2026-05-26 session 4 — Second wave of UI additions + bug fixes
 
@@ -415,7 +446,7 @@ verify earlier cleanup. Found and fixed residual contamination:
 ### Verified clean (post-fix sampling)
 All 56 packs sampled. Final status:
 - ✅ tour.adventure_text reads fluently in target language for all packs
-- ✅ tour.quiz_text reads fluently in target language for all packs  
+- ✅ tour.quiz_text reads fluently in target language for all packs
 - ✅ tour.simplified_text reads fluently in target language for all packs
 - ✅ sidebar.ai_guide_welcome clean across all packs
 

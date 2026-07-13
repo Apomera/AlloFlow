@@ -1,12 +1,20 @@
-(function() {
+(function initResearchLaneEngineering(retriesLeft) {
   "use strict";
+  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules.ResearchLaneEngineering) window.AlloModules.ResearchLaneEngineering = { __pending: true };
   if (window.ResearchHub && window.ResearchHub._lanes && window.ResearchHub._lanes.engineering && window.ResearchHub._lanes.engineering.__tier >= 2) {
     console.log("[CDN] ResearchLaneEngineering already registered, skipping");
     return;
   }
   if (!window.ResearchHub || typeof window.ResearchHub.registerLane !== "function") {
+    if (retriesLeft === void 0) retriesLeft = 50;
+    if (retriesLeft <= 0) {
+      console.error("[ResearchLaneEngineering] window.ResearchHub never became available \u2014 giving up");
+      return;
+    }
     console.warn("[ResearchLaneEngineering] window.ResearchHub not yet available \u2014 deferring");
-    setTimeout(arguments.callee || function() {
+    setTimeout(function() {
+      initResearchLaneEngineering(retriesLeft - 1);
     }, 200);
     return;
   }
@@ -4801,5 +4809,6 @@
     },
     __tier: 2
   });
+  window.AlloModules.ResearchLaneEngineering = { __tier: 2, lane: "engineering" };
   console.log("[CDN] ResearchLaneEngineering registered (Tier 2)");
 })();

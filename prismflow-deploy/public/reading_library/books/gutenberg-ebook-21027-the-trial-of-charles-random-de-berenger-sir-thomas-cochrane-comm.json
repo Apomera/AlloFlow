@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-21027-the-trial-of-charles-random-de-berenger-sir-thomas-cochrane-comm",
+  "title": "The Trial of Charles Random de Berenger, Sir Thomas Cochrane, commonly called Lord Cochrane, the Hon. Andrew Cochrane Johnstone, Richard Gathorne Butt, Ralph Sandom, Alexander M'Rae, John Peter Holloway, and Henry Lyte for A Conspiracy: In the Court of King's Bench, Guildhall, on Wednesday the 8th, and Thursday the 9th of June, 1814",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Beaufain, Charles Random de Bérenger, baron de -- Trials, litigation, etc.",
+    "Butt, Richard Gathorne -- Trials, litigation, etc.",
+    "Dundonald, Thomas Cochrane, Earl of, 1775-1860 -- Trials, litigation, etc.",
+    "Holloway, John Peter -- Trials, litigation, etc.",
+    "Johnstone, Andrew James Cochrane, 1767- -- Trials, litigation, etc.",
+    "Lyte, Henry -- Trials, litigation, etc."
+  ],
+  "authors": [
+    "Project Gutenberg"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/21027"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/21027/pg21027.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Trial of Charles Random de Berenger, Sir Thomas Cochrane, commonly called Lord Cochrane, the Hon. Andrew Cochrane Johnstone, Richard Gathorne Butt, Ralph Sandom, Alexander M'Rae, John Peter Holloway, and Henry Lyte for A Conspiracy: In the Court of King's Bench, Guildhall, on Wednesday the 8th, and Thursday the 9th of June, 1814\". Metadata tags include: Beaufain, Charles Random de Bérenger, baron de -- Trials, litigation, etc.; Butt, Richard Gathorne -- Trials, litigation, etc.; Dundonald, Thomas Cochrane, Earl of, 1775-1860 -- Trials, litigation, etc.; Holloway, John Peter -- Trials, litigation, etc.."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 141
+  }
+}

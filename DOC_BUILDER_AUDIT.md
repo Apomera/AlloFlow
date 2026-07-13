@@ -1,5 +1,7 @@
 # Document Builder — Architecture & Improvement Audit
 
+> **Historical architecture snapshot, not current product claims (2026-07-09):** This May 2026 audit documents the Document Builder state at that time. Treat feature counts, risk ranking, and competitor comparisons here as planning context; use the current README/manual, `FEATURE_INVENTORY.md`, and live tests for present-day status.
+
 **Generated**: 2026-05-24 (Claude Opus 4.7)
 **Trigger**: After completing the PDF remediation pipeline work, audit the Document Builder sibling feature to map its state and identify improvement opportunities.
 **Companion doc**: [PDF_PIPELINE_AUDIT.md](PDF_PIPELINE_AUDIT.md)
@@ -79,7 +81,7 @@ Plus **AI Theme Generator**: user prompt → `generateCustomExportStyle` calls G
 ## Strengths (real, not pad)
 
 - **Output format breadth.** Six output formats including all major LMS standards is genuinely impressive for a free tool. Adobe InDesign + a separate LMS exporter would cost $200+/month to match.
-- **Live accessibility inspector.** WCAG contrast ratios and heading hierarchy visible while authoring, not just at audit time. Bakes accessibility into the workflow rather than treating it as a separate compliance step.
+- **Live accessibility inspector.** WCAG contrast ratios and heading hierarchy visible while authoring, not just at audit time. Bakes accessibility into the workflow rather than treating it as a separate after-the-fact check.
 - **AAA contrast option built in.** Newsela and ReadWorks have AA themes but no AAA option. High-vision-impairment users get an out-of-the-box themed export.
 - **Preset save/load.** Districts can standardize their export configuration across teachers via shared preset JSON — real institutional value.
 - **Paper-worksheet mode auto-replacing inputs with fillable blanks.** Specific, useful, non-obvious. Saves teachers manual layout time.

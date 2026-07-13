@@ -1,0 +1,2852 @@
+window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
+(function() {
+  'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+
+  // ── Audio (auto-injected) ──
+  var _calcAC = null;
+  function getCalcAC() { if (!_calcAC) { try { _calcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_calcAC && _calcAC.state === "suspended") { try { _calcAC.resume(); } catch(e) {} } return _calcAC; }
+  function calcTone(f,d,tp,v) { var ac = getCalcAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxCalcClick() { calcTone(600, 0.03, "sine", 0.04); }
+  function sfxCalcSuccess() { calcTone(523, 0.08, "sine", 0.07); setTimeout(function() { calcTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { calcTone(784, 0.1, "sine", 0.08); }, 140); }
+
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-calculus')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-calculus';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
+
+  window.StemLab.registerTool('calculus', {
+    icon: '\u222B',
+    label: 'Calculus',
+    desc: 'Riemann sums, derivatives, and guided discovery missions',
+    color: 'red',
+    category: 'math',
+    questHooks: [
+      { id: 'explore_integral', label: 'Explore Riemann sum approximation', icon: '\u222B', check: function(d) { return (d.n || 20) !== 20 || d.mode !== 'left'; }, progress: function(d) { return d.mode && d.mode !== 'left' ? 'Exploring!' : 'Adjust rectangles'; } },
+      { id: 'try_all_methods', label: 'Try left, right, midpoint, and trapezoid methods', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.methodsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.methodsUsed || {}).length + '/4 methods'; } },
+      { id: 'predict_correctly', label: 'Make a correct prediction in predict mode', icon: '\uD83E\uDDE0', check: function(d) { return d.predictCorrect || false; }, progress: function(d) { return d.predictCorrect ? 'Correct!' : 'Try predicting'; } }
+    ],
+    render: function(ctx) {
+      var React = ctx.React;
+      var h = React.createElement;
+      var labToolData = ctx.toolData;
+      var setLabToolData = ctx.setToolData;
+      var setStemLabTool = ctx.setStemLabTool;
+      var setToolSnapshots = ctx.setToolSnapshots;
+      var addToast = ctx.addToast;
+      var t = ctx.t;
+      var ArrowLeft = ctx.icons.ArrowLeft;
+      var awardStemXP = ctx.awardXP;
+      var stemCelebrate = ctx.celebrate;
+      var stemBeep = ctx.beep;
+      var callGemini = ctx.callGemini;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
+
+      return (function() {
+        var d = labToolData.calculus || {};
+
+        var upd = function(key, val) {
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { calculus: Object.assign({}, prev.calculus, { [key]: val }) });
+          });
+        };
+
+        // ── VISUALIZE: canvas hooks (declared at IIFE top so they fire every render) ──
+        var _vizCvRef = React.useRef(null);
+        var _vizAnimId = React.useRef(0);
+        var _vizTick = React.useRef(0);
+        var _vizLiveState = React.useRef({});
+        var _vizLoopRunning = React.useRef(false);
+
+        // ── FUNCTION REGISTRY (used by Visualize views — unlocks non-quadratics) ──
+        var CALC_FUNCS = {
+          'quadratic':  { label: 'x\u00B2 - 2',          f: function(x){ return x*x - 2; },             df: function(x){ return 2*x; } },
+          'cubic':      { label: 'x\u00B3 / 3 - x',     f: function(x){ return x*x*x/3 - x; },         df: function(x){ return x*x - 1; } },
+          'sin':        { label: 'sin(x)',               f: function(x){ return Math.sin(x); },         df: function(x){ return Math.cos(x); } },
+          'exp':        { label: 'e^(x/2)',              f: function(x){ return Math.exp(x/2); },       df: function(x){ return 0.5*Math.exp(x/2); } },
+          'bell':       { label: 'e^(-x\u00B2/2)',      f: function(x){ return Math.exp(-x*x/2); },    df: function(x){ return -x*Math.exp(-x*x/2); } },
+          'rational':   { label: '1 / (1+x\u00B2)',     f: function(x){ return 1/(1+x*x); },           df: function(x){ return -2*x/Math.pow(1+x*x,2); } }
+        };
+
+        // Pipe live state into ref so the RAF loop always reads fresh values
+        _vizLiveState.current = {
+          tab: d.tab || 'integral',
+          vizView: d.vizView || 'zoom',
+          vizFn: d.vizFn || 'quadratic',
+          vizZoom: d.vizZoom !== undefined ? d.vizZoom : 1,
+          vizX0: d.vizX0 !== undefined ? d.vizX0 : 0,
+          vizFtcX: d.vizFtcX !== undefined ? d.vizFtcX : -1,
+          vizOptimX: d.vizOptimX !== undefined ? d.vizOptimX : null,
+          vizRiemannMode: d.vizRiemannMode || 'midpoint',
+          vizUserInteracted: d.vizUserInteracted || {},
+          vizSlopeSeeds: d.vizSlopeSeeds || [],
+          CALC_FUNCS: CALC_FUNCS
+        };
+
+        // ── RAF LOOP FOR VISUALIZE CANVAS (attach once, dispatch per view) ──
+        React.useEffect(function() {
+          if ((d.tab || 'integral') !== 'visualize') return;
+          var tries = 0, retryTimer = null;
+          function tryInit() {
+            var cv = _vizCvRef.current;
+            if (!cv) {
+              // Tiered polling so the canvas isn't lost if React's ref attachment is delayed:
+              //   - first 60 tries at 50ms each = 3s of fast polling (covers normal renders)
+              //   - next 30 tries at 500ms each = 15s more of slow polling (catches blocked-JS or off-screen mounts)
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              } else {
+                console.warn('[Calculus Viz] canvas ref NEVER attached after ~18s of retries');
+              }
+              tries++;
+              return;
+            }
+            var c = cv.getContext('2d');
+            if (!c) return;
+            function resize() {
+              var r = cv.getBoundingClientRect();
+              var dpr = window.devicePixelRatio || 1;
+              cv.width = Math.max(1, Math.floor(r.width * dpr));
+              cv.height = Math.max(1, Math.floor(r.height * dpr));
+              c.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            var resizeObs = null;
+            try { resizeObs = new ResizeObserver(resize); resizeObs.observe(cv); } catch(e) {}
+
+            // Canvas click interaction — maps pointer X/Y into plot coords per view
+            function onClick(ev) {
+              var ls = _vizLiveState.current;
+              if (ls.tab !== 'visualize') return;
+              var r = cv.getBoundingClientRect();
+              var px = ev.clientX - r.left, py = ev.clientY - r.top;
+              var W = r.width, H = r.height;
+              var v = ls.vizView;
+              if (v === 'zoom' || v === 'tangent') {
+                // Map px over the x range [-3, 3]
+                var Lx = 60, Rx = W - 20;
+                if (v === 'tangent') { Lx = 20; Rx = 20 + (W - 20 - 20 - 12) / 2; } // left panel
+                if (px >= Lx && px <= Rx) {
+                  var newX0 = -3 + ((px - Lx) / (Rx - Lx)) * 6;
+                  upd('vizX0', Math.max(-3, Math.min(3, newX0)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { x0: true }));
+                }
+              } else if (v === 'ftc') {
+                var gap = 12;
+                var panelW = (W - gap - 40) / 2;
+                var Lx1 = 20, Rx1 = Lx1 + panelW;
+                if (px >= Lx1 && px <= Rx1) {
+                  var nx = -3 + ((px - Lx1) / (Rx1 - Lx1)) * 6;
+                  upd('vizFtcX', Math.max(-2.95, Math.min(2.95, nx)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { ftc: true }));
+                }
+              } else if (v === 'slope') {
+                var Lxs = 30, Rxs = W - 30, Tys = 46, Bys = H - 36;
+                if (px >= Lxs && px <= Rxs && py >= Tys && py <= Bys) {
+                  var sxR = { min: -3, max: 3 }, syR = { min: -2.5, max: 2.5 };
+                  var seedX = sxR.min + ((px - Lxs) / (Rxs - Lxs)) * (sxR.max - sxR.min);
+                  var seedY = syR.max - ((py - Tys) / (Bys - Tys)) * (syR.max - syR.min);
+                  var seeds = (ls.vizSlopeSeeds || []).slice(-3);
+                  seeds.push({ x: seedX, y: seedY });
+                  upd('vizSlopeSeeds', seeds);
+                }
+              } else if (v === 'optim') {
+                var Lx2 = (function() {
+                  var panelW2 = W * 0.42;
+                  return 20 + panelW2 + 20;
+                })();
+                var Rx2 = W - 20;
+                if (px >= Lx2 && px <= Rx2) {
+                  var xMax = 6 - 0.2;
+                  var nxv = 0 + ((px - Lx2) / (Rx2 - Lx2)) * (xMax + 0.5);
+                  upd('vizOptimX', Math.max(0.05, Math.min(xMax, nxv)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { optim: true }));
+                }
+              }
+            }
+            cv.addEventListener('click', onClick);
+
+            function frame() {
+              _vizTick.current++;
+              var t = _vizTick.current;
+              var ls = _vizLiveState.current;
+              if (ls.tab !== 'visualize') { _vizAnimId.current = requestAnimationFrame(frame); return; }
+              if (!cv.isConnected) { _vizLoopRunning.current = false; if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current); return; }
+              var r = cv.getBoundingClientRect();
+              var W = r.width, H = r.height;
+              // Clear
+              var bg = c.createLinearGradient(0, 0, 0, H);
+              bg.addColorStop(0, '#0f172a'); bg.addColorStop(1, '#1e293b');
+              c.fillStyle = bg; c.fillRect(0, 0, W, H);
+
+              var fn = ls.CALC_FUNCS[ls.vizFn] || ls.CALC_FUNCS.quadratic;
+
+              if (ls.vizView === 'zoom')         { drawZoomToLinearity(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'tangent') { drawTangentExplorer(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'ftc')     { drawFTCSweep(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'motion')  { drawMotionLab(c, W, H, ls, t); }
+              else if (ls.vizView === 'riemann') { drawRiemannAnimator(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'slope')   { drawSlopeFields(c, W, H, ls, t); }
+              else if (ls.vizView === 'chain')   { drawChainRule(c, W, H, ls, t); }
+              else if (ls.vizView === 'taylor')  { drawTaylorSeries(c, W, H, ls, t); }
+              else if (ls.vizView === 'optim')   { drawOptimization(c, W, H, ls, t); }
+              else if (ls.vizView === 'related') { drawRelatedRates(c, W, H, ls, t); }
+              else if (ls.vizView === 'vor')     { drawVolumeOfRevolution(c, W, H, ls, t); }
+              else if (ls.vizView === 'eps')     { drawEpsilonDelta(c, W, H, ls, t); }
+              else { drawComingSoon(c, W, H, ls.vizView); }
+
+              _vizAnimId.current = requestAnimationFrame(frame);
+            }
+            if (!_vizLoopRunning.current) {
+              _vizLoopRunning.current = true;
+              _vizAnimId.current = requestAnimationFrame(frame);
+            }
+            cv._vizCleanup = function() {
+              _vizLoopRunning.current = false;
+              if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current);
+              if (resizeObs) { try { resizeObs.disconnect(); } catch(e) {} }
+              cv.removeEventListener('click', onClick);
+            };
+          }
+          tryInit();
+          return function() {
+            if (retryTimer) clearTimeout(retryTimer);
+            var cv = _vizCvRef.current;
+            if (cv && cv._vizCleanup) cv._vizCleanup();
+          };
+        }, [d.tab]);
+
+        // ── Keyboard shortcuts Shift+1..6 for viz views ──
+        React.useEffect(function() {
+          if ((d.tab || 'integral') !== 'visualize') return;
+          function onKey(e) {
+            if (!e.shiftKey || !/^[0-9]$/.test(e.key)) return;
+            var views = ['zoom','tangent','motion','riemann','ftc','slope','chain','taylor','optim','related'];
+            e.preventDefault();
+            var idx = e.key === '0' ? 9 : parseInt(e.key, 10) - 1;
+            if (views[idx]) upd('vizView', views[idx]);
+          }
+          window.addEventListener('keydown', onKey);
+          return function() { window.removeEventListener('keydown', onKey); };
+        }, [d.tab]);
+
+        // ── VIZ DRAW FUNCTIONS (scoped inside render — OK because IIFE runs each render) ──
+        function drawComingSoon(c, W, H, viewId) {
+          c.fillStyle = '#94a3b8'; c.textAlign = 'center';
+          c.font = 'bold 16px "Inter", sans-serif';
+          c.fillText('\u23F3 View "' + viewId + '" coming soon', W/2, H/2 - 8);
+          c.font = '11px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Try Zoom, Tangent, or FTC for now', W/2, H/2 + 12);
+        }
+
+        // Helper: plot a function curve onto canvas rect with axis transforms
+        function plotCurve(c, fn, xR, yR, Lx, Rx, Ty, By, color, width) {
+          c.strokeStyle = color; c.lineWidth = width || 2;
+          c.beginPath();
+          var N = 200;
+          for (var i = 0; i <= N; i++) {
+            var x = xR.min + (i / N) * (xR.max - xR.min);
+            var y = fn(x);
+            var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+          }
+          c.stroke();
+        }
+        function drawAxes(c, Lx, Rx, Ty, By, xR, yR, color) {
+          color = color || 'rgba(148,163,184,0.35)';
+          c.strokeStyle = color; c.lineWidth = 1;
+          // x=0 axis
+          if (xR.min < 0 && xR.max > 0) {
+            var zeroX = Lx + ((0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            c.beginPath(); c.moveTo(zeroX, Ty); c.lineTo(zeroX, By); c.stroke();
+          }
+          // y=0 axis
+          if (yR.min < 0 && yR.max > 0) {
+            var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.beginPath(); c.moveTo(Lx, zeroY); c.lineTo(Rx, zeroY); c.stroke();
+          }
+          // Frame
+          c.strokeStyle = 'rgba(148,163,184,0.25)';
+          c.strokeRect(Lx, Ty, Rx - Lx, By - Ty);
+        }
+
+        // ── VIEW 1: Zoom to Linearity ──
+        function drawZoomToLinearity(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDD0D Zoom to Linearity \u2014 "what IS a derivative?"', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('As you zoom, ANY smooth curve becomes a straight line. That line\u2019s slope = f\u2032(x\u2080).', W/2, 36);
+
+          var userX0 = ls.vizUserInteracted && ls.vizUserInteracted.x0;
+          var x0 = userX0 ? ls.vizX0 : Math.sin(t / 90) * 2;
+          // Zoom factor: slow sine ping-pong 1x .. 100x so users see motion even without interacting
+          var autoZoom = 1 + 100 * (1 - Math.cos(t / 90)) / 2;
+          var zoom = ls.vizZoom && ls.vizZoom > 1 ? ls.vizZoom : autoZoom;
+          var halfW_x = 3 / zoom;
+          var xR = { min: x0 - halfW_x, max: x0 + halfW_x };
+
+          // Sample to find dynamic y range
+          // (fn is the CALC_FUNCS wrapper { label, f, df } — call fn.f to evaluate)
+          var samples = [];
+          for (var si = 0; si <= 40; si++) {
+            samples.push(fn.f(xR.min + (si/40) * (xR.max - xR.min)));
+          }
+          var yMin = Math.min.apply(null, samples), yMax = Math.max.apply(null, samples);
+          var yPad = (yMax - yMin) * 0.25 + 0.05;
+          var yR = { min: yMin - yPad, max: yMax + yPad };
+
+          // Plot area
+          var Lx = 60, Rx = W - 20, Ty = 56, By = H - 60;
+
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // The curve
+          plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, '#f87171', 2.5);
+
+          // The tangent line at x0 (always drawn)
+          var slope = fn.df(x0);
+          var y0 = fn.f(x0);
+          var tanFn = function(x) { return slope * (x - x0) + y0; };
+          c.shadowColor = '#34d399'; c.shadowBlur = 6;
+          plotCurve(c, tanFn, xR, yR, Lx, Rx, Ty, By, 'rgba(52,211,153,0.85)', 2);
+          c.shadowBlur = 0;
+
+          // Marker at (x0, f(x0))
+          var mx = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Zoom meter
+          var zTxt = zoom.toFixed(0) + '\u00D7 zoom';
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 10, Ty + 10, 120, 40);
+          c.strokeStyle = 'rgba(59,130,246,0.5)'; c.strokeRect(Lx + 10, Ty + 10, 120, 40);
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText(zTxt, Lx + 18, Ty + 28);
+          c.font = 'bold 10px "Inter", sans-serif'; c.fillStyle = '#34d399';
+          c.fillText('slope \u2192 ' + slope.toFixed(4), Lx + 18, Ty + 44);
+
+          // Small legend
+          c.textAlign = 'right';
+          c.fillStyle = '#f87171'; c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('\u2014 f(x)', Rx - 10, Ty + 20);
+          c.fillStyle = '#34d399';
+          c.fillText('\u2014 tangent at x\u2080', Rx - 10, Ty + 36);
+
+          // x-axis scrubber at bottom
+          var scrubY = H - 34;
+          c.fillStyle = 'rgba(148,163,184,0.2)';
+          c.fillRect(Lx, scrubY, Rx - Lx, 18);
+          c.strokeStyle = 'rgba(148,163,184,0.4)';
+          c.strokeRect(Lx, scrubY, Rx - Lx, 18);
+          // Map x0 across a fixed -3..3 global range for scrubber
+          var gx = Lx + ((x0 + 3) / 6) * (Rx - Lx);
+          c.fillStyle = '#fde047';
+          c.fillRect(gx - 3, scrubY - 2, 6, 22);
+          c.fillStyle = '#94a3b8'; c.textAlign = 'center';
+          c.font = '9px "Inter", sans-serif';
+          c.fillText('drag x\u2080 below: x\u2080 = ' + x0.toFixed(2), W/2, H - 8);
+        }
+
+        // ── VIEW 2: Tangent Explorer (curve + tangent + f'(x) trace) ──
+        function drawTangentExplorer(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCCD Tangent Explorer \u2014 the derivative is itself a function', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Left: f(x) with live tangent. Right: f\u2032(x) traced as you move x\u2080.', W/2, 36);
+
+          // Two panels side by side
+          var gap = 12;
+          var panelW = (W - gap - 40) / 2;
+          var Lx1 = 20, Rx1 = Lx1 + panelW;
+          var Lx2 = Rx1 + gap, Rx2 = Lx2 + panelW;
+          var Ty = 56, By = H - 30;
+
+          var xR = { min: -3, max: 3 };
+
+          // Sample y ranges dynamically
+          var fs = [], dfs = [];
+          for (var si = 0; si <= 60; si++) {
+            var x = xR.min + (si/60) * (xR.max - xR.min);
+            fs.push(fn.f(x));
+            dfs.push(fn.df(x));
+          }
+          var yMin = Math.min.apply(null, fs), yMax = Math.max.apply(null, fs);
+          var dyMin = Math.min.apply(null, dfs), dyMax = Math.max.apply(null, dfs);
+          var yR = { min: yMin - 0.5, max: yMax + 0.5 };
+          var dyR = { min: dyMin - 0.5, max: dyMax + 0.5 };
+
+          // Left panel: f(x)
+          drawAxes(c, Lx1, Rx1, Ty, By, xR, yR);
+          plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2);
+
+          // Auto-sweep x0 (smooth ping-pong) if user hasn't interacted
+          var userX0 = ls.vizUserInteracted && ls.vizUserInteracted.x0;
+          var x0 = userX0 ? ls.vizX0 : Math.sin(t / 60) * 2.5;
+          var slope = fn.df(x0);
+          var y0 = fn.f(x0);
+
+          // Tangent at x0
+          var tanFn = function(x) { return slope * (x - x0) + y0; };
+          c.shadowColor = '#34d399'; c.shadowBlur = 6;
+          plotCurve(c, tanFn, xR, yR, Lx1, Rx1, Ty, By, 'rgba(52,211,153,0.85)', 2);
+          c.shadowBlur = 0;
+
+          // Marker
+          var mx = Lx1 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x)', Lx1 + 8, Ty + 16);
+
+          // Right panel: f'(x) traced
+          drawAxes(c, Lx2, Rx2, Ty, By, xR, dyR);
+          plotCurve(c, fn.df, xR, dyR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.6)', 1.5);
+
+          // A DOT on f'(x) at x0 — this is the "slope on the right matches tangent on the left"
+          var dmx = Lx2 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+          var dmy = By - ((slope - dyR.min) / (dyR.max - dyR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(dmx, dmy, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Arrow from left marker up to right dot — visual "they're the same"
+          c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+          c.beginPath(); c.moveTo(mx, my); c.lineTo(dmx, dmy); c.stroke();
+          c.setLineDash([]);
+
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText("f\u2032(x)", Lx2 + 8, Ty + 16);
+
+          // Bottom readout
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('x\u2080 = ' + x0.toFixed(2) + '   \u2192   f(x\u2080) = ' + y0.toFixed(2) + '   \u2022   f\u2032(x\u2080) = slope = ' + slope.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 5: FTC Sweep (THE payoff) ──
+        function drawFTCSweep(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\u2B50 Fundamental Theorem of Calculus \u2014 area\u2019s slope IS the curve', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("Left: shaded area A(x) under f. Right: plot of A(x). Its slope at any x equals f(x).", W/2, 36);
+
+          var gap = 12;
+          var panelW = (W - gap - 40) / 2;
+          var Lx1 = 20, Rx1 = Lx1 + panelW;
+          var Lx2 = Rx1 + gap, Rx2 = Lx2 + panelW;
+          var Ty = 56, By = H - 30;
+
+          var xR = { min: -3, max: 3 };
+          // Sample f and A
+          var N = 240;
+          var dxS = (xR.max - xR.min) / N;
+          var fVals = new Array(N+1), AVals = new Array(N+1);
+          var acc = 0;
+          for (var i = 0; i <= N; i++) {
+            var xi = xR.min + i * dxS;
+            fVals[i] = fn.f(xi);
+            if (i > 0) acc += (fVals[i-1] + fVals[i]) / 2 * dxS; // trapezoidal
+            AVals[i] = acc;
+          }
+          var fMin = Math.min.apply(null, fVals), fMax = Math.max.apply(null, fVals);
+          var aMin = Math.min.apply(null, AVals), aMax = Math.max.apply(null, AVals);
+          var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
+          var aR = { min: aMin - 0.3, max: aMax + 0.3 };
+
+          drawAxes(c, Lx1, Rx1, Ty, By, xR, yR);
+          drawAxes(c, Lx2, Rx2, Ty, By, xR, aR);
+
+          // Auto-sweep the x pointer if user hasn't touched it
+          var userFtc = ls.vizUserInteracted && ls.vizUserInteracted.ftc;
+          var sweepX = userFtc
+            ? Math.max(xR.min + 0.01, Math.min(xR.max - 0.01, ls.vizFtcX))
+            : (xR.min + ((Math.sin(t/80) + 1) / 2) * (xR.max - xR.min));
+
+          // Shade area [xR.min .. sweepX] under f on left panel
+          var zeroY_L = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = 'rgba(59,130,246,0.28)';
+          c.beginPath();
+          var startSx = Lx1;
+          c.moveTo(startSx, zeroY_L);
+          for (var k = 0; k <= N; k++) {
+            var xi2 = xR.min + k * dxS;
+            if (xi2 > sweepX) break;
+            var sx = Lx1 + ((xi2 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+            var sy = By - ((fVals[k] - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.lineTo(sx, sy);
+          }
+          // Close bottom
+          var endSx = Lx1 + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          c.lineTo(endSx, zeroY_L);
+          c.closePath();
+          c.fill();
+
+          // Curve on top of shading
+          plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2.2);
+
+          // Sweep marker on left
+          c.strokeStyle = '#fde047'; c.lineWidth = 1.5;
+          c.beginPath(); c.moveTo(endSx, Ty); c.lineTo(endSx, By); c.stroke();
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(endSx, zeroY_L, 4, 0, Math.PI * 2); c.fill();
+
+          // Right panel: A(x) curve drawn only up to sweepX
+          // First draw full ghost curve
+          plotCurve(c, function(x){
+            var idx = Math.round((x - xR.min) / dxS);
+            if (idx < 0) idx = 0; if (idx > N) idx = N;
+            return AVals[idx];
+          }, xR, aR, Lx2, Rx2, Ty, By, 'rgba(59,130,246,0.18)', 1.5);
+          // Then draw the solid portion
+          c.strokeStyle = '#60a5fa'; c.lineWidth = 2.5;
+          c.beginPath();
+          var drawn = 0;
+          for (var j = 0; j <= N; j++) {
+            var xj = xR.min + j * dxS;
+            if (xj > sweepX) break;
+            var sx2 = Lx2 + ((xj - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+            var sy2 = By - ((AVals[j] - aR.min) / (aR.max - aR.min)) * (By - Ty);
+            if (drawn === 0) c.moveTo(sx2, sy2); else c.lineTo(sx2, sy2);
+            drawn++;
+          }
+          c.stroke();
+
+          // Tangent to A(x) at sweepX — slope should equal f(sweepX)
+          var idxS = Math.max(0, Math.min(N, Math.round((sweepX - xR.min) / dxS)));
+          var fAtS = fVals[idxS], aAtS = AVals[idxS];
+          var Lx2Offset = Lx2;
+          var sxAtS = Lx2Offset + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+          var syAtS = By - ((aAtS - aR.min) / (aR.max - aR.min)) * (By - Ty);
+          // Draw the tangent
+          var tanA = function(x) { return fAtS * (x - sweepX) + aAtS; };
+          plotCurve(c, tanA, xR, aR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.85)', 2);
+          // Sweep dot on right
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(sxAtS, syAtS, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+
+          // Panel labels
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x) \u2022 shaded area = A(x)', Lx1 + 8, Ty + 16);
+          c.fillStyle = '#60a5fa';
+          c.fillText('A(x) = \u222B f(t) dt', Lx2 + 8, Ty + 16);
+          c.fillStyle = '#34d399'; c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText("slope of tangent = " + fAtS.toFixed(2), Lx2 + 8, Ty + 30);
+
+          // Bottom big insight
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText("x = " + sweepX.toFixed(2) + "   \u2022   A(x) = " + aAtS.toFixed(3) + "   \u2022   A\u2032(x) = " + fAtS.toFixed(3) + "   \u2190  same as f(x)!", W/2, H - 10);
+        }
+
+        // ── VIEW 3: Motion Lab (position / velocity / acceleration) ──
+        function drawMotionLab(c, W, H, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDE97 Motion Lab \u2014 position \u2192 velocity \u2192 acceleration', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Position p(t). Velocity = p\u2032(t). Acceleration = v\u2032(t). Each is the slope of the one above.', W/2, 32);
+
+          // Driver function — animated scenario: a car that gently accelerates, cruises, brakes
+          // p(t) = 0.5 * t^2 for t in [0, 2], then linear for [2, 4], then decelerating to stop [4, 6]
+          function pos(tt) {
+            if (tt < 2) return 0.5 * tt * tt;
+            if (tt < 4) return 2 + 2 * (tt - 2);
+            if (tt < 6) return 6 + 2 * (tt - 4) - 0.5 * (tt - 4) * (tt - 4);
+            return 8;
+          }
+          function vel(tt) {
+            if (tt < 2) return tt;
+            if (tt < 4) return 2;
+            if (tt < 6) return 2 - (tt - 4);
+            return 0;
+          }
+          function acc(tt) {
+            if (tt < 2) return 1;
+            if (tt < 4) return 0;
+            if (tt < 6) return -1;
+            return 0;
+          }
+
+          // Live time scrubs back and forth 0..6
+          var phase = (t / 60) % 12;
+          var tNow = phase < 6 ? phase : 12 - phase; // ping-pong
+
+          var gap = 10;
+          var panelY0 = 46;
+          var panelH = (H - panelY0 - 36) / 3 - gap;
+          var Lx = 60, Rx = W - 20;
+          var tR = { min: 0, max: 6 };
+
+          // 3 panels stacked
+          var panels = [
+            { lbl: 'position p(t)', fn: pos,  col: '#60a5fa', yMin: -0.5, yMax: 8.8 },
+            { lbl: 'velocity v(t) = p\u2032(t)', fn: vel, col: '#34d399', yMin: -0.5, yMax: 2.8 },
+            { lbl: 'acceleration a(t) = v\u2032(t)', fn: acc, col: '#fbbf24', yMin: -1.5, yMax: 1.5 }
+          ];
+
+          panels.forEach(function(p, pi) {
+            var Ty = panelY0 + pi * (panelH + gap);
+            var By = Ty + panelH;
+            var yR = { min: p.yMin, max: p.yMax };
+            drawAxes(c, Lx, Rx, Ty, By, tR, yR);
+            plotCurve(c, p.fn, tR, yR, Lx, Rx, Ty, By, p.col, 2);
+            // Label
+            c.fillStyle = p.col; c.textAlign = 'left';
+            c.font = 'bold 10.5px "Inter", sans-serif';
+            c.fillText(p.lbl, Lx + 6, Ty + 12);
+            // Dot at current time
+            var yVal = p.fn(tNow);
+            var sx = Lx + ((tNow - tR.min) / (tR.max - tR.min)) * (Rx - Lx);
+            var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = '#fde047';
+            c.beginPath(); c.arc(sx, sy, 4.5, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+            // Readout of current value
+            c.fillStyle = '#e2e8f0'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('= ' + yVal.toFixed(2), Rx - 6, Ty + 12);
+            // Vertical time indicator line across panel
+            c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(sx, Ty); c.lineTo(sx, By); c.stroke();
+          });
+
+          // Animated "car" at the top between t-axis and panel 1
+          var carY = 40;
+          var carX = Lx + (pos(tNow) / 8) * (Rx - Lx);
+          c.fillStyle = '#ef4444';
+          c.fillRect(carX - 10, carY - 6, 20, 10);
+          c.fillStyle = '#1f2937';
+          c.beginPath(); c.arc(carX - 5, carY + 4, 2, 0, Math.PI * 2); c.fill();
+          c.beginPath(); c.arc(carX + 5, carY + 4, 2, 0, Math.PI * 2); c.fill();
+
+          // Bottom timestamp
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('t = ' + tNow.toFixed(2) + ' s   \u2022   each graph\u2019s slope = the graph below', W/2, H - 12);
+        }
+
+        // ── VIEW 4: Riemann Animator (n=1..256 all four methods) ──
+        function drawRiemannAnimator(c, W, H, fn, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAC Riemann Animator \u2014 as n grows, all methods converge', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Watch left, right, midpoint, trapezoidal rectangles shrink; errors approach 0.', W/2, 32);
+
+          // n scrubs 2..128 in a log-ish ramp + gentle ping-pong
+          var phase = (t / 4) % 240;
+          var k = phase < 120 ? phase / 120 : (240 - phase) / 120;
+          var n = Math.round(2 + Math.pow(k, 2) * 126);
+
+          // 4 small panels (2x2)
+          var methods = [
+            { id: 'left',      lbl: 'Left',       col: '#f87171' },
+            { id: 'right',     lbl: 'Right',      col: '#fbbf24' },
+            { id: 'midpoint',  lbl: 'Midpoint',   col: '#34d399' },
+            { id: 'trapezoid', lbl: 'Trapezoid',  col: '#60a5fa' }
+          ];
+          var gx = 14, gy = 46;
+          var pw = (W - gx * 3) / 2;
+          var ph = (H - gy - 40) / 2 - gx;
+
+          var xR = { min: -2, max: 2 };
+          var sampleY = [];
+          for (var si = 0; si <= 40; si++) sampleY.push(fn.f(xR.min + (si/40) * (xR.max - xR.min)));
+          var fMin = Math.min.apply(null, sampleY), fMax = Math.max.apply(null, sampleY);
+          var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
+
+          // Exact via fine-grained trapezoid
+          var exactAcc = 0, NE = 2000, dxE = (xR.max - xR.min) / NE;
+          var prevY = fn.f(xR.min);
+          for (var i = 1; i <= NE; i++) {
+            var curY = fn.f(xR.min + i * dxE);
+            exactAcc += (prevY + curY) / 2 * dxE;
+            prevY = curY;
+          }
+
+          methods.forEach(function(m, mi) {
+            var col = mi % 2, row = Math.floor(mi / 2);
+            var Lx = gx + col * (pw + gx);
+            var Ty = gy + row * (ph + gx);
+            var Rx = Lx + pw, By = Ty + ph;
+
+            drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+            plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, m.col, 1.5);
+
+            // Draw rectangles
+            var dx = (xR.max - xR.min) / n;
+            var approx = 0;
+            var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = m.col.replace('#', 'rgba(') ? m.col : m.col; // fallback
+            for (var r = 0; r < n; r++) {
+              var xi = xR.min + r * dx;
+              var yVal;
+              if (m.id === 'left')       yVal = fn.f(xi);
+              else if (m.id === 'right') yVal = fn.f(xi + dx);
+              else if (m.id === 'midpoint') yVal = fn.f(xi + dx/2);
+              else { yVal = (fn.f(xi) + fn.f(xi + dx)) / 2; } // trapezoid area-equivalent for approx
+              approx += yVal * dx;
+
+              var rxL = Lx + ((xi - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var rxR = Lx + ((xi + dx - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var ryT, ryB;
+              if (m.id === 'trapezoid') {
+                // Draw trapezoid polygon
+                var yL = fn.f(xi), yRv = fn.f(xi + dx);
+                var syL = By - ((yL - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                var syR = By - ((yRv - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                c.fillStyle = m.col + '33';
+                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                c.beginPath();
+                c.moveTo(rxL, zeroY); c.lineTo(rxL, syL); c.lineTo(rxR, syR); c.lineTo(rxR, zeroY); c.closePath();
+                c.fill(); c.stroke();
+              } else {
+                var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                c.fillStyle = m.col + '33';
+                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                var top = Math.min(sy, zeroY), hr = Math.abs(sy - zeroY);
+                c.fillRect(rxL, top, rxR - rxL, hr);
+                c.strokeRect(rxL, top, rxR - rxL, hr);
+              }
+            }
+            // Panel label + error
+            c.fillStyle = m.col; c.textAlign = 'left';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText(m.lbl, Lx + 6, Ty + 13);
+            var err = Math.abs(approx - exactAcc);
+            c.fillStyle = '#e2e8f0'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('err = ' + err.toFixed(4), Rx - 6, Ty + 13);
+          });
+
+          // Footer: n readout + exact value
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('n = ' + n + '  \u2022  exact \u222B f = ' + exactAcc.toFixed(4) + '  \u2022  each method shrinks error as n \u2192 \u221E', W/2, H - 12);
+        }
+
+        // ── VIEW 6: Slope Fields + trajectories ──
+        function drawSlopeFields(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDF0A Slope Fields \u2014 see an ODE without solving it', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("dy/dx = f(x,y). Arrows show direction. Trajectories flow along the field.", W/2, 32);
+
+          // Pick a slope function — auto-cycle through 3 interesting ODEs
+          var odes = [
+            { name: "y' = y",              df: function(x,y){ return y; } },
+            { name: "y' = x \u2212 y",     df: function(x,y){ return x - y; } },
+            { name: "y' = sin(x) \u2212 y", df: function(x,y){ return Math.sin(x) - y; } }
+          ];
+          var odeIdx = Math.floor((t / 300)) % odes.length;
+          var ode = odes[odeIdx];
+
+          var Lx = 30, Rx = W - 30, Ty = 46, By = H - 36;
+          var xR = { min: -3, max: 3 };
+          var yR = { min: -2.5, max: 2.5 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Grid of arrows
+          var nx = 24, ny = 16;
+          for (var ix = 0; ix < nx; ix++) {
+            for (var iy = 0; iy < ny; iy++) {
+              var x = xR.min + (ix + 0.5) / nx * (xR.max - xR.min);
+              var y = yR.min + (iy + 0.5) / ny * (yR.max - yR.min);
+              var slope;
+              try { slope = ode.df(x, y); } catch(e) { slope = 0; }
+              if (!isFinite(slope)) continue;
+              // Clamp large slopes for display
+              var theta = Math.atan(slope);
+              var len = 12;
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              var dx = Math.cos(theta) * len / 2;
+              var dy = -Math.sin(theta) * len / 2;
+              // Color by slope magnitude
+              var mag = Math.min(1, Math.abs(slope) / 3);
+              var r = Math.floor(100 + mag * 155);
+              var g = Math.floor(200 - mag * 80);
+              var b = 255 - Math.floor(mag * 120);
+              c.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.75)';
+              c.lineWidth = 1.2;
+              c.beginPath(); c.moveTo(sx - dx, sy - dy); c.lineTo(sx + dx, sy + dy); c.stroke();
+              // Small arrowhead
+              c.beginPath();
+              c.moveTo(sx + dx, sy + dy);
+              c.lineTo(sx + dx - Math.cos(theta + 0.4) * 3, sy + dy + Math.sin(theta + 0.4) * 3);
+              c.stroke();
+            }
+          }
+
+          // Euler-stepped trajectories from a few seed points
+          var seeds = [
+            { x: -2.8, y: -2.0, col: '#fbbf24' },
+            { x: -2.8, y:  0.0, col: '#34d399' },
+            { x: -2.8, y:  2.0, col: '#60a5fa' },
+            { x:  0.0, y: -2.3, col: '#f472b6' },
+            { x:  0.0, y:  2.3, col: '#a78bfa' }
+          ];
+          // Append up to 4 user-clicked seeds (cycle palette)
+          var userSeeds = ls.vizSlopeSeeds || [];
+          var userCols = ['#fde047', '#22d3ee', '#fb7185', '#84cc16'];
+          userSeeds.slice(-4).forEach(function(s, si) {
+            seeds.push({ x: s.x, y: s.y, col: userCols[si % userCols.length] });
+          });
+          seeds.forEach(function(s) {
+            c.strokeStyle = s.col; c.lineWidth = 2;
+            c.shadowColor = s.col; c.shadowBlur = 4;
+            c.beginPath();
+            var x = s.x, y = s.y;
+            var step = 0.03, steps = 260;
+            var started = false;
+            for (var k = 0; k < steps; k++) {
+              var slope = ode.df(x, y);
+              if (!isFinite(slope)) break;
+              // Clip trajectory to panel
+              if (x < xR.min || x > xR.max || y < yR.min - 0.5 || y > yR.max + 0.5) break;
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              if (!started) { c.moveTo(sx, sy); started = true; } else { c.lineTo(sx, sy); }
+              // RK2 (midpoint) step for a smoother curve
+              var kx = step, ky = slope * step;
+              var mSlope = ode.df(x + kx/2, y + ky/2);
+              x += step;
+              y += mSlope * step;
+            }
+            c.stroke();
+            c.shadowBlur = 0;
+            // Seed marker
+            var ssx = Lx + ((s.x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var ssy = By - ((s.y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = s.col;
+            c.beginPath(); c.arc(ssx, ssy, 3.5, 0, Math.PI * 2); c.fill();
+          });
+
+          // ODE label
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 8, Ty + 8, 140, 26);
+          c.strokeStyle = 'rgba(99,102,241,0.5)';
+          c.strokeRect(Lx + 8, Ty + 8, 140, 26);
+          c.fillStyle = '#c7d2fe'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText(ode.name, Lx + 18, Ty + 26);
+
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('cycling through 3 ODEs \u2014 each curve is a solution, no formula needed', W/2, H - 12);
+        }
+
+        // ── VIEW 7: Chain Rule (gears metaphor) ──
+        function drawChainRule(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText("\u2699\uFE0F Chain Rule \u2014 rates multiply when functions compose", W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Example: u = 2x  (inner),  f = sin(u)  (outer).  df/dx = cos(u) \u00D7 2.', W/2, 32);
+
+          // Animated input: x increases linearly; u = 2x; f = sin(u)
+          var x = Math.sin(t / 90) * 2;
+          var u = 2 * x;
+          var fVal = Math.sin(u);
+          var duDx = 2;
+          var dfDu = Math.cos(u);
+          var dfDx = dfDu * duDx;
+
+          // Three panels: [x axis box] [meshed gears] [f(x) graph]
+          // Gears are the centerpiece
+          var gearY = H * 0.48;
+          var innerX = W * 0.36;
+          var outerX = W * 0.62;
+
+          // Rotation: inner turns at rate proportional to du/dx
+          // Angle accumulates with x (since x is a sin wave here, angle oscillates too)
+          var innerAngle = u * 0.4;          // visually ties to u
+          var outerAngle = -innerAngle * 1.7; // ratio 1.7 = dfDu placeholder (gears visual metaphor, not strict)
+
+          function drawGear(cx, cy, R, teeth, angle, col, col2) {
+            c.save(); c.translate(cx, cy); c.rotate(angle);
+            c.fillStyle = col;
+            c.beginPath();
+            for (var i = 0; i < teeth * 2; i++) {
+              var a = (i / (teeth * 2)) * Math.PI * 2;
+              var r = (i % 2 === 0) ? R : R * 0.88;
+              if (i === 0) c.moveTo(r, 0); else c.lineTo(r * Math.cos(a), r * Math.sin(a));
+            }
+            c.closePath(); c.fill();
+            c.strokeStyle = col2; c.lineWidth = 1.5; c.stroke();
+            // Hub
+            c.fillStyle = col2;
+            c.beginPath(); c.arc(0, 0, R * 0.28, 0, Math.PI * 2); c.fill();
+            // Spoke so rotation is visible
+            c.strokeStyle = '#0f172a'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(0, 0); c.lineTo(R * 0.75, 0); c.stroke();
+            c.restore();
+          }
+
+          // Inner gear (small, ties to x)
+          drawGear(innerX, gearY, 44, 12, innerAngle, '#60a5fa', '#1e3a8a');
+          // Outer gear (bigger, ties to f)
+          drawGear(outerX, gearY, 64, 18, outerAngle, '#fbbf24', '#78350f');
+
+          // Tangent arrow on inner = du/dx
+          c.strokeStyle = '#38bdf8'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(innerX + 44, gearY);
+          c.lineTo(innerX + 44 + duDx * 18, gearY - 18);
+          c.stroke();
+          // Tangent arrow on outer = df/du
+          c.strokeStyle = '#fbbf24';
+          c.beginPath();
+          c.moveTo(outerX - 64, gearY);
+          c.lineTo(outerX - 64 - dfDu * 20, gearY + 20);
+          c.stroke();
+
+          // Labels above each gear
+          c.fillStyle = '#60a5fa'; c.textAlign = 'center';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('u = 2x', innerX, gearY - 64);
+          c.font = 'bold 10.5px "Inter", sans-serif'; c.fillStyle = '#7dd3fc';
+          c.fillText('du/dx = 2', innerX, gearY - 48);
+
+          c.fillStyle = '#fbbf24';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('f = sin(u)', outerX, gearY - 84);
+          c.font = 'bold 10.5px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+          c.fillText('df/du = cos(u) = ' + dfDu.toFixed(2), outerX, gearY - 68);
+
+          // Chain rule equation below gears (animated final value)
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('df/dx = df/du \u00D7 du/dx = ' + dfDu.toFixed(2) + ' \u00D7 ' + duDx.toFixed(0) + ' = ' + dfDx.toFixed(2), W/2, gearY + 88);
+
+          // Left input indicator: x input tape
+          var tapeLx = 20, tapeRx = W - 20, tapeY = H - 30;
+          c.fillStyle = 'rgba(148,163,184,0.2)';
+          c.fillRect(tapeLx, tapeY, tapeRx - tapeLx, 16);
+          c.strokeStyle = 'rgba(148,163,184,0.4)';
+          c.strokeRect(tapeLx, tapeY, tapeRx - tapeLx, 16);
+          var tapeX = tapeLx + ((x + 3) / 6) * (tapeRx - tapeLx);
+          c.fillStyle = '#fde047';
+          c.fillRect(tapeX - 3, tapeY - 3, 6, 22);
+
+          // Readout
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('x = ' + x.toFixed(2) + '    u = 2x = ' + u.toFixed(2) + '    f = sin(u) = ' + fVal.toFixed(2), W/2, tapeY - 6);
+        }
+
+        // ── VIEW 8: Taylor Series Builder (approximates sin x by degree) ──
+        function drawTaylorSeries(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\u221E Taylor Series \u2014 a polynomial becomes sin(x), one term at a time', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('sin(x) = x \u2212 x\u00B3/3! + x\u2075/5! \u2212 x\u2077/7! + \u2026', W/2, 32);
+
+          // Degree ramps 0..13 then back
+          var phase = (t / 4) % 180;
+          var deg = phase < 90 ? Math.floor(phase / 6) + 1 : Math.floor((180 - phase) / 6) + 1;
+          if (deg < 1) deg = 1; if (deg > 13) deg = 13;
+          // Only odd degrees actually change sin's approximation but we still display all
+          // Use the max odd <= deg
+          var nTerms = Math.floor((deg + 1) / 2);
+
+          // Taylor approx: sum_{k=0..nTerms-1} (-1)^k * x^(2k+1) / (2k+1)!
+          function fact(n) { var r = 1; for (var i = 2; i <= n; i++) r *= i; return r; }
+          function taylorSin(x, n) {
+            var s = 0, sgn = 1;
+            for (var k = 0; k < n; k++) {
+              var p = 2 * k + 1;
+              s += sgn * Math.pow(x, p) / fact(p);
+              sgn *= -1;
+            }
+            return s;
+          }
+
+          // Wider x range so convergence is visible
+          var Lx = 50, Rx = W - 30, Ty = 50, By = H - 60;
+          var xR = { min: -7, max: 7 };
+          var yR = { min: -2.5, max: 2.5 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Draw sin(x) as the target (ghost thick line)
+          plotCurve(c, Math.sin, xR, yR, Lx, Rx, Ty, By, 'rgba(248,113,113,0.85)', 2.6);
+
+          // Draw each degree up to current as fading polylines
+          for (var k = 1; k <= nTerms; k++) {
+            var alpha = 0.12 + 0.75 * (k / nTerms);
+            c.strokeStyle = 'rgba(52,211,153,' + alpha + ')';
+            c.lineWidth = k === nTerms ? 2.5 : 1;
+            c.beginPath();
+            var N = 240;
+            for (var i = 0; i <= N; i++) {
+              var x = xR.min + (i / N) * (xR.max - xR.min);
+              var y = taylorSin(x, k);
+              // Clip massively out-of-range values for readability
+              if (y > yR.max + 5 || y < yR.min - 5) { y = y > 0 ? yR.max + 5 : yR.min - 5; }
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+            }
+            c.stroke();
+          }
+
+          // Expression bar at top
+          var currentDeg = 2 * nTerms - 1;
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 8, Ty + 8, 260, 40);
+          c.strokeStyle = 'rgba(52,211,153,0.5)';
+          c.strokeRect(Lx + 8, Ty + 8, 260, 40);
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('degree ' + currentDeg + ' Taylor polynomial', Lx + 18, Ty + 24);
+
+          // Build a readable polynomial string
+          var polyStr = '';
+          for (var m = 0; m < nTerms; m++) {
+            var pow = 2 * m + 1;
+            var sign = (m % 2 === 0) ? (m === 0 ? '' : ' + ') : ' \u2212 ';
+            var denom = fact(pow);
+            polyStr += sign + (pow === 1 ? 'x' : 'x^' + pow + '/' + denom);
+          }
+          c.font = '10.5px monospace'; c.fillStyle = '#a7f3d0';
+          c.fillText(polyStr.slice(0, 50) + (polyStr.length > 50 ? '\u2026' : ''), Lx + 18, Ty + 40);
+
+          // Error callout near x = 5 (where truncated Taylor series diverge visibly)
+          var xCheck = 5;
+          var errAt5 = Math.abs(taylorSin(xCheck, nTerms) - Math.sin(xCheck));
+          c.fillStyle = '#fbbf24'; c.textAlign = 'right';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('error at x = 5: ' + errAt5.toExponential(2), Rx - 8, Ty + 24);
+          c.font = '10px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+          c.fillText('(goes to 0 as degree \u2192 \u221E)', Rx - 8, Ty + 40);
+
+          // Legend
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 10.5px "Inter", sans-serif';
+          c.fillText('\u2014 target: sin(x)', Lx + 8, By + 18);
+          c.fillStyle = '#34d399';
+          c.fillText('\u2014 Taylor approximations (darker = higher degree)', Lx + 8, By + 34);
+
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('higher-degree polynomial matches sin(x) further from origin \u2014 the key idea of analytic functions', W/2, H - 12);
+        }
+
+        // ── VIEW 9: Optimization (cardboard box) ──
+        function drawOptimization(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCE6 Optimization \u2014 the cardboard box', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Cut squares of side x from corners of a 20\u00D712 sheet. Fold up. Maximize volume.', W/2, 32);
+
+          // Sheet dimensions (inches)
+          var SW = 20, SH = 12;
+          // Animated x: ping-pong from 0.1 to 5.5 (max allowed = SH/2 = 6 but keeps some material)
+          var xMax = SH / 2 - 0.2;
+          var userOptim = ls.vizUserInteracted && ls.vizUserInteracted.optim;
+          var x;
+          if (userOptim && ls.vizOptimX !== null && ls.vizOptimX !== undefined) {
+            x = Math.max(0.05, Math.min(xMax, ls.vizOptimX));
+          } else {
+            var phase = (t / 80) % 2;
+            x = phase < 1 ? 0.1 + phase * xMax : 0.1 + (2 - phase) * xMax;
+          }
+
+          // V(x) = x(SW - 2x)(SH - 2x)
+          var V = function(xx) { return xx * (SW - 2 * xx) * (SH - 2 * xx); };
+          var dV = function(xx) { return 12 * xx * xx - 128 * xx + 240; }; // derivative for 20x12
+          // Find critical point numerically: V'(x) = 12x^2 - 128x + 240 = 0
+          // x = (128 - sqrt(128^2 - 4*12*240)) / (2*12) = (128 - sqrt(16384 - 11520)) / 24 = (128 - sqrt(4864))/24
+          var xCrit = (128 - Math.sqrt(128 * 128 - 4 * 12 * 240)) / 24; // ~2.43
+          var Vcrit = V(xCrit);
+          var Vnow = V(x);
+
+          // LEFT: top-down view of the sheet with cuts
+          var Lx1 = 20, Ty1 = 52, panelW = W * 0.42, panelH = H * 0.46;
+          var Rx1 = Lx1 + panelW, By1 = Ty1 + panelH;
+          c.fillStyle = '#1e293b'; c.fillRect(Lx1, Ty1, panelW, panelH);
+          c.strokeStyle = 'rgba(148,163,184,0.35)'; c.strokeRect(Lx1, Ty1, panelW, panelH);
+
+          // Scale sheet to fit panel with margin
+          var sheetScale = Math.min((panelW - 30) / SW, (panelH - 30) / SH);
+          var cx = Lx1 + panelW / 2, cy = Ty1 + panelH / 2;
+          var sx = cx - SW * sheetScale / 2, sy = cy - SH * sheetScale / 2;
+          // Sheet base
+          c.fillStyle = '#d97706';
+          c.fillRect(sx, sy, SW * sheetScale, SH * sheetScale);
+          c.strokeStyle = '#78350f'; c.lineWidth = 1.5; c.strokeRect(sx, sy, SW * sheetScale, SH * sheetScale);
+          // Cut-outs at four corners
+          c.fillStyle = '#1e293b';
+          var cs = x * sheetScale;
+          c.fillRect(sx, sy, cs, cs);
+          c.fillRect(sx + SW * sheetScale - cs, sy, cs, cs);
+          c.fillRect(sx, sy + SH * sheetScale - cs, cs, cs);
+          c.fillRect(sx + SW * sheetScale - cs, sy + SH * sheetScale - cs, cs, cs);
+          // Dashed fold lines
+          c.strokeStyle = 'rgba(252,211,77,0.7)'; c.setLineDash([4, 3]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(sx + cs, sy); c.lineTo(sx + cs, sy + SH * sheetScale); c.stroke();
+          c.beginPath(); c.moveTo(sx + SW * sheetScale - cs, sy); c.lineTo(sx + SW * sheetScale - cs, sy + SH * sheetScale); c.stroke();
+          c.beginPath(); c.moveTo(sx, sy + cs); c.lineTo(sx + SW * sheetScale, sy + cs); c.stroke();
+          c.beginPath(); c.moveTo(sx, sy + SH * sheetScale - cs); c.lineTo(sx + SW * sheetScale, sy + SH * sheetScale - cs); c.stroke();
+          c.setLineDash([]);
+
+          // Dimension labels
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('20 in', cx, sy - 8);
+          c.save(); c.translate(sx - 14, cy); c.rotate(-Math.PI / 2); c.fillText('12 in', 0, 0); c.restore();
+
+          // Panel label
+          c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('x = ' + x.toFixed(2) + ' in (cut size)', Lx1 + 10, Ty1 + 16);
+
+          // Small 3D-ish box preview below sheet
+          var bbW = (SW - 2 * x), bbD = (SH - 2 * x), bbH = x;
+          var bX = cx, bY = By1 + 32;
+          var bs = 4; // pixels per inch for small 3D box
+          var baseW = bbW * bs, baseD = bbD * bs * 0.55, baseH = bbH * bs;
+          c.save();
+          c.translate(bX - baseW / 2, bY - baseH);
+          // back face
+          c.fillStyle = '#92400e';
+          c.beginPath();
+          c.moveTo(0, 0); c.lineTo(baseW, 0); c.lineTo(baseW + baseD, -baseD * 0.6); c.lineTo(baseD, -baseD * 0.6); c.closePath();
+          c.fill();
+          // side right
+          c.fillStyle = '#b45309';
+          c.beginPath();
+          c.moveTo(baseW, 0); c.lineTo(baseW, baseH); c.lineTo(baseW + baseD, baseH - baseD * 0.6); c.lineTo(baseW + baseD, -baseD * 0.6); c.closePath();
+          c.fill();
+          // front face
+          c.fillStyle = '#f59e0b';
+          c.fillRect(0, 0, baseW, baseH);
+          c.strokeStyle = '#78350f'; c.lineWidth = 0.8;
+          c.strokeRect(0, 0, baseW, baseH);
+          c.restore();
+          // Dimensions under box
+          c.fillStyle = '#fde68a'; c.textAlign = 'center';
+          c.font = 'bold 9px "Inter", sans-serif';
+          c.fillText(bbW.toFixed(1) + ' \u00D7 ' + bbD.toFixed(1) + ' \u00D7 ' + bbH.toFixed(1) + ' in', bX, bY + 16);
+
+          // RIGHT: V(x) curve
+          var Lx2 = Rx1 + 20, Ty2 = Ty1, Rx2 = W - 20, By2 = By1 + 30;
+          var xRg = { min: 0, max: xMax + 0.5 };
+          var vVals = [];
+          for (var i = 0; i <= 80; i++) vVals.push(V(xRg.min + (i / 80) * (xRg.max - xRg.min)));
+          var vMax = Math.max.apply(null, vVals) * 1.1;
+          var yRg = { min: 0, max: vMax };
+
+          drawAxes(c, Lx2, Rx2, Ty2, By2, xRg, yRg);
+          plotCurve(c, V, xRg, yRg, Lx2, Rx2, Ty2, By2, '#34d399', 2.2);
+
+          // Dotted vertical at xCrit (the maximum)
+          var cX = Lx2 + ((xCrit - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+          var cY = By2 - ((Vcrit - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+          c.strokeStyle = 'rgba(253,224,71,0.55)'; c.lineWidth = 1.2; c.setLineDash([4, 4]);
+          c.beginPath(); c.moveTo(cX, Ty2); c.lineTo(cX, By2); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(cX, cY, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('MAX @ x\u2248' + xCrit.toFixed(2), cX, cY - 12);
+
+          // Current x marker
+          var curXp = Lx2 + ((x - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+          var curYp = By2 - ((Vnow - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+          c.fillStyle = '#f87171';
+          c.beginPath(); c.arc(curXp, curYp, 4.5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+
+          // Panel label
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V(x) = x(20-2x)(12-2x)', Lx2 + 8, Ty2 + 16);
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V(' + x.toFixed(2) + ') = ' + Vnow.toFixed(1) + ' in\u00B3    \u2022    max volume = ' + Vcrit.toFixed(1) + ' in\u00B3 at x = ' + xCrit.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 10: Related Rates (sliding ladder) ──
+        function drawRelatedRates(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCCF Related Rates \u2014 a sliding ladder', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("13-ft ladder. Bottom slides away at 2 ft/s. How fast does the top slide down?", W/2, 32);
+
+          var L = 13; // ladder length
+          var dxDt = 2; // constant bottom velocity (ft/s)
+          // Animate x(t): x starts at 0.5 ft, grows at 2 ft/s until x ≈ 12.8 ft, then resets
+          var periodS = 6;
+          var tS = ((t / 60) % periodS);
+          var xFt = 0.5 + dxDt * tS;
+          if (xFt > L - 0.3) xFt = L - 0.3;
+          var yFt = Math.sqrt(Math.max(0, L * L - xFt * xFt));
+          var dyDt = yFt > 0.01 ? -(xFt / yFt) * dxDt : -Infinity;
+
+          // Scene layout
+          var sceneX = 40, sceneY = H - 50;
+          var pxPerFt = Math.min((W * 0.45 - 60) / L, (H - 100) / L);
+
+          // Wall
+          c.fillStyle = '#94a3b8';
+          c.fillRect(sceneX - 12, sceneY - L * pxPerFt, 12, L * pxPerFt);
+          // Floor
+          c.fillStyle = '#475569';
+          c.fillRect(sceneX - 12, sceneY, W * 0.55, 10);
+
+          // Ladder
+          var bx = sceneX + xFt * pxPerFt, by = sceneY;
+          var tx = sceneX, ty = sceneY - yFt * pxPerFt;
+          c.strokeStyle = '#fbbf24'; c.lineWidth = 5;
+          c.beginPath(); c.moveTo(bx, by); c.lineTo(tx, ty); c.stroke();
+          // Rungs
+          c.strokeStyle = '#b45309'; c.lineWidth = 2;
+          for (var rg = 1; rg < 10; rg++) {
+            var ra = rg / 10;
+            var rgx = bx * (1 - ra) + tx * ra;
+            var rgy = by * (1 - ra) + ty * ra;
+            var ang = Math.atan2(ty - by, tx - bx) + Math.PI / 2;
+            var rl = 9;
+            c.beginPath();
+            c.moveTo(rgx + Math.cos(ang) * rl, rgy + Math.sin(ang) * rl);
+            c.lineTo(rgx - Math.cos(ang) * rl, rgy - Math.sin(ang) * rl);
+            c.stroke();
+          }
+          // Endpoints
+          c.fillStyle = '#f87171';
+          c.beginPath(); c.arc(bx, by, 6, 0, Math.PI * 2); c.fill();
+          c.fillStyle = '#60a5fa';
+          c.beginPath(); c.arc(tx, ty, 6, 0, Math.PI * 2); c.fill();
+
+          // Velocity arrow on bottom (→ direction at 2 ft/s)
+          c.strokeStyle = '#f87171'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(bx, by + 16); c.lineTo(bx + dxDt * pxPerFt * 0.8, by + 16);
+          c.stroke();
+          // Arrowhead
+          c.beginPath();
+          c.moveTo(bx + dxDt * pxPerFt * 0.8, by + 16);
+          c.lineTo(bx + dxDt * pxPerFt * 0.8 - 8, by + 12);
+          c.lineTo(bx + dxDt * pxPerFt * 0.8 - 8, by + 20);
+          c.closePath();
+          c.fillStyle = '#f87171'; c.fill();
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('dx/dt = +' + dxDt + ' ft/s', bx + 6, by + 32);
+
+          // Velocity arrow on top (↓ direction at |dy/dt| ft/s)
+          var topArrowLen = Math.min(Math.abs(dyDt), 8) * pxPerFt * 0.4;
+          c.strokeStyle = '#60a5fa'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(tx - 16, ty); c.lineTo(tx - 16, ty + topArrowLen);
+          c.stroke();
+          c.beginPath();
+          c.moveTo(tx - 16, ty + topArrowLen);
+          c.lineTo(tx - 20, ty + topArrowLen - 8);
+          c.lineTo(tx - 12, ty + topArrowLen - 8);
+          c.closePath();
+          c.fillStyle = '#60a5fa'; c.fill();
+          c.fillStyle = '#60a5fa'; c.textAlign = 'right';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('dy/dt = ' + (isFinite(dyDt) ? dyDt.toFixed(2) + ' ft/s' : '-\u221E'), tx - 22, ty + topArrowLen / 2);
+
+          // x, y dimension labels
+          c.strokeStyle = 'rgba(148,163,184,0.6)'; c.lineWidth = 1; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(sceneX, by + 8); c.lineTo(bx, by + 8); c.stroke();
+          c.beginPath(); c.moveTo(tx - 6, ty); c.lineTo(tx - 6, by); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 9.5px "Inter", sans-serif';
+          c.fillText('x = ' + xFt.toFixed(2) + ' ft', (sceneX + bx) / 2, by + 22);
+          c.save(); c.translate(tx - 22, (ty + by) / 2); c.rotate(-Math.PI / 2);
+          c.fillText('y = ' + yFt.toFixed(2) + ' ft', 0, 0);
+          c.restore();
+
+          // Right panel: equation derivation
+          var rX = W * 0.55;
+          var rBlockY = 60;
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(rX, rBlockY, W - rX - 20, H - rBlockY - 36);
+          c.strokeStyle = 'rgba(99,102,241,0.5)';
+          c.strokeRect(rX, rBlockY, W - rX - 20, H - rBlockY - 36);
+
+          c.fillStyle = '#c7d2fe'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('Relationship:', rX + 14, rBlockY + 22);
+          c.font = 'bold 14px monospace'; c.fillStyle = '#fde047';
+          c.fillText('x\u00B2 + y\u00B2 = 169', rX + 14, rBlockY + 44);
+
+          c.fillStyle = '#c7d2fe'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('Differentiate w.r.t. t:', rX + 14, rBlockY + 70);
+          c.font = 'bold 13px monospace'; c.fillStyle = '#34d399';
+          c.fillText('2x(dx/dt) + 2y(dy/dt) = 0', rX + 14, rBlockY + 92);
+
+          c.fillStyle = '#c7d2fe'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('Solve for dy/dt:', rX + 14, rBlockY + 118);
+          c.font = 'bold 13px monospace'; c.fillStyle = '#f472b6';
+          c.fillText('dy/dt = \u2212(x/y)(dx/dt)', rX + 14, rBlockY + 140);
+
+          // Plug in current values
+          c.fillStyle = '#fbbf24'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('At x=' + xFt.toFixed(2) + ', y=' + yFt.toFixed(2) + ':', rX + 14, rBlockY + 172);
+          c.font = 'bold 12px monospace'; c.fillStyle = '#fde047';
+          c.fillText('dy/dt = \u2212(' + xFt.toFixed(2) + '/' + yFt.toFixed(2) + ')(2) = ' + (isFinite(dyDt) ? dyDt.toFixed(3) : '-\u221E') + ' ft/s', rX + 14, rBlockY + 194);
+
+          // Footer
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10.5px "Inter", sans-serif';
+          c.fillText('Bottom moves at CONSTANT 2 ft/s, but the top accelerates as the ladder nears horizontal!', W/2, H - 12);
+        }
+
+        // ── VIEW 11: Volume of Revolution (disks stacking) ──
+        function drawVolumeOfRevolution(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAA Volume of Revolution \u2014 spin a curve, get a solid', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Rotate f(x) around the x-axis. Each slice becomes a disk. V = \u03C0 \u222B f(x)\u00B2 dx.', W/2, 32);
+
+          // Left panel: 2D curve + shaded band
+          var Lx1 = 20, Ty1 = 52, panelW1 = W * 0.42, panelH1 = H - 100;
+          var Rx1 = Lx1 + panelW1, By1 = Ty1 + panelH1;
+          var xR = { min: 0, max: 4 };
+          function f(x) { return 0.6 + 0.4 * Math.sin(x * 1.2) + 0.2 * x; }
+          var fVals = [];
+          for (var i = 0; i <= 60; i++) fVals.push(f(xR.min + (i/60) * (xR.max - xR.min)));
+          var fMax = Math.max.apply(null, fVals);
+          var yR = { min: 0, max: fMax * 1.25 };
+          drawAxes(c, Lx1, Rx1, Ty1, By1, xR, yR);
+
+          // Shade area under curve (in blue)
+          var zY = By1 - ((0 - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+          c.fillStyle = 'rgba(96,165,250,0.28)';
+          c.beginPath();
+          c.moveTo(Lx1 + ((xR.min - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1), zY);
+          for (var j = 0; j <= 60; j++) {
+            var x = xR.min + (j/60) * (xR.max - xR.min);
+            var y = f(x);
+            var sxj = Lx1 + ((x - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+            var syj = By1 - ((y - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+            c.lineTo(sxj, syj);
+          }
+          c.lineTo(Lx1 + ((xR.max - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1), zY);
+          c.closePath(); c.fill();
+          plotCurve(c, f, xR, yR, Lx1, Rx1, Ty1, By1, '#f87171', 2.2);
+
+          // Animated highlight disk position
+          var diskX = xR.min + (((Math.sin(t / 70) + 1) / 2)) * (xR.max - xR.min);
+          var diskR = f(diskX);
+          var dsx = Lx1 + ((diskX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          var dsyTop = By1 - ((diskR - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+          c.strokeStyle = '#fde047'; c.lineWidth = 1.5;
+          c.beginPath(); c.moveTo(dsx, zY); c.lineTo(dsx, dsyTop); c.stroke();
+          c.fillStyle = 'rgba(253,224,71,0.35)';
+          c.fillRect(dsx - 3, dsyTop, 6, zY - dsyTop);
+
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x) = 0.6 + 0.4 sin(1.2x) + 0.2x', Lx1 + 8, Ty1 + 16);
+
+          // RIGHT panel: 3D-ish solid built from stacking translucent disks with axonometric tilt
+          var Lx2 = Rx1 + 20, Rx2 = W - 20, Ty2 = Ty1, By2 = By1;
+          var axisY = Ty2 + panelH1 / 2;
+          var solidLx = Lx2 + 30, solidRx = Rx2 - 30;
+          var pxPerX = (solidRx - solidLx) / (xR.max - xR.min);
+
+          // Faint bounding box
+          c.strokeStyle = 'rgba(148,163,184,0.25)';
+          c.strokeRect(Lx2, Ty2, Rx2 - Lx2, By2 - Ty2);
+
+          // Axis line
+          c.strokeStyle = 'rgba(148,163,184,0.55)'; c.setLineDash([4, 3]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(solidLx, axisY); c.lineTo(solidRx, axisY); c.stroke();
+          c.setLineDash([]);
+
+          // Stack disks from right to left (for correct z-order)
+          var nDisks = 40;
+          var disks = [];
+          for (var k = nDisks - 1; k >= 0; k--) {
+            var xk = xR.min + (k / (nDisks - 1)) * (xR.max - xR.min);
+            var rk = f(xk);
+            disks.push({ x: xk, r: rk });
+          }
+          disks.forEach(function(d2) {
+            var cx = solidLx + d2.x * pxPerX;
+            // Axonometric offset (camera tilt) — fake depth by shifting y slightly
+            var axyTilt = -0.15;
+            var yOffset = (d2.x - xR.min) * pxPerX * axyTilt;
+            var ellipseRx = Math.max(1, d2.r * pxPerX * 0.06); // depth thickness
+            var ellipseRy = Math.max(1, d2.r * 50); // vertical radius of the disk
+            // Body
+            c.fillStyle = 'rgba(96,165,250,0.38)';
+            c.strokeStyle = 'rgba(37,99,235,0.7)'; c.lineWidth = 1;
+            c.beginPath();
+            c.ellipse(cx, axisY + yOffset, ellipseRx, ellipseRy, 0, 0, Math.PI * 2);
+            c.fill(); c.stroke();
+          });
+
+          // Highlight disk (same x as diskX on the left)
+          var hcx = solidLx + diskX * pxPerX;
+          var hOff = (diskX - xR.min) * pxPerX * (-0.15);
+          var hRx = Math.max(1, diskR * pxPerX * 0.12);
+          var hRy = Math.max(2, diskR * 50);
+          c.fillStyle = 'rgba(253,224,71,0.6)';
+          c.strokeStyle = '#fbbf24'; c.lineWidth = 2;
+          c.beginPath();
+          c.ellipse(hcx, axisY + hOff, hRx, hRy, 0, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+
+          // Labels
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('solid = stacked disks', Lx2 + 8, Ty2 + 16);
+
+          // Compute volume numerically
+          var volSum = 0, NV = 400, dxV = (xR.max - xR.min) / NV;
+          for (var v = 0; v < NV; v++) {
+            var xv = xR.min + (v + 0.5) * dxV;
+            var rv = f(xv);
+            volSum += Math.PI * rv * rv * dxV;
+          }
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V = \u03C0 \u222B\u2080\u2074 f(x)\u00B2 dx \u2248 ' + volSum.toFixed(3) + ' cubic units    \u2022    highlighted disk at x = ' + diskX.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 12: Epsilon-Delta Game ──
+        function drawEpsilonDelta(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAF \u03B5\u2013\u03B4 Game \u2014 the FORMAL definition of a limit', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Goal: trap f(x) inside a tolerance \u03B5 by choosing \u03B4. Shrinking \u03B5 \u2192 shrinks required \u03B4.', W/2, 32);
+
+          // Function: f(x) = x^2; limit at x0 = 2 is f(2) = 4
+          function f(x) { return x * x; }
+          var x0 = 2, L = 4;
+
+          var Lx = 60, Rx = W - 40, Ty = 52, By = H - 60;
+          var xR = { min: 0, max: 4 };
+          var yR = { min: 0, max: 18 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Animate epsilon shrinking: 3 -> 0.5 -> 3 cycle
+          var ePhase = (t / 120) % 2;
+          var eps = ePhase < 1 ? (3 - ePhase * 2.5) : (0.5 + (ePhase - 1) * 2.5);
+
+          // Find delta such that for all x in [x0-delta, x0+delta], f(x) in [L-eps, L+eps]
+          // For f = x^2 at x0=2: need |x^2 - 4| < eps => solve x^2 < 4+eps and x^2 > 4-eps
+          // delta = min(sqrt(4+eps) - 2, 2 - sqrt(Math.max(0, 4-eps)))
+          var upperDelta = Math.sqrt(4 + eps) - 2;
+          var lowerDelta = 2 - Math.sqrt(Math.max(0, 4 - eps));
+          var delta = Math.min(upperDelta, lowerDelta);
+          // Clamp for visual display
+          if (delta < 0.01) delta = 0.01;
+
+          // Horizontal epsilon band around L=4
+          var yBandTop = By - ((L + eps - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          var yBandBot = By - ((L - eps - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = 'rgba(96,165,250,0.2)';
+          c.fillRect(Lx, yBandTop, Rx - Lx, yBandBot - yBandTop);
+          c.strokeStyle = 'rgba(96,165,250,0.6)'; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(Lx, yBandTop); c.lineTo(Rx, yBandTop); c.stroke();
+          c.beginPath(); c.moveTo(Lx, yBandBot); c.lineTo(Rx, yBandBot); c.stroke();
+          c.setLineDash([]);
+
+          // Vertical delta band around x0=2
+          var xBandL = Lx + ((x0 - delta - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var xBandR = Lx + ((x0 + delta - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          c.fillStyle = 'rgba(52,211,153,0.2)';
+          c.fillRect(xBandL, Ty, xBandR - xBandL, By - Ty);
+          c.strokeStyle = 'rgba(52,211,153,0.6)'; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(xBandL, Ty); c.lineTo(xBandL, By); c.stroke();
+          c.beginPath(); c.moveTo(xBandR, Ty); c.lineTo(xBandR, By); c.stroke();
+          c.setLineDash([]);
+
+          // Plot f
+          plotCurve(c, f, xR, yR, Lx, Rx, Ty, By, '#f87171', 2.5);
+
+          // (x0, L) marker
+          var x0s = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var Ls = By - ((L - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(x0s, Ls, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Labels on bands
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('\u03B5 = ' + eps.toFixed(2), Rx + 4, (yBandTop + yBandBot) / 2 + 4);
+          c.textAlign = 'left';
+          c.fillText('L = 4', Rx + 4, Ls - 14);
+          c.fillStyle = '#34d399';
+          c.fillText('\u03B4 = ' + delta.toFixed(3), (xBandL + xBandR) / 2 - 20, By + 14);
+          c.fillText('x\u2080 = 2', x0s - 15, By + 26);
+
+          // "Trapped" check: is f(x) inside eps band for all x in [x0-delta, x0+delta]?
+          var trapped = true;
+          for (var tk = 0; tk <= 30; tk++) {
+            var xt = x0 - delta + (tk / 30) * (2 * delta);
+            var ft = f(xt);
+            if (ft < L - eps - 0.001 || ft > L + eps + 0.001) { trapped = false; break; }
+          }
+
+          // STATUS big pill
+          var stX = Lx + 12, stY = Ty + 8, stW = 180, stH = 30;
+          c.fillStyle = trapped ? 'rgba(22,163,74,0.9)' : 'rgba(220,38,38,0.9)';
+          c.fillRect(stX, stY, stW, stH);
+          c.fillStyle = '#fff'; c.textAlign = 'center';
+          c.font = 'bold 13px "Inter", sans-serif';
+          c.fillText(trapped ? '\u2705 TRAPPED inside \u03B5' : '\u26A0 leaks out', stX + stW / 2, stY + 20);
+
+          // Formula callout right side
+          var fX = Lx + 220, fY = Ty + 8;
+          c.fillStyle = 'rgba(15,23,42,0.88)';
+          c.fillRect(fX, fY, W - fX - 20, 46);
+          c.strokeStyle = 'rgba(196,181,253,0.5)';
+          c.strokeRect(fX, fY, W - fX - 20, 46);
+          c.fillStyle = '#c4b5fd'; c.textAlign = 'left';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('lim\u2093\u2192\u2082 x\u00B2 = 4   means:', fX + 10, fY + 16);
+          c.font = 'bold 10px monospace'; c.fillStyle = '#fbcfe8';
+          c.fillText('\u2200\u03B5>0, \u2203\u03B4>0 : |x\u22122|<\u03B4 \u21D2 |x\u00B2\u22124|<\u03B5', fX + 10, fY + 36);
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('smaller \u03B5 forces smaller \u03B4 \u2014 and for a continuous function, such a \u03B4 always exists', W/2, H - 12);
+        }
+
+        // ── FUNCTION EVALUATION ─────────────────────────────────────────
+        var fa = d.a !== undefined ? d.a : 1;
+        var fb = d.b !== undefined ? d.b : 0;
+        var fc = d.c !== undefined ? d.c : 0;
+
+        var evalF = function(x) { return fa * x * x + fb * x + fc; };
+        var evalDeriv = function(x) { return 2 * fa * x + fb; };
+        var evalAntiAt = function(a, b, c, x) { return (a / 3) * x * x * x + (b / 2) * x * x + c * x; };
+        var exact = evalAntiAt(fa, fb, fc, d.xMax) - evalAntiAt(fa, fb, fc, d.xMin);
+
+        // ── SYMBOLIC STRINGS ────────────────────────────────────────────
+        var fmtTerm = function(coeff, power, isFirst) {
+          if (coeff === 0) return '';
+          var sign = coeff > 0 ? (isFirst ? '' : '+') : '\u2212';
+          var absC = Math.abs(coeff);
+          var cStr = (absC === 1 && power > 0) ? '' : String(absC);
+          if (power === 0) return sign + absC;
+          if (power === 1) return sign + cStr + 'x';
+          return sign + cStr + 'x\u00B2';
+        };
+        var buildFStr = function(a, b, c) {
+          var parts = [fmtTerm(a, 2, true), fmtTerm(b, 1, a === 0), fmtTerm(c, 0, a === 0 && b === 0)].filter(Boolean);
+          return parts.length ? parts.join('') : '0';
+        };
+        var buildDerivStr = function(a, b) {
+          var parts = [fmtTerm(2 * a, 1, true), fmtTerm(b, 0, 2 * a === 0)].filter(Boolean);
+          return parts.length ? parts.join('') : '0';
+        };
+        var fStr = 'f(x) = ' + buildFStr(fa, fb, fc);
+        var derivStr = "f\u2032(x) = " + buildDerivStr(fa, fb);
+
+        // ── SVG LAYOUT ──────────────────────────────────────────────────
+        var W = 440, H = 300, pad = 40;
+        var xMin = d.xMin !== undefined ? d.xMin : 0;
+        var xMax2 = d.xMax !== undefined ? d.xMax : 3;
+        var nRects = d.n || 20;
+        var mode = d.mode || 'left';
+        var tab = d.tab || 'integral';
+        var x0 = d.x0 !== undefined ? d.x0 : Math.round((xMin + xMax2) / 2 * 10) / 10;
+
+        var sampleY = Array.from({ length: 60 }, function(_, i) { return evalF(xMin + i / 59 * (xMax2 - xMin)); });
+        var yMax = Math.max.apply(null, sampleY.map(Math.abs).concat([1]));
+        var xR = { min: xMin - 0.5, max: xMax2 + 0.5 };
+        var yR = { min: -yMax * 0.3, max: yMax * 1.3 };
+        var toSX = function(x) { return pad + ((x - xR.min) / (xR.max - xR.min)) * (W - 2 * pad); };
+        var toSY = function(y) { return (H - pad) - ((y - yR.min) / (yR.max - yR.min)) * (H - 2 * pad); };
+
+        // ── RIEMANN SHAPES ──────────────────────────────────────────────
+        var dx = (xMax2 - xMin) / nRects;
+        var rects = [], area = 0;
+        if (mode === 'trapezoid') {
+          for (var ti = 0; ti < nRects; ti++) {
+            var txi = xMin + ti * dx, tyL = evalF(txi), tyR2 = evalF(txi + dx);
+            area += (tyL + tyR2) / 2 * dx;
+            rects.push({ x: txi, w: dx, hL: tyL, hR: tyR2, type: 'trap' });
+          }
+        } else if (mode === 'simpson' && nRects >= 2 && nRects % 2 === 0) {
+          for (var si = 0; si < nRects; si += 2) {
+            var sx0 = xMin + si * dx, sy0 = evalF(sx0), sy1 = evalF(sx0 + dx), sy2 = evalF(sx0 + 2 * dx);
+            area += (sy0 + 4 * sy1 + sy2) * dx / 3;
+            rects.push({ x: sx0, w: dx * 2, hL: sy0, hM: sy1, hR: sy2, type: 'simp' });
+          }
+        } else {
+          for (var ri = 0; ri < nRects; ri++) {
+            var xi = xMin + ri * dx;
+            var yi = mode === 'left' ? evalF(xi) : mode === 'right' ? evalF(xi + dx) : evalF(xi + dx / 2);
+            area += yi * dx; rects.push({ x: xi, w: dx, h: yi, type: 'rect' });
+          }
+        }
+        var err = Math.abs(area - exact);
+
+        // ── CONVERGENCE DATA ────────────────────────────────────────────
+        var CW = 160, Cpad = 15;
+        var convKey = [fa, fb, fc, xMin, xMax2, mode].join(',');
+        if (!window._calcConvCache || window._calcConvCache.key !== convKey) {
+          var _cd = [];
+          for (var cn = 2; cn <= 50; cn += 2) {
+            var cdx = (xMax2 - xMin) / cn, carea = 0;
+            if (mode === 'trapezoid') { for (var cti = 0; cti < cn; cti++) { var cxti = xMin + cti * cdx; carea += (evalF(cxti) + evalF(cxti + cdx)) / 2 * cdx; } }
+            else if (mode === 'simpson' && cn % 2 === 0) { for (var csi = 0; csi < cn; csi += 2) { var csx = xMin + csi * cdx; carea += (evalF(csx) + 4 * evalF(csx + cdx) + evalF(csx + 2 * cdx)) * cdx / 3; } }
+            else { for (var cri = 0; cri < cn; cri++) { var cxi2 = xMin + cri * cdx; carea += evalF(mode === 'right' ? cxi2 + cdx : mode === 'midpoint' ? cxi2 + cdx / 2 : cxi2) * cdx; } }
+            _cd.push({ n: cn, err: Math.abs(carea - exact) });
+          }
+          window._calcConvCache = { key: convKey, data: _cd };
+        }
+        var convData = window._calcConvCache.data;
+        var convMaxErr = Math.max.apply(null, convData.map(function(c) { return c.err; }).concat([0.001]));
+        var convToX = function(n) { return Cpad + ((n - 2) / 48) * (CW - 2 * Cpad); };
+        var convToY = function(e) { return 55 - (e / convMaxErr) * 40; };
+
+        // ── CURVE / TANGENT ─────────────────────────────────────────────
+        var curvePts = [];
+        for (var cpx = 0; cpx <= W - 2 * pad; cpx += 2) {
+          var cx = xR.min + (cpx / (W - 2 * pad)) * (xR.max - xR.min);
+          curvePts.push(toSX(cx) + ',' + toSY(evalF(cx)));
+        }
+        var slope = evalDeriv(x0);
+        var fy0 = evalF(x0);
+        var tangentPts = (function() {
+          var tl = Math.max(xR.min, x0 - 1.5), tr = Math.min(xR.max, x0 + 1.5);
+          return toSX(tl) + ',' + toSY(slope * (tl - x0) + fy0) + ' ' + toSX(tr) + ',' + toSY(slope * (tr - x0) + fy0);
+        })();
+        var dh = d.secantH !== undefined ? d.secantH : 1.0;
+        var secantSlope = dh > 0.001 ? (evalF(x0 + dh) - evalF(x0)) / dh : slope;
+        var secantPts = (function() {
+          var sl = Math.max(xR.min, x0 - 0.5), sr = Math.min(xR.max, x0 + dh + 0.5);
+          return toSX(sl) + ',' + toSY(secantSlope * (sl - x0) + fy0) + ' ' + toSX(sr) + ',' + toSY(secantSlope * (sr - x0) + fy0);
+        })();
+
+        // ── CSS ─────────────────────────────────────────────────────────
+        var css = '@keyframes calcPop{0%{transform:scale(0.85);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}' +
+          '@keyframes calcCorrect{0%,100%{background:#dcfce7}50%{background:#86efac}}' +
+          '@keyframes calcWrong{0%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}' +
+          '@keyframes calcFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}' +
+          '@keyframes spin{to{transform:rotate(360deg)}}';
+
+        // ── MODES ────────────────────────────────────────────────────────
+        var MODES = [
+          { id: 'left', label: 'Left' }, { id: 'midpoint', label: 'Midpoint' },
+          { id: 'right', label: 'Right' }, { id: 'trapezoid', label: 'Trapezoid' }, { id: 'simpson', label: "Simpson's" }
+        ];
+
+        // ── PRESETS ──────────────────────────────────────────────────────
+        var PRESETS = [
+          { label: '\u222B x\u00B2 [0,1]',           a:1, b:0, c:0, xMin:0, xMax:1, n:20, tip:'Classic! Think about it first: is the area more or less than 0.5?' },
+          { label: '\u222B x\u00B2 [0,3]',           a:1, b:0, c:0, xMin:0, xMax:3, n:20, tip:'Same curve, wider bounds. Predict the area before computing!' },
+          { label: '\u222B 2x [0,5]',                a:0, b:2, c:0, xMin:0, xMax:5, n:10, tip:'Linear function. Will rectangles ever be exact? Why?' },
+          { label: '\u222B 3 [1,4]',                 a:0, b:0, c:3, xMin:1, xMax:4, n:5,  tip:'Constant function. What should the error always be?' },
+          { label: '\u222B (x\u00B2+2x+1) [0,2]',   a:1, b:2, c:1, xMin:0, xMax:2, n:20, tip:'This equals (x+1)\u00B2. Does that change your prediction?' },
+          { label: '\u222B \u2212x\u00B2+4 [0,2]',   a:-1,b:0, c:4, xMin:0, xMax:2, n:25, tip:'Downward arch. Will the integral be larger or smaller than for x\u00B2?' },
+          { label: '\u222B \u2212x\u00B2+4 [\u22122,2]',a:-1,b:0,c:4,xMin:-2,xMax:2,n:20,tip:'Full arch. Estimate the area visually before running it.' },
+          { label: '\u222B (x\u00B2\u22123x) [1,4]', a:1, b:-3,c:0, xMin:1, xMax:4, n:20, tip:'The function crosses zero in this range. What does that mean for the integral?' },
+        ];
+
+        // ── ACTIVE LEARNING STATE ────────────────────────────────────────
+        var predictMode = d.predictMode || false;
+        var predictInput = d.predictInput || '';
+        var predictSubmitted = d.predictSubmitted || false;
+        var overUnderGuess = d.overUnderGuess || null;   // 'over' | 'under' | null
+        var overUnderChecked = d.overUnderChecked || false;
+
+        // Is the sum actually an over or underestimate?
+        // Left/Right Riemann sums only go CONSISTENTLY over or under when f is MONOTONIC on the
+        // interval. For this quadratic that means the vertex (x = -b/2a) lies OUTSIDE (xMin, xMax2).
+        // If the vertex is inside (e.g. the default preset -x²+4 on [-2,2]), the endpoint-slope rule
+        // is invalid — the curve rises then falls — so we report 'neither' instead of a wrong verdict.
+        var fVertex = fa !== 0 ? (-fb / (2 * fa)) : null;
+        var fMonotonic = (fa === 0) || fVertex <= xMin || fVertex >= xMax2;
+        var fIsIncreasing = evalF(xMax2) > evalF(xMin);
+        var actualOverUnder = !fMonotonic ? 'neither'
+          : (mode === 'left' && fIsIncreasing) ? 'under'
+          : (mode === 'left' && !fIsIncreasing) ? 'over'
+          : (mode === 'right' && fIsIncreasing) ? 'over'
+          : (mode === 'right' && !fIsIncreasing) ? 'under'
+          : 'neither';  // midpoint/trapezoid/simpson don't have consistent direction
+
+        var derivInputChecked = d.derivInputChecked || false;
+        var derivInput1 = d.derivInput1 || '';
+        var derivInput2 = d.derivInput2 || '';
+        var antiChecked = d.antiChecked || false;
+        var antiA = d.antiA || '';
+        var antiB = d.antiB || '';
+        var antiC2 = d.antiC2 || '';
+
+        // Challenge state
+        var cq = d.calcQuiz || null;
+        var cScore = d.calcScore || 0;
+        var cStreak = d.calcStreak || 0;
+        var cMode = d.calcChallengeMode || 'estimate';
+        var cHint = d.calcHint || '';
+        var CALC_CHALLENGES = [
+          { id: 'estimate',  label: '\uD83C\uDFAF Estimate \u222B',  color: 'red' },
+          { id: 'overunder', label: '\u2B06\u2B07 Over or Under?',    color: 'orange' },
+          { id: 'method',    label: '\u26A1 Best Method',             color: 'amber' },
+          { id: 'minN',      label: '\uD83D\uDD22 Min n',             color: 'blue' },
+          { id: 'exact',     label: '\u270F\uFE0F Exact \u222B',      color: 'emerald' },
+          { id: 'deriv',     label: '\uD83D\uDCC8 Find the Slope',    color: 'violet' },
+        ];
+
+        // ── CHALLENGE GENERATORS ─────────────────────────────────────────
+        function makeEstimateQuiz() {
+          var qa=[1,-1,2,-2,0][Math.floor(Math.random()*5)];
+          var qb=[0,1,2,-1,-2][Math.floor(Math.random()*5)];
+          var qc=[0,1,2,-1][Math.floor(Math.random()*4)];
+          var qxMax=[1,2,3][Math.floor(Math.random()*3)];
+          var qExact=Math.round((evalAntiAt(qa,qb,qc,qxMax)-evalAntiAt(qa,qb,qc,0))*100)/100;
+          var opts=[qExact];
+          while(opts.length<4){var w=Math.round((qExact+(Math.floor(Math.random()*5)+1)*(Math.random()<0.5?1:-1))*100)/100; if(opts.indexOf(w)<0)opts.push(w);}
+          opts.sort(function(a,b){return a-b;});
+          return {mode:'estimate',a:qa,b:qb,c:qc,xMin:0,xMax:qxMax,answer:qExact,opts:opts,answered:false,
+            question:'\u222B\u2080'+qxMax+' ('+buildFStr(qa,qb,qc)+') dx = ?'};
+        }
+        function makeOverUnderQuiz() {
+          var qa=[1,2,-1,-2][Math.floor(Math.random()*4)];
+          var qb=[0,1,-1][Math.floor(Math.random()*3)];
+          var qxMax=[2,3][Math.floor(Math.random()*2)];
+          var qMode=['left','right'][Math.floor(Math.random()*2)];
+          var isInc = evalAntiAt(qa,qb,0,qxMax) - evalAntiAt(qa,qb,0,0) > 0 ? (qa*qxMax + qb > qa*0 + qb) : false;
+          // simpler: f increasing if f(xMax) > f(0)
+          var fAtEnd = qa*qxMax*qxMax + qb*qxMax;
+          var fAtStart = 0;
+          var inc = fAtEnd > fAtStart;
+          var correct = (qMode==='left' && inc) ? 'under' : (qMode==='left' && !inc) ? 'over' : (qMode==='right' && inc) ? 'over' : 'under';
+          var why = qMode==='left'
+            ? (inc ? 'Left endpoints are on the rising part of the curve, so rectangles miss the area above each left corner.'
+                   : 'Left endpoints are on the falling part, so rectangles extend beyond the curve.')
+            : (inc ? 'Right endpoints are on the rising part, so rectangles overshoot the curve.'
+                   : 'Right endpoints are on the falling part, so rectangles miss area.');
+          return {mode:'overunder',a:qa,b:qb,c:0,xMin:0,xMax:qxMax,ruleMode:qMode,answer:correct,why:why,answered:false,
+            question:'For f(x)='+buildFStr(qa,qb,0)+' using '+qMode.charAt(0).toUpperCase()+qMode.slice(1)+' Riemann sums [0,'+qxMax+']: is the approximation an OVERestimate or UNDERestimate?'};
+        }
+        function makeMethodQuiz() {
+          var qa=[1,-1,2][Math.floor(Math.random()*3)], qb=[0,1,-1][Math.floor(Math.random()*3)], qc=[0,1][Math.floor(Math.random()*2)];
+          var qxMax=[2,3][Math.floor(Math.random()*2)], qn=[4,6,8][Math.floor(Math.random()*3)];
+          var qExact=evalAntiAt(qa,qb,qc,qxMax)-evalAntiAt(qa,qb,qc,0);
+          var methods=['left','right','midpoint','trapezoid','simpson'], errors={};
+          methods.forEach(function(m){
+            var qdx=qxMax/qn, qa2=0;
+            for(var i=0;i<qn;i++){var xi=i*qdx;
+              if(m==='trapezoid'){qa2+=(qa*xi*xi+qb*xi+qc+qa*(xi+qdx)*(xi+qdx)+qb*(xi+qdx)+qc)/2*qdx;}
+              else if(m==='simpson'&&qn%2===0&&i%2===0){var f0=qa*xi*xi+qb*xi+qc,f1=qa*(xi+qdx)*(xi+qdx)+qb*(xi+qdx)+qc,f2=qa*(xi+2*qdx)*(xi+2*qdx)+qb*(xi+2*qdx)+qc;qa2+=(f0+4*f1+f2)*qdx/3;}
+              else if(m!=='simpson'){var xs=m==='right'?xi+qdx:m==='midpoint'?xi+qdx/2:xi;qa2+=(qa*xs*xs+qb*xs+qc)*qdx;}}
+            errors[m]=Math.abs(qa2-qExact);
+          });
+          var best=methods.reduce(function(a,b){return errors[a]<errors[b]?a:b;});
+          var labels={left:'Left Riemann',right:'Right Riemann',midpoint:'Midpoint',trapezoid:'Trapezoidal',simpson:"Simpson's"};
+          return {mode:'method',a:qa,b:qb,c:qc,xMin:0,xMax:qxMax,n:qn,answer:best,answerLabel:labels[best],
+            opts:methods.map(function(m){return{id:m,label:labels[m]};}),errors:errors,answered:false,
+            question:'At n='+qn+', which method gives the SMALLEST error for f(x)='+buildFStr(qa,qb,qc)+'?'};
+        }
+        function makeMinNQuiz() {
+          var qa=[1,-1,2][Math.floor(Math.random()*3)], qb=[0,1][Math.floor(Math.random()*2)];
+          var qxMax=[2,3][Math.floor(Math.random()*2)], thr=[0.5,0.1,0.05][Math.floor(Math.random()*3)];
+          var qExact=evalAntiAt(qa,qb,0,qxMax)-evalAntiAt(qa,qb,0,0);
+          var minN=2;
+          for(var tn=2;tn<=100;tn++){var tdx=qxMax/tn,ta=0;for(var ti=0;ti<tn;ti++){var txi=ti*tdx;ta+=(qa*txi*txi+qb*txi)*tdx;}if(Math.abs(ta-qExact)<thr){minN=tn;break;}}
+          if(minN>50){minN=50;thr=0.5;}
+          var opts=[minN],cands=[minN-4,minN-2,minN+2,minN+4,minN*2].filter(function(v){return v>=2&&v<=100&&v!==minN;});
+          while(opts.length<4&&cands.length>0){var ci=Math.floor(Math.random()*cands.length);opts.push(cands.splice(ci,1)[0]);}
+          opts.sort(function(a,b){return a-b;});
+          return {mode:'minN',a:qa,b:qb,c:0,xMin:0,xMax:qxMax,answer:minN,threshold:thr,opts:opts,answered:false,
+            question:'Using Left Riemann for f(x)='+buildFStr(qa,qb,0)+', what is the SMALLEST n where error < '+thr+'?'};
+        }
+        function makeExactQuiz() {
+          var qa=[0,1,-1,2][Math.floor(Math.random()*4)], qb=[0,1,2,3][Math.floor(Math.random()*4)], qc=[0,1,2][Math.floor(Math.random()*3)];
+          var qxMax=[1,2,3][Math.floor(Math.random()*3)];
+          var qExact=Math.round((evalAntiAt(qa,qb,qc,qxMax)-evalAntiAt(qa,qb,qc,0))*1000)/1000;
+          var hParts=[]; if(qa!==0)hParts.push(qa+'x\u00B3/3'); if(qb!==0)hParts.push(qb+'x\u00B2/2'); if(qc!==0)hParts.push(qc+'x');
+          return {mode:'exact',a:qa,b:qb,c:qc,xMin:0,xMax:qxMax,answer:qExact,answered:false,
+            question:'Use the power rule to compute \u222B\u2080'+qxMax+' ('+buildFStr(qa,qb,qc)+') dx exactly.',
+            hint:'Anti-derivative: F(x) = '+(hParts.join(' + ')||'0')+'. Evaluate F('+qxMax+')\u2212F(0).'};
+        }
+        function makeDerivQuiz() {
+          var qa=[1,-1,2,-2,3][Math.floor(Math.random()*5)], qb=[0,1,2,-1,-3][Math.floor(Math.random()*5)];
+          var qx=[0,1,2,-1,0.5,3][Math.floor(Math.random()*6)];
+          var qSlope=2*qa*qx+qb;
+          var opts=[qSlope];
+          while(opts.length<4){var w=qSlope+(Math.floor(Math.random()*4)+1)*(Math.random()<0.5?1:-1); if(opts.indexOf(w)<0)opts.push(w);}
+          opts.sort(function(a,b){return a-b;});
+          return {mode:'deriv',a:qa,b:qb,c:0,x0:qx,answer:qSlope,opts:opts,answered:false,
+            question:"For f(x)="+buildFStr(qa,qb,0)+", apply the power rule to find f\u2032("+qx+")."};
+        }
+        function startCalcChallenge() {
+          var q = cMode==='method'?makeMethodQuiz():cMode==='minN'?makeMinNQuiz():cMode==='exact'?makeExactQuiz():cMode==='deriv'?makeDerivQuiz():cMode==='overunder'?makeOverUnderQuiz():makeEstimateQuiz();
+          setLabToolData(function(prev){
+            var patch={calcQuiz:q,calcHint:'',_calcExactInput:'',a:q.a,b:q.b,c:q.c};
+            if(q.xMin!==undefined)patch.xMin=q.xMin;
+            if(q.xMax!==undefined)patch.xMax=q.xMax;
+            if(q.n!==undefined)patch.n=q.n;
+            if(q.x0!==undefined)patch.x0=q.x0;
+            if(q.ruleMode!==undefined)patch.mode=q.ruleMode;
+            return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,patch)});
+          });
+          stemBeep && stemBeep('click');
+        }
+        function checkCalcAnswer(chosen) {
+          var correct = cMode==='method'?chosen===cq.answer:cMode==='minN'?chosen<=cq.answer+2&&chosen>=cq.answer:cMode==='exact'?Math.abs(parseFloat(chosen)-cq.answer)<0.05:cMode==='overunder'?chosen===cq.answer:cMode==='deriv'?chosen===cq.answer:chosen===cq.answer;
+          var newStreak=correct?cStreak+1:0;
+          var hintMsg = correct ? '' : cMode==='method'?'Best was '+cq.answerLabel+". Simpson\u2019s is exact for polynomials \u2264 degree 3!":cMode==='minN'?'Min n = '+cq.answer+'. More subdivisions \u2192 smaller error.':cMode==='overunder'?cq.why:cMode==='deriv'?'Power rule: f\u2032(x) = '+buildDerivStr(cq.a,cq.b)+', so f\u2032('+cq.x0+') = '+cq.answer+'. (Differentiate each term: d/dx[ax\u00B2] = 2ax, d/dx[bx] = b)':'Answer: '+cq.answer+'. Apply the power rule: \u222B x\u207F = x\u207F\u207A\u00B9/(n+1)';
+          setLabToolData(function(prev){
+            return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{
+              calcQuiz:Object.assign({},prev.calculus.calcQuiz,{answered:true,chosen:chosen,correct:correct}),
+              calcScore:(prev.calculus.calcScore||0)+(correct?1:0),
+              calcStreak:newStreak,
+              calcHint:hintMsg
+            })});
+          });
+          if(correct){stemBeep&&stemBeep('success');if(typeof awardStemXP==='function')awardStemXP('calculus',5,cMode);addToast('\u2705 Correct! +5 XP','success');if(newStreak>=3){stemCelebrate&&stemCelebrate();awardStemXP&&awardStemXP('calculus',5,'streak');addToast('\uD83D\uDD25 '+newStreak+'-streak! +5 bonus XP','success');}setTimeout(startCalcChallenge,2000);}
+          else{stemBeep&&stemBeep('error');addToast('\u274C Not quite \u2014 see explanation below','error');}
+        }
+
+        // ── SHARED SVG GRAPH ─────────────────────────────────────────────
+        var svgGraph = function(showTangent, showRects) {
+          return h('svg', { viewBox: '0 0 '+W+' '+H, className: 'w-full bg-white rounded-xl border-2 border-red-200 shadow-sm', style:{maxHeight:'280px'} },
+            (function(){var gs=[];for(var gx=Math.ceil(xR.min);gx<=xR.max;gx++){var gsx=toSX(gx);if(gsx>pad&&gsx<W-pad)gs.push(h('line',{key:'g'+gx,x1:gsx,y1:pad,x2:gsx,y2:H-pad,stroke:'#f1f5f9',strokeWidth:0.5}));}return gs;})(),
+            h('line',{x1:pad,y1:toSY(0),x2:W-pad,y2:toSY(0),stroke:'#94a3b8',strokeWidth:1.5}),
+            h('line',{x1:toSX(0),y1:pad,x2:toSX(0),y2:H-pad,stroke:'#94a3b8',strokeWidth:1.5}),
+            showRects && h('rect',{x:toSX(xMin),y:pad,width:Math.abs(toSX(xMax2)-toSX(xMin)),height:H-2*pad,fill:'none',stroke:'#ef4444',strokeWidth:1,strokeDasharray:'4 2'}),
+            showRects && rects.map(function(r,i){
+              if(r.type==='trap'){var pts=toSX(r.x)+','+toSY(0)+' '+toSX(r.x)+','+toSY(r.hL)+' '+toSX(r.x+r.w)+','+toSY(r.hR)+' '+toSX(r.x+r.w)+','+toSY(0);var tpos=(r.hL+r.hR)>=0;return h('polygon',{key:i,points:pts,fill:tpos?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:tpos?'#3b82f6':'#f97316',strokeWidth:0.8});}
+              if(r.type==='simp'){var sp=[toSX(r.x)+','+toSY(0)];for(var sp2=0;sp2<=10;sp2++){var st=sp2/10,spx=r.x+st*r.w,spy=r.hL*(1-st)*(1-2*st)+4*r.hM*st*(1-st)+r.hR*st*(2*st-1);sp.push(toSX(spx)+','+toSY(spy));}sp.push(toSX(r.x+r.w)+','+toSY(0));return h('polygon',{key:i,points:sp.join(' '),fill:'rgba(168,85,247,0.15)',stroke:'#a855f7',strokeWidth:0.8});}
+              return h('rect',{key:i,x:toSX(r.x),y:r.h>=0?toSY(r.h):toSY(0),width:Math.abs(toSX(r.x+r.w)-toSX(r.x)),height:Math.abs(toSY(r.h)-toSY(0)),fill:r.h>=0?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:r.h>=0?'#3b82f6':'#f97316',strokeWidth:0.8});
+            }),
+            showTangent && dh > 0.05 && h('polyline',{points:secantPts,fill:'none',stroke:'#f59e0b',strokeWidth:1.5,strokeDasharray:'5 3'}),
+            showTangent && h('polyline',{points:tangentPts,fill:'none',stroke:'#ef4444',strokeWidth:2,style:{filter:'drop-shadow(0 0 3px rgba(239,68,68,0.45))'}}),
+            curvePts.length>1 && h('polyline',{points:curvePts.join(' '),fill:'none',stroke:'#1e293b',strokeWidth:2.5}),
+            showTangent && h('circle',{cx:toSX(x0),cy:toSY(fy0),r:5,fill:'#ef4444',stroke:'white',strokeWidth:2}),
+            showTangent && dh>0.05 && h('circle',{cx:toSX(x0+dh),cy:toSY(evalF(x0+dh)),r:4,fill:'#f59e0b',stroke:'white',strokeWidth:2}),
+            h('text',{x:W/2,y:H-6,textAnchor:'middle',fill:'#94a3b8',style:{fontSize:'9px',fontWeight:'bold'}},
+              showTangent ? fStr+'  |  f\u2032('+x0+') = '+slope.toFixed(3) : fStr+'  |  \u222B \u2248 '+area.toFixed(4)+'  (n='+nRects+', '+mode+')')
+          );
+        };
+
+        // ── RENDER ───────────────────────────────────────────────────────
+        return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
+
+          h('style', null, css),
+
+          // Header
+          h('div', { className: 'flex items-center gap-3 mb-3' },
+            h('button', { onClick: function(){setStemLabTool(null);}, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, {size:18,className:'text-slate-600'})),
+            h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u222B Calculus'),
+            h('span', { className: 'px-2 py-0.5 bg-red-100 text-red-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
+            cScore > 0 && h('span', { className: 'ml-auto px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
+          ),
+
+          // Tab bar
+          h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
+            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['visualize','\uD83C\uDFAC Visualize'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item){
+              return h('button',{ key:item[0],onClick:function(){upd('tab',item[0]);},role:'tab','aria-selected':tab===item[0],className:'px-3 py-1.5 text-xs font-bold transition-all '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
+            })
+          ),
+
+          // ── Topic-accent hero band per tab ──
+          (function() {
+            var TAB_META = {
+              integral:   { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u222B', title: 'Integral \u2014 area under the curve',         hint: 'Riemann sums (left, right, midpoint, trapezoid, Simpson) approximate the integral. As n \u2192 \u221E, the limit becomes the exact area. Simpson\'s rule converges fastest \u2014 odd polynomials integrate exactly.' },
+              derivative: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Derivative \u2014 slope at a point',     hint: 'lim(h\u21920) [f(x+h)\u2212f(x)]/h. Slope of the tangent line. Power rule + chain rule + product rule + quotient rule cover ~95% of AP Calc problems.' },
+              visualize:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAC', title: 'Visualize \u2014 see the math move',     hint: 'Watch a Riemann sum refine to the exact integral as n grows. Watch a tangent line slide along a curve. Calculus that looked abstract on paper becomes obvious in motion.' },
+              challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',       hint: 'AP Calc AB / BC items with step-by-step feedback. Common traps: sign errors in chain rule, forgetting the +C in indefinite integrals, mixing up [f(x)]\u00b2 vs f(x\u00b2).' },
+              discover:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Discover \u2014 the big ideas',           hint: 'Fundamental Theorem of Calculus: integration and differentiation are inverse operations. The single most beautiful result in mathematics. Newton + Leibniz, independently, ~1670s.' }
+            };
+            var meta = TAB_META[tab] || TAB_META.integral;
+            return h('div', {
+              style: {
+                margin: '0 0 12px',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
+          // ══════════════════════════════════════════════════════════════
+          // TAB: INTEGRAL
+          // ══════════════════════════════════════════════════════════════
+          tab === 'integral' && h('div', { key: 'integral' },
+
+            // Method selector
+            h('div', { className: 'flex flex-wrap gap-1 mb-3' },
+              MODES.map(function(m){
+                return h('button',{ key:m.id,onClick:function(){upd('mode',m.id);if(m.id==='simpson'&&nRects%2!==0)upd('n',nRects+1);},className:'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+(mode===m.id?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-red-50')},m.label);
+              })
+            ),
+
+            svgGraph(false, true),
+
+            // ── OVER/UNDER PREDICTION (active learning) ──────────────────
+            (mode === 'left' || mode === 'right') && h('div', { className: 'mt-2 bg-slate-50 rounded-xl border p-3', style:{animation:'calcFade 0.3s ease'} },
+              h('p', { className: 'text-xs font-bold text-slate-700 mb-2' },
+                '\uD83E\uDD14 Before checking — is this ' + mode + ' Riemann sum an OVERestimate or UNDERestimate?'
+              ),
+              !overUnderChecked && h('div', { className: 'flex gap-2' },
+                h('button', { "aria-label": "OVERestimate",
+                  onClick: function(){ upd('overUnderGuess','over'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
+                  className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-red-100 text-red-700 hover:bg-red-200 transition-all border-2 border-red-600'
+                }, '\u2B06 OVERestimate'),
+                h('button', { "aria-label": "UNDERestimate",
+                  onClick: function(){ upd('overUnderGuess','under'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
+                  className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all border-2 border-blue-600'
+                }, '\u2B07 UNDERestimate'),
+                h('button', { onClick: function(){ upd('overUnderGuess','neither'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
+                  className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all border-2 border-slate-200'
+                }, '\u2194 Can\'t tell')
+              ),
+              overUnderChecked && (function(){
+                var correct = overUnderGuess === actualOverUnder || (actualOverUnder === 'neither' && overUnderGuess === 'neither');
+                var isOver = actualOverUnder === 'over';
+                var isNeither = actualOverUnder === 'neither';
+                return h('div', { style:{animation:'calcPop 0.3s ease'}},
+                  h('p', { className: 'text-sm font-bold mb-1 ' + (correct?'text-emerald-600':'text-red-600') },
+                    (correct?'\u2705 Correct! ':'❌ Not quite — ') + (isNeither ? (((mode === 'left' || mode === 'right') && !fMonotonic) ? 'This curve rises then falls here, so left/right rectangles overshoot in one part and undershoot in the other; there is no single direction. Try an interval where it only rises or only falls.' : 'Midpoint/Trapezoid/Simpson\u2019s don\u2019t always go one way.') : isOver ? 'It\u2019s an OVERestimate.' : 'It\u2019s an UNDERestimate.')
+                  ),
+                  !isNeither && h('p', { className: 'text-xs text-slate-600' },
+                    '\uD83D\uDCA1 ' + (mode==='left'
+                      ? (fIsIncreasing ? 'The function is rising, so each left endpoint is below where the curve ends up — rectangles miss area above them.' : 'The function is falling, so each left endpoint is above where the curve goes — rectangles overshoot.')
+                      : (fIsIncreasing ? 'The function is rising, so each right endpoint is at the highest point — rectangles overshoot the curve.' : 'The function is falling, so each right endpoint is at the lowest point — rectangles miss area.'))
+                  ),
+                  h('button', {"aria-label":"Reset", onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'mt-1 text-[11px] text-slate-600 hover:text-slate-800 font-bold' }, '\u21BA Reset')
+                );
+              })()
+            ),
+
+            // ── PREDICT FIRST mode ────────────────────────────────────────
+            h('div', { className: 'mt-3 flex items-center gap-2 mb-1' },
+              h('button', { onClick: function(){ upd('predictMode',!predictMode); upd('predictSubmitted',false); upd('predictInput',''); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (predictMode?'bg-violet-600 text-white':'bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100')
+              }, predictMode ? '\uD83D\uDD2E Predict Mode ON' : '\uD83D\uDD2E Try Predict Mode'),
+              !predictMode && h('span', { className: 'text-[11px] text-slate-600' }, '\u2014 estimate the integral before it\u2019s revealed')
+            ),
+
+            predictMode && !predictSubmitted && h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', style:{animation:'calcFade 0.3s ease'} },
+              h('p', { className: 'text-sm font-bold text-violet-800 mb-1' }, '\uD83D\uDD2E What do you estimate \u222B[' + xMin + ',' + xMax2 + '] f(x) dx to be?'),
+              h('p', { className: 'text-xs text-violet-600 mb-3 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
+              h('div', { className: 'flex gap-2' },
+                h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': 'Integral estimate input', className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
+                h('button', {"aria-label":"Reveal", disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Reveal \u2192')
+              )
+            ),
+
+            predictMode && predictSubmitted && (function(){
+              var pred = parseFloat(predictInput);
+              var pctOff = exact !== 0 ? Math.abs(pred - exact) / Math.abs(exact) * 100 : Math.abs(pred - exact) * 100;
+              return h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', style:{animation:'calcFade 0.3s ease'} },
+                h('div', { className: 'grid grid-cols-3 gap-2 text-center mb-3' },
+                  h('div', { className: 'p-2 bg-white rounded-lg border border-violet-200' },
+                    h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase' }, 'Your Estimate'),
+                    h('p', { className: 'text-lg font-black text-violet-700' }, pred.toFixed(3))
+                  ),
+                  h('div', { className: 'p-2 bg-white rounded-lg border border-emerald-200' },
+                    h('p', { className: 'text-[11px] font-bold text-emerald-400 uppercase' }, 'Exact Value'),
+                    h('p', { className: 'text-lg font-black text-emerald-700', style:{animation:'calcPop 0.4s ease'} }, exact.toFixed(4))
+                  ),
+                  h('div', { className: 'p-2 bg-white rounded-lg border border-slate-400' },
+                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '% Off'),
+                    h('p', { className: 'text-sm font-black text-slate-600' }, pctOff.toFixed(1) + '%')
+                  )
+                ),
+                h('p', { className: 'text-xs italic ' + (pctOff<5?'text-emerald-600':pctOff<20?'text-amber-600':'text-slate-600') },
+                  pctOff<5 ? '\uD83C\uDFAF Excellent! Within 5% \u2014 you have strong spatial intuition!' :
+                  pctOff<15 ? '\uD83D\uDC4D Good intuition! Within 15%. Tip: think about the average y-value \u00D7 width.' :
+                  '\uD83D\uDCA1 Keep at it! Estimation gets better with practice. Try: pick a "middle" y-value and multiply by the width.'
+                ),
+                h('button', {"aria-label":"Try another estimate", onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'mt-2 text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
+              );
+            })(),
+
+            // Analysis panel (only show if not in predict mode OR already submitted)
+            (!predictMode || predictSubmitted) && h('div', { className: 'mt-3 grid grid-cols-5 gap-3' },
+              h('div', { className: 'col-span-3 bg-red-50 rounded-xl border border-red-200 p-3' },
+                h('p', { className: 'text-[11px] font-bold text-red-700 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Analysis'),
+                h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                  h('div', { className: 'p-1.5 bg-white rounded-lg border', style:{animation:'calcPop 0.3s ease'} },
+                    h('p', { className: 'text-[11px] font-bold text-red-400' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
+                    h('p', { className: 'text-sm font-bold text-red-800' }, area.toFixed(4))
+                  ),
+                  h('div', { className: 'p-1.5 bg-white rounded-lg border' },
+                    h('p', { className: 'text-[11px] font-bold text-red-400' }, 'Exact (\u222B)'),
+                    h('p', { className: 'text-sm font-bold text-red-800' }, exact.toFixed(4))
+                  ),
+                  h('div', { className: 'p-1.5 bg-white rounded-lg border' },
+                    h('p', { id: 'err-stem_tool_calculus-474', role: 'alert', className: 'text-[11px] font-bold text-red-400' }, 'Error'),
+                    h('p', { className: 'text-sm font-bold '+(err<0.01?'text-emerald-600':err<0.1?'text-yellow-600':'text-red-600') }, err.toFixed(6))
+                  )
+                ),
+                h('p', { className: 'mt-2 text-xs text-slate-600 italic' },
+                  mode==='simpson'?"\uD83D\uDCA1 Simpson's uses parabolic arcs \u2014 exact for polynomials up to degree 3. Why do you think that is?":
+                  mode==='trapezoid'?"\uD83D\uDCA1 Trapezoid error \u221D 1/n\u00B2. What does that mean when you double n?":
+                  nRects<=5?"\uD83D\uDCA1 Only " + nRects + " rectangles. Predict: what happens to the error if you triple n?":
+                  "\uD83D\uDCA1 At n=" + nRects + ": how many times larger is the error compared to n=50? Use the chart \u2192"
+                ),
+                // Net signed-area note \u2014 only surfaces when the curve crosses the x-axis (pairs with the blue/orange shading)
+                (function(){
+                  var below=false, above=false;
+                  for(var _s=0;_s<=24;_s++){ var _y=evalF(xMin+(xMax2-xMin)*_s/24); if(_y<-1e-9)below=true; if(_y>1e-9)above=true; }
+                  if(!(below&&above)) return null;
+                  return h('p',{className:'mt-2 text-[11px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1 leading-snug'},
+                    h('span',{className:'font-bold text-blue-600'},'Blue'),' area (above the axis) adds; ',
+                    h('span',{className:'font-bold text-orange-500'},'orange'),' area (below) subtracts. The integral is the NET signed area \u2014 not the total amount of region.');
+                })()
+              ),
+              h('div', { className: 'col-span-2 bg-slate-50 rounded-xl border p-2' },
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
+                h('svg', { viewBox: '0 0 '+CW+' 60', className: 'w-full' },
+                  h('line',{x1:Cpad,y1:55,x2:CW-Cpad,y2:55,stroke:'#e2e8f0',strokeWidth:0.5}),
+                  h('polyline',{points:convData.map(function(cd){return convToX(cd.n)+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#ef4444',strokeWidth:1.5}),
+                  h('circle',{cx:convToX(nRects),cy:convToY(err),r:3,fill:'#ef4444',stroke:'white',strokeWidth:1}),
+                  h('text',{x:CW/2,y:8,textAnchor:'middle',fill:'#94a3b8',style:{fontSize:'6px'}},'error \u2192 0 as n \u2192 \u221E')
+                )
+              )
+            ),
+
+            // ── ANTIDERIVATIVE BUILDER ────────────────────────────────────
+            h('div', { className: 'mt-3 bg-cyan-50 rounded-xl border border-cyan-200 p-3' },
+              h('div', { className: 'flex items-center justify-between mb-1' },
+                h('p', { className: 'text-[11px] font-bold text-cyan-700 uppercase tracking-wider' }, '\u270F\uFE0F Build the Antiderivative'),
+                h('p', { className: 'text-[11px] text-cyan-500 italic' }, 'Power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1)')
+              ),
+              h('p', { className: 'text-xs text-cyan-800 mb-2' }, 'For f(x) = ' + buildFStr(fa, fb, fc) + ', complete F(x):'),
+              h('div', { className: 'flex items-center gap-1 flex-wrap' },
+                h('span', { className: 'text-sm font-bold text-cyan-900' }, 'F(x) = '),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiA, onChange:function(e){upd('antiA',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-cubed coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B3/3 + '),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-squared coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B2/2 + '),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x + C'),
+                h('button', {"aria-label":"Check", disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-600' }, 'Check')
+              ),
+              h('p', { className: 'mt-1.5 text-[11px] text-cyan-600 italic' }, 'Every antiderivative also carries a constant + C \u2014 but it cancels in F('+xMax2+') \u2212 F('+xMin+'), so a definite integral never needs it.'),
+              antiChecked && (function(){
+                var okA=Math.abs(parseFloat(antiA)-fa)<0.01, okB=Math.abs(parseFloat(antiB)-fb)<0.01, okC=Math.abs(parseFloat(antiC2)-fc)<0.01, all=okA&&okB&&okC;
+                return h('div', { className:'mt-2', style:{animation:'calcPop 0.3s ease'} },
+                  h('p', { className:'text-sm font-bold '+(all?'text-emerald-700':'text-red-600') }, all ? '\u2705 Correct! Now evaluate: F(' + xMax2 + ') \u2212 F(' + xMin + ') = ' + exact.toFixed(4) : '\u274C Check each term:'),
+                  !all && h('div', { className:'text-xs space-y-0.5 mt-1' },
+                    h('p',{className:okA?'text-emerald-600':'text-red-500'},(okA?'\u2713':'\u2717')+' x\u00B3/3 coefficient: should be '+fa+' (same as coefficient of x\u00B2 in f(x))'),
+                    h('p',{className:okB?'text-emerald-600':'text-red-500'},(okB?'\u2713':'\u2717')+' x\u00B2/2 coefficient: should be '+fb),
+                    h('p',{className:okC?'text-emerald-600':'text-red-500'},(okC?'\u2713':'\u2717')+' x coefficient: should be '+fc)
+                  ),
+                  h('button',{"aria-label":"Clear and try again",onClick:function(){upd('antiChecked',false);upd('antiA','');upd('antiB','');upd('antiC2','');},className:'mt-1 text-[11px] text-cyan-600 hover:underline font-bold'},'\u21BA Clear and try again')
+                );
+              })()
+            ),
+
+            // Sliders
+            h('div', { className: 'grid grid-cols-2 gap-2 mt-3' },
+              [{k:'a',label:'a (x\u00B2)',min:-3,max:3,step:0.5},{k:'b',label:'b (x)',min:-5,max:5,step:0.5},{k:'c',label:'c (const)',min:-5,max:5,step:0.5},{k:'xMin',label:'Lower a',min:-3,max:4,step:0.5},{k:'xMax',label:'Upper b',min:1,max:10,step:0.5},{k:'n',label:'n (subdivisions)',min:2,max:50,step:mode==='simpson'?2:1}].map(function(s){
+                return h('div',{ key:s.k,className:'text-center bg-slate-50 rounded-lg p-2 border'},
+                  h('label',{className:'text-[11px] font-bold text-red-600'},s.label+': '+d[s.k]),
+                  h('input',{type:'range',min:s.min,max:s.max,step:s.step,value:d[s.k],'aria-label':s.label,onChange:function(e){upd(s.k,parseFloat(e.target.value));upd('overUnderChecked',false);upd('predictSubmitted',false);upd('antiChecked',false);},className:'w-full accent-red-600'})
+                );
+              })
+            ),
+
+            // Presets
+            h('div', { className: 'mt-3 flex flex-wrap gap-1.5 items-center' },
+              h('span',{ className:'text-[11px] font-bold text-slate-600'},'Load:'),
+              PRESETS.map(function(p){
+                return h('button',{ key:p.label,onClick:function(){
+                  setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:p.a,b:p.b,c:p.c,xMin:p.xMin,xMax:p.xMax,n:p.n,overUnderChecked:false,predictSubmitted:false,antiChecked:false,antiA:'',antiB:'',antiC2:''})});});
+                  addToast('\uD83E\uDD14 '+p.tip,'info');
+                  stemBeep&&stemBeep('click');
+                },className:'px-2 py-1 rounded-lg text-[11px] font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all'},p.label);
+              })
+            ),
+
+            // Snapshot
+            h('button',{"aria-label":"Snapshot",onClick:function(){setToolSnapshots(function(prev){return prev.concat([{id:'calc-'+Date.now(),tool:'calculus',label:'\u222B['+xMin+','+xMax2+'] n='+nRects,data:Object.assign({},d),timestamp:Date.now()}]);});addToast('\uD83D\uDCF8 Snapshot!','success');},className:'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-md transition-all'},'\uD83D\uDCF8 Snapshot')
+          ),
+
+          // ══════════════════════════════════════════════════════════════
+          // TAB: DERIVATIVE
+          // ══════════════════════════════════════════════════════════════
+          tab === 'derivative' && h('div', { key: 'derivative' },
+
+            h('div', { className: 'bg-red-50 rounded-xl border border-red-100 p-3 mb-3 grid grid-cols-2 gap-3' },
+              h('div', null,
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Function'),
+                h('p',{className:'text-sm font-bold text-slate-800 font-mono'},fStr)
+              ),
+              h('div', null,
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'f\u2032(x\u2080='+x0+') = slope'),
+                h('p',{className:'text-base font-black text-red-700',style:{animation:'calcPop 0.3s ease'}},slope.toFixed(4))
+              ),
+              h('div', null,
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Tangent line'),
+                h('p',{className:'text-xs font-bold text-slate-700 font-mono'},'y = '+slope.toFixed(2)+'(x\u2212'+x0+') + '+fy0.toFixed(2))
+              ),
+              h('div', null,
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Secant slope (h='+dh.toFixed(2)+')'),
+                h('p',{className:'text-sm font-bold text-amber-600'},secantSlope.toFixed(4)+' \u2192 '+slope.toFixed(4))
+              )
+            ),
+
+            svgGraph(true, false),
+
+            h('div',{className:'mt-2 grid grid-cols-2 gap-2'},
+              h('div',{className:'bg-slate-50 rounded-lg border p-2'},
+                h('label',{className:'text-[11px] font-bold text-red-600'},'x\u2080 (tangent point): '+x0),
+                h('input',{type:'range','aria-label':'Tangent point x0',min:(xMin-1).toFixed(1),max:(xMax2+1).toFixed(1),step:0.1,value:x0,onChange:function(e){upd('x0',parseFloat(e.target.value));upd('derivInputChecked',false);},className:'w-full accent-red-600'})
+              ),
+              h('div',{className:'bg-slate-50 rounded-lg border p-2'},
+                h('label',{className:'text-[11px] font-bold text-amber-600'},'h (secant gap): '+dh.toFixed(2)),
+                h('input',{type:'range','aria-label':'Secant gap h',min:'0.02',max:'2',step:'0.02',value:dh,onChange:function(e){upd('secantH',parseFloat(e.target.value));},className:'w-full accent-amber-500'})
+              )
+            ),
+
+            // Limit definition callout
+            h('div',{ className:'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3'},
+              h('p',{className:'text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D The Limit Definition of the Derivative'),
+              h('p',{className:'text-xs font-mono text-amber-900 mb-2'},"f\u2032(x\u2080) = lim\u2095\u2192\u2080 [f(x\u2080 + h) \u2212 f(x\u2080)] / h"),
+              h('p',{className:'text-xs text-amber-700'},'Drag h toward 0 above \u2014 watch the secant slope (\uD83D\uDFE1) converge to the true derivative (\uD83D\uDD34). When are they equal?')
+            ),
+
+            // ── POWER RULE TRAINER ────────────────────────────────────────
+            h('div',{ className:'mt-3 bg-rose-50 rounded-xl border border-rose-200 p-3'},
+              h('p',{className:'text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-1'},'\u26A0\uFE0F Common mix-ups'),
+              h('ul',{className:'text-xs text-rose-800 space-y-1 list-disc list-inside'},
+                h('li',null, h('b',null,'f\u2032(x\u2080) is the SLOPE'),' \u2014 a single number, not the tangent line itself. The tangent is the line; the derivative is how steep it is.'),
+                h('li',null, h('b',null,'f\u2032(x) is a whole new function'),', not one value \u2014 it gives the slope at every x. Slide x\u2080 and watch it change.'),
+                h('li',null, 'A big ', h('b',null,'f(x)'),' value does NOT mean a big slope \u2014 at any peak or valley the curve is at an extreme yet f\u2032 = 0 (perfectly flat).')
+              )
+            ),
+
+            h('div', { className: 'mt-3 bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('p', { className: 'text-[11px] font-bold text-emerald-700 uppercase tracking-wider' }, '\u270F\uFE0F Power Rule Practice'),
+                h('button', { onClick: function(){ upd('showDerivTrainer', !d.showDerivTrainer); upd('derivInputChecked', false); upd('derivInput1', ''); upd('derivInput2', ''); },
+                  className: 'text-xs font-bold text-emerald-600 hover:text-emerald-800'
+                }, d.showDerivTrainer ? 'Hide' : 'Try yourself \u2192')
+              ),
+              !d.showDerivTrainer && h('p', { className: 'text-xs text-emerald-700 italic' },
+                'Before looking at the result above: apply d/dx[\u00B7] to each term of ' + fStr + '. What do you get?'
+              ),
+              d.showDerivTrainer && h('div', null,
+                h('p', { className: 'text-sm font-bold text-emerald-800 mb-1' }, 'If f(x) = ' + buildFStr(fa, fb, fc) + ', enter f\u2032(x):'),
+                h('p', { className: 'text-[11px] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
+                h('div', { className: 'flex items-center gap-1 flex-wrap' },
+                  h('span', { className: 'text-sm font-bold text-emerald-900' }, "f\u2032(x) = "),
+                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':'Derivative x coefficient', onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('span', { className: 'text-sm font-bold text-emerald-900' }, 'x + '),
+                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput2, 'aria-label':'Derivative constant', onChange:function(e){upd('derivInput2',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('button', {"aria-label":"Check", disabled:derivInput1===''||derivInput2==='', onClick:function(){upd('derivInputChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, 'Check')
+                ),
+                derivInputChecked && (function(){
+                  var ok1=Math.abs(parseFloat(derivInput1)-2*fa)<0.01, ok2=Math.abs(parseFloat(derivInput2)-fb)<0.01, all=ok1&&ok2;
+                  return h('div',{ className:'mt-2',style:{animation:'calcPop 0.3s ease'}},
+                    h('p',{className:'text-sm font-bold '+(all?'text-emerald-700':'text-red-600')},all?'\u2705 Correct! '+derivStr:'❌ Not quite:'),
+                    !all && h('div',{ className:'text-xs space-y-0.5 mt-1'},
+                      h('p',{className:ok1?'text-emerald-600':'text-red-500'},(ok1?'\u2713':'\u2717')+' Coefficient of x: '+2*fa+' (d/dx['+fa+'x\u00B2] = 2\u00D7'+fa+'x = '+2*fa+'x)'),
+                      h('p',{className:ok2?'text-emerald-600':'text-red-500'},(ok2?'\u2713':'\u2717')+' Constant: '+fb+' (d/dx['+fb+'x] = '+fb+')')
+                    ),
+                    h('button',{"aria-label":"Try again",onClick:function(){upd('derivInputChecked',false);upd('derivInput1','');upd('derivInput2','');},className:'mt-1 text-[11px] text-emerald-600 hover:underline font-bold'},'\u21BA Try again')
+                  );
+                })()
+              )
+            ),
+
+            // Function sliders
+            h('div',{className:'grid grid-cols-2 gap-2 mt-3'},
+              [{k:'a',label:'a (x\u00B2)',min:-3,max:3,step:0.5},{k:'b',label:'b (x)',min:-5,max:5,step:0.5},{k:'c',label:'c (const)',min:-5,max:5,step:0.5},{k:'xMin',label:'View left',min:-5,max:3,step:0.5},{k:'xMax',label:'View right',min:1,max:10,step:0.5}].map(function(s){
+                return h('div',{key:s.k,className:'text-center bg-slate-50 rounded-lg p-2 border'},
+                  h('label',{className:'text-[11px] font-bold text-red-600'},s.label+': '+d[s.k]),
+                  h('input',{type:'range','aria-label':s.label,min:s.min,max:s.max,step:s.step,value:d[s.k],onChange:function(e){upd(s.k,parseFloat(e.target.value));upd('derivInputChecked',false);},className:'w-full accent-red-600'})
+                );
+              })
+            )
+          ),
+
+          // ══════════════════════════════════════════════════════════════
+          // TAB: CHALLENGE
+          // ══════════════════════════════════════════════════════════════
+          tab === 'challenge' && h('div', { key: 'challenge' },
+
+            h('div',{ className:'flex items-center gap-2 mb-3 flex-wrap'},
+              h('span',{ className:'text-sm font-black text-red-800'},'\uD83C\uDFAF Calculus Challenges'),
+              cScore>0 && h('span',{ className:'ml-auto text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border'},'\u2B50 '+cScore+' | \uD83D\uDD25 '+cStreak)
+            ),
+            h('div',{ className:'flex flex-wrap gap-1.5 mb-2'},
+              CALC_CHALLENGES.map(function(cm){
+                return h('button',{ "aria-label": "Start Calc Challenge",key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?'bg-'+cm.color+'-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
+              })
+            ),
+            h('p',{className:'text-[11px] text-slate-600 italic mb-3'},
+              cMode==='estimate'?'Pick the correct definite integral value from 4 choices.':
+              cMode==='overunder'?'Decide if the Riemann sum is an over or underestimate — and understand why.':
+              cMode==='method'?'Which approximation method gives the smallest error?':
+              cMode==='minN'?'Find the minimum n to hit a precision target.':
+              cMode==='exact'?'Apply the power rule: compute the exact integral by hand.':
+              'Apply the power rule: compute f\u2032(x\u2080).'
+            ),
+            h('button',{ onClick:startCalcChallenge,className:'px-4 py-2 rounded-lg text-xs font-bold mb-3 transition-all '+(cq?'bg-slate-100 text-slate-600 hover:bg-slate-200':'bg-red-600 text-white hover:bg-red-700 shadow-md')},cq?'\uD83D\uDD04 New Challenge':'\uD83D\uDE80 Start Challenge'),
+            cq && h('div',{ className:'mb-3'},svgGraph(cMode==='deriv',cMode!=='deriv'&&cMode!=='overunder')),
+            cq && !cq.answered && cMode!=='exact' && h('div',{ className:'bg-red-50 rounded-xl p-4 border border-red-200 animate-in fade-in'},
+              h('p',{className:'text-sm font-bold text-red-800 mb-3'},cq.question),
+              h('div',{className:'grid grid-cols-2 gap-2'},
+                (cMode==='overunder'
+                  ? [{id:'over',label:'\u2B06 OVERestimate'},{id:'under',label:'\u2B07 UNDERestimate'}]
+                  : cMode==='method'?cq.opts:cq.opts.map(function(o){return{id:o,label:cMode==='minN'?'n = '+o:String(o)};})
+                ).map(function(opt){
+                  return h('button',{ key:String(opt.id),onClick:function(){checkCalcAnswer(opt.id);stemBeep&&stemBeep('click');},className:'px-3 py-2.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-red-400 hover:bg-red-50 transition-all'},opt.label);
+                })
+              )
+            ),
+            cq && !cq.answered && cMode==='exact' && h('div',{className:'bg-emerald-50 rounded-xl p-4 border border-emerald-200'},
+              h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
+              h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C'),
+              h('div',{className:'flex gap-2'},
+                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-500'}),
+                h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-600'},'Check \u2192')
+              )
+            ),
+            cq && cq.answered && h('div',{className:'p-3 rounded-xl text-sm font-bold mb-2 '+(cq.correct?'bg-emerald-50 text-emerald-700 border border-emerald-200':'bg-red-50 text-red-700 border border-red-200'),style:{animation:cq.correct?'calcCorrect 0.5s ease':'calcWrong 0.4s ease'}},
+              cq.correct?'\u2705 Correct! '+cq.answer:'\u274C Correct answer: '+cq.answer,
+              cq.correct && cStreak>=3 && h('span',{className:'ml-2 text-amber-600'},'\uD83D\uDD25 '+cStreak+'-streak!')
+            ),
+            cHint && h('div',{className:'bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2 text-xs text-amber-800',style:{animation:'calcFade 0.3s ease'}},h('span',{className:'font-bold'},'\uD83D\uDCA1 Explanation: '),cHint),
+            cq&&cq.answered&&cMode==='method'&&cq.errors&&h('div',{className:'mt-2 bg-slate-50 rounded-lg p-2 border'},
+              h('p',{className:'text-[11px] font-bold text-slate-600 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
+              h('div',{className:'grid grid-cols-5 gap-1 text-center'},['left','right','midpoint','trapezoid','simpson'].map(function(m){
+                return h('div',{key:m,className:'px-1 py-1 rounded text-[11px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-600 border')},
+                  h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[11px]'},cq.errors[m].toFixed(4)));
+              }))
+            )
+          ),
+
+          // ══════════════════════════════════════════════════════════════
+          // TAB: DISCOVER (Guided Missions)
+          // ══════════════════════════════════════════════════════════════
+          tab === 'discover' && h('div', { key: 'discover' },
+
+            h('p',{className:'text-xs text-slate-600 italic mb-3'},'Guided investigations \u2014 you measure, predict, and find the pattern. The tool is your calculator, not your teacher.'),
+
+            // Mission selector
+            h('div',{ className:'flex gap-2 mb-4 flex-wrap'},
+              ['\uD83D\uDD0D Error & n','\u26A1 Method Showdown','\uD83D\uDCCF Find the Rule','\uD83D\uDE97 Area as Distance'].map(function(label,i){
+                return h('button',{ key:i,onClick:function(){upd('missionIdx',i);upd('missionStep',0);upd('missionData',{});},className:'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+((d.missionIdx||0)===i?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},label);
+              })
+            ),
+
+            // ── MISSION 0: How does error change with n? ──────────────────
+            (d.missionIdx||0) === 0 && (function(){
+              var step = d.missionStep || 0;
+              var data = d.missionData || {};
+              var nextStep = function(){ upd('missionStep', step+1); };
+              var saveData = function(key, val){ upd('missionData', Object.assign({}, data, { [key]: val })); };
+
+              return h('div',{style:{animation:'calcFade 0.3s ease'}},
+                h('div',{ className:'bg-red-50 rounded-xl border border-red-200 p-4 mb-3'},
+                  h('p',{ id: 'err-stem_tool_calculus-724', role: 'alert',className:'text-xs font-bold text-red-600 uppercase tracking-wider mb-1'},'\uD83D\uDD0D Mission 1: The Error Halving Law'),
+                  h('p',{ id: 'err-stem_tool_calculus-725', role: 'alert',className:'text-xs text-red-800'},'Goal: Discover what happens to the error when you double the number of rectangles.'),
+                  h('div',{ role:'progressbar', 'aria-label':'Mission 1 progress', 'aria-valuemin':0, 'aria-valuemax':5, 'aria-valuenow':Math.min(step,5), 'aria-valuetext':'Step '+Math.min(step+1,5)+' of 5'},
+                    h('p',{className:'text-[10px] font-bold text-red-700 mb-1'},'Step '+Math.min(step+1,5)+' of 5'),
+                    h('div',{ className:'flex gap-1', 'aria-hidden':'true'},
+                      [0,1,2,3,4].map(function(i){
+                        return h('div',{ key:i,className:'flex-1 h-1.5 rounded-full '+(step>i?'bg-red-500':step===i?'bg-red-300':'bg-slate-200')});
+                      })
+                    )
+                  )
+                ),
+
+                // Step 0: Setup + first observation
+                step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Set up the investigation'),
+                  h('p',{className:'text-xs text-slate-600 mb-3'},'Click this preset to load f(x) = x\u00B2 with bounds [0,3] and left Riemann sums. Then switch to the Integral tab to see the graph.'),
+                  h('button',{ onClick:function(){
+                    setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:4,mode:'left',tab:'discover',predictMode:false,overUnderChecked:false})});});
+                    addToast('Loaded \u222B x\u00B2 [0,3] with n=4, Left Riemann','success');
+                    stemBeep&&stemBeep('click');
+                  },className:'px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-all mb-3'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=4'),
+                  h('p',{className:'text-xs text-slate-700 mb-2 font-bold'},'Now go to the Integral tab and find the error value for n=4. Come back and enter it below:'),
+                  h('div',{ className:'flex gap-2 items-center'},
+                    h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=4:'),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'',onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":"Got it",disabled:!data.err4,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
+                  )
+                ),
+
+                // Step 1: Double n, predict first
+                step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Make a prediction before looking'),
+                  h('p',{className:'text-xs text-slate-600 mb-2'},'You recorded error \u2248 '+(parseFloat(data.err4)||0).toFixed(4)+' at n=4. Now you will double n to 8.'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-3'},'Before changing the slider: predict the new error. Will it be:'),
+                  h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
+                    [['same','About the same'],['half','About half ('+((parseFloat(data.err4)||0)/2).toFixed(4)+')'],['quarter','About a quarter ('+((parseFloat(data.err4)||0)/4).toFixed(4)+')'],['smaller','Much smaller (near 0)']].map(function(item){
+                      return h('button',{ "aria-label": "Next Step",key:item[0],onClick:function(){saveData('prediction1',item[0]);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction1===item[0]?'bg-violet-600 text-white border-violet-600':'bg-white text-slate-600 border-slate-200 hover:border-violet-400')},item[1]);
+                    })
+                  ),
+                  data.prediction1 && h('button',{"aria-label":"Locked in  now measure",onClick:nextStep,className:'px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700'},'Locked in \u2014 now measure \u2192')
+                ),
+
+                // Step 2: Measure n=8
+                step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 Measure at n=8'),
+                  h('p',{className:'text-xs text-slate-600 mb-3'},'Go to the Integral tab, set n=8 (using the slider), and record the error:'),
+                  h('div',{ className:'flex gap-2 items-center mb-3'},
+                    h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=8:'),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'',onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":"Got it",disabled:!data.err8,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
+                  )
+                ),
+
+                // Step 3: Find the ratio + predict n=16
+                step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2463 Find the pattern'),
+                  (function(){
+                    var e4=parseFloat(data.err4)||1, e8=parseFloat(data.err8)||1;
+                    var ratio=(e4/e8).toFixed(2);
+                    return h('div',null,
+                      h('div',{ className:'bg-white rounded-lg border p-3 mb-3'},
+                        h('p',{className:'text-xs text-slate-600'},'Error at n=4: '+e4.toFixed(4)),
+                        h('p',{className:'text-xs text-slate-600'},'Error at n=8: '+e8.toFixed(4)),
+                        h('p',{className:'text-sm font-bold text-red-700 mt-1'},'Ratio: '+e4.toFixed(4)+' \u00F7 '+e8.toFixed(4)+' = '+ratio),
+                        h('p',{className:'text-xs text-slate-600 italic mt-1'},'When n doubled (4\u21928), error was divided by about '+ratio+'.')
+                      ),
+                      h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now predict: what will the error be at n=16? (Hint: apply the same ratio again)'),
+                      h('div',{ className:'flex gap-2 items-center'},
+                        h('span',{ className:'text-xs font-bold text-slate-600'},'Predicted error at n=16:'),
+                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                        h('button',{"aria-label":"Predict locked",disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Predict locked \u2192')
+                      )
+                    );
+                  })()
+                ),
+
+                // Step 4: Verify + conclude
+                step === 4 && h('div',{style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2464 Verify and conclude'),
+                  h('p',{className:'text-xs text-slate-600 mb-2'},'Set n=16 on the Integral tab and record the actual error. Then compare to your prediction.'),
+                  h('div',{className:'flex gap-2 items-center mb-3'},
+                    h('span',{className:'text-xs font-bold text-slate-600'},'Actual error at n=16:'),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err16||'','aria-label':'Error for n equals 16',onChange:function(e){saveData('err16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
+                  ),
+                  data.err16 && (function(){
+                    var pred=parseFloat(data.predictN16)||0, actual=parseFloat(data.err16)||0;
+                    var pctOff=pred!==0?Math.abs(pred-actual)/Math.abs(pred)*100:0;
+                    return h('div',{style:{animation:'calcFade 0.3s ease'}},
+                      h('div',{className:'bg-emerald-50 rounded-xl border border-emerald-200 p-3 mb-3'},
+                        h('p',{className:'text-sm font-bold text-emerald-700 mb-1'},'\uD83C\uDF89 '+(pctOff<10?'Excellent prediction! You nailed it!':pctOff<25?'Good prediction!':'Not bad \u2014 the pattern is approximately correct.')),
+                        h('p',{className:'text-xs text-emerald-800'},'Your prediction: '+pred.toFixed(4)+' \u00B7\u00B7\u00B7 Actual: '+actual.toFixed(4)+' \u00B7\u00B7\u00B7 '+pctOff.toFixed(0)+'% off')
+                      ),
+                      h('div',{className:'bg-slate-50 rounded-xl border p-3'},
+                        h('p',{className:'text-xs font-bold text-slate-700 uppercase tracking-wider mb-2'},'\uD83D\uDCCC The Big Idea'),
+                        h('p',{className:'text-xs text-slate-700 mb-1'},'For Left Riemann sums: when n doubles, the error is divided by approximately \u00B72 (halved).'),
+                        h('p',{className:'text-xs text-slate-700 mb-1'},'This means error \u221D 1/n \u2014 the error shrinks linearly with n.'),
+                        h('p',{className:'text-xs text-slate-700'},'Try the Trapezoid method: does it shrink faster? (Trapezoid error \u221D 1/n\u00B2 \u2014 it halves the error when n doubles, but halves \u2248 twice as fast overall!)'),
+                        h('p',{className:'text-xs font-bold text-red-600 mt-2'},"And Simpson's? Test it on your own!"),
+                        awardStemXP&&awardStemXP('calculus',15,'Mission 1 complete')
+                      )
+                    );
+                  })()
+                )
+              );
+            })(),
+
+            // ── MISSION 1: Method Showdown ────────────────────────────────
+            (d.missionIdx||0) === 1 && (function(){
+              var step = d.missionStep || 0;
+              var data = d.missionData || {};
+              var nextStep = function(){ upd('missionStep', step+1); };
+              var saveData = function(key,val){ upd('missionData', Object.assign({}, data, {[key]:val})); };
+              return h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                h('div',{ className:'bg-amber-50 rounded-xl border border-amber-200 p-4 mb-3'},
+                  h('p',{className:'text-xs font-bold text-amber-600 uppercase tracking-wider mb-1'},'\u26A1 Mission 2: Method Showdown'),
+                  h('p',{className:'text-xs text-amber-800'},'Goal: Discover which integration method is most accurate, and why.'),
+                  h('div',{ className:'flex gap-1 mt-2'},[0,1,2,3].map(function(i){return h('div',{key:i,className:'flex-1 h-1.5 rounded-full '+(step>i?'bg-amber-500':step===i?'bg-amber-300':'bg-slate-200')});}))
+                ),
+                step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Predict before you test'),
+                  h('button',{"aria-label":"Load f(x) = x [0,3], n=6",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:6,mode:'left',tab:'discover'})});});addToast('Loaded for Method Showdown','success');},className:'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=6'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'At n=6, which method do you predict will be MOST accurate?'),
+                  h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
+                    ['Left Riemann','Right Riemann','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
+                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('prediction',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction===m?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},m);
+                    })
+                  ),
+                  data.prediction && h('button',{"aria-label":"Prediction locked",onClick:nextStep,className:'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600'},'Prediction locked \u2192')
+                ),
+                step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Measure errors for all 5 methods'),
+                  h('p',{className:'text-xs text-slate-600 mb-3'},'Switch to the Challenge tab, select "Best Method" mode, click Start. The error comparison table appears after you answer. OR: go to Integral tab, try each mode, record errors.'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Which method had the SMALLEST error?'),
+                  h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
+                    ['Left','Right','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
+                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('measured',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.measured===m?'bg-emerald-700 text-white border-emerald-500':'bg-white text-slate-600 border-slate-200 hover:border-emerald-600')},m);
+                    })
+                  ),
+                  data.measured && h('button',{"aria-label":"Next",onClick:nextStep,className:'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600'},'Next \u2192')
+                ),
+                step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 Were you right?'),
+                  h('div',{ className:'bg-white rounded-lg border p-3 mb-3'},
+                    h('p',{className:'text-xs text-slate-600'},'You predicted: '+data.prediction),
+                    h('p',{className:'text-xs text-slate-600'},'Most accurate was: '+data.measured),
+                    h('p',{className:'text-sm font-bold '+(data.prediction===data.measured?'text-emerald-600':'text-slate-700')+' mt-1'},data.prediction===data.measured?'\u2705 You predicted correctly!':'\uD83D\uDCA1 The result might have surprised you.')
+                  ),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},"Why is Simpson's usually most accurate for polynomials?"),
+                  h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
+                    ['It uses parabolas — which fit polynomial curves better than flat-top rectangles','It uses the most rectangles','It averages left and right','It avoids the edges of the curve'].map(function(ans,i){
+                      return h('button',{ "aria-label": "Next Step",key:i,onClick:function(){saveData('why',i);},className:'px-2 py-2 rounded-lg text-xs text-left border-2 transition-all '+(data.why===i?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},ans);
+                    })
+                  ),
+                  data.why !== undefined && h('button',{"aria-label":"See answer",onClick:nextStep,className:'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600'},'See answer \u2192')
+                ),
+                step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2463 The Big Idea'),
+                  h('div',{className:'bg-amber-50 rounded-xl border border-amber-200 p-3'},
+                    h('p',{className:'text-sm font-bold text-amber-800 mb-2'},(data.why===0?'\u2705 Exactly right!':'\uD83D\uDCA1 The real reason:')+' Simpson\u2019s fits parabolic arcs to the curve.'),
+                    h('p',{className:'text-xs text-amber-800 mb-1'},"Since f(x) = x\u00B2 IS already a parabola, Simpson's rule fits it perfectly \u2014 giving zero error!"),
+                    h('p',{className:'text-xs text-amber-800 mb-1'},"In fact: Simpson's rule is EXACT for any polynomial of degree \u2264 3."),
+                    h('p',{className:'text-xs font-bold text-amber-900 mt-2'},"Test it: set Simpson's with n=2. Is the error 0? Now try n=4. What pattern do you see?"),
+                    awardStemXP&&awardStemXP('calculus',15,'Mission 2 complete')
+                  )
+                )
+              );
+            })(),
+
+            // ── MISSION 2: Find the Power Rule ───────────────────────────
+            (d.missionIdx||0) === 2 && (function(){
+              var step = d.missionStep || 0;
+              var data = d.missionData || {};
+              var nextStep = function(){ upd('missionStep', step+1); };
+              var saveData = function(key,val){ upd('missionData', Object.assign({}, data, {[key]:val})); };
+              return h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                h('div',{ className:'bg-violet-50 rounded-xl border border-violet-200 p-4 mb-3'},
+                  h('p',{className:'text-xs font-bold text-violet-600 uppercase tracking-wider mb-1'},'\uD83D\uDCCF Mission 3: Discover the Power Rule'),
+                  h('p',{className:'text-xs text-violet-800'},'Goal: By measuring slopes, you will discover f\u2032(x) = 2ax + b yourself \u2014 before being told.'),
+                  h('div',{ className:'flex gap-1 mt-2'},[0,1,2,3].map(function(i){return h('div',{key:i,className:'flex-1 h-1.5 rounded-full '+(step>i?'bg-violet-500':step===i?'bg-violet-300':'bg-slate-200')});}))
+                ),
+                step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Set up and measure'),
+                  h('button',{"aria-label":"Load f(x) = x, x=1",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:-1,xMax:4,n:20,mode:'left',x0:1,secantH:0.1,tab:'discover'})});});addToast('Loaded f(x) = x\u00B2','success');},className:'px-4 py-2 bg-violet-700 text-white rounded-lg text-xs font-bold hover:bg-violet-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2, x\u2080=1'),
+                  h('p',{className:'text-xs text-slate-600 mb-2'},'Go to the Derivative tab. Drag h close to 0. The slope shown is f\u2032(1). Record it:'),
+                  h('div',{ className:'space-y-2'},
+                    [['1','slope1'],['2','slope2'],['3','slope3']].map(function(item){
+                      return h('div',{ key:item[0],className:'flex gap-2 items-center'},
+                        h('span',{ className:'text-xs font-bold text-slate-600 w-24'},'f\u2032('+item[0]+') ='),
+                        h('input',{type:'number',step:'any',placeholder:'?',value:data[item[1]]||'',onChange:function(e){saveData(item[1],e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
+                      );
+                    })
+                  ),
+                  data.slope1 && data.slope2 && data.slope3 && h('button',{"aria-label":"Got all three",onClick:nextStep,className:'mt-3 px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700'},'Got all three \u2192')
+                ),
+                step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Spot the pattern'),
+                  h('div',{ className:'bg-white rounded-lg border p-3 mb-3'},
+                    ['1','2','3'].map(function(x,i){
+                      var key=['slope1','slope2','slope3'][i];
+                      return h('p',{key:x,className:'text-xs text-slate-700'},'f\u2032('+x+') = '+(data[key]||'?'));
+                    })
+                  ),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'What formula produces these values? f\u2032(x) = ___'),
+                  h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
+                    ['2x','x\u00B2','x + 1','x/2'].map(function(f){
+                      return h('button',{ "aria-label": "Next Step",key:f,onClick:function(){saveData('formulaGuess',f);},className:'px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all '+(data.formulaGuess===f?'bg-violet-600 text-white border-violet-600':'bg-white text-slate-600 border-slate-200 hover:border-violet-400')},f);
+                    })
+                  ),
+                  data.formulaGuess && h('button',{"aria-label":"Check answer",onClick:nextStep,className:'px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700'},'Check answer \u2192')
+                ),
+                step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 You found it!'),
+                  h('div',{ className:'bg-violet-50 rounded-xl border border-violet-200 p-3 mb-3'},
+                    h('p',{className:'text-sm font-bold text-violet-800 mb-1'},(data.formulaGuess==='2x'?'\u2705 Yes! f\u2032(x) = 2x.':'\uD83D\uDCA1 Actually: f\u2032(x) = 2x.')),
+                    h('p',{className:'text-xs text-violet-700 mb-1'},'For f(x) = x\u00B2: the derivative is 2x.'),
+                    h('p',{className:'text-xs text-violet-700'},'This is the Power Rule: d/dx[x\u207F] = n\u00B7x\u207F\u207B\u00B9. For n=2: d/dx[x\u00B2] = 2x\u00B9 = 2x.')
+                  ),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now change a=2 (f(x) = 2x\u00B2) on the Derivative tab. Measure f\u2032(1). What do you predict?'),
+                  h('div',{ className:'flex gap-2 items-center mb-3'},
+                    h('span',{ className:'text-xs font-bold'},'f\u2032(1) for 2x\u00B2:'),
+                    h('input',{type:'number',step:'any',placeholder:'?',value:data.slope2x||'',onChange:function(e){saveData('slope2x',e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":"Verify",disabled:!data.slope2x,onClick:nextStep,className:'px-3 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-violet-700'},'Verify \u2192')
+                  )
+                ),
+                step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
+                  h('div',{className:'bg-violet-50 rounded-xl border border-violet-200 p-3'},
+                    h('p',{className:'text-sm font-bold text-violet-800 mb-2'},'\uD83C\uDF89 The General Power Rule'),
+                    h('p',{className:'text-xs text-violet-800 mb-1'},'You measured: for f(x) = 2x\u00B2, f\u2032(1) \u2248 '+(data.slope2x||'?')+'. (Should be 4 = 2\u00D72\u00D71)'),
+                    h('p',{className:'text-xs text-violet-800 mb-1'},'General rule: d/dx[ax\u00B2 + bx + c] = 2ax + b'),
+                    h('p',{className:'text-xs text-violet-800 mb-2'},'The constant c vanishes because a horizontal line has zero slope.'),
+                    h('p',{className:'text-xs font-bold text-violet-900'},'Try: add b=3. What is f\u2032(0) now? What does f\u2032(0) equal in terms of b? (Answer: b itself!)'),
+                    awardStemXP&&awardStemXP('calculus',15,'Mission 3 complete')
+                  )
+                )
+              );
+            })(),
+
+            // ── MISSION 3: Area as Distance ───────────────────────────────
+            (d.missionIdx||0) === 3 && (function(){
+              var step = d.missionStep || 0;
+              var data = d.missionData || {};
+              var nextStep = function(){ upd('missionStep', step+1); };
+              var saveData = function(key,val){ upd('missionData', Object.assign({}, data, {[key]:val})); };
+              return h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                h('div',{ className:'bg-emerald-50 rounded-xl border border-emerald-200 p-4 mb-3'},
+                  h('p',{className:'text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1'},'\uD83D\uDE97 Mission 4: Area as Accumulated Distance'),
+                  h('p',{className:'text-xs text-emerald-800'},'Goal: Understand why the area under a velocity curve equals distance traveled.'),
+                  h('div',{ className:'flex gap-1 mt-2'},[0,1,2,3].map(function(i){return h('div',{key:i,className:'flex-1 h-1.5 rounded-full '+(step>i?'bg-emerald-500':step===i?'bg-emerald-300':'bg-slate-200')});}))
+                ),
+                step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 The setup'),
+                  h('p',{className:'text-xs text-slate-700 mb-2'},'A car starts from rest. Its velocity (in m/s) at time t seconds is:'),
+                  h('p',{className:'text-base font-black text-emerald-700 text-center mb-2'},'v(t) = 2t m/s'),
+                  h('p',{className:'text-xs text-slate-700 mb-3'},'The x-axis is time (seconds), the y-axis is velocity (m/s). The area under the velocity curve is the total distance traveled.'),
+                  h('button',{"aria-label":"Load v(t) = 2t, t  [0,3]",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:0,b:2,c:0,xMin:0,xMax:3,n:20,mode:'left',tab:'discover'})});});addToast('Loaded v(t) = 2t from t=0 to t=3','success');},className:'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 mb-3 block'},'\u25B6 Load v(t) = 2t, t \u2208 [0,3]'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Before computing: the velocity graph from t=0 to t=3 is a triangle. What is the area of this triangle?'),
+                  h('p',{className:'text-xs text-slate-600 mb-2'},'(Hint: Area of triangle = \u00BD \u00D7 base \u00D7 height. Base = 3, height = v(3) = 2\u00D73 = ?)'),
+                  h('div',{ className:'flex gap-2 items-center'},
+                    h('span',{ className:'text-xs font-bold'},'My triangle area:'),
+                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'',onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('span',{ className:'text-xs text-slate-600'},'meters'),
+                    h('button',{"aria-label":"Got it",disabled:!data.triangleArea,onClick:nextStep,className:'px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-600'},'Got it \u2192')
+                  )
+                ),
+                step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Verify with Riemann sums'),
+                  h('p',{className:'text-xs text-slate-600 mb-2'},'Go to the Integral tab. The exact value shown is the definite integral of v(t) = 2t from 0 to 3. What is it?'),
+                  h('div',{ className:'flex gap-2 items-center mb-3'},
+                    h('span',{ className:'text-xs font-bold'},'Integral value:'),
+                    h('input',{type:'number',step:'any',placeholder:'?',value:data.integralVal||'',onChange:function(e){saveData('integralVal',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":"Verify",disabled:!data.integralVal,onClick:nextStep,className:'px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-600'},'Verify \u2192')
+                  )
+                ),
+                step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
+                  h('div',{ className:'bg-emerald-50 rounded-xl border border-emerald-200 p-3 mb-3'},
+                    h('p',{className:'text-sm font-bold text-emerald-700 mb-2'},'\u2462 They match!'),
+                    h('p',{className:'text-xs text-emerald-800 mb-1'},'Triangle area: '+data.triangleArea+' m'),
+                    h('p',{className:'text-xs text-emerald-800 mb-1'},'Definite integral: '+data.integralVal+' m'),
+                    h('p',{className:'text-xs font-bold text-emerald-900 mt-2'},(Math.abs(parseFloat(data.triangleArea||9)-9)<0.5?'\u2705 Both give 9 meters! The car traveled 9 meters in 3 seconds.':'\uD83D\uDCA1 Both should give 9 m. Triangle: \u00BD\u00D73\u00D76 = 9. Check your triangle calculation!'))
+                  ),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Why does this work? Each thin rectangle has width \u0394t (time) and height v(t) (velocity). Area = v(t)\u00D7\u0394t = distance. Add them all up \u2192 total distance. This is exactly what integration does!'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Extension: change xMax to 5. How far does the car travel in 5 seconds? Predict first!'),
+                  h('div',{ className:'flex gap-2 items-center'},
+                    h('span',{ className:'text-xs font-bold'},'Distance in 5s (predicted):'),
+                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'',onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":"Test it",disabled:!data.predict5,onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{xMax:5,tab:'discover'})});});nextStep();},className:'px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-600'},'Test it \u2192')
+                  )
+                ),
+                step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
+                  h('div',{className:'bg-emerald-50 rounded-xl border border-emerald-200 p-3'},
+                    h('p',{className:'text-sm font-bold text-emerald-700 mb-2'},'\uD83C\uDF89 Mission Complete!'),
+                    h('p',{className:'text-xs text-emerald-800 mb-1'},'Distance in 5s = \u00BD\u00D75\u00D710 = 25 m. Did your prediction match?'),
+                    h('p',{className:'text-xs text-emerald-800 mb-2'},'The Fundamental Theorem of Calculus says: \u222B\u2080\u1D57 v(t) dt = position at time t \u2212 position at t=0.'),
+                    h('p',{className:'text-xs font-bold text-emerald-900'},"Real applications: physicists use this to calculate trajectories, economists to find accumulated profit, biologists to model population growth. The area under ANY rate curve gives the total accumulated quantity."),
+                    awardStemXP&&awardStemXP('calculus',20,'Mission 4 complete')
+                  )
+                )
+              );
+            })()
+
+          ), // end discover tab
+
+          // ══════════════════════════════════════════════════════════════
+          // TAB: VISUALIZE  (canvas-based pedagogical views)
+          // Pedagogy: show intuition BEFORE formulas.
+          // ══════════════════════════════════════════════════════════════
+          tab === 'visualize' && h('div', { key: 'visualize' },
+            (function() {
+              var vizView = d.vizView || 'zoom';
+              var vizFn   = d.vizFn   || 'quadratic';
+              var VIEWS = [
+                { id: 'zoom',    icon: '\uD83D\uDD0D', label: 'Zoom',          desc: 'Zoom to Linearity \u2014 what is a derivative? (Shift+1)' },
+                { id: 'tangent', icon: '\uD83D\uDCCD', label: 'Tangent',       desc: 'Tangent explorer \u2014 derivative as a function (Shift+2)' },
+                { id: 'motion',  icon: '\uD83D\uDE97', label: 'Motion',        desc: 'Position / Velocity / Acceleration (Shift+3)' },
+                { id: 'riemann', icon: '\uD83C\uDFAC', label: 'Riemann',       desc: 'Animated Riemann convergence (Shift+4)' },
+                { id: 'ftc',     icon: '\u2B50',       label: 'FTC',           desc: 'The Fundamental Theorem of Calculus (Shift+5)' },
+                { id: 'slope',   icon: '\uD83C\uDF0A', label: 'Slope Fields',  desc: 'Visualize ODEs without solving them (Shift+6)' },
+                { id: 'chain',   icon: '\u2699\uFE0F', label: 'Chain Rule',    desc: 'Meshed gears \u2014 rates multiply (Shift+7)' },
+                { id: 'taylor',  icon: '\u221E',       label: 'Taylor Series', desc: 'Build sin(x) term by term (Shift+8)' },
+                { id: 'optim',   icon: '\uD83D\uDCE6', label: 'Optimization',  desc: 'The cardboard box \u2014 maximize volume (Shift+9)' },
+                { id: 'related', icon: '\uD83D\uDCCF', label: 'Related Rates', desc: 'Sliding ladder \u2014 two rates linked by geometry (Shift+0)' },
+                { id: 'vor',     icon: '\uD83C\uDFAA', label: 'Vol. of Revolution', desc: 'Spin a curve \u2192 solid; stacked disks' },
+                { id: 'eps',     icon: '\uD83C\uDFAF', label: '\u03B5\u2013\u03B4 Game', desc: 'Formal limit: find the \u03B4 that traps f(x) inside \u03B5' }
+              ];
+              return h(React.Fragment, null,
+                // Header strip
+                h('div', { className: 'flex items-center gap-2 mb-2 text-xs text-slate-600' },
+                  h('span', { className: 'font-bold' }, 'Visualize'),
+                  h('span', { className: 'text-slate-400' }, '\u2022'),
+                  h('span', {}, 'See the ideas before you see the formulas'),
+                  h('span', { className: 'ml-auto px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full' }, 'LIVE CANVAS')
+                ),
+                // Sub-view selector
+                h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold mb-2', role: 'tablist', 'aria-label': 'Calculus visualization view' },
+                  VIEWS.map(function(v, vi) {
+                    var active = vizView === v.id;
+                    var btnAttrs = {
+                      key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                      onClick: function() { upd('vizView', v.id); },
+                      title: v.desc,
+                      className: 'px-3 py-1.5 rounded-lg border transition-all whitespace-nowrap ' + (active
+                        ? 'bg-red-500 border-red-600 text-white shadow-md'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-red-400')
+                    };
+                    // Only the first 10 views (zoom..related) have keyboard shortcuts wired:
+                    //   indices 0-8 → Shift+1..9, index 9 → Shift+0. vor + eps have no shortcut.
+                    if (vi < 9) btnAttrs['aria-keyshortcuts'] = 'Shift+' + (vi + 1);
+                    else if (vi === 9) btnAttrs['aria-keyshortcuts'] = 'Shift+0';
+                    return h('button', btnAttrs, v.icon + ' ' + v.label);
+                  })
+                ),
+                // Function picker (shown only for views that use it)
+                (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'riemann') &&
+                h('div', { className: 'flex gap-1 flex-wrap text-[11px] mb-2' },
+                  h('span', { className: 'text-slate-300 font-semibold self-center mr-1' }, 'f(x) ='),
+                  Object.keys(CALC_FUNCS).map(function(fid) {
+                    var active = vizFn === fid;
+                    return h('button', {
+                      key: fid,
+                      onClick: function() { upd('vizFn', fid); },
+                      className: 'px-2 py-1 rounded border font-mono font-bold transition-all ' + (active
+                        ? 'bg-indigo-500 border-indigo-600 text-white'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-400')
+                    }, CALC_FUNCS[fid].label);
+                  })
+                ),
+                // Canvas wrapper (fullscreen target)
+                h('div', {
+                  id: 'calc-viz-wrap',
+                  className: 'relative rounded-xl overflow-hidden border-2 border-indigo-300',
+                  style: { height: '380px', width: '100%', background: 'var(--allo-stem-canvas, #0f172a)' }
+                },
+                  h('canvas', {
+                    ref: _vizCvRef,
+                    role: 'img',
+                    'aria-label': 'Calculus visualization canvas: ' + (VIEWS.find(function(v){return v.id===vizView;}) || {}).desc,
+                    style: {
+                      width: '100%', height: '100%', display: 'block',
+                      cursor: (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') ? 'pointer' : 'default'
+                    }
+                  }),
+                  // Reset interaction button — shown only on interactive views
+                  (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') &&
+                  h('button', {
+                    onClick: function() {
+                      upd('vizUserInteracted', {});
+                      upd('vizSlopeSeeds', []);
+                    },
+                    title: 'Return to auto-animation',
+                    'aria-label': 'Reset interaction; resume auto-animation',
+                    className: 'absolute top-2 right-12 px-2 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-xs font-bold'
+                  }, '\u21BA auto'),
+                  h('button', {
+                    onClick: function() {
+                      var el = document.getElementById('calc-viz-wrap');
+                      if (!el) return;
+                      if (document.fullscreenElement) { document.exitFullscreen(); }
+                      else if (el.requestFullscreen) { el.requestFullscreen(); }
+                    },
+                    title: 'Toggle fullscreen',
+                    'aria-label': 'Toggle fullscreen',
+                    className: 'absolute top-2 right-2 w-8 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-sm font-bold'
+                  }, '\u26F6')
+                ),
+                // Per-view explainer strip
+                h('div', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' },
+                  vizView === 'zoom'    && 'Drag the zoom slider. Watch any smooth curve become a straight line up close. That local slope IS the derivative.',
+                  vizView === 'tangent' && 'Drag the x-marker below. As you scan, the tangent line swings; f\u2032(x) traces itself on the right panel.',
+                  vizView === 'motion'  && 'Drag the position curve. Velocity = slope; acceleration = slope of velocity. Three panels update live.',
+                  vizView === 'riemann' && 'Watch n grow from 1 \u2192 256. All four Riemann methods converge to the true area \u2014 but at different speeds.',
+                  vizView === 'ftc'     && 'THE payoff: drag x. Accumulated area A(x) is plotted on the right \u2014 its slope at every x is exactly f(x). That\u2019s the Fundamental Theorem.',
+                  vizView === 'slope'   && 'Each arrow is the slope dy/dx at that point. Click anywhere to drop a solution curve that flows along the field.',
+                  vizView === 'chain'   && 'Inner gear du/dx turns an outer gear df/du. Composed rate = product: df/dx = df/du \u00D7 du/dx.',
+                  vizView === 'taylor'  && 'A Taylor polynomial is an infinite sum of powers that reconstructs a function. Watch degree climb 0 \u2192 13.',
+                  vizView === 'optim'   && 'Cut squares of side x from each corner of a sheet. Volume V(x) peaks where V\u2032(x) = 0.',
+                  vizView === 'related' && "A ladder slides. Bottom moves at 2 ft/s; top\u2019s speed depends on where we are. Geometry links the rates.",
+                  vizView === 'vor'     && 'Spin f(x) around the x-axis. The disks stack into a solid. V = \u03C0 \u222B f(x)\u00B2 dx.',
+                  vizView === 'eps'     && "For every tolerance \u03B5, find a \u03B4 small enough that f(x) stays inside \u03B5 whenever x is within \u03B4 of x\u2080."
+                )
+              );
+            })()
+          ),
+
+          // === H7b'' inquiry widget: derivative behavior ===
+          tab === 'derivHunt' && (function() {
+            var iq = d.derivHunt || { a: 1, b: 0, c: 0, xPoint: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd({ derivHunt: Object.assign({}, iq, patch) }); }
+            var derivAtX = 2 * iq.a * iq.xPoint + iq.b;
+            var state;
+            if (Math.abs(derivAtX) < 0.1) state = 'extremum';
+            else if (derivAtX > 0 && iq.a > 0) state = 'increasingUp';
+            else if (derivAtX < 0 && iq.a > 0) state = 'decreasingUp';
+            else if (derivAtX > 0) state = 'increasingDown';
+            else state = 'decreasingDown';
+            var sm = {
+              extremum:        { label: '🎯 At extremum (slope ≈ 0)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+              increasingUp:    { label: '↗️ Increasing on opens-up parabola', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+              decreasingUp:    { label: '↘️ Decreasing on opens-up parabola', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+              increasingDown:  { label: '↗️ Increasing on opens-down', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+              decreasingDown:  { label: '↘️ Decreasing on opens-down', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+            }[state];
+            return h('div', { key: 'derivHunt' },
+              h('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
+                h('h3', { className: 'text-sm font-black text-violet-700' }, '📈 Derivative behavior discovery'),
+                h('p', { className: 'text-[12px] text-slate-700' }, 'Sliders for ax² + bx + c parabola coefficients and x-point. Discrete 5-state derivative behavior. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'f(x)=' + iq.a + 'x² + ' + iq.b + 'x + ' + iq.c + ',  f\'(' + iq.xPoint + ')=' + derivAtX.toFixed(2))
+                ),
+                h('div', { className: 'grid grid-cols-4 gap-3' },
+                  [{ k: 'a', l: 'a', mn: -3, mx: 3 }, { k: 'b', l: 'b', mn: -10, mx: 10 }, { k: 'c', l: 'c', mn: -10, mx: 10 }, { k: 'xPoint', l: 'x', mn: -10, mx: 10 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
+                      h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: 1, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.a, b: iq.b, c: iq.c, x: iq.xPoint, d: derivAtX.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ a: 1, b: 0, c: 0, xPoint: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At what x does f\'(x) = 0?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Vertex form: x = -b/(2a). Test at extremum.'),
+                    h('li', null, 'Why does a flip the increasing/decreasing pattern?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain derivative behavior at extrema.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state derivative marker; no slope score; no reveal — by design.')
+              )
+            );
+          })(),
+
+          // ── AI Calculus Tutor (reading-level aware) ──
+          (function () {
+            var aiLevel = d.aiLevel || 'grade5';
+            var aiText = d.aiExplain || '';
+            var aiLoading = !!d.aiLoading;
+            var aiError = d.aiError || '';
+            var LEVELS = [
+              { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
+              { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, with a concrete everyday example' },
+              { id: 'hs', label: 'AP Calc', hint: 'for an AP Calculus student, using proper calculus terminology' }
+            ];
+            function save(k, v) {
+              setLabToolData(function (prev) { return Object.assign({}, prev, { calculus: Object.assign({}, prev.calculus, (function(){var o={};o[k]=v;return o;})()) }); });
+            }
+            function explain() {
+              if (typeof callGemini !== 'function') { save('aiError', 'AI tutor not available.'); return; }
+              save('aiLoading', true); save('aiError', ''); save('aiExplain', '');
+              var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+              var fnStr = (d.a || 1) + 'x\u00B2 + ' + (d.b || 0) + 'x + ' + (d.c || 0);
+              var tabLabel = tab === 'integral' ? 'Integral (Riemann sums)' : tab === 'derivative' ? 'Derivative (slope)' : tab === 'challenge' ? 'Challenge' : 'Discover';
+              var prompt = 'Explain what this calculus tool is showing ' + lv.hint + '. '
+                + 'Current tab: ' + tabLabel + '. Function: f(x) = ' + fnStr + ' on [' + (d.xMin || 0) + ', ' + (d.xMax || 3) + '] with n=' + (d.n || 20) + ' ' + (mode || 'left') + ' rectangles. '
+                + 'In 3 short sentences: (1) What the student is computing. (2) Why this method works (intuition first). (3) One real-world place this shows up. '
+                + 'No markdown, no bullets, no headings. Plain prose.';
+              callGemini(prompt, false, false, 0.5).then(function (resp) {
+                save('aiExplain', String(resp || '').trim()); save('aiLoading', false);
+                if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+              }).catch(function () {
+                save('aiLoading', false); save('aiError', 'Could not reach AI tutor. Try again in a moment.');
+              });
+            }
+            return h('div', { className: 'mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50', role: 'region', },
+              h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
+                h('span', { className: 'text-sm font-bold text-purple-700' }, '\u2728 Explain at my level'),
+                h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                  LEVELS.map(function (L) {
+                    var active = aiLevel === L.id;
+                    return h('button', {
+                      key: L.id,
+                      onClick: function () { save('aiLevel', L.id); },
+                      'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                      'aria-pressed': active,
+                      className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
+                    }, L.label);
+                  })
+                ),
+                h('button', {
+                  onClick: explain,
+                  disabled: aiLoading,
+                  'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
+                  className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+              ),
+              aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
+              aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-300' }, 'Click \u201CExplain\u201D for the AI tutor to describe what you\u2019re computing right now.')
+            );
+          })()
+
+        );
+      })();
+    }
+  });
+
+  console.log('[StemLab] stem_tool_calculus.js loaded');
+})();

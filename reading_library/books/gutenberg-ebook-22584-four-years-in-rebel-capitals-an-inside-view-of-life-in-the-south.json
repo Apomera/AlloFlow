@@ -1,0 +1,54 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22584-four-years-in-rebel-capitals-an-inside-view-of-life-in-the-south",
+  "title": "Four Years in Rebel Capitals: An Inside View of Life in the Southern Confederacy from Birth to Death",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Confederate States of America",
+    "Southern States -- Description and travel",
+    "United States -- History -- Civil War, 1861-1865 -- Personal narratives, Confederate"
+  ],
+  "authors": [
+    "De Leon, T. C. (Thomas Cooper)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22584"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/22584/pg22584.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Four Years in Rebel Capitals: An Inside View of Life in the Southern Confederacy from Birth to Death\" by De Leon, T. C. (Thomas Cooper). Metadata tags include: Confederate States of America; Southern States -- Description and travel; United States -- History -- Civil War, 1861-1865 -- Personal narratives, Confederate."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 100
+  }
+}

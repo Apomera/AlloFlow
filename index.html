@@ -4,20 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlloFlow | The Local-First AI Classroom Assistant</title>
+    <title>AlloFlow | Open-Source AI Classroom Assistant</title>
     <meta name="description"
-        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, and clinical reporting. 85+ STEM simulations, 30+ SEL tools, Symbol Studio AAC boards, PDF accessibility remediation, and 126+ verified tests. Runs in Google Gemini Canvas or Firebase — no install required.">
+        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, and accessibility workflows. July 2026 audit: 111 STEM tool files / 116 registered STEM IDs, 70 SEL tools, Desktop local-first path, and optional School Box server stack.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://apomera.github.io/AlloFlow/">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AlloFlow">
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
-    <meta property="og:title" content="AlloFlow | Differentiation on Auto-Pilot">
+    <meta property="og:title" content="AlloFlow | Open-Source UDL and Accessibility Toolkit">
     <meta property="og:description"
-        content="The privacy-first AI platform with 85+ STEM simulations, 30+ SEL tools, AAC communication boards, clinical reporting, and PDF accessibility remediation — all free and open source.">
+        content="Free, open-source classroom AI with 111 STEM tool files / 116 registered STEM IDs, 70 SEL tools, AAC boards, clinical workflows, Desktop local-first options, and PDF accessibility remediation support.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="AlloFlow | Differentiation on Auto-Pilot">
+    <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/">
+    <meta property="twitter:title" content="AlloFlow | Open-Source UDL and Accessibility Toolkit">
+    <meta property="twitter:description" content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, Desktop local-first use, and accessibility supports.">
     <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser","description":"Open-source, privacy-first AI platform for differentiated instruction, AAC communication, clinical reporting, and STEM/SEL education. 85+ STEM simulations, 30+ SEL tools, Symbol Studio, and PDF accessibility remediation.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"School Psychologist"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
+    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser, Windows, macOS","description":"Open-source AI platform for differentiated instruction, AAC communication, clinical reporting, STEM/SEL education, local-first Desktop use, and PDF accessibility remediation support.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"School Psychologist"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
     </script>
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
@@ -83,27 +88,27 @@
                     <span
                         style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>
                     <span
-                        style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Gemini Canvas · Firebase Hosting · School Box (coming soon)</span>
+                        style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Gemini Canvas · AlloFlow Desktop · Optional School Box Server</span>
                 </div>
                 <h1
                     style="font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-0.02em">
-                    Differentiation on<br><span class="gradient-text">Auto-Pilot</span>
+                    Differentiation with<br><span class="gradient-text">Local Control</span>
                 </h1>
                 <p style="font-size:1.15rem;color:#64748b;max-width:600px;margin:0 auto 32px;line-height:1.7">
-                    The open-source AI engine that turns static curriculum into interactive games, leveled text, and
-                    quizzes
-                    — in seconds, not hours.
+                    Open-source classroom AI for differentiated materials, STEM/SEL activities, AAC supports,
+                    clinical workflows, and accessibility evidence. Run in Gemini Canvas, Firebase, or the local-first
+                    Desktop app; use School Box only when you need school-owned server infrastructure.
                 </p>
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
                     <button onclick="copyCanvasLink()" class="btn-primary" id="hero-copy-btn">
                         <i data-lucide="link" style="width:18px;height:18px"></i>
                         <span>Copy Canvas Link</span>
                     </button>
-                    <a href="https://github.com/Apomera/AlloFlow" class="btn-secondary" style="text-decoration:none">
-                        <i data-lucide="flame" style="width:18px;height:18px"></i> Firebase Deploy
+                    <a href="https://github.com/Apomera/AlloFlow/tree/main/desktop" class="btn-secondary" style="text-decoration:none">
+                        <i data-lucide="download" style="width:18px;height:18px"></i> Desktop Setup
                     </a>
-                    <a href="https://github.com/Apomera/AlloFlow" class="btn-secondary" style="text-decoration:none">
-                        <i data-lucide="server" style="width:18px;height:18px"></i> School Box (Coming Soon)
+                    <a href="https://github.com/Apomera/AlloFlow/blob/main/docker/README.md" class="btn-secondary" style="text-decoration:none">
+                        <i data-lucide="server" style="width:18px;height:18px"></i> Optional School Box
                     </a>
                 </div>
                 <div style="margin:20px auto 0;position:relative;display:inline-block">
@@ -122,7 +127,7 @@
                 </div>
                 <p
                     style="font-size:0.65rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;font-weight:600">
-                    Optimized for Google Chrome & Microsoft Edge on Desktop
+                    Web path works best in Chrome or Edge; Desktop provides the local-first runtime.
                 </p>
             </div>
         </header>
@@ -131,20 +136,20 @@
         <div class="section reveal" style="padding:20px 24px 60px;background:#fff;border-top:1px solid #e2e8f0">
             <div class="stats-row">
                 <div class="stat-item">
-                    <div class="stat-number" data-target="115" data-suffix="+">0</div>
-                    <div class="stat-label">Interactive Tools</div>
+                    <div class="stat-number" data-target="720" data-suffix="+">0</div>
+                    <div class="stat-label">Documented Features</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-target="100" data-suffix="+">0</div>
-                    <div class="stat-label">Languages</div>
+                    <div class="stat-number" data-target="116">0</div>
+                    <div class="stat-label">Registered STEM IDs</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-prefix="$" data-target="0">$0</div>
-                    <div class="stat-label">Software Cost</div>
+                    <div class="stat-number" data-target="70">0</div>
+                    <div class="stat-label">SEL Tools</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-text="K-12">K-12</div>
-                    <div class="stat-label">Grade Range</div>
+                    <div class="stat-number" data-target="63">0</div>
+                    <div class="stat-label">Language Pack Files</div>
                 </div>
             </div>
         </div>
@@ -319,8 +324,8 @@
                                 <span style="font-weight:700;font-size:0.95rem;color:#1e293b">Multilingual
                                     Learners</span>
                             </div>
-                            <p style="font-size:0.8rem;color:#64748b;line-height:1.5">Supporting ELLs with native
-                                language generation, bilingual scaffolds, and 100+ language translations — not
+                            <p style="font-size:0.8rem;color:#64748b;line-height:1.5">Supporting multilingual learners
+                                with mirrored language packs, bilingual scaffolds, and AI-assisted translation workflows — not
                                 just Google Translate overlays.</p>
                         </div>
                     </div>
@@ -360,7 +365,7 @@
             <div class="section-inner">
                 <div class="section-header">
                     <h2>Three Pathways. One Mission.</h2>
-                    <p>Run instantly in Gemini Canvas — deploy to Firebase for your district — or go fully offline with the School Box for absolute data sovereignty (coming soon, in collaboration with <a href="https://physher.com" target="_blank" style="color:var(--indigo)">Tyler Despain of Physher</a>).</p>
+                    <p>Run instantly in Gemini Canvas, deploy a district-controlled Firebase site, or use AlloFlow Desktop for local files, local providers, and same-room Desktop LAN sessions. The Docker School Box stack is an optional server/appliance path for schools that need district-owned infrastructure.</p>
                 </div>
                 <div class="grid-3">
                     <div style="text-align:center">
@@ -368,7 +373,7 @@
                             style="width:80px;height:80px;background:#fff;border:4px solid #eef2ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--indigo);font-family:'Outfit'">
                             1</div>
                         <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Choose Your Path</h3>
-                        <p style="font-size:0.85rem;color:#64748b"><strong>Cloud:</strong> Paste the Canvas link. <strong>Firebase:</strong> Deploy to Google Hosting. <strong>Local:</strong> Run <code>docker-compose up</code>.</p>
+                        <p style="font-size:0.85rem;color:#64748b"><strong>Cloud:</strong> Paste the Canvas link. <strong>Firebase:</strong> Deploy static hosting. <strong>Desktop:</strong> run the local-first app. <strong>Server:</strong> use Docker only for optional School Box infrastructure.</p>
                     </div>
                     <div style="text-align:center">
                         <div
@@ -1057,10 +1062,10 @@
                                     <h3
                                         style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text;">
                                         Local-First Architecture</h3>
-                                    <p>AlloFlow is built on a <strong>Local-First Monolith architecture</strong>.
-                                        While lesson generation requires internet access, exported HTML bundles
-                                        guarantee that students receive offline study resources with the
-                                        <strong>exact same</strong> pedagogical support as any connected classroom.
+                                    <p>AlloFlow is built around a <strong>local-first app shell</strong>.
+                                        While AI generation usually requires a provider connection, exported project
+                                        and HTML bundles can preserve many study resources for offline or low-connectivity
+                                        use after the materials are created.
                                     </p>
 
                                     <div class="info-box" style="border-left: 4px solid #10b981;">
@@ -1312,9 +1317,8 @@
                                         <span class="stat-number" style="color:#c084fc;">6+</span>
                                         <span class="stat-label">output formats from one standard</span>
                                     </div>
-                                    <p>One size never fits all. AlloFlow uses a <strong>Structural JSON
-                                            Extractor</strong> to guarantee
-                                        that raw standards data can be visualized into vastly different UIs—gamified
+                                    <p>One size never fits all. AlloFlow uses structured content representations so
+                                        source material can be reviewed and rendered into different UIs—gamified
                                         adventures, interactive quizzes, printable worksheets, and more.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #a855f7;">
@@ -1656,19 +1660,20 @@
                             <!-- Slide 6: Data Privacy -->
                             <div class="slide">
                                 <div class="slide-content">
-                                    <div class="slide-tag">FERPA Compliance</div>
+                                    <div class="slide-tag">FERPA-Aligned Data Paths</div>
                                     <h3
                                         style="background: linear-gradient(135deg, #14b8a6, #2dd4bf); -webkit-background-clip: text; background-clip: text;">
-                                        Absolute Data Privacy</h3>
+                                        Privacy-Minimizing Architecture</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(45,212,191,0.08)); border: 1px solid rgba(20,184,166,0.3);">
                                         <span class="stat-number" style="color:#2dd4bf;">0</span>
-                                        <span class="stat-label">student PII transmitted to external servers</span>
+                                        <span class="stat-label">student PII required by default</span>
                                     </div>
                                     <p>Student data should never be collected, sold, or stored on corporate servers.
-                                        AlloFlow solves
-                                        data privacy by eliminating backend databases entirely—there is
-                                        <strong>no server to breach</strong>.
+                                        AlloFlow reduces data exposure by keeping ordinary work in the browser,
+                                        downloaded files, Desktop runtime, or school-controlled infrastructure whenever
+                                        those paths are selected. Cloud AI and hosted live-session paths remain
+                                        deployment-dependent.
                                     </p>
 
                                     <div class="info-box" style="border-left: 4px solid #14b8a6;">
@@ -1679,10 +1684,10 @@
                                             context.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #2dd4bf;">
-                                        <div class="info-title">FERPA & COPPA by Design</div>
-                                        <div class="info-desc">Because no student data ever leaves the device, AlloFlow
-                                            is inherently compliant with FERPA, COPPA, and state-level student privacy
-                                            laws—no vendor agreements needed.</div>
+                                        <div class="info-title">FERPA/COPPA Support Depends on Deployment</div>
+                                        <div class="info-desc">AlloFlow can support FERPA-aligned school-controlled
+                                            deployments, but final compliance depends on district configuration,
+                                            contracts, retention policy, and actual classroom use.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #0d9488;">
                                         <div class="info-title">🔐 Zero-Knowledge Architecture</div>
@@ -1814,8 +1819,8 @@
                                     </div>
                                     <p>Response to Intervention (RTI) thrives when families are involved, but high-tier
                                         educational software is usually gatekept by district licensing fees.
-                                        AlloFlow breaks this barrier with <strong>free, identical access</strong> for
-                                        every family—in <strong>100+ languages</strong>.</p>
+                                        AlloFlow lowers this barrier with <strong>free software access</strong> for
+                                        families, 63 mirrored language-pack files, and AI-assisted content translation.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #ef4444;">
                                         <div class="info-title">💰 The $0 Software Extension</div>
@@ -1839,8 +1844,8 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; background-clip: text;">100+</span>
-                                            <span class="stat-label">Languages supported</span>
+                                                style="background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; background-clip: text;">63</span>
+                                            <span class="stat-label">mirrored language-pack files</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08);">
@@ -1925,17 +1930,17 @@
                                         <path d="M 305 200 L 220 235" stroke="#475569" stroke-width="1.5"
                                             stroke-dasharray="4" />
 
-                                        <!-- 100+ Languages Globe Badge -->
+                                        <!-- Language-pack globe badge -->
                                         <circle cx="350" cy="35" r="22" fill="#1e1b4b" stroke="#f87171"
                                             stroke-width="1.5" />
                                         <text x="350" y="32" font-size="14" text-anchor="middle">🌍</text>
                                         <text x="350" y="46" font-size="7" fill="#f87171" text-anchor="middle"
-                                            font-weight="bold">100+</text>
+                                            font-weight="bold">63</text>
 
                                         <!-- Bottom label -->
                                         <text x="200" y="285" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">Same Student → Same Lesson → Two Settings → 100+
-                                            Languages</text>
+                                            font-family="Inter">Same Student → Same Lesson → Two Settings → Reviewed
+                                            Language Packs</text>
                                     </svg>
                                 </div>
                             </div>
@@ -1966,7 +1971,7 @@
                                     <div class="info-box" style="border-left: 4px solid #059669;">
                                         <div class="info-title">🐠 Immersive Simulations</div>
                                         <div class="info-desc">Explore a virtual aquarium with 30+ AI-driven species,
-                                            a 3D anatomy viewer covering 100+ organs and body systems, a neuroscience
+                                            a human anatomy explorer with 129 structures across 10 body systems, a neuroscience
                                             atlas with 30+ brain regions, a pharmacology lab with 20+ neurotransmitter pathways,
                                             and a geology collection with 30+ mineral specimens.</div>
                                     </div>
@@ -2070,7 +2075,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="295" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">40+ Simulations → 5 Disciplines → Zero Install → Browser
+                                            font-family="Inter">116 STEM IDs → Browser Tools → Desktop-Ready
                                             Native</text>
                                     </svg>
                                 </div>
@@ -2670,16 +2675,16 @@
                                     <div class="slide-tag">Multilingual</div>
                                     <h3
                                         style="background: linear-gradient(135deg, #ec4899, #f472b6); -webkit-background-clip: text; background-clip: text;">
-                                        100+ Language Support</h3>
+                                        63 Language-Pack Files</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(244,114,182,0.08)); border: 1px solid rgba(236,72,153,0.3);">
-                                        <span class="stat-number" style="color:#f472b6;">100+</span>
-                                        <span class="stat-label">languages with instant UI translation</span>
+                                        <span class="stat-number" style="color:#f472b6;">63</span>
+                                        <span class="stat-label">mirrored language-pack files</span>
                                     </div>
-                                    <p>Multilingual Learners deserve tools in their home language.
-                                        AlloFlow's <strong>automatic translation engine</strong> converts the
-                                        entire interface — buttons, labels, instructions, and generated
-                                        content — into 100+ languages with one click.</p>
+                                    <p>Multilingual learners deserve tools in their home language.
+                                        AlloFlow mirrors UI keys across the current language-pack files and supports
+                                        AI-assisted content translation. Native review is still important for
+                                        institution-facing use.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #ec4899;">
                                         <div class="info-title">🌐 Full UI Translation</div>
@@ -2789,7 +2794,7 @@
                                             text-anchor="middle">ANY</text>
 
                                         <text x="200" y="290" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">One Click → Full UI + Content → 100+ Languages</text>
+                                            font-family="Inter">Pack Mirror → AI Translation → Native Review</text>
                                     </svg>
                                 </div>
                             </div>
@@ -3352,7 +3357,7 @@
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(96,165,250,0.08)); border: 1px solid rgba(37,99,235,0.3);">
                                         <span class="stat-number" style="color:#60a5fa;">WCAG 2.1</span>
-                                        <span class="stat-label">AA accessibility compliance</span>
+                                        <span class="stat-label">AA-oriented accessibility evidence</span>
                                     </div>
                                     <p>Built-in <strong>Immersive Reader</strong> with Dyslexia-friendly fonts,
                                         line focus masks, syllable splitting, grammar color-coding, and
@@ -3649,7 +3654,7 @@
                                     </div>
                                     <p>The <strong>Teacher Dashboard</strong> provides real-time class analytics,
                                         individual learner profiles, and RTI/MTSS progress monitoring — all
-                                        stored locally with no cloud dependency. Track growth, set goals,
+                                        stored locally when using local-first paths. Track growth, set goals,
                                         and export IEP documentation.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #d97706;">
@@ -3663,7 +3668,7 @@
                                         <div class="info-title">👤 Individual Learner Profiles</div>
                                         <div class="info-desc">Drill into each student's journey: quiz scores,
                                             fluency rates, phonics mastery, and XP progression. Data-driven
-                                            insights without any cloud storage or privacy concerns.</div>
+                                            insights with reduced cloud persistence when configured for local use.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fde68a;">
                                         <div class="info-title">📈 RTI/MTSS Progress Monitoring</div>
@@ -4445,23 +4450,22 @@
                                         <span class="stat-number" style="color:#fbbf24;">$0/yr</span>
                                         <span class="stat-label">AI costs after hardware</span>
                                     </div>
-                                    <p>AlloFlow supports <strong>model-agnostic AI backends</strong>. The School Box
-                                        air-gapped deployment is currently in development with collaborator <a href="https://physher.com" target="_blank" style="color:#fbbf24;text-decoration:underline">Tyler Despain of Physher</a> —
-                                        designed to run the entire platform on a single school workstation with zero cloud dependency.</p>
+                                    <p>AlloFlow supports <strong>model-agnostic AI backends</strong>. AlloFlow Desktop is
+                                        the normal local-first teacher-laptop path. The Docker School Box stack is optional
+                                        server/appliance infrastructure for schools that need district-owned local services.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #f59e0b;">
-                                        <div class="info-title">🐳 Docker "School Box" Deploy</div>
+                                        <div class="info-title">🐳 Optional Docker School Box</div>
                                         <div class="info-desc"><code
                                                 style="color:#fbbf24;background:#1e293b;padding:2px 6px;border-radius:4px">docker compose up -d</code>
-                                            launches Ollama
-                                            (text AI), Flux (image generation), Piper (text-to-speech), and SearXNG
-                                            (web search) — all running locally on your network.</div>
+                                            launches local services such as PocketBase, Ollama, Piper / Edge TTS, SearXNG,
+                                            Nginx, and optional Flux image generation when GPU hardware is available.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #fbbf24;">
-                                        <div class="info-title">🔒 Total Data Sovereignty</div>
-                                        <div class="info-desc">Every AI call — text generation, image creation,
-                                            voice synthesis — happens on-premises. Student data never touches external
-                                            servers. FERPA compliance by architecture, not policy.</div>
+                                        <div class="info-title">🔒 School-Controlled Infrastructure</div>
+                                        <div class="info-desc">When configured for local providers, AI and data services
+                                            can run on school-controlled hardware. FERPA posture still depends on district
+                                            policy, contracts, retention, and configuration.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #d97706;">
                                         <div class="info-title">🔌 Pluggable Backends</div>
@@ -4662,7 +4666,7 @@
                         'Engagement — Multi-Modal Workflows',
                         'Science of Reading — Phonemic Precision',
                         'Scaffolding — Interactive Tour Engine',
-                        'FERPA Compliance — Absolute Data Privacy',
+                        'Privacy — FERPA-Aligned Data Paths',
                         'Community — Empowering Families',
                         'Clinical — BehaviorLens Suite',
                     'Clinical — Report Writer',
@@ -4670,7 +4674,7 @@
                     'STEM & Science — Interactive STEM Lab',
                         'Developer Ecosystem — Modular Architecture',
                         'Gamification — Adventure Mode',
-                        'Multilingual — 100+ Language Support',
+                        'Multilingual — 63 Language-Pack Files',
                         'Engagement — Interactive Game Modes',
                         'Computer Science — Gemini Coding Bridge',
                         'RTI Monitoring — Oral Fluency Coach',
@@ -4770,7 +4774,7 @@
             <div class="section-inner">
                 <div class="section-header">
                     <h2>Universal Design for Learning</h2>
-                    <p>700+ features organized by UDL Principle. <a href="features.html"
+                    <p>720+ documented features organized by UDL Principle. <a href="features.html"
                             style="color:var(--indigo);font-weight:700">See all features →</a></p>
                 </div>
                 <div class="grid-3">
@@ -4857,7 +4861,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#10b981">
                             <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">40+ interactive simulations including an aquarium (30+ species), 3D anatomy viewer (100+ organs), galaxy explorer, coding playground, chemistry lab, and more — all browser-native.
+                        <p style="font-size:0.85rem;color:#475569">111 STEM tool files / 116 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
                         </p>
                     </div>
                     <div class="card">
@@ -4872,10 +4876,10 @@
                     <div class="card">
                         <div
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#db2777">
-                            <i data-lucide="globe" style="width:18px;height:18px"></i> 100+ Languages
+                            <i data-lucide="globe" style="width:18px;height:18px"></i> 63 Language-Pack Files
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">Full UI and content translation in 100+
-                            languages with bilingual side-by-side view — one click switches everything instantly.
+                        <p style="font-size:0.85rem;color:#475569">UI keys are mirrored across the current language
+                            pack files, with bilingual views and AI-assisted content translation where configured.
                         </p>
                     </div>
                     <div class="card">
@@ -4884,7 +4888,7 @@
                             <i data-lucide="accessibility" style="width:18px;height:18px"></i> Immersive Reader
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Dyslexia fonts, line focus masks, syllable
-                            splitting, and grammar color-coding — WCAG 2.1 AA accessible for every learner.
+                            splitting, and grammar color-coding, with WCAG-oriented design and published audit/VPAT evidence.
                         </p>
                     </div>
                     <div class="card">
@@ -4901,8 +4905,8 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#d97706">
                             <i data-lucide="bar-chart-3" style="width:18px;height:18px"></i> Teacher Dashboard
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">Real-time class analytics, RTI tier tracking, and
-                            individual learner profiles — all stored locally with IEP-ready report export.
+                        <p style="font-size:0.85rem;color:#475569">Class analytics, RTI tier tracking, and learner profiles
+                            support local-first storage paths and exportable evidence for school review.
                         </p>
                     </div>
                     <div class="card">
@@ -4935,7 +4939,7 @@
                 </div>
                 <div style="text-align:center;margin-top:36px">
                     <a href="features.html" class="btn-primary" style="background:var(--slate-900)"><i
-                            data-lucide="layout-grid" style="width:18px;height:18px"></i> View All 700+ Features</a>
+                            data-lucide="layout-grid" style="width:18px;height:18px"></i> View All 720+ Features</a>
                 </div>
             </div>
         </section>
@@ -5115,7 +5119,8 @@
                             Canvas, AlloFlow piggybacks entirely on your district's existing <strong>Google Workspace
                                 for
                                 Education</strong> security agreements. API calls happen directly through Google's
-                            infrastructure, ensuring your school's FERPA and COPPA compliance remains intact.</p>
+                            infrastructure; privacy obligations still depend on your district's Google Workspace
+                            configuration, contracts, retention settings, and actual use.</p>
                     </div>
                 </div>
                 <div
@@ -5159,7 +5164,7 @@
             <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>An open-source project for educators. Not affiliated with Google.</p>
-            <p>School Box deployment in collaboration with <a href="https://physher.com" target="_blank" style="color:#818cf8">Tyler Despain of Physher</a>.</p>
+            <p>AlloFlow Desktop is the primary local-first path; School Box remains optional school-owned server infrastructure.</p>
             <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
             <div class="footer-links">
                 <a href="features.html">Features</a>

@@ -13,7 +13,13 @@ function EducatorHubModal(props) {
     handleFileUpload, openExportPreview, pdfAuditResult, pdfFixLoading, pdfFixResult,
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
-    setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, showEducatorHub, t,
+    setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    // Video Studio launcher (2026-07-02): companion-window screen recorder/editor.
+    // Optional default so legacy hosts that haven't wired the setter still render.
+    setIsVideoStudioOpen = (() => {}),
+    // AlloStudio launcher (2026-07-02): flyer/worksheet/poster editor with
+    // born-accessible exports + process provenance (docs/studio_design.md).
+    setIsAlloStudioOpen = (() => {}),
     // Phase A.3 polish (May 12 2026): renamed from setPdfBatchFiles (which was
     // never defined in host scope). The real host setter is setPdfBatchQueue,
     // matching the batch-files array shape stored in `pdfBatchQueue` state.
@@ -26,7 +32,39 @@ function EducatorHubModal(props) {
     // hasn't wired the STEM-Lab setters still renders the rest of the hub.
     setShowStemLab = (() => {}),
     setStemLabTool = (() => {}),
+    // Lesson-builder card (2026-06-13): opens the AlloBot guided lesson flow. The host
+    // passes a closure mirroring startLessonFlow({}) (show bot + trigger Auto-Fill).
+    // Optional default so legacy hosts that don't pass it still render the hub.
+    startLessonFlow = (() => {}),
+    // Family Bridge launcher (2026-06-28): opens the live-translation panel so the
+    // bridge feature is reachable from the hub, not only the History sidebar tab.
+    // Optional default so a host that hasn't wired the setter still renders the hub.
+    setBridgeSendOpen = (() => {}),
+    // Whiteboard launcher (2026-07-06): the host owns window.open now so it can
+    // retain the popup handle for two-way postMessage (Save-to-resources + future
+    // AI assist). Optional default so a host that hasn't wired it still renders.
+    openWhiteboard = (() => {}),
   } = props;
+  const dialogRef = React.useRef(null);
+  React.useEffect(function () {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); setShowEducatorHub(false); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+  }, [setShowEducatorHub]);
 
   // ── Platform Check (2026-06-12) ──
   // The app's primary surface is the Gemini Canvas sandboxed iframe, where
@@ -142,8 +180,12 @@ function EducatorHubModal(props) {
   const _probeReportText = () => !platProbe ? '' : ('AlloFlow Platform Check — ' + platProbe.when + '\n' + (typeof navigator !== 'undefined' ? navigator.userAgent : '') + '\n\n' + platProbe.rows.map((r) => '[' + r.status.toUpperCase() + '] ' + r.name + ' — ' + r.detail).join('\n'));
 
   return (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
-          <div data-help-key="educator_hub_modal_panel" className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} onClick={() => setShowEducatorHub(false)}>
+          {/* allo-docsuite: portal modal rendered OUTSIDE the .allo-docsuite content wrapper,
+              so the theme-dark gradient/text remaps never reached its pastel cards. Opting into
+              the scope class inherits the existing dark remap (from-*-50 -> dark, text -> light).
+              No-op in light mode (all .allo-docsuite rules are .theme-dark / .theme-contrast). */}
+          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
@@ -152,6 +194,9 @@ function EducatorHubModal(props) {
               <button onClick={() => setShowEducatorHub(false)} className="p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Bridge card removed 2026-07-02 (Aaron): the header Bridge button is the
+                  single entry point now. setBridgeSendOpen prop stays accepted (unused)
+                  so hosts that still pass it render unchanged. */}
               <button data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🧠</span>
                 <div>
@@ -166,6 +211,24 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms'}</p>
                 </div>
               </button>
+              {/* Cinematic Studio card removed 2026-07-02 (Aaron): it now lives INSIDE
+                  Video Studio as the "NotebookLM / AI-video tools" entry — one video
+                  card instead of two confusing ones. setShowCinematicStudio prop stays
+                  accepted (unused) so hosts that still pass it render unchanged. */}
+              <button data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🎥</span>
+                <div>
+                  <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
+                  <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export video demos — plus prompt tools for NotebookLM and other AI video generators'}</p>
+                </div>
+              </button>
+              <button data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🎨</span>
+                <div>
+                  <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'AlloStudio'}</h3>
+                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Design flyers, worksheets, and posters that export born-accessible (tagged PDF, real reading order, enforced alt text) — with a process timeline that shows what was made by hand vs. AI'}</p>
+                </div>
+              </button>
               <button data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🎨</span>
                 <div>
@@ -173,11 +236,29 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing'}</p>
                 </div>
               </button>
+              {/* Whiteboard (2026-07-06): a freehand sketch/diagram canvas (Excalidraw, MIT)
+                  in its own window — the escape-hatch popup pattern, so it works inside the
+                  Gemini Canvas sandbox. A general, cross-subject "multiple means of
+                  expression" tool, so it lives here in the Educator Hub, not the STEM grid. */}
+              <button data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">✏️</span>
+                <div>
+                  <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
+                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.whiteboard_desc') || 'A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking — with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export.'}</p>
+                </div>
+              </button>
               <button data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🔬</span>
                 <div>
                   <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
                   <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
+                </div>
+              </button>
+              <button data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🪄</span>
+                <div>
+                  <h3 className="font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</h3>
+                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.lesson_builder_desc') || "I'll ask you a few questions and build a differentiated lesson with you, step by step."}</p>
                 </div>
               </button>
               <button data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
@@ -263,6 +344,16 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</h3>
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons from the AlloFlow community, or submit your own for review'}</p>
+                </div>
+              </button>
+              {/* Professional Development (2026-06-19): opens the Community Catalog modal straight to
+                  its PD tab via a one-shot intent flag the catalog module reads itself — so this reuses
+                  the existing setIsCommunityCatalogOpen prop and needs no new host wiring. */}
+              <button data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.graduation_emoji_aria') || 'graduation cap'}>🎓</span>
+                <div>
+                  <h3 className="font-bold text-sky-800">{t('educator_hub.professional_dev_title') || 'Professional Development'}</h3>
+                  <p className="text-xs text-sky-700 mt-1">{t('educator_hub.professional_dev_desc') || 'Short, self-paced PD modules — learn, take a knowledge check, and download a completion record'}</p>
                 </div>
               </button>
               {/* Demoted to a quiet footer row (maintainer feedback 2026-06-10:

@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-25699-the-battle-of-new-orleans-including-the-previous-engagements-bet",
+  "title": "The Battle of New Orleans: including the Previous Engagements between the Americans; and the British, the Indians and the Spanish which led to; the Final Conflict on the 8th of January, 1815",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "New Orleans, Battle of, New Orleans, La., 1815"
+  ],
+  "authors": [
+    "Smith, Z. F. (Zachariah Frederick)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/25699"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/25699/pg25699.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Battle of New Orleans: including the Previous Engagements between the Americans; and the British, the Indians and the Spanish which led to; the Final Conflict on the 8th of January, 1815\" by Smith, Z. F. (Zachariah Frederick). Metadata tags include: New Orleans, Battle of, New Orleans, La., 1815."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 99
+  }
+}

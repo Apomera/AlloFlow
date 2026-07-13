@@ -48,8 +48,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 
   window.StemLab.registerTool('behaviorLab', {
-    icon: 'ðŸ”¬',
-    label: 'behaviorLab',
+    icon: "🐭",
+    label: "Behavior Lab",
     desc: '',
     color: 'slate',
     category: 'science',
@@ -306,7 +306,7 @@ var d = labToolData || {};
             { name: 'B.F. Skinner', year: '1904-1990', contribution: 'Developed operant conditioning and the Skinner box. Identified reinforcement schedules (FR, VR, FI, VI). Most influential behavioral psychologist ever.', icon: '\uD83D\uDC2D', field: 'Operant Conditioning' },
             { name: 'Albert Bandura', year: '1925-2021', contribution: 'Social learning theory and the Bobo doll experiment. Showed learning occurs through observation (modeling), not just direct reinforcement. Self-efficacy theory.', icon: '\uD83E\uDDD1', field: 'Social Learning' },
             { name: 'Baer, Wolf & Risley', year: '1968', contribution: 'Published the founding article of Applied Behavior Analysis (ABA). Defined ABA as applied, behavioral, analytic, technological, conceptually systematic, effective, and generalizable.', icon: '\uD83D\uDCDA', field: 'Applied Behavior Analysis' },
-            { name: 'O. Ivar Lovaas', year: '1927-2010', contribution: 'Pioneered the use of ABA for autism intervention. His 1987 study showed 47% of children receiving intensive ABA achieved normal functioning.', icon: '\u2764', field: 'Autism Intervention' },
+            { name: 'O. Ivar Lovaas', year: '1927-2010', contribution: 'Pioneered the use of ABA for autism intervention. His influential 1987 study reported 47% of children reaching "normal functioning" — a contested result (small, non-random sample; not replicated at that rate).', icon: '\u2764', field: 'Autism Intervention' },
             { name: 'Murray Sidman', year: '1923-2019', contribution: 'Developed stimulus equivalence theory and the coercion framework. Advocated for reinforcement over punishment in all applications.', icon: '\u2696', field: 'Stimulus Equivalence' }
           ];
 

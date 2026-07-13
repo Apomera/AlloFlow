@@ -2,8 +2,8 @@
  * AlloFlow — Teacher History Tab Module
  *
  * Roster-groups strip in the teacher-mode sidebar's History tab. Shows
- * colored group pills, a "Differentiate by Group" CTA, and Manage Roster /
- * Bridge Mode quick-action buttons.
+ * colored group pills, a "Differentiate by Group" CTA, and a Manage Roster
+ * quick-action button. (Bridge moved to a header button for discoverability.)
  *
  * Extracted from AlloFlowANTI.txt lines 21320-21367 (May 2026).
  *
@@ -11,7 +11,6 @@
  *   handleApplyRosterGroup — fires when a group pill is clicked
  *   hasSourceOrAnalysis    — gate for the Differentiate CTA
  *   rosterKey              — { groups: {gid: {name, color, profile}} }
- *   setBridgeSendOpen      — opens Bridge Mode modal
  *   setIsRosterKeyOpen     — opens roster management modal
  *   t                      — translation function
  *
@@ -26,7 +25,6 @@ function TeacherHistoryTab({
   handleApplyRosterGroup,
   hasSourceOrAnalysis,
   rosterKey,
-  setBridgeSendOpen,
   setIsRosterKeyOpen,
   setShowBatchConfig,
   t,
@@ -46,9 +44,7 @@ function TeacherHistoryTab({
           <ClipboardList size={16} /> {t('roster.strip_title') || 'Class Groups'}
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={() => setBridgeSendOpen(true)} className="p-1.5 rounded-md hover:bg-teal-100 text-teal-600" title={t('roster.bridge_mode_btn') || '🌐 Bridge Mode'} aria-label={t('roster.bridge_mode_btn') || 'Bridge Mode'} data-help-key="bridge_mode_button">
-            🌐
-          </button>
+          {/* Bridge moved to a header button (🌐 Bridge) for discoverability — removed here to avoid redundancy. */}
           <button onClick={() => setIsRosterKeyOpen(true)} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('roster.title') || 'Manage Roster'} aria-label={t('roster.title')} data-help-key="roster_manage_button">
             <Settings size={14} />
           </button>

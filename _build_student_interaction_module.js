@@ -40,7 +40,7 @@ const source = fs.readFileSync(SOURCE, 'utf-8');
 const entry = `
 /* global React, useState, useEffect, useRef, useCallback, useMemo, useContext */
 /* global LanguageContext, useFocusTrap, safeGetItem, safeSetItem, warnLog */
-/* global ArrowRight, BookOpen, CheckSquare, Download, History, Lock, MapIcon, Quote, RefreshCw, Send, Star, Trophy */
+/* global ArrowRight, BookOpen, CheckSquare, Download, History, Lock, MapIcon, Quote, RefreshCw, Send, Star, Trophy, X */
 
 ${source}
 
@@ -132,6 +132,7 @@ const outputCode = `/**
   var Send = _icons.Send || function() { return null; };
   var Star = _icons.Star || function() { return null; };
   var Trophy = _icons.Trophy || function() { return null; };
+  var X = _icons.X || window.X || function() { return null; };
 
   // ═══════════════════════════════════════════════════════════════
   // STUDENT INTERACTION COMPONENTS (JSX pre-transformed by esbuild)

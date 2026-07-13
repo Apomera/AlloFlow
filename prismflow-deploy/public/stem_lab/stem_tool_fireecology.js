@@ -64,6 +64,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     document.head.appendChild(fireStyle);
   }
 
+  // Scoped workspace styling for the Fire Ecology learning routes.
+  if (!document.getElementById('fire-ecology-workspace-css')) {
+    var fireWorkspaceStyle = document.createElement('style');
+    fireWorkspaceStyle.id = 'fire-ecology-workspace-css';
+    fireWorkspaceStyle.textContent = [
+      '.fireecology-tool-shell{--fe-ember:#ea580c;--fe-text:var(--allo-stem-text,#e2e8f0);--fe-muted:var(--allo-stem-text-soft,#94a3b8);--fe-surface:var(--allo-stem-canvas,#0f172a);--fe-panel:var(--allo-stem-panel,#1e293b);--fe-border:var(--allo-stem-border,#334155);max-width:1120px;margin:0 auto;color:var(--fe-text);}',
+      '.fireecology-tool-shell *{box-sizing:border-box;}',
+      '.fireecology-tool-shell button,.fireecology-tool-shell input,.fireecology-tool-shell textarea,.fireecology-tool-shell select{font:inherit;}',
+      '.fireecology-tool-shell button:focus-visible,.fireecology-tool-shell input:focus-visible,.fireecology-tool-shell textarea:focus-visible,.fireecology-tool-shell select:focus-visible,.fireecology-tool-shell summary:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
+      '.fireecology-command{position:relative;overflow:hidden;border:1px solid rgba(249,115,22,.42);border-radius:18px;padding:18px;background:radial-gradient(circle at 88% 10%,rgba(249,115,22,.22),transparent 34%),linear-gradient(135deg,rgba(67,20,7,.96),rgba(15,23,42,.98));box-shadow:0 18px 42px rgba(15,23,42,.22);margin-bottom:14px;}',
+      '.fireecology-command-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
+      '.fireecology-command-title{display:flex;align-items:flex-start;gap:12px;min-width:0;}',
+      '.fireecology-back{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;min-width:42px;border:1px solid rgba(255,255,255,.2)!important;border-radius:12px!important;background:rgba(255,255,255,.08)!important;color:#fff!important;}',
+      '.fireecology-eyebrow{margin:0 0 4px;color:#fdba74;font-size:11px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;}',
+      '.fireecology-command h2{margin:0;color:#fff;font-size:clamp(20px,3vw,29px);line-height:1.12;}',
+      '.fireecology-command-copy{max-width:720px;margin:8px 0 0;color:#fed7aa;font-size:13px;line-height:1.55;}',
+      '.fireecology-command-icon{font-size:38px;line-height:1;filter:drop-shadow(0 7px 15px rgba(249,115,22,.35));}',
+      '.fireecology-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px;}',
+      '.fireecology-metric{min-width:0;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;background:rgba(15,23,42,.58);}',
+      '.fireecology-metric-label{display:block;color:#fdba74;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}',
+      '.fireecology-metric-value{display:block;margin-top:3px;color:#fff;font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.fireecology-route-board{border:1px solid var(--fe-border);border-radius:16px;padding:14px;background:linear-gradient(180deg,var(--fe-surface),var(--fe-panel));box-shadow:0 12px 30px rgba(15,23,42,.12);margin-bottom:14px;}',
+      '.fireecology-route-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:11px;}',
+      '.fireecology-route-heading h3{margin:0;color:var(--fe-text);font-size:15px;}',
+      '.fireecology-route-heading p{margin:3px 0 0;color:var(--fe-muted);font-size:11px;line-height:1.4;}',
+      '.fireecology-route-step{flex:0 0 auto;border-radius:999px;padding:5px 9px;background:rgba(249,115,22,.12);color:#fb923c;font-size:10px;font-weight:900;}',
+      '.fireecology-route-groups{display:grid;grid-template-columns:1.05fr 1.35fr .8fr;gap:10px;}',
+      '.fireecology-route-group{min-width:0;border:1px solid var(--fe-border);border-radius:12px;padding:10px;background:var(--fe-surface);}',
+      '.fireecology-route-group-label{display:flex;align-items:center;gap:7px;margin:0 0 8px;color:var(--fe-muted);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}',
+      '.fireecology-route-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}',
+      '.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:1fr;}',
+      '.fireecology-route-tab{display:flex;align-items:center;gap:8px;min-width:0;min-height:46px;padding:8px 10px;border:1px solid transparent;border-radius:10px;cursor:pointer;background:var(--fe-panel);color:var(--fe-muted);text-align:left;transition:border-color .18s,background .18s,transform .18s;}',
+      '.fireecology-route-tab:hover{border-color:rgba(249,115,22,.45);transform:translateY(-1px);}',
+      '.fireecology-route-tab[aria-selected="true"]{border-color:#fb923c;background:linear-gradient(135deg,rgba(194,65,12,.96),rgba(154,52,18,.96));color:#fff;box-shadow:0 8px 18px rgba(154,52,18,.22);}',
+      '.fireecology-route-icon{font-size:18px;line-height:1;}',
+      '.fireecology-route-label{min-width:0;font-size:11px;font-weight:800;line-height:1.25;}',
+      '.fireecology-active-band{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;border:1px solid var(--active-accent);border-left-width:4px;border-radius:12px;padding:12px 14px;background:linear-gradient(135deg,var(--active-soft),transparent);margin-top:12px;}',
+      '.fireecology-active-band-icon{font-size:28px;}',
+      '.fireecology-active-band h3{margin:0;color:var(--active-accent);font-size:15px;}',
+      '.fireecology-active-band p{margin:3px 0 0;color:var(--fe-text);font-size:11px;line-height:1.5;}',
+      '.fireecology-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;}',
+      '.fireecology-context details{border:1px solid var(--fe-border);border-radius:12px;background:var(--fe-surface);}',
+      '.fireecology-context summary{cursor:pointer;padding:11px 13px;color:var(--fe-text);font-size:12px;font-weight:800;}',
+      '.fireecology-context details>div{padding:0 13px 13px;color:var(--fe-muted);font-size:12px;line-height:1.55;}',
+      '.fireecology-tab-panel{min-width:0;}',
+      '.fireecology-fact,.fireecology-badges{min-width:0;}',
+      '@media (max-width:860px){.fireecology-route-groups{grid-template-columns:1fr;}.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:repeat(2,minmax(0,1fr));}.fireecology-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:620px){.fireecology-context{grid-template-columns:1fr;}}',
+      '@media (max-width:560px){.fireecology-tool-shell{padding:0 2px;}.fireecology-command{padding:14px;border-radius:14px;}.fireecology-command-top{gap:8px;}.fireecology-command-icon{display:none;}.fireecology-back{width:40px;height:40px;min-width:40px;}.fireecology-command-copy{font-size:12px;}.fireecology-route-board{padding:10px;}.fireecology-route-heading{align-items:flex-start;}.fireecology-route-step{display:none;}.fireecology-route-list,.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:1fr;}.fireecology-route-tab{min-height:44px;}.fireecology-active-band{align-items:flex-start;}.fireecology-metrics{gap:6px;}.fireecology-metric{padding:8px 9px;}.fireecology-metric-value{font-size:13px;}}',
+      '@media (prefers-reduced-motion:reduce){.fireecology-route-tab{transition:none!important;}.fireecology-route-tab:hover{transform:none;}}',
+      '.theme-contrast .fireecology-command,.theme-contrast .fireecology-route-board,.theme-contrast .fireecology-route-group{box-shadow:none;}',
+      '.theme-contrast .fireecology-route-tab[aria-selected="true"]{outline:2px solid currentColor;outline-offset:2px;}'
+    ].join('\n');
+    document.head.appendChild(fireWorkspaceStyle);
+  }
+
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
     var g = parseInt(ctx.gradeLevel, 10);
@@ -75,8 +131,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
   var getGradeIntro = function(band) {
     if (band === 'k2') return 'Welcome! Some forests NEED fire to stay healthy. Let\u2019s learn how fire helps nature grow!';
-    if (band === 'g35') return 'For thousands of years, Indigenous peoples have used fire to care for the land. Explore how cultural burning keeps forests healthy and prevents wildfires.';
-    if (band === 'g68') return 'Investigate fire ecology \u2014 how fire shapes ecosystems, why Indigenous fire stewardship outperforms suppression, and how to plan a prescribed burn using weather, fuel, and terrain data.';
+    if (band === 'g35') return 'For thousands of years, Indigenous peoples have used fire to care for the land. Explore how cultural burning can support ecosystem goals and reduce some wildfire hazards.';
+    if (band === 'g68') return 'Investigate fire ecology \u2014 how fire shapes ecosystems, how Indigenous fire stewardship differs from blanket suppression, and how to plan a prescribed burn using weather, fuel, and terrain data.';
     return 'Analyze fire regime ecology, Indigenous land management systems spanning 65,000+ years, prescribed burn modeling with fuel moisture calculations, and the policy failures of total fire suppression.';
   };
 
@@ -255,13 +311,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     }
   }
 
-  // ── Badge definitions (14 total) ──
+  // ── Badge definitions (23 total) ──
   var BADGES = [
     { id: 'firstBurn', icon: '\uD83D\uDD25', label: 'First Cultural Burn', desc: 'Complete your first prescribed burn' },
     { id: 'firekeeper', icon: '\uD83E\uDEF6', label: 'Firekeeper', desc: 'Successfully manage 5 cultural burns' },
     { id: 'indigenousScholar', icon: '\uD83C\uDF0D', label: 'Indigenous Scholar', desc: 'Study fire practices from 8 different nations' },
     { id: 'ecologyExplorer', icon: '\uD83C\uDF32', label: 'Ecology Explorer', desc: 'Explore all 6 fire-adapted ecosystems' },
-    { id: 'burnPlanner', icon: '\uD83D\uDCCB', label: 'Burn Planner', desc: 'Create a safe prescribed burn plan' },
+    { id: 'burnPlanner', icon: '\uD83D\uDCCB', label: 'Burn Planner', desc: 'Complete the classroom burn-condition comparison' },
     { id: 'successionWatcher', icon: '\uD83C\uDF31', label: 'Succession Watcher', desc: 'Observe 50 years of forest succession' },
     { id: 'quizMaster', icon: '\uD83C\uDFC6', label: 'Fire Quiz Master', desc: 'Answer 8 quiz questions correctly' },
     { id: 'aiScholar', icon: '\uD83E\uDD16', label: 'AI Fire Scholar', desc: 'Use the AI tutor 3 times' },
@@ -377,7 +433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       years: '7,000+',
       practice: 'Pine Savanna / Understory Burning',
       description: 'The longleaf pine ecosystem \u2014 once the largest ecosystem in North America, stretching 90 million acres from Virginia to Texas \u2014 was maintained by Indigenous fire. Cherokee, Creek, Muscogee, and Seminole peoples burned the understory of longleaf pine forests every 1-3 years. This created open, park-like savannas with rich ground-cover plants including blueberries, wild strawberries, and medicinal herbs.',
-      science: 'Longleaf pine is a fire-dependent species with remarkable adaptations. Seedlings spend 5-7 years in a \u201Cgrass stage,\u201D looking like a clump of grass, with a thick root storing energy. When the root is large enough, the seedling \u201Cbolts\u201D upward 3-6 feet in a single season, racing its growing tip above fire height. Mature longleaf bark is 2-3 inches thick and nearly fireproof. Without fire, shade-tolerant oaks and sweetgum overtop longleaf seedlings, killing them. Only 3% of the original longleaf ecosystem remains.',
+      science: 'Longleaf pine is a fire-dependent species with remarkable adaptations. Seedlings spend 5-7 years in a \u201Cgrass stage,\u201D looking like a clump of grass, with a thick root storing energy. When the root is large enough, the seedling \u201Cbolts\u201D upward 3-6 feet in a single season, racing its growing tip above fire height. Mature longleaf bark can be 2-3 inches thick and is highly fire resistant. Without fire, shade-tolerant oaks and sweetgum overtop longleaf seedlings, killing them. Only 3% of the original longleaf ecosystem remains.',
       keyPractices: [
         'Annual to triennial understory burns during dormant season (winter)',
         'Maintain open savanna structure for wild fruit, tuber, and herb harvest',
@@ -655,11 +711,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       id: 'fireTriangle',
       name: 'The Fire Triangle',
       icon: '\u25B3',
-      description: 'Every fire requires three elements: heat (ignition source), fuel (organic material), and oxygen. Remove any one element and the fire goes out. Indigenous fire practitioners manipulate all three: choosing ignition timing (heat), managing fuel loads through regular burning (fuel), and burning when humidity/moisture reduces oxygen availability.',
+      description: 'Every fire requires three elements: heat (ignition source), fuel (organic material), and oxygen. Remove any one element and the fire goes out. Indigenous fire practitioners manipulate all three: choosing ignition timing (heat), managing fuel loads through regular burning (fuel), and burning in calm air to limit oxygen and spread (oxygen). High humidity also keeps a burn gentle — but by dampening the fuel, not by removing oxygen.',
       elements: [
         { name: 'Heat', icon: '\uD83C\uDF21\uFE0F', desc: 'Ignition temperature for wood is ~300\u00B0C (572\u00B0F). Indigenous practitioners use wind, slope, and time of day to control fire intensity.' },
         { name: 'Fuel', icon: '\uD83C\uDF3F', desc: 'Dead leaves, branches, grass, and woody debris. Fuel moisture content determines if fire will carry. Regular cultural burning keeps fuel loads LOW.' },
-        { name: 'Oxygen', icon: '\uD83D\uDCA8', desc: 'Wind provides oxygen and drives fire spread. Burning in calm conditions or when humidity is high (early morning, after light rain) keeps fire intensity low.' }
+        { name: 'Oxygen', icon: '\uD83D\uDCA8', desc: 'Wind supplies oxygen and drives fire spread, so burning in calm air keeps intensity low. (High humidity also lowers intensity \u2014 but by raising fuel moisture, not by changing oxygen.)' }
       ]
     },
     {
@@ -669,7 +725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       description: 'Fire behaves differently depending on where it burns in the forest structure. Understanding these types is key to both Indigenous fire management and modern prescribed burning.',
       elements: [
         { name: 'Ground Fire', icon: '\uD83E\uDEA8', desc: 'Smolders in organic soil layers (duff, peat). Very slow, hard to detect, can burn for weeks. Used by Amazonian peoples to create biochar.' },
-        { name: 'Surface Fire', icon: '\uD83C\uDF42', desc: 'Burns leaf litter and small fuels on the forest floor. LOW intensity. This is the type used in cultural burning \u2014 gentle enough that animals can walk away and trees survive.' },
+        { name: 'Surface Fire', icon: '\uD83C\uDF42', desc: 'Burns leaf litter and small fuels on the forest floor. LOW intensity. This is the type used in cultural burning \u2014 whose lower intensity can allow many mobile animals to move away and some mature trees to survive, depending on conditions.' },
         { name: 'Crown Fire', icon: '\uD83C\uDF32', desc: 'Burns through tree canopies. HIGH intensity, often lethal. Crown fires occur when fuel ladders (understory buildup from fire suppression) allow surface fire to climb into the canopy.' }
       ]
     },
@@ -677,21 +733,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       id: 'fuelMoisture',
       name: 'Fuel Moisture & Fire Weather',
       icon: '\uD83D\uDCA7',
-      description: 'Fuel moisture content is the single most important factor in fire behavior. Indigenous practitioners have always understood this \u2014 choosing to burn when moisture levels allow controlled, low-intensity fire.',
+      description: 'Fuel moisture is one major influence on fire behavior, alongside fuel type and arrangement, weather, topography, and ignition pattern. Skilled practitioners interpret these factors together in a specific place.',
       elements: [
         { name: '1-Hour Fuels', icon: '\uD83C\uDF43', desc: 'Fine twigs < 0.25 inches. Respond to weather within 1 hour. Dry out fastest. Primary carrier of surface fire in cultural burns.' },
         { name: '10-Hour Fuels', icon: '\uD83E\uDEB5', desc: 'Branches 0.25-1 inch. Take ~10 hours to adjust moisture. Important for sustained burning.' },
         { name: '100-Hour Fuels', icon: '\uD83E\uDE9A', desc: 'Branches 1-3 inches. Heavy fuels that burn only in dry conditions. Cultural burning rarely consumes these.' },
-        { name: '1000-Hour Fuels', icon: '\uD83C\uDF33', desc: 'Logs > 3 inches. Only burn in severe drought. When these ignite, fire is too intense to control \u2014 this is wildfire territory.' }
+        { name: '1000-Hour Fuels', icon: '\uD83C\uDF33', desc: 'Logs > 3 inches. Respond slowly to changing weather and may remain moist longer than fine fuels. When dry enough to ignite, they can sustain heat and complicate control.' }
       ]
     },
     {
       id: 'succession',
       name: 'Post-Fire Succession',
       icon: '\uD83C\uDF31',
-      description: 'After fire, ecosystems recover in predictable stages. Indigenous fire practitioners understood and managed these stages to maximize biodiversity and food production.',
+      description: 'Post-fire change is often described in stages, but pathways vary with ecosystem, burn severity, climate, soils, surviving organisms, and later disturbance. Indigenous practitioners use place-based knowledge to steward these responses.',
       elements: [
-        { name: 'Stage 1: Pioneer (0\u20132 years)', icon: '\uD83C\uDF3E', desc: 'Fireweed, grasses, and annual wildflowers colonize bare ground. Soil fungi (morels!) fruit. Highest plant diversity.' },
+        { name: 'Stage 1: Pioneer (0\u20132 years)', icon: '\uD83C\uDF3E', desc: 'Fireweed, grasses, and annual wildflowers may colonize exposed ground, and some fungi fruit. Early-seral plant diversity can be high.' },
         { name: 'Stage 2: Shrub (3\u201310 years)', icon: '\uD83C\uDF3F', desc: 'Shrubs (huckleberry, ceanothus, hazel) establish. Berry production peaks. Deer and elk browse heavily.' },
         { name: 'Stage 3: Young Forest (10\u201350 years)', icon: '\uD83C\uDF32', desc: 'Trees overtop shrubs. Canopy begins to close. Shade-intolerant species decline. Berry production drops.' },
         { name: 'Stage 4: Mature Forest (50\u2013200+ years)', icon: '\uD83C\uDF33', desc: 'Closed canopy. Deep shade eliminates understory diversity. Fuel accumulates. Without fire, this stage is \u201Cstuck\u201D and vulnerable to catastrophic wildfire.' }
@@ -751,7 +807,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
   var QUIZ_QUESTIONS = [
     { q: 'How long have Aboriginal Australians used fire to manage the landscape?', choices: ['500 years', '5,000 years', '65,000+ years', '200 years'], answer: 2 },
     { q: 'What is a \u201Cserotinous\u201D cone?', choices: ['A cone that opens in water', 'A cone sealed with resin that opens only with fire heat', 'A cone that is poisonous', 'A cone that grows underground'], answer: 1 },
-    { q: 'What happens when fire is completely suppressed in a forest for 50+ years?', choices: ['The forest becomes healthier', 'Fuel accumulates, making catastrophic wildfire inevitable', 'Trees grow faster', 'Animals thrive'], answer: 1 },
+    { q: 'What can decades of fire exclusion contribute to in some fire-adapted forests?', choices: ['Every forest becomes healthier', 'Fuel and ladder buildup that can increase potential fire severity under conducive conditions', 'All trees grow faster', 'Every animal population increases'], answer: 1 },
     { q: 'What is \u201Cterra preta\u201D?', choices: ['A type of volcanic rock', 'Extremely fertile dark soil created by Indigenous Amazonian peoples using fire and charcoal', 'A fire-resistant tree species', 'A Spanish word for fire'], answer: 1 },
     { q: 'The longleaf pine savanna once covered 90 million acres. What percentage remains today?', choices: ['50%', '25%', '3%', '75%'], answer: 2 },
     { q: 'Why did Plains Nations burn the prairie?', choices: ['To destroy enemy camps', 'To attract bison to nutritious new grass growth', 'To create charcoal', 'To signal for rain'], answer: 1 },
@@ -978,7 +1034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     '\u2744\uFE0F The S\u00E1mi people of northern Scandinavia burned boreal forest to grow reindeer lichen \u2014 connecting fire management to one of Europe\u2019s last nomadic pastoral traditions.',
     '\uD83E\uDD97 The black-backed woodpecker depends ENTIRELY on recently burned forest. It can detect fires from 50+ miles away and flies toward them to colonize newly burned trees.',
     '\uD83C\uDF3A California fire poppies can remain dormant in soil for over 50 years, waiting for the smoke signal to germinate. When they do, entire hillsides turn orange overnight.',
-    '\uD83D\uDCCA The US fire suppression budget has grown from $1 billion/year in 2000 to over $4 billion/year \u2014 and fire seasons have only gotten worse. Suppression doesn\u2019t work.',
+    '\uD83D\uDCCA The US fire suppression budget has grown from $1 billion/year in 2000 to over $4 billion/year \u2014 while damaging fire seasons remain a major challenge. Suppression alone cannot address fuels, climate, land-use patterns, and community exposure.',
     '\uD83C\uDF3F The gopher tortoise\u2019s 40-foot-deep burrows provide fire refugia for over 350 other species, including indigo snakes, burrowing owls, and gopher frogs.',
     '\uD83C\uDF0D Martu women in the Western Desert of Australia use fire as a hunting tool. Research shows their burning increases biodiversity by 70% compared to unmanaged lands.',
     '\u26AB Biochar (charcoal) in soil sequesters carbon for 1,000-4,000+ years AND improves soil fertility. Indigenous Amazonian fire management was both agriculture AND climate engineering.'
@@ -1001,8 +1057,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { q: 'What is \u201Cepicormic sprouting\u201D?', choices: ['Seeds germinating after fire', 'Dormant buds beneath bark that sprout new growth after fire kills the canopy', 'A type of fire spread', 'Mushrooms growing after rain'], answer: 1 },
     { q: 'Cultural burning protects watersheds by:', choices: ['Building dams', 'Keeping trees alive so roots stabilize soil and prevent debris flows', 'Adding chemicals to streams', 'Increasing snowpack'], answer: 1 },
     { q: 'In the 2018 Camp Fire, the town of Paradise was destroyed in:', choices: ['3 days', 'Less than 4 hours', '2 weeks', '1 month'], answer: 1 },
-    { q: 'What is the \u201Cfuel debt\u201D?', choices: ['Money owed for firefighting', 'The accumulated fuel load from decades of fire suppression that makes catastrophic wildfire inevitable', 'The cost of prescribed burns', 'A tax on logging'], answer: 1 },
-    { q: 'How do beaver dams help during wildfire?', choices: ['Beavers fight fires', 'Beaver ponds create fireproof wetland refugia where vegetation stays green', 'Beavers warn other animals', 'They don\u2019t help at all'], answer: 1 },
+    { q: 'What does the teaching term \u201Cfuel debt\u201D describe?', choices: ['Money owed for firefighting', 'Fuel accumulated during fire exclusion that may contribute to more severe fire behavior', 'The cost of prescribed burns', 'A tax on logging'], answer: 1 },
+    { q: 'How do beaver dams help during wildfire?', choices: ['Beavers fight fires', 'Beaver ponds can create wetter refugia that sometimes burn less severely than surrounding areas', 'Beavers warn other animals', 'They don\u2019t help at all'], answer: 1 },
     { q: 'Emily Fairfax\u2019s satellite research showed that during wildfire, beaver-dammed areas:', choices: ['Burned faster than surrounding land', 'Stayed green and acted as fire refugia for wildlife', 'Dried up completely', 'Were abandoned by all animals'], answer: 1 },
     { q: 'The fur trade\u2019s near-elimination of beavers across North America:', choices: ['Had no ecological effect', 'Drained millions of acres of wetlands, increasing wildfire vulnerability', 'Made forests healthier', 'Increased beaver populations'], answer: 1 },
     { q: 'What is a Beaver Dam Analog (BDA)?', choices: ['A computer model of beaver behavior', 'A human-built structure that mimics a beaver dam to restore wetlands in fire-prone areas', 'A type of fire extinguisher', 'A beaver-shaped robot'], answer: 1 }
@@ -1014,12 +1070,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
   var BEAVER_FIRE = {
     title: 'Nature\u2019s Firefighters: How Beavers Protect Landscapes from Wildfire',
-    intro: 'The North American beaver (Castor canadensis) is increasingly recognized as one of the most important allies in wildfire resilience. Beaver dams create wetlands that act as fireproof refugia, store water that sustains landscapes through drought, and slow post-fire debris flows. Indigenous peoples across North America managed beaver populations as part of their holistic land stewardship \u2014 and the fur trade\u2019s near-elimination of beavers is directly linked to increased wildfire vulnerability.',
+    intro: 'The North American beaver (Castor canadensis) is increasingly recognized as one of the most important allies in wildfire resilience. Beaver dams create wetlands that can act as comparatively fire-resistant refugia, store water that may sustain surrounding vegetation through drought, and slow post-fire debris flows. Indigenous peoples across North America managed beaver populations as part of their holistic land stewardship \u2014 and the fur trade\u2019s near-elimination of beavers is directly linked to increased wildfire vulnerability.',
     science: [
       {
         name: 'Beaver Ponds as Fire Refugia',
         icon: '\uD83D\uDCA7',
-        desc: 'In 2020, fire ecologist Emily Fairfax (California State University Channel Islands) published groundbreaking satellite research showing that during wildfires, beaver-dammed river corridors stayed green and lush while everything around them burned. Beaver ponds raise the water table, saturating surrounding soil and vegetation. This creates a \u201Cfireproof\u201D ribbon of green along waterways that wildlife can shelter in during fire.',
+        desc: 'In 2020, fire ecologist Emily Fairfax (California State University Channel Islands) published groundbreaking satellite research showing that during wildfires, beaver-dammed river corridors stayed green and lush while everything around them burned. Beaver ponds raise the water table, saturating surrounding soil and vegetation. This can create a wetter, more fire-resistant corridor along waterways that may provide wildlife refuge during some fires.',
         stat: 'Beaver-dammed areas had 3x more green vegetation during wildfire than similar undammed streams.',
         color: '#0ea5e9'
       },
@@ -1199,7 +1255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { condition: function(gs) { return gs.waterYield < 50; }, tip: '\uD83D\uDCA7 Watershed Advisor: "Water yield is dangerously low. Consider beaver dam analogs \u2014 they\u2019re the cheapest and most effective way to raise water tables in fire-prone landscapes."', icon: '\uD83E\uDDAB' },
     { condition: function(gs) { return gs.biodiversity > 85 && gs.fuelLoad < 20; }, tip: '\u2B50 Elder Advisor: "The land is healthy \u2014 diverse, moist, open. This is what our ancestors maintained for thousands of years. You are walking the right path."', icon: '\uD83C\uDF0D' },
     { condition: function(gs) { return gs.wildfires > 0 && gs.biodiversity < 50; }, tip: '\uD83C\uDF31 Ecology Advisor: "After wildfire, the land needs gentle care. Cultural burning actually HELPS recovery by stimulating fire-adapted seeds and clearing debris. Don\u2019t be afraid to use good fire."', icon: '\uD83C\uDF3F' },
-    { condition: function(gs) { return gs.understoryDensity > 60; }, tip: '\uD83C\uDF32 Forestry Advisor: "Understory density is dangerously high. This is the fuel ladder that turns gentle surface fires into catastrophic crown fires. Burning or thinning the understory is the single most important action right now."', icon: '\uD83E\uDE93' },
+    { condition: function(gs) { return gs.understoryDensity > 60; }, tip: '\uD83C\uDF32 Forestry Advisor: "High understory density can create ladder fuels that help a surface fire move into the canopy. Appropriate treatment depends on local ecology, objectives, conditions, and qualified planning."', icon: '\uD83E\uDE93' },
     { condition: function(gs) { return gs.totalBurns === 0 && gs.year >= 30; }, tip: '\u26D4 Elder Advisor: "30 years and no fire? The forest is forgetting what fire means. The longer you wait, the harder the first burn becomes. Start small \u2014 but start."', icon: '\uD83C\uDF0D' },
     { condition: function(gs) { return gs.villageHealth < 60; }, tip: '\uD83C\uDFE0 Community Advisor: "The village is losing faith. Another wildfire could be the end. Every burn you do now is an investment in their safety \u2014 show them that good fire prevents bad fire."', icon: '\uD83E\uDD1D' },
     { condition: function(gs) { return gs.soilHealth < 40; }, tip: '\uD83E\uDEB5 Soil Advisor: "Soil health is critically low. Years of intense fire or no fire have depleted the soil microbiome. Cultural burning with biochar production could begin rebuilding it \u2014 the Amazonian terra preta approach."', icon: '\uD83C\uDF3F' },
@@ -1482,6 +1538,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       { id: 'create_burn_plan', label: 'Create a prescribed burn plan', icon: '\uD83D\uDCDD', check: function(d) { return d.burnResult !== null && d.burnResult !== undefined; }, progress: function(d) { return d.burnResult ? 'Created!' : 'Not yet'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -1643,74 +1700,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         // ── Tab Navigation ──
         var TABS = [
-          { id: 'indigenous', icon: '\uD83C\uDF0D', label: 'Indigenous Knowledge' },
-          { id: 'ecosystems', icon: '\uD83C\uDF32', label: 'Fire Ecosystems' },
-          { id: 'simulator', icon: '\uD83C\uDFAE', label: 'Forest Simulator' },
-          { id: 'mosaic', icon: '\uD83E\uDDE9', label: 'Cultural Mosaic' },
-          { id: 'burnPlan', icon: '\uD83D\uDCCB', label: 'Burn Planner' },
-          { id: 'science', icon: '\uD83D\uDD2C', label: 'Fire Science' },
-          { id: 'smokeSeeds', icon: '\uD83C\uDF3A', label: 'Smoke & Seeds' },
-          { id: 'watershed', icon: '\uD83D\uDCA7', label: 'Watersheds' },
-          { id: 'caseStudies', icon: '\uD83D\uDCF0', label: 'Case Studies' },
-          { id: 'carbon', icon: '\u2601\uFE0F', label: 'Carbon Calculator' },
-          { id: 'beavers', icon: '\uD83E\uDDAB', label: 'Beavers & Fire' },
-          { id: 'game', icon: '\uD83C\uDFAE', label: 'Firekeeper Challenge' },
-          { id: 'quiz', icon: '\uD83C\uDFC6', label: 'Quiz' },
-          { id: 'regimeHunt', icon: '\uD83D\uDD25', label: 'Fire Regime' }
+          { id: 'indigenous', icon: '\uD83C\uDF0D', label: t('stem.fireecology.indigenous_knowledge', 'Indigenous Knowledge') },
+          { id: 'ecosystems', icon: '\uD83C\uDF32', label: t('stem.fireecology.fire_ecosystems', 'Fire Ecosystems') },
+          { id: 'simulator', icon: '\uD83C\uDFAE', label: t('stem.fireecology.forest_simulator', 'Forest Simulator') },
+          { id: 'mosaic', icon: '\uD83E\uDDE9', label: t('stem.fireecology.cultural_mosaic', 'Cultural Mosaic') },
+          { id: 'burnPlan', icon: '\uD83D\uDCCB', label: t('stem.fireecology.burn_planner', 'Burn Planner') },
+          { id: 'science', icon: '\uD83D\uDD2C', label: t('stem.fireecology.fire_science', 'Fire Science') },
+          { id: 'smokeSeeds', icon: '\uD83C\uDF3A', label: t('stem.fireecology.smoke_seeds', 'Smoke & Seeds') },
+          { id: 'watershed', icon: '\uD83D\uDCA7', label: t('stem.fireecology.watersheds', 'Watersheds') },
+          { id: 'caseStudies', icon: '\uD83D\uDCF0', label: t('stem.fireecology.case_studies', 'Case Studies') },
+          { id: 'carbon', icon: '\u2601\uFE0F', label: t('stem.fireecology.carbon_calculator', 'Carbon Calculator') },
+          { id: 'beavers', icon: '\uD83E\uDDAB', label: t('stem.fireecology.beavers_fire', 'Beavers & Fire') },
+          { id: 'game', icon: '\uD83C\uDFAE', label: t('stem.fireecology.firekeeper_challenge', 'Firekeeper Challenge') },
+          { id: 'quiz', icon: '\uD83C\uDFC6', label: t('stem.fireecology.quiz', 'Quiz') },
+          { id: 'regimeHunt', icon: '\uD83D\uDD25', label: t('stem.fireecology.fire_regime', 'Fire Regime') }
         ];
 
         function renderTabNav() {
           var TAB_META = {
-            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: 'Indigenous fire knowledge',                hint: 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Western fire science is finally reading what Indigenous practitioners always knew.' },
-            ecosystems: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF32', title: 'Fire-adapted ecosystems',               hint: 'Some ecosystems NEED fire to function \u2014 longleaf pine, sequoia, chaparral, prairie. Cones that only open in heat (serotiny). Suppress fire and the ecosystem dies.' },
-            simulator:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFAE', title: 'Forest simulator',                       hint: 'Cellular-automaton fire spread \u2014 each cell tracks fuel load + moisture + slope. Watch how a single ignition becomes a megafire when fuels accumulate.' },
-            mosaic:     { accent: '#15803d', soft: 'rgba(21,128,61,0.10)',  icon: '\uD83E\uDDE9', title: 'Cultural mosaic \u2014 Wabanaki stewardship',  hint: 'A real Indigenous approach is patchwork, not uniform. Each habitat has its own fire-return interval: blueberry barren every 2 years, riparian almost never. Steward 5 zones over 8 years.' },
-            burnPlan:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: 'Burn planner \u2014 cultural burn safety', hint: 'Indigenous + modern burn planners read temperature, humidity, wind, and fuel moisture together. Score \u2265 85 = GO; 60\u201385 = CAUTION; <60 = NO-GO.' },
-            science:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\uD83D\uDD2C', title: 'Fire science \u2014 the chemistry',       hint: 'The fire triangle: fuel + oxygen + heat. Combustion is exothermic oxidation. Flashover = the moment ambient air reaches ignition temperature \u2014 catastrophic.' },
-            smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: 'Smoke + seeds',                          hint: 'Many plants need smoke chemicals (karrikins) to germinate. Fire-followers (whispering bells, fire poppies) bloom only in burned ground; seed banks wait decades.' },
-            watershed:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCA7', title: 'Fire + watersheds',                     hint: 'Burn scars trigger debris flows. Hydrophobic soils after high-severity burns can shed water like pavement. Post-fire flooding kills more people than the fire itself in some events.' },
-            caseStudies: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCF0', title: 'Case studies',                        hint: 'Camp Fire (2018), Black Saturday (2009), Carr Fire (2018), Kincade (2019). Each is a master class in what suppression-only management produces.' },
-            carbon:     { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\u2601\uFE0F',  title: 'Wildfire carbon ledger',                  hint: 'Wildfire is carbon-neutral over decades \u2014 trees regrow, sequester. But MEGAFIRES release decades of stored carbon in days, and warmer climate slows regrowth. Net-positive emitter.' },
-            beavers:    { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '\uD83E\uDDAB', title: 'Beavers vs fire',                       hint: 'Beaver wetlands act as fire breaks \u2014 wet meadows resist burning. Reintroducing beavers reduces fire intensity for free. Cheaper than mechanical fuel-thinning.' },
-            game:       { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAE', title: 'Firekeeper Challenge \u2014 100-year game', hint: 'You manage a forest for 100 years. Cultural burns, prescribed burns, beaver dams, thinning, native seeds. Random events test your wisdom under uncertainty.' },
-            quiz:       { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83C\uDFC6', title: 'Fire ecology quiz',                     hint: 'Multi-choice items spanning ecology, chemistry, Indigenous knowledge, watersheds, and policy. Each question links back to the simulator + case studies.' }
+            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: t('stem.fireecology.indigenous_fire_knowledge', 'Indigenous fire knowledge'), hint: t('stem.fireecology.cultural_burning_predates_colonization', 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Center Indigenous practitioners as living authorities while comparing their place-based knowledge with contemporary fire ecology.') },
+            ecosystems: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF32', title: t('stem.fireecology.fire_adapted_ecosystems', 'Fire-adapted ecosystems'), hint: t('stem.fireecology.some_ecosystems_need_fire_to_function_', 'Some ecosystems need fire to function. Compare the adaptations, return intervals, and risks that shape each landscape.') },
+            simulator: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)', icon: '\uD83C\uDFAE', title: t('stem.fireecology.forest_simulator_2', 'Forest simulator'), hint: t('stem.fireecology.cellular_automaton_fire_spread_each_ce', 'Test how cultural burning, prescribed burning, and suppression change fuel, biodiversity, and wildfire risk over decades.') },
+            mosaic: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83E\uDDE9', title: t('stem.fireecology.cultural_mosaic_wabanaki_stewardship', 'Cultural mosaic - Wabanaki stewardship'), hint: t('stem.fireecology.a_real_indigenous_approach_is_patchwor', 'Steward a patchwork of habitats with distinct fire-return intervals and management needs.') },
+            burnPlan: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: t('stem.fireecology.burn_planner_cultural_burn_safety', 'Burn conditions - classroom comparison'), hint: t('stem.fireecology.indigenous_modern_burn_planners_read_t', 'Compare four weather and fuel inputs in a simplified classroom model; real burn decisions require a site-specific approved plan and qualified personnel.') },
+            science: { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)', icon: '\uD83D\uDD2C', title: t('stem.fireecology.fire_science_the_chemistry', 'Fire science - the chemistry'), hint: t('stem.fireecology.the_fire_triangle_fuel_oxygen_heat_com', 'Investigate combustion, the fire triangle, heat transfer, and flashover.') },
+            smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: t('stem.fireecology.smoke_seeds_2', 'Smoke + seeds'), hint: t('stem.fireecology.many_plants_need_smoke_chemicals_karri', 'Explore karrikins, fire-followers, and seed banks that wait decades for the right signal.') },
+            watershed: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCA7', title: t('stem.fireecology.fire_watersheds', 'Fire + watersheds'), hint: t('stem.fireecology.burn_scars_trigger_debris_flows_hydrop', 'Connect burn severity to hydrophobic soils, runoff, debris flows, and recovery.') },
+            caseStudies: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCF0', title: t('stem.fireecology.case_studies_2', 'Case studies'), hint: t('stem.fireecology.camp_fire_2018_black_saturday_2009_car', 'Use real fire events to examine weather, fuel, policy, and community impacts.') },
+            carbon: { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\u2601\uFE0F', title: t('stem.fireecology.wildfire_carbon_ledger', 'Wildfire carbon ledger'), hint: t('stem.fireecology.wildfire_is_carbon_neutral_over_decade', 'Estimate how fire severity and regrowth change the carbon balance.') },
+            beavers: { accent: '#92400e', soft: 'rgba(146,64,14,0.10)', icon: '\uD83E\uDDAB', title: t('stem.fireecology.beavers_vs_fire', 'Beavers vs fire'), hint: t('stem.fireecology.beaver_wetlands_act_as_fire_breaks_wet', 'Explore how wetland restoration can create living fire breaks and refuges.') },
+            game: { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAE', title: t('stem.fireecology.firekeeper_challenge_100_year_game', 'Firekeeper Challenge - 100-year game'), hint: t('stem.fireecology.you_manage_a_forest_for_100_years_cult', 'Make long-term stewardship decisions and adapt to uncertain events.') },
+            quiz: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83C\uDFC6', title: t('stem.fireecology.fire_ecology_quiz', 'Fire ecology quiz'), hint: t('stem.fireecology.multi_choice_items_spanning_ecology_ch', 'Check understanding across ecology, chemistry, stewardship, watersheds, and policy.') },
+            regimeHunt: { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)', icon: '\uD83D\uDD25', title: t('stem.fireecology.fire_regime_discovery', 'Fire regime discovery'), hint: t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret', 'Form a hypothesis, then test how fuel accumulation, return interval, and drought interact.') }
           };
+          var ROUTE_GROUPS = [
+            { id: 'learn', icon: '\uD83C\uDF3F', label: t('stem.fireecology.learn_route', 'Learn'), tabs: ['indigenous', 'ecosystems', 'science', 'smokeSeeds'] },
+            { id: 'investigate', icon: '\uD83D\uDD2D', label: t('stem.fireecology.investigate_route', 'Investigate'), tabs: ['simulator', 'mosaic', 'burnPlan', 'watershed', 'carbon', 'beavers', 'caseStudies', 'regimeHunt'] },
+            { id: 'apply', icon: '\uD83C\uDFAF', label: t('stem.fireecology.apply_route', 'Apply'), tabs: ['game', 'quiz'] }
+          ];
           var meta = TAB_META[tab] || TAB_META.indigenous;
-          var heroBand = h('div', {
-            style: {
-              padding: '12px 14px',
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
-              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
-              marginBottom: 12
+          var activeIndex = TABS.map(function(item) { return item.id; }).indexOf(tab);
+
+          function chooseTab(id) {
+            upd('tab', id);
+            if (announceToSR) {
+              var chosen = TABS.filter(function(item) { return item.id === id; })[0];
+              announceToSR((chosen ? chosen.label : id) + ' activity selected.');
             }
-          },
-            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-            h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
-            )
-          );
-          return h('div', null,
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }, role: 'tablist', 'aria-label': 'Fire Ecology sections' },
-              TABS.map(function(tt) {
-                var active = tab === tt.id;
-                return h('button', { key: tt.id,
-                  onClick: function() { upd('tab', tt.id); },
-                  role: 'tab', 'aria-selected': active,
-                  style: {
-                    padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    background: active ? '#ea580c' : '#1e293b',
-                    color: active ? '#fff' : '#94a3b8',
-                    fontWeight: active ? 700 : 500, fontSize: 13,
-                    transition: 'all 0.2s'
-                  }
-                }, tt.icon + ' ' + tt.label);
+          }
+
+          function handleTabKey(e) {
+            if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].indexOf(e.key) === -1) return;
+            var board = e.currentTarget.closest('[data-fireecology-route-board]');
+            var buttons = board ? Array.prototype.slice.call(board.querySelectorAll('[role="tab"]')) : [];
+            if (!buttons.length) return;
+            e.preventDefault();
+            var current = buttons.indexOf(e.currentTarget);
+            var next = e.key === 'Home' ? 0 : e.key === 'End' ? buttons.length - 1 :
+              (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? (current + 1) % buttons.length : (current - 1 + buttons.length) % buttons.length;
+            buttons[next].focus();
+            buttons[next].click();
+          }
+
+          return h('nav', { className: 'fireecology-route-board', 'data-fireecology-route-board': 'true', 'aria-label': t('stem.fireecology.fire_ecology_sections', 'Fire Ecology sections') },
+            h('div', { className: 'fireecology-route-heading' },
+              h('div', null,
+                h('h3', null, t('stem.fireecology.choose_learning_route', 'Choose a learning route')),
+                h('p', null, t('stem.fireecology.route_help', 'Move from knowledge to investigation, then apply what you discover.'))
+              ),
+              h('span', { className: 'fireecology-route-step' }, t('stem.fireecology.activity_progress', 'Activity') + ' ' + (activeIndex + 1) + ' / ' + TABS.length)
+            ),
+            h('div', { className: 'fireecology-route-groups', role: 'tablist' },
+              ROUTE_GROUPS.map(function(group) {
+                return h('section', { key: group.id, className: 'fireecology-route-group', role: 'presentation' },
+                  h('div', { className: 'fireecology-route-group-label' }, h('span', { 'aria-hidden': 'true' }, group.icon), group.label),
+                  h('div', { className: 'fireecology-route-list', role: 'presentation' },
+                    group.tabs.map(function(id) {
+                      var tt = TABS.filter(function(item) { return item.id === id; })[0];
+                      if (!tt) return null;
+                      var active = tab === tt.id;
+                      return h('button', {
+                        key: tt.id,
+                        id: 'fireecology-tab-' + tt.id,
+                        type: 'button',
+                        className: 'fireecology-route-tab',
+                        onClick: function() { chooseTab(tt.id); },
+                        onKeyDown: handleTabKey,
+                        role: 'tab',
+                        'aria-selected': active,
+                        'aria-controls': 'fireecology-active-panel',
+                        tabIndex: active ? 0 : -1
+                      },
+                        h('span', { className: 'fireecology-route-icon', 'aria-hidden': 'true' }, tt.icon),
+                        h('span', { className: 'fireecology-route-label' }, tt.label)
+                      );
+                    })
+                  )
+                );
               })
             ),
-            heroBand
+            h('div', { className: 'fireecology-active-band', style: { '--active-accent': meta.accent, '--active-soft': meta.soft } },
+              h('div', { className: 'fireecology-active-band-icon', 'aria-hidden': 'true' }, meta.icon),
+              h('div', null,
+                h('h3', null, meta.title),
+                h('p', null, meta.hint)
+              )
+            )
           );
         }
 
@@ -1721,7 +1816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderIndigenousTab() {
           if (selectedNation) {
             var nation = INDIGENOUS_FIRE_NATIONS.filter(function(n) { return n.id === selectedNation; })[0];
-            if (!nation) { upd('selectedNation', null); return null; }
+            if (!nation) { return null; } // (was upd(...) during render — a setState-in-render that risks a render loop; stale id self-heals on next action)
 
             // Track viewing
             if (!nationsViewed[nation.id]) {
@@ -1733,10 +1828,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
-              h('button', { 'aria-label': 'Back to All Nations',
+              h('button', { 'aria-label': t('stem.fireecology.back_to_all_nations', 'Back to All Nations'),
                 onClick: function() { upd('selectedNation', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
-              }, '\u2190 Back to All Nations'),
+              }, t('stem.fireecology.back_to_all_nations_2', '\u2190 Back to All Nations')),
 
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + nation.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
@@ -1753,12 +1848,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ),
 
                 h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, marginBottom: 16 } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#38bdf8' } }, '\uD83D\uDD2C The Science'),
+                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#38bdf8' } }, t('stem.fireecology.the_science', '\uD83D\uDD2C The Science')),
                   h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, nation.science)
                 ),
 
                 h('div', { style: { marginBottom: 16 } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#fbbf24' } }, '\uD83D\uDEE0\uFE0F Key Practices'),
+                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#fbbf24' } }, t('stem.fireecology.key_practices', '\uD83D\uDEE0\uFE0F Key Practices')),
                   nation.keyPractices.map(function(kp, ki) {
                     return h('div', { key: ki, style: { display: 'flex', gap: 8, marginBottom: 6, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } },
                       h('span', { style: { color: '#f97316', flexShrink: 0 } }, '\u2022'),
@@ -1768,14 +1863,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ),
 
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 4, color: '#4ade80', width: '100%' } }, '\uD83C\uDF31 Fire-Managed Plants'),
+                  h('div', { style: { fontWeight: 700, marginBottom: 4, color: '#4ade80', width: '100%' } }, t('stem.fireecology.fire_managed_plants', '\uD83C\uDF31 Fire-Managed Plants')),
                   nation.plants.map(function(p, pi) {
                     return h('span', { key: pi, style: { background: '#065f4620', border: '1px solid #065f4640', borderRadius: 6, padding: '4px 10px', fontSize: 13, color: '#4ade80' } }, p);
                   })
                 ),
 
                 h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, borderLeft: '3px solid #f59e0b' } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#f59e0b' } }, '\u2728 Living Legacy'),
+                  h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#f59e0b' } }, t('stem.fireecology.living_legacy', '\u2728 Living Legacy')),
                   h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, nation.legacy)
                 )
               )
@@ -1786,8 +1881,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
               h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
-                'For tens of thousands of years, Indigenous peoples around the world have used fire as a sophisticated land management tool. These are not \u201Cprimitive\u201D practices \u2014 they represent deep ecological knowledge refined over hundreds of generations. Modern fire science is only now beginning to understand what Indigenous fire keepers have always known: ',
-                h('strong', { style: { color: '#f97316' } }, 'fire is not the enemy of healthy ecosystems \u2014 the absence of fire is.')
+                t('stem.fireecology.for_tens_of_thousands_of_years_indigen', 'For tens of thousands of years, Indigenous peoples around the world have used fire as a sophisticated land management tool. These are not \u201Cprimitive\u201D practices \u2014 they represent deep ecological knowledge refined over hundreds of generations. Modern fire science is only now beginning to understand what Indigenous fire keepers have always known: '),
+                h('strong', { style: { color: '#f97316' } }, t('stem.fireecology.fire_is_not_the_enemy_of_healthy_ecosy', 'fire is not the enemy of healthy ecosystems \u2014 the absence of fire is.'))
               )
             ),
 
@@ -1797,7 +1892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 return h('button', { key: nation.id,
                   onClick: function() { upd('selectedNation', nation.id); },
                   style: {
-                    background: viewed ? nation.color + '18' : '#0f172a',
+                    background: viewed ? nation.color + '18' : 'var(--allo-stem-deeper, #0f172a)',
                     border: '1px solid ' + nation.color + '44',
                     borderRadius: 12, padding: 16, cursor: 'pointer', textAlign: 'left',
                     transition: 'all 0.2s'
@@ -1812,7 +1907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   ),
                   h('div', { style: { fontSize: 13, color: '#f59e0b', marginBottom: 6 } }, '\uD83D\uDD25 ' + nation.practice),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, nation.years + ' years of fire stewardship'),
-                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, '\u2713 Studied') : null
+                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, t('stem.fireecology.studied', '\u2713 Studied')) : null
                 );
               })
             )
@@ -1826,7 +1921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderEcosystemsTab() {
           if (selectedEcosystem) {
             var eco = FIRE_ECOSYSTEMS.filter(function(e) { return e.id === selectedEcosystem; })[0];
-            if (!eco) { upd('selectedEcosystem', null); return null; }
+            if (!eco) { return null; } // (removed setState-in-render upd)
 
             if (!ecosystemsViewed[eco.id]) {
               var ev = Object.assign({}, ecosystemsViewed);
@@ -1837,10 +1932,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
-              h('button', { 'aria-label': 'Back to All Ecosystems',
+              h('button', { 'aria-label': t('stem.fireecology.back_to_all_ecosystems', 'Back to All Ecosystems'),
                 onClick: function() { upd('selectedEcosystem', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
-              }, '\u2190 Back to All Ecosystems'),
+              }, t('stem.fireecology.back_to_all_ecosystems_2', '\u2190 Back to All Ecosystems')),
 
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + eco.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
@@ -1854,12 +1949,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('p', { style: { lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 16 } }, eco.description),
 
                 h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, marginBottom: 16 } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#f97316' } }, '\uD83D\uDD25 Role of Fire'),
+                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#f97316' } }, t('stem.fireecology.role_of_fire', '\uD83D\uDD25 Role of Fire')),
                   h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, eco.fireRole)
                 ),
 
                 h('div', { style: { marginBottom: 16 } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 10, color: '#38bdf8' } }, '\uD83E\uDDEC Fire Adaptations'),
+                  h('div', { style: { fontWeight: 700, marginBottom: 10, color: '#38bdf8' } }, t('stem.fireecology.fire_adaptations', '\uD83E\uDDEC Fire Adaptations')),
                   eco.adaptations.map(function(a, ai) {
                     return h('div', { key: ai, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 12, marginBottom: 8 } },
                       h('div', { style: { fontWeight: 700, color: eco.color, marginBottom: 4, fontSize: 14 } }, a.species),
@@ -1869,7 +1964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ),
 
                 h('div', { style: { background: '#7f1d1d20', borderRadius: 8, padding: 14, borderLeft: '3px solid #ef4444' } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#ef4444' } }, '\u26A0\uFE0F Without Fire'),
+                  h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#ef4444' } }, t('stem.fireecology.without_fire', '\u26A0\uFE0F Without Fire')),
                   h('p', { style: { margin: 0, lineHeight: 1.6, color: '#fca5a5', fontSize: 14 } }, eco.withoutFire)
                 )
               )
@@ -1879,9 +1974,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #16a34a' } },
               h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
-                'Many of Earth\u2019s most biodiverse ecosystems are ',
+                t('stem.fireecology.many_of_earth_s_most_biodiverse_ecosys', 'Many of Earth\u2019s most biodiverse ecosystems are '),
                 h('strong', { style: { color: '#4ade80' } }, 'fire-dependent'),
-                ' \u2014 they evolved WITH fire and cannot survive without it. From Australian eucalyptus forests to American tallgrass prairies, fire is as essential as rain or sunlight.'
+                t('stem.fireecology.they_evolved_with_fire_and_cannot_surv', ' \u2014 they evolved WITH fire and cannot survive without it. From Australian eucalyptus forests to American tallgrass prairies, fire is as essential as rain or sunlight.')
               )
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
@@ -1890,7 +1985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 return h('button', { key: eco.id,
                   onClick: function() { upd('selectedEcosystem', eco.id); },
                   style: {
-                    background: viewed ? eco.color + '18' : '#0f172a',
+                    background: viewed ? eco.color + '18' : 'var(--allo-stem-deeper, #0f172a)',
                     border: '1px solid ' + eco.color + '44',
                     borderRadius: 12, padding: 16, cursor: 'pointer', textAlign: 'left',
                     transition: 'all 0.2s'
@@ -1905,7 +2000,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   ),
                   h('div', { style: { fontSize: 13, color: '#f97316', marginBottom: 4 } }, '\uD83D\uDD04 Fire interval: ' + eco.fireInterval),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, eco.description.substring(0, 100) + '...'),
-                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, '\u2713 Explored') : null
+                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, t('stem.fireecology.explored', '\u2713 Explored')) : null
                 );
               })
             )
@@ -1923,7 +2018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           function renderCanvas() {
             var burning = s.eventLog && s.eventLog.length > 0 && s.eventLog[s.eventLog.length - 1].event && s.eventLog[s.eventLog.length - 1].event.indexOf('CATASTROPHIC') >= 0;
             return h('div', { style: { marginBottom: 16 } },
-              h('canvas', { 'aria-label': 'Fireecology visualization',
+              h('canvas', { 'aria-label': t('stem.fireecology.fireecology_visualization', 'Fireecology visualization'),
                 ref: forestCanvasRef,
                 'data-fuel': s.fuelLoad,
                 'data-canopy': s.canopyCover,
@@ -1931,7 +2026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 'data-understory': s.understoryDensity,
                 'data-burning': burning ? '1' : '0',
                 style: { width: '100%', height: 200, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', display: 'block' },
-                'aria-label': 'Forest visualization showing current fuel load, canopy cover, and biodiversity'
+                'aria-label': t('stem.fireecology.forest_visualization_showing_current_f', 'Forest visualization showing current fuel load, canopy cover, and biodiversity')
               })
             );
           }
@@ -2030,20 +2125,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           // Danger level indicator
           var dangerLevel = s.fuelLoad < 20 ? { label: 'Low', color: '#22c55e' } :
-                            s.fuelLoad < 40 ? { label: 'Moderate', color: '#f59e0b' } :
-                            s.fuelLoad < 60 ? { label: 'High', color: '#f97316' } :
+                            s.fuelLoad < 40 ? { label: t('stem.fireecology.moderate', 'Moderate'), color: '#f59e0b' } :
+                            s.fuelLoad < 60 ? { label: t('stem.fireecology.high', 'High'), color: '#f97316' } :
                             { label: 'EXTREME', color: '#ef4444' };
 
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
-                'Manage a forest over decades. Choose your strategy each decade: ',
-                h('strong', { style: { color: '#4ade80' } }, 'Cultural Burn'),
-                ' (Indigenous method), ',
-                h('strong', { style: { color: '#f59e0b' } }, 'Prescribed Burn'),
-                ' (Western forestry), or ',
-                h('strong', { style: { color: '#ef4444' } }, 'Suppress'),
-                ' (fight all fire). Watch what happens over time.'
+                t('stem.fireecology.manage_a_forest_over_decades_choose_yo', 'Manage a forest over decades. Choose your strategy each decade: '),
+                h('strong', { style: { color: '#4ade80' } }, t('stem.fireecology.cultural_burn', 'Cultural Burn')),
+                t('stem.fireecology.indigenous_method', ' (Indigenous method), '),
+                h('strong', { style: { color: '#f59e0b' } }, t('stem.fireecology.prescribed_burn', 'Prescribed Burn')),
+                t('stem.fireecology.western_forestry_or', ' (Western forestry), or '),
+                h('strong', { style: { color: '#ef4444' } }, t('stem.fireecology.suppress', 'Suppress')),
+                t('stem.fireecology.fight_all_fire_watch_what_happens_over', ' (fight all fire). Watch what happens over time.')
               )
             ),
 
@@ -2057,14 +2152,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
             },
               h('strong', { style: { color: '#fb923c' } }, 'Goal: '),
-              'keep biodiversity above 70 and fuel load below 30 across 50+ years without triggering a catastrophic wildfire. Cultural burn every decade or two; suppression looks safe at first but stockpiles fuel until one bad year erases everything.'
+              t('stem.fireecology.keep_biodiversity_above_70_and_fuel_lo', 'keep biodiversity above 70 and fuel load below 30 across 50+ years without triggering a catastrophic wildfire. Cultural burn every decade or two; suppression looks safe at first but stockpiles fuel until one bad year erases everything.')
             ),
 
             // Canvas visualization
             renderCanvas(),
 
             // Comparison mode toggle
-            h('button', { 'aria-label': 'Year',
+            h('button', { 'aria-label': t('stem.fireecology.year', 'Year'),
               onClick: function() { updMulti({ comparisonMode: !comparisonMode }); },
               style: { background: comparisonMode ? '#7c3aed' : '#1e293b', border: '1px solid ' + (comparisonMode ? '#7c3aed' : '#334155'), borderRadius: 8, padding: '8px 16px', color: comparisonMode ? '#fff' : '#94a3b8', cursor: 'pointer', fontSize: 13, marginBottom: 12 }
             }, comparisonMode ? '\u2716 Exit Comparison Mode' : '\u2194\uFE0F Compare: Cultural Burn vs. Suppression'),
@@ -2072,11 +2167,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             // Stats dashboard
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 12 } },
-                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, '\uD83D\uDCC5 Year'),
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, t('stem.fireecology.year_2', '\uD83D\uDCC5 Year')),
                 h('div', { style: { color: '#fff', fontSize: 24, fontWeight: 700 } }, s.year)
               ),
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 12 } },
-                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, '\u26A0\uFE0F Wildfire Risk'),
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, t('stem.fireecology.wildfire_risk', '\u26A0\uFE0F Wildfire Risk')),
                 h('div', { style: { color: dangerLevel.color, fontSize: 20, fontWeight: 700 } }, dangerLevel.label)
               )
             ),
@@ -2093,30 +2188,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Action buttons
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
-              h('button', { 'aria-label': 'Cultural Burn (+10 yrs)',
+              h('button', { 'aria-label': t('stem.fireecology.cultural_burn_10_yrs', 'Cultural Burn (+10 yrs)'),
                 onClick: function() { advanceDecade('culturalBurn'); },
                 style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 14 }
-              }, '\uD83D\uDD25 Cultural Burn (+10 yrs)'),
-              h('button', { 'aria-label': 'Prescribed Burn (+10 yrs)',
+              }, t('stem.fireecology.cultural_burn_10_yrs_2', '\uD83D\uDD25 Cultural Burn (+10 yrs)')),
+              h('button', { 'aria-label': t('stem.fireecology.prescribed_burn_10_yrs', 'Prescribed Burn (+10 yrs)'),
                 onClick: function() { advanceDecade('prescribe'); },
                 style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#f59e0b', color: '#000', fontWeight: 700, fontSize: 14 }
-              }, '\uD83D\uDCCB Prescribed Burn (+10 yrs)'),
-              h('button', { 'aria-label': 'Suppress Fire (+10 yrs)',
+              }, t('stem.fireecology.prescribed_burn_10_yrs_2', '\uD83D\uDCCB Prescribed Burn (+10 yrs)')),
+              h('button', { 'aria-label': t('stem.fireecology.suppress_fire_10_yrs', 'Suppress Fire (+10 yrs)'),
                 onClick: function() { advanceDecade('suppress'); },
                 style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 14 }
-              }, '\u26D4 Suppress Fire (+10 yrs)')
+              }, t('stem.fireecology.suppress_fire_10_yrs_2', '\u26D4 Suppress Fire (+10 yrs)'))
             ),
 
             // Reset
-            h('button', { 'aria-label': 'Reset Forest',
+            h('button', { 'aria-label': t('stem.fireecology.reset_forest', 'Reset Forest'),
               onClick: function() { updMulti({ sim: Object.assign({}, SIM_DEFAULTS), simB: Object.assign({}, SIM_DEFAULTS) }); if (addToast) addToast('Forest reset to starting conditions.', 'info'); },
               style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: '8px 16px', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 13, marginBottom: 16 }
-            }, '\uD83D\uDD04 Reset Forest'),
+            }, t('stem.fireecology.reset_forest_2', '\uD83D\uDD04 Reset Forest')),
 
             // Side-by-side comparison
             comparisonMode ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, border: '2px solid #7c3aed' } },
-              h('div', { style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression'),
-              h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.'),
+              h('div', { style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.side_by_side_cultural_burn_vs_suppress', '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression')),
+              h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.click_to_advance_both_forests_10_years', 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.')),
               h('button', { onClick: function() {
                   // Advance Forest A (cultural burn)
                   var newA = Object.assign({}, sim);
@@ -2164,7 +2259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   if (newA.year >= 50) checkBadge('comparisonChamp');
                 },
                 style: { width: '100%', padding: '12px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 14, marginBottom: 16 }
-              }, '\u27A1\uFE0F Advance Both Forests +10 Years'),
+              }, t('stem.fireecology.advance_both_forests_10_years', '\u27A1\uFE0F Advance Both Forests +10 Years')),
 
               // Side by side gauges
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 } },
@@ -2189,7 +2284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Decade graph
             s.decade && s.decade.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14, marginBottom: 16 } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, fontSize: 14 } }, '\uD83D\uDCCA Forest Health Over Time'),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, fontSize: 14 } }, t('stem.fireecology.forest_health_over_time', '\uD83D\uDCCA Forest Health Over Time')),
               h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 120 } },
                 s.decade.map(function(snap, si) {
                   return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
@@ -2200,14 +2295,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ),
               h('div', { style: { display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                h('span', null, '\u25A0 Biodiversity'),
-                h('span', { style: { color: '#f59e0b' } }, '\u25A0 Fuel Load')
+                h('span', null, t('stem.fireecology.biodiversity', '\u25A0 Biodiversity')),
+                h('span', { style: { color: '#f59e0b' } }, t('stem.fireecology.fuel_load', '\u25A0 Fuel Load'))
               )
             ) : null,
 
             // Event log
             s.eventLog && s.eventLog.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14 } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontSize: 14 } }, '\uD83D\uDCDC Event Log'),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontSize: 14 } }, t('stem.fireecology.event_log', '\uD83D\uDCDC Event Log')),
               s.eventLog.slice(-8).reverse().map(function(ev, ei) {
                 return h('div', { key: ei, style: { padding: '6px 0', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
                   h('span', { style: { color: '#f97316', fontWeight: 600 } }, 'Year ' + ev.year + ': '),
@@ -2250,9 +2345,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             else if (burnFuelMoisture < 8) { score += 0; notes.push('\u274C Fuel moisture critically low \u2014 wildfire risk extreme'); }
             else { score += 10; notes.push('\u26A0\uFE0F Fuel moisture high \u2014 fire may not sustain'); }
 
-            var verdict = score >= 85 ? { label: 'GO \u2014 Excellent conditions for cultural burning', color: '#22c55e', icon: '\u2705' } :
-                          score >= 60 ? { label: 'CAUTION \u2014 Proceed with extra care', color: '#f59e0b', icon: '\u26A0\uFE0F' } :
-                          { label: 'NO-GO \u2014 Conditions unsafe for burning', color: '#ef4444', icon: '\u274C' };
+            var verdict = score >= 85 ? { label: t('stem.fireecology.go_excellent_conditions_for_cultural_b', 'Four classroom ranges matched'), color: '#22c55e', icon: '\u2705' } :
+                          score >= 60 ? { label: t('stem.fireecology.caution_proceed_with_extra_care', 'Some classroom ranges matched'), color: '#f59e0b', icon: '\u26A0\uFE0F' } :
+                          { label: t('stem.fireecology.no_go_conditions_unsafe_for_burning', 'Few classroom ranges matched'), color: '#ef4444', icon: '\u274C' };
 
             updMulti({ burnResult: { score: score, notes: notes, verdict: verdict } });
             awardStemXP('fire_burn_plan', 15, 'Burn plan evaluation');
@@ -2280,7 +2375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f59e0b' } },
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
-                'Indigenous fire practitioners read the land, sky, and wind to determine the right moment to burn. Modern prescribed burn planners use the same principles with instruments. Adjust the conditions below and evaluate your burn plan.'
+                t('stem.fireecology.indigenous_fire_practitioners_read_the', 'Indigenous fire practitioners read the land, sky, and wind to determine the right moment to burn. Modern prescribed burn planners use the same principles with instruments. Compare the four inputs below, then identify what additional local information and professional planning a real decision would require.')
               )
             ),
 
@@ -2293,13 +2388,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 color: '#fde68a', fontSize: 13, lineHeight: 1.55
               }
             },
-              h('strong', { style: { color: '#fbbf24' } }, 'Goal: '),
-              'land all four sliders inside their ideal range to score 85+ (GO). Score 60 to 84 prints CAUTION; under 60 prints NO-GO.',
+              h('strong', { style: { color: '#fbbf24' } }, 'Classroom task: '),
+              t('stem.fireecology.land_all_four_sliders_inside_their_ide', 'compare how four inputs affect this classroom score. A high score is not authorization or evidence that a real burn is safe.'),
               h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 } },
                 h('div', null, 'Ideal Temperature: 50 to 70 ' + '\u00B0F'),
-                h('div', null, 'Ideal Humidity: 30 to 55 percent'),
-                h('div', null, 'Ideal Wind: 3 to 12 mph'),
-                h('div', null, 'Ideal Fuel Moisture: 12 to 25 percent')
+                h('div', null, t('stem.fireecology.ideal_humidity_30_to_55_percent', 'Ideal Humidity: 30 to 55 percent')),
+                h('div', null, t('stem.fireecology.ideal_wind_3_to_12_mph', 'Ideal Wind: 3 to 12 mph')),
+                h('div', null, t('stem.fireecology.ideal_fuel_moisture_12_to_25_percent', 'Ideal Fuel Moisture: 12 to 25 percent'))
               )
             ),
 
@@ -2310,12 +2405,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               slider('Fuel Moisture Content', burnFuelMoisture, 2, 40, 1, '%', 'burnFuelMoisture', '#22c55e')
             ),
 
-            h('button', { 'aria-label': 'Evaluate Burn Plan',
+            h('button', { 'aria-label': t('stem.fireecology.evaluate_burn_plan', 'Compare Classroom Conditions'),
               onClick: evaluateBurn,
               style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }
-            }, '\uD83D\uDD25 Evaluate Burn Plan'),
+            }, t('stem.fireecology.evaluate_burn_plan_2', '\uD83D\uDD25 Compare Classroom Conditions')),
 
-            burnResult ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
+            burnResult ? h('div', { role: 'status', 'aria-live': 'polite', style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
               (function() {
                 var rad = 32, circ = 2 * Math.PI * rad;
                 var dashOff = circ - (burnResult.score / 100) * circ;
@@ -2324,8 +2419,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 var cautionAngleEnd = (60 / 100) * 360 - 90;
                 return h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
                   h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
-                    h('svg', { viewBox: '0 0 100 100', width: 84, height: 84,
-                      'aria-label': 'Safety score: ' + burnResult.score + ' out of 100. ' + burnResult.verdict.label
+                    h('svg', { viewBox: '0 0 100 100', width: 84, height: 84, role: 'img',
+                      'aria-label': 'Classroom condition score: ' + burnResult.score + ' out of 100. ' + burnResult.verdict.label
                     },
                       h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.18)', strokeWidth: 8 }),
                       // Threshold tick marks at 60 (CAUTION) and 85 (GO)
@@ -2353,9 +2448,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('div', null,
                       h('div', { style: { fontWeight: 700, color: burnResult.verdict.color, fontSize: 17, lineHeight: 1.2 } }, burnResult.verdict.label),
                       h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 4, lineHeight: 1.5 } },
-                        burnResult.score >= 85 ? 'All four conditions in safe range.'
-                        : burnResult.score >= 60 ? 'Threshold for GO is 85. Adjust the slider for the worst-flagged condition.'
-                        : 'Threshold for CAUTION is 60. Multiple conditions need adjustment before this is safe to burn.'
+                        burnResult.score >= 85 ? 'All four inputs match this activity\'s example ranges; this is not a safety determination.'
+                        : burnResult.score >= 60 ? 'Compare the flagged input with this activity\'s example ranges.'
+                        : 'Several inputs fall outside this activity\'s example ranges.'
                       )
                     )
                   )
@@ -2365,8 +2460,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 return h('div', { key: ni, style: { padding: '4px 0', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } }, note);
               }),
               h('div', { style: { marginTop: 12, padding: 12, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
-                h('strong', { style: { color: '#f59e0b' } }, 'Indigenous Wisdom: '),
-                'Traditional fire practitioners burn on days with light dew, gentle breeze, and rising humidity. They start fires at the edges and burn toward the center, letting the fire creep slowly. If conditions change, they let the fire die naturally. This patience \u2014 working WITH the weather rather than against it \u2014 is what makes cultural burning so safe and effective.'
+                h('strong', { style: { color: '#f59e0b' } }, t('stem.fireecology.indigenous_wisdom', 'Indigenous Wisdom: ')),
+                t('stem.fireecology.traditional_fire_practitioners_burn_on', 'Cultural burning knowledge is place-based, relational, and held by specific communities. Weather readings are only part of that knowledge. Learn from local Indigenous fire practitioners and qualified fire professionals; this classroom activity cannot represent or authorize their practice.')
               )
             ) : null
           );
@@ -2379,13 +2474,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderScienceTab() {
           if (selectedScience) {
             var concept = FIRE_SCIENCE.filter(function(c) { return c.id === selectedScience; })[0];
-            if (!concept) { upd('selectedScience', null); return null; }
+            if (!concept) { return null; } // (removed setState-in-render upd)
 
             return h('div', null,
-              h('button', { 'aria-label': 'Back to Concepts',
+              h('button', { 'aria-label': t('stem.fireecology.back_to_concepts', 'Back to Concepts'),
                 onClick: function() { upd('selectedScience', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
-              }, '\u2190 Back to Concepts'),
+              }, t('stem.fireecology.back_to_concepts_2', '\u2190 Back to Concepts')),
 
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
@@ -2479,32 +2574,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             },
               h('summary', {
                 style: { fontWeight: 700, color: '#10b981', cursor: 'pointer', fontSize: 14 }
-              }, '📜 What this quiz covers'),
+              }, t('stem.fireecology.what_this_quiz_covers', '📜 What this quiz covers')),
               h('div', { style: { marginTop: 8, color: '#d1fae5' } },
-                h('div', null, '32 multi-choice items across six themes:'),
+                h('div', null, t('stem.fireecology.32_multi_choice_items_across_six_theme', '32 multi-choice items across six themes:')),
                 h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
-                  h('li', null, 'Indigenous fire stewardship (timelines, nations, practices)'),
-                  h('li', null, 'Fire-adapted ecosystem mechanics (serotiny, smoke-cued germination)'),
-                  h('li', null, 'Combustion chemistry (fire triangle, flashover, fuel moisture)'),
-                  h('li', null, 'Watershed and soil response (hydrophobic soils, debris flows)'),
-                  h('li', null, 'Suppression policy failures and their case studies'),
-                  h('li', null, 'Beavers, prescribed burning, and modern restoration tools')
+                  h('li', null, t('stem.fireecology.indigenous_fire_stewardship_timelines_', 'Indigenous fire stewardship (timelines, nations, practices)')),
+                  h('li', null, t('stem.fireecology.fire_adapted_ecosystem_mechanics_serot', 'Fire-adapted ecosystem mechanics (serotiny, smoke-cued germination)')),
+                  h('li', null, t('stem.fireecology.combustion_chemistry_fire_triangle_fla', 'Combustion chemistry (fire triangle, flashover, fuel moisture)')),
+                  h('li', null, t('stem.fireecology.watershed_and_soil_response_hydrophobi', 'Watershed and soil response (hydrophobic soils, debris flows)')),
+                  h('li', null, t('stem.fireecology.suppression_policy_failures_and_their_', 'Suppression policy failures and their case studies')),
+                  h('li', null, t('stem.fireecology.beavers_prescribed_burning_and_modern_', 'Beavers, prescribed burning, and modern restoration tools'))
                 ),
-                h('div', { style: { marginTop: 8 } }, 'Streak counters track consecutive correct answers. The quiz loops, so you can keep going for mastery.')
+                h('div', { style: { marginTop: 8 } }, t('stem.fireecology.streak_counters_track_consecutive_corr', 'Streak counters track consecutive correct answers. The quiz loops, so you can keep going for mastery.'))
               )
             ),
             // Score header
             h('div', { style: { display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' } },
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Score'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.score', 'Score')),
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: '#22c55e' } }, quizScore + '/' + quizTotal)
               ),
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Streak'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.streak', 'Streak')),
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f97316' } }, '\uD83D\uDD25 ' + quizStreak)
               ),
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Best Streak'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.best_streak', 'Best Streak')),
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f59e0b' } }, '\u2B50 ' + quizBest)
               )
             ),
@@ -2523,7 +2618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 var border = !answered ? '#334155' :
                              (isCorrect ? '#22c55e' : (isSelected ? '#ef4444' : '#334155'));
 
-                return h('button', { 'aria-label': 'Select Answer',
+                return h('button', { 'aria-label': 'Answer ' + String.fromCharCode(65 + ci) + ': ' + choice,
                   key: ci,
                   onClick: function() { selectAnswer(ci); },
                   disabled: answered,
@@ -2540,10 +2635,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }),
 
               quizAnswer >= 0 ? h('div', { style: { marginTop: 12 } },
-                h('button', { 'aria-label': 'Next Question',
+                h('button', { 'aria-label': t('stem.fireecology.next_question', 'Next Question'),
                   onClick: nextQuestion,
                   style: { padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 14 }
-                }, 'Next Question \u2192')
+                }, t('stem.fireecology.next_question_2', 'Next Question \u2192'))
               ) : null
             )
           );
@@ -2574,14 +2669,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16 } },
-            h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 10, fontSize: 14 } }, '\uD83E\uDD16 AI Fire Ecology Tutor'),
+            h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 10, fontSize: 14 } }, t('stem.fireecology.ai_fire_ecology_tutor', '\uD83E\uDD16 AI Fire Ecology Tutor')),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
               h('input', {
                 type: 'text',
                 value: aiQuestion,
                 onChange: function(e) { upd('aiQuestion', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
-                placeholder: 'Ask about fire ecology, Indigenous practices, prescribed burning...',
+                placeholder: t('stem.fireecology.ask_about_fire_ecology_indigenous_prac', 'Ask about fire ecology, Indigenous practices, prescribed burning...'),
                 style: {
                   flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)',
                   background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, outline: 'none'
@@ -2592,7 +2687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 disabled: aiLoading,
                 style: {
                   padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: aiLoading ? '#334155' : '#0ea5e9', color: '#fff', fontWeight: 700, fontSize: 14
+                  background: aiLoading ? '#334155' : '#0369a1', color: '#fff', fontWeight: 700, fontSize: 14
                 }
               }, aiLoading ? 'Thinking...' : 'Ask')
             ),
@@ -2614,7 +2709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Smoke chemicals
             h('div', { style: { marginBottom: 16 } },
-              h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 10, fontSize: 15 } }, '\uD83E\uDDEA Smoke Chemicals That Trigger Life'),
+              h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 10, fontSize: 15 } }, t('stem.fireecology.smoke_chemicals_that_trigger_life', '\uD83E\uDDEA Smoke Chemicals That Trigger Life')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
                 SMOKE_ECOLOGY.chemicals.map(function(chem, ci) {
                   return h('div', { key: ci, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 14, border: '1px solid ' + chem.color + '44' } },
@@ -2628,7 +2723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Germination strategies
             h('div', { style: { marginBottom: 16 } },
-              h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 10, fontSize: 15 } }, '\uD83C\uDF31 Fire Survival Strategies'),
+              h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 10, fontSize: 15 } }, t('stem.fireecology.fire_survival_strategies', '\uD83C\uDF31 Fire Survival Strategies')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
                 SMOKE_ECOLOGY.strategies.map(function(strat, si) {
                   return h('div', { key: si, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 14, border: '1px solid var(--allo-stem-border, #334155)44' } },
@@ -2644,7 +2739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Fire-dependent species gallery
             h('div', null,
-              h('div', { style: { fontWeight: 700, color: '#f97316', marginBottom: 10, fontSize: 15 } }, '\uD83C\uDF3A Fire-Dependent Species Gallery'),
+              h('div', { style: { fontWeight: 700, color: '#f97316', marginBottom: 10, fontSize: 15 } }, t('stem.fireecology.fire_dependent_species_gallery', '\uD83C\uDF3A Fire-Dependent Species Gallery')),
               SMOKE_ECOLOGY.fireSeeds.map(function(seed, si) {
                 var expanded = selectedSeed === si;
                 return h('div', { key: si, style: { background: expanded ? '#1e293b' : '#0f172a', borderRadius: 10, padding: expanded ? 16 : 12, marginBottom: 8, border: '1px solid var(--allo-stem-border, #334155)44', cursor: 'pointer', transition: 'all 0.2s' },
@@ -2689,26 +2784,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Comparison table
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16, border: '1px solid var(--allo-stem-border, #334155)' } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, '\uD83D\uDCCA Watershed Impact: Cultural Burn vs. Wildfire'),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.watershed_impact_cultural_burn_vs_wild', '\uD83D\uDCCA Watershed Impact: Cultural Burn vs. Wildfire')),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, fontSize: 13 } },
                 // Header
-                h('div', { style: { padding: 8, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, 'Metric'),
-                h('div', { style: { padding: 8, fontWeight: 700, color: '#22c55e', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, '\uD83D\uDD25 Cultural Burn'),
-                h('div', { style: { padding: 8, fontWeight: 700, color: '#ef4444', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, '\uD83D\uDCA5 Wildfire'),
+                h('div', { style: { padding: 8, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.metric', 'Metric')),
+                h('div', { style: { padding: 8, fontWeight: 700, color: '#22c55e', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.cultural_burn_2', '\uD83D\uDD25 Cultural Burn')),
+                h('div', { style: { padding: 8, fontWeight: 700, color: '#ef4444', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.wildfire', '\uD83D\uDCA5 Wildfire')),
                 // Rows
-                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Sediment runoff'),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, t('stem.fireecology.sediment_runoff', 'Sediment runoff')),
                 h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.sediment),
                 h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.sediment),
-                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Water temp change'),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, t('stem.fireecology.water_temp_change', 'Water temp change')),
                 h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.waterTemp),
                 h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.waterTemp),
-                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Aquatic life'),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, t('stem.fireecology.aquatic_life', 'Aquatic life')),
                 h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.aquaticLife),
                 h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.aquaticLife),
-                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Recovery time'),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, t('stem.fireecology.recovery_time', 'Recovery time')),
                 h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.recovery),
                 h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.recovery),
-                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Runoff increase'),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.runoff_increase', 'Runoff increase')),
                 h('div', { style: { padding: 8, color: '#4ade80' } }, WATERSHED_SCIENCE.comparison.culturalBurn.runoff),
                 h('div', { style: { padding: 8, color: '#fca5a5' } }, WATERSHED_SCIENCE.comparison.wildfire.runoff)
               ),
@@ -2724,7 +2819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderCaseStudiesTab() {
           if (selectedCase) {
             var cs = CASE_STUDIES.filter(function(c) { return c.id === selectedCase; })[0];
-            if (!cs) { upd('selectedCase', null); return null; }
+            if (!cs) { return null; } // (removed setState-in-render upd)
 
             if (!casesViewed[cs.id]) {
               var cv = Object.assign({}, casesViewed);
@@ -2735,10 +2830,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
-              h('button', { 'aria-label': 'Back to Case Studies',
+              h('button', { 'aria-label': t('stem.fireecology.back_to_case_studies', 'Back to Case Studies'),
                 onClick: function() { upd('selectedCase', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
-              }, '\u2190 Back to Case Studies'),
+              }, t('stem.fireecology.back_to_case_studies_2', '\u2190 Back to Case Studies')),
 
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + cs.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
@@ -2763,17 +2858,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('p', { style: { lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 16 } }, cs.description),
 
                 h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, marginBottom: 16, borderLeft: '3px solid #f59e0b' } },
-                  h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, '\uD83C\uDF0D Indigenous Context'),
+                  h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, t('stem.fireecology.indigenous_context', '\uD83C\uDF0D Indigenous Context')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, lineHeight: 1.6 } }, cs.indigenousContext)
                 ),
 
                 h('div', { style: { background: cs.color + '15', borderRadius: 8, padding: 14, marginBottom: 16, borderLeft: '3px solid ' + cs.color } },
-                  h('div', { style: { fontWeight: 700, color: cs.color, marginBottom: 6 } }, '\u26A1 The Lesson'),
+                  h('div', { style: { fontWeight: 700, color: cs.color, marginBottom: 6 } }, t('stem.fireecology.the_lesson', '\u26A1 The Lesson')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, cs.lesson)
                 ),
 
                 h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14 } },
-                  h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 6 } }, '\uD83D\uDD2C Science Note'),
+                  h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 6 } }, t('stem.fireecology.science_note', '\uD83D\uDD2C Science Note')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, lineHeight: 1.6 } }, cs.scienceNote)
                 )
               )
@@ -2783,8 +2878,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #ef4444' } },
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
-                'These are not \u201Cnatural disasters.\u201D Each wildfire case study below reveals the predictable consequences of removing Indigenous fire management from fire-adapted landscapes. The pattern is the same everywhere: ',
-                h('strong', { style: { color: '#ef4444' } }, 'suppress fire \u2192 accumulate fuel \u2192 catastrophic wildfire \u2192 devastation that Indigenous burning would have prevented.')
+                t('stem.fireecology.these_are_not_natural_disasters_each_w', 'These are not \u201Cnatural disasters.\u201D Each wildfire case study below reveals the predictable consequences of removing Indigenous fire management from fire-adapted landscapes. The pattern is the same everywhere: '),
+                h('strong', { style: { color: '#ef4444' } }, t('stem.fireecology.suppress_fire_accumulate_fuel_catastro', 'suppress fire \u2192 accumulate fuel \u2192 catastrophic wildfire \u2192 devastation that Indigenous burning would have prevented.'))
               )
             ),
 
@@ -2809,7 +2904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   ),
                   h('div', { style: { fontSize: 13, color: '#ef4444', marginBottom: 4 } }, '\uD83D\uDD25 ' + cs.stats.acresBurned + (cs.stats.deaths ? ' \u2022 ' + cs.stats.deaths + ' deaths' : '')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, cs.description.substring(0, 120) + '...'),
-                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, '\u2713 Studied') : null
+                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, t('stem.fireecology.studied_2', '\u2713 Studied')) : null
                 );
               })
             )
@@ -2833,27 +2928,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #64748b' } },
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
-                'Compare the carbon impact of different fire management strategies. Adjust the acreage and see how cultural burning, prescribed burning, wildfire, and long-term suppression compare for carbon emissions and sequestration.'
+                t('stem.fireecology.compare_the_carbon_impact_of_different', 'Compare the carbon impact of different fire management strategies. Adjust the acreage and see how cultural burning, prescribed burning, wildfire, and long-term suppression compare for carbon emissions and sequestration.')
               )
             ),
 
             // Acres slider
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 } },
-                h('label', { htmlFor: 'fireeco-carbon-acres', style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Area to Calculate'),
+                h('label', { htmlFor: 'fireeco-carbon-acres', style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, t('stem.fireecology.area_to_calculate', 'Area to Calculate')),
                 h('span', { style: { color: '#f97316', fontWeight: 700 } }, carbonAcres.toLocaleString() + ' acres')
               ),
               h('input', {
                 id: 'fireeco-carbon-acres',
-                'aria-label': 'Area to Calculate (acres)',
+                'aria-label': t('stem.fireecology.area_to_calculate_acres', 'Area to Calculate (acres)'),
                 type: 'range',  min: 10, max: 10000, step: 10, value: carbonAcres,
                 onChange: function(e) { updMulti({ carbonAcres: parseInt(e.target.value), carbonCalculated: false }); },
                 style: { width: '100%', accentColor: '#f97316' }
               }),
-              h('button', { 'aria-label': 'Calculate Carbon Impact',
+              h('button', { 'aria-label': t('stem.fireecology.calculate_carbon_impact', 'Calculate Carbon Impact'),
                 onClick: calculate,
                 style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 15, marginTop: 12 }
-              }, '\u2601\uFE0F Calculate Carbon Impact')
+              }, t('stem.fireecology.calculate_carbon_impact_2', '\u2601\uFE0F Calculate Carbon Impact'))
             ),
 
             // Results
@@ -2869,27 +2964,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('div', { style: { fontWeight: 700, color: sc.color, marginBottom: 10, fontSize: 14 } }, sc.label),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Immediate CO\u2082 Release'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.immediate_co_release', 'Immediate CO\u2082 Release')),
                       h('div', { style: { fontSize: 20, fontWeight: 700, color: sc.color } }, totalCO2.toLocaleString() + ' tons')
                     ),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Tree Survival'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.tree_survival', 'Tree Survival')),
                       h('div', { style: { fontSize: 16, fontWeight: 700, color: sc.treeSurvival > 50 ? '#22c55e' : '#ef4444' } }, sc.treeSurvival + '%')
                     ),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Soil Carbon'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.soil_carbon', 'Soil Carbon')),
                       h('div', { style: { fontSize: 13, fontWeight: 600, color: sc.soilCarbon === 'preserved' ? '#22c55e' : sc.soilCarbon === 'destroyed' ? '#ef4444' : '#f59e0b' } }, sc.soilCarbon)
                     ),
 
                     biochar > 0 ? h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Biochar Created (1000+ yr storage)'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.biochar_created_1000_yr_storage', 'Biochar Created (1000+ yr storage)')),
                       h('div', { style: { fontSize: 14, fontWeight: 700, color: '#22c55e' } }, biochar.toLocaleString() + ' tons')
                     ) : null,
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Net Carbon (10 years)'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.net_carbon_10_years', 'Net Carbon (10 years)')),
                       h('div', { style: { fontSize: 18, fontWeight: 700, color: net10yr <= 0 ? '#22c55e' : '#ef4444' } },
                         (net10yr <= 0 ? '\u2193 ' : '\u2191 ') + Math.abs(net10yr).toLocaleString() + ' tons',
                         h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 4 } }, net10yr <= 0 ? '(carbon sink)' : '(carbon source)')
@@ -2922,9 +3017,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { marginTop: 12, padding: 12, background: '#052e16', borderRadius: 8, fontSize: 13, color: '#4ade80', lineHeight: 1.5 } },
                   '\u2B50 For ' + carbonAcres.toLocaleString() + ' acres: Cultural burning saves ',
                   h('strong', null, ((CARBON_DATA.wildfire.co2PerAcre - CARBON_DATA.culturalBurn.co2PerAcre) * carbonAcres).toLocaleString() + ' tons of CO\u2082'),
-                  ' compared to wildfire. That\u2019s equivalent to taking ',
+                  t('stem.fireecology.compared_to_wildfire_that_s_equivalent', ' compared to wildfire. That\u2019s equivalent to taking '),
                   h('strong', null, Math.round(((CARBON_DATA.wildfire.co2PerAcre - CARBON_DATA.culturalBurn.co2PerAcre) * carbonAcres) / 4.6).toLocaleString()),
-                  ' cars off the road for a year.'
+                  t('stem.fireecology.cars_off_the_road_for_a_year', ' cars off the road for a year.')
                 )
               )
             ) : null
@@ -2972,6 +3067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           function draw() {
+            if (!canvasEl.isConnected) { if (canvasEl._fireAnim) cancelAnimationFrame(canvasEl._fireAnim); return; }
             canvasEl._fireAnim = requestAnimationFrame(draw);
             tick++;
             cx.clearRect(0, 0, cW, cH);
@@ -3068,6 +3164,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Fire effect overlay — enhanced with layered flames, heat shimmer, sparks
             if (burning) {
+              // Fire light (glow + flame tongues) blends additively so the blaze reads hotter
+              cx.save(); cx.globalCompositeOperation = 'lighter';
               // Base fire glow at ground level
               var fireGlow = cx.createRadialGradient(w * 0.5, groundY, 0, w * 0.5, groundY, w * 0.6);
               fireGlow.addColorStop(0, 'rgba(251,146,60,' + (0.22 + Math.sin(tick * 0.05) * 0.06).toFixed(3) + ')');
@@ -3099,6 +3197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   cx.fill();
                 }
               }
+              cx.restore();
 
               // Smoke columns — rising, expanding, fading
               for (var si = 0; si < 20; si++) {
@@ -3294,7 +3393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 8, marginBottom: 12, border: '1px solid var(--allo-stem-border, #1e293b)' }
             },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, paddingLeft: 4 } }, opts.title || 'Your Territory'),
-              h('svg', { viewBox: '0 0 600 300', style: { width: '100%', height: 'auto', maxHeight: 300, display: 'block', borderRadius: 8 }, 'aria-label': 'Aerial map of the Wabanaki territory showing the 5 stewardship zones' },
+              h('svg', { viewBox: '0 0 600 300', style: { width: '100%', height: 'auto', maxHeight: 300, display: 'block', borderRadius: 8 }, 'aria-label': t('stem.fireecology.aerial_map_of_the_wabanaki_territory_s', 'Aerial map of the Wabanaki territory showing the 5 stewardship zones') },
                 // dark base
                 h('rect', { x: 0, y: 0, width: 600, height: 300, fill: '#020617', rx: 6 }),
                 // each zone tile
@@ -3348,11 +3447,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ),
               // Map legend
               h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 6, paddingLeft: 4, display: 'flex', gap: 14, flexWrap: 'wrap' } },
-                h('span', null, h('span', { style: { color: '#ef4444' } }, '🔥'), ' past due'),
-                h('span', null, h('span', { style: { color: '#fbbf24' } }, '🎯'), ' in window'),
-                h('span', null, h('span', { style: { color: '#facc15' } }, '⚠️'), ' fuel high'),
-                h('span', null, h('span', { style: { color: '#38bdf8' } }, '〰'), ' stream / riparian'),
-                h('span', { style: { marginLeft: 'auto', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Click any zone for cultural deep-dive →')
+                h('span', null, h('span', { style: { color: '#ef4444' } }, '🔥'), t('stem.fireecology.past_due', ' past due')),
+                h('span', null, h('span', { style: { color: '#fbbf24' } }, '🎯'), t('stem.fireecology.in_window', ' in window')),
+                h('span', null, h('span', { style: { color: '#facc15' } }, '⚠️'), t('stem.fireecology.fuel_high', ' fuel high')),
+                h('span', null, h('span', { style: { color: '#38bdf8' } }, '〰'), t('stem.fireecology.stream_riparian', ' stream / riparian')),
+                h('span', { style: { marginLeft: 'auto', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.click_any_zone_for_cultural_deep_dive', 'Click any zone for cultural deep-dive →'))
               )
             );
           }
@@ -3376,8 +3475,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p[key]; }).join(' ');
             }
             return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Eight-year trend'),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Trend chart of ecological health and total cultural yield year by year' },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, t('stem.fireecology.eight_year_trend', '📈 Eight-year trend')),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': t('stem.fireecology.trend_chart_of_ecological_health_and_t', 'Trend chart of ecological health and total cultural yield year by year') },
                 // gridlines
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
@@ -3404,8 +3503,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ),
               h('div', { style: { display: 'flex', gap: 16, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } },
-                h('span', null, h('span', { style: { color: '#86efac' } }, '━ '), 'Avg health (0 to 100)'),
-                h('span', null, h('span', { style: { color: '#fbbf24' } }, '┄ '), 'Total yield (rescaled to 0 to 500)')
+                h('span', null, h('span', { style: { color: '#86efac' } }, '━ '), t('stem.fireecology.avg_health_0_to_100', 'Avg health (0 to 100)')),
+                h('span', null, h('span', { style: { color: '#fbbf24' } }, '┄ '), t('stem.fireecology.total_yield_rescaled_to_0_to_500', 'Total yield (rescaled to 0 to 500)'))
               )
             );
           }
@@ -3487,25 +3586,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               return h('div', {
                 role: 'status', 'aria-live': 'polite',
                 style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 }
-              }, '⏳ AI fire ecologist is reading your land...');
+              }, t('stem.fireecology.ai_fire_ecologist_is_reading_your_land', '⏳ AI fire ecologist is reading your land...'));
             }
             if (!m.aiReadResponse) return null;
             return h('div', {
-              role: 'region', 'aria-label': 'AI Land Reading',
+              role: 'region', 'aria-label': t('stem.fireecology.ai_land_reading', 'AI Land Reading'),
               style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
-                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Land Reading'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, t('stem.fireecology.ai_land_reading_2', 'AI Land Reading')),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
                   h('button', {
                     onClick: readLand,
-                    'aria-label': 'Read again',
+                    'aria-label': t('stem.fireecology.read_again', 'Read again'),
                     style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
-                  }, '↻ Re-read'),
+                  }, t('stem.fireecology.re_read', '↻ Re-read')),
                   h('button', {
                     onClick: dismissAIRead,
-                    'aria-label': 'Dismiss reading',
+                    'aria-label': t('stem.fireecology.dismiss_reading', 'Dismiss reading'),
                     style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
                   }, '✕')
                 )
@@ -3514,9 +3613,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', {
                 style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' }
               },
-                'AI fire ecology educator trained on documented Wabanaki fire stewardship research. ',
-                h('strong', null, 'It is not a Wabanaki person and does not speak for any Wabanaki nation.'),
-                ' For authoritative voice, consult Wabanaki organizations directly: Maine Indian Basketmakers Alliance, Wabanaki Public Health and Wellness, the Penobscot Cultural and Historic Preservation Department, and the Passamaquoddy Cultural Heritage Museum.'
+                t('stem.fireecology.ai_fire_ecology_educator_trained_on_do', 'AI fire ecology educator trained on documented Wabanaki fire stewardship research. '),
+                h('strong', null, t('stem.fireecology.it_is_not_a_wabanaki_person_and_does_n', 'It is not a Wabanaki person and does not speak for any Wabanaki nation.')),
+                t('stem.fireecology.for_authoritative_voice_consult_wabana', ' For authoritative voice, consult Wabanaki organizations directly: Maine Indian Basketmakers Alliance, Wabanaki Public Health and Wellness, the Penobscot Cultural and Historic Preservation Department, and the Passamaquoddy Cultural Heritage Museum.')
               )
             );
           }
@@ -3526,34 +3625,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // glossary button on the setup phase header.
           var WABANAKI_GLOSSARY = [
             { group: 'Seasons (across the campaign year)', items: [
-              { term: 'Sigwan',   en: 'spring',   note: 'First part of the Warm Season phase in the sim.' },
-              { term: 'Nipon',    en: 'summer',   note: 'Second part of the Warm Season phase.' },
-              { term: 'Toqaq',    en: 'fall',     note: 'First part of the Cold Season phase. Primary cultural-burn window.' },
-              { term: 'Pun',      en: 'winter',   note: 'Second part of the Cold Season phase. Pile-burn and coppice window.' }
+              { term: 'Sigwan',   en: 'spring',   note: t('stem.fireecology.first_part_of_the_warm_season_phase_in', 'First part of the Warm Season phase in the sim.') },
+              { term: 'Nipon',    en: 'summer',   note: t('stem.fireecology.second_part_of_the_warm_season_phase', 'Second part of the Warm Season phase.') },
+              { term: 'Toqaq',    en: 'fall',     note: t('stem.fireecology.first_part_of_the_cold_season_phase_pr', 'First part of the Cold Season phase. Primary cultural-burn window.') },
+              { term: 'Pun',      en: 'winter',   note: t('stem.fireecology.second_part_of_the_cold_season_phase_p', 'Second part of the Cold Season phase. Pile-burn and coppice window.') }
             ] },
             { group: 'Blueberry Barren', items: [
-              { term: 'Sata', en: 'lowbush blueberry', note: 'Fire-dependent rhizomatous shrub. Burned every 2 to 3 years.' }
+              { term: 'Sata', en: 'lowbush blueberry', note: t('stem.fireecology.fire_dependent_rhizomatous_shrub_burne', 'Fire-dependent rhizomatous shrub. Burned every 2 to 3 years.') }
             ] },
             { group: 'White Oak Savanna', items: [
-              { term: 'Anaskimnesi', en: 'white oak', note: 'Less tannic than red oak; preferred acorn source.' }
+              { term: 'Anaskimnesi', en: 'white oak', note: t('stem.fireecology.less_tannic_than_red_oak_preferred_aco', 'Less tannic than red oak; preferred acorn source.') }
             ] },
             { group: 'Pine-Spruce Stand and White Pine Grove', items: [
-              { term: 'Kuwes',    en: 'white pine',  note: 'Maine state tree. Pitch and canoe wood.' },
-              { term: 'Skog',     en: 'spruce',      note: 'Red spruce dominates higher elevations.' },
-              { term: 'Pasekona', en: 'canoe',       note: 'White pine and birchbark canoe traditions are central to Wabanaki travel.' }
+              { term: 'Kuwes',    en: 'white pine',  note: t('stem.fireecology.maine_state_tree_pitch_and_canoe_wood', 'Maine state tree. Pitch and canoe wood.') },
+              { term: 'Skog',     en: 'spruce',      note: t('stem.fireecology.red_spruce_dominates_higher_elevations', 'Red spruce dominates higher elevations.') },
+              { term: 'Pasekona', en: 'canoe',       note: t('stem.fireecology.white_pine_and_birchbark_canoe_traditi', 'White pine and birchbark canoe traditions are central to Wabanaki travel.') }
             ] },
             { group: 'Riparian Corridor', items: [
-              { term: 'Welimanal', en: 'sweetgrass',  note: 'Smudge for ceremony; binding band on baskets.' },
-              { term: 'Qapit',     en: 'beaver',      note: 'Engineer of the riparian zone; raises water tables and creates firebreaks.' }
+              { term: 'Welimanal', en: 'sweetgrass',  note: t('stem.fireecology.smudge_for_ceremony_binding_band_on_ba', 'Smudge for ceremony; binding band on baskets.') },
+              { term: 'Qapit',     en: 'beaver',      note: t('stem.fireecology.engineer_of_the_riparian_zone_raises_w', 'Engineer of the riparian zone; raises water tables and creates firebreaks.') }
             ] },
             { group: 'Mixed Hardwood', items: [
-              { term: 'Wikp',     en: 'brown ash',    note: 'The basketry tree. Annual growth rings split into splints when the trunk is pounded.' },
-              { term: 'Senomozi', en: 'sugar maple',  note: 'Spring sap run for syrup.' }
+              { term: 'Wikp',     en: 'brown ash',    note: t('stem.fireecology.the_basketry_tree_annual_growth_rings_', 'The basketry tree. Annual growth rings split into splints when the trunk is pounded.') },
+              { term: 'Senomozi', en: 'sugar maple',  note: t('stem.fireecology.spring_sap_run_for_syrup', 'Spring sap run for syrup.') }
             ] },
             { group: 'Intervale Meadow', items: [
-              { term: 'Olawagik',   en: 'intervale',   note: 'Alluvial river-floodplain land. Warm, loose, fertile.' },
-              { term: 'Skamonal',   en: 'corn',        note: 'White flint corn was the Wabanaki staple; dried and ground.' },
-              { term: 'Malsanikuk', en: 'squash',      note: 'One of the Three Sisters with corn and beans.' }
+              { term: 'Olawagik',   en: 'intervale',   note: t('stem.fireecology.alluvial_river_floodplain_land_warm_lo', 'Alluvial river-floodplain land. Warm, loose, fertile.') },
+              { term: 'Skamonal',   en: 'corn',        note: t('stem.fireecology.white_flint_corn_was_the_wabanaki_stap', 'White flint corn was the Wabanaki staple; dried and ground.') },
+              { term: 'Malsanikuk', en: 'squash',      note: t('stem.fireecology.one_of_the_three_sisters_with_corn_and', 'One of the Three Sisters with corn and beans.') }
             ] }
           ];
 
@@ -3562,7 +3661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           function renderGlossaryPanel() {
             return h('div', {
-              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Wabanaki vocabulary glossary',
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': t('stem.fireecology.wabanaki_vocabulary_glossary', 'Wabanaki vocabulary glossary'),
               style: {
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(15,23,42,0.85) 60%)',
                 borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7',
@@ -3572,22 +3671,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 30 } }, '📖'),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, color: '#a855f7', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Vocabulary'),
-                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, 'Wabanaki vocabulary in this sim')
+                  h('div', { style: { fontSize: 11, color: '#a855f7', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.fireecology.vocabulary', 'Vocabulary')),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, t('stem.fireecology.wabanaki_vocabulary_in_this_sim', 'Wabanaki vocabulary in this sim'))
                 ),
                 h('button', {
                   onClick: closeGlossary,
-                  'aria-label': 'Close glossary',
+                  'aria-label': t('stem.fireecology.close_glossary', 'Close glossary'),
                   style: {
                     background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)',
                     color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer',
                     borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
                   }
-                }, '✕ Close')
+                }, t('stem.fireecology.close', '✕ Close'))
               ),
 
               h('p', { style: { fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.55, marginBottom: 14 } },
-                'The bilingual terms across this sim. The Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki), each with its own language. Spellings vary by orthography and dialect; the forms here are representative, not authoritative. For language teaching consult the language program of each nation, the University of Maine Wabanaki Center, or community resources directly.'
+                t('stem.fireecology.the_bilingual_terms_across_this_sim_th', 'The bilingual terms across this sim. The Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki), each with its own language. Spellings vary by orthography and dialect; the forms here are representative, not authoritative. For language teaching consult the language program of each nation, the University of Maine Wabanaki Center, or community resources directly.')
               ),
 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 } },
@@ -3640,33 +3739,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, def.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Cultural deep-dive'),
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.fireecology.cultural_deep_dive', 'Cultural deep-dive')),
                   h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, dd.bilingual)
                 ),
                 h('button', {
                   onClick: closeDeepDive,
-                  'aria-label': 'Close deep-dive',
+                  'aria-label': t('stem.fireecology.close_deep_dive', 'Close deep-dive'),
                   style: {
                     background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)',
                     color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer',
                     borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
                   }
-                }, '✕ Close')
+                }, t('stem.fireecology.close_2', '✕ Close'))
               ),
 
               // Sections grid
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 Ecological knowledge'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.ecological_knowledge', '🌿 Ecological knowledge')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🧺 Traditional use and preparation'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.traditional_use_and_preparation', '🧺 Traditional use and preparation')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.preparation)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Modern context'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.modern_context', '🌍 Modern context')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
@@ -3679,10 +3778,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   borderRadius: 10, padding: 14, marginTop: 12
                 }
               },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a855f7', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '✨ A Wabanaki teaching'),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a855f7', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.a_wabanaki_teaching', '✨ A Wabanaki teaching')),
                 h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } }, '“' + dd.teaching + '”'),
                 h('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                  'Paraphrased from documented Wabanaki stewardship practice. The Wabanaki Confederacy includes Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, and Abenaki nations, each with its own distinct language; the bilingual term above is one representative form.'
+                  t('stem.fireecology.paraphrased_from_documented_wabanaki_s', 'Paraphrased from documented Wabanaki stewardship practice. The Wabanaki Confederacy includes Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, and Abenaki nations, each with its own distinct language; the bilingual term above is one representative form.')
                 )
               )
             );
@@ -3792,7 +3891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             var pickRng = mosaicMulberry32(mosaicHash(seed + ':pick:' + m.year));
             var ev;
             if (skipRng() < (diff.eventSkipChance || 0)) {
-              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. The seasons turned as expected and the community kept its rhythm.', apply: function() {} };
+              ev = { id: 'quietYear', name: t('stem.fireecology.a_quiet_year', 'A Quiet Year'), icon: '🌤️', desc: t('stem.fireecology.no_major_event_the_seasons_turned_as_e', 'No major event. The seasons turned as expected and the community kept its rhythm.'), apply: function() {} };
             } else {
               ev = MOSAIC_EVENTS[Math.floor(pickRng() * MOSAIC_EVENTS.length)];
             }
@@ -3880,13 +3979,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               var totalYield = Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0));
               var outcome;
               if (avgHealth >= 78 && totalYield >= 490 && m.continuityWins >= 6) {
-                outcome = { tier: 'excellent', label: 'Wabanaki Stewardship Mastery', color: '#16a34a', icon: '🏆', desc: 'The mosaic thrives. Berry harvests are abundant, intervale corn fills the longhouse, ash splints supply every basketmaker, canoes leave the pine grove finished and tight, sweetgrass braids fill every ceremony. The land remembers good fire.' };
+                outcome = { tier: 'excellent', label: t('stem.fireecology.wabanaki_stewardship_mastery', 'Wabanaki Stewardship Mastery'), color: '#16a34a', icon: '🏆', desc: t('stem.fireecology.the_mosaic_thrives_berry_harvests_are_', 'The mosaic thrives. Berry harvests are abundant, intervale corn fills the longhouse, ash splints supply every basketmaker, canoes leave the pine grove finished and tight, sweetgrass braids fill every ceremony. The land remembers good fire.') };
               } else if (avgHealth >= 70 && totalYield >= 390) {
-                outcome = { tier: 'good', label: 'Skilled Mosaic Steward', color: '#22c55e', icon: '🌿', desc: 'You held the mosaic together. Some zones thrived, others held steady. The community has what it needs.' };
+                outcome = { tier: 'good', label: t('stem.fireecology.skilled_mosaic_steward', 'Skilled Mosaic Steward'), color: '#22c55e', icon: '🌿', desc: t('stem.fireecology.you_held_the_mosaic_together_some_zone', 'You held the mosaic together. Some zones thrived, others held steady. The community has what it needs.') };
               } else if (avgHealth >= 60) {
-                outcome = { tier: 'struggling', label: 'Mosaic Apprentice', color: '#f59e0b', icon: '🍃', desc: 'You kept the land alive but it is fraying. Some zones missed their fire-return windows; harvests were thin in places.' };
+                outcome = { tier: 'struggling', label: t('stem.fireecology.mosaic_apprentice', 'Mosaic Apprentice'), color: '#f59e0b', icon: '🍃', desc: t('stem.fireecology.you_kept_the_land_alive_but_it_is_fray', 'You kept the land alive but it is fraying. Some zones missed their fire-return windows; harvests were thin in places.') };
               } else {
-                outcome = { tier: 'critical', label: 'Ecology Slipping', color: '#ef4444', icon: '⚠️', desc: 'The mosaic is unraveling. Without consistent stewardship the habitats are blending together and the cultural species are losing ground.' };
+                outcome = { tier: 'critical', label: t('stem.fireecology.ecology_slipping', 'Ecology Slipping'), color: '#ef4444', icon: '⚠️', desc: t('stem.fireecology.the_mosaic_is_unraveling_without_consi', 'The mosaic is unraveling. Without consistent stewardship the habitats are blending together and the cultural species are losing ground.') };
               }
               setMosaic({ phase: 'debrief', finalOutcome: outcome });
               awardStemXP('mosaic_complete', 50, outcome.label);
@@ -3921,36 +4020,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, '🧩'),
                   h('div', null,
-                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Wabanaki Cultural Mosaic'),
-                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'Steward a real Maine territory across 8 years.')
+                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, t('stem.fireecology.wabanaki_cultural_mosaic', 'Wabanaki Cultural Mosaic')),
+                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, t('stem.fireecology.steward_a_real_maine_territory_across_', 'Steward a real Maine territory across 8 years.'))
                   )
                 ),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
-                  'Your land is divided into 5 zones, each with its own habitat, its own cultural use, and its own fire-return interval. ',
-                  h('strong', null, 'A blueberry barren needs fire every 2 years; a riparian corridor needs fire almost never.'),
-                  ' Real Indigenous stewardship is patchwork, not uniform.'
+                  t('stem.fireecology.your_land_is_divided_into_5_zones_each', 'Your land is divided into 5 zones, each with its own habitat, its own cultural use, and its own fire-return interval. '),
+                  h('strong', null, t('stem.fireecology.a_blueberry_barren_needs_fire_every_2_', 'A blueberry barren needs fire every 2 years; a riparian corridor needs fire almost never.')),
+                  t('stem.fireecology.real_indigenous_stewardship_is_patchwo', ' Real Indigenous stewardship is patchwork, not uniform.')
                 ),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } },
-                  'This sim is built on documented Wabanaki practice (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki). Where details are simplified for an 8-year window, the underlying logic is faithful.'
+                  t('stem.fireecology.this_sim_is_built_on_documented_wabana', 'This sim is built on documented Wabanaki practice (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki). Where details are simplified for an 8-year window, the underlying logic is faithful.')
                 ),
                 h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
                     onClick: openGlossary,
-                    'aria-label': 'Open Wabanaki vocabulary glossary',
+                    'aria-label': t('stem.fireecology.open_wabanaki_vocabulary_glossary', 'Open Wabanaki vocabulary glossary'),
                     style: {
                       background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7',
                       color: '#e9d5ff', cursor: 'pointer',
                       borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12
                     }
-                  }, '📖 Wabanaki vocabulary')
+                  }, t('stem.fireecology.wabanaki_vocabulary', '📖 Wabanaki vocabulary'))
                 )
               ),
 
               // Zone preview cards
-              h('h4', { style: { margin: '14px 0 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 16 } }, 'Your Territory'),
+              h('h4', { style: { margin: '14px 0 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 16 } }, t('stem.fireecology.your_territory', 'Your Territory')),
               renderTerritoryMap(
                 WABANAKI_ZONES.map(function(z) { return Object.assign({ id: z.id }, z.defaultState); }),
-                { title: 'Starting state of your land' }
+                { title: t('stem.fireecology.starting_state_of_your_land', 'Starting state of your land') }
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10, marginBottom: 14 } },
                 WABANAKI_ZONES.map(function(z) {
@@ -3968,7 +4067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 4 } },
                       'Fire return: ' + (z.fireReturn >= 50 ? 'almost never' : 'every ' + z.fireReturn + ' years')
                     ),
-                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, z.desc),
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.fireecology.' + (z.id) + '_desc', z.desc)),
                     h('div', { style: { color: '#fbbf24', fontSize: 11.5, marginBottom: 8 } }, '✨ ' + z.culturalUse),
                     z.deepDive ? h('button', {
                       onClick: function() { openDeepDive(z.id); },
@@ -3978,7 +4077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                         border: '1px solid ' + z.color + '88', background: z.color + '22',
                         color: z.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5
                       }
-                    }, '📚 Cultural deep-dive →') : null
+                    }, t('stem.fireecology.cultural_deep_dive_2', '📚 Cultural deep-dive →')) : null
                   );
                 })
               ),
@@ -3987,7 +4086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', {
                 style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' }
               },
-                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, t('stem.fireecology.difficulty', 'Difficulty')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                   Object.keys(MOSAIC_DIFFICULTIES).map(function(dkey) {
                     var diff = MOSAIC_DIFFICULTIES[dkey];
@@ -4006,26 +4105,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                       }
                     },
                       h('div', { style: { fontWeight: 800, fontSize: 13 } }, diff.label),
-                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, diff.desc)
+                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.fireecology.' + (dkey) + '_desc', diff.desc))
                     );
                   })
                 )
               ),
 
               h('div', {
-                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: '#fde68a' }
+                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: 'var(--allo-stem-text, #fde68a)' }
               },
-                h('strong', { style: { color: '#fbbf24' } }, 'How a year works: '),
-                'each year splits into a ',
-                h('strong', { style: { color: '#fb923c' } }, '☼ Warm Season (Sigwan-Nipon)'),
-                ' and a ',
-                h('strong', { style: { color: '#60a5fa' } }, '❄ Cold Season (Toqaq-Pun)'),
+                h('strong', { style: { color: '#fbbf24' } }, t('stem.fireecology.how_a_year_works', 'How a year works: ')),
+                t('stem.fireecology.each_year_splits_into_a', 'each year splits into a '),
+                h('strong', { style: { color: '#fb923c' } }, t('stem.fireecology.warm_season_sigwan_nipon', '☼ Warm Season (Sigwan-Nipon)')),
+                t('stem.fireecology.and_a', ' and a '),
+                h('strong', { style: { color: '#60a5fa' } }, t('stem.fireecology.cold_season_toqaq_pun', '❄ Cold Season (Toqaq-Pun)')),
                 '. You get ' + (MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward).hoursPerYear + ' total stewardship hours per year, split half-and-half across the two phases. Cultural burn, pile burn, and coppice only happen in the Cold Season. Hand thinning, rest, and seed scatter (post-burn) work in either. Both phases of one year, then a weather or community event fires and the land drifts to the next year.'
               ),
 
               h('button', {
                 onClick: startCampaign,
-                'aria-label': 'Begin Wabanaki Mosaic',
+                'aria-label': t('stem.fireecology.begin_wabanaki_mosaic', 'Begin Wabanaki Mosaic'),
                 style: {
                   width: '100%', padding: '14px 20px', borderRadius: 12,
                   border: 'none', cursor: 'pointer',
@@ -4033,7 +4132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   color: '#fff', fontWeight: 800, fontSize: 16,
                   boxShadow: '0 6px 14px rgba(21,128,61,0.35)'
                 }
-              }, '🧩 Begin 8-year Stewardship'),
+              }, t('stem.fireecology.begin_8_year_stewardship', '🧩 Begin 8-year Stewardship')),
 
               // Notes for educators (collapsed by default)
               h('details', {
@@ -4044,28 +4143,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               },
                 h('summary', {
                   style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 }
-                }, '📝 Notes for educators'),
+                }, t('stem.fireecology.notes_for_educators', '📝 Notes for educators')),
                 h('div', { style: { marginTop: 10, fontSize: 13, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)' } },
                   h('p', { style: { margin: '0 0 8px' } },
-                    'This sim is a teaching tool. Wabanaki fire stewardship is a living practice held by living people, not a historical artifact. The simulation is intentionally a simplification across an 8-year window; real stewardship operates on multi-generational time horizons, ties into ceremony, language, and treaty relationships, and is led by Wabanaki nations themselves.'
+                    t('stem.fireecology.this_sim_is_a_teaching_tool_wabanaki_f', 'This sim is a teaching tool. Wabanaki fire stewardship is a living practice held by living people, not a historical artifact. The simulation is intentionally a simplification across an 8-year window; real stewardship operates on multi-generational time horizons, ties into ceremony, language, and treaty relationships, and is led by Wabanaki nations themselves.')
                   ),
                   h('p', { style: { margin: '0 0 8px' } },
-                    h('strong', { style: { color: '#fbbf24' } }, 'For pairing with classroom work, consider these resources:'),
+                    h('strong', { style: { color: '#fbbf24' } }, t('stem.fireecology.for_pairing_with_classroom_work_consid', 'For pairing with classroom work, consider these resources:')),
                   ),
                   h('ul', { style: { margin: '0 0 8px 18px', padding: 0 } },
-                    h('li', null, 'Wabanaki Public Health and Wellness (wabanakipublichealth.org) for community-led programming.'),
-                    h('li', null, 'Maine Indian Basketmakers Alliance (maineindianbaskets.org) for brown-ash crisis and craft revitalization.'),
-                    h('li', null, 'University of Maine Wabanaki Center (umaine.edu/nativeamericanprograms) for academic resources.'),
-                    h('li', null, 'Each nation\'s cultural offices: Penobscot Cultural and Historic Preservation Department; Passamaquoddy Cultural Heritage Museum; Maliseet, Mi\'kmaq, and Abenaki community resources.')
+                    h('li', null, t('stem.fireecology.wabanaki_public_health_and_wellness_wa', 'Wabanaki Public Health and Wellness (wabanakipublichealth.org) for community-led programming.')),
+                    h('li', null, t('stem.fireecology.maine_indian_basketmakers_alliance_mai', 'Maine Indian Basketmakers Alliance (maineindianbaskets.org) for brown-ash crisis and craft revitalization.')),
+                    h('li', null, t('stem.fireecology.university_of_maine_wabanaki_center_um', 'University of Maine Wabanaki Center (umaine.edu/nativeamericanprograms) for academic resources.')),
+                    h('li', null, t('stem.fireecology.each_nation_s_cultural_offices_penobsc', 'Each nation\'s cultural offices: Penobscot Cultural and Historic Preservation Department; Passamaquoddy Cultural Heritage Museum; Maliseet, Mi\'kmaq, and Abenaki community resources.'))
                   ),
                   h('p', { style: { margin: '0 0 8px' } },
-                    h('strong', { style: { color: '#fbbf24' } }, 'Discussion prompts after the campaign:')
+                    h('strong', { style: { color: '#fbbf24' } }, t('stem.fireecology.discussion_prompts_after_the_campaign', 'Discussion prompts after the campaign:'))
                   ),
                   h('ul', { style: { margin: '0 0 0 18px', padding: 0 } },
-                    h('li', null, 'Where in your local landscape do you see evidence of past or ongoing Indigenous fire stewardship?'),
-                    h('li', null, 'How did the seasonal split (Sigwan-Nipon and Toqaq-Pun) change which moves felt high-leverage?'),
-                    h('li', null, 'Which zone did you find hardest to keep healthy, and what does that suggest about the cultural infrastructure (food, basketry, canoe-building, ceremony) it supports?'),
-                    h('li', null, 'How is the loss of brown ash to emerald ash borer a parallel to other ongoing cultural-ecological emergencies you know about?')
+                    h('li', null, t('stem.fireecology.where_in_your_local_landscape_do_you_s', 'Where in your local landscape do you see evidence of past or ongoing Indigenous fire stewardship?')),
+                    h('li', null, t('stem.fireecology.how_did_the_seasonal_split_sigwan_nipo', 'How did the seasonal split (Sigwan-Nipon and Toqaq-Pun) change which moves felt high-leverage?')),
+                    h('li', null, t('stem.fireecology.which_zone_did_you_find_hardest_to_kee', 'Which zone did you find hardest to keep healthy, and what does that suggest about the cultural infrastructure (food, basketry, canoe-building, ceremony) it supports?')),
+                    h('li', null, t('stem.fireecology.how_is_the_loss_of_brown_ash_to_emeral', 'How is the loss of brown ash to emerald ash borer a parallel to other ongoing cultural-ecological emergencies you know about?'))
                   )
                 )
               )
@@ -4116,19 +4215,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
               ),
-              renderTerritoryMap(m.zones, { title: 'Final state of your mosaic' }),
+              renderTerritoryMap(m.zones, { title: t('stem.fireecology.final_state_of_your_mosaic', 'Final state of your mosaic') }),
               renderTrendChart(m.yearLog),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Avg ecological health'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.avg_ecological_health', 'Avg ecological health')),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: '#86efac' } }, actualHealth + '/100')
                 ),
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Total cultural yield'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.total_cultural_yield', 'Total cultural yield')),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: '#fbbf24' } }, actualYield)
                 ),
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Continuity wins'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.continuity_wins', 'Continuity wins')),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
                 )
               ),
@@ -4141,18 +4240,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   border: '1px solid rgba(248,113,113,0.4)'
                 }
               },
-                h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing?'),
+                h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, t('stem.fireecology.what_if_you_had_done_nothing', '↔ What if you had done nothing?')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                   h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your mosaic'),
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, t('stem.fireecology.your_mosaic', 'Your mosaic')),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Health ' + actualHealth + ' / Yield ' + actualYield)
                   ),
                   h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Neglected mosaic'),
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, t('stem.fireecology.neglected_mosaic', 'Neglected mosaic')),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Health ' + baselineHealth + ' / Yield ' + baselineYield)
                   )
                 ),
-                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, fontStyle: 'italic' } },
                   actualHealth > baselineHealth + 8 || actualYield > baselineYield + 50
                     ? 'Your stewardship pulled the mosaic substantially ahead of where neglect would have left it. That gap is the cultural infrastructure you built.'
                     : (actualHealth > baselineHealth - 2
@@ -4165,11 +4264,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               Object.keys(lifetimeHarvest).length > 0 ? h('div', {
                 style: { background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24' }
               },
-                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, '🌾 Eight-year cultural harvest'),
+                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, t('stem.fireecology.eight_year_cultural_harvest', '🌾 Eight-year cultural harvest')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, marginTop: 8 } },
                   Object.keys(lifetimeHarvest).map(function(zid) {
                     var lh = lifetimeHarvest[zid];
-                    return h('div', { key: zid, style: { fontSize: 12.5, color: '#fde68a' } },
+                    return h('div', { key: zid, style: { fontSize: 12.5, color: 'var(--allo-stem-text, #fde68a)' } },
                       h('span', { style: { fontSize: 16, marginRight: 6 } }, lh.icon),
                       sumHarvestText(lh.parts)
                     );
@@ -4177,7 +4276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 )
               ) : null,
 
-              h('h4', { style: { color: 'var(--allo-stem-text, #e2e8f0)', margin: '10px 0' } }, 'Final state by zone'),
+              h('h4', { style: { color: 'var(--allo-stem-text, #e2e8f0)', margin: '10px 0' } }, t('stem.fireecology.final_state_by_zone', 'Final state by zone')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
                 m.zones.map(function(z) {
                   var def = getZoneDef(z.id);
@@ -4188,25 +4287,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
-                h('button', { onClick: resetCampaign, 'aria-label': 'Start a new mosaic with fresh random conditions', style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ New mosaic, new conditions'),
+                h('button', { onClick: resetCampaign, 'aria-label': t('stem.fireecology.start_a_new_mosaic_with_fresh_random_c', 'Start a new mosaic with fresh random conditions'), style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, t('stem.fireecology.new_mosaic_new_conditions', '↻ New mosaic, new conditions')),
                 h('button', {
                   onClick: function() { startCampaign({ seed: m.seed, difficulty: m.difficulty }); },
-                  'aria-label': 'Replay the same starting conditions and event sequence with a different strategy',
-                  title: 'Same seed = same starting state + same yearly events. Try a different stewardship plan.',
+                  'aria-label': t('stem.fireecology.replay_the_same_starting_conditions_an', 'Replay the same starting conditions and event sequence with a different strategy'),
+                  title: t('stem.fireecology.same_seed_same_starting_state_same_yea', 'Same seed = same starting state + same yearly events. Try a different stewardship plan.'),
                   style: {
                     padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8',
                     cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700
                   }
-                }, '🔁 Replay same conditions')
+                }, t('stem.fireecology.replay_same_conditions', '🔁 Replay same conditions'))
               ),
               // Seed display (so a class or a friend can run the same scenario)
               h('div', {
                 style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' }
               },
-                h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'Campaign seed: '),
+                h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, t('stem.fireecology.campaign_seed', 'Campaign seed: ')),
                 h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, m.seed || 'mosaic-default'),
                 h('div', { style: { marginTop: 4, fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontFamily: 'system-ui, sans-serif', fontStyle: 'italic' } },
-                  'A teacher or classmate using the same seed on the same difficulty gets the same starting state and the same sequence of yearly events.'
+                  t('stem.fireecology.a_teacher_or_classmate_using_the_same_', 'A teacher or classmate using the same seed on the same difficulty gets the same starting state and the same sequence of yearly events.')
                 )
               )
             );
@@ -4254,15 +4353,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Avg health'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.avg_health', 'Avg health')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#86efac' } }, (lastSnap.avgHealth || 0) + '/100')
                 ),
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Total yield'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.total_yield', 'Total yield')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, lastSnap.totalYield || 0)
                 ),
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Continuity this year'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.continuity_this_year', 'Continuity this year')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, '+' + (lastSnap.continuityHits || 0))
                 )
               ),
@@ -4271,15 +4370,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               continuityNames.length > 0 ? h('div', {
                 style: { padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.10)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff' }
               },
-                h('strong', { style: { color: '#a855f7' } }, '🎯 Hit the fire-return window: '),
+                h('strong', { style: { color: '#a855f7' } }, t('stem.fireecology.hit_the_fire_return_window', '🎯 Hit the fire-return window: ')),
                 continuityNames.join(', ')
               ) : h('div', {
                 style: { padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(100,116,139,0.10)', borderLeft: '3px solid #64748b', fontSize: 12.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }
-              }, 'No zone hit its fire-return window this year. The mosaic drifts when no habitat gets the right treatment on time.'),
+              }, t('stem.fireecology.no_zone_hit_its_fire_return_window_thi', 'No zone hit its fire-return window this year. The mosaic drifts when no habitat gets the right treatment on time.')),
 
               // Per-zone delta rows
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, marginBottom: 12 } },
-                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, t('stem.fireecology.what_changed_this_year', 'What changed this year')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 6 } },
                   deltaRows.map(function(row) {
                     return h('div', { key: row.def.id,
@@ -4298,10 +4397,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               (lastSnap.harvest && lastSnap.harvest.length > 0) ? h('div', {
                 style: { background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: 10, marginBottom: 12, borderLeft: '3px solid #fbbf24' }
               },
-                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, '🌾 This year the community gathered'),
+                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, t('stem.fireecology.this_year_the_community_gathered', '🌾 This year the community gathered')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 6, marginTop: 6 } },
                   lastSnap.harvest.map(function(harv) {
-                    return h('div', { key: harv.id, style: { fontSize: 12.5, color: '#fde68a' } },
+                    return h('div', { key: harv.id, style: { fontSize: 12.5, color: 'var(--allo-stem-text, #fde68a)' } },
                       h('span', { style: { fontSize: 16, marginRight: 6 } }, harv.icon),
                       harv.text
                     );
@@ -4312,7 +4411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               elderMatches.length > 0 ? h('div', {
                 style: { padding: 12, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7' }
               },
-                h('strong', { style: { color: '#a855f7', fontSize: 13 } }, '✨ Elder Guidance'),
+                h('strong', { style: { color: '#a855f7', fontSize: 13 } }, t('stem.fireecology.elder_guidance', '✨ Elder Guidance')),
                 elderMatches.map(function(g, i) {
                   return h('div', { key: i, style: { margin: '6px 0 0', color: '#e9d5ff', fontSize: 13, lineHeight: 1.5, fontStyle: 'italic' } }, '“' + g.msg + '”');
                 })
@@ -4349,7 +4448,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             },
               h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
               h('div', { style: { flex: 1 } },
-                h('strong', { style: { color: '#a855f7' } }, 'First-year tip: '),
+                h('strong', { style: { color: '#a855f7' } }, t('stem.fireecology.first_year_tip', 'First-year tip: ')),
                 'your ' + coachingTip.def.name.toLowerCase() + ' is ' +
                 (coachingTip.overdue > 0
                   ? 'about ' + coachingTip.overdue + ' year' + (coachingTip.overdue === 1 ? '' : 's') + ' overdue for fire'
@@ -4358,7 +4457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ),
               h('button', {
                 onClick: function() { setMosaic({ firstTipDismissed: true }); },
-                'aria-label': 'Dismiss tip',
+                'aria-label': t('stem.fireecology.dismiss_tip', 'Dismiss tip'),
                 style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 }
               }, '✕')
             ) : null,
@@ -4380,28 +4479,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 }
               },
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Year'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.year_3', 'Year')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, m.year + ' / ' + m.maxYears)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Season'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.season', 'Season')),
                   h('div', { style: { fontSize: 16, fontWeight: 800, color: phaseAccent } }, phaseLabel),
                   h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, phaseSubLabel)
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours this phase'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.hours_this_phase', 'Hours this phase')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, m.hoursLeft + ' / ' + (isWarm ? m.warmHoursBudget : m.coldHoursBudget))
                 ),
                 h('div', null,
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Continuity wins'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.continuity_wins_2', 'Continuity wins')),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
                 ),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                   callGemini ? h('button', {
                     onClick: readLand,
                     disabled: m.aiReadLoading,
-                    'aria-label': 'Ask AI fire ecologist to read your land state',
-                    title: 'AI fire ecology educator reads your current land state',
+                    'aria-label': t('stem.fireecology.ask_ai_fire_ecologist_to_read_your_lan', 'Ask AI fire ecologist to read your land state'),
+                    title: t('stem.fireecology.ai_fire_ecology_educator_reads_your_cu', 'AI fire ecology educator reads your current land state'),
                     style: {
                       padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8',
                       cursor: m.aiReadLoading ? 'wait' : 'pointer',
@@ -4447,7 +4546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     def.deepDive ? h('button', {
                       onClick: function() { openDeepDive(z.id); },
                       'aria-label': 'Cultural deep-dive for ' + def.name,
-                      title: 'Cultural deep-dive',
+                      title: t('stem.fireecology.cultural_deep_dive_3', 'Cultural deep-dive'),
                       style: {
                         background: 'transparent', border: '1px solid ' + def.color + '66',
                         color: def.color, cursor: 'pointer', borderRadius: 6,
@@ -4497,7 +4596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               m.yearActions.map(function(a, ai) {
                 return h('div', { key: ai }, '• ' + a.tech + ' → ' + a.zone + ' (' + a.hours + 'h)' + (a.mult < 1 ? ' [off-season ×' + a.mult.toFixed(2) + ']' : ''));
               })
-            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No actions yet this year. Pick a zone, pick a technique.')
+            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, t('stem.fireecology.no_actions_yet_this_year_pick_a_zone_p', 'No actions yet this year. Pick a zone, pick a technique.'))
           );
         }
 
@@ -4517,7 +4616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Interactive beaver-dam diagram
             h('div', { style: { background: '#0c1929', borderRadius: 12, padding: 16, marginBottom: 16, textAlign: 'center', border: '1px solid #1e3a5f' } },
-              h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 12, fontSize: 15 } }, '\uD83C\uDF0A How Beaver Dams Create Fire Refugia'),
+              h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.how_beaver_dams_create_fire_refugia', '\uD83C\uDF0A How Beaver Dams Create Fire Refugia')),
               h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 12 } },
                 // Visual cross-section
                 [
@@ -4536,7 +4635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   );
                 })
               ),
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Cross-section: Beaver pond creates a green, fire-resistant corridor even when surrounding forest burns')
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, t('stem.fireecology.cross_section_beaver_pond_creates_a_gr', 'Cross-section: Beaver pond creates a green, fire-resistant corridor even when surrounding forest burns'))
             ),
 
             // Science cards
@@ -4555,15 +4654,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Key takeaway
             h('div', { style: { background: '#052e16', borderRadius: 12, padding: 16, border: '1px solid #16a34a44' } },
-              h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 8, fontSize: 15 } }, '\u2B50 The Integrated Vision: Fire + Beavers + Indigenous Knowledge'),
+              h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 8, fontSize: 15 } }, t('stem.fireecology.the_integrated_vision_fire_beavers_ind', '\u2B50 The Integrated Vision: Fire + Beavers + Indigenous Knowledge')),
               h('p', { style: { margin: 0, color: '#bbf7d0', fontSize: 14, lineHeight: 1.7 } },
-                'The most fire-resilient landscapes on Earth share three features: ',
-                h('strong', null, 'regular low-intensity fire'),
-                ' managed by knowledgeable practitioners, ',
-                h('strong', null, 'intact beaver populations'),
-                ' maintaining wetland corridors, and ',
-                h('strong', null, 'Indigenous stewardship'),
-                ' that understands fire, water, and wildlife as interconnected systems. Restoring all three together \u2014 not just one in isolation \u2014 is the most effective strategy for building landscape resilience in an era of increasing wildfire risk.'
+                t('stem.fireecology.the_most_fire_resilient_landscapes_on_', 'The most fire-resilient landscapes on Earth share three features: '),
+                h('strong', null, t('stem.fireecology.regular_low_intensity_fire', 'regular low-intensity fire')),
+                t('stem.fireecology.managed_by_knowledgeable_practitioners', ' managed by knowledgeable practitioners, '),
+                h('strong', null, t('stem.fireecology.intact_beaver_populations', 'intact beaver populations')),
+                t('stem.fireecology.maintaining_wetland_corridors_and', ' maintaining wetland corridors, and '),
+                h('strong', null, t('stem.fireecology.indigenous_stewardship', 'Indigenous stewardship')),
+                t('stem.fireecology.that_understands_fire_water_and_wildli', ' that understands fire, water, and wildlife as interconnected systems. Restoring all three together \u2014 not just one in isolation \u2014 is the most effective strategy for building landscape resilience in an era of increasing wildfire risk.')
               )
             )
           );
@@ -4875,27 +4974,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             return h('div', null,
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 24, marginBottom: 16, textAlign: 'center' } },
                 h('div', { style: { fontSize: 48, marginBottom: 8 } }, '\uD83D\uDD25'),
-                h('h3', { style: { margin: '0 0 8px 0', color: '#f97316', fontSize: 22 } }, 'The Firekeeper Challenge'),
+                h('h3', { style: { margin: '0 0 8px 0', color: '#f97316', fontSize: 22 } }, t('stem.fireecology.the_firekeeper_challenge', 'The Firekeeper Challenge')),
                 h('p', { style: { margin: '0 0 16px 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, lineHeight: 1.6, maxWidth: 550, marginLeft: 'auto', marginRight: 'auto' } },
                   'You are a fire keeper tasked with managing a forest and protecting a village for ' + diff.targetYears + ' years. Choose your strategy each decade: cultural burn, prescribed burn, thinning, plant native seeds, install beaver dams, build firebreaks, educate the community, or do nothing. Random events and decision moments will test your wisdom. Earn achievements by mastering fire ecology.'
                 ),
                 gameBestScore > 0 ? h('div', { style: { fontSize: 14, color: '#f59e0b', marginBottom: 12 } }, '\u2B50 Personal Best: ' + gameBestScore + ' points') : null,
-                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, 'Select Difficulty:'),
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, t('stem.fireecology.select_difficulty', 'Select Difficulty:')),
                 h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
                   Object.keys(GAME_DIFFICULTIES).map(function(key) {
                     var gd = GAME_DIFFICULTIES[key];
                     var active = gameDifficulty === key;
-                    return h('button', { 'aria-label': 'Start Game', key: key, onClick: function() { upd('gameDifficulty', key); },
+                    return h('button', { 'aria-label': t('stem.fireecology.start_game', 'Start Game'), key: key, onClick: function() { upd('gameDifficulty', key); },
                       style: { padding: '10px 16px', borderRadius: 8, border: '2px solid ' + (active ? '#f97316' : '#334155'), background: active ? '#431407' : '#0f172a', color: active ? '#fb923c' : '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500, maxWidth: 200 }
                     },
                       h('div', { style: { fontWeight: 700 } }, gd.label),
-                      h('div', { style: { fontSize: 11, marginTop: 2, lineHeight: 1.3 } }, gd.description)
+                      h('div', { style: { fontSize: 11, marginTop: 2, lineHeight: 1.3 } }, __alloT('stem.fireecology.' + (key) + '_description', gd.description))
                     );
                   })
                 ),
-                h('button', { 'aria-label': 'Begin the Challenge', onClick: startGame,
+                h('button', { 'aria-label': t('stem.fireecology.begin_the_challenge', 'Begin the Challenge'), onClick: startGame,
                   style: { padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 18 }
-                }, '\uD83D\uDD25 Begin the Challenge')
+                }, t('stem.fireecology.begin_the_challenge_2', '\uD83D\uDD25 Begin the Challenge'))
               )
             );
           }
@@ -4907,13 +5006,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
                   h('span', { style: { fontSize: 32 } }, pendingDecision.icon),
                   h('div', null,
-                    h('div', { style: { fontWeight: 700, color: '#a5b4fc', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 } }, 'DECISION EVENT'),
+                    h('div', { style: { fontWeight: 700, color: '#a5b4fc', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.fireecology.decision_event', 'DECISION EVENT')),
                     h('h3', { style: { margin: 0, color: '#e0e7ff', fontSize: 18 } }, pendingDecision.name)
                   )
                 ),
                 h('p', { style: { color: '#c7d2fe', fontSize: 14, lineHeight: 1.6, marginBottom: 16 } }, pendingDecision.desc),
                 pendingDecision.choices.map(function(ch, ci) {
-                  return h('button', { 'aria-label': 'Resolve Decision', key: ci, onClick: function() { resolveDecision(ci); },
+                  return h('button', { 'aria-label': t('stem.fireecology.resolve_decision', 'Resolve Decision'), key: ci, onClick: function() { resolveDecision(ci); },
                     style: { display: 'block', width: '100%', padding: 14, marginBottom: 10, borderRadius: 10, border: '2px solid #4f46e544', background: 'var(--allo-stem-canvas, #0f172a)', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }
                   },
                     h('div', { style: { fontWeight: 700, color: '#e0e7ff', fontSize: 14, marginBottom: 2 } }, ch.label),
@@ -4926,7 +5025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           // ═══ GAME IN PROGRESS ═══
           var gs = gameState;
-          var dangerLevel = gs.fuelLoad < 25 ? { label: 'Low', color: '#22c55e' } : gs.fuelLoad < 40 ? { label: 'Moderate', color: '#f59e0b' } : gs.fuelLoad < 60 ? { label: 'High', color: '#f97316' } : { label: 'EXTREME', color: '#ef4444' };
+          var dangerLevel = gs.fuelLoad < 25 ? { label: 'Low', color: '#22c55e' } : gs.fuelLoad < 40 ? { label: t('stem.fireecology.moderate_2', 'Moderate'), color: '#f59e0b' } : gs.fuelLoad < 60 ? { label: t('stem.fireecology.high_2', 'High'), color: '#f97316' } : { label: 'EXTREME', color: '#ef4444' };
           var advisorTip = getAdvisorTip(gs);
           var achievements = getAchievements(gs, gameOver);
 
@@ -4971,14 +5070,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ),
                 // Rank-progression strip — shows where this score falls across the 5 surviving ranks
                 survived && h('div', { style: { marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(148,163,184,0.2)' } },
-                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, 'Rank progression'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, t('stem.fireecology.rank_progression', 'Rank progression')),
                   h('div', { style: { display: 'flex', gap: 4, alignItems: 'stretch' } },
                     [
-                      { name: 'Apprentice', min: 0, color: 'var(--allo-stem-text-soft, #64748b)' },
-                      { name: 'Journeyman', min: 80, color: '#84cc16' },
-                      { name: 'Skilled', min: 150, color: '#22c55e' },
-                      { name: 'Master', min: 220, color: '#f97316' },
-                      { name: 'Legendary', min: 300, color: '#fbbf24' }
+                      { name: t('stem.fireecology.apprentice', 'Apprentice'), min: 0, color: 'var(--allo-stem-text-soft, #64748b)' },
+                      { name: t('stem.fireecology.journeyman', 'Journeyman'), min: 80, color: '#84cc16' },
+                      { name: t('stem.fireecology.skilled', 'Skilled'), min: 150, color: '#22c55e' },
+                      { name: t('stem.fireecology.master', 'Master'), min: 220, color: '#f97316' },
+                      { name: t('stem.fireecology.legendary', 'Legendary'), min: 300, color: '#fbbf24' }
                     ].map(function(r, ri, arr) {
                       var achieved = gameScore >= r.min;
                       var current = achieved && (ri === arr.length - 1 || gameScore < arr[ri + 1].min);
@@ -5002,19 +5101,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
               // Report card
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
-                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, '\uD83D\uDCCB Report Card'),
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.report_card', '\uD83D\uDCCB Report Card')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 } },
                   [
-                    { label: 'Years Survived', value: gs.year, color: '#fff' },
-                    { label: 'Cultural Burns', value: gs.totalBurns, color: '#22c55e' },
-                    { label: 'Wildfires', value: gs.wildfires, color: gs.wildfires === 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Beaver Dams', value: gs.beaverDams || 0, color: '#0ea5e9' },
-                    { label: 'Decisions Won', value: gs.decisionsWon || 0, color: '#a855f7' },
-                    { label: 'Final Biodiversity', value: Math.round(gs.biodiversity), color: gs.biodiversity > 70 ? '#22c55e' : '#f59e0b' },
-                    { label: 'Final Soil Health', value: Math.round(gs.soilHealth), color: gs.soilHealth > 70 ? '#22c55e' : '#f59e0b' },
-                    { label: 'Village Health', value: Math.round(gs.villageHealth || 0) + '%', color: (gs.villageHealth || 0) > 50 ? '#22c55e' : '#ef4444' },
-                    { label: 'Species Returned', value: (gs.species || []).length, color: '#4ade80' },
-                    { label: 'Best Decade', value: '+' + (gs.bestDecadeScore || 0), color: '#f59e0b' }
+                    { label: t('stem.fireecology.years_survived', 'Years Survived'), value: gs.year, color: '#fff' },
+                    { label: t('stem.fireecology.cultural_burns', 'Cultural Burns'), value: gs.totalBurns, color: '#22c55e' },
+                    { label: t('stem.fireecology.wildfires', 'Wildfires'), value: gs.wildfires, color: gs.wildfires === 0 ? '#22c55e' : '#ef4444' },
+                    { label: t('stem.fireecology.beaver_dams', 'Beaver Dams'), value: gs.beaverDams || 0, color: '#0ea5e9' },
+                    { label: t('stem.fireecology.decisions_won', 'Decisions Won'), value: gs.decisionsWon || 0, color: '#a855f7' },
+                    { label: t('stem.fireecology.final_biodiversity', 'Final Biodiversity'), value: Math.round(gs.biodiversity), color: gs.biodiversity > 70 ? '#22c55e' : '#f59e0b' },
+                    { label: t('stem.fireecology.final_soil_health', 'Final Soil Health'), value: Math.round(gs.soilHealth), color: gs.soilHealth > 70 ? '#22c55e' : '#f59e0b' },
+                    { label: t('stem.fireecology.village_health', 'Village Health'), value: Math.round(gs.villageHealth || 0) + '%', color: (gs.villageHealth || 0) > 50 ? '#22c55e' : '#ef4444' },
+                    { label: t('stem.fireecology.species_returned', 'Species Returned'), value: (gs.species || []).length, color: '#4ade80' },
+                    { label: t('stem.fireecology.best_decade', 'Best Decade'), value: '+' + (gs.bestDecadeScore || 0), color: '#f59e0b' }
                   ].map(function(stat) {
                     return h('div', { key: stat.label, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 10, textAlign: 'center' } },
                       h('div', { style: { fontSize: 20, fontWeight: 700, color: stat.color } }, stat.value),
@@ -5026,7 +5125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
               // Species that returned
               gs.species && gs.species.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
-                h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 8, fontSize: 14 } }, '\uD83E\uDD8B Species That Returned to Your Forest'),
+                h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 8, fontSize: 14 } }, t('stem.fireecology.species_that_returned_to_your_forest', '\uD83E\uDD8B Species That Returned to Your Forest')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                   gs.species.filter(function(s, i, arr) { return arr.indexOf(s) === i; }).map(function(sp) {
                     return h('span', { key: sp, style: { background: '#052e16', border: '1px solid #16a34a44', borderRadius: 6, padding: '4px 10px', fontSize: 13, color: '#4ade80' } }, sp);
@@ -5036,7 +5135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
               // Achievements earned
               achievements.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
-                h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 8, fontSize: 14 } }, '\uD83C\uDFC5 Achievements Earned'),
+                h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 8, fontSize: 14 } }, t('stem.fireecology.achievements_earned', '\uD83C\uDFC5 Achievements Earned')),
                 achievements.map(function(a) {
                   return h('div', { key: a.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                     h('span', { style: { fontSize: 20 } }, a.icon),
@@ -5048,9 +5147,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ) : null,
 
-              h('button', { 'aria-label': 'Play Again', onClick: function() { updMulti({ gameActive: false, gameState: null, gameEvent: null, gameScore: 0, gameOver: false, gameHistory: [], pendingDecision: null }); },
+              h('button', { 'aria-label': t('stem.fireecology.play_again', 'Play Again'), onClick: function() { updMulti({ gameActive: false, gameState: null, gameEvent: null, gameScore: 0, gameOver: false, gameHistory: [], pendingDecision: null }); },
                 style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 16 }
-              }, '\uD83D\uDD04 Play Again')
+              }, t('stem.fireecology.play_again_2', '\uD83D\uDD04 Play Again'))
             );
           }
 
@@ -5059,11 +5158,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             // Header stats
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
               [
-                { label: 'Year', value: gs.year + '/' + diff.targetYears, color: '#fff' },
-                { label: 'Score', value: gameScore, color: '#f97316' },
-                { label: 'Fire Risk', value: dangerLevel.label, color: dangerLevel.color },
-                { label: 'Wildfires', value: gs.wildfires, color: gs.wildfires > 0 ? '#ef4444' : '#22c55e' },
-                { label: 'Village', value: (gs.villageHealth || 100) + '%', color: (gs.villageHealth || 100) > 50 ? '#22c55e' : '#ef4444' }
+                { label: t('stem.fireecology.year_4', 'Year'), value: gs.year + '/' + diff.targetYears, color: '#fff' },
+                { label: t('stem.fireecology.score_2', 'Score'), value: gameScore, color: '#f97316' },
+                { label: t('stem.fireecology.fire_risk', 'Fire Risk'), value: dangerLevel.label, color: dangerLevel.color },
+                { label: t('stem.fireecology.wildfires_2', 'Wildfires'), value: gs.wildfires, color: gs.wildfires > 0 ? '#ef4444' : '#22c55e' },
+                { label: t('stem.fireecology.village', 'Village'), value: (gs.villageHealth || 100) + '%', color: (gs.villageHealth || 100) > 50 ? '#22c55e' : '#ef4444' }
               ].map(function(s) {
                 return h('div', { key: s.label, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 70 } },
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.label),
@@ -5092,7 +5191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Species tracker
             gs.species && gs.species.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 } },
-              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 4 } }, 'Species returned:'),
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 4 } }, t('stem.fireecology.species_returned_2', 'Species returned:')),
               gs.species.filter(function(s, i, arr) { return arr.indexOf(s) === i; }).map(function(sp) {
                 return h('span', { key: sp, style: { background: '#052e16', borderRadius: 4, padding: '2px 6px', fontSize: 11, color: '#4ade80' } }, sp);
               })
@@ -5109,17 +5208,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             ),
 
             // Action buttons — 8 options now
-            h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, '\uD83C\uDFAE Choose Your Action:'),
+            h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, t('stem.fireecology.choose_your_action', '\uD83C\uDFAE Choose Your Action:')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 6, marginBottom: 14 } },
               [
-                { action: 'culturalBurn', label: '\uD83D\uDD25 Cultural Burn', desc: 'Best: fuel + biodiversity' + (gs.tribalPartner ? ' (ENHANCED)' : ''), color: '#16a34a' },
-                { action: 'prescribe', label: '\uD83D\uDCCB Prescribed Burn', desc: 'Good fuel reduction', color: '#f59e0b' },
-                { action: 'thin', label: '\uD83E\uDE93 Mech. Thin', desc: 'Remove heavy fuel', color: 'var(--allo-stem-text-soft, #94a3b8)' },
-                { action: 'plantSeeds', label: '\uD83C\uDF31 Plant Natives', desc: 'Biodiversity + soil', color: '#4ade80' },
-                { action: 'beavers', label: '\uD83E\uDDAB Beaver Dams', desc: 'Water + fire breaks', color: '#0ea5e9' },
-                { action: 'firebreak', label: '\uD83D\uDEE1\uFE0F Firebreaks', desc: 'Protect village', color: '#a855f7' },
-                { action: 'educate', label: '\uD83C\uDFEB Educate', desc: 'Village support +', color: '#f472b6' },
-                { action: 'nothing', label: '\u23F8\uFE0F Do Nothing', desc: 'Fuel accumulates...', color: '#ef4444' }
+                { action: 'culturalBurn', label: t('stem.fireecology.cultural_burn_3', '\uD83D\uDD25 Cultural Burn'), desc: 'Best: fuel + biodiversity' + (gs.tribalPartner ? ' (ENHANCED)' : ''), color: '#16a34a' },
+                { action: 'prescribe', label: t('stem.fireecology.prescribed_burn_2', '\uD83D\uDCCB Prescribed Burn'), desc: t('stem.fireecology.good_fuel_reduction', 'Good fuel reduction'), color: '#f59e0b' },
+                { action: 'thin', label: t('stem.fireecology.mech_thin', '\uD83E\uDE93 Mech. Thin'), desc: t('stem.fireecology.remove_heavy_fuel', 'Remove heavy fuel'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
+                { action: 'plantSeeds', label: t('stem.fireecology.plant_natives', '\uD83C\uDF31 Plant Natives'), desc: t('stem.fireecology.biodiversity_soil', 'Biodiversity + soil'), color: '#4ade80' },
+                { action: 'beavers', label: t('stem.fireecology.beaver_dams_2', '\uD83E\uDDAB Beaver Dams'), desc: t('stem.fireecology.water_fire_breaks', 'Water + fire breaks'), color: '#0ea5e9' },
+                { action: 'firebreak', label: t('stem.fireecology.firebreaks', '\uD83D\uDEE1\uFE0F Firebreaks'), desc: t('stem.fireecology.protect_village', 'Protect village'), color: '#a855f7' },
+                { action: 'educate', label: t('stem.fireecology.educate', '\uD83C\uDFEB Educate'), desc: t('stem.fireecology.village_support', 'Village support +'), color: '#f472b6' },
+                { action: 'nothing', label: t('stem.fireecology.do_nothing', '\u23F8\uFE0F Do Nothing'), desc: t('stem.fireecology.fuel_accumulates', 'Fuel accumulates...'), color: '#ef4444' }
               ].map(function(opt) {
                 return h('button', { key: opt.action, onClick: function() { gameAdvance(opt.action); },
                   style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '2px solid ' + opt.color + '33', borderRadius: 10, padding: 10, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
@@ -5139,7 +5238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // History graph
             gs.decade && gs.decade.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 10 } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, '\uD83D\uDCCA Timeline'),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, t('stem.fireecology.timeline', '\uD83D\uDCCA Timeline')),
               h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 70 } },
                 gs.decade.map(function(snap, si) {
                   return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 } },
@@ -5150,13 +5249,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ),
               h('div', { style: { display: 'flex', gap: 10, marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                h('span', null, '\u25A0 Biodiversity'), h('span', { style: { color: '#f59e0b' } }, '\u25A0 Fuel Load')
+                h('span', null, t('stem.fireecology.biodiversity_2', '\u25A0 Biodiversity')), h('span', { style: { color: '#f59e0b' } }, t('stem.fireecology.fuel_load_2', '\u25A0 Fuel Load'))
               )
             ) : null,
 
             // Event log
             gs.eventLog && gs.eventLog.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12 } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, '\uD83D\uDCDC Log'),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, t('stem.fireecology.log', '\uD83D\uDCDC Log')),
               gs.eventLog.slice(-5).reverse().map(function(ev, ei) {
                 return h('div', { key: ei, style: { padding: '3px 0', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } },
                   h('span', { style: { color: '#f97316', fontWeight: 600 } }, 'Y' + ev.year + ': '),
@@ -5173,12 +5272,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         function renderFireFact() {
           var fact = FIRE_FACTS[factIdx % FIRE_FACTS.length];
-          return h('div', { style: { background: '#1c1917', borderRadius: 10, padding: 12, marginTop: 16, border: '1px solid #44403c', display: 'flex', alignItems: 'center', gap: 10 } },
+          return h('div', { className: 'fireecology-fact', style: { background: '#1c1917', borderRadius: 10, padding: 12, marginTop: 16, border: '1px solid #44403c', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
             h('div', { style: { flex: 1, fontSize: 13, color: '#d6d3d1', lineHeight: 1.5 } },
-              h('strong', { style: { color: '#f97316' } }, 'Did You Know? '),
+              h('strong', { style: { color: '#f97316' } }, t('stem.fireecology.did_you_know', 'Did You Know? ')),
               fact
             ),
-            h('button', { 'aria-label': 'Next fact',
+            h('button', { 'aria-label': t('stem.fireecology.next_fact', 'Next fact'),
               onClick: function() {
                 var newIdx = (factIdx + 1) % FIRE_FACTS.length;
                 upd('factIdx', newIdx);
@@ -5188,7 +5287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 if (factsRead >= 10) checkBadge('factCollector');
               },
               style: { background: '#292524', border: '1px solid #44403c', borderRadius: 6, padding: '6px 10px', color: '#a8a29e', cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }
-            }, 'Next fact \u2192')
+            }, t('stem.fireecology.next_fact_2', 'Next fact \u2192'))
           );
         }
 
@@ -5198,7 +5297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         function renderBadges() {
           var earned = Object.keys(badges).length;
-          return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16 } },
+          return h('div', { className: 'fireecology-badges', style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16 } },
             h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 10, fontSize: 14 } },
               '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
             ),
@@ -5229,33 +5328,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         var intro = getGradeIntro(band);
 
-        return h('div', { style: { maxWidth: 900, margin: '0 auto' } },
-          // Header
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 } },
-            h('button', {
-              onClick: function() { setStemLabTool(null); },
-              'aria-label': 'Back to STEM Lab',
-              style: { background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--allo-stem-text-soft, #94a3b8)' }
-            }, h(ArrowLeft, { size: 20 })),
-            h('span', { style: { fontSize: 28 } }, '\uD83D\uDD25'),
-            h('h2', { style: { margin: 0, color: '#f97316', fontSize: 22 } }, 'Fire Ecology & Indigenous Stewardship')
+        var activeTabItem = TABS.filter(function(item) { return item.id === tab; })[0] || TABS[0];
+        var learningBand = band === 'k2' ? 'K-2' : band === 'g35' ? 'Grades 3-5' : band === 'g68' ? 'Grades 6-8' : 'Grades 9-12';
+        var fieldNotes = Object.keys(nationsViewed).length + Object.keys(ecosystemsViewed).length + Object.keys(casesViewed).length;
+
+        return h('main', { className: 'fireecology-tool-shell', 'data-fireecology-tool': 'true' },
+          // Mission command header
+          h('header', { className: 'fireecology-command', 'data-fireecology-mission': 'true' },
+            h('div', { className: 'fireecology-command-top' },
+              h('div', { className: 'fireecology-command-title' },
+                h('button', {
+                  type: 'button',
+                  className: 'fireecology-back',
+                  onClick: function() { setStemLabTool(null); },
+                  'aria-label': t('stem.fireecology.back_to_stem_lab', 'Back to STEM Lab')
+                }, h(ArrowLeft, { size: 20 })),
+                h('div', null,
+                  h('p', { className: 'fireecology-eyebrow' }, t('stem.fireecology.land_stewardship_lab', 'Land stewardship lab')),
+                  h('h2', null, t('stem.fireecology.fire_ecology_indigenous_stewardship', 'Fire Ecology & Indigenous Stewardship')),
+                  h('p', { className: 'fireecology-command-copy' }, intro)
+                )
+              ),
+              h('span', { className: 'fireecology-command-icon', 'aria-hidden': 'true' }, '\uD83D\uDD25')
+            ),
+            h('div', { className: 'fireecology-metrics', 'aria-label': t('stem.fireecology.learning_status', 'Learning status') },
+              [
+                { label: t('stem.fireecology.active_activity', 'Active activity'), value: activeTabItem.label },
+                { label: t('stem.fireecology.field_notes', 'Field notes'), value: fieldNotes + ' explored' },
+                { label: t('stem.fireecology.badges', 'Badges'), value: Object.keys(badges).length + ' / ' + BADGES.length },
+                { label: t('stem.fireecology.learning_band', 'Learning band'), value: learningBand }
+              ].map(function(metric) {
+                return h('div', { key: metric.label, className: 'fireecology-metric' },
+                  h('span', { className: 'fireecology-metric-label' }, metric.label),
+                  h('span', { className: 'fireecology-metric-value', title: metric.value }, metric.value)
+                );
+              })
+            )
           ),
 
-          // Grade intro
-          h('div', { style: { background: '#431407', borderRadius: 10, padding: 14, marginBottom: 16, borderLeft: '3px solid #ea580c' } },
-            h('p', { style: { margin: 0, color: '#fed7aa', fontSize: 14, lineHeight: 1.5 } }, intro)
-          ),
-
-          // Acknowledgment
-          h('div', { style: { background: '#0c0a09', borderRadius: 10, padding: 12, marginBottom: 16, border: '1px solid #44403c', fontSize: 13, color: '#a8a29e', lineHeight: 1.5 } },
-            h('strong', { style: { color: '#d6d3d1' } }, 'Acknowledgment: '),
-            'This tool honors the fire stewardship knowledge of Indigenous peoples worldwide, developed over tens of thousands of years. We recognize that this knowledge belongs to these nations and is shared here with the intent of education and respect, not appropriation. We encourage learners to seek out and support Indigenous-led fire management organizations and to listen to Indigenous fire keepers as the primary authorities on these practices.'
+          h('div', { className: 'fireecology-context' },
+            h('details', null,
+              h('summary', null, t('stem.fireecology.about_this_learning_context', 'About this learning context')),
+              h('div', null, intro)
+            ),
+            h('details', null,
+              h('summary', null, t('stem.fireecology.knowledge_acknowledgment', 'Knowledge acknowledgment')),
+              h('div', null,
+                h('strong', null, t('stem.fireecology.acknowledgment_label', 'Acknowledgment: ')),
+                t('stem.fireecology.this_tool_honors_the_fire_stewardship_', 'This tool honors the fire stewardship knowledge of Indigenous peoples worldwide, developed over tens of thousands of years. We recognize that this knowledge belongs to these nations and is shared here with the intent of education and respect, not appropriation. We encourage learners to seek out and support Indigenous-led fire management organizations and to listen to Indigenous fire keepers as the primary authorities on these practices.')
+              )
+            )
           ),
 
           // Tab navigation
           renderTabNav(),
 
           // Tab content
+          h('section', { id: 'fireecology-active-panel', className: 'fireecology-tab-panel', role: 'tabpanel', 'aria-labelledby': 'fireecology-tab-' + tab, tabIndex: 0, 'data-fireecology-workspace': tab },
           tab === 'indigenous' ? renderIndigenousTab() :
           tab === 'ecosystems' ? renderEcosystemsTab() :
           tab === 'simulator' ? renderSimulatorTab() :
@@ -5274,19 +5403,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             function setIQ(patch) { upd('regimeHunt', Object.assign({}, iq, patch)); }
             var risk = (iq.fuel * iq.drought) / iq.interval;
             var state;
-            if (risk > 2.5) state = 'mega';
+            if (iq.interval < 5) state = 'typeConv';
+            else if (risk > 2.5) state = 'mega';
             else if (risk > 1.2) state = 'dangerous';
-            else if (iq.interval > 70 && iq.fuel < 3) state = 'typeConv';
             else state = 'healthy';
             var sm = {
-              healthy:   { label: '🌲 Healthy ecosystem', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Fuel/fire balance maintained. Cultural-burn equivalent.' },
-              dangerous: { label: '⚠️ Dangerous fuel buildup', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Decades of fire-suppression. Next ignition is bad.' },
-              mega:      { label: '🔥 Megafire risk', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'High fuel + drought + suppression = catastrophic event.' },
-              typeConv:  { label: '🌾 Type conversion (forest → grassland)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Frequent low-fuel burns convert forest permanently.' }
+              healthy:   { label: t('stem.fireecology.healthy_ecosystem', '🌲 Lower modeled concern'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.fireecology.fuel_fire_balance_maintained_cultural_', 'Lower concern in this classroom index; this is not an ecosystem-health determination.') },
+              dangerous: { label: t('stem.fireecology.dangerous_fuel_buildup', '⚠️ Dangerous fuel buildup'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.fireecology.decades_of_fire_suppression_next_ignit', 'Elevated classroom index. Actual fire behavior also depends on fuels, weather, topography, and ignition.') },
+              mega:      { label: t('stem.fireecology.megafire_risk', '🔥 Megafire risk'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.fireecology.high_fuel_drought_suppression_catastro', 'High classroom index, not a forecast of ignition, spread, severity, or impacts.') },
+              typeConv:  { label: t('stem.fireecology.type_conversion_forest_grassland', '🌾 Very short interval flag'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.fireecology.frequent_low_fuel_burns_convert_forest', 'A very short interval may alter some communities, but outcomes depend on ecosystem, season, severity, and stewardship goals.') }
             }[state];
             return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 shadow-sm space-y-3' },
-              h('h3', { className: 'text-sm font-black text-orange-700' }, '🔥 Fire regime discovery'),
-              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for fuel accumulation, fire return interval, drought severity. Discrete 4-state regime. No score, no reveal.'),
+              h('h3', { className: 'text-sm font-black text-orange-700' }, t('stem.fireecology.fire_regime_discovery', '🔥 Fire regime discovery')),
+              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret', 'Explore an arbitrary classroom index built from fuel accumulation, return interval, and drought severity. It is not a fire-behavior or ecosystem forecast.')),
               h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                 h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                 h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
@@ -5303,25 +5432,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ),
               h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ f: iq.fuel, i: iq.interval, d: iq.drought, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ f: iq.fuel, i: iq.interval, d: iq.drought, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.fireecology.log_2', '📋 Log')),
+                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.fireecology.reset', '↺ Reset'))
               ),
-              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does drought magnify fuel-load risk?',
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.fireecology.hypothesis_how_does_drought_magnify_fu', 'Hypothesis: How does drought magnify fuel-load risk?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.fireecology.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, 'Cultural burns used 5-10 yr intervals. Investigate the science.'),
-                  h('li', null, 'Why does 80-year fire suppression create catastrophic risk?'))),
+                  h('li', null, t('stem.fireecology.cultural_burns_used_5_10_yr_intervals_', 'Compare intervals only after naming the ecosystem, season, and stewardship objective.')),
+                  h('li', null, t('stem.fireecology.why_does_80_year_fire_suppression_crea', 'How can long fire exclusion alter fuels in some fire-adapted ecosystems?')))),
               h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how fuel load, fire interval, and drought jointly determine fire regime.',
+                  t('stem.fireecology.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.fireecology.explain_how_fuel_load_fire_interval_an', 'Explain how fuel load, fire interval, and drought jointly determine fire regime.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state fire regime marker; no acres-burned score; no reveal — by design.')
+              h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.fireecology.design_note_discrete_4_state_fire_regi', 'Model limit: arbitrary index = fuel accumulation x drought severity / return interval. It omits fuel type and arrangement, wind, slope, ignition, season, prior treatments, and local ecology; labels are inquiry prompts, not predictions.'))
             );
-          })() : null,
+          })() : null),
 
           // Fire Fact banner
           renderFireFact(),

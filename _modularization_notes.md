@@ -1,5 +1,8 @@
 # AlloFlowANTI.txt Modularization Notes
-**Date**: April 2, 2026 (updated April 3)  
+
+> **Historical implementation note, not current architecture status (2026-07-09):** This April 2026 modularization pass is preserved for context. Current module counts, generated-file rules, and Desktop/CDN deployment guidance live in `architecture.md`, `CONTRIBUTING.md`, `FEATURE_INVENTORY.md`, and `AGENT_HANDOFF.md`.
+
+**Date**: April 2, 2026 (updated April 3)
 **Agent**: Claude Opus 4.6 (#4 — monolith modularization)
 
 ## Summary

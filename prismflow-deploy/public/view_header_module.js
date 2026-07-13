@@ -47,6 +47,7 @@ function HeaderBar(props) {
   const RefreshCw = window.RefreshCw || noop;
   const School = window.School || noop;
   const Send = window.Send || noop;
+  const Share2 = window.Share2 || noop;
   const Smile = window.Smile || noop;
   const Sparkles = window.Sparkles || noop;
   const Sun = window.Sun || noop;
@@ -95,6 +96,7 @@ function HeaderBar(props) {
     appId,
     currentLevelXP,
     customExportCSS,
+    createHomeworkAssignmentLink,
     dismissHelpOnboarding,
     focusNarrationEnabled,
     generatedContent,
@@ -153,9 +155,16 @@ function HeaderBar(props) {
     setJoinCodeInput,
     setPendingRole,
     setRunTour,
+    setGuidedMode,
+    setGuidedStep,
+    setGuidedSelectedIds,
+    guidedStep,
+    guidedMode,
+    resetGuidedProgress,
     setSelectedVoice,
     setSessionData,
     setShowAIBackendModal,
+    setBridgeSendOpen,
     setShowClassAnalytics,
     setShowEducatorHub,
     setShowExportMenu,
@@ -182,7 +191,89 @@ function HeaderBar(props) {
     voiceSpeed,
     voiceVolume
   } = props;
-  return /* @__PURE__ */ React.createElement("header", { "aria-label": t("common.main_application_header"), className: `p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 ${theme === "contrast" ? "bg-black border-b-4 border-yellow-400" : "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[98%] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { className: `text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : "p-1.5 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30"}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: "w-10 h-10", "aria-hidden": "true" })), theme === "contrast" ? t("header.app_name") : /* @__PURE__ */ React.createElement("span", { className: "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent" }, t("header.app_name")), /* @__PURE__ */ React.createElement("div", { className: `hidden md:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-sm font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] ${theme === "contrast" ? "text-yellow-400" : "px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100"}` }, t("header.rights")), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100"}` }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", t("header.pii_warning")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-end gap-4 w-full lg:w-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap justify-end relative" }, /* @__PURE__ */ React.createElement(
+  const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  const _setupMenuRef = React.useRef(null);
+  const _setupMenuReturnRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!showSetupPathMenu) return;
+    _setupMenuReturnRef.current = typeof document !== "undefined" ? document.activeElement : null;
+    const root = _setupMenuRef.current;
+    try {
+      if (root) {
+        const f = root.querySelector('button, a[href], [tabindex]:not([tabindex="-1"])');
+        (f || root).focus();
+      }
+    } catch (_) {
+    }
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setShowSetupPathMenu(false);
+        return;
+      }
+      if (e.key === "Tab" && root) {
+        const items = root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          try {
+            last.focus();
+          } catch (_) {
+          }
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          try {
+            first.focus();
+          } catch (_) {
+          }
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      try {
+        const r = _setupMenuReturnRef.current;
+        if (r && r.focus && document.contains(r)) r.focus();
+      } catch (_) {
+      }
+    };
+  }, [showSetupPathMenu]);
+  const openQuickStartSetup = () => {
+    try {
+      if (safeRemoveItem) safeRemoveItem("allo_wizard_completed");
+    } catch (_) {
+    }
+    setShowSetupPathMenu(false);
+    setShowWizard(true);
+  };
+  const _guidedHasProgress = typeof guidedStep === "number" && guidedStep > 0;
+  const restartGuidedModeFromHeader = () => {
+    if (typeof resetGuidedProgress === "function") resetGuidedProgress();
+    else {
+      if (typeof setGuidedSelectedIds === "function") setGuidedSelectedIds(null);
+      if (typeof setGuidedStep === "function") setGuidedStep(0);
+    }
+    if (typeof setGuidedMode === "function") setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === "function") addToast(t("guided.started_from_header") || "Guided Mode started.", "success");
+  };
+  const startGuidedModeFromHeader = () => {
+    if (!_guidedHasProgress) {
+      restartGuidedModeFromHeader();
+      return;
+    }
+    if (typeof setGuidedMode === "function") setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === "function") addToast(t("guided.resumed") || "Resumed your guided tutorial.", "success");
+  };
+  const isDesktopBundledApp = typeof window !== "undefined" && !!window._isDesktopBundledApp;
+  const isLocalVoiceMode = ai?._ttsProvider === "local" || ai?._ttsProvider !== "gemini" && ai?._ttsProvider !== "browser" && (ai?.backend === "ollama" || ai?.backend === "localai" || ai?.backend === "lmstudio");
+  const canUseKokoroVoicePicker = _isCanvasEnv || isDesktopBundledApp;
+  return /* @__PURE__ */ React.createElement("header", { "aria-label": t("common.main_application_header"), className: `p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === "contrast" ? "bg-black border-b-4 border-yellow-400" : "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[98%] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { className: `text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : "p-1.5 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30"}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: "w-10 h-10", "aria-hidden": "true" })), theme === "contrast" ? t("header.app_name") : /* @__PURE__ */ React.createElement("span", { className: "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent" }, t("header.app_name")), /* @__PURE__ */ React.createElement("div", { className: `hidden md:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-sm font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] ${theme === "contrast" ? "text-yellow-400" : "px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100"}` }, t("header.rights")), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100"}` }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", t("header.pii_warning")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetShowXPModalToTrue,
@@ -198,7 +289,7 @@ function HeaderBar(props) {
         style: { width: `${globalProgress}%` }
       }
     )))
-  ), /* @__PURE__ */ React.createElement("div", { id: "tour-header-settings", className: `relative z-[60] flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement(GlobalMuteButton, { className: `px-3 py-2 rounded-xl transition-colors ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "contrast" ? "bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold" : "hover:bg-white/10 text-white"}` }), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { id: "tour-header-settings", className: `relative z-[60] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement(GlobalMuteButton, { className: `px-3 py-2 rounded-xl transition-colors ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "contrast" ? "bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold" : "hover:bg-white/10 text-white"}` }), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setShowReadThisPage((prev) => !prev),
@@ -343,9 +434,9 @@ function HeaderBar(props) {
       onChange: (e) => {
         const voice = e.target.value;
         setSelectedVoice(voice);
-        if (_isCanvasEnv && KOKORO_VOICES.some((v) => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
+        if (canUseKokoroVoicePicker && KOKORO_VOICES.some((v) => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
           window.__kokoroTTSDownloading = true;
-          addToast("Downloading Kokoro voice model (~40MB)...", "info");
+          addToast("Downloading Kokoro voice model (~88MB, one time)...", "info");
           window.__loadKokoroTTS().then((ok) => {
             window.__kokoroTTSDownloading = false;
             if (ok) addToast("Kokoro voice ready!", "success");
@@ -356,26 +447,8 @@ function HeaderBar(props) {
       "data-help-key": "header_settings_voice_select",
       className: "w-full text-xs p-2 rounded-lg border border-slate-400 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
     },
-    _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 Gemini TTS (Cloud)" }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (tap to download ~40MB)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label, !window._kokoroTTS?.ready ? " \u2B07" : ""))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F310} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : ai?._ttsProvider === "local" || ai?._ttsProvider !== "gemini" && ai?._ttsProvider !== "browser" && (ai?.backend === "ollama" || ai?.backend === "localai") ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F507} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))
-  ), _isCanvasEnv && selectedVoice && selectedVoice.includes("_") && window._kokoroTTS && /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${theme === "light" ? "text-slate-600" : "text-slate-300"} block mb-1.5` }, t("header.voice_quality_label") || "Voice Quality"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        window._kokoroTTS.setQuality("fast");
-      },
-      className: `flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${!window._kokoroTTS.quality || window._kokoroTTS.quality === "fast" ? "bg-indigo-500 text-white shadow-sm" : "bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300"}`
-    },
-    "\u26A1 Fast (~43MB)"
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        window._kokoroTTS.setQuality("high");
-      },
-      className: `flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${window._kokoroTTS.quality === "high" ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300"}`
-    },
-    "\u{1F3B5} High Quality (~86MB)"
-  )), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mt-1` }, t("header.voice_quality_desc") || "Fast uses a smaller model for quicker response. High Quality is richer but slower.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 Gemini TTS (Cloud)" }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (tap to download ~88MB)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label, !window._kokoroTTS?.ready ? " \u2B07" : ""))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F310} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, isDesktopBundledApp && /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (loading/local)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F507} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))
+  ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && window._kokoroTTS && /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} m-0` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : t("header.voice_model_preparing") || "Kokoro (~88MB) \u2014 preparing\u2026 a temporary voice reads aloud until it finishes.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "checkbox",
@@ -502,7 +575,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(BookOpen, { size: 20 }),
     /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold leading-none bg-white/20 rounded-full px-1.5 py-0.5 min-w-[18px] text-center" }, notebookEntryCount)
-  ))), /* @__PURE__ */ React.createElement("div", { id: "tour-header-utils", className: `relative z-[100] flex items-center gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, isTeacherMode && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { id: "tour-header-utils", className: `relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetShowHintsModalToTrue,
@@ -569,14 +642,11 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => {
-        safeRemoveItem("allo_wizard_completed");
-        setShowWizard(true);
-      },
+      onClick: () => setShowSetupPathMenu(true),
       "data-help-key": "header_rerun_wizard",
       className: "p-2 rounded-xl hover:bg-white/10 text-white transition-colors",
-      title: t("toolbar.rerun_wizard") || "Re-run Setup Wizard",
-      "aria-label": t("toolbar.rerun_wizard_aria") || "Re-run the QuickStart setup wizard"
+      title: t("toolbar.setup_options") || "Setup and Guided Mode",
+      "aria-label": t("toolbar.setup_options_aria") || "Open setup and Guided Mode options"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 20 })
   )), /* @__PURE__ */ React.createElement(
@@ -589,7 +659,7 @@ function HeaderBar(props) {
       "aria-label": t("toolbar.about_aria")
     },
     /* @__PURE__ */ React.createElement(Info, { size: 20 })
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3 justify-end relative z-10 mt-2" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `flex items-center gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-end sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "scale-90 origin-right sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, null))), isTeacherMode && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full flex flex-wrap items-center justify-start gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, null))), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setShowAIBackendModal(true),
@@ -635,6 +705,17 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F9E0}"),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Learn")
+  ), isTeacherMode && !isIndependentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setBridgeSendOpen(true),
+      "data-help-key": "header_bridge",
+      className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10",
+      title: t("header.bridge_tooltip") || "Family Bridge: live translation to talk with multilingual families & students",
+      "aria-label": t("header.bridge_aria") || "Family Bridge translation"
+    },
+    /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F310}"),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Bridge")
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -694,7 +775,7 @@ function HeaderBar(props) {
       onChange: (e) => setJoinCodeInput(e.target.value.toUpperCase()),
       onKeyDown: (e) => e.key === "Enter" && joinClassSession(joinCodeInput),
       placeholder: t("session.code_placeholder"),
-      maxLength: 4,
+      maxLength: 5,
       className: "w-full text-center font-mono font-bold text-lg border border-slate-400 rounded p-1 uppercase focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
     }
   ), /* @__PURE__ */ React.createElement(
@@ -799,7 +880,20 @@ function HeaderBar(props) {
     },
     !pptxLoaded ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14 }),
     t("export_menu.slides")
-  ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "Student QR"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      role: "menuitem",
+      onClick: () => {
+        if (typeof createHomeworkAssignmentLink === "function") createHomeworkAssignmentLink();
+        setShowExportMenu(false);
+      },
+      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors",
+      "data-help-key": "homework_qr"
+    },
+    /* @__PURE__ */ React.createElement(Share2, { size: 14 }),
+    " Homework QR"
+  ), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, "Teacher-prepared resources open for students with AI generation off."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       role: "menuitem",
@@ -829,7 +923,7 @@ function HeaderBar(props) {
     t("export_menu.ims")
   )), showExportMenu && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), /* @__PURE__ */ React.createElement(
+  }, className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setShowClassAnalytics(true),
@@ -851,7 +945,64 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement(Send, { size: 14 }),
     " ",
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.submit_work"))
-  )))))));
+  )))))), showSetupPathMenu && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "fixed inset-0 z-[12000] bg-slate-950/70 backdrop-blur-sm flex items-start justify-end p-4 md:p-8",
+      onClick: () => setShowSetupPathMenu(false)
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        ref: _setupMenuRef,
+        tabIndex: -1,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "header-setup-options-title",
+        className: "w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden outline-none",
+        onClick: (e) => e.stopPropagation()
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "header-setup-options-title", className: "text-sm font-black" }, t("toolbar.setup_options_title") || "Choose a setup path"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-300 mt-1 leading-relaxed" }, t("toolbar.setup_options_desc") || "Restart the setup wizard or turn on Guided Mode for step-by-step lesson building.")), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setShowSetupPathMenu(false),
+          className: "p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors",
+          "aria-label": t("common.close") || "Close"
+        },
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
+      )),
+      /* @__PURE__ */ React.createElement("div", { className: "p-4 space-y-3" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: openQuickStartSetup,
+          "data-help-key": "header_quickstart_setup",
+          className: "w-full text-start rounded-xl border border-indigo-300/30 bg-indigo-500/15 hover:bg-indigo-500/25 px-4 py-3 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), t("toolbar.rerun_wizard") || "Re-run Setup Wizard"),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-100 mt-1 leading-relaxed" }, t("toolbar.quickstart_setup_desc") || "Set grade, source material, standards, languages, and personalization.")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: startGuidedModeFromHeader,
+          "data-help-key": "header_guided_mode_start",
+          className: "w-full text-start rounded-xl border border-emerald-300/30 bg-emerald-500/15 hover:bg-emerald-500/25 px-4 py-3 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16 }), _guidedHasProgress ? t("toolbar.guided_mode_resume") || "Resume Guided Mode" : t("launch_pad.guided_title") || "Guided Mode"),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-100 mt-1 leading-relaxed" }, _guidedHasProgress ? t("toolbar.guided_mode_resume_desc") || "Pick the tour back up where you left off." : t("toolbar.guided_mode_setup_desc") || "Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.")
+      ), _guidedHasProgress && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: restartGuidedModeFromHeader,
+          className: "w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-200" }, t("toolbar.guided_mode_start_over") || "Start the tour over from step 1")
+      ))
+    )
+  ));
 }
 
   window.AlloModules = window.AlloModules || {};

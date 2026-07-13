@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-federalist-10-excerpt",
+  "title": "Federalist No. 10",
+  "description": "A Wikisource source card for Federalist No. 10 and older-student civics reading.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Civics",
+    "Primary sources",
+    "Political philosophy",
+    "U.S. history"
+  ],
+  "authors": [
+    "James Madison"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/The_Federalist_Papers/No._10",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/The_Federalist_Papers/No._10"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Federalist No. 10 is a key primary source for studying factions, representation, republican government, and arguments for the Constitution."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for close reading of political vocabulary, argument structure, claim-evidence reasoning, and historical context."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Wikisource hosts public-domain and freely licensed texts. Check the linked work page for its specific license and source notes before assigning or mirroring."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

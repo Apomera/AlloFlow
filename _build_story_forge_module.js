@@ -38,7 +38,7 @@ const source = fs.readFileSync(SOURCE, 'utf-8');
 // they're injected by the wrapper preamble.
 const entry = `
 /* global React, useState, useEffect, useRef, useCallback, useMemo, useReducer */
-/* global ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Download, Edit, Eye, HelpCircle, Image, ImageIcon, Mic, Palette, Play, Plus, RefreshCw, Save, Sparkles, Star, Trash2, Type, Volume2, X */
+/* global ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Download, Edit, Eye, HelpCircle, Image, ImageIcon, Maximize2, Mic, Move, Palette, Play, Plus, RefreshCw, Save, Sparkles, Star, Trash2, Type, Volume2, X */
 
 ${source}
 `;
@@ -104,7 +104,9 @@ const outputCode = `/**
   var HelpCircle = _icons.HelpCircle || function() { return null; };
   var Image = _icons.Image || function() { return null; };
   var ImageIcon = _icons.ImageIcon || function() { return null; };
+  var Maximize2 = _icons.Maximize2 || function() { return null; };
   var Mic = _icons.Mic || function() { return null; };
+  var Move = _icons.Move || function() { return null; };
   var Palette = _icons.Palette || function() { return null; };
   var Play = _icons.Play || function() { return null; };
   var Plus = _icons.Plus || function() { return null; };
@@ -128,9 +130,9 @@ ${compiled}
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.StoryForge = StoryForge;
-  // Test seam (read-only): expose pure reading-level helpers for characterization
+  // Test seam (read-only): expose pure reading-level and comic layout helpers for characterization
   // tests (tests/story_forge_golden.test.js). Zero behavior change.
-  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber }; } catch (e) {}
+  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails }; } catch (e) {}
 
   console.log('[StoryForge] Module registered');
 })();

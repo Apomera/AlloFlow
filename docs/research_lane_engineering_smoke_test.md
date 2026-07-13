@@ -1,5 +1,7 @@
 # Tier 3 Engineering lane (Constraint Forge) — manual smoke test
 
+> **Historical manual smoke checklist, verify before reuse (2026-07-09):** This checklist was written for a specific deploy state. Confirm the current Research Hub lane status, route labels, and deploy commit before running it as a pass/fail script.
+
 **Run this in the deployed Gemini Canvas** once `deploy.sh` ships the Engineering lane to the CDN. Companion to `docs/research_lane_engineering_design.md`.
 
 Each numbered item is one observation; cross it off as you go.

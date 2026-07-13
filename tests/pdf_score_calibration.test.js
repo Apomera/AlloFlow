@@ -1,9 +1,12 @@
 // PDF score calibration harness (rank 11 of the 2026-06-08 pipeline audit).
 //
-// AlloFlow's PDF score is a 50/50 blend of an AI-rubric score and an axe-core score. That weight
-// was never validated against expert/tool ground truth. This harness compares AlloFlow's scores
-// against a human/PAC/veraPDF-scored corpus and reports whether 50/50 is justified — re-deriving
-// the error-minimising weight from data.
+// HISTORICAL NOTE (2026-06-21): AlloFlow's PDF score is NO LONGER a 50/50 blend — the headline is now
+// min(AI rubric, axe/EqualAccess), the lower (governing) layer, never an average (weakest-layer-governs
+// redesign). So the "is 50/50 the right weight" question below is obsolete for the shipped model. What
+// REMAINS useful here is the corpus correlation analysis (do the AI / axe / min scores track expert
+// ground truth at all?) and the calibration MATH self-tests (mae / pearson / bestBlendWeight on
+// synthetic data), which are model-agnostic and still run every time. The weight-search is kept only as
+// an analytical lens on the historical blend, not a claim about the current score.
 //
 // It CANNOT run AlloFlow's audit itself (needs a real DOM + network — the documented headless
 // ceiling), so a reviewer records each PDF's AI/axe/expert scores into

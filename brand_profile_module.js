@@ -33,9 +33,11 @@
  *   - Schema-versioned. v1 is initial; future versions migrate on read.
  *   - Validation is strict on save, lenient on read (a slightly-failing
  *     stored profile still loads; it just shows warnings).
- *   - No clinical-grade XSS protection here — that's the export pipeline's
- *     job (sanitizeCustomExportCSS). This module emits well-formed HTML
- *     using textContent / escaped attributes only.
+ *   - Defense-in-depth on injection: colors are hex-enforced and fonts are
+ *     charset-allowlisted on BOTH save (validateBrandProfile) and every read
+ *     (_normalize), because brand colors/fonts are interpolated raw into export
+ *     <style> blocks downstream. HTML bands emit escaped attributes / textContent.
+ *     The export pipeline still sanitizes customExportCSS as a second layer.
  */
 (function () {
   'use strict';
@@ -98,6 +100,18 @@
     if (typeof value !== 'string') return false;
     var h = value.replace('#', '').trim();
     return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(h);
+  }
+  // Font-family values are interpolated RAW into export <style> blocks downstream
+  // (the export pipeline sanitizes customExportCSS but not brand-derived fonts), so a
+  // crafted font like "x;}</style><script>…" would break out of the style element =
+  // same-origin XSS in the preview AND the distributed .html. Allow only the characters
+  // a real font stack uses (names, generics, quotes, commas, hyphens, accented Latin);
+  // reject anything that can carry CSS or markup. Returns a safe value or null.
+  function _safeFontStack(value) {
+    if (typeof value !== 'string') return null;
+    var v = value.trim();
+    if (!v || v.length > 200) return null;
+    return /^[a-zA-Z0-9 ,.'"À-ɏ-]+$/.test(v) ? v : null;
   }
 
   // ── Escape helpers for HTML emission ─────────────────────────────────────
@@ -172,8 +186,21 @@
   // consumers can rely on the shape. This is the OUTPUT shape; validate first.
   function _normalize(input) {
     var src = input || {};
-    var colors = Object.assign({}, DEFAULT_COLORS, src.colors || {});
-    var fonts = Object.assign({}, DEFAULT_FONTS, src.fonts || {});
+    // Re-enforce hex on EVERY read (not just at save): a profile can reach here via
+    // importBrandProfile or a hand-edited localStorage that never passed validation, and
+    // the colors are interpolated raw into export CSS. Any non-hex falls back to default.
+    var _mergedColors = Object.assign({}, DEFAULT_COLORS, src.colors || {});
+    var colors = {};
+    Object.keys(DEFAULT_COLORS).forEach(function (ck) {
+      colors[ck] = isValidHex(_mergedColors[ck]) ? _mergedColors[ck] : DEFAULT_COLORS[ck];
+    });
+    // Likewise sanitize the font stacks (see _safeFontStack) so a stored/imported brand
+    // can never inject markup through font-family. Unsafe → default (body) / null (heading).
+    var _mergedFonts = Object.assign({}, DEFAULT_FONTS, src.fonts || {});
+    var fonts = {
+      body: _safeFontStack(_mergedFonts.body) || DEFAULT_FONTS.body,
+      heading: (_mergedFonts.heading == null) ? null : (_safeFontStack(_mergedFonts.heading) || null)
+    };
     var header = src.header && typeof src.header === 'object'
       ? { text: String(src.header.text || ''), showLogo: !!src.header.showLogo }
       : { text: '', showLogo: false };
@@ -220,6 +247,11 @@
       var k = colorKeys[i];
       if (!isValidHex(n.colors[k])) errors.push('Color "' + k + '" must be a valid hex (#rrggbb or #rgb)');
     }
+    // Font validity — fonts are interpolated into export CSS, so reject CSS/markup-bearing
+    // values rather than silently swapping them (the user should know their input was rejected).
+    var rawFonts = (profile.fonts && typeof profile.fonts === 'object') ? profile.fonts : {};
+    if (rawFonts.body && _safeFontStack(rawFonts.body) === null) errors.push('Body font contains characters that are not allowed in a font name (use letters, digits, spaces, commas, periods, hyphens and quotes only)');
+    if (rawFonts.heading && _safeFontStack(rawFonts.heading) === null) errors.push('Heading font contains characters that are not allowed in a font name');
     if (errors.length === 0) {
       // Contrast checks (only if all colors parsed)
       var c = n.colors;

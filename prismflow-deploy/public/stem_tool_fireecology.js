@@ -19,6 +19,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-fireecology')) return;
@@ -32,6 +41,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     document.body.appendChild(liveRegion);
   })();
 
+
+  // ── Fire Ecology CSS animations ──
+  if (!document.getElementById('fire-eco-css')) {
+    var fireStyle = document.createElement('style');
+    fireStyle.id = 'fire-eco-css';
+    fireStyle.textContent = [
+      '@keyframes fireGlow { 0%, 100% { box-shadow: 0 0 8px rgba(251,146,60,0.2); } 50% { box-shadow: 0 0 20px rgba(251,146,60,0.4); } }',
+      '@keyframes firePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
+      '@keyframes fireSlideIn { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }',
+      '@keyframes fireShake { 0%, 100% { transform: translateX(0); } 10% { transform: translateX(-4px) rotate(-1deg); } 30% { transform: translateX(3px) rotate(0.5deg); } 50% { transform: translateX(-2px); } 70% { transform: translateX(2px) rotate(-0.5deg); } 90% { transform: translateX(-1px); } }',
+      '@keyframes emberFloat { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-40px) scale(0) translateX(15px); } }',
+      '@keyframes badgePop { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }',
+      '@keyframes forestGrow { 0% { transform: scaleY(0.8); opacity: 0.7; } 100% { transform: scaleY(1); opacity: 1; } }',
+      '@keyframes statBarFill { 0% { width: 0; } }',
+      '.fire-card { animation: fireSlideIn 0.4s ease-out; }',
+      '.fire-badge { animation: badgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
+      '.fire-burn-btn:hover { animation: fireGlow 1.5s ease-in-out infinite; }',
+      '.fire-wildfire-shake { animation: fireShake 0.5s ease-in-out; }',
+      '.fire-stat-bar { animation: statBarFill 0.8s ease-out; }'
+    ].join('\n');
+    document.head.appendChild(fireStyle);
+  }
 
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
@@ -70,18 +101,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     } catch(e) {}
   }
 
+  // Noise burst helper — for crackle, wind, rain textures
+  function noiseBurst(dur, vol, filterFreq, filterType) {
+    var ac = getAudioCtx(); if (!ac) return;
+    try {
+      var bufSize = Math.floor(ac.sampleRate * (dur || 0.04));
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+      var src = ac.createBufferSource(); src.buffer = buf;
+      var filt = ac.createBiquadFilter(); filt.type = filterType || 'lowpass'; filt.frequency.value = filterFreq || 800;
+      var g = ac.createGain(); g.gain.setValueAtTime(vol || 0.03, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.04));
+      src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+    } catch(e) {}
+  }
+
   function playSound(type) {
     try {
       switch(type) {
         case 'ignite':
-          playTone(180, 0.15, 'sawtooth', 0.08);
-          setTimeout(function() { playTone(220, 0.12, 'sawtooth', 0.06); }, 80);
-          setTimeout(function() { playTone(330, 0.18, 'sine', 0.10); }, 160);
+          // Rich ignition: low rumble + crackle burst + rising whoosh
+          playTone(120, 0.2, 'sawtooth', 0.08);
+          noiseBurst(0.15, 0.06, 1200, 'bandpass');
+          setTimeout(function() { playTone(180, 0.15, 'sawtooth', 0.06); noiseBurst(0.1, 0.05, 800); }, 80);
+          setTimeout(function() { playTone(330, 0.2, 'sine', 0.10); noiseBurst(0.08, 0.04, 1500, 'bandpass'); }, 160);
+          setTimeout(function() { playTone(440, 0.15, 'sine', 0.06); }, 280);
           break;
         case 'rain':
-          playTone(800, 0.04, 'sine', 0.06);
-          setTimeout(function() { playTone(600, 0.04, 'sine', 0.05); }, 50);
-          setTimeout(function() { playTone(900, 0.04, 'sine', 0.04); }, 100);
+          // Patter of raindrops — multiple rapid filtered clicks
+          for (var ri = 0; ri < 8; ri++) {
+            (function(delay) {
+              setTimeout(function() { noiseBurst(0.02, 0.03 + Math.random() * 0.02, 1500 + Math.random() * 1000, 'bandpass'); }, delay);
+            })(ri * 30 + Math.random() * 20);
+          }
           break;
         case 'grow':
           playTone(440, 0.08, 'sine', 0.06);
@@ -95,6 +148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           break;
         case 'quizWrong':
           playTone(220, 0.25, 'sawtooth', 0.08);
+          setTimeout(function() { playTone(180, 0.15, 'sawtooth', 0.05); }, 120);
           break;
         case 'badge':
           playTone(523, 0.08, 'sine', 0.1);
@@ -103,18 +157,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           setTimeout(function() { playTone(1047, 0.2, 'sine', 0.14); }, 210);
           break;
         case 'wildfire':
-          playTone(100, 0.3, 'sawtooth', 0.12);
-          setTimeout(function() { playTone(150, 0.25, 'sawtooth', 0.10); }, 100);
-          setTimeout(function() { playTone(80, 0.4, 'sawtooth', 0.08); }, 200);
+          // Intense multi-layer roar
+          playTone(80, 0.4, 'sawtooth', 0.12);
+          playTone(120, 0.35, 'sawtooth', 0.08);
+          noiseBurst(0.3, 0.1, 400);
+          setTimeout(function() { playTone(100, 0.3, 'sawtooth', 0.10); noiseBurst(0.25, 0.08, 600); }, 100);
+          setTimeout(function() { playTone(60, 0.5, 'sawtooth', 0.06); noiseBurst(0.2, 0.06, 300); }, 200);
           break;
         case 'snapshot':
           playTone(1200, 0.04, 'sine', 0.08);
           setTimeout(function() { playTone(800, 0.06, 'sine', 0.06); }, 50);
           break;
+        case 'crackle':
+          // Single fire crackle pop
+          noiseBurst(0.03, 0.04, 2000 + Math.random() * 1500, 'bandpass');
+          break;
+        case 'wind':
+          // Wind gust
+          noiseBurst(0.4, 0.04, 250, 'lowpass');
+          break;
+        case 'bird':
+          // Single bird chirp
+          playTone(1800 + Math.random() * 600, 0.04, 'sine', 0.04);
+          setTimeout(function() { playTone(2200 + Math.random() * 400, 0.03, 'sine', 0.03); }, 40);
+          break;
+        case 'cricket':
+          // Cricket chirp
+          playTone(4000, 0.02, 'sine', 0.02);
+          setTimeout(function() { playTone(4200, 0.02, 'sine', 0.02); }, 30);
+          setTimeout(function() { playTone(4000, 0.02, 'sine', 0.02); }, 60);
+          break;
         default:
           playTone(440, 0.08, 'sine', 0.06);
       }
     } catch(e) {}
+  }
+
+  // ── Ambient soundscapes — continuous background audio tied to ecosystem state ──
+  var _fireAmbient = null;
+  function startFireAmbient(isBurning, biodiversity) {
+    stopFireAmbient();
+    var ac = getAudioCtx(); if (!ac) return;
+    try {
+      if (isBurning) {
+        // Fire crackling ambience — filtered noise with LFO
+        var bufSize = ac.sampleRate * 2;
+        var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+        var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+        var filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 800; filt.Q.value = 0.8;
+        var lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 3 + Math.random() * 2;
+        var lfoG = ac.createGain(); lfoG.gain.value = 300;
+        lfo.connect(lfoG); lfoG.connect(filt.frequency);
+        var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
+        master.gain.linearRampToValueAtTime(0.025, ac.currentTime + 1);
+        src.connect(filt); filt.connect(master); master.connect(ac.destination);
+        src.start(); lfo.start();
+        _fireAmbient = { src: src, lfo: lfo, master: master };
+        // Random crackle pops
+        _fireAmbient._interval = setInterval(function() {
+          if (Math.random() > 0.3) playSound('crackle');
+        }, 400 + Math.random() * 600);
+      } else {
+        // Forest ambience — soft wind + bird/cricket calls based on biodiversity
+        var bufSize2 = ac.sampleRate * 2;
+        var buf2 = ac.createBuffer(1, bufSize2, ac.sampleRate);
+        var data2 = buf2.getChannelData(0);
+        for (var j = 0; j < bufSize2; j++) data2[j] = (Math.random() * 2 - 1);
+        var src2 = ac.createBufferSource(); src2.buffer = buf2; src2.loop = true;
+        var filt2 = ac.createBiquadFilter(); filt2.type = 'lowpass'; filt2.frequency.value = 200;
+        var master2 = ac.createGain(); master2.gain.setValueAtTime(0, ac.currentTime);
+        master2.gain.linearRampToValueAtTime(0.01, ac.currentTime + 2);
+        src2.connect(filt2); filt2.connect(master2); master2.connect(ac.destination);
+        src2.start();
+        _fireAmbient = { src: src2, master: master2 };
+        // Wildlife sounds based on biodiversity level
+        var bio = biodiversity || 50;
+        _fireAmbient._interval = setInterval(function() {
+          if (bio > 60 && Math.random() > 0.5) playSound('bird');
+          else if (bio > 30 && Math.random() > 0.6) playSound('cricket');
+          if (Math.random() > 0.7) playSound('wind');
+        }, 3000 + Math.random() * 4000);
+      }
+    } catch(e) {}
+  }
+  function stopFireAmbient() {
+    if (_fireAmbient) {
+      try {
+        var ac = getAudioCtx();
+        if (ac && _fireAmbient.master) _fireAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5);
+        if (_fireAmbient._interval) clearInterval(_fireAmbient._interval);
+        var nodes = _fireAmbient;
+        setTimeout(function() { try { nodes.src.stop(); if (nodes.lfo) nodes.lfo.stop(); } catch(e) {} }, 600);
+      } catch(e) {}
+      _fireAmbient = null;
+    }
   }
 
   // ── Badge definitions (14 total) ──
@@ -128,7 +266,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { id: 'quizMaster', icon: '\uD83C\uDFC6', label: 'Fire Quiz Master', desc: 'Answer 8 quiz questions correctly' },
     { id: 'aiScholar', icon: '\uD83E\uDD16', label: 'AI Fire Scholar', desc: 'Use the AI tutor 3 times' },
     { id: 'suppressionLesson', icon: '\u26A0\uFE0F', label: 'Suppression Lesson', desc: 'Witness the consequences of 50 years of fire suppression' },
-    { id: 'mosaicMaster', icon: '\uD83D\uDFE9', label: 'Mosaic Master', desc: 'Create a healthy mosaic burn pattern' },
+    { id: 'mosaicMaster', icon: '\uD83E\uDDE9', label: 'Mosaic Master', desc: 'Steward the Wabanaki cultural mosaic with 4+ continuity wins across 8 years' },
+    { id: 'berryKeeper', icon: '\uD83E\uDED0', label: 'Berry Keeper', desc: 'Bring the blueberry barren to 80+ yield in a single year' },
+    { id: 'ashKeeper', icon: '\uD83E\uDDFA', label: 'Ash Keeper', desc: 'Bring the mixed hardwood stand to 70+ yield (enough ash splints for a full season of basketry)' },
+    { id: 'sweetgrassKeeper', icon: '\uD83C\uDF3E', label: 'Sweetgrass Keeper', desc: 'Hold the riparian corridor at 75+ yield (sweetgrass braids for every ceremony)' },
+    { id: 'pineKeeper', icon: '\uD83D\uDEF6', label: 'Pine Keeper', desc: 'Bring the white pine grove to 65+ yield (canoes finished, pitch rendered)' },
+    { id: 'cornKeeper', icon: '\uD83C\uDF3D', label: 'Three Sisters Keeper', desc: 'Bring the intervale meadow to 85+ yield (a full corn-bean-squash harvest)' },
     { id: 'carbonTracker', icon: '\u2601\uFE0F', label: 'Carbon Tracker', desc: 'Compare carbon outcomes of cultural burning vs. wildfire' },
     { id: 'seedSprouter', icon: '\uD83C\uDF3E', label: 'Seed Sprouter', desc: 'Trigger fire-dependent seed germination' },
     { id: 'waterProtector', icon: '\uD83D\uDCA7', label: 'Water Protector', desc: 'Learn how cultural burning protects watersheds' },
@@ -512,11 +655,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       id: 'fireTriangle',
       name: 'The Fire Triangle',
       icon: '\u25B3',
-      description: 'Every fire requires three elements: heat (ignition source), fuel (organic material), and oxygen. Remove any one element and the fire goes out. Indigenous fire practitioners manipulate all three: choosing ignition timing (heat), managing fuel loads through regular burning (fuel), and burning when humidity/moisture reduces oxygen availability.',
+      description: 'Every fire requires three elements: heat (ignition source), fuel (organic material), and oxygen. Remove any one element and the fire goes out. Indigenous fire practitioners manipulate all three: choosing ignition timing (heat), managing fuel loads through regular burning (fuel), and burning in calm air to limit oxygen and spread (oxygen). High humidity also keeps a burn gentle — but by dampening the fuel, not by removing oxygen.',
       elements: [
         { name: 'Heat', icon: '\uD83C\uDF21\uFE0F', desc: 'Ignition temperature for wood is ~300\u00B0C (572\u00B0F). Indigenous practitioners use wind, slope, and time of day to control fire intensity.' },
         { name: 'Fuel', icon: '\uD83C\uDF3F', desc: 'Dead leaves, branches, grass, and woody debris. Fuel moisture content determines if fire will carry. Regular cultural burning keeps fuel loads LOW.' },
-        { name: 'Oxygen', icon: '\uD83D\uDCA8', desc: 'Wind provides oxygen and drives fire spread. Burning in calm conditions or when humidity is high (early morning, after light rain) keeps fire intensity low.' }
+        { name: 'Oxygen', icon: '\uD83D\uDCA8', desc: 'Wind supplies oxygen and drives fire spread, so burning in calm air keeps intensity low. (High humidity also lowers intensity \u2014 but by raising fuel moisture, not by changing oxygen.)' }
       ]
     },
     {
@@ -1080,6 +1223,249 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
   };
 
   // ═══════════════════════════════════════════
+  // CULTURAL MOSAIC: WABANAKI STEWARDSHIP SIM
+  // 5 zones in a Wabanaki Maine territory, each with a different
+  // cultural fire-return interval and a different cultural use.
+  // The point is NOT "burn everything every 5 years" but tending
+  // a mosaic where each zone gets the right treatment.
+  // ═══════════════════════════════════════════
+
+  var WABANAKI_ZONES = [
+    {
+      id: 'blueberryBarren', name: 'Blueberry Barren', icon: '🫐', color: '#7c3aed',
+      fireReturn: 2, idealFuel: 25, idealYield: 70,
+      desc: 'Open scrubland on glacial outwash. Frequent fire keeps heath low and clears competing shrubs. Wabanaki burned for thousands of years to maintain the blueberry crop.',
+      cultivars: 'Lowbush blueberry, sweet fern, bracken fern',
+      culturalUse: 'Summer harvest, dried winter stores, trade good',
+      defaultState: { fuel: 38, health: 62, yield: 35, lastBurn: 4 },
+      deepDive: {
+        bilingual: 'Sata · low-bush blueberry',
+        knowledge: 'Lowbush blueberry is a fire-dependent shrub. It spreads underground through rhizomes and only fruits prolifically on plants that are 2 years past a burn. Hot wildfires sterilize the soil and kill the rhizomes; gentle cool burns release the seeds and prune the canes for next year. A barren that goes 5+ years without fire turns into scrubland and the harvest fails.',
+        preparation: 'Sun-dried into raisins; smoked into cakes; mixed with cornmeal for travel food; sometimes mashed with dried fish. A major caloric input for winter, especially before potatoes arrived.',
+        modernContext: 'Maine\'s commercial wild-blueberry industry runs on the same 2-year burn cycle that Wabanaki communities developed over centuries. The "fields" of Washington County are Indigenous fire culture, retitled. Climate change is shortening the safe-burn window each year.',
+        teaching: 'A barren without fire does not stop being a barren. It stops being a barren that feeds anyone. The fire is the harvest.'
+      }
+    },
+    {
+      id: 'oakSavanna', name: 'White Oak Savanna', icon: '🌳', color: '#a16207',
+      fireReturn: 5, idealFuel: 30, idealYield: 65,
+      desc: 'Open oak grassland. Ground fire every few years kills competing maple and birch saplings while mature oaks survive on their thick fire-resistant bark.',
+      cultivars: 'White oak, big bluestem, butterfly weed',
+      culturalUse: 'Acorn flour, deer browse habitat, basket withes',
+      defaultState: { fuel: 48, health: 68, yield: 48, lastBurn: 6 },
+      deepDive: {
+        bilingual: 'Anaskimnesi · white oak',
+        knowledge: 'White oak acorns are preferred over red oak because they have less tannin and can be leached in days instead of weeks. White oaks evolved with frequent fire: their thick bark insulates the cambium while ground fire kills the young maples and beeches that would otherwise shade them out. An oak savanna without fire becomes a closed maple-beech forest in a single human lifetime.',
+        preparation: 'Acorns shelled, ground into meal, soaked in running water (often in a basket weighted in a stream) for several days to leach tannins, then baked into breads or porridge. Deer browse in the open savanna was as important as the acorns themselves.',
+        modernContext: 'Most New England oak savannas converted to closed-canopy forest after Indigenous burning was suppressed. Restoration ecologists are reintroducing prescribed fire on a 3 to 5 year cycle to bring back the open structure, with mixed success.',
+        teaching: 'When the canopy closes, the deer move on, the acorn crop fails, and the meadow plants disappear. The savanna is not a forest with gaps. It is its own thing.'
+      }
+    },
+    {
+      id: 'mixedConifer', name: 'Pine-Spruce Stand', icon: '🌲', color: '#15803d',
+      fireReturn: 30, idealFuel: 35, idealYield: 50,
+      desc: 'Higher-elevation pine and spruce. Burns rarely; mostly self-maintaining. Hand thinning is the main intervention. A small understory burn maybe once a generation.',
+      cultivars: 'Eastern white pine, red spruce, partridgeberry',
+      culturalUse: 'Pine pitch for sealing, spruce roots for canoe binding, lumber',
+      defaultState: { fuel: 28, health: 78, yield: 32, lastBurn: 18 },
+      deepDive: {
+        bilingual: 'Kuwes · white pine · Skog · spruce',
+        knowledge: 'Eastern white pine is fire-tolerant once mature: thick bark, self-pruning of lower branches, and tall crowns above most ground fires. Red spruce is fire-sensitive but its moist understory rarely carries fire. Stand-replacing fire here is a once-a-century event, not a stewardship tool. The right interventions are selective hand-thinning and patience.',
+        preparation: 'Pine pitch (resin) was collected from wounds in the trunk and rendered with animal fat into a waterproof sealant used on canoes, watertight baskets, and roof seams. Spruce roots were dug, split into long flexible cords, and used as thread to sew birchbark canoe seams that the pitch then sealed.',
+        modernContext: 'White pine remains central to Maine identity and economy. Modern threats are spruce-fir budworm outbreaks (made worse by fire suppression and even-aged management) and white pine blister rust. Climate change is pushing red spruce upslope.',
+        teaching: 'Some land is not waiting for fire. This stand keeps itself if you let it. Stewardship here is to walk through it, take what is dying, and leave the rest.'
+      }
+    },
+    {
+      id: 'riparian', name: 'Riparian Corridor', icon: '🌿', color: '#0ea5e9',
+      fireReturn: 99, idealFuel: 18, idealYield: 75,
+      desc: 'Stream banks and beaver wetlands. Almost never burned, moisture keeps fire out, and stream health depends on shaded canopy. Beavers do the work here.',
+      cultivars: 'Silver maple, sweetgrass, fiddlehead fern',
+      culturalUse: 'Sweetgrass braids for ceremony and baskets, fiddleheads, beaver wetlands',
+      defaultState: { fuel: 16, health: 86, yield: 58, lastBurn: 99 },
+      deepDive: {
+        bilingual: 'Welimanal · sweetgrass · Qapit · beaver',
+        knowledge: 'Sweetgrass (Hierochloe odorata) grows on the moist edge of streams and marshes, in low-fertility soil where competition is weak. It needs open, moist ground. It does not need fire and does not tolerate hot fire. Beavers are the actual stewards of this zone: their dams raise the water table, slow flooding, create the moist meadow conditions sweetgrass needs, and create firebreaks during dry years.',
+        preparation: 'Sweetgrass is cut just before maturity, braided while wet, dried in shade. Burned as smudge for purification (a scent like vanilla and fresh hay) and woven into baskets, often as the binding band along the rim. Fiddleheads (ostrich fern) gathered in May for spring food.',
+        modernContext: 'Sweetgrass populations are declining across Maine due to wetland development, agricultural drainage, and contamination. Maine Indian Basketmakers Alliance and others coordinate restoration plantings. Beaver populations were nearly extirpated by the fur trade; their recovery is slowly restoring this zone.',
+        teaching: 'You cannot make a riparian corridor with fire. You can only protect it from fire. The beaver does the work. Your job is to leave the beaver alone.'
+      }
+    },
+    {
+      id: 'whitePineGrove', name: 'White Pine Grove', icon: '🌲', color: '#0891b2',
+      fireReturn: 25, idealFuel: 30, idealYield: 55,
+      desc: 'A grove of eastern white pine on sandy soil. Tolerates surface fire once mature. Gentle burns every 20 to 30 years keep the understory open and the crowns healthy. Center of canoe-making and pitch economy.',
+      cultivars: 'Eastern white pine, princess pine, partridgeberry',
+      culturalUse: 'Birchbark and white-pine canoes, pine pitch, ceremonial wood',
+      defaultState: { fuel: 36, health: 72, yield: 38, lastBurn: 22 },
+      deepDive: {
+        bilingual: 'Kuwes · white pine · Pasekona · canoe',
+        knowledge: 'Eastern white pine (Pinus strobus) is fire-tolerant once mature. Thick bark protects the cambium, lower branches self-prune, and the crown is usually above ground-fire reach. Cool surface fires every 20 to 30 years remove competing balsam fir and red maple, keep the grove open, and stimulate cone release. Without occasional fire, the grove transitions to closed mixed forest and white pine fails to regenerate.',
+        preparation: 'White pine was the preferred lumber for canoe ribs and gunwales and the trunks were sometimes used for dugout canoes on lakes. Pine pitch (resin) was rendered with bear or moose fat into a sticky waterproofing applied to birchbark canoe seams. Princess pine ground cover was gathered for ceremonial smudge.',
+        modernContext: 'White pine is the Maine state tree and central to Maine identity. It was the masting tree the British Royal Navy claimed in the 1700s, which fueled Wabanaki and colonial resistance. Today modern threats include white pine blister rust (an introduced fungus) and the southward push of red oak under climate change.',
+        teaching: 'A pine grove is a slow place. The work is to walk through it, to take what is dying, to listen for which trees the next canoe lives inside. The fire comes once a generation. The patience is daily.'
+      }
+    },
+    {
+      id: 'intervaleMeadow', name: 'Intervale Meadow', icon: '🌽', color: '#f59e0b',
+      fireReturn: 3, idealFuel: 22, idealYield: 78,
+      desc: 'Rich river-floodplain land along the Penobscot, Kennebec, and Saco intervales. Wabanaki villages grew corn, beans, and squash here using fire to clear and frost-protect the fields. The most productive land in the territory.',
+      cultivars: 'Corn (white flint), beans, squash, sunflower, tobacco',
+      culturalUse: 'Three Sisters agriculture, seed sovereignty, village food economy',
+      defaultState: { fuel: 30, health: 80, yield: 60, lastBurn: 3 },
+      deepDive: {
+        bilingual: 'Olawagik · intervale · Skamonal · corn · Malsanikuk · squash',
+        knowledge: 'Intervale soil is alluvial, deposited by annual river flooding. It is loose, fertile, and warm: corn matures here in Maine\'s short season where it cannot on upland clay. Wabanaki farmers burned the previous year\'s stubble each spring to clear weeds, add a small ash amendment, and warm the soil. The Three Sisters (corn, beans, squash) were planted together: corn for the stalk, beans to fix nitrogen, squash to shade the soil and deter pests.',
+        preparation: 'White flint corn dried on the ear, ground into samp or meal, boiled into porridge or baked as bread. Beans dried and stored. Squash baked, dried into rings, stored for winter. Fields were chosen on the south-facing intervale and rotated; long-term village sites moved every several decades as soil and firewood demanded.',
+        modernContext: 'Maine intervales were the first land taken for English settlement because they were already cleared and productive. Many "first homestead" sites in Maine are former Wabanaki cornfields. Seed sovereignty work today (such as preserving Wabanaki white flint corn varieties through organizations like Wabanaki Public Health and Wellness) is reconnecting communities to this agricultural inheritance.',
+        teaching: 'When the colonists arrived and asked where to plant, they were shown the intervales. They were already fields. The forest you see along the river now is a forest that grew over a farm.'
+      }
+    },
+    {
+      id: 'hardwoodStand', name: 'Mixed Hardwood', icon: '🍁', color: '#dc2626',
+      fireReturn: 60, idealFuel: 32, idealYield: 60,
+      desc: 'Mature beech, birch, brown ash, sugar maple. Burns once a generation, very low intensity. Most stewardship is coppicing brown ash for the splints that define Wabanaki basketry.',
+      cultivars: 'Brown ash, sugar maple, paper birch',
+      culturalUse: 'Ash splint baskets (defining Wabanaki craft), maple sap, birchbark canoes',
+      defaultState: { fuel: 34, health: 74, yield: 42, lastBurn: 38 },
+      deepDive: {
+        bilingual: 'Wikp · brown ash · Senomozi · sugar maple',
+        knowledge: 'Brown ash (Fraxinus nigra) is central to Wabanaki life. Each annual growth ring is a discrete layer; when the trunk is pounded with the back of an axe, those rings split into long flexible splints that can be woven into baskets. A single basketmaker may search for years to find the right ash tree (straight, slow-grown, sound). The tree itself takes 50 to 80 years to reach basket size.',
+        preparation: 'Tree felled in winter, hauled out by sled, debarked, pounded section by section to release the splints. Splints scraped smooth with a draw knife, dyed (often with butternut, beet, or commercial dye), and woven. A finished basket may take 30 to 60 hours of work after the splints are made.',
+        modernContext: 'Emerald ash borer, an invasive beetle, is killing brown ash across the East. Wabanaki communities are racing to save seed and preserve mature trees. The Maine Indian Basketmakers Alliance leads both the craft revival and the ecological conservation. Without brown ash, a defining Wabanaki art form ends.',
+        teaching: 'The basket is not the tree. The basket is one generation of the tree taught to a person, then taught to another person, then taught to another. We are inside that line. The beetle does not know what it is breaking.'
+      }
+    }
+  ];
+
+  var MOSAIC_TECHNIQUES = [
+    {
+      id: 'culturalBurn', name: 'Cultural Burn', icon: '🔥', hours: 8, season: 'cold',
+      desc: 'Low-intensity ground fire at the right fall moisture window. The single most effective stewardship tool. Cold-season work.',
+      effects: { fuel: -16, health: 6, yield: 12 },
+      resetsBurn: true
+    },
+    {
+      id: 'pileBurn', name: 'Pile Burn', icon: '🪵', hours: 5, season: 'cold',
+      desc: 'Concentrate slash into piles and burn during snow cover. Low-risk way to remove fuel without scorching the soil. Cold-season work.',
+      effects: { fuel: -10, health: 2, yield: 2 }
+    },
+    {
+      id: 'handThin', name: 'Hand Thinning', icon: '🪓', hours: 12, season: 'any',
+      desc: 'Selective cutting of small-diameter competitors. No fire risk but labor-intensive. Works in either season.',
+      effects: { fuel: -11, health: 4, yield: 3 }
+    },
+    {
+      id: 'coppice', name: 'Coppice + Pollard', icon: '🌱', hours: 10, season: 'cold',
+      desc: 'Cut select trees at the base in winter; new shoots regrow straight and supple, ideal for ash splints and pole material. Cold-season work.',
+      effects: { fuel: -3, health: 1, yield: 18 },
+      zoneRestrict: ['hardwoodStand', 'mixedConifer', 'whitePineGrove']
+    },
+    {
+      id: 'seedScatter', name: 'Seed Scatter', icon: '🌾', hours: 4, season: 'any',
+      desc: 'Broadcast cultural plant seeds on a recently burned zone. Lowbush blueberry, big bluestem, sweetgrass establish on bare mineral soil.',
+      effects: { fuel: 0, health: 8, yield: 12 },
+      requires: 'recentBurn'
+    },
+    {
+      id: 'rest', name: 'Rest the Land', icon: '🍃', hours: 0, season: 'any',
+      desc: 'Sometimes the most important move is no move. Fuels accumulate slightly; ecology heals. Either season.',
+      effects: { fuel: 3, health: 3, yield: -1 }
+    }
+  ];
+
+  var MOSAIC_EVENTS = [
+    { id: 'drought',     name: 'Drought Year',        icon: '☀️', desc: 'A dry summer raises fuel risk and reduces berry yield. Cultural burn windows are tighter than usual.', apply: function(z) { z.yield = Math.max(0, z.yield - 5); z.fuel = Math.min(100, z.fuel + 4); } },
+    { id: 'wetSummer',   name: 'Wet Summer',           icon: '⛈️', desc: 'A wet, cool summer boosts riparian and blueberry yields but suppresses fire windows.', apply: function(z) { if (z.id === 'blueberryBarren' || z.id === 'riparian') z.yield = Math.min(100, z.yield + 7); } },
+    { id: 'beaverComplex', name: 'Beaver Complex Expands', icon: '🦫', desc: 'Beavers expand their dam complex. The riparian zone bumps up, and the adjacent mixed hardwood gets a moisture boost.', apply: function(z) { if (z.id === 'riparian') { z.yield = Math.min(100, z.yield + 10); z.health = Math.min(100, z.health + 4); } if (z.id === 'hardwoodStand') z.health = Math.min(100, z.health + 2); } },
+    { id: 'browsePressure', name: 'Deer + Moose Browse',  icon: '🦌', desc: 'Heavy browse pressure on young shoots. Oak savanna and barren yields drop unless the canopy was opened recently.', apply: function(z) { if (z.id === 'blueberryBarren' || z.id === 'oakSavanna') z.yield = Math.max(0, z.yield - 6); } },
+    { id: 'ceremonyYear', name: 'Ceremony Year',         icon: '✨', desc: 'A major ceremony requires sweetgrass and ash splints. Riparian and hardwood zones must be ready; if they are, the whole community celebrates.', apply: function(z, all) { var rip = all.find(function(zz){return zz.id==='riparian';}); var hw = all.find(function(zz){return zz.id==='hardwoodStand';}); if (rip && hw && rip.yield >= 50 && hw.yield >= 50) z.health = Math.min(100, z.health + 3); else if (z.id === 'riparian' || z.id === 'hardwoodStand') z.health = Math.max(0, z.health - 2); } },
+    { id: 'barkBeetle',  name: 'Bark Beetle Outbreak', icon: '🐛', desc: 'A bark beetle pulse hits the pine-spruce stand. Health drops and fuel rises as dead trees fall.', apply: function(z) { if (z.id === 'mixedConifer') { z.health = Math.max(0, z.health - 10); z.fuel = Math.min(100, z.fuel + 6); } } },
+    { id: 'treaty',      name: 'Treaty Council',       icon: '🤝', desc: 'A council across Wabanaki nations shares stewardship knowledge. Yields and continuity scores improve everywhere this year.', apply: function(z) { z.yield = Math.min(100, z.yield + 3); } },
+    { id: 'lateSpring',  name: 'Late Spring',          icon: '❄️', desc: 'Snow lingers into May. All techniques this year are 20 percent less effective.', apply: function(z) { /* effect is applied at action-resolution time via yearMult */ } }
+  ];
+
+  // Elder guidance fires based on current state. Each guidance is a soft nudge,
+  // not a directive: the elder names what they are seeing on the land.
+  var MOSAIC_ELDER = [
+    { check: function(z) { return z.id === 'blueberryBarren' && z.fuel > 60; }, msg: 'The barren is choked. Without a burn the heath swallows the blueberries, and the harvest fails.' },
+    { check: function(z) { return z.id === 'blueberryBarren' && (z.lastBurn || 99) > 4; }, msg: 'It has been too long since the barren was burned. Even good rain will not replace good fire.' },
+    { check: function(z) { return z.id === 'oakSavanna' && z.fuel > 55; }, msg: 'The savanna is filling in with maple and birch. The young oaks cannot push through that shade.' },
+    { check: function(z) { return z.id === 'riparian' && z.fuel > 35; }, msg: 'Something is not right by the water. Sweetgrass needs open, moist ground, not crowded brush.' },
+    { check: function(z) { return z.id === 'mixedConifer' && z.health < 55; }, msg: 'The pines are tired. Thin a little, then let them rest. Fire here is rare and patient.' },
+    { check: function(z) { return z.id === 'hardwoodStand' && z.yield < 30; }, msg: 'The brown ash is not giving splints this year. Coppice in winter and the shoots will come.' }
+  ];
+
+  // Difficulty presets. Affects hours-per-year budget, how often events
+  // fire (apprentice gets some quiet years), and how hard events hit.
+  var MOSAIC_DIFFICULTIES = {
+    apprentice: { id: 'apprentice', label: 'Apprentice', hoursPerYear: 40, eventSkipChance: 0.3, eventSeverity: 0.8, desc: '40 hours / year, kinder events. Good for a first run.' },
+    steward:    { id: 'steward',    label: 'Steward',    hoursPerYear: 32, eventSkipChance: 0,   eventSeverity: 1.0, desc: '32 hours / year, standard events. Default.' },
+    keeper:     { id: 'keeper',     label: 'Fire Keeper', hoursPerYear: 24, eventSkipChance: 0,   eventSeverity: 1.5, desc: '24 hours / year, harsher events. Tight constraint.' }
+  };
+
+  // Deterministic PRNG for replayable campaigns. Mulberry32 is simple and
+  // good enough for picking events. We key it on (seed + year + purpose)
+  // so an identical seed produces an identical event sequence year-by-year
+  // regardless of player order of operations.
+  function mosaicMulberry32(a) {
+    return function() {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function mosaicHash(s) {
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = (h * 16777619) >>> 0;
+    }
+    return h;
+  }
+  function newMosaicSeed() {
+    var d = new Date();
+    var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+    var datePart = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+    var noise = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+    return 'mosaic-' + datePart + '-' + noise;
+  }
+
+  function defaultMosaicState() {
+    var diff = MOSAIC_DIFFICULTIES.steward;
+    var warmHours = Math.ceil(diff.hoursPerYear / 2);
+    return {
+      phase: 'setup',          // 'setup' | 'year' | 'review' | 'debrief'
+      subPhase: 'warm',        // 'warm' (Sigwan-Nipon) | 'cold' (Toqaq-Pun)
+      year: 1,
+      maxYears: 8,
+      difficulty: diff.id,
+      hoursPerYear: diff.hoursPerYear,
+      hoursLeft: warmHours,
+      warmHoursBudget: warmHours,
+      coldHoursBudget: Math.floor(diff.hoursPerYear / 2),
+      zones: WABANAKI_ZONES.map(function(z) { return Object.assign({ id: z.id }, z.defaultState); }),
+      yearActions: [],         // actions logged during this year (across both phases)
+      yearLog: [],             // multi-year history
+      lastEvent: null,
+      continuityWins: 0,
+      finalOutcome: null,
+      // AI Land Reading state
+      aiReadResponse: null,
+      aiReadLoading: false,
+      aiReadHistory: [],
+      // UI state
+      deepDiveZone: null,
+      firstTipDismissed: false,
+      // Deterministic-replay state
+      seed: newMosaicSeed()
+    };
+  }
+
+  function getZoneDef(id) { return WABANAKI_ZONES.find(function(z) { return z.id === id; }); }
+
+  // ═══════════════════════════════════════════
   // MAIN TOOL REGISTRATION
   // ═══════════════════════════════════════════
 
@@ -1089,6 +1475,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.',
     color: 'orange',
     category: 'science',
+    questHooks: [
+      { id: 'view_3_nations', label: 'Learn about 3 Indigenous nations\u2019 fire practices', icon: '\uD83C\uDF0E', check: function(d) { return Object.keys(d.nationsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.nationsViewed || {}).length + '/3 nations'; } },
+      { id: 'view_3_ecosystems', label: 'Explore 3 fire-adapted ecosystems', icon: '\uD83C\uDF32', check: function(d) { return Object.keys(d.ecosystemsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.ecosystemsViewed || {}).length + '/3 ecosystems'; } },
+      { id: 'run_simulation', label: 'Run a fire simulation', icon: '\uD83D\uDD25', check: function(d) { return d.simRun || false; }, progress: function(d) { return d.simRun ? 'Done!' : 'Not yet'; } },
+      { id: 'create_burn_plan', label: 'Create a prescribed burn plan', icon: '\uD83D\uDCDD', check: function(d) { return d.burnResult !== null && d.burnResult !== undefined; }, progress: function(d) { return d.burnResult ? 'Created!' : 'Not yet'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -1213,6 +1605,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         var gameOver = d.gameOver || false;
         var gameHistory = d.gameHistory || [];
 
+        // Cultural Mosaic state
+        var mosaic = d.mosaic || defaultMosaicState();
+
         var band = getGradeBand(ctx);
 
         // ── Badge checker ──
@@ -1240,7 +1635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('span', null, label),
               h('span', { style: { fontWeight: 600 } }, value + (unit || ''))
             ),
-            h('div', { style: { height: 10, background: '#1e293b', borderRadius: 5, overflow: 'hidden' } },
+            h('div', { style: { height: 10, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 5, overflow: 'hidden' } },
               h('div', { style: { width: pct + '%', height: '100%', background: color, borderRadius: 5, transition: 'width 0.4s' } })
             )
           );
@@ -1251,6 +1646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           { id: 'indigenous', icon: '\uD83C\uDF0D', label: 'Indigenous Knowledge' },
           { id: 'ecosystems', icon: '\uD83C\uDF32', label: 'Fire Ecosystems' },
           { id: 'simulator', icon: '\uD83C\uDFAE', label: 'Forest Simulator' },
+          { id: 'mosaic', icon: '\uD83E\uDDE9', label: 'Cultural Mosaic' },
           { id: 'burnPlan', icon: '\uD83D\uDCCB', label: 'Burn Planner' },
           { id: 'science', icon: '\uD83D\uDD2C', label: 'Fire Science' },
           { id: 'smokeSeeds', icon: '\uD83C\uDF3A', label: 'Smoke & Seeds' },
@@ -1259,26 +1655,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           { id: 'carbon', icon: '\u2601\uFE0F', label: 'Carbon Calculator' },
           { id: 'beavers', icon: '\uD83E\uDDAB', label: 'Beavers & Fire' },
           { id: 'game', icon: '\uD83C\uDFAE', label: 'Firekeeper Challenge' },
-          { id: 'quiz', icon: '\uD83C\uDFC6', label: 'Quiz' }
+          { id: 'quiz', icon: '\uD83C\uDFC6', label: 'Quiz' },
+          { id: 'regimeHunt', icon: '\uD83D\uDD25', label: 'Fire Regime' }
         ];
 
         function renderTabNav() {
-          return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }, role: 'tablist', 'aria-label': 'Fire Ecology sections' },
-            TABS.map(function(tt) {
-              var active = tab === tt.id;
-              return h('button', { 'aria-label': 'Change tab',
-                key: tt.id,
-                onClick: function() { upd('tab', tt.id); },
-                role: 'tab', 'aria-selected': active,
-                style: {
-                  padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: active ? '#ea580c' : '#1e293b',
-                  color: active ? '#fff' : '#94a3b8',
-                  fontWeight: active ? 700 : 500, fontSize: 13,
-                  transition: 'all 0.2s'
-                }
-              }, tt.icon + ' ' + tt.label);
-            })
+          var TAB_META = {
+            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: 'Indigenous fire knowledge',                hint: 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Western fire science is finally reading what Indigenous practitioners always knew.' },
+            ecosystems: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF32', title: 'Fire-adapted ecosystems',               hint: 'Some ecosystems NEED fire to function \u2014 longleaf pine, sequoia, chaparral, prairie. Cones that only open in heat (serotiny). Suppress fire and the ecosystem dies.' },
+            simulator:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFAE', title: 'Forest simulator',                       hint: 'Cellular-automaton fire spread \u2014 each cell tracks fuel load + moisture + slope. Watch how a single ignition becomes a megafire when fuels accumulate.' },
+            mosaic:     { accent: '#15803d', soft: 'rgba(21,128,61,0.10)',  icon: '\uD83E\uDDE9', title: 'Cultural mosaic \u2014 Wabanaki stewardship',  hint: 'A real Indigenous approach is patchwork, not uniform. Each habitat has its own fire-return interval: blueberry barren every 2 years, riparian almost never. Steward 5 zones over 8 years.' },
+            burnPlan:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: 'Burn planner \u2014 cultural burn safety', hint: 'Indigenous + modern burn planners read temperature, humidity, wind, and fuel moisture together. Score \u2265 85 = GO; 60\u201385 = CAUTION; <60 = NO-GO.' },
+            science:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\uD83D\uDD2C', title: 'Fire science \u2014 the chemistry',       hint: 'The fire triangle: fuel + oxygen + heat. Combustion is exothermic oxidation. Flashover = the moment ambient air reaches ignition temperature \u2014 catastrophic.' },
+            smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: 'Smoke + seeds',                          hint: 'Many plants need smoke chemicals (karrikins) to germinate. Fire-followers (whispering bells, fire poppies) bloom only in burned ground; seed banks wait decades.' },
+            watershed:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCA7', title: 'Fire + watersheds',                     hint: 'Burn scars trigger debris flows. Hydrophobic soils after high-severity burns can shed water like pavement. Post-fire flooding kills more people than the fire itself in some events.' },
+            caseStudies: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCF0', title: 'Case studies',                        hint: 'Camp Fire (2018), Black Saturday (2009), Carr Fire (2018), Kincade (2019). Each is a master class in what suppression-only management produces.' },
+            carbon:     { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\u2601\uFE0F',  title: 'Wildfire carbon ledger',                  hint: 'Wildfire is carbon-neutral over decades \u2014 trees regrow, sequester. But MEGAFIRES release decades of stored carbon in days, and warmer climate slows regrowth. Net-positive emitter.' },
+            beavers:    { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '\uD83E\uDDAB', title: 'Beavers vs fire',                       hint: 'Beaver wetlands act as fire breaks \u2014 wet meadows resist burning. Reintroducing beavers reduces fire intensity for free. Cheaper than mechanical fuel-thinning.' },
+            game:       { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAE', title: 'Firekeeper Challenge \u2014 100-year game', hint: 'You manage a forest for 100 years. Cultural burns, prescribed burns, beaver dams, thinning, native seeds. Random events test your wisdom under uncertainty.' },
+            quiz:       { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83C\uDFC6', title: 'Fire ecology quiz',                     hint: 'Multi-choice items spanning ecology, chemistry, Indigenous knowledge, watersheds, and policy. Each question links back to the simulator + case studies.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.indigenous;
+          var heroBand = h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+              marginBottom: 12
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+          return h('div', null,
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }, role: 'tablist', 'aria-label': 'Fire Ecology sections' },
+              TABS.map(function(tt) {
+                var active = tab === tt.id;
+                return h('button', { key: tt.id,
+                  onClick: function() { upd('tab', tt.id); },
+                  role: 'tab', 'aria-selected': active,
+                  style: {
+                    padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                    background: active ? '#ea580c' : '#1e293b',
+                    color: active ? '#fff' : '#94a3b8',
+                    fontWeight: active ? 700 : 500, fontSize: 13,
+                    transition: 'all 0.2s'
+                  }
+                }, tt.icon + ' ' + tt.label);
+              })
+            ),
+            heroBand
           );
         }
 
@@ -1289,7 +1721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderIndigenousTab() {
           if (selectedNation) {
             var nation = INDIGENOUS_FIRE_NATIONS.filter(function(n) { return n.id === selectedNation; })[0];
-            if (!nation) { upd('selectedNation', null); return null; }
+            if (!nation) { return null; } // (was upd(...) during render — a setState-in-render that risks a render loop; stale id self-heals on next action)
 
             // Track viewing
             if (!nationsViewed[nation.id]) {
@@ -1306,29 +1738,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to All Nations'),
 
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 20, border: '1px solid ' + nation.color + '44' } },
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + nation.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
                   h('span', { style: { fontSize: 32 } }, nation.icon),
                   h('div', null,
                     h('h3', { style: { margin: 0, color: nation.color, fontSize: 20 } }, nation.nation),
-                    h('div', { style: { color: '#94a3b8', fontSize: 13 } }, nation.region + ' \u2022 ' + nation.years + ' years of fire stewardship')
+                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, nation.region + ' \u2022 ' + nation.years + ' years of fire stewardship')
                   )
                 ),
 
                 h('div', { style: { background: nation.color + '15', borderRadius: 8, padding: 14, marginBottom: 16, borderLeft: '3px solid ' + nation.color } },
                   h('div', { style: { fontWeight: 700, marginBottom: 6, color: nation.color } }, '\uD83D\uDD25 ' + nation.practice),
-                  h('p', { style: { margin: 0, lineHeight: 1.6, color: '#e2e8f0', fontSize: 14 } }, nation.description)
+                  h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } }, nation.description)
                 ),
 
-                h('div', { style: { background: '#1e293b', borderRadius: 8, padding: 14, marginBottom: 16 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, marginBottom: 16 } },
                   h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#38bdf8' } }, '\uD83D\uDD2C The Science'),
-                  h('p', { style: { margin: 0, lineHeight: 1.6, color: '#cbd5e1', fontSize: 14 } }, nation.science)
+                  h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, nation.science)
                 ),
 
                 h('div', { style: { marginBottom: 16 } },
                   h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#fbbf24' } }, '\uD83D\uDEE0\uFE0F Key Practices'),
                   nation.keyPractices.map(function(kp, ki) {
-                    return h('div', { key: ki, style: { display: 'flex', gap: 8, marginBottom: 6, fontSize: 14, color: '#e2e8f0' } },
+                    return h('div', { key: ki, style: { display: 'flex', gap: 8, marginBottom: 6, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } },
                       h('span', { style: { color: '#f97316', flexShrink: 0 } }, '\u2022'),
                       h('span', null, kp)
                     );
@@ -1342,9 +1774,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   })
                 ),
 
-                h('div', { style: { background: '#1e293b', borderRadius: 8, padding: 14, borderLeft: '3px solid #f59e0b' } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, borderLeft: '3px solid #f59e0b' } },
                   h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#f59e0b' } }, '\u2728 Living Legacy'),
-                  h('p', { style: { margin: 0, lineHeight: 1.6, color: '#cbd5e1', fontSize: 14 } }, nation.legacy)
+                  h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, nation.legacy)
                 )
               )
             );
@@ -1352,18 +1784,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           // Nation cards grid
           return h('div', null,
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
-              h('p', { style: { margin: 0, lineHeight: 1.6, color: '#e2e8f0', fontSize: 14 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
+              h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
                 'For tens of thousands of years, Indigenous peoples around the world have used fire as a sophisticated land management tool. These are not \u201Cprimitive\u201D practices \u2014 they represent deep ecological knowledge refined over hundreds of generations. Modern fire science is only now beginning to understand what Indigenous fire keepers have always known: ',
                 h('strong', { style: { color: '#f97316' } }, 'fire is not the enemy of healthy ecosystems \u2014 the absence of fire is.')
               )
             ),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               INDIGENOUS_FIRE_NATIONS.map(function(nation) {
                 var viewed = nationsViewed[nation.id];
-                return h('button', { 'aria-label': 'Change selected nation',
-                  key: nation.id,
+                return h('button', { key: nation.id,
                   onClick: function() { upd('selectedNation', nation.id); },
                   style: {
                     background: viewed ? nation.color + '18' : '#0f172a',
@@ -1376,11 +1807,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('span', { style: { fontSize: 28 } }, nation.icon),
                     h('div', null,
                       h('div', { style: { fontWeight: 700, color: nation.color, fontSize: 15 } }, nation.nation),
-                      h('div', { style: { fontSize: 12, color: '#94a3b8' } }, nation.region)
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, nation.region)
                     )
                   ),
                   h('div', { style: { fontSize: 13, color: '#f59e0b', marginBottom: 6 } }, '\uD83D\uDD25 ' + nation.practice),
-                  h('div', { style: { fontSize: 12, color: '#94a3b8' } }, nation.years + ' years of fire stewardship'),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, nation.years + ' years of fire stewardship'),
                   viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, '\u2713 Studied') : null
                 );
               })
@@ -1395,7 +1826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderEcosystemsTab() {
           if (selectedEcosystem) {
             var eco = FIRE_ECOSYSTEMS.filter(function(e) { return e.id === selectedEcosystem; })[0];
-            if (!eco) { upd('selectedEcosystem', null); return null; }
+            if (!eco) { return null; } // (removed setState-in-render upd)
 
             if (!ecosystemsViewed[eco.id]) {
               var ev = Object.assign({}, ecosystemsViewed);
@@ -1411,28 +1842,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to All Ecosystems'),
 
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 20, border: '1px solid ' + eco.color + '44' } },
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + eco.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
                   h('span', { style: { fontSize: 32 } }, eco.icon),
                   h('div', null,
                     h('h3', { style: { margin: 0, color: eco.color, fontSize: 20 } }, eco.name),
-                    h('div', { style: { color: '#94a3b8', fontSize: 13 } }, eco.region + ' \u2022 Fire return interval: ' + eco.fireInterval)
+                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, eco.region + ' \u2022 Fire return interval: ' + eco.fireInterval)
                   )
                 ),
 
-                h('p', { style: { lineHeight: 1.6, color: '#e2e8f0', fontSize: 14, marginBottom: 16 } }, eco.description),
+                h('p', { style: { lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 16 } }, eco.description),
 
-                h('div', { style: { background: '#1e293b', borderRadius: 8, padding: 14, marginBottom: 16 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, marginBottom: 16 } },
                   h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#f97316' } }, '\uD83D\uDD25 Role of Fire'),
-                  h('p', { style: { margin: 0, lineHeight: 1.6, color: '#cbd5e1', fontSize: 14 } }, eco.fireRole)
+                  h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, eco.fireRole)
                 ),
 
                 h('div', { style: { marginBottom: 16 } },
                   h('div', { style: { fontWeight: 700, marginBottom: 10, color: '#38bdf8' } }, '\uD83E\uDDEC Fire Adaptations'),
                   eco.adaptations.map(function(a, ai) {
-                    return h('div', { key: ai, style: { background: '#1e293b', borderRadius: 8, padding: 12, marginBottom: 8 } },
+                    return h('div', { key: ai, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 12, marginBottom: 8 } },
                       h('div', { style: { fontWeight: 700, color: eco.color, marginBottom: 4, fontSize: 14 } }, a.species),
-                      h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.5 } }, a.adaptation)
+                      h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.5 } }, a.adaptation)
                     );
                   })
                 ),
@@ -1446,18 +1877,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           return h('div', null,
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #16a34a' } },
-              h('p', { style: { margin: 0, lineHeight: 1.6, color: '#e2e8f0', fontSize: 14 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #16a34a' } },
+              h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
                 'Many of Earth\u2019s most biodiverse ecosystems are ',
                 h('strong', { style: { color: '#4ade80' } }, 'fire-dependent'),
                 ' \u2014 they evolved WITH fire and cannot survive without it. From Australian eucalyptus forests to American tallgrass prairies, fire is as essential as rain or sunlight.'
               )
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               FIRE_ECOSYSTEMS.map(function(eco) {
                 var viewed = ecosystemsViewed[eco.id];
-                return h('button', { 'aria-label': 'Change selected ecosystem',
-                  key: eco.id,
+                return h('button', { key: eco.id,
                   onClick: function() { upd('selectedEcosystem', eco.id); },
                   style: {
                     background: viewed ? eco.color + '18' : '#0f172a',
@@ -1470,11 +1900,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('span', { style: { fontSize: 28 } }, eco.icon),
                     h('div', null,
                       h('div', { style: { fontWeight: 700, color: eco.color, fontSize: 15 } }, eco.name),
-                      h('div', { style: { fontSize: 12, color: '#94a3b8' } }, eco.region)
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, eco.region)
                     )
                   ),
                   h('div', { style: { fontSize: 13, color: '#f97316', marginBottom: 4 } }, '\uD83D\uDD04 Fire interval: ' + eco.fireInterval),
-                  h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.4 } }, eco.description.substring(0, 100) + '...'),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, eco.description.substring(0, 100) + '...'),
                   viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, '\u2713 Explored') : null
                 );
               })
@@ -1493,14 +1923,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           function renderCanvas() {
             var burning = s.eventLog && s.eventLog.length > 0 && s.eventLog[s.eventLog.length - 1].event && s.eventLog[s.eventLog.length - 1].event.indexOf('CATASTROPHIC') >= 0;
             return h('div', { style: { marginBottom: 16 } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Fireecology visualization',
                 ref: forestCanvasRef,
                 'data-fuel': s.fuelLoad,
                 'data-canopy': s.canopyCover,
                 'data-bio': s.biodiversity,
                 'data-understory': s.understoryDensity,
                 'data-burning': burning ? '1' : '0',
-                style: { width: '100%', height: 200, borderRadius: 12, background: '#0f172a', display: 'block' },
+                style: { width: '100%', height: 200, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', display: 'block' },
                 'aria-label': 'Forest visualization showing current fuel load, canopy cover, and biodiversity'
               })
             );
@@ -1522,6 +1952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               newSim.totalBurns = s.totalBurns + 1;
               event = '\uD83D\uDD25 Cultural burn performed. Fuel reduced, understory opened, biodiversity thriving.';
               playSound('ignite');
+              startFireAmbient(true, newSim.biodiversity);
               awardStemXP('fire_sim_burn', 10, 'Cultural burn');
               if (newSim.totalBurns === 1) checkBadge('firstBurn');
               if (newSim.totalBurns >= 5) checkBadge('firekeeper');
@@ -1535,6 +1966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               newSim.carbonStored = clamp(s.carbonStored + 5, 0, 200);
               newSim.yearsSinceLastBurn = s.yearsSinceLastBurn + 10;
               event = '\u26D4 Fire suppressed. Fuel accumulating, understory thickening, biodiversity declining.';
+              startFireAmbient(false, newSim.biodiversity);
 
               // Wildfire risk check
               if (newSim.fuelLoad > 55 && Math.random() < (newSim.fuelLoad - 40) / 80) {
@@ -1550,6 +1982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 newSim.yearsSinceLastBurn = 0;
                 event = '\uD83D\uDCA5 CATASTROPHIC WILDFIRE! Decades of fuel accumulation erupted into an uncontrollable crown fire. Canopy, soil, and biodiversity devastated.';
                 playSound('wildfire');
+                startFireAmbient(true, newSim.biodiversity);
                 checkBadge('suppressionLesson');
               }
             } else if (action === 'prescribe') {
@@ -1587,6 +2020,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             updMulti({ sim: newSim });
 
+            // WCAG 4.1.3: Announce event to screen readers
+            if (typeof announceToSR === 'function') announceToSR('Year ' + newSim.year + '. ' + event.replace(/[\uD83D\uDD25\uD83D\uDCA5\u26D4\uD83C\uDF3F\uD83C\uDF0D]/g, ''));
+
             if (newSim.year >= 50) checkBadge('successionWatcher');
 
             if (addToast) addToast(event, event.indexOf('CATASTROPHIC') >= 0 ? 'error' : 'success');
@@ -1599,8 +2035,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                             { label: 'EXTREME', color: '#ef4444' };
 
           return h('div', null,
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.5 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
                 'Manage a forest over decades. Choose your strategy each decade: ',
                 h('strong', { style: { color: '#4ade80' } }, 'Cultural Burn'),
                 ' (Indigenous method), ',
@@ -1609,6 +2045,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('strong', { style: { color: '#ef4444' } }, 'Suppress'),
                 ' (fight all fire). Watch what happens over time.'
               )
+            ),
+
+            h('div', {
+              role: 'note',
+              style: {
+                background: 'linear-gradient(135deg, rgba(251,146,60,0.14) 0%, rgba(251,146,60,0.04) 100%)',
+                borderRadius: 12, padding: '10px 14px', marginBottom: 16,
+                borderLeft: '3px solid #fb923c',
+                color: '#fed7aa', fontSize: 13, lineHeight: 1.55
+              }
+            },
+              h('strong', { style: { color: '#fb923c' } }, 'Goal: '),
+              'keep biodiversity above 70 and fuel load below 30 across 50+ years without triggering a catastrophic wildfire. Cultural burn every decade or two; suppression looks safe at first but stockpiles fuel until one bad year erases everything.'
             ),
 
             // Canvas visualization
@@ -1622,31 +2071,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Stats dashboard
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
-              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: 12 } },
-                h('div', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } }, '\uD83D\uDCC5 Year'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 12 } },
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, '\uD83D\uDCC5 Year'),
                 h('div', { style: { color: '#fff', fontSize: 24, fontWeight: 700 } }, s.year)
               ),
-              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: 12 } },
-                h('div', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 4 } }, '\u26A0\uFE0F Wildfire Risk'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 12 } },
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, '\u26A0\uFE0F Wildfire Risk'),
                 h('div', { style: { color: dangerLevel.color, fontSize: 20, fontWeight: 700 } }, dangerLevel.label)
               )
             ),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 8, padding: 14, marginBottom: 16 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14, marginBottom: 16 } },
               gauge('Fuel Load', Math.round(s.fuelLoad), 100, s.fuelLoad > 50 ? '#ef4444' : s.fuelLoad > 30 ? '#f59e0b' : '#22c55e', ' tons/acre'),
               gauge('Canopy Cover', Math.round(s.canopyCover), 100, '#16a34a', '%'),
               gauge('Understory Density', Math.round(s.understoryDensity), 100, s.understoryDensity > 60 ? '#ef4444' : '#f59e0b', '%'),
               gauge('Biodiversity', Math.round(s.biodiversity), 100, '#3b82f6', '/100'),
               gauge('Soil Health', Math.round(s.soilHealth), 100, '#854d0e', '/100'),
               gauge('Water Yield', Math.round(s.waterYield), 100, '#0ea5e9', '%'),
-              gauge('Carbon Stored', Math.round(s.carbonStored), 100, '#64748b', ' tons')
+              gauge('Carbon Stored', Math.round(s.carbonStored), 100, '#94a3b8', ' tons')
             ),
 
             // Action buttons
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
+            h('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
               h('button', { 'aria-label': 'Cultural Burn (+10 yrs)',
                 onClick: function() { advanceDecade('culturalBurn'); },
-                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 14 }
+                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 14 }
               }, '\uD83D\uDD25 Cultural Burn (+10 yrs)'),
               h('button', { 'aria-label': 'Prescribed Burn (+10 yrs)',
                 onClick: function() { advanceDecade('prescribe'); },
@@ -1654,22 +2103,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }, '\uD83D\uDCCB Prescribed Burn (+10 yrs)'),
               h('button', { 'aria-label': 'Suppress Fire (+10 yrs)',
                 onClick: function() { advanceDecade('suppress'); },
-                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontWeight: 700, fontSize: 14 }
+                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 14 }
               }, '\u26D4 Suppress Fire (+10 yrs)')
             ),
 
             // Reset
             h('button', { 'aria-label': 'Reset Forest',
               onClick: function() { updMulti({ sim: Object.assign({}, SIM_DEFAULTS), simB: Object.assign({}, SIM_DEFAULTS) }); if (addToast) addToast('Forest reset to starting conditions.', 'info'); },
-              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 16px', color: '#94a3b8', cursor: 'pointer', fontSize: 13, marginBottom: 16 }
+              style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: '8px 16px', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 13, marginBottom: 16 }
             }, '\uD83D\uDD04 Reset Forest'),
 
             // Side-by-side comparison
-            comparisonMode ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, border: '2px solid #7c3aed' } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression'),
-              h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: '#94a3b8' } }, 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.'),
-              h('button', { 'aria-label': 'Action',
-                onClick: function() {
+            comparisonMode ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, border: '2px solid #7c3aed' } },
+              h('div', { style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression'),
+              h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.'),
+              h('button', { onClick: function() {
                   // Advance Forest A (cultural burn)
                   var newA = Object.assign({}, sim);
                   newA.fuelLoad = clamp(sim.fuelLoad - 8, 3, 100);
@@ -1740,28 +2188,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             ) : null,
 
             // Decade graph
-            s.decade && s.decade.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 8, padding: 14, marginBottom: 16 } },
-              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 10, fontSize: 14 } }, '\uD83D\uDCCA Forest Health Over Time'),
+            s.decade && s.decade.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14, marginBottom: 16 } },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, fontSize: 14 } }, '\uD83D\uDCCA Forest Health Over Time'),
               h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 120 } },
                 s.decade.map(function(snap, si) {
                   return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
                     h('div', { title: 'Biodiversity: ' + snap.biodiversity, style: { width: '100%', height: Math.max(2, snap.biodiversity * 1.1) + 'px', background: '#3b82f6', borderRadius: '2px 2px 0 0', transition: 'height 0.3s' } }),
                     h('div', { title: 'Fuel: ' + snap.fuel, style: { width: '100%', height: Math.max(2, snap.fuel * 1.1) + 'px', background: snap.fuel > 50 ? '#ef4444' : '#f59e0b', borderRadius: '0 0 2px 2px', transition: 'height 0.3s' } }),
-                    h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, 'Y' + snap.year)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Y' + snap.year)
                   );
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: '#94a3b8' } },
+              h('div', { style: { display: 'flex', gap: 16, marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 h('span', null, '\u25A0 Biodiversity'),
                 h('span', { style: { color: '#f59e0b' } }, '\u25A0 Fuel Load')
               )
             ) : null,
 
             // Event log
-            s.eventLog && s.eventLog.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 8, padding: 14 } },
-              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 8, fontSize: 14 } }, '\uD83D\uDCDC Event Log'),
+            s.eventLog && s.eventLog.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14 } },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontSize: 14 } }, '\uD83D\uDCDC Event Log'),
               s.eventLog.slice(-8).reverse().map(function(ev, ei) {
-                return h('div', { key: ei, style: { padding: '6px 0', borderBottom: '1px solid #1e293b', fontSize: 13, color: '#cbd5e1' } },
+                return h('div', { key: ei, style: { padding: '6px 0', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
                   h('span', { style: { color: '#f97316', fontWeight: 600 } }, 'Year ' + ev.year + ': '),
                   ev.event
                 );
@@ -1813,12 +2261,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           function slider(label, value, min, max, step, unit, key, color) {
+            var sliderId = 'fireeco-slider-' + key;
             return h('div', { style: { marginBottom: 14 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 } },
-                h('span', { style: { color: '#e2e8f0' } }, label),
+                h('label', { htmlFor: sliderId, style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, label),
                 h('span', { style: { color: color, fontWeight: 700 } }, value + unit)
               ),
               h('input', {
+                id: sliderId,
+                'aria-label': label,
                 type: 'range', min: min, max: max, step: step, value: value,
                 onChange: function(e) { upd(key, parseFloat(e.target.value)); upd('burnResult', null); },
                 style: { width: '100%', accentColor: color }
@@ -1827,13 +2278,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           return h('div', null,
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f59e0b' } },
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.5 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f59e0b' } },
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
                 'Indigenous fire practitioners read the land, sky, and wind to determine the right moment to burn. Modern prescribed burn planners use the same principles with instruments. Adjust the conditions below and evaluate your burn plan.'
               )
             ),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16 } },
+            h('div', {
+              role: 'note',
+              style: {
+                background: 'linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)',
+                borderRadius: 12, padding: '10px 14px', marginBottom: 16,
+                borderLeft: '3px solid #fbbf24',
+                color: '#fde68a', fontSize: 13, lineHeight: 1.55
+              }
+            },
+              h('strong', { style: { color: '#fbbf24' } }, 'Goal: '),
+              'land all four sliders inside their ideal range to score 85+ (GO). Score 60 to 84 prints CAUTION; under 60 prints NO-GO.',
+              h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 } },
+                h('div', null, 'Ideal Temperature: 50 to 70 ' + '\u00B0F'),
+                h('div', null, 'Ideal Humidity: 30 to 55 percent'),
+                h('div', null, 'Ideal Wind: 3 to 12 mph'),
+                h('div', null, 'Ideal Fuel Moisture: 12 to 25 percent')
+              )
+            ),
+
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
               slider('Temperature', burnTemp, 30, 100, 1, '\u00B0F', 'burnTemp', '#ef4444'),
               slider('Relative Humidity', burnHumidity, 10, 90, 1, '%', 'burnHumidity', '#3b82f6'),
               slider('Wind Speed', burnWind, 0, 30, 1, ' mph', 'burnWind', '#94a3b8'),
@@ -1842,21 +2312,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             h('button', { 'aria-label': 'Evaluate Burn Plan',
               onClick: evaluateBurn,
-              style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }
+              style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }
             }, '\uD83D\uDD25 Evaluate Burn Plan'),
 
-            burnResult ? h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                h('span', { style: { fontSize: 28 } }, burnResult.verdict.icon),
-                h('div', null,
-                  h('div', { style: { fontWeight: 700, color: burnResult.verdict.color, fontSize: 18 } }, burnResult.verdict.label),
-                  h('div', { style: { color: '#94a3b8', fontSize: 13 } }, 'Safety score: ' + burnResult.score + '/100')
-                )
-              ),
+            burnResult ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
+              (function() {
+                var rad = 32, circ = 2 * Math.PI * rad;
+                var dashOff = circ - (burnResult.score / 100) * circ;
+                // Threshold markers — GO needs 85, CAUTION needs 60
+                var goAngleEnd = (85 / 100) * 360 - 90;
+                var cautionAngleEnd = (60 / 100) * 360 - 90;
+                return h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
+                  h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
+                    h('svg', { viewBox: '0 0 100 100', width: 84, height: 84,
+                      'aria-label': 'Safety score: ' + burnResult.score + ' out of 100. ' + burnResult.verdict.label
+                    },
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.18)', strokeWidth: 8 }),
+                      // Threshold tick marks at 60 (CAUTION) and 85 (GO)
+                      (function() {
+                        var ticks = [60, 85];
+                        return ticks.map(function(t) {
+                          var ang = (t / 100) * 2 * Math.PI - Math.PI / 2;
+                          var x1 = 50 + (rad - 4) * Math.cos(ang);
+                          var y1 = 50 + (rad - 4) * Math.sin(ang);
+                          var x2 = 50 + (rad + 4) * Math.cos(ang);
+                          var y2 = 50 + (rad + 4) * Math.sin(ang);
+                          return h('line', { key: t, x1: x1, y1: y1, x2: x2, y2: y2, stroke: t === 85 ? '#22c55e' : '#f59e0b', strokeWidth: 1.5, strokeLinecap: 'round' });
+                        });
+                      })(),
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: burnResult.verdict.color, strokeWidth: 8, strokeLinecap: 'round',
+                        strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                    ),
+                    h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                      h('div', { style: { fontSize: 22, fontWeight: 900, color: burnResult.verdict.color, lineHeight: 1 } }, burnResult.score),
+                      h('div', { style: { fontSize: 8, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '/ 100')
+                    )
+                  ),
+                  h('div', { style: { flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 10 } },
+                    h('span', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, burnResult.verdict.icon),
+                    h('div', null,
+                      h('div', { style: { fontWeight: 700, color: burnResult.verdict.color, fontSize: 17, lineHeight: 1.2 } }, burnResult.verdict.label),
+                      h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 4, lineHeight: 1.5 } },
+                        burnResult.score >= 85 ? 'All four conditions in safe range.'
+                        : burnResult.score >= 60 ? 'Threshold for GO is 85. Adjust the slider for the worst-flagged condition.'
+                        : 'Threshold for CAUTION is 60. Multiple conditions need adjustment before this is safe to burn.'
+                      )
+                    )
+                  )
+                );
+              })(),
               burnResult.notes.map(function(note, ni) {
-                return h('div', { key: ni, style: { padding: '4px 0', fontSize: 14, color: '#e2e8f0' } }, note);
+                return h('div', { key: ni, style: { padding: '4px 0', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } }, note);
               }),
-              h('div', { style: { marginTop: 12, padding: 12, background: '#1e293b', borderRadius: 8, fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } },
+              h('div', { style: { marginTop: 12, padding: 12, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                 h('strong', { style: { color: '#f59e0b' } }, 'Indigenous Wisdom: '),
                 'Traditional fire practitioners burn on days with light dew, gentle breeze, and rising humidity. They start fires at the edges and burn toward the center, letting the fire creep slowly. If conditions change, they let the fire die naturally. This patience \u2014 working WITH the weather rather than against it \u2014 is what makes cultural burning so safe and effective.'
               )
@@ -1871,7 +2379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderScienceTab() {
           if (selectedScience) {
             var concept = FIRE_SCIENCE.filter(function(c) { return c.id === selectedScience; })[0];
-            if (!concept) { upd('selectedScience', null); return null; }
+            if (!concept) { return null; } // (removed setState-in-render upd)
 
             return h('div', null,
               h('button', { 'aria-label': 'Back to Concepts',
@@ -1879,20 +2387,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to Concepts'),
 
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 20 } },
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
                   h('span', { style: { fontSize: 32 } }, concept.icon),
                   h('h3', { style: { margin: 0, color: '#f97316', fontSize: 20 } }, concept.name)
                 ),
-                h('p', { style: { lineHeight: 1.6, color: '#e2e8f0', fontSize: 14, marginBottom: 16 } }, concept.description),
+                h('p', { style: { lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 16 } }, concept.description),
 
                 concept.elements.map(function(el, ei) {
-                  return h('div', { key: ei, style: { background: '#1e293b', borderRadius: 8, padding: 14, marginBottom: 10 } },
+                  return h('div', { key: ei, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, marginBottom: 10 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       h('span', { style: { fontSize: 20 } }, el.icon),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#e2e8f0', fontSize: 15 } }, el.name)
+                      h('span', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15 } }, el.name)
                     ),
-                    h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 14, lineHeight: 1.5 } }, el.desc)
+                    h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, lineHeight: 1.5 } }, el.desc)
                   );
                 })
               )
@@ -1900,13 +2408,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           return h('div', null,
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
               FIRE_SCIENCE.map(function(concept) {
-                return h('button', { 'aria-label': 'Change selected science',
-                  key: concept.id,
+                return h('button', { key: concept.id,
                   onClick: function() { upd('selectedScience', concept.id); },
                   style: {
-                    background: '#0f172a', border: '1px solid #334155', borderRadius: 12,
+                    background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12,
                     padding: 16, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
                   }
                 },
@@ -1914,8 +2421,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('span', { style: { fontSize: 28 } }, concept.icon),
                     h('span', { style: { fontWeight: 700, color: '#f97316', fontSize: 15 } }, concept.name)
                   ),
-                  h('div', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.4 } }, concept.description.substring(0, 120) + '...'),
-                  h('div', { style: { fontSize: 12, color: '#64748b', marginTop: 6 } }, concept.elements.length + ' topics inside')
+                  h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, concept.description.substring(0, 120) + '...'),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6 } }, concept.elements.length + ' topics inside')
                 );
               })
             )
@@ -1960,26 +2467,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           return h('div', null,
+            // Pre-game brief
+            h('details', {
+              style: {
+                background: 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.04) 100%)',
+                borderRadius: 12, padding: '10px 14px', marginBottom: 14,
+                borderLeft: '3px solid #10b981',
+                color: '#a7f3d0', fontSize: 13, lineHeight: 1.55
+              },
+              open: quizTotal === 0
+            },
+              h('summary', {
+                style: { fontWeight: 700, color: '#10b981', cursor: 'pointer', fontSize: 14 }
+              }, '📜 What this quiz covers'),
+              h('div', { style: { marginTop: 8, color: '#d1fae5' } },
+                h('div', null, '32 multi-choice items across six themes:'),
+                h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
+                  h('li', null, 'Indigenous fire stewardship (timelines, nations, practices)'),
+                  h('li', null, 'Fire-adapted ecosystem mechanics (serotiny, smoke-cued germination)'),
+                  h('li', null, 'Combustion chemistry (fire triangle, flashover, fuel moisture)'),
+                  h('li', null, 'Watershed and soil response (hydrophobic soils, debris flows)'),
+                  h('li', null, 'Suppression policy failures and their case studies'),
+                  h('li', null, 'Beavers, prescribed burning, and modern restoration tools')
+                ),
+                h('div', { style: { marginTop: 8 } }, 'Streak counters track consecutive correct answers. The quiz loops, so you can keep going for mastery.')
+              )
+            ),
             // Score header
             h('div', { style: { display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' } },
-              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Score'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Score'),
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: '#22c55e' } }, quizScore + '/' + quizTotal)
               ),
-              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Streak'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Streak'),
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f97316' } }, '\uD83D\uDD25 ' + quizStreak)
               ),
-              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Best Streak'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Best Streak'),
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f59e0b' } }, '\u2B50 ' + quizBest)
               )
             ),
 
             // Question
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 20, marginBottom: 16 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#64748b', marginBottom: 8 } }, 'Question ' + ((quizIdx % QUIZ_QUESTIONS.length) + 1) + ' of ' + QUIZ_QUESTIONS.length),
-              h('h3', { style: { margin: '0 0 16px 0', color: '#e2e8f0', fontSize: 16, lineHeight: 1.5 } }, currentQ.q),
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, marginBottom: 16 } },
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'Question ' + ((quizIdx % QUIZ_QUESTIONS.length) + 1) + ' of ' + QUIZ_QUESTIONS.length),
+              h('h3', { style: { margin: '0 0 16px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 16, lineHeight: 1.5 } }, currentQ.q),
 
               currentQ.choices.map(function(choice, ci) {
                 var isSelected = quizAnswer === ci;
@@ -1997,7 +2530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   style: {
                     display: 'block', width: '100%', padding: '12px 16px', marginBottom: 8,
                     borderRadius: 8, border: '2px solid ' + border,
-                    background: bg, color: '#e2e8f0', fontSize: 14,
+                    background: bg, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14,
                     textAlign: 'left', cursor: answered ? 'default' : 'pointer',
                     transition: 'all 0.2s'
                   }
@@ -2006,10 +2539,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 );
               }),
 
-              quizAnswer >= 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12 } },
+              quizAnswer >= 0 ? h('div', { style: { marginTop: 12 } },
                 h('button', { 'aria-label': 'Next Question',
                   onClick: nextQuestion,
-                  style: { padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 14 }
+                  style: { padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 14 }
                 }, 'Next Question \u2192')
               ) : null
             )
@@ -2040,7 +2573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             });
           }
 
-          return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginTop: 16 } },
+          return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16 } },
             h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 10, fontSize: 14 } }, '\uD83E\uDD16 AI Fire Ecology Tutor'),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
               h('input', {
@@ -2050,13 +2583,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
                 placeholder: 'Ask about fire ecology, Indigenous practices, prescribed burning...',
                 style: {
-                  flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155',
-                  background: '#1e293b', color: '#e2e8f0', fontSize: 14, outline: 'none'
+                  flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)',
+                  background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, outline: 'none'
                 },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #f97316'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
               }),
-              h('button', { 'aria-label': 'Ask A I',
-                onClick: askAI,
+              h('button', { onClick: askAI,
                 disabled: aiLoading,
                 style: {
                   padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -2064,7 +2596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 }
               }, aiLoading ? 'Thinking...' : 'Ask')
             ),
-            aiResponse ? h('div', { style: { background: '#1e293b', borderRadius: 8, padding: 14, fontSize: 14, color: '#cbd5e1', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, aiResponse) : null
+            aiResponse ? h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, aiResponse) : null
           );
         }
 
@@ -2075,9 +2607,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderSmokeSeedsTab() {
           return h('div', null,
             // Intro
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
               h('h3', { style: { margin: '0 0 8px 0', color: '#f97316', fontSize: 16 } }, SMOKE_ECOLOGY.title),
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, SMOKE_ECOLOGY.intro)
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, SMOKE_ECOLOGY.intro)
             ),
 
             // Smoke chemicals
@@ -2085,10 +2617,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 10, fontSize: 15 } }, '\uD83E\uDDEA Smoke Chemicals That Trigger Life'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
                 SMOKE_ECOLOGY.chemicals.map(function(chem, ci) {
-                  return h('div', { key: ci, style: { background: '#0f172a', borderRadius: 10, padding: 14, border: '1px solid ' + chem.color + '44' } },
+                  return h('div', { key: ci, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 14, border: '1px solid ' + chem.color + '44' } },
                     h('div', { style: { fontWeight: 700, color: chem.color, fontSize: 14, marginBottom: 2 } }, chem.name),
-                    h('div', { style: { fontSize: 12, color: '#64748b', marginBottom: 6, fontFamily: 'monospace' } }, chem.formula),
-                    h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } }, chem.desc)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontFamily: 'monospace' } }, chem.formula),
+                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, chem.desc)
                   );
                 })
               )
@@ -2099,12 +2631,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 10, fontSize: 15 } }, '\uD83C\uDF31 Fire Survival Strategies'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
                 SMOKE_ECOLOGY.strategies.map(function(strat, si) {
-                  return h('div', { key: si, style: { background: '#0f172a', borderRadius: 10, padding: 14, border: '1px solid #33415544' } },
+                  return h('div', { key: si, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 14, border: '1px solid var(--allo-stem-border, #334155)44' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       h('span', { style: { fontSize: 20 } }, strat.icon),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#e2e8f0', fontSize: 14 } }, strat.name)
+                      h('span', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } }, strat.name)
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.5 } }, strat.desc)
+                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, strat.desc)
                   );
                 })
               )
@@ -2112,21 +2644,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Fire-dependent species gallery
             h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#f97316', marginBottom: 10, fontSize: 15 } }, '\uD83C\uDF3A Fire-Dependent Species Gallery'),
+              h('div', { style: { fontWeight: 700, color: '#f97316', marginBottom: 10, fontSize: 15 } }, '\uD83C\uDF3A Fire-Dependent Species Gallery'),
               SMOKE_ECOLOGY.fireSeeds.map(function(seed, si) {
                 var expanded = selectedSeed === si;
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: si, style: { background: expanded ? '#1e293b' : '#0f172a', borderRadius: 10, padding: expanded ? 16 : 12, marginBottom: 8, border: '1px solid #33415544', cursor: 'pointer', transition: 'all 0.2s' },
+                return h('div', { key: si, style: { background: expanded ? '#1e293b' : '#0f172a', borderRadius: 10, padding: expanded ? 16 : 12, marginBottom: 8, border: '1px solid var(--allo-stem-border, #334155)44', cursor: 'pointer', transition: 'all 0.2s' },
                   onClick: function() { upd('selectedSeed', expanded ? null : si); if (!expanded) { awardStemXP('fire_seed_' + si, 5, seed.species); checkBadge('seedSprouter'); } }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                     h('span', { style: { fontSize: 22 } }, seed.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontWeight: 700, color: '#e2e8f0', fontSize: 14 } }, seed.species),
+                      h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } }, seed.species),
                       h('div', { style: { fontSize: 12, color: '#f97316' } }, seed.type)
                     ),
-                    h('span', { style: { color: '#64748b', fontSize: 12 } }, expanded ? '\u25B2' : '\u25BC')
+                    h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, expanded ? '\u25B2' : '\u25BC')
                   ),
-                  expanded ? h('div', { style: { marginTop: 10, padding: 12, background: '#0f172a', borderRadius: 8, fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 } }, seed.strategy) : null
+                  expanded ? h('div', { style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, seed.strategy) : null
                 );
               })
             )
@@ -2139,44 +2671,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         function renderWatershedTab() {
           return h('div', null,
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #0ea5e9' } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #0ea5e9' } },
               h('h3', { style: { margin: '0 0 8px 0', color: '#0ea5e9', fontSize: 16 } }, WATERSHED_SCIENCE.title),
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, WATERSHED_SCIENCE.intro)
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, WATERSHED_SCIENCE.intro)
             ),
 
             // Concepts
             WATERSHED_SCIENCE.concepts.map(function(concept, ci) {
-              return h('div', { key: ci, style: { background: '#0f172a', borderRadius: 10, padding: 14, marginBottom: 10, borderLeft: '3px solid ' + concept.color } },
+              return h('div', { key: ci, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 14, marginBottom: 10, borderLeft: '3px solid ' + concept.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 20 } }, concept.icon),
                   h('span', { style: { fontWeight: 700, color: concept.color, fontSize: 14 } }, concept.name)
                 ),
-                h('div', { style: { fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 } }, concept.desc)
+                h('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, concept.desc)
               );
             }),
 
             // Comparison table
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginTop: 16, border: '1px solid #334155' } },
-              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 12, fontSize: 15 } }, '\uD83D\uDCCA Watershed Impact: Cultural Burn vs. Wildfire'),
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16, border: '1px solid var(--allo-stem-border, #334155)' } },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, '\uD83D\uDCCA Watershed Impact: Cultural Burn vs. Wildfire'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, fontSize: 13 } },
                 // Header
-                h('div', { style: { padding: 8, fontWeight: 700, color: '#94a3b8', borderBottom: '1px solid #334155' } }, 'Metric'),
-                h('div', { style: { padding: 8, fontWeight: 700, color: '#22c55e', borderBottom: '1px solid #334155' } }, '\uD83D\uDD25 Cultural Burn'),
-                h('div', { style: { padding: 8, fontWeight: 700, color: '#ef4444', borderBottom: '1px solid #334155' } }, '\uD83D\uDCA5 Wildfire'),
+                h('div', { style: { padding: 8, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, 'Metric'),
+                h('div', { style: { padding: 8, fontWeight: 700, color: '#22c55e', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, '\uD83D\uDD25 Cultural Burn'),
+                h('div', { style: { padding: 8, fontWeight: 700, color: '#ef4444', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, '\uD83D\uDCA5 Wildfire'),
                 // Rows
-                h('div', { style: { padding: 8, color: '#94a3b8', borderBottom: '1px solid #1e293b' } }, 'Sediment runoff'),
-                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.culturalBurn.sediment),
-                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.wildfire.sediment),
-                h('div', { style: { padding: 8, color: '#94a3b8', borderBottom: '1px solid #1e293b' } }, 'Water temp change'),
-                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.culturalBurn.waterTemp),
-                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.wildfire.waterTemp),
-                h('div', { style: { padding: 8, color: '#94a3b8', borderBottom: '1px solid #1e293b' } }, 'Aquatic life'),
-                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.culturalBurn.aquaticLife),
-                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.wildfire.aquaticLife),
-                h('div', { style: { padding: 8, color: '#94a3b8', borderBottom: '1px solid #1e293b' } }, 'Recovery time'),
-                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.culturalBurn.recovery),
-                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid #1e293b' } }, WATERSHED_SCIENCE.comparison.wildfire.recovery),
-                h('div', { style: { padding: 8, color: '#94a3b8' } }, 'Runoff increase'),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Sediment runoff'),
+                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.sediment),
+                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.sediment),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Water temp change'),
+                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.waterTemp),
+                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.waterTemp),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Aquatic life'),
+                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.aquaticLife),
+                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.aquaticLife),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, 'Recovery time'),
+                h('div', { style: { padding: 8, color: '#4ade80', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.recovery),
+                h('div', { style: { padding: 8, color: '#fca5a5', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.recovery),
+                h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Runoff increase'),
                 h('div', { style: { padding: 8, color: '#4ade80' } }, WATERSHED_SCIENCE.comparison.culturalBurn.runoff),
                 h('div', { style: { padding: 8, color: '#fca5a5' } }, WATERSHED_SCIENCE.comparison.wildfire.runoff)
               ),
@@ -2192,7 +2724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderCaseStudiesTab() {
           if (selectedCase) {
             var cs = CASE_STUDIES.filter(function(c) { return c.id === selectedCase; })[0];
-            if (!cs) { upd('selectedCase', null); return null; }
+            if (!cs) { return null; } // (removed setState-in-render upd)
 
             if (!casesViewed[cs.id]) {
               var cv = Object.assign({}, casesViewed);
@@ -2208,12 +2740,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to Case Studies'),
 
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 20, border: '1px solid ' + cs.color + '44' } },
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + cs.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
                   h('span', { style: { fontSize: 32 } }, cs.icon),
                   h('div', null,
                     h('h3', { style: { margin: 0, color: cs.color, fontSize: 20 } }, cs.name),
-                    h('div', { style: { color: '#94a3b8', fontSize: 13 } }, cs.location + ' \u2022 ' + cs.year)
+                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, cs.location + ' \u2022 ' + cs.year)
                   )
                 ),
 
@@ -2221,46 +2753,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8, marginBottom: 16 } },
                   Object.keys(cs.stats).map(function(key) {
                     var label = key.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase(); });
-                    return h('div', { key: key, style: { background: '#1e293b', borderRadius: 8, padding: 10, textAlign: 'center' } },
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2 } }, label),
+                    return h('div', { key: key, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 10, textAlign: 'center' } },
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, label),
                       h('div', { style: { fontSize: 14, fontWeight: 700, color: '#ef4444' } }, cs.stats[key])
                     );
                   })
                 ),
 
-                h('p', { style: { lineHeight: 1.6, color: '#e2e8f0', fontSize: 14, marginBottom: 16 } }, cs.description),
+                h('p', { style: { lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 16 } }, cs.description),
 
-                h('div', { style: { background: '#1e293b', borderRadius: 8, padding: 14, marginBottom: 16, borderLeft: '3px solid #f59e0b' } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, marginBottom: 16, borderLeft: '3px solid #f59e0b' } },
                   h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, '\uD83C\uDF0D Indigenous Context'),
-                  h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 14, lineHeight: 1.6 } }, cs.indigenousContext)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, lineHeight: 1.6 } }, cs.indigenousContext)
                 ),
 
                 h('div', { style: { background: cs.color + '15', borderRadius: 8, padding: 14, marginBottom: 16, borderLeft: '3px solid ' + cs.color } },
                   h('div', { style: { fontWeight: 700, color: cs.color, marginBottom: 6 } }, '\u26A1 The Lesson'),
-                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, cs.lesson)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, cs.lesson)
                 ),
 
-                h('div', { style: { background: '#1e293b', borderRadius: 8, padding: 14 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14 } },
                   h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 6 } }, '\uD83D\uDD2C Science Note'),
-                  h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 14, lineHeight: 1.6 } }, cs.scienceNote)
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, lineHeight: 1.6 } }, cs.scienceNote)
                 )
               )
             );
           }
 
           return h('div', null,
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #ef4444' } },
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #ef4444' } },
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
                 'These are not \u201Cnatural disasters.\u201D Each wildfire case study below reveals the predictable consequences of removing Indigenous fire management from fire-adapted landscapes. The pattern is the same everywhere: ',
                 h('strong', { style: { color: '#ef4444' } }, 'suppress fire \u2192 accumulate fuel \u2192 catastrophic wildfire \u2192 devastation that Indigenous burning would have prevented.')
               )
             ),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               CASE_STUDIES.map(function(cs) {
                 var viewed = casesViewed[cs.id];
-                return h('button', { 'aria-label': 'Change selected case',
-                  key: cs.id,
+                return h('button', { key: cs.id,
                   onClick: function() { upd('selectedCase', cs.id); },
                   style: {
                     background: viewed ? cs.color + '18' : '#0f172a',
@@ -2273,11 +2804,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('span', { style: { fontSize: 28 } }, cs.icon),
                     h('div', null,
                       h('div', { style: { fontWeight: 700, color: cs.color, fontSize: 15 } }, cs.name),
-                      h('div', { style: { fontSize: 12, color: '#94a3b8' } }, cs.location + ' \u2022 ' + cs.year)
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, cs.location + ' \u2022 ' + cs.year)
                     )
                   ),
                   h('div', { style: { fontSize: 13, color: '#ef4444', marginBottom: 4 } }, '\uD83D\uDD25 ' + cs.stats.acresBurned + (cs.stats.deaths ? ' \u2022 ' + cs.stats.deaths + ' deaths' : '')),
-                  h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.4 } }, cs.description.substring(0, 120) + '...'),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, cs.description.substring(0, 120) + '...'),
                   viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, '\u2713 Studied') : null
                 );
               })
@@ -2300,26 +2831,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           var scenarios = ['culturalBurn', 'prescribedBurn', 'wildfire', 'suppression50yr'];
 
           return h('div', null,
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #64748b' } },
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #64748b' } },
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
                 'Compare the carbon impact of different fire management strategies. Adjust the acreage and see how cultural burning, prescribed burning, wildfire, and long-term suppression compare for carbon emissions and sequestration.'
               )
             ),
 
             // Acres slider
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#e2e8f0' } }, 'Area to Calculate'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#f97316', fontWeight: 700 } }, carbonAcres.toLocaleString() + ' acres')
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 } },
+                h('label', { htmlFor: 'fireeco-carbon-acres', style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Area to Calculate'),
+                h('span', { style: { color: '#f97316', fontWeight: 700 } }, carbonAcres.toLocaleString() + ' acres')
               ),
               h('input', {
-                type: 'range', min: 10, max: 10000, step: 10, value: carbonAcres,
+                id: 'fireeco-carbon-acres',
+                'aria-label': 'Area to Calculate (acres)',
+                type: 'range',  min: 10, max: 10000, step: 10, value: carbonAcres,
                 onChange: function(e) { updMulti({ carbonAcres: parseInt(e.target.value), carbonCalculated: false }); },
                 style: { width: '100%', accentColor: '#f97316' }
               }),
               h('button', { 'aria-label': 'Calculate Carbon Impact',
                 onClick: calculate,
-                style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 15, marginTop: 12 }
+                style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 15, marginTop: 12 }
               }, '\u2601\uFE0F Calculate Carbon Impact')
             ),
 
@@ -2332,56 +2865,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   var net10yr = sc.netCarbon10yr * carbonAcres;
                   var biochar = sc.biocharCreated * carbonAcres;
 
-                  return h('div', { key: key, style: { background: '#0f172a', borderRadius: 12, padding: 16, border: '2px solid ' + sc.color + '44' } },
+                  return h('div', { key: key, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, border: '2px solid ' + sc.color + '44' } },
                     h('div', { style: { fontWeight: 700, color: sc.color, marginBottom: 10, fontSize: 14 } }, sc.label),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Immediate CO\u2082 Release'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Immediate CO\u2082 Release'),
                       h('div', { style: { fontSize: 20, fontWeight: 700, color: sc.color } }, totalCO2.toLocaleString() + ' tons')
                     ),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Tree Survival'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Tree Survival'),
                       h('div', { style: { fontSize: 16, fontWeight: 700, color: sc.treeSurvival > 50 ? '#22c55e' : '#ef4444' } }, sc.treeSurvival + '%')
                     ),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Soil Carbon'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Soil Carbon'),
                       h('div', { style: { fontSize: 13, fontWeight: 600, color: sc.soilCarbon === 'preserved' ? '#22c55e' : sc.soilCarbon === 'destroyed' ? '#ef4444' : '#f59e0b' } }, sc.soilCarbon)
                     ),
 
                     biochar > 0 ? h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Biochar Created (1000+ yr storage)'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Biochar Created (1000+ yr storage)'),
                       h('div', { style: { fontSize: 14, fontWeight: 700, color: '#22c55e' } }, biochar.toLocaleString() + ' tons')
                     ) : null,
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Net Carbon (10 years)'),
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Net Carbon (10 years)'),
                       h('div', { style: { fontSize: 18, fontWeight: 700, color: net10yr <= 0 ? '#22c55e' : '#ef4444' } },
                         (net10yr <= 0 ? '\u2193 ' : '\u2191 ') + Math.abs(net10yr).toLocaleString() + ' tons',
-                        h('span', { style: { fontSize: 12, color: '#94a3b8', marginLeft: 4 } }, net10yr <= 0 ? '(carbon sink)' : '(carbon source)')
+                        h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 4 } }, net10yr <= 0 ? '(carbon sink)' : '(carbon source)')
                       )
                     ),
 
-                    h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'Recovery: ' + (sc.recoveryTime === 0 ? 'Immediate' : sc.recoveryTime + ' years'))
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Recovery: ' + (sc.recoveryTime === 0 ? 'Immediate' : sc.recoveryTime + ' years'))
                   );
                 })
               ),
 
               // Visual comparison bar
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16 } },
-                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 12, fontSize: 14 } }, '\uD83D\uDCCA CO\u2082 Release Comparison (' + carbonAcres.toLocaleString() + ' acres)'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16 } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 14 } }, '\uD83D\uDCCA CO\u2082 Release Comparison (' + carbonAcres.toLocaleString() + ' acres)'),
                 scenarios.map(function(key) {
                   var sc = CARBON_DATA[key];
                   var totalCO2 = sc.co2PerAcre * carbonAcres;
                   var maxCO2 = CARBON_DATA.suppression50yr.co2PerAcre * carbonAcres;
                   var pct = Math.round((totalCO2 / maxCO2) * 100);
                   return h('div', { key: key, style: { marginBottom: 10 } },
-                    h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#94a3b8', marginBottom: 3 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } },
                       h('span', null, sc.label),
                       h('span', { style: { color: sc.color, fontWeight: 700 } }, totalCO2.toLocaleString() + ' tons CO\u2082')
                     ),
-                    h('div', { style: { height: 16, background: '#1e293b', borderRadius: 8, overflow: 'hidden' } },
+                    h('div', { style: { height: 16, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, overflow: 'hidden' } },
                       h('div', { style: { width: Math.max(2, pct) + '%', height: '100%', background: sc.color, borderRadius: 8, transition: 'width 0.5s' } })
                     )
                   );
@@ -2439,6 +2972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           function draw() {
+            if (!canvasEl.isConnected) { if (canvasEl._fireAnim) cancelAnimationFrame(canvasEl._fireAnim); return; }
             canvasEl._fireAnim = requestAnimationFrame(draw);
             tick++;
             cx.clearRect(0, 0, cW, cH);
@@ -2533,26 +3067,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
             }
 
-            // Fire effect overlay
+            // Fire effect overlay — enhanced with layered flames, heat shimmer, sparks
             if (burning) {
-              for (var ei = 0; ei < 25; ei++) {
-                var ex = (ei * 41 + tick * 0.5) % w;
-                var ey = groundY - Math.random() * 40 - 5;
-                var er = 3 + Math.random() * 8;
-                cx.fillStyle = 'rgba(251,191,36,' + (0.3 + Math.random() * 0.4) + ')';
+              // Base fire glow at ground level
+              var fireGlow = cx.createRadialGradient(w * 0.5, groundY, 0, w * 0.5, groundY, w * 0.6);
+              fireGlow.addColorStop(0, 'rgba(251,146,60,' + (0.22 + Math.sin(tick * 0.05) * 0.06).toFixed(3) + ')');
+              fireGlow.addColorStop(0.5, 'rgba(239,68,68,0.12)');
+              fireGlow.addColorStop(1, 'rgba(0,0,0,0)');
+              cx.fillStyle = fireGlow;
+              cx.fillRect(0, 0, w, ht);
+
+              // Layered flame tongues rising from ground
+              for (var ei = 0; ei < 35; ei++) {
+                var ex = (ei * 31 + tick * 0.7) % w;
+                var flameH = 12 + Math.random() * 25 + Math.sin(tick * 0.15 + ei * 1.7) * 8;
+                var ey = groundY - flameH;
+                var er = 2 + Math.random() * 5;
+
+                // Outer flame (yellow-orange)
+                cx.fillStyle = 'rgba(251,191,36,' + (0.25 + Math.random() * 0.3) + ')';
                 cx.beginPath();
-                cx.arc(ex, ey + Math.sin(tick * 0.1 + ei) * 3, er, 0, Math.PI * 2);
+                cx.moveTo(ex - er, groundY);
+                cx.quadraticCurveTo(ex - er * 0.5, ey - er, ex, ey - er * 1.5 + Math.sin(tick * 0.2 + ei) * 3);
+                cx.quadraticCurveTo(ex + er * 0.5, ey - er, ex + er, groundY);
+                cx.fill();
+
+                // Inner flame (bright white-yellow core)
+                if (Math.random() > 0.4) {
+                  cx.fillStyle = 'rgba(255,255,220,' + (0.15 + Math.random() * 0.2) + ')';
+                  cx.beginPath();
+                  cx.arc(ex, groundY - flameH * 0.4, er * 0.5, 0, Math.PI * 2);
+                  cx.fill();
+                }
+              }
+
+              // Smoke columns — rising, expanding, fading
+              for (var si = 0; si < 20; si++) {
+                var sx = (si * 53 + tick * 0.2) % w;
+                var sy = groundY - 45 - si * 6 - Math.sin(tick * 0.015 + si) * 12;
+                var sr = 6 + si * 3.5;
+                var smokeAlpha = Math.max(0, 0.18 - si * 0.007);
+                cx.fillStyle = 'rgba(80,80,80,' + smokeAlpha + ')';
+                cx.beginPath();
+                cx.arc(sx + Math.sin(tick * 0.01 + si * 0.5) * 4, sy, sr, 0, Math.PI * 2);
                 cx.fill();
               }
-              // Smoke
-              for (var si = 0; si < 15; si++) {
-                var sx = (si * 67 + tick * 0.3) % w;
-                var sy = groundY - 50 - si * 8 - Math.sin(tick * 0.02 + si) * 15;
-                var sr = 8 + si * 3;
-                cx.fillStyle = 'rgba(100,100,100,' + (0.15 - si * 0.008) + ')';
+
+              // Flying sparks — bright orange dots rising fast
+              for (var ski = 0; ski < 12; ski++) {
+                var spx = (ski * 73 + tick * 1.5) % w;
+                var spy = groundY - 20 - ((tick * 0.8 + ski * 30) % 80);
+                if (spy > 0) {
+                  cx.fillStyle = 'rgba(251,146,60,' + (0.6 + Math.random() * 0.3) + ')';
+                  cx.fillRect(spx, spy, 1.5, 1.5);
+                }
+              }
+
+              // Heat shimmer distortion (wavy horizontal lines above fire)
+              cx.strokeStyle = 'rgba(255,200,100,0.04)';
+              cx.lineWidth = 1;
+              for (var hi = 0; hi < 6; hi++) {
+                var hy = groundY - 50 - hi * 12;
                 cx.beginPath();
-                cx.arc(sx, sy, sr, 0, Math.PI * 2);
-                cx.fill();
+                for (var hx = 0; hx < w; hx += 4) {
+                  var hdy = Math.sin(hx * 0.08 + tick * 0.06 + hi) * 2;
+                  if (hx === 0) cx.moveTo(hx, hy + hdy);
+                  else cx.lineTo(hx, hy + hdy);
+                }
+                cx.stroke();
+              }
+            }
+
+            // Sun or moon (non-burning: golden sun; burning: red sun through smoke)
+            if (!burning) {
+              var sunX = w * 0.82, sunY = 22;
+              var sunGrad = cx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 15);
+              sunGrad.addColorStop(0, 'rgba(255,251,235,0.95)');
+              sunGrad.addColorStop(0.2, 'rgba(251,191,36,0.75)');
+              sunGrad.addColorStop(0.5, 'rgba(251,191,36,0.3)');
+              sunGrad.addColorStop(1, 'rgba(251,191,36,0)');
+              cx.fillStyle = sunGrad;
+              cx.fillRect(sunX - 20, sunY - 20, 40, 40);
+            }
+
+            // Fireflies at dusk (when not burning and bio > 50)
+            if (!burning && bio > 50) {
+              for (var ffi = 0; ffi < Math.floor(bio / 15); ffi++) {
+                var ffx = (ffi * 97 + Math.sin(tick * 0.03 + ffi * 2.1) * 30) % w;
+                var ffy = groundY - 20 - Math.abs(Math.sin(tick * 0.02 + ffi * 1.3)) * 50;
+                var ffAlpha = 0.3 + Math.sin(tick * 0.1 + ffi * 0.7) * 0.3;
+                if (ffAlpha > 0) {
+                  cx.fillStyle = 'rgba(250,240,100,' + ffAlpha + ')';
+                  cx.beginPath();
+                  cx.arc(ffx, ffy, 1.5, 0, Math.PI * 2);
+                  cx.fill();
+                }
               }
             }
 
@@ -2599,17 +3208,1312 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         }
 
         // ══════════════════════════════════════
+        // TAB: CULTURAL MOSAIC — WABANAKI STEWARDSHIP
+        // ══════════════════════════════════════
+
+        function renderMosaicTab() {
+          var m = mosaic;
+          var setMosaic = function(patch) { updMulti({ mosaic: Object.assign({}, m, patch) }); };
+          var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
+
+          // Map abstract yield to a concrete cultural artifact per zone.
+          // Numbers are illustrative scales, calibrated so a healthy zone at
+          // ~60 yield produces a believable annual harvest for a small community.
+          function zoneArtifact(z) {
+            var y = Math.max(0, Math.round(z.yield));
+            if (z.id === 'blueberryBarren') return { icon: '🫐', text: Math.round(y * 6) + ' lb blueberries' };
+            if (z.id === 'oakSavanna')      return { icon: '🌰', text: Math.round(y / 3) + ' bushels of acorns' };
+            if (z.id === 'mixedConifer')    return { icon: '🪵', text: Math.round(y / 4) + ' lb pine pitch and root' };
+            if (z.id === 'whitePineGrove')  return { icon: '🛶', text: Math.round(y / 12) + ' canoes ribbed-and-gunwaled' };
+            if (z.id === 'intervaleMeadow') return { icon: '🌽', text: Math.round(y * 4) + ' lb of corn, beans, and squash' };
+            if (z.id === 'riparian')        return { icon: '🌾', text: Math.round(y / 2) + ' sweetgrass braids' };
+            if (z.id === 'hardwoodStand')   return { icon: '🧺', text: Math.round(y / 5) + ' ash splint baskets' };
+            return { icon: '🌿', text: '' };
+          }
+
+          // Simulate 8 years of pure neglect from the original default state.
+          // No actions, no events: just drift. Used at debrief to show the
+          // counterfactual ("what would have happened if you did nothing").
+          function computeDoNothingBaseline() {
+            var zs = WABANAKI_ZONES.map(function(zd) {
+              return Object.assign({ id: zd.id }, zd.defaultState);
+            });
+            for (var y = 0; y < m.maxYears; y++) {
+              zs = zs.map(function(z) {
+                var def = getZoneDef(z.id);
+                var nz = Object.assign({}, z);
+                nz.fuel = clamp(nz.fuel + 4, 0, 100);
+                nz.lastBurn = (nz.lastBurn || 0) + 1;
+                var pastDue = nz.lastBurn - def.fireReturn;
+                if (def.fireReturn < 50 && pastDue > 0) {
+                  nz.yield = clamp(nz.yield - 4 - Math.min(8, pastDue), 0, 100);
+                  nz.health = clamp(nz.health - 2.5, 0, 100);
+                } else {
+                  nz.yield = clamp(nz.yield - 1, 0, 100);
+                  nz.health = clamp(nz.health - 0.6, 0, 100);
+                }
+                return nz;
+              });
+            }
+            return zs;
+          }
+
+          // The single most overdue zone, used to coach a first-year student
+          // toward the highest-leverage action.
+          function getCoachingTip() {
+            var worst = null;
+            m.zones.forEach(function(z) {
+              var def = getZoneDef(z.id);
+              if (def.fireReturn >= 50) return;
+              var overdue = (z.lastBurn || 0) - def.fireReturn;
+              if (!worst || overdue > worst.overdue) worst = { zone: z, def: def, overdue: overdue };
+            });
+            return worst;
+          }
+
+          // Stylized aerial map of the territory. Top band: highlands
+          // (mixed conifer + white pine grove). Mid band: blueberry barren
+          // (south slope) + oak savanna (east-facing). Lower band: intervale
+          // meadow along the river + mixed hardwood. Bottom band: riparian
+          // corridor along the stream.
+          function renderTerritoryMap(zones, opts) {
+            opts = opts || {};
+            var layout = {
+              // Top band: highlands. mixedConifer left, whitePineGrove right.
+              mixedConifer:    { x: 4,   y: 4,   w: 360, h: 64,  iconX: 184, iconY: 44,  labelX: 12 },
+              whitePineGrove:  { x: 370, y: 4,   w: 226, h: 64,  iconX: 482, iconY: 44,  labelX: 378 },
+              // Mid band: blueberry barren left, oak savanna right.
+              blueberryBarren: { x: 4,   y: 74,  w: 290, h: 80,  iconX: 148, iconY: 122, labelX: 12 },
+              oakSavanna:      { x: 300, y: 74,  w: 296, h: 80,  iconX: 448, iconY: 122, labelX: 308 },
+              // Lower band: intervale meadow (left, on the river) + mixed hardwood.
+              intervaleMeadow: { x: 4,   y: 160, w: 240, h: 76,  iconX: 124, iconY: 204, labelX: 12 },
+              hardwoodStand:   { x: 250, y: 160, w: 346, h: 76,  iconX: 422, iconY: 204, labelX: 258 },
+              // Bottom band: riparian corridor full-width
+              riparian:        { x: 4,   y: 242, w: 592, h: 54,  iconX: 300, iconY: 274, labelX: 12 }
+            };
+            return h('div', {
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 8, marginBottom: 12, border: '1px solid var(--allo-stem-border, #1e293b)' }
+            },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, paddingLeft: 4 } }, opts.title || 'Your Territory'),
+              h('svg', { viewBox: '0 0 600 300', style: { width: '100%', height: 'auto', maxHeight: 300, display: 'block', borderRadius: 8 }, 'aria-label': 'Aerial map of the Wabanaki territory showing the 5 stewardship zones' },
+                // dark base
+                h('rect', { x: 0, y: 0, width: 600, height: 300, fill: '#020617', rx: 6 }),
+                // each zone tile
+                zones.map(function(z) {
+                  var def = getZoneDef(z.id);
+                  var rect = layout[z.id];
+                  if (!rect) return null;
+                  var intensity = Math.max(0.32, Math.min(1, z.health / 100));
+                  var pastDue = (def.fireReturn < 50 && z.lastBurn > def.fireReturn);
+                  var nearWindow = (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1);
+                  var fuelHot = z.fuel > 60;
+                  var strokeColor = pastDue ? '#ef4444' : (nearWindow ? '#fbbf24' : 'rgba(255,255,255,0.15)');
+                  var strokeWidth = (pastDue || nearWindow) ? 2.5 : 1;
+                  var statusIcon = pastDue ? '🔥' : (nearWindow ? '🎯' : (fuelHot ? '⚠️' : ''));
+                  return h('g', {
+                    key: z.id,
+                    onClick: function() { openDeepDive(z.id); },
+                    style: { cursor: 'pointer' },
+                    role: 'button',
+                    'aria-label': 'Open cultural deep-dive for ' + def.name,
+                    tabIndex: 0,
+                    onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDeepDive(z.id); } }
+                  },
+                    h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: def.color, opacity: intensity, rx: 6 }),
+                    h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: 'none', stroke: strokeColor, strokeWidth: strokeWidth, rx: 6 }),
+                    h('text', { x: rect.labelX, y: rect.y + 16, fontSize: 11, fontWeight: 700, fill: '#fff', style: { pointerEvents: 'none' } }, def.name),
+                    h('text', { x: rect.iconX, y: rect.iconY, fontSize: 30, textAnchor: 'middle', style: { pointerEvents: 'none' } }, def.icon),
+                    // health bar at bottom of tile
+                    h('rect', { x: rect.x + 8, y: rect.y + rect.h - 10, width: (rect.w - 16), height: 4, fill: 'rgba(255,255,255,0.08)', rx: 2 }),
+                    h('rect', { x: rect.x + 8, y: rect.y + rect.h - 10, width: (rect.w - 16) * (z.health / 100), height: 4, fill: z.health > 70 ? '#86efac' : (z.health > 50 ? '#fbbf24' : '#fca5a5'), rx: 2 }),
+                    // status overlay top-right
+                    statusIcon ? h('text', { x: rect.x + rect.w - 18, y: rect.y + 22, fontSize: 16, textAnchor: 'middle', style: { pointerEvents: 'none' } }, statusIcon) : null,
+                    // last-burn tag for fire-dependent zones
+                    def.fireReturn < 50 ? h('text', { x: rect.x + rect.w - 8, y: rect.y + rect.h - 16, fontSize: 9, fontWeight: 600, textAnchor: 'end', fill: 'rgba(255,255,255,0.7)', style: { pointerEvents: 'none' } }, z.lastBurn + 'y') : null
+                  );
+                }),
+                // Stream overlay: stylized river curves from the top-right
+                // down past the intervale into the riparian band along the bottom.
+                h('path', {
+                  d: 'M 580 70 Q 540 110 555 150 Q 545 180 250 240 Q 120 270 20 270',
+                  stroke: '#38bdf8', strokeWidth: 6, fill: 'none', opacity: 0.55,
+                  strokeLinecap: 'round',
+                  style: { pointerEvents: 'none' }
+                }),
+                h('path', {
+                  d: 'M 580 70 Q 540 110 555 150 Q 545 180 250 240 Q 120 270 20 270',
+                  stroke: '#bae6fd', strokeWidth: 2, fill: 'none', opacity: 0.75,
+                  strokeLinecap: 'round',
+                  style: { pointerEvents: 'none' }
+                })
+              ),
+              // Map legend
+              h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 6, paddingLeft: 4, display: 'flex', gap: 14, flexWrap: 'wrap' } },
+                h('span', null, h('span', { style: { color: '#ef4444' } }, '🔥'), ' past due'),
+                h('span', null, h('span', { style: { color: '#fbbf24' } }, '🎯'), ' in window'),
+                h('span', null, h('span', { style: { color: '#facc15' } }, '⚠️'), ' fuel high'),
+                h('span', null, h('span', { style: { color: '#38bdf8' } }, '〰'), ' stream / riparian'),
+                h('span', { style: { marginLeft: 'auto', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Click any zone for cultural deep-dive →')
+              )
+            );
+          }
+
+          // Tiny SVG line chart for the debrief: avg health and total yield
+          // year by year across the campaign.
+          function renderTrendChart(yearLog) {
+            if (!yearLog || yearLog.length === 0) return null;
+            var w = 600, hgt = 160, padL = 36, padR = 12, padT = 12, padB = 24;
+            var ix = w - padL - padR;
+            var iy = hgt - padT - padB;
+            var maxYield = 700; // 7 zones × 100 max
+            // Health: 0..100 mapped to plot. Yield: 0..maxYield mapped to plot.
+            var pts = yearLog.map(function(s, i) {
+              var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+              var hY = padT + iy - (s.avgHealth / 100) * iy;
+              var yY = padT + iy - (s.totalYield / maxYield) * iy;
+              return { x: x, hY: hY, yY: yY, year: s.year, health: s.avgHealth, yield: s.totalYield };
+            });
+            function path(key) {
+              return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p[key]; }).join(' ');
+            }
+            return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Eight-year trend'),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Trend chart of ecological health and total cultural yield year by year' },
+                // gridlines
+                [0, 25, 50, 75, 100].map(function(g, gi) {
+                  var y = padT + iy - (g / 100) * iy;
+                  return h('g', { key: 'g' + gi },
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                  );
+                }),
+                // x axis labels
+                pts.map(function(p, i) {
+                  return h('text', { key: 'xl' + i, x: p.x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'Y' + p.year);
+                }),
+                // health line
+                h('path', { d: path('hY'), stroke: '#86efac', strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' }),
+                // yield line (rescaled to the same 0..100 plot, label denotes raw value)
+                h('path', { d: path('yY'), stroke: '#fbbf24', strokeWidth: 2, fill: 'none', strokeLinejoin: 'round', strokeDasharray: '4 3' }),
+                // health points
+                pts.map(function(p, i) {
+                  return h('circle', { key: 'hp' + i, cx: p.x, cy: p.hY, r: 3, fill: '#86efac' });
+                }),
+                // yield points
+                pts.map(function(p, i) {
+                  return h('circle', { key: 'yp' + i, cx: p.x, cy: p.yY, r: 3, fill: '#fbbf24' });
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 16, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } },
+                h('span', null, h('span', { style: { color: '#86efac' } }, '━ '), 'Avg health (0 to 100)'),
+                h('span', null, h('span', { style: { color: '#fbbf24' } }, '┄ '), 'Total yield (rescaled to 0 to 500)')
+              )
+            );
+          }
+
+          // ── AI LAND READING ──
+          // Carefully framed: this is an AI fire-ecology educator that reads
+          // the observable land state. It is NOT an "Elder voice" and must
+          // never speak in first-person Wabanaki voice, attribute statements
+          // to named tribal individuals, invoke sacred or ceremonial claims,
+          // or use romanticized framing. The system prompt enforces these
+          // constraints; a visible disclaimer renders with every response.
+          function readLand() {
+            if (!callGemini || m.aiReadLoading) return;
+            var landSummary = m.zones.map(function(z) {
+              var def = getZoneDef(z.id);
+              var fr = def.fireReturn >= 50 ? 'almost never (riparian or mature forest)' : 'every ' + def.fireReturn + ' years';
+              return '- ' + def.name + ': fuel ' + Math.round(z.fuel) + ', health ' + Math.round(z.health) + ', yield ' + Math.round(z.yield) + ', ' + z.lastBurn + ' years since last burn (target fire-return: ' + fr + ')';
+            }).join('\n');
+
+            var prompt = [
+              'You are an AI fire ecology educator. You are NOT a Wabanaki person and you do NOT speak on behalf of any tribal nation, elder, or named individual.',
+              '',
+              'A student is stewarding a simulated Maine territory across 8 years. The territory has 5 zones, each with a different fire-return interval.',
+              '',
+              'Current land state (Year ' + m.year + ' of ' + m.maxYears + ', difficulty: ' + (MOSAIC_DIFFICULTIES[m.difficulty] || MOSAIC_DIFFICULTIES.steward).label + '):',
+              landSummary,
+              'Stewardship hours available this year: ' + m.hoursLeft + ' of ' + m.hoursPerYear,
+              'Continuity wins so far: ' + m.continuityWins,
+              '',
+              'Read this land state and give 3 to 4 sentences of practical coaching.',
+              '',
+              'HARD CONSTRAINTS (must follow all):',
+              '- NEVER speak in first-person Elder voice or claim to be a Wabanaki person.',
+              '- NEVER attribute statements to specific tribal individuals, elders, or named persons.',
+              '- NEVER invoke sacred, ceremonial, or spiritual claims you do not have authority over.',
+              '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+              '- NEVER invent quotes or attributed sayings.',
+              '- DO frame as "documented Wabanaki fire stewardship practice" or "fire ecology research on Indigenous burning."',
+              '- DO acknowledge that the Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki) with different languages and practices when relevant.',
+              '- DO stay grounded in observable land state and concrete techniques: cultural burn, pile burn, hand thinning, coppice, seed scatter, rest.',
+              '- Name 1 or 2 highest-priority moves and explain why, grounded in fire ecology and documented practice.',
+              '- Be direct, observational, useful. No flowery language.',
+              '',
+              'Respond in 3 to 4 sentences of plain prose. Do not use markdown. Do not use first-person plural ("we") or first-person singular ("I") for Wabanaki voice.'
+            ].join('\n');
+
+            setMosaic({ aiReadLoading: true, aiReadResponse: null });
+            try {
+              var p = callGemini(prompt);
+              if (p && typeof p.then === 'function') {
+                p.then(function(resp) {
+                  var text = '';
+                  if (typeof resp === 'string') text = resp;
+                  else if (resp && typeof resp.text === 'string') text = resp.text;
+                  else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                  text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                  setMosaic({
+                    aiReadResponse: text,
+                    aiReadLoading: false,
+                    aiReadHistory: (m.aiReadHistory || []).concat([{ year: m.year, text: text }])
+                  });
+                  if (announceToSR) announceToSR('AI Land Reading complete.');
+                }).catch(function() {
+                  setMosaic({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                });
+              } else {
+                setMosaic({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+              }
+            } catch (e) {
+              setMosaic({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+            }
+          }
+
+          function dismissAIRead() { setMosaic({ aiReadResponse: null }); }
+
+          // Render the AI Land Reading response panel (only when set)
+          function renderAIReadPanel() {
+            if (m.aiReadLoading) {
+              return h('div', {
+                role: 'status', 'aria-live': 'polite',
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 }
+              }, '⏳ AI fire ecologist is reading your land...');
+            }
+            if (!m.aiReadResponse) return null;
+            return h('div', {
+              role: 'region', 'aria-label': 'AI Land Reading',
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('span', { style: { fontSize: 20 } }, '🔍'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Land Reading'),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                  h('button', {
+                    onClick: readLand,
+                    'aria-label': 'Read again',
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                  }, '↻ Re-read'),
+                  h('button', {
+                    onClick: dismissAIRead,
+                    'aria-label': 'Dismiss reading',
+                    style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                  }, '✕')
+                )
+              ),
+              h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, m.aiReadResponse),
+              h('div', {
+                style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' }
+              },
+                'AI fire ecology educator trained on documented Wabanaki fire stewardship research. ',
+                h('strong', null, 'It is not a Wabanaki person and does not speak for any Wabanaki nation.'),
+                ' For authoritative voice, consult Wabanaki organizations directly: Maine Indian Basketmakers Alliance, Wabanaki Public Health and Wellness, the Penobscot Cultural and Historic Preservation Department, and the Passamaquoddy Cultural Heritage Museum.'
+              )
+            );
+          }
+
+          // ── WABANAKI VOCABULARY GLOSSARY ──
+          // Surfaces all bilingual terms in one place. Open / close with the
+          // glossary button on the setup phase header.
+          var WABANAKI_GLOSSARY = [
+            { group: 'Seasons (across the campaign year)', items: [
+              { term: 'Sigwan',   en: 'spring',   note: 'First part of the Warm Season phase in the sim.' },
+              { term: 'Nipon',    en: 'summer',   note: 'Second part of the Warm Season phase.' },
+              { term: 'Toqaq',    en: 'fall',     note: 'First part of the Cold Season phase. Primary cultural-burn window.' },
+              { term: 'Pun',      en: 'winter',   note: 'Second part of the Cold Season phase. Pile-burn and coppice window.' }
+            ] },
+            { group: 'Blueberry Barren', items: [
+              { term: 'Sata', en: 'lowbush blueberry', note: 'Fire-dependent rhizomatous shrub. Burned every 2 to 3 years.' }
+            ] },
+            { group: 'White Oak Savanna', items: [
+              { term: 'Anaskimnesi', en: 'white oak', note: 'Less tannic than red oak; preferred acorn source.' }
+            ] },
+            { group: 'Pine-Spruce Stand and White Pine Grove', items: [
+              { term: 'Kuwes',    en: 'white pine',  note: 'Maine state tree. Pitch and canoe wood.' },
+              { term: 'Skog',     en: 'spruce',      note: 'Red spruce dominates higher elevations.' },
+              { term: 'Pasekona', en: 'canoe',       note: 'White pine and birchbark canoe traditions are central to Wabanaki travel.' }
+            ] },
+            { group: 'Riparian Corridor', items: [
+              { term: 'Welimanal', en: 'sweetgrass',  note: 'Smudge for ceremony; binding band on baskets.' },
+              { term: 'Qapit',     en: 'beaver',      note: 'Engineer of the riparian zone; raises water tables and creates firebreaks.' }
+            ] },
+            { group: 'Mixed Hardwood', items: [
+              { term: 'Wikp',     en: 'brown ash',    note: 'The basketry tree. Annual growth rings split into splints when the trunk is pounded.' },
+              { term: 'Senomozi', en: 'sugar maple',  note: 'Spring sap run for syrup.' }
+            ] },
+            { group: 'Intervale Meadow', items: [
+              { term: 'Olawagik',   en: 'intervale',   note: 'Alluvial river-floodplain land. Warm, loose, fertile.' },
+              { term: 'Skamonal',   en: 'corn',        note: 'White flint corn was the Wabanaki staple; dried and ground.' },
+              { term: 'Malsanikuk', en: 'squash',      note: 'One of the Three Sisters with corn and beans.' }
+            ] }
+          ];
+
+          function openGlossary() { setMosaic({ glossaryOpen: true }); }
+          function closeGlossary() { setMosaic({ glossaryOpen: false }); }
+
+          function renderGlossaryPanel() {
+            return h('div', {
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Wabanaki vocabulary glossary',
+              style: {
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(15,23,42,0.85) 60%)',
+                borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7',
+                borderRadius: 14, padding: 18, marginBottom: 16
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 30 } }, '📖'),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: '#a855f7', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Vocabulary'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, 'Wabanaki vocabulary in this sim')
+                ),
+                h('button', {
+                  onClick: closeGlossary,
+                  'aria-label': 'Close glossary',
+                  style: {
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)',
+                    color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer',
+                    borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
+                  }
+                }, '✕ Close')
+              ),
+
+              h('p', { style: { fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.55, marginBottom: 14 } },
+                'The bilingual terms across this sim. The Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki), each with its own language. Spellings vary by orthography and dialect; the forms here are representative, not authoritative. For language teaching consult the language program of each nation, the University of Maine Wabanaki Center, or community resources directly.'
+              ),
+
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 } },
+                WABANAKI_GLOSSARY.map(function(grp, gi) {
+                  return h('div', { key: gi, style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12, border: '1px solid rgba(168,85,247,0.18)' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#c4b5fd', letterSpacing: 0.3, marginBottom: 8 } }, grp.group),
+                    grp.items.map(function(it, ii) {
+                      return h('div', { key: ii, style: { marginBottom: 8, fontSize: 13, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                        h('div', null,
+                          h('strong', { style: { color: '#a855f7', fontFamily: 'ui-monospace, monospace' } }, it.term),
+                          h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, ' · ' + it.en)
+                        ),
+                        h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, it.note)
+                      );
+                    })
+                  );
+                })
+              )
+            );
+          }
+
+          // Open / close per-zone cultural deep-dive
+          function openDeepDive(zoneId) {
+            setMosaic({ deepDiveZone: zoneId });
+            if (announceToSR) {
+              var def = getZoneDef(zoneId);
+              if (def) announceToSR('Cultural deep-dive opened: ' + def.name + '. Press escape or click close to return.');
+            }
+          }
+          function closeDeepDive() { setMosaic({ deepDiveZone: null }); }
+
+          function renderDeepDivePanel(zoneId) {
+            var def = getZoneDef(zoneId);
+            if (!def || !def.deepDive) return null;
+            var dd = def.deepDive;
+            return h('div', {
+              role: 'dialog',
+              'aria-modal': 'true',
+              'aria-label': 'Cultural deep-dive: ' + def.name,
+              style: {
+                background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
+                border: '1px solid ' + def.color + '88',
+                borderLeft: '4px solid ' + def.color,
+                borderRadius: 14,
+                padding: 18,
+                marginBottom: 16
+              }
+            },
+              // Header
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, def.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Cultural deep-dive'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, dd.bilingual)
+                ),
+                h('button', {
+                  onClick: closeDeepDive,
+                  'aria-label': 'Close deep-dive',
+                  style: {
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)',
+                    color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer',
+                    borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
+                  }
+                }, '✕ Close')
+              ),
+
+              // Sections grid
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 Ecological knowledge'),
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🧺 Traditional use and preparation'),
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.preparation)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Modern context'),
+                  h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                )
+              ),
+
+              // Teaching pull-quote
+              h('div', {
+                style: {
+                  background: 'rgba(168,85,247,0.10)',
+                  borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7',
+                  borderRadius: 10, padding: 14, marginTop: 12
+                }
+              },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a855f7', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '✨ A Wabanaki teaching'),
+                h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } }, '“' + dd.teaching + '”'),
+                h('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  'Paraphrased from documented Wabanaki stewardship practice. The Wabanaki Confederacy includes Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, and Abenaki nations, each with its own distinct language; the bilingual term above is one representative form.'
+                )
+              )
+            );
+          }
+
+          function startCampaign(opts) {
+            opts = opts || {};
+            var fresh = defaultMosaicState();
+            var diffId = (opts.difficulty || m.difficulty) || 'steward';
+            var diff = MOSAIC_DIFFICULTIES[diffId] || MOSAIC_DIFFICULTIES.steward;
+            var warmHours = Math.ceil(diff.hoursPerYear / 2);
+            var coldHours = Math.floor(diff.hoursPerYear / 2);
+            fresh.phase = 'year';
+            fresh.subPhase = 'warm';
+            fresh.difficulty = diff.id;
+            fresh.hoursPerYear = diff.hoursPerYear;
+            fresh.warmHoursBudget = warmHours;
+            fresh.coldHoursBudget = coldHours;
+            fresh.hoursLeft = warmHours;
+            if (opts.seed) fresh.seed = opts.seed;
+            setMosaic(fresh);
+            playSound('ignite');
+            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty. Warm Season (Sigwan-Nipon).' + (opts.seed ? ' (Replay)' : ''), 'success');
+            awardStemXP('mosaic_start', 10, 'Mosaic begins (' + diff.label + ')');
+            if (announceToSR) announceToSR('Cultural Mosaic started on ' + diff.label + '. Year 1 of 8, Warm Season Sigwan-Nipon. ' + warmHours + ' stewardship hours available in this phase.');
+          }
+
+          function resetCampaign() {
+            setMosaic(defaultMosaicState());
+            if (addToast) addToast('Mosaic reset.', 'info');
+          }
+
+          // Apply a technique to a zone
+          function applyTechnique(techId, zoneId) {
+            var tech = MOSAIC_TECHNIQUES.find(function(t2) { return t2.id === techId; });
+            var zone = m.zones.find(function(z) { return z.id === zoneId; });
+            var zDef = getZoneDef(zoneId);
+            if (!tech || !zone || !zDef) return;
+            if (m.hoursLeft < tech.hours) {
+              if (addToast) addToast('Not enough stewardship hours left this year.', 'warn');
+              return;
+            }
+            if (tech.zoneRestrict && tech.zoneRestrict.indexOf(zoneId) < 0) {
+              if (addToast) addToast(tech.name + ' does not apply to ' + zDef.name + '.', 'info');
+              return;
+            }
+            if (tech.requires === 'recentBurn' && (zone.lastBurn || 99) > 1) {
+              if (addToast) addToast('Seed scatter only works on a zone burned within the past year.', 'info');
+              return;
+            }
+            // Hard season gate: cold-season techniques are simply unavailable in warm phase.
+            // (Buttons should already be disabled, but defend against keyboard / a11y paths.)
+            if (tech.season !== 'any' && tech.season !== m.subPhase) {
+              if (addToast) addToast(tech.name + ' is a ' + (tech.season === 'cold' ? 'Cold Season (Toqaq-Pun)' : 'Warm Season (Sigwan-Nipon)') + ' technique.', 'info');
+              return;
+            }
+            var lateSpringYear = m.lastEvent && m.lastEvent.id === 'lateSpring';
+            var yearMult = lateSpringYear ? 0.8 : 1;
+            var totalMult = yearMult;
+            var newZones = m.zones.map(function(z) {
+              if (z.id !== zoneId) return z;
+              var nz = Object.assign({}, z);
+              nz.fuel = clamp(nz.fuel + tech.effects.fuel * totalMult, 0, 100);
+              nz.health = clamp(nz.health + tech.effects.health * totalMult, 0, 100);
+              nz.yield = clamp(nz.yield + tech.effects.yield * totalMult, 0, 100);
+              if (tech.resetsBurn) nz.lastBurn = 0;
+              return nz;
+            });
+            var newAction = { tech: tech.name, zone: zDef.name, hours: tech.hours, mult: totalMult };
+            setMosaic({
+              zones: newZones,
+              hoursLeft: m.hoursLeft - tech.hours,
+              yearActions: m.yearActions.concat([newAction])
+            });
+            playSound(techId === 'culturalBurn' || techId === 'pileBurn' ? 'ignite' : 'quizCorrect');
+            if (announceToSR) announceToSR(tech.name + ' applied to ' + zDef.name + '. ' + (m.hoursLeft - tech.hours) + ' hours left.');
+          }
+
+          // End the current year — fire event, recover, check continuity
+          function endYear() {
+            // Snapshot pre-drift state so the review can show deltas
+            var preDrift = m.zones.map(function(z) { return Object.assign({}, z); });
+
+            // Natural drift: fuel accumulates, health drifts, yield depends on years since burn
+            var driftedZones = m.zones.map(function(z) {
+              var nz = Object.assign({}, z);
+              var def = getZoneDef(z.id);
+              nz.fuel = clamp(nz.fuel + 4, 0, 100);
+              nz.lastBurn = (nz.lastBurn || 0) + 1;
+              // Yield drift: if you have not burned within the fire-return interval, yield erodes
+              var pastDue = nz.lastBurn - def.fireReturn;
+              if (def.fireReturn < 50 && pastDue > 0) {
+                nz.yield = clamp(nz.yield - 4 - Math.min(8, pastDue), 0, 100);
+              } else {
+                nz.yield = clamp(nz.yield - 1, 0, 100);
+              }
+              return nz;
+            });
+
+            // Trigger a random event (1 of 8) — 1 event per year, with
+            // difficulty-aware skip + severity scaling. The event sequence
+            // is seeded by (campaign seed + year) so identical seeds produce
+            // identical event sequences across replays.
+            var diff = MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward;
+            var seed = m.seed || 'mosaic-default';
+            var skipRng = mosaicMulberry32(mosaicHash(seed + ':skip:' + m.year));
+            var pickRng = mosaicMulberry32(mosaicHash(seed + ':pick:' + m.year));
+            var ev;
+            if (skipRng() < (diff.eventSkipChance || 0)) {
+              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. The seasons turned as expected and the community kept its rhythm.', apply: function() {} };
+            } else {
+              ev = MOSAIC_EVENTS[Math.floor(pickRng() * MOSAIC_EVENTS.length)];
+            }
+            // Wrap apply with severity scaling so harder difficulty hits harder.
+            var sev = diff.eventSeverity || 1;
+            driftedZones.forEach(function(z) {
+              var before = { fuel: z.fuel, health: z.health, yield: z.yield };
+              ev.apply(z, driftedZones);
+              if (sev !== 1) {
+                z.fuel   = clamp(before.fuel   + (z.fuel   - before.fuel)   * sev, 0, 100);
+                z.health = clamp(before.health + (z.health - before.health) * sev, 0, 100);
+                z.yield  = clamp(before.yield  + (z.yield  - before.yield)  * sev, 0, 100);
+              }
+            });
+
+            // Continuity bonus: name each zone that hit its fire-return window (+/- 1 year)
+            var continuityZones = [];
+            driftedZones.forEach(function(z) {
+              var def = getZoneDef(z.id);
+              if (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1) {
+                continuityZones.push(def.name);
+              }
+            });
+            var continuityHits = continuityZones.length;
+
+            var avgHealth = Math.round(driftedZones.reduce(function(a, z) { return a + z.health; }, 0) / driftedZones.length);
+            var totalYield = Math.round(driftedZones.reduce(function(a, z) { return a + z.yield; }, 0));
+
+            // Cultural-artifact harvest for the year
+            var harvest = driftedZones.map(function(z) {
+              var a = zoneArtifact(z);
+              return { id: z.id, icon: a.icon, text: a.text };
+            });
+
+            var yearSnap = {
+              year: m.year, event: ev.name, eventIcon: ev.icon,
+              avgHealth: avgHealth, totalYield: totalYield,
+              continuityHits: continuityHits,
+              continuityZones: continuityZones,
+              actions: m.yearActions.slice(),
+              preDrift: preDrift,
+              postDrift: driftedZones.map(function(z) { return Object.assign({}, z); }),
+              harvest: harvest
+            };
+
+            setMosaic({
+              phase: 'review',
+              zones: driftedZones,
+              lastEvent: ev,
+              continuityWins: m.continuityWins + continuityHits,
+              yearLog: m.yearLog.concat([yearSnap])
+            });
+
+            playSound(continuityHits > 0 ? 'badge' : 'pause');
+            if (announceToSR) announceToSR('Year ' + m.year + ' complete. Event: ' + ev.name + '. Avg health ' + avgHealth + ', total yield ' + totalYield + (continuityHits > 0 ? '. Continuity wins: ' + continuityZones.join(', ') : '') + '.');
+            if (m.year >= m.maxYears - 2 && continuityHits >= 2) checkBadge('mosaicMaster');
+
+            // Zone-specific keeper badges: fire when a zone crosses its threshold this year
+            driftedZones.forEach(function(z) {
+              if (z.id === 'blueberryBarren' && z.yield >= 80) checkBadge('berryKeeper');
+              if (z.id === 'hardwoodStand' && z.yield >= 70) checkBadge('ashKeeper');
+              if (z.id === 'riparian' && z.yield >= 75) checkBadge('sweetgrassKeeper');
+              if (z.id === 'whitePineGrove' && z.yield >= 65) checkBadge('pineKeeper');
+              if (z.id === 'intervaleMeadow' && z.yield >= 85) checkBadge('cornKeeper');
+            });
+          }
+
+          // End the current sub-phase: warm → cold (refill cold-half hours);
+          // cold → review (triggers endYear's natural drift + event)
+          function endPhase() {
+            if (m.subPhase === 'warm') {
+              setMosaic({ subPhase: 'cold', hoursLeft: m.coldHoursBudget });
+              playSound('pause');
+              if (addToast) addToast('Warm Season (Sigwan-Nipon) ends. Cold Season (Toqaq-Pun) begins. ' + m.coldHoursBudget + ' hours.', 'info');
+              if (announceToSR) announceToSR('Cold Season Toqaq-Pun begins. Cultural burn, pile burn, and coppice are now available. ' + m.coldHoursBudget + ' hours.');
+            } else {
+              endYear();
+            }
+          }
+
+          function advanceFromReview() {
+            if (m.year >= m.maxYears) {
+              // Final scoring
+              var avgHealth = Math.round(m.zones.reduce(function(a, z) { return a + z.health; }, 0) / m.zones.length);
+              var totalYield = Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0));
+              var outcome;
+              if (avgHealth >= 78 && totalYield >= 490 && m.continuityWins >= 6) {
+                outcome = { tier: 'excellent', label: 'Wabanaki Stewardship Mastery', color: '#16a34a', icon: '🏆', desc: 'The mosaic thrives. Berry harvests are abundant, intervale corn fills the longhouse, ash splints supply every basketmaker, canoes leave the pine grove finished and tight, sweetgrass braids fill every ceremony. The land remembers good fire.' };
+              } else if (avgHealth >= 70 && totalYield >= 390) {
+                outcome = { tier: 'good', label: 'Skilled Mosaic Steward', color: '#22c55e', icon: '🌿', desc: 'You held the mosaic together. Some zones thrived, others held steady. The community has what it needs.' };
+              } else if (avgHealth >= 60) {
+                outcome = { tier: 'struggling', label: 'Mosaic Apprentice', color: '#f59e0b', icon: '🍃', desc: 'You kept the land alive but it is fraying. Some zones missed their fire-return windows; harvests were thin in places.' };
+              } else {
+                outcome = { tier: 'critical', label: 'Ecology Slipping', color: '#ef4444', icon: '⚠️', desc: 'The mosaic is unraveling. Without consistent stewardship the habitats are blending together and the cultural species are losing ground.' };
+              }
+              setMosaic({ phase: 'debrief', finalOutcome: outcome });
+              awardStemXP('mosaic_complete', 50, outcome.label);
+              if (outcome.tier === 'excellent' || outcome.tier === 'good') checkBadge('mosaicMaster');
+            } else {
+              setMosaic({
+                phase: 'year', subPhase: 'warm', year: m.year + 1,
+                hoursLeft: m.warmHoursBudget,
+                yearActions: [], lastEvent: null
+              });
+              if (announceToSR) announceToSR('Year ' + (m.year + 1) + ' begins, Warm Season Sigwan-Nipon. ' + m.warmHoursBudget + ' hours.');
+            }
+          }
+
+          // Render deep-dive / glossary at the very top of any phase when active
+          var deepDivePanel = m.deepDiveZone ? renderDeepDivePanel(m.deepDiveZone) : null;
+          var glossaryPanel = m.glossaryOpen ? renderGlossaryPanel() : null;
+
+          // ── SETUP PHASE ──
+          if (m.phase === 'setup') {
+            return h('div', null,
+              deepDivePanel,
+              glossaryPanel,
+              h('div', {
+                style: {
+                  padding: 18, borderRadius: 14,
+                  background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(124,58,237,0.08) 100%)',
+                  border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN,
+                  marginBottom: 14
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                  h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, '🧩'),
+                  h('div', null,
+                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Wabanaki Cultural Mosaic'),
+                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'Steward a real Maine territory across 8 years.')
+                  )
+                ),
+                h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
+                  'Your land is divided into 5 zones, each with its own habitat, its own cultural use, and its own fire-return interval. ',
+                  h('strong', null, 'A blueberry barren needs fire every 2 years; a riparian corridor needs fire almost never.'),
+                  ' Real Indigenous stewardship is patchwork, not uniform.'
+                ),
+                h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } },
+                  'This sim is built on documented Wabanaki practice (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki). Where details are simplified for an 8-year window, the underlying logic is faithful.'
+                ),
+                h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: openGlossary,
+                    'aria-label': 'Open Wabanaki vocabulary glossary',
+                    style: {
+                      background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7',
+                      color: '#e9d5ff', cursor: 'pointer',
+                      borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12
+                    }
+                  }, '📖 Wabanaki vocabulary')
+                )
+              ),
+
+              // Zone preview cards
+              h('h4', { style: { margin: '14px 0 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 16 } }, 'Your Territory'),
+              renderTerritoryMap(
+                WABANAKI_ZONES.map(function(z) { return Object.assign({ id: z.id }, z.defaultState); }),
+                { title: 'Starting state of your land' }
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10, marginBottom: 14 } },
+                WABANAKI_ZONES.map(function(z) {
+                  return h('div', { key: z.id,
+                    style: {
+                      background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + z.color,
+                      borderRadius: 10, padding: 12, fontSize: 13
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 22 } }, z.icon),
+                      h('strong', { style: { color: z.color } }, z.name)
+                    ),
+                    z.deepDive ? h('div', { style: { color: z.color, fontSize: 11, fontStyle: 'italic', marginBottom: 4 } }, z.deepDive.bilingual) : null,
+                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 4 } },
+                      'Fire return: ' + (z.fireReturn >= 50 ? 'almost never' : 'every ' + z.fireReturn + ' years')
+                    ),
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, z.desc),
+                    h('div', { style: { color: '#fbbf24', fontSize: 11.5, marginBottom: 8 } }, '✨ ' + z.culturalUse),
+                    z.deepDive ? h('button', {
+                      onClick: function() { openDeepDive(z.id); },
+                      'aria-label': 'Learn more about ' + z.name,
+                      style: {
+                        width: '100%', padding: '6px 10px', borderRadius: 8,
+                        border: '1px solid ' + z.color + '88', background: z.color + '22',
+                        color: z.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5
+                      }
+                    }, '📚 Cultural deep-dive →') : null
+                  );
+                })
+              ),
+
+              // Difficulty picker
+              h('div', {
+                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' }
+              },
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                  Object.keys(MOSAIC_DIFFICULTIES).map(function(dkey) {
+                    var diff = MOSAIC_DIFFICULTIES[dkey];
+                    var picked = (m.difficulty || 'steward') === dkey;
+                    return h('button', {
+                      key: dkey,
+                      onClick: function() { setMosaic({ difficulty: dkey }); },
+                      'aria-label': 'Set difficulty: ' + diff.label,
+                      'aria-pressed': picked,
+                      style: {
+                        background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b',
+                        border: '1px solid ' + (picked ? '#15803d' : '#334155'),
+                        color: picked ? '#86efac' : '#cbd5e1',
+                        borderRadius: 8, padding: '8px 12px', cursor: 'pointer',
+                        textAlign: 'left'
+                      }
+                    },
+                      h('div', { style: { fontWeight: 800, fontSize: 13 } }, diff.label),
+                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, diff.desc)
+                    );
+                  })
+                )
+              ),
+
+              h('div', {
+                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: '#fde68a' }
+              },
+                h('strong', { style: { color: '#fbbf24' } }, 'How a year works: '),
+                'each year splits into a ',
+                h('strong', { style: { color: '#fb923c' } }, '☼ Warm Season (Sigwan-Nipon)'),
+                ' and a ',
+                h('strong', { style: { color: '#60a5fa' } }, '❄ Cold Season (Toqaq-Pun)'),
+                '. You get ' + (MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward).hoursPerYear + ' total stewardship hours per year, split half-and-half across the two phases. Cultural burn, pile burn, and coppice only happen in the Cold Season. Hand thinning, rest, and seed scatter (post-burn) work in either. Both phases of one year, then a weather or community event fires and the land drifts to the next year.'
+              ),
+
+              h('button', {
+                onClick: startCampaign,
+                'aria-label': 'Begin Wabanaki Mosaic',
+                style: {
+                  width: '100%', padding: '14px 20px', borderRadius: 12,
+                  border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)',
+                  color: '#fff', fontWeight: 800, fontSize: 16,
+                  boxShadow: '0 6px 14px rgba(21,128,61,0.35)'
+                }
+              }, '🧩 Begin 8-year Stewardship'),
+
+              // Notes for educators (collapsed by default)
+              h('details', {
+                style: {
+                  marginTop: 16, padding: '10px 14px', borderRadius: 12,
+                  background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)'
+                }
+              },
+                h('summary', {
+                  style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 }
+                }, '📝 Notes for educators'),
+                h('div', { style: { marginTop: 10, fontSize: 13, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                  h('p', { style: { margin: '0 0 8px' } },
+                    'This sim is a teaching tool. Wabanaki fire stewardship is a living practice held by living people, not a historical artifact. The simulation is intentionally a simplification across an 8-year window; real stewardship operates on multi-generational time horizons, ties into ceremony, language, and treaty relationships, and is led by Wabanaki nations themselves.'
+                  ),
+                  h('p', { style: { margin: '0 0 8px' } },
+                    h('strong', { style: { color: '#fbbf24' } }, 'For pairing with classroom work, consider these resources:'),
+                  ),
+                  h('ul', { style: { margin: '0 0 8px 18px', padding: 0 } },
+                    h('li', null, 'Wabanaki Public Health and Wellness (wabanakipublichealth.org) for community-led programming.'),
+                    h('li', null, 'Maine Indian Basketmakers Alliance (maineindianbaskets.org) for brown-ash crisis and craft revitalization.'),
+                    h('li', null, 'University of Maine Wabanaki Center (umaine.edu/nativeamericanprograms) for academic resources.'),
+                    h('li', null, 'Each nation\'s cultural offices: Penobscot Cultural and Historic Preservation Department; Passamaquoddy Cultural Heritage Museum; Maliseet, Mi\'kmaq, and Abenaki community resources.')
+                  ),
+                  h('p', { style: { margin: '0 0 8px' } },
+                    h('strong', { style: { color: '#fbbf24' } }, 'Discussion prompts after the campaign:')
+                  ),
+                  h('ul', { style: { margin: '0 0 0 18px', padding: 0 } },
+                    h('li', null, 'Where in your local landscape do you see evidence of past or ongoing Indigenous fire stewardship?'),
+                    h('li', null, 'How did the seasonal split (Sigwan-Nipon and Toqaq-Pun) change which moves felt high-leverage?'),
+                    h('li', null, 'Which zone did you find hardest to keep healthy, and what does that suggest about the cultural infrastructure (food, basketry, canoe-building, ceremony) it supports?'),
+                    h('li', null, 'How is the loss of brown ash to emerald ash borer a parallel to other ongoing cultural-ecological emergencies you know about?')
+                  )
+                )
+              )
+            );
+          }
+
+          // ── DEBRIEF PHASE ──
+          if (m.phase === 'debrief' && m.finalOutcome) {
+            var o = m.finalOutcome;
+
+            // Counterfactual: what would have happened with 8 years of neglect?
+            var baseline = computeDoNothingBaseline();
+            var baselineHealth = Math.round(baseline.reduce(function(a, z) { return a + z.health; }, 0) / baseline.length);
+            var baselineYield = Math.round(baseline.reduce(function(a, z) { return a + z.yield; }, 0));
+
+            var actualHealth = Math.round(m.zones.reduce(function(a, z) { return a + z.health; }, 0) / m.zones.length);
+            var actualYield = Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0));
+
+            // Lifetime cultural harvest totals across all 8 years
+            var lifetimeHarvest = {};
+            (m.yearLog || []).forEach(function(snap) {
+              (snap.harvest || []).forEach(function(harv) {
+                if (!lifetimeHarvest[harv.id]) lifetimeHarvest[harv.id] = { icon: harv.icon, parts: [] };
+                lifetimeHarvest[harv.id].parts.push(harv.text);
+              });
+            });
+            // Sum text parts that start with a number
+            function sumHarvestText(parts) {
+              var total = 0; var unit = '';
+              parts.forEach(function(t) {
+                var m2 = t.match(/^(\d+)\s+(.+)$/);
+                if (m2) { total += parseInt(m2[1], 10); unit = m2[2]; }
+              });
+              return total + ' ' + unit;
+            }
+
+            return h('div', null,
+              deepDivePanel,
+              glossaryPanel,
+              h('div', {
+                style: {
+                  padding: 18, borderRadius: 14, marginBottom: 14,
+                  background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)',
+                  border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color
+                }
+              },
+                h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
+                h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+              ),
+              renderTerritoryMap(m.zones, { title: 'Final state of your mosaic' }),
+              renderTrendChart(m.yearLog),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Avg ecological health'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#86efac' } }, actualHealth + '/100')
+                ),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Total cultural yield'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#fbbf24' } }, actualYield)
+                ),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Continuity wins'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
+                )
+              ),
+
+              // What would have happened if you did nothing?
+              h('div', {
+                style: {
+                  padding: 12, borderRadius: 12, marginBottom: 14,
+                  background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)',
+                  border: '1px solid rgba(248,113,113,0.4)'
+                }
+              },
+                h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing?'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                  h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your mosaic'),
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Health ' + actualHealth + ' / Yield ' + actualYield)
+                  ),
+                  h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Neglected mosaic'),
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Health ' + baselineHealth + ' / Yield ' + baselineYield)
+                  )
+                ),
+                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                  actualHealth > baselineHealth + 8 || actualYield > baselineYield + 50
+                    ? 'Your stewardship pulled the mosaic substantially ahead of where neglect would have left it. That gap is the cultural infrastructure you built.'
+                    : (actualHealth > baselineHealth - 2
+                        ? 'You roughly matched the do-nothing baseline. Active stewardship without good timing can be no better than rest.'
+                        : 'Active stewardship without good timing can leave land worse off than rest. Stewardship is a craft, not just effort.')
+                )
+              ),
+
+              // Lifetime cultural harvest
+              Object.keys(lifetimeHarvest).length > 0 ? h('div', {
+                style: { background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24' }
+              },
+                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, '🌾 Eight-year cultural harvest'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, marginTop: 8 } },
+                  Object.keys(lifetimeHarvest).map(function(zid) {
+                    var lh = lifetimeHarvest[zid];
+                    return h('div', { key: zid, style: { fontSize: 12.5, color: '#fde68a' } },
+                      h('span', { style: { fontSize: 16, marginRight: 6 } }, lh.icon),
+                      sumHarvestText(lh.parts)
+                    );
+                  })
+                )
+              ) : null,
+
+              h('h4', { style: { color: 'var(--allo-stem-text, #e2e8f0)', margin: '10px 0' } }, 'Final state by zone'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+                m.zones.map(function(z) {
+                  var def = getZoneDef(z.id);
+                  return h('div', { key: z.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + def.color, fontSize: 12 } },
+                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4 } }, def.icon + ' ' + def.name),
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Health: ' + Math.round(z.health) + ' • Yield: ' + Math.round(z.yield) + ' • Last burn: ' + z.lastBurn + 'y')
+                  );
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
+                h('button', { onClick: resetCampaign, 'aria-label': 'Start a new mosaic with fresh random conditions', style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ New mosaic, new conditions'),
+                h('button', {
+                  onClick: function() { startCampaign({ seed: m.seed, difficulty: m.difficulty }); },
+                  'aria-label': 'Replay the same starting conditions and event sequence with a different strategy',
+                  title: 'Same seed = same starting state + same yearly events. Try a different stewardship plan.',
+                  style: {
+                    padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8',
+                    cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700
+                  }
+                }, '🔁 Replay same conditions')
+              ),
+              // Seed display (so a class or a friend can run the same scenario)
+              h('div', {
+                style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' }
+              },
+                h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'Campaign seed: '),
+                h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, m.seed || 'mosaic-default'),
+                h('div', { style: { marginTop: 4, fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontFamily: 'system-ui, sans-serif', fontStyle: 'italic' } },
+                  'A teacher or classmate using the same seed on the same difficulty gets the same starting state and the same sequence of yearly events.'
+                )
+              )
+            );
+          }
+
+          // ── REVIEW PHASE (end-of-year) ──
+          if (m.phase === 'review') {
+            var lastSnap = m.yearLog[m.yearLog.length - 1] || {};
+            var ev = m.lastEvent || {};
+            // Find Elder Guidance entries matching at least one current zone state
+            var elderMatches = [];
+            m.zones.forEach(function(z) {
+              MOSAIC_ELDER.forEach(function(g) {
+                if (g.check(z) && elderMatches.length < 3 && !elderMatches.find(function(em){return em.msg === g.msg;})) elderMatches.push(g);
+              });
+            });
+            // Build delta rows: pre vs post values per zone
+            var deltaRows = (lastSnap.preDrift || []).map(function(pre) {
+              var post = (lastSnap.postDrift || []).find(function(p) { return p.id === pre.id; }) || pre;
+              var def = getZoneDef(pre.id);
+              return { def: def, pre: pre, post: post };
+            });
+            var continuityNames = lastSnap.continuityZones || [];
+
+            function deltaCell(label, before, after, goodIfDown) {
+              var d = Math.round(after - before);
+              var color, arrow;
+              if (Math.abs(d) < 1) { color = '#64748b'; arrow = '·'; }
+              else if ((d > 0 && !goodIfDown) || (d < 0 && goodIfDown)) { color = '#86efac'; arrow = d > 0 ? '▲' : '▼'; }
+              else { color = '#fca5a5'; arrow = d > 0 ? '▲' : '▼'; }
+              return h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', padding: '4px 6px', borderRadius: 6, textAlign: 'center', fontSize: 11 } },
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, label),
+                h('div', { style: { color: color, fontWeight: 700 } }, Math.round(after) + ' ' + arrow + ' ' + (d > 0 ? '+' : '') + d)
+              );
+            }
+
+            return h('div', null,
+              deepDivePanel,
+              glossaryPanel,
+              renderTerritoryMap(m.zones, { title: 'End of Year ' + m.year }),
+              h('div', { style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
+                h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + m.year + ' event: ' + (ev.name || 'quiet year')),
+                h('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Avg health'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#86efac' } }, (lastSnap.avgHealth || 0) + '/100')
+                ),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Total yield'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, lastSnap.totalYield || 0)
+                ),
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Continuity this year'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, '+' + (lastSnap.continuityHits || 0))
+                )
+              ),
+
+              // Named continuity wins (which zones hit their window)
+              continuityNames.length > 0 ? h('div', {
+                style: { padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.10)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff' }
+              },
+                h('strong', { style: { color: '#a855f7' } }, '🎯 Hit the fire-return window: '),
+                continuityNames.join(', ')
+              ) : h('div', {
+                style: { padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(100,116,139,0.10)', borderLeft: '3px solid #64748b', fontSize: 12.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }
+              }, 'No zone hit its fire-return window this year. The mosaic drifts when no habitat gets the right treatment on time.'),
+
+              // Per-zone delta rows
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 6 } },
+                  deltaRows.map(function(row) {
+                    return h('div', { key: row.def.id,
+                      style: { display: 'grid', gridTemplateColumns: '170px 1fr 1fr 1fr', gap: 6, alignItems: 'center' }
+                    },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: row.def.color } }, row.def.icon + ' ' + row.def.name),
+                      deltaCell('Fuel', row.pre.fuel, row.post.fuel, true),
+                      deltaCell('Health', row.pre.health, row.post.health, false),
+                      deltaCell('Yield', row.pre.yield, row.post.yield, false)
+                    );
+                  })
+                )
+              ),
+
+              // Cultural artifact harvest
+              (lastSnap.harvest && lastSnap.harvest.length > 0) ? h('div', {
+                style: { background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: 10, marginBottom: 12, borderLeft: '3px solid #fbbf24' }
+              },
+                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, '🌾 This year the community gathered'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 6, marginTop: 6 } },
+                  lastSnap.harvest.map(function(harv) {
+                    return h('div', { key: harv.id, style: { fontSize: 12.5, color: '#fde68a' } },
+                      h('span', { style: { fontSize: 16, marginRight: 6 } }, harv.icon),
+                      harv.text
+                    );
+                  })
+                )
+              ) : null,
+
+              elderMatches.length > 0 ? h('div', {
+                style: { padding: 12, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7' }
+              },
+                h('strong', { style: { color: '#a855f7', fontSize: 13 } }, '✨ Elder Guidance'),
+                elderMatches.map(function(g, i) {
+                  return h('div', { key: i, style: { margin: '6px 0 0', color: '#e9d5ff', fontSize: 13, lineHeight: 1.5, fontStyle: 'italic' } }, '“' + g.msg + '”');
+                })
+              ) : null,
+              h('button', {
+                onClick: advanceFromReview,
+                style: {
+                  width: '100%', padding: '12px 20px', borderRadius: 10,
+                  border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)',
+                  color: '#fff', fontWeight: 700, fontSize: 14
+                }
+              }, m.year >= m.maxYears ? 'See final outcome →' : ('Begin Year ' + (m.year + 1) + ' →'))
+            );
+          }
+
+          // ── YEAR PHASE (active stewardship) ──
+          var coachingTip = (m.year === 1 && !m.firstTipDismissed && m.yearActions.length === 0) ? getCoachingTip() : null;
+          return h('div', null,
+            deepDivePanel,
+            glossaryPanel,
+            // Territory map (current state)
+            renderTerritoryMap(m.zones, { title: 'Year ' + m.year + ' of ' + m.maxYears + ': current state' }),
+            // Year-1 coaching tip (only on Year 1, until first action or dismissed)
+            coachingTip ? h('div', {
+              role: 'note',
+              style: {
+                padding: '10px 14px', borderRadius: 12, marginBottom: 12,
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)',
+                borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7',
+                color: '#e9d5ff', fontSize: 13, lineHeight: 1.55,
+                display: 'flex', alignItems: 'flex-start', gap: 10
+              }
+            },
+              h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
+              h('div', { style: { flex: 1 } },
+                h('strong', { style: { color: '#a855f7' } }, 'First-year tip: '),
+                'your ' + coachingTip.def.name.toLowerCase() + ' is ' +
+                (coachingTip.overdue > 0
+                  ? 'about ' + coachingTip.overdue + ' year' + (coachingTip.overdue === 1 ? '' : 's') + ' overdue for fire'
+                  : 'approaching its fire-return window') +
+                '. A cultural burn (8 hours) is the highest-leverage move you can make this year. You have ' + m.hoursPerYear + ' hours to spend; try one good burn plus one supporting action.'
+              ),
+              h('button', {
+                onClick: function() { setMosaic({ firstTipDismissed: true }); },
+                'aria-label': 'Dismiss tip',
+                style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 }
+              }, '✕')
+            ) : null,
+
+            // HUD
+            (function() {
+              var isWarm = m.subPhase === 'warm';
+              var phaseAccent = isWarm ? '#a16207' : '#1d4ed8';
+              var phaseSoft = isWarm ? 'rgba(161,98,7,0.18)' : 'rgba(29,78,216,0.18)';
+              var phaseLabel = isWarm ? '☼ Warm Season' : '❄ Cold Season';
+              var phaseSubLabel = isWarm ? 'Sigwan-Nipon (spring + summer)' : 'Toqaq-Pun (fall + winter)';
+              var endLabel = isWarm ? 'End Warm Season →' : 'End Cold Season + Run Year →';
+              return h('div', {
+                style: {
+                  padding: '10px 14px', borderRadius: 12, marginBottom: 12,
+                  background: 'linear-gradient(135deg, ' + phaseSoft + ' 0%, rgba(15,23,42,0) 100%)',
+                  border: '1px solid ' + phaseAccent + '66', borderLeft: '4px solid ' + phaseAccent,
+                  display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
+                }
+              },
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Year'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, m.year + ' / ' + m.maxYears)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Season'),
+                  h('div', { style: { fontSize: 16, fontWeight: 800, color: phaseAccent } }, phaseLabel),
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, phaseSubLabel)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours this phase'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, m.hoursLeft + ' / ' + (isWarm ? m.warmHoursBudget : m.coldHoursBudget))
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Continuity wins'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
+                ),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                  callGemini ? h('button', {
+                    onClick: readLand,
+                    disabled: m.aiReadLoading,
+                    'aria-label': 'Ask AI fire ecologist to read your land state',
+                    title: 'AI fire ecology educator reads your current land state',
+                    style: {
+                      padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8',
+                      cursor: m.aiReadLoading ? 'wait' : 'pointer',
+                      background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12,
+                      opacity: m.aiReadLoading ? 0.6 : 1
+                    }
+                  }, m.aiReadLoading ? '⏳ Reading...' : '🔍 Read the land (AI)') : null,
+                  h('button', {
+                    onClick: endPhase,
+                    'aria-label': isWarm ? 'End Warm Season and begin Cold Season' : 'End Cold Season and resolve the year',
+                    style: {
+                      padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                      background: isWarm ? '#15803d' : '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13
+                    }
+                  }, endLabel)
+                )
+              );
+            })(),
+
+            // AI Land Reading response (below HUD when present)
+            renderAIReadPanel(),
+
+            // Zones with action picker
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10, marginBottom: 12 } },
+              m.zones.map(function(z) {
+                var def = getZoneDef(z.id);
+                var pastDue = (def.fireReturn < 50 && z.lastBurn > def.fireReturn);
+                var nearWindow = (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1);
+                var statusColor = pastDue ? '#ef4444' : (nearWindow ? '#fbbf24' : '#86efac');
+                var statusText = pastDue ? 'PAST DUE for burn' : (nearWindow ? 'In fire-return window' : 'Stable');
+                return h('div', { key: z.id,
+                  style: {
+                    background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12,
+                    borderLeft: '3px solid ' + def.color
+                  }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 22 } }, def.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                      h('div', { style: { fontSize: 11, color: statusColor, fontWeight: 700 } }, statusText + ' • last burn ' + z.lastBurn + 'y')
+                    ),
+                    def.deepDive ? h('button', {
+                      onClick: function() { openDeepDive(z.id); },
+                      'aria-label': 'Cultural deep-dive for ' + def.name,
+                      title: 'Cultural deep-dive',
+                      style: {
+                        background: 'transparent', border: '1px solid ' + def.color + '66',
+                        color: def.color, cursor: 'pointer', borderRadius: 6,
+                        padding: '2px 8px', fontSize: 11, fontWeight: 700
+                      }
+                    }, '📚') : null
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                    [['Fuel', Math.round(z.fuel), z.fuel > 55 ? '#ef4444' : z.fuel > 35 ? '#f59e0b' : '#22c55e'],
+                     ['Health', Math.round(z.health), z.health < 50 ? '#ef4444' : z.health < 70 ? '#f59e0b' : '#22c55e'],
+                     ['Yield', Math.round(z.yield), z.yield < 40 ? '#ef4444' : z.yield < 60 ? '#f59e0b' : '#22c55e']
+                    ].map(function(s, si) {
+                      return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s[0]),
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: s[2] } }, s[1])
+                      );
+                    })
+                  ),
+                  // Action picker per zone — gated by current sub-phase
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                    MOSAIC_TECHNIQUES.map(function(t) {
+                      var seasonOk = (t.season === 'any' || t.season === m.subPhase);
+                      var disabled = !seasonOk || m.hoursLeft < t.hours || (t.zoneRestrict && t.zoneRestrict.indexOf(z.id) < 0) || (t.requires === 'recentBurn' && z.lastBurn > 1);
+                      var seasonTag = t.season === 'any' ? '' : (t.season === 'cold' ? ' ❄' : ' ☼');
+                      return h('button', { key: t.id,
+                        onClick: function() { applyTechnique(t.id, z.id); },
+                        disabled: disabled,
+                        title: t.desc + (seasonOk ? '' : ' (only available in ' + (t.season === 'cold' ? 'Cold Season — Toqaq-Pun' : 'Warm Season — Sigwan-Nipon') + ')'),
+                        style: {
+                          padding: '4px 8px', fontSize: 11, fontWeight: 700,
+                          borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+                          background: disabled ? '#1e293b' : (t.season === 'cold' ? '#1d4ed8' : (t.season === 'warm' ? '#a16207' : '#15803d')),
+                          color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1
+                        }
+                      }, t.icon + ' ' + t.name + ' (' + t.hours + 'h)' + seasonTag);
+                    })
+                  )
+                );
+              })
+            ),
+
+            // Year action log
+            m.yearActions.length > 0 ? h('div', {
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' }
+            },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Year ' + m.year + ' actions'),
+              m.yearActions.map(function(a, ai) {
+                return h('div', { key: ai }, '• ' + a.tech + ' → ' + a.zone + ' (' + a.hours + 'h)' + (a.mult < 1 ? ' [off-season ×' + a.mult.toFixed(2) + ']' : ''));
+              })
+            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No actions yet this year. Pick a zone, pick a technique.')
+          );
+        }
+
+        // ══════════════════════════════════════
         // TAB: BEAVERS & FIRE
         // ══════════════════════════════════════
 
         function renderBeaverTab() {
           return h('div', null,
-            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #0ea5e9' } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #0ea5e9' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, '\uD83E\uDDAB'),
                 h('h3', { style: { margin: 0, color: '#0ea5e9', fontSize: 18 } }, BEAVER_FIRE.title)
               ),
-              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.7 } }, BEAVER_FIRE.intro)
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.7 } }, BEAVER_FIRE.intro)
             ),
 
             // Interactive beaver-dam diagram
@@ -2629,21 +4533,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ].map(function(zone, zi) {
                   return h('div', { key: zi, style: { width: zone.w, padding: '8px 2px', background: zone.bg, borderRadius: zi === 0 ? '8px 0 0 8px' : zi === 7 ? '0 8px 8px 0' : 0, textAlign: 'center' } },
                     h('div', { style: { fontSize: 18, marginBottom: 2 } }, zone.emoji),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', whiteSpace: 'pre-line', lineHeight: 1.2 } }, zone.label)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', whiteSpace: 'pre-line', lineHeight: 1.2 } }, zone.label)
                   );
                 })
               ),
-              h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'Cross-section: Beaver pond creates a green, fire-resistant corridor even when surrounding forest burns')
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Cross-section: Beaver pond creates a green, fire-resistant corridor even when surrounding forest burns')
             ),
 
             // Science cards
             BEAVER_FIRE.science.map(function(item, idx) {
-              return h('div', { key: idx, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 12, borderLeft: '3px solid ' + item.color } },
+              return h('div', { key: idx, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 12, borderLeft: '3px solid ' + item.color } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('span', { style: { fontSize: 22 } }, item.icon),
                   h('span', { style: { fontWeight: 700, color: item.color, fontSize: 15 } }, item.name)
                 ),
-                h('p', { style: { margin: '0 0 8px 0', color: '#cbd5e1', fontSize: 14, lineHeight: 1.6 } }, item.desc),
+                h('p', { style: { margin: '0 0 8px 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, lineHeight: 1.6 } }, item.desc),
                 h('div', { style: { background: item.color + '15', borderRadius: 6, padding: '8px 12px', fontSize: 13, color: item.color, fontWeight: 600 } },
                   '\uD83D\uDCCA ' + item.stat
                 )
@@ -2970,28 +4874,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // ═══ START SCREEN ═══
           if (!gameActive || !gameState) {
             return h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 24, marginBottom: 16, textAlign: 'center' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 8 } }, '\uD83D\uDD25'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 24, marginBottom: 16, textAlign: 'center' } },
+                h('div', { style: { fontSize: 48, marginBottom: 8 } }, '\uD83D\uDD25'),
                 h('h3', { style: { margin: '0 0 8px 0', color: '#f97316', fontSize: 22 } }, 'The Firekeeper Challenge'),
-                h('p', { style: { margin: '0 0 16px 0', color: '#cbd5e1', fontSize: 14, lineHeight: 1.6, maxWidth: 550, marginLeft: 'auto', marginRight: 'auto' } },
+                h('p', { style: { margin: '0 0 16px 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14, lineHeight: 1.6, maxWidth: 550, marginLeft: 'auto', marginRight: 'auto' } },
                   'You are a fire keeper tasked with managing a forest and protecting a village for ' + diff.targetYears + ' years. Choose your strategy each decade: cultural burn, prescribed burn, thinning, plant native seeds, install beaver dams, build firebreaks, educate the community, or do nothing. Random events and decision moments will test your wisdom. Earn achievements by mastering fire ecology.'
                 ),
-                gameBestScore > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, color: '#f59e0b', marginBottom: 12 } }, '\u2B50 Personal Best: ' + gameBestScore + ' points') : null,
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, 'Select Difficulty:'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
+                gameBestScore > 0 ? h('div', { style: { fontSize: 14, color: '#f59e0b', marginBottom: 12 } }, '\u2B50 Personal Best: ' + gameBestScore + ' points') : null,
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, 'Select Difficulty:'),
+                h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
                   Object.keys(GAME_DIFFICULTIES).map(function(key) {
                     var gd = GAME_DIFFICULTIES[key];
                     var active = gameDifficulty === key;
                     return h('button', { 'aria-label': 'Start Game', key: key, onClick: function() { upd('gameDifficulty', key); },
                       style: { padding: '10px 16px', borderRadius: 8, border: '2px solid ' + (active ? '#f97316' : '#334155'), background: active ? '#431407' : '#0f172a', color: active ? '#fb923c' : '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500, maxWidth: 200 }
                     },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700 } }, gd.label),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, marginTop: 2, lineHeight: 1.3 } }, gd.description)
+                      h('div', { style: { fontWeight: 700 } }, gd.label),
+                      h('div', { style: { fontSize: 11, marginTop: 2, lineHeight: 1.3 } }, gd.description)
                     );
                   })
                 ),
                 h('button', { 'aria-label': 'Begin the Challenge', onClick: startGame,
-                  style: { padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 18 }
+                  style: { padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 18 }
                 }, '\uD83D\uDD25 Begin the Challenge')
               )
             );
@@ -3000,21 +4904,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // ═══ DECISION EVENT OVERLAY ═══
           if (pendingDecision) {
             return h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#1e1b4b', borderRadius: 12, padding: 20, border: '2px solid #6366f1' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 32 } }, pendingDecision.icon),
+              h('div', { style: { background: '#1e1b4b', borderRadius: 12, padding: 20, border: '2px solid #6366f1' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
+                  h('span', { style: { fontSize: 32 } }, pendingDecision.icon),
                   h('div', null,
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#a5b4fc', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 } }, 'DECISION EVENT'),
+                    h('div', { style: { fontWeight: 700, color: '#a5b4fc', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 } }, 'DECISION EVENT'),
                     h('h3', { style: { margin: 0, color: '#e0e7ff', fontSize: 18 } }, pendingDecision.name)
                   )
                 ),
                 h('p', { style: { color: '#c7d2fe', fontSize: 14, lineHeight: 1.6, marginBottom: 16 } }, pendingDecision.desc),
                 pendingDecision.choices.map(function(ch, ci) {
                   return h('button', { 'aria-label': 'Resolve Decision', key: ci, onClick: function() { resolveDecision(ci); },
-                    style: { display: 'block', width: '100%', padding: 14, marginBottom: 10, borderRadius: 10, border: '2px solid #4f46e544', background: '#0f172a', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }
+                    style: { display: 'block', width: '100%', padding: 14, marginBottom: 10, borderRadius: 10, border: '2px solid #4f46e544', background: 'var(--allo-stem-canvas, #0f172a)', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }
                   },
                     h('div', { style: { fontWeight: 700, color: '#e0e7ff', fontSize: 14, marginBottom: 2 } }, ch.label),
-                    h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.4 } }, ch.desc)
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, ch.desc)
                   );
                 })
               )
@@ -3030,18 +4934,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // ═══ GAME OVER SCREEN ═══
           if (gameOver) {
             var rank = getRank(gameScore);
+            var survived = gs.year >= diff.targetYears;
+            // Normalize to Legendary threshold (300) for the donut. Negative scores clamp to 0.
+            var LEGENDARY_THRESHOLD = 300;
+            var donutScore = Math.max(0, Math.min(100, Math.round((gameScore / LEGENDARY_THRESHOLD) * 100)));
+            var donutColor = !survived ? '#ef4444'
+                             : gameScore >= 300 ? '#fbbf24'
+                             : gameScore >= 220 ? '#f97316'
+                             : gameScore >= 150 ? '#22c55e'
+                             : gameScore >= 80 ? '#84cc16'
+                             : '#64748b';
+            var rad = 38, circ = 2 * Math.PI * rad;
+            var dashOff = circ - (donutScore / 100) * circ;
             return h('div', null,
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 24, textAlign: 'center', marginBottom: 16 } },
-                h('div', { style: { fontSize: 48, marginBottom: 8 } }, gs.year >= diff.targetYears ? rank.icon : '\uD83D\uDCA5'),
-                h('h3', { style: { margin: '0 0 4px 0', color: gs.year >= diff.targetYears ? '#22c55e' : '#ef4444', fontSize: 22 } }, gs.year >= diff.targetYears ? 'Challenge Complete!' : 'Game Over'),
-                h('div', { style: { fontSize: 16, color: '#f59e0b', marginBottom: 4 } }, rank.name),
-                h('div', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, fontStyle: 'italic' } }, rank.desc),
-                h('div', { style: { fontSize: 36, fontWeight: 700, color: '#f97316', marginBottom: 16 } }, gameScore + ' points')
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 18, marginBottom: 16, border: '2px solid ' + donutColor + '88', overflow: 'hidden' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
+                  // Score donut (% of Legendary threshold)
+                  h('div', { style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
+                    h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
+                      'aria-label': 'Score: ' + gameScore + ' points, ' + donutScore + ' percent of Legendary rank threshold'
+                    },
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: donutColor, strokeWidth: 9, strokeLinecap: 'round',
+                        strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                    ),
+                    h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                      h('div', { style: { fontSize: 22, fontWeight: 900, color: donutColor, lineHeight: 1 } }, gameScore),
+                      h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'points')
+                    )
+                  ),
+                  h('div', { style: { flex: 1, minWidth: 220 } },
+                    h('div', { style: { fontSize: 36, marginBottom: 2 }, 'aria-hidden': 'true' }, survived ? rank.icon : '\uD83D\uDCA5'),
+                    h('h3', { style: { margin: '0 0 4px', color: survived ? '#22c55e' : '#ef4444', fontSize: 22, fontWeight: 900, lineHeight: 1.1 } }, survived ? 'Challenge Complete!' : 'Game Over'),
+                    h('div', { style: { fontSize: 15, color: donutColor, fontWeight: 800, marginBottom: 4 } }, rank.name),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', lineHeight: 1.5 } }, rank.desc)
+                  )
+                ),
+                // Rank-progression strip — shows where this score falls across the 5 surviving ranks
+                survived && h('div', { style: { marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(148,163,184,0.2)' } },
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, 'Rank progression'),
+                  h('div', { style: { display: 'flex', gap: 4, alignItems: 'stretch' } },
+                    [
+                      { name: 'Apprentice', min: 0, color: 'var(--allo-stem-text-soft, #64748b)' },
+                      { name: 'Journeyman', min: 80, color: '#84cc16' },
+                      { name: 'Skilled', min: 150, color: '#22c55e' },
+                      { name: 'Master', min: 220, color: '#f97316' },
+                      { name: 'Legendary', min: 300, color: '#fbbf24' }
+                    ].map(function(r, ri, arr) {
+                      var achieved = gameScore >= r.min;
+                      var current = achieved && (ri === arr.length - 1 || gameScore < arr[ri + 1].min);
+                      return h('div', { key: r.name,
+                        style: {
+                          flex: 1, padding: '6px 4px', borderRadius: 6, textAlign: 'center',
+                          background: achieved ? r.color + '33' : 'rgba(148,163,184,0.08)',
+                          border: '1.5px solid ' + (current ? r.color : achieved ? r.color + '55' : 'rgba(148,163,184,0.20)'),
+                          fontSize: 9, fontWeight: 800, color: achieved ? r.color: 'var(--allo-stem-text-soft, #64748b)',
+                          letterSpacing: '0.04em', textTransform: 'uppercase',
+                          boxShadow: current ? '0 0 0 1px ' + r.color : 'none'
+                        }
+                      },
+                        h('div', null, r.name),
+                        h('div', { style: { fontSize: 10, fontWeight: 700, opacity: 0.8, marginTop: 2 } }, r.min + '+')
+                      );
+                    })
+                  )
+                )
               ),
 
               // Report card
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16 } },
-                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 12, fontSize: 15 } }, '\uD83D\uDCCB Report Card'),
+              h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, '\uD83D\uDCCB Report Card'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 } },
                   [
                     { label: 'Years Survived', value: gs.year, color: '#fff' },
@@ -3055,16 +5017,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     { label: 'Species Returned', value: (gs.species || []).length, color: '#4ade80' },
                     { label: 'Best Decade', value: '+' + (gs.bestDecadeScore || 0), color: '#f59e0b' }
                   ].map(function(stat) {
-                    return h('div', { key: stat.label, style: { background: '#1e293b', borderRadius: 8, padding: 10, textAlign: 'center' } },
+                    return h('div', { key: stat.label, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 10, textAlign: 'center' } },
                       h('div', { style: { fontSize: 20, fontWeight: 700, color: stat.color } }, stat.value),
-                      h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 2 } }, stat.label)
+                      h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, stat.label)
                     );
                   })
                 )
               ),
 
               // Species that returned
-              gs.species && gs.species.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16 } },
+              gs.species && gs.species.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
                 h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 8, fontSize: 14 } }, '\uD83E\uDD8B Species That Returned to Your Forest'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                   gs.species.filter(function(s, i, arr) { return arr.indexOf(s) === i; }).map(function(sp) {
@@ -3074,21 +5036,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ) : null,
 
               // Achievements earned
-              achievements.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16 } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#f59e0b', marginBottom: 8, fontSize: 14 } }, '\uD83C\uDFC5 Achievements Earned'),
+              achievements.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16 } },
+                h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 8, fontSize: 14 } }, '\uD83C\uDFC5 Achievements Earned'),
                 achievements.map(function(a) {
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: a.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 20 } }, a.icon),
+                  return h('div', { key: a.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 20 } }, a.icon),
                     h('div', null,
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#e2e8f0', fontSize: 13 } }, a.name),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#64748b', fontSize: 12, marginLeft: 6 } }, ' \u2014 ' + a.desc)
+                      h('span', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13 } }, a.name),
+                      h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginLeft: 6 } }, ' \u2014 ' + a.desc)
                     )
                   );
                 })
               ) : null,
 
               h('button', { 'aria-label': 'Play Again', onClick: function() { updMulti({ gameActive: false, gameState: null, gameEvent: null, gameScore: 0, gameOver: false, gameHistory: [], pendingDecision: null }); },
-                style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 16 }
+                style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 16 }
               }, '\uD83D\uDD04 Play Again')
             );
           }
@@ -3104,8 +5066,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 { label: 'Wildfires', value: gs.wildfires, color: gs.wildfires > 0 ? '#ef4444' : '#22c55e' },
                 { label: 'Village', value: (gs.villageHealth || 100) + '%', color: (gs.villageHealth || 100) > 50 ? '#22c55e' : '#ef4444' }
               ].map(function(s) {
-                return h('div', { key: s.label, style: { background: '#0f172a', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 70 } },
-                  h('div', { style: { fontSize: 11, color: '#64748b' } }, s.label),
+                return h('div', { key: s.label, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 70 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.label),
                   h('div', { style: { fontSize: 16, fontWeight: 700, color: s.color } }, s.value)
                 );
               })
@@ -3123,22 +5085,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', { style: { fontSize: 20 } }, gameEvent.icon),
                 h('div', null,
                   h('div', { style: { fontWeight: 700, color: gameEvent.urgent ? '#fb923c' : '#e2e8f0', fontSize: 13 } }, gameEvent.name),
-                  h('div', { style: { fontSize: 12, color: '#94a3b8' } }, gameEvent.desc)
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, gameEvent.desc)
                 )
               ),
-              gameEvent.teachingMoment ? h('div', { style: { marginTop: 6, padding: 8, background: '#0f172a', borderRadius: 6, fontSize: 12, color: '#fbbf24' } }, '\uD83D\uDCA1 ' + gameEvent.teachingMoment) : null
+              gameEvent.teachingMoment ? h('div', { style: { marginTop: 6, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontSize: 12, color: '#fbbf24' } }, '\uD83D\uDCA1 ' + gameEvent.teachingMoment) : null
             ) : null,
 
             // Species tracker
             gs.species && gs.species.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 } },
-              h('span', { style: { fontSize: 11, color: '#64748b', marginRight: 4 } }, 'Species returned:'),
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 4 } }, 'Species returned:'),
               gs.species.filter(function(s, i, arr) { return arr.indexOf(s) === i; }).map(function(sp) {
                 return h('span', { key: sp, style: { background: '#052e16', borderRadius: 4, padding: '2px 6px', fontSize: 11, color: '#4ade80' } }, sp);
               })
             ) : null,
 
             // Gauges
-            h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 12 } },
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 12 } },
               gauge('Fuel Load', Math.round(gs.fuelLoad), 100, gs.fuelLoad > 50 ? '#ef4444' : gs.fuelLoad > 30 ? '#f59e0b' : '#22c55e', ' t/acre'),
               gauge('Canopy', Math.round(gs.canopyCover), 100, '#16a34a', '%'),
               gauge('Understory', Math.round(gs.understoryDensity), 100, gs.understoryDensity > 60 ? '#ef4444' : '#f59e0b', '%'),
@@ -3148,23 +5110,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             ),
 
             // Action buttons — 8 options now
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, '\uD83C\uDFAE Choose Your Action:'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 6, marginBottom: 14 } },
+            h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, '\uD83C\uDFAE Choose Your Action:'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 6, marginBottom: 14 } },
               [
                 { action: 'culturalBurn', label: '\uD83D\uDD25 Cultural Burn', desc: 'Best: fuel + biodiversity' + (gs.tribalPartner ? ' (ENHANCED)' : ''), color: '#16a34a' },
                 { action: 'prescribe', label: '\uD83D\uDCCB Prescribed Burn', desc: 'Good fuel reduction', color: '#f59e0b' },
-                { action: 'thin', label: '\uD83E\uDE93 Mech. Thin', desc: 'Remove heavy fuel', color: '#64748b' },
+                { action: 'thin', label: '\uD83E\uDE93 Mech. Thin', desc: 'Remove heavy fuel', color: 'var(--allo-stem-text-soft, #94a3b8)' },
                 { action: 'plantSeeds', label: '\uD83C\uDF31 Plant Natives', desc: 'Biodiversity + soil', color: '#4ade80' },
                 { action: 'beavers', label: '\uD83E\uDDAB Beaver Dams', desc: 'Water + fire breaks', color: '#0ea5e9' },
                 { action: 'firebreak', label: '\uD83D\uDEE1\uFE0F Firebreaks', desc: 'Protect village', color: '#a855f7' },
                 { action: 'educate', label: '\uD83C\uDFEB Educate', desc: 'Village support +', color: '#f472b6' },
                 { action: 'nothing', label: '\u23F8\uFE0F Do Nothing', desc: 'Fuel accumulates...', color: '#ef4444' }
               ].map(function(opt) {
-                return h('button', { 'aria-label': 'Select option', key: opt.action, onClick: function() { gameAdvance(opt.action); },
-                  style: { background: '#0f172a', border: '2px solid ' + opt.color + '33', borderRadius: 10, padding: 10, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
+                return h('button', { key: opt.action, onClick: function() { gameAdvance(opt.action); },
+                  style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '2px solid ' + opt.color + '33', borderRadius: 10, padding: 10, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontWeight: 700, color: opt.color, fontSize: 13, marginBottom: 2 } }, opt.label),
-                  h('div', { style: { fontSize: 10, color: '#64748b', lineHeight: 1.2 } }, opt.desc)
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.2 } }, opt.desc)
                 );
               })
             ),
@@ -3172,32 +5134,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             // Mini achievements tracker
             achievements.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 } },
               achievements.slice(0, 5).map(function(a) {
-                return h('span', { key: a.id, title: a.name + ': ' + a.desc, style: { background: '#1e293b', borderRadius: 6, padding: '3px 8px', fontSize: 11, color: '#f59e0b' } }, a.icon + ' ' + a.name);
+                return h('span', { key: a.id, title: a.name + ': ' + a.desc, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, padding: '3px 8px', fontSize: 11, color: '#f59e0b' } }, a.icon + ' ' + a.name);
               })
             ) : null,
 
             // History graph
-            gs.decade && gs.decade.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 10 } },
-              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 12 } }, '\uD83D\uDCCA Timeline'),
+            gs.decade && gs.decade.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 10 } },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, '\uD83D\uDCCA Timeline'),
               h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 70 } },
                 gs.decade.map(function(snap, si) {
                   return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 } },
                     h('div', { title: 'Bio: ' + snap.biodiversity, style: { width: '100%', height: Math.max(2, snap.biodiversity * 0.6), background: '#3b82f6', borderRadius: '2px 2px 0 0' } }),
                     h('div', { title: 'Fuel: ' + snap.fuel, style: { width: '100%', height: Math.max(2, snap.fuel * 0.6), background: snap.fuel > 50 ? '#ef4444' : '#f59e0b', borderRadius: '0 0 2px 2px' } }),
-                    h('div', { style: { fontSize: 7, color: '#475569', marginTop: 1 } }, snap.year)
+                    h('div', { style: { fontSize: 7, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 1 } }, snap.year)
                   );
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 10, marginTop: 4, fontSize: 10, color: '#64748b' } },
+              h('div', { style: { display: 'flex', gap: 10, marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 h('span', null, '\u25A0 Biodiversity'), h('span', { style: { color: '#f59e0b' } }, '\u25A0 Fuel Load')
               )
             ) : null,
 
             // Event log
-            gs.eventLog && gs.eventLog.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12 } },
-              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 12 } }, '\uD83D\uDCDC Log'),
+            gs.eventLog && gs.eventLog.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12 } },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, '\uD83D\uDCDC Log'),
               gs.eventLog.slice(-5).reverse().map(function(ev, ei) {
-                return h('div', { key: ei, style: { padding: '3px 0', borderBottom: '1px solid #1e293b', fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } },
+                return h('div', { key: ei, style: { padding: '3px 0', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } },
                   h('span', { style: { color: '#f97316', fontWeight: 600 } }, 'Y' + ev.year + ': '),
                   ev.event
                 );
@@ -3212,8 +5174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         function renderFireFact() {
           var fact = FIRE_FACTS[factIdx % FIRE_FACTS.length];
-          return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#1c1917', borderRadius: 10, padding: 12, marginTop: 16, border: '1px solid #44403c', display: 'flex', alignItems: 'center', gap: 10 } },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, fontSize: 13, color: '#d6d3d1', lineHeight: 1.5 } },
+          return h('div', { style: { background: '#1c1917', borderRadius: 10, padding: 12, marginTop: 16, border: '1px solid #44403c', display: 'flex', alignItems: 'center', gap: 10 } },
+            h('div', { style: { flex: 1, fontSize: 13, color: '#d6d3d1', lineHeight: 1.5 } },
               h('strong', { style: { color: '#f97316' } }, 'Did You Know? '),
               fact
             ),
@@ -3237,7 +5199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         function renderBadges() {
           var earned = Object.keys(badges).length;
-          return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginTop: 16 } },
+          return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16 } },
             h('div', { style: { fontWeight: 700, color: '#f59e0b', marginBottom: 10, fontSize: 14 } },
               '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
             ),
@@ -3268,13 +5230,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         var intro = getGradeIntro(band);
 
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { maxWidth: 900, margin: '0 auto' } },
+        return h('div', { style: { maxWidth: 900, margin: '0 auto' } },
           // Header
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 } },
             h('button', {
               onClick: function() { setStemLabTool(null); },
               'aria-label': 'Back to STEM Lab',
-              style: { background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#94a3b8' }
+              style: { background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--allo-stem-text-soft, #94a3b8)' }
             }, h(ArrowLeft, { size: 20 })),
             h('span', { style: { fontSize: 28 } }, '\uD83D\uDD25'),
             h('h2', { style: { margin: 0, color: '#f97316', fontSize: 22 } }, 'Fire Ecology & Indigenous Stewardship')
@@ -3305,8 +5267,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           tab === 'caseStudies' ? renderCaseStudiesTab() :
           tab === 'carbon' ? renderCarbonTab() :
           tab === 'beavers' ? renderBeaverTab() :
+          tab === 'mosaic' ? renderMosaicTab() :
           tab === 'game' ? renderGameTab() :
-          tab === 'quiz' ? renderQuizTab() : null,
+          tab === 'quiz' ? renderQuizTab() :
+          tab === 'regimeHunt' ? (function() {
+            var iq = d.regimeHunt || { fuel: 8, interval: 30, drought: 4, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('regimeHunt', Object.assign({}, iq, patch)); }
+            var risk = (iq.fuel * iq.drought) / iq.interval;
+            var state;
+            if (risk > 2.5) state = 'mega';
+            else if (risk > 1.2) state = 'dangerous';
+            else if (iq.interval > 70 && iq.fuel < 3) state = 'typeConv';
+            else state = 'healthy';
+            var sm = {
+              healthy:   { label: '🌲 Healthy ecosystem', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Fuel/fire balance maintained. Cultural-burn equivalent.' },
+              dangerous: { label: '⚠️ Dangerous fuel buildup', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Decades of fire-suppression. Next ignition is bad.' },
+              mega:      { label: '🔥 Megafire risk', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'High fuel + drought + suppression = catastrophic event.' },
+              typeConv:  { label: '🌾 Type conversion (forest → grassland)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Frequent low-fuel burns convert forest permanently.' }
+            }[state];
+            return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 shadow-sm space-y-3' },
+              h('h3', { className: 'text-sm font-black text-orange-700' }, '🔥 Fire regime discovery'),
+              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for fuel accumulation, fire return interval, drought severity. Discrete 4-state regime. No score, no reveal.'),
+              h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3' },
+                [{ k: 'fuel', l: 'Fuel (t/ac/yr)', mn: 0, mx: 15, st: 0.5 },
+                 { k: 'interval', l: 'Fire return (yr)', mn: 1, mx: 100, st: 1 },
+                 { k: 'drought', l: 'Drought severity', mn: 0, mx: 10, st: 0.5 }].map(function(s) {
+                  return h('div', { key: s.k },
+                    h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
+                    h('input', { id: 'rh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.l }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ f: iq.fuel, i: iq.interval, d: iq.drought, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does drought magnify fuel-load risk?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Cultural burns used 5-10 yr intervals. Investigate the science.'),
+                  h('li', null, 'Why does 80-year fire suppression create catastrophic risk?'))),
+              h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how fuel load, fire interval, and drought jointly determine fire regime.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state fire regime marker; no acres-burned score; no reveal — by design.')
+            );
+          })() : null,
 
           // Fire Fact banner
           renderFireFact(),

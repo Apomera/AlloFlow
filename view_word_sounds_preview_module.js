@@ -57,8 +57,12 @@
     size: 18
   }), " Pre-Activity Review"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
+      // Honor the lesson-plan sequence exactly like the
+      // Review button above — 'counting' is only the
+      // no-sequence fallback.
+      const initialActivity = wsActivitySequence && wsActivitySequence.length > 0 ? wsActivitySequence[0] : 'counting';
+      setWordSoundsActivity(initialActivity);
       setIsWordSoundsMode(true);
-      setWordSoundsActivity('counting');
     },
     className: "flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
   }, /*#__PURE__*/React.createElement(Play, {

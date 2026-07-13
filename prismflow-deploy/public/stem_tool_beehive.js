@@ -33,6 +33,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
 (function() {
   'use strict';
+  // ── Debug logging flag ── flip to true to re-enable verbose diagnostics
+  // for the canvas init / frame loop / render path. Off in production so the
+  // console isn't spammed on every render.
+  var BEEHIVE_DEBUG = false;
+
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -3490,6 +3495,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               });
               })()),
 
+            // ── v3.2: AI tutor for the current inspection layer ──
+            (function () {
+              var LAYER_LABELS = {
+                roles: 'bee roles and temporal polyethism',
+                honey_chem: 'honey chemistry and enzymatic conversion',
+                lifecycle: 'the bee life cycle (egg → larva → pupa → adult)',
+                waggle: 'the waggle dance as a symbolic communication system',
+                temperature: 'hive thermoregulation at 35°C',
+                pheromones: 'the pheromone language of the colony',
+                anatomy: 'bee anatomy (proboscis, pollen baskets, stinger)',
+                native: 'native bees vs. the European honey bee',
+                bloom: 'seasonal bloom calendar and forage'
+              };
+              var aiLevel = d.aiLevel || 'grade5';
+              var iKey = 'aiExplainI_' + inspectLayer;
+              var iLoadKey = 'aiLoadingI_' + inspectLayer;
+              var iErrKey = 'aiErrorI_' + inspectLayer;
+              var aiText = d[iKey] || '';
+              var aiLoading = !!d[iLoadKey];
+              var aiError = d[iErrKey] || '';
+              var LEVELS = [
+                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+                { id: 'hs', label: 'High School', hint: 'for a high school biology student, scientifically accurate' }
+              ];
+              var layerLabel = LAYER_LABELS[inspectLayer] || inspectLayer;
+              function updI(k, v) { setLabToolData(function (prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive, (function(){var o={};o[k]=v;return o;})()) }); }); }
+              function explainI() {
+                if (typeof callGemini !== 'function') { updI(iErrKey, 'AI tutor not available.'); return; }
+                updI(iLoadKey, true); updI(iErrKey, ''); updI(iKey, '');
+                var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+                var prompt = 'Explain ' + layerLabel + ' inside a honeybee colony ' + lv.hint + '. '
+                  + 'In 3 short sentences: (1) What this part of the hive does. (2) The single most surprising fact about it. (3) One real-world observation a student could make to connect to it. '
+                  + 'No markdown, no bullets, no headings. Plain prose.';
+                callGemini(prompt, false, false, 0.5).then(function (resp) {
+                  updI(iKey, String(resp || '').trim()); updI(iLoadKey, false);
+                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                }).catch(function () {
+                  updI(iLoadKey, false); updI(iErrKey, 'Could not reach AI tutor. Try again in a moment.');
+                });
+              }
+              return h('div', { className: 'mt-1 mb-1 p-2.5 rounded-lg border border-amber-500/40 bg-amber-900/40', role: 'region', 'aria-label': 'AI tutor for inspection layer' },
+                h('div', { className: 'flex items-center flex-wrap gap-2 mb-1' },
+                  h('span', { className: 'text-xs font-bold text-amber-200' }, '✨ Explain: ' + layerLabel),
+                  h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                    LEVELS.map(function (L) {
+                      var active = aiLevel === L.id;
+                      return h('button', {
+                        key: L.id,
+                        onClick: function () { updI('aiLevel', L.id); },
+                        'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                        'aria-pressed': active,
+                        className: 'px-2 py-1 rounded text-[11px] font-bold ' + (active ? 'bg-amber-500 text-amber-950' : 'bg-amber-950 text-amber-300 border border-amber-500/40 hover:bg-amber-800')
+                      }, L.label);
+                    })
+                  ),
+                  h('button', {
+                    onClick: explainI, disabled: aiLoading,
+                    'aria-label': 'Generate AI explanation for ' + layerLabel,
+                    className: 'px-2.5 py-1 rounded text-[11px] font-bold bg-amber-500 text-amber-950 hover:bg-amber-400 disabled:opacity-50'
+                  }, aiLoading ? '⏳' : (aiText ? '🔄' : '🧠 Explain'))
+                ),
+                aiError && h('p', { className: 'text-[11px] text-rose-300', role: 'alert' }, aiError),
+                aiText && h('p', { className: 'text-[11px] leading-relaxed text-amber-100 mt-1' }, aiText)
+              );
+            })(),
+
             // ── ROLES VIEW ──
             inspectLayer === 'roles' && h('div', { className: 'space-y-2' },
               h('p', { className: 'text-xs text-amber-200' }, 'A worker bee changes jobs as she ages. This "temporal polyethism" means the colony always has the right workers for every task:'),
@@ -3904,27 +3976,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones, beeView: beeView, bkAnim: d.bkAnim };
 
         React.useEffect(function() {
-          console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
-          if (viewMode !== 'beekeeper') { console.log('[Beehive DEBUG] early return: viewMode not beekeeper'); return; }
+          BEEHIVE_DEBUG && console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
+          if (viewMode !== 'beekeeper') { BEEHIVE_DEBUG && console.log('[Beehive DEBUG] early return: viewMode not beekeeper'); return; }
           // DOM diagnostic: is the canvas actually in the rendered DOM?
           var domCanvases = document.querySelectorAll('canvas');
-          console.log('[Beehive DEBUG] DOM scan: found ' + domCanvases.length + ' <canvas> elements on page');
+          BEEHIVE_DEBUG && console.log('[Beehive DEBUG] DOM scan: found ' + domCanvases.length + ' <canvas> elements on page');
           for (var i = 0; i < domCanvases.length; i++) {
             var dc = domCanvases[i];
             var al = dc.getAttribute('aria-label') || '';
-            console.log('[Beehive DEBUG]   canvas[' + i + ']: aria-label="' + al.slice(0, 50) + '" size=' + dc.clientWidth + 'x' + dc.clientHeight + ' parent=' + (dc.parentElement ? dc.parentElement.tagName : '?'));
+            BEEHIVE_DEBUG && console.log('[Beehive DEBUG]   canvas[' + i + ']: aria-label="' + al.slice(0, 50) + '" size=' + dc.clientWidth + 'x' + dc.clientHeight + ' parent=' + (dc.parentElement ? dc.parentElement.tagName : '?'));
           }
-          // NEW: find the TOP MARKER (if it rendered) and log its siblings to see what's actually in DOM
-          var topMarker = document.querySelector('div[style*="TOP MARKER"]') || Array.from(document.querySelectorAll('div')).find(function(d) { return d.textContent && d.textContent.indexOf('TOP MARKER') !== -1 && d.children.length === 0; });
-          console.log('[Beehive DEBUG] TOP MARKER in DOM:', topMarker ? 'YES' : 'NO');
-          if (topMarker) {
-            var parent = topMarker.parentElement;
-            console.log('[Beehive DEBUG] TOP MARKER parent:', parent ? parent.tagName + '.' + parent.className + ' (' + parent.children.length + ' children)' : 'NULL');
+          // Sibling diagnostic: find the simulation perspective tablist and print its parent's children in the DOM
+          var tablist = document.querySelector('[role="tablist"][aria-label="Simulation perspective"]');
+          BEEHIVE_DEBUG && console.log('[Beehive DEBUG] tablist in DOM:', tablist ? 'YES' : 'NO');
+          if (tablist) {
+            var parent = tablist.parentElement;
+            BEEHIVE_DEBUG && console.log('[Beehive DEBUG] tablist parent:', parent ? parent.tagName + '.' + parent.className + ' (' + parent.children.length + ' children)' : 'NULL');
             if (parent) {
-              for (var ci = 0; ci < Math.min(parent.children.length, 10); ci++) {
+              for (var ci = 0; ci < parent.children.length; ci++) {
                 var ch = parent.children[ci];
-                var txt = (ch.textContent || '').slice(0, 60).replace(/\s+/g, ' ');
-                console.log('[Beehive DEBUG]   child[' + ci + ']: <' + ch.tagName + '> "' + txt + '"');
+                var txt = (ch.textContent || '').slice(0, 40).replace(/\s+/g, ' ');
+                BEEHIVE_DEBUG && console.log('[Beehive DEBUG]   child[' + ci + ']: <' + ch.tagName + '> id="' + (ch.id || '') + '" class="' + (ch.className || '') + '" text="' + txt + '"');
               }
             }
           }
@@ -3936,26 +4008,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // On every try, also recheck DOM directly
             if (!cv && tries === 0) {
               var foundByLabel = document.querySelector('canvas[aria-label*="beehive"]') || document.querySelector('canvas[aria-label*="Animated"]');
-              console.log('[Beehive DEBUG] ref null but DOM query found: ' + (foundByLabel ? 'YES (' + foundByLabel.outerHTML.slice(0, 100) + '...)' : 'NO'));
+              BEEHIVE_DEBUG && console.log('[Beehive DEBUG] ref null but DOM query found: ' + (foundByLabel ? 'YES (' + foundByLabel.outerHTML.slice(0, 100) + '...)' : 'NO'));
             }
-            console.log('[Beehive DEBUG] tryInit #' + tries + ', cv=' + (cv ? 'ATTACHED (' + cv.tagName + ')' : 'NULL') + ', _cvRef obj id=' + (_cvRef.__id || (_cvRef.__id = Math.random().toString(36).slice(2, 6))));
+            BEEHIVE_DEBUG && console.log('[Beehive DEBUG] tryInit #' + tries + ', cv=' + (cv ? 'ATTACHED (' + cv.tagName + ')' : 'NULL') + ', _cvRef obj id=' + (_cvRef.__id || (_cvRef.__id = Math.random().toString(36).slice(2, 6))));
             if (!cv) {
-              if (tries++ < 12) {
+              // Tiered polling so the canvas isn't lost if React's ref attachment is delayed:
+              //   - first 60 tries at 50ms each = 3s of fast polling (covers normal renders)
+              //   - next 30 tries at 500ms each = 15s more of slow polling (catches blocked-JS or off-screen mounts)
+              if (tries < 60) {
                 retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
               } else {
-                console.warn('[Beehive DEBUG] beekeeper canvas ref NEVER attached after 12 retries');
+                BEEHIVE_DEBUG && console.warn('[Beehive DEBUG] beekeeper canvas ref NEVER attached after ~18s of retries');
               }
+              tries++;
               return;
             }
             var c = cv.getContext('2d');
-            console.log('[Beehive DEBUG] getContext result=' + (c ? 'OK' : 'NULL') + ', parent=' + (cv.parentElement ? cv.parentElement.tagName + ' ' + cv.parentElement.clientWidth + 'x' + cv.parentElement.clientHeight : 'NO PARENT'));
+            BEEHIVE_DEBUG && console.log('[Beehive DEBUG] getContext result=' + (c ? 'OK' : 'NULL') + ', parent=' + (cv.parentElement ? cv.parentElement.tagName + ' ' + cv.parentElement.clientWidth + 'x' + cv.parentElement.clientHeight : 'NO PARENT'));
             if (!c) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              }
+              tries++;
               return;
             }
-            console.log('[Beehive DEBUG] calling doSetup...');
+            BEEHIVE_DEBUG && console.log('[Beehive DEBUG] calling doSetup...');
             teardownFn = doSetup(cv, c);
-            console.log('[Beehive DEBUG] doSetup returned. Frame loop should be running now.');
+            BEEHIVE_DEBUG && console.log('[Beehive DEBUG] doSetup returned. Frame loop should be running now.');
           }
           // Wrap the rest of the original setup in a function so the retry can invoke it.
           function doSetup(cv, c) {
@@ -16128,11 +16211,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Start animation loop (only if not already running)
           _loopRunning.current = true;
           if (_animId.current) cancelAnimationFrame(_animId.current);
-          console.log('[Beehive DEBUG] Starting frame loop. canvas size=' + cv.width + 'x' + cv.height + ', W=' + W + ' H=' + H);
+          BEEHIVE_DEBUG && console.log('[Beehive DEBUG] Starting frame loop. canvas size=' + cv.width + 'x' + cv.height + ', W=' + W + ' H=' + H);
           frame();
           // Log first frame completion after a short delay
           setTimeout(function() {
-            console.log('[Beehive DEBUG] After 200ms: _tick=' + _tick.current + ', bees=' + (_bees.current ? _bees.current.length : 'NULL') + ', _animId=' + _animId.current);
+            BEEHIVE_DEBUG && console.log('[Beehive DEBUG] After 200ms: _tick=' + _tick.current + ', bees=' + (_bees.current ? _bees.current.length : 'NULL') + ', _animId=' + _animId.current);
           }, 200);
 
           return function() {
@@ -16316,13 +16399,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function tryInit() {
             var cv = _droneCvRef.current;
             if (!cv) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
-              else console.warn('[Beehive] drone canvas ref never attached');
+              // Tiered polling: 60 fast (50ms) + 30 slow (500ms) = ~18s budget
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              } else {
+                console.warn('[Beehive] drone canvas ref never attached after ~18s of retries');
+              }
+              tries++;
               return;
             }
             var c = cv.getContext('2d');
             if (!c) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              }
+              tries++;
               return;
             }
             teardownFn = doSetup(cv, c);
@@ -17323,13 +17418,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function tryInit() {
             var cv = _queenCvRef.current;
             if (!cv) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
-              else console.warn('[Beehive] queen canvas ref never attached');
+              // Tiered polling: 60 fast (50ms) + 30 slow (500ms) = ~18s budget
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              } else {
+                console.warn('[Beehive] queen canvas ref never attached after ~18s of retries');
+              }
+              tries++;
               return;
             }
             var c = cv.getContext('2d');
             if (!c) {
-              if (tries++ < 12) retryTimer = setTimeout(tryInit, 50);
+              if (tries < 60) {
+                retryTimer = setTimeout(tryInit, 50);
+              } else if (tries < 90) {
+                retryTimer = setTimeout(tryInit, 500);
+              }
+              tries++;
               return;
             }
             teardownFn = doSetup(cv, c);
@@ -17473,7 +17580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = qg;
             c.beginPath(); c.arc(qx, qy, auraR, 0, 6.28); c.fill();
             // Queen body
-            c.shadowColor = '#f59e0b'; c.shadowBlur = 8;
+            c.shadowColor = '#f59e0b'; c.shadowBlur = 18; // the queen reads as the radiant center of the scene
             c.font = '28px system-ui'; c.textAlign = 'center';
             c.fillText('👑', qx, qy + 10);
             c.restore();
@@ -17564,15 +17671,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         if (!window.__beehiveRenderLogged) window.__beehiveRenderLogged = 0;
         if (window.__beehiveRenderLogged < 3) {
           window.__beehiveRenderLogged++;
-          console.log('[Beehive DEBUG RENDER #' + window.__beehiveRenderLogged + '] viewMode=' + viewMode + ' colonySurvived=' + colonySurvived + ' day=' + day + ' showInspect=' + showInspect + ' canvas-will-render=' + (viewMode === 'beekeeper'));
+          BEEHIVE_DEBUG && console.log('[Beehive DEBUG RENDER #' + window.__beehiveRenderLogged + '] viewMode=' + viewMode + ' colonySurvived=' + colonySurvived + ' day=' + day + ' showInspect=' + showInspect + ' canvas-will-render=' + (viewMode === 'beekeeper'));
           // Decisive #1 — two React instances?
-          console.log('[Beehive DEBUG 2R] ctx.React === window.React:', (React === window.React),
+          BEEHIVE_DEBUG && console.log('[Beehive DEBUG 2R] ctx.React === window.React:', (React === window.React),
             '| ctx.React.createElement === window.React?.createElement:', (React.createElement === (window.React && window.React.createElement)),
             '| React.version:', React.version,
             '| window.React.version:', (window.React && window.React.version));
           // Decisive #2 — does h('canvas', ...) actually produce a React element?
           var _testEl = h('canvas', { 'aria-label': 'test', style: { width: 10, height: 10 } });
-          console.log('[Beehive DEBUG EL] h("canvas") result:',
+          BEEHIVE_DEBUG && console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
@@ -17587,7 +17694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex items-center gap-1' },
               // Sound toggle
               h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute sound effects' : 'Enable sound effects', title: soundOn ? 'Sound on' : 'Sound off',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, soundOn ? '🔊' : '🔇'),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600') }, soundOn ? '🔊' : '🔇'),
               // Quiz button
               h('button', { onClick: startQuiz, title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '🎓'),
@@ -17713,6 +17820,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               className: 'absolute bottom-2 left-2 z-10 px-2 py-1 rounded-md text-[10px] backdrop-blur-sm bg-black/45 text-amber-100 border border-amber-600/30 italic',
               style: { lineHeight: 1.3, maxWidth: '60%' }
             }, '💡 Tip: click the hive, beekeeper, or meadow to dive in')
+          ),
+          // ═══ EDUCATIONAL VIEW SELECTOR (beekeeper only) ═══
+          // 10 educational views (scene, anatomy, physics, lifecycle, honey, waggle,
+          // thermo, castes, pheromones, threats) already have draw functions + Shift+1..0
+          // shortcuts wired. This selector makes them clickable + discoverable.
+          viewMode === 'beekeeper' && h('div', {
+            className: 'flex gap-1.5 p-1 rounded-xl flex-wrap ' + (dk ? 'bg-slate-800' : 'bg-slate-100'),
+            role: 'tablist',
+            'aria-label': 'Educational topic views'
+          },
+            [
+              { id: 'scene', icon: '🎬', label: 'Scene', shortDesc: 'the hive scene' },
+              { id: 'anatomy', icon: '🐝', label: 'Anatomy', shortDesc: 'bee anatomy' },
+              { id: 'physics', icon: '⚡', label: 'Flight Physics', shortDesc: 'bee flight physics' },
+              { id: 'lifecycle', icon: '🔄', label: 'Lifecycle', shortDesc: 'the bee lifecycle' },
+              { id: 'honey', icon: '🍯', label: 'Honey', shortDesc: 'honey production' },
+              { id: 'waggle', icon: '💃', label: 'Waggle Dance', shortDesc: 'the waggle dance' },
+              { id: 'thermo', icon: '🌡️', label: 'Thermoregulation', shortDesc: 'hive thermoregulation' },
+              { id: 'castes', icon: '👥', label: 'Castes', shortDesc: 'bee castes (queen / worker / drone)' },
+              { id: 'pheromones', icon: '👃', label: 'Pheromones', shortDesc: 'bee pheromones' },
+              { id: 'threats', icon: '⚠️', label: 'Threats', shortDesc: 'colony threats' }
+            ].map(function(tab, idx) {
+              var active = beeView === tab.id;
+              var shortcut = idx === 9 ? 'Shift+0' : 'Shift+' + (idx + 1);
+              return h('button', {
+                key: tab.id,
+                role: 'tab',
+                'aria-selected': active ? 'true' : 'false',
+                onClick: function() { upd('beeView', tab.id); },
+                className: 'flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-bold transition-all ' +
+                  (active
+                    ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md border border-amber-200')
+                    : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 border border-transparent')),
+                title: 'View: ' + tab.shortDesc + ' (' + shortcut + ')'
+              }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label);
+            })
           ),
 // ═══ DRONE FLIGHT MODE UI ═══
           viewMode === 'drone' && h('div', { className: 'space-y-3' },
@@ -18068,6 +18211,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ].map(function(pair) {
                 return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[11px] py-0.5' },
                   h('kbd', { className: 'inline-flex items-center justify-center w-6 h-6 rounded font-mono font-bold text-[11px] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-400') }, pair[0]),
+                  h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
+              })),
+            // Educational view shortcuts (added alongside the simulation shortcuts above)
+            h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, '🔬 Educational Views'),
+            h('div', { className: 'grid grid-cols-2 gap-1' },
+              [
+                ['Shift+1', 'Scene'], ['Shift+2', 'Anatomy'],
+                ['Shift+3', 'Flight Physics'], ['Shift+4', 'Lifecycle'],
+                ['Shift+5', 'Honey'], ['Shift+6', 'Waggle Dance'],
+                ['Shift+7', 'Thermoregulation'], ['Shift+8', 'Castes'],
+                ['Shift+9', 'Pheromones'], ['Shift+0', 'Threats']
+              ].map(function(pair) {
+                return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[11px] py-0.5' },
+                  h('kbd', { className: 'inline-flex items-center justify-center px-1.5 h-6 rounded font-mono font-bold text-[10px] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-400') }, pair[0]),
                   h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
               }))),
 
@@ -18474,7 +18631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 lines.forEach(function(line) {
                   cCtx.beginPath();
                   for (var i = 0; i < hLen; i++) {
-                    var px = mx + (i / (hLen - 1)) * pw;
+                    var px = mx + (hLen > 1 ? (i / (hLen - 1)) : 0) * pw;
                     var val = history[i][line.key] || 0;
                     var py = my + ph - (Math.min(val, line.max) / line.max) * ph;
                     i === 0 ? cCtx.moveTo(px, py) : cCtx.lineTo(px, py);
@@ -18490,7 +18647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var lx = mx + li * (pw / 4);
                   cCtx.fillStyle = line.color;
                   cCtx.fillRect(lx, cH - 10, 8, 8);
-                  cCtx.fillStyle = dk ? '#94a3b8' : '#94a3b8';
+                  cCtx.fillStyle = dk ? '#94a3b8' : '#475569';
                   cCtx.fillText(line.label, lx + 11, cH - 3);
                 });
               },
@@ -18601,9 +18758,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ].map(function(frame, i) {
                 var bgColor = frame.type === 'honey' ? 'bg-amber-400' : frame.type === 'pollen' ? 'bg-yellow-400' : frame.type === 'brood' ? 'bg-orange-300' : 'bg-purple-400';
                 var emptyColor = frame.type === 'honey' ? 'bg-amber-200' : frame.type === 'pollen' ? 'bg-yellow-200' : frame.type === 'brood' ? 'bg-orange-100' : 'bg-purple-200';
-                return h('div', { key: i, className: 'flex flex-col justify-end flex-1 rounded-sm overflow-hidden ' + emptyColor, title: frame.label + ' ' + Math.round(frame.pct) + '% full' },
+                // v3.2: always render an emoji badge at the top of the column so
+                // empty/small frames are never just unlabeled colored rectangles.
+                // Show inline label inside the bar when bar is tall enough; otherwise
+                // the small top badge is the only label, with a dimmed look.
+                var hasRoom = frame.pct > 20;
+                return h('div', { key: i, className: 'flex flex-col justify-end flex-1 rounded-sm overflow-hidden relative ' + emptyColor, title: frame.label + ' ' + Math.round(frame.pct) + '% full' },
+                  // Permanent corner badge so the frame's purpose is always clear
+                  h('span', { className: 'absolute top-0.5 left-1/2 -translate-x-1/2 text-[10px] z-10', style: { opacity: hasRoom ? 0 : 0.55, pointerEvents: 'none' } }, frame.label),
                   h('div', { style: { height: Math.round(frame.pct) + '%' }, className: bgColor + ' transition-all duration-500 flex items-end justify-center' },
-                    h('span', { className: 'text-[11px]' }, frame.pct > 20 ? frame.label : '')));
+                    h('span', { className: 'text-[11px]' }, hasRoom ? frame.label : '')));
               })),
             h('div', { className: 'flex justify-between mt-1 text-[11px] ' + (dk ? 'text-amber-400' : 'text-amber-700') },
               h('span', null, '← Honey stores'),
@@ -19008,7 +19172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       onClick: function () { upd2('aiLevel', L.id); },
                       'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
                       'aria-pressed': active,
-                      className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-purple-300 border border-purple-500/40' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
+                      className: 'px-2.5 py-1 rounded text-[11px] font-bold ' + (active ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-purple-300 border border-purple-500/40' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
                     }, L.label);
                   })
                 ),
@@ -19037,7 +19201,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('div', { key: sc.title, className: 'rounded-xl border p-3 transition-all hover:shadow-md ' + (dk ? 'bg-slate-800 border-slate-700 hover:border-amber-600/40' : 'bg-white border-slate-200 hover:border-amber-300'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
                 h('h4', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-200' : 'text-slate-800') }, sc.title),
                 h('p', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-600') }, sc.text));
-            }))
+            })),
+          // === H7b'' inquiry widget: hive thermoregulation ===
+          (function() {
+            var iq = d.thermHunt || { outsideC: 20, beesFanning: 30, broodCount: 5000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('thermHunt', Object.assign({}, iq, patch)); }
+            var heatGen = iq.broodCount * 0.0008;
+            var cooling = iq.beesFanning * 0.04;
+            var hiveTempC = iq.outsideC + heatGen - cooling;
+            var deviation = Math.abs(hiveTempC - 35);
+            var state;
+            if (deviation < 1) state = 'optimal';
+            else if (hiveTempC > 36) state = 'overheating';
+            else if (hiveTempC < 32) state = 'chilled';
+            else state = 'compensating';
+            var sm = {
+              optimal:      { label: '🟢 Optimal (35 °C)',  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Brood healthy. Colony thermoregulating.' },
+              overheating:  { label: '🔥 Overheating',       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Brood at risk above 36°C.' },
+              chilled:      { label: '🧊 Chilled brood',     color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Below 32°C development fails.' },
+              compensating: { label: '🟡 Within tolerance',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Maintains range but costs energy.' }
+            }[state];
+            return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
+              h('h3', { className: 'text-sm font-black text-amber-700' }, '🐝 Hive thermoregulation discovery'),
+              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for outside temp, fanning bees, brood count. Discrete 4-state thermal regime. No score, no reveal.'),
+              h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
+                h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Hive ≈ ' + hiveTempC.toFixed(1) + ' °C')
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3' },
+                [{ k: 'outsideC', l: 'Outside °C', mn: -10, mx: 45, st: 1 },
+                 { k: 'beesFanning', l: 'Fanning bees', mn: 0, mx: 500, st: 10 },
+                 { k: 'broodCount', l: 'Brood count', mn: 0, mx: 20000, st: 500 }].map(function(s) {
+                  return h('div', { key: s.k },
+                    h('label', { htmlFor: 'th-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
+                    h('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.l }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.outsideC, f: iq.beesFanning, b: iq.broodCount, t: hiveTempC.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                h('button', { onClick: function() { setIQ({ outsideC: 20, beesFanning: 30, broodCount: 5000, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At 40°C outside, how many fanning bees maintain 35°C brood?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Brood tolerance is 35 ± 0.5°C. Investigate why so tight.'),
+                  h('li', null, 'What is the cost of constant fanning?'))),
+              h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                'I understand — explain in own words'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how the colony as a superorganism thermoregulates.',
+                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state thermal marker; no temperature score; no reveal — by design.')
+            );
+          })()
         );
       })();
     }

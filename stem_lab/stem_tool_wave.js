@@ -34,16 +34,24 @@ window.StemLab = window.StemLab || {
   })();
 
 
+  // "Play Sound" oscillator lives at module scope — NOT in toolData, where the
+  // live AudioContext would get captured by Snapshot's Object.assign({}, d).
+  var _waveAudio = { ctx: null, osc: null, osc2: null };
+  function _waveAudioStop() {
+    try { if (_waveAudio.ctx) _waveAudio.ctx.close(); } catch (e) {}
+    _waveAudio.ctx = null; _waveAudio.osc = null; _waveAudio.osc2 = null;
+  }
+
   window.StemLab.registerTool('wave', {
-    icon: '🔬',
-    label: 'wave',
-    desc: '',
+    icon: "🌊",
+    label: "Wave Simulator",
+    desc: "Animate sound and water waves across Free, Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum modes.",
     color: 'slate',
     category: 'science',
     questHooks: [
       { id: 'adjust_frequency', label: 'Experiment with wave frequency', icon: '∿', check: function(d) { return d.frequency && d.frequency !== 1; }, progress: function(d) { return d.frequency !== 1 ? 'Adjusted!' : 'Change frequency'; } },
       { id: 'try_doppler', label: 'Try Doppler effect mode', icon: '🚗', check: function(d) { return d.waveMode === 'doppler'; }, progress: function(d) { return d.waveMode === 'doppler' ? 'Exploring!' : 'Select Doppler'; } },
-      { id: 'compare_waves', label: 'Use wave comparison mode', icon: '🔊', check: function(d) { return d.waveMode === 'compare'; }, progress: function(d) { return d.waveMode === 'compare' ? 'Comparing!' : 'Select Compare'; } }
+      { id: 'compare_waves', label: 'Compare two waves (superposition)', icon: '🔊', check: function(d) { return !!d.showSecond; }, progress: function(d) { return d.showSecond ? 'Comparing!' : 'Enable second wave'; } }
     ],
 
     render: function(ctx) {
@@ -89,8 +97,9 @@ window.StemLab = window.StemLab || {
             return Object.assign({}, prev, { wave: {
               frequency: 2, amplitude: 50, waveType: 'sine',
               waveMode: 'free', waveSpeed: 343, showSecond: false,
-              amp2: 30, freq2: 3, phase2: 0, harmonic: 1,
-              damping: false, dampingAlpha: 0.5
+              amplitude2: 30, frequency2: 3, phase2: 0, harmonic: 1,
+              damping: false, dampingAlpha: 0.5,
+              paused: (function() { try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } })()
             }});
           });
         }
@@ -108,46 +117,82 @@ const d = labToolData.wave;
           var waveSpeedBase = d.waveSpeed || 343;
           var wavelength = waveSpeedBase / (d.frequency || 1);
           var waveSpeedCalc = (d.frequency || 1) * wavelength;
-
-
-
-          // ── Match Waveform XP check (called on slider change) ──
-
-          var checkWaveMatch = function (newAmp, newFreq) {
-
-            if (!d.matchTarget || d.matchXpClaimed) return;
-
-            var tAmp = d.matchTarget.amp, tFreq = d.matchTarget.freq;
-
-            var ampDiff = Math.abs(newAmp - tAmp) / tAmp;
-
-            var freqDiff = Math.abs(newFreq - tFreq) / tFreq;
-
-            var matchPct = Math.max(0, Math.round((1 - (ampDiff + freqDiff) / 2) * 100));
-
-            if (matchPct > 90) {
-
-              awardStemXP('wave-match', 10, 'Matched waveform (A=' + tAmp + ', f=' + tFreq + ')');
-
-              upd('matchXpClaimed', true);
-
-            }
-
+          var displayAmp = d.amplitude || 50;
+          var displayFreq = d.frequency || 2;
+          var displaySpeed = d.speed || 1;
+          var displayMediumSpeed = d.waveSpeed || 343;
+          var displayWavelength = displayMediumSpeed / displayFreq;
+          var displayPeriod = 1 / displayFreq;
+          var activeWaveType = d.waveType || 'sine';
+          var WAVE_VIEW_META = {
+            free: { label: 'Free wave', accent: '#22d3ee', chip: 'Waveform lab' },
+            standing: { label: 'Standing', accent: '#a855f7', chip: 'Nodes + antinodes' },
+            ripple: { label: 'Ripple tank', accent: '#60a5fa', chip: 'Interference field' },
+            reflection: { label: 'Reflection', accent: '#f59e0b', chip: 'Boundary lab' },
+            longitudinal: { label: 'Longitudinal', accent: '#fb923c', chip: 'Compression map' },
+            doppler: { label: 'Doppler', accent: '#fb7185', chip: 'Motion shift' },
+            spectrum: { label: 'Spectrum', accent: '#34d399', chip: 'Frequency analyzer' }
           };
+          var waveViewMeta = WAVE_VIEW_META[waveMode] || WAVE_VIEW_META.free;
+
+          // Interference readout for the second-wave row. Equal frequencies
+          // interfere per the PHASE offset (φ₂≈0 constructive, φ₂≈π destructive);
+          // nearly-equal frequencies produce beats at |f₁−f₂|.
+          var interferenceLabel = null;
+          if (d.showSecond) {
+            var _f1 = d.frequency || 2, _f2 = d.frequency2 || 3;
+            var _a1 = d.amplitude || 50, _a2 = d.amplitude2 || 30;
+            if (_f1 === _f2) {
+              var _phN = (((d.phase2 || 0) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+              if (Math.min(_phN, Math.PI * 2 - _phN) < 0.35) interferenceLabel = Math.abs(_a1 - _a2) < 1 ? 'Full constructive' : 'Partial constructive';
+              else if (Math.abs(_phN - Math.PI) < 0.35) interferenceLabel = Math.abs(_a1 - _a2) < 1 ? 'Full destructive' : 'Partial destructive';
+              else interferenceLabel = 'Partial (φ₂ = ' + (_phN / Math.PI).toFixed(1) + 'π)';
+            } else if (Math.abs(_f1 - _f2) <= 1) {
+              interferenceLabel = 'Beats — pulses at ' + Math.abs(_f1 - _f2).toFixed(1) + ' Hz (|f₁−f₂|)';
+            } else interferenceLabel = 'Complex';
+          }
+
+          var timbreNote = activeWaveType === 'sine' ? 'Pure sine — ONE frequency, no harmonics'
+            : activeWaveType === 'square' ? 'Square — odd harmonics (1f, 3f, 5f…), ~1/n'
+            : activeWaveType === 'triangle' ? 'Triangle — odd harmonics fading fast (~1/n²)'
+            : 'Sawtooth — ALL harmonics (1f, 2f, 3f…), ~1/n';
 
 
+
+          // (Match Waveform XP check — single definition lives below, next to toggleSound.)
 
           // Canvas-based animated wave
 
           const canvasRef = function (canvasEl) {
 
-            if (!canvasEl) return;
+            if (!canvasEl) {
+              // React re-fires inline callback refs on EVERY re-render (null, then node).
+              // Only tear down when the canvas actually left the DOM (real unmount) —
+              // tearing down on a mere re-render reset the whole animation (tick → 0,
+              // scene re-randomized) on every slider move: the canvas-stutter bug.
+              // On real unmount the draw loop's own contains() check also cleans up,
+              // so this branch is belt-and-braces for the frame gap.
+              try {
+                var _prevCv = canvasRef._lastCanvas;
+                if (_prevCv && !document.body.contains(_prevCv)) {
+                  if (_prevCv._waveCleanup) _prevCv._waveCleanup();
+                  else {
+                    if (_prevCv._waveAnim) { cancelAnimationFrame(_prevCv._waveAnim); _prevCv._waveAnim = null; }
+                    if (_prevCv._wavePointerUp) { window.removeEventListener('mouseup', _prevCv._wavePointerUp); window.removeEventListener('touchend', _prevCv._wavePointerUp); _prevCv._wavePointerUp = null; }
+                  }
+                  _waveAudioStop();
+                }
+              } catch (e) {}
+              return;
+            }
+
+            // Stamp _lastCanvas on THIS render's ref fn before the re-fire early-return —
+            // the Step/Reset buttons read canvasRef._lastCanvas from the current render.
+            canvasRef._lastCanvas = canvasEl;
 
             if (canvasEl._waveInit) return;
 
             canvasEl._waveInit = true;
-
-            canvasRef._lastCanvas = canvasEl;
 
             // ── Interactive drag state (ripple tank sources, reflection wall) ──
             // Sources start centered; reflection wall starts at 75%. Stored on
@@ -226,8 +271,16 @@ const d = labToolData.wave;
               else if (canvasEl._drag.activeHandle === 'wall') canvasEl._drag.wallX = newX;
             }
             function onPointerUp() {
+              var hd = canvasEl._drag.activeHandle;
               canvasEl._drag.activeHandle = null;
               canvasEl.style.cursor = '';
+              // Persist as canvas-size fractions so positions survive remounts and
+              // the reflection wall slider tracks where the wall was dragged.
+              try {
+                if (hd === 'r1' && canvasEl._drag.ripple1) upd('rippleSrc1', { x: canvasEl._drag.ripple1.x / canvasEl.width, y: canvasEl._drag.ripple1.y / canvasEl.height });
+                else if (hd === 'r2' && canvasEl._drag.ripple2) upd('rippleSrc2', { x: canvasEl._drag.ripple2.x / canvasEl.width, y: canvasEl._drag.ripple2.y / canvasEl.height });
+                else if (hd === 'wall' && canvasEl._drag.wallX != null) upd('wallFrac', Math.round(canvasEl._drag.wallX / canvasEl.width * 100) / 100);
+              } catch (e) {}
             }
             canvasEl.addEventListener('mousedown', onPointerDown);
             canvasEl.addEventListener('mousemove', onPointerMove);
@@ -235,6 +288,7 @@ const d = labToolData.wave;
             canvasEl.addEventListener('touchstart', onPointerDown, { passive: false });
             canvasEl.addEventListener('touchmove', onPointerMove, { passive: false });
             window.addEventListener('touchend', onPointerUp);
+            canvasEl._wavePointerUp = onPointerUp;
             // Canvas Narration: tool init
             if (typeof canvasNarrate === 'function') canvasNarrate('wave', 'init', {
               first: 'Wave Simulator loaded. An underwater ocean scene shows animated waves. Adjust amplitude and frequency with sliders. Switch between Free Wave, Standing, Ripple Tank, Longitudinal, Doppler, and Spectrum modes.',
@@ -246,11 +300,71 @@ const d = labToolData.wave;
 
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
+            // Restore persisted drag positions (ripple sources / reflection wall).
+            if (d.rippleSrc1) canvasEl._drag.ripple1 = { x: d.rippleSrc1.x * cW, y: d.rippleSrc1.y * cH };
+            if (d.rippleSrc2) canvasEl._drag.ripple2 = { x: d.rippleSrc2.x * cW, y: d.rippleSrc2.y * cH };
+            if (d.wallFrac != null) canvasEl._drag.wallX = d.wallFrac * cW;
+
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) {
+              canvasEl.removeEventListener('mousedown', onPointerDown);
+              canvasEl.removeEventListener('mousemove', onPointerMove);
+              canvasEl.removeEventListener('touchstart', onPointerDown);
+              canvasEl.removeEventListener('touchmove', onPointerMove);
+              window.removeEventListener('mouseup', onPointerUp);
+              window.removeEventListener('touchend', onPointerUp);
+              canvasEl._wavePointerUp = null;
+              canvasEl._waveInit = false;
+              return;
+            }
 
             var dpr = 2;
 
             var tick = 0;
+            var waveAlive = true;
+            var waveMotionReduced = false;
+            try { waveMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isWaveHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelWaveFrame() {
+              if (canvasEl._waveAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._waveAnim);
+              canvasEl._waveAnim = null;
+            }
+
+            function scheduleWaveFrame() {
+              if (!waveAlive || canvasEl._waveAnim || isWaveHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._waveAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupWaveCanvas() {
+              waveAlive = false;
+              cancelWaveFrame();
+              canvasEl.removeEventListener('mousedown', onPointerDown);
+              canvasEl.removeEventListener('mousemove', onPointerMove);
+              canvasEl.removeEventListener('touchstart', onPointerDown);
+              canvasEl.removeEventListener('touchmove', onPointerMove);
+              window.removeEventListener('mouseup', onPointerUp);
+              window.removeEventListener('touchend', onPointerUp);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onWaveVisibilityChange);
+              canvasEl._wavePointerUp = null;
+              canvasEl._waveCleanup = null;
+              canvasEl._waveInit = false;
+              _waveAudioStop();
+            }
+
+            function onWaveVisibilityChange() {
+              if (!waveAlive) return;
+              if (!document.body.contains(canvasEl)) { cleanupWaveCanvas(); return; }
+              if (isWaveHidden()) cancelWaveFrame();
+              else { cancelWaveFrame(); draw(); }
+            }
+
+            canvasEl._waveCleanup = cleanupWaveCanvas;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onWaveVisibilityChange);
 
 
 
@@ -306,16 +420,34 @@ const d = labToolData.wave;
 
 
 
+            // Step-while-paused hook (Pause/Step buttons + Space key live in React;
+            // tick is closure-local, so expose a nudge function on the element).
+            canvasEl._waveStep = function (n) { tick += n; };
+
             function draw() {
-              if (!document.body.contains(canvasEl)) return;
-              tick++;
+              if (!waveAlive) return;
+              canvasEl._waveAnim = null;
+              if (!document.body.contains(canvasEl)) { cleanupWaveCanvas(); return; }
+              if (isWaveHidden()) { cancelWaveFrame(); return; }
+              var isPaused = canvasEl.dataset.paused === 'true';
+              if (!isPaused) tick += waveMotionReduced ? 0.2 : 1;
               var t = tick;
+
+              // Scene policy: the underwater diorama supports free/longitudinal/
+              // reflection. Ripple overwrites every pixel via putImageData (drawing
+              // the scene first was pure wasted work), and the analytic plot modes
+              // (standing/doppler/spectrum) keep just the gradient so the physics
+              // reads cleanly.
+              var mode0 = canvasEl.dataset.waveMode || 'free';
+              var sceneRich = (mode0 === 'free' || mode0 === 'longitudinal' || mode0 === 'reflection');
 
               ctx.clearRect(0, 0, cW, cH);
 
 
 
               // ── Underwater ocean gradient ──
+
+              if (mode0 !== 'ripple') {
 
               var oceanGrad = ctx.createLinearGradient(0, 0, 0, cH);
 
@@ -335,9 +467,13 @@ const d = labToolData.wave;
 
               ctx.fillRect(0, 0, cW, cH);
 
+              }
+
 
 
               // ── Surface shimmer line ──
+
+              if (sceneRich) {
 
               ctx.save();
 
@@ -517,13 +653,12 @@ const d = labToolData.wave;
 
                 var pl = _plankton[pk];
 
-                pl.x += pl.vx + Math.sin(tick * 0.003 + pl.phase) * 0.1;
-
-                pl.y += pl.vy;
-
-                if (pl.x < 0) pl.x = cW; if (pl.x > cW) pl.x = 0;
-
-                if (pl.y < cH * 0.1) pl.y = cH * 0.8; if (pl.y > cH * 0.85) pl.y = cH * 0.1;
+                if (!isPaused) {
+                  pl.x += pl.vx + Math.sin(tick * 0.003 + pl.phase) * 0.1;
+                  pl.y += pl.vy;
+                  if (pl.x < 0) pl.x = cW; if (pl.x > cW) pl.x = 0;
+                  if (pl.y < cH * 0.1) pl.y = cH * 0.8; if (pl.y > cH * 0.85) pl.y = cH * 0.1;
+                }
 
                 ctx.globalAlpha = 0.3 + Math.sin(tick * 0.01 + pk) * 0.15;
 
@@ -537,9 +672,15 @@ const d = labToolData.wave;
 
               ctx.restore();
 
+              }
+
 
 
               // ── Medium particles (water molecules oscillating with wave) ──
+              // Free mode only — they animate the FREE-wave equation, which would
+              // contradict what the other modes are showing.
+
+              if (mode0 === 'free') {
 
               ctx.save();
 
@@ -553,7 +694,7 @@ const d = labToolData.wave;
 
                 var mPart = _mediumParticles[mi];
 
-                var mWaveT = mPart.x / cW * Math.PI * 2 * mFreq - tick * 0.08 * mSpeed;
+                var mWaveT = mPart.x / cW * Math.PI * 2 * mFreq - tick * 0.04 * mFreq * mSpeed;
 
                 var mDisp = Math.sin(mWaveT) * mAmp * dpr * 0.3;
 
@@ -591,9 +732,13 @@ const d = labToolData.wave;
 
               ctx.restore();
 
+              }
+
 
 
               // ── Rising bubbles ──
+
+              if (sceneRich) {
 
               ctx.save();
 
@@ -601,11 +746,11 @@ const d = labToolData.wave;
 
                 var bub = _bubbles[bj];
 
-                bub.y -= bub.speed;
-
-                bub.x += Math.sin(tick * 0.006 + bub.wobble) * bub.wobbleAmp;
-
-                if (bub.y < cH * 0.03) { bub.y = cH * 0.9 + Math.random() * cH * 0.1; bub.x = Math.random() * cW; }
+                if (!isPaused) {
+                  bub.y -= bub.speed;
+                  bub.x += Math.sin(tick * 0.006 + bub.wobble) * bub.wobbleAmp;
+                  if (bub.y < cH * 0.03) { bub.y = cH * 0.9 + Math.random() * cH * 0.1; bub.x = Math.random() * cW; }
+                }
 
                 var bubR = bub.r * dpr;
 
@@ -629,9 +774,13 @@ const d = labToolData.wave;
 
               ctx.restore();
 
+              }
+
 
 
               // ── Measurement grid (subtle overlay) ──
+
+              if (mode0 !== 'ripple') {
 
               ctx.strokeStyle = 'rgba(255,255,255,0.05)';
 
@@ -650,6 +799,8 @@ const d = labToolData.wave;
               ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
 
               ctx.setLineDash([]);
+
+              }
 
               // Read params
 
@@ -673,6 +824,8 @@ const d = labToolData.wave;
 
               var currentMode = canvasEl.dataset.waveMode || 'free';
 
+              var accent = canvasEl.dataset.accent || '#22d3ee';
+
               var harmonic = parseInt(canvasEl.dataset.harmonic || '1', 10);
 
 
@@ -694,147 +847,124 @@ const d = labToolData.wave;
 
 
               if (currentMode === 'standing') {
-
-                // Standing wave mode
-
                 var n = harmonic;
+                var standMid = cH / 2;
+                var standPhase = Math.cos(tick * 0.05 * speed);
+                var lobeWidth = cW / n;
 
-                // Draw standing wave envelope
+                // Antinode energy wells give every resonant lobe a dimensional
+                // center without obscuring the mathematical envelope.
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var lk = 0; lk < n; lk++) {
+                  var lcx = (lk + 0.5) * lobeWidth;
+                  var lobeR = Math.min(lobeWidth * 0.44, amp * dpr * 1.25 + 28 * dpr);
+                  var lobeGlow = ctx.createRadialGradient(lcx, standMid, 0, lcx, standMid, lobeR);
+                  lobeGlow.addColorStop(0, 'rgba(167,139,250,0.20)');
+                  lobeGlow.addColorStop(0.38, 'rgba(34,211,238,0.10)');
+                  lobeGlow.addColorStop(1, 'rgba(34,211,238,0)');
+                  ctx.fillStyle = lobeGlow;
+                  ctx.beginPath(); ctx.arc(lcx, standMid, lobeR, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
 
-                ctx.globalAlpha = 0.2;
-
-                ctx.fillStyle = '#22d3ee';
-
-                ctx.beginPath();
-
-                for (var x = 0; x < cW; x++) {
-
-                  var envelope = Math.sin(n * Math.PI * x / cW) * amp * dpr;
-
-                  var py = cH / 2 - envelope;
-
-                  if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-
+                function traceStandingEnvelope(sign) {
+                  ctx.beginPath();
+                  for (var ex = 0; ex < cW; ex++) {
+                    var envY = Math.sin(n * Math.PI * ex / cW) * amp * dpr * sign;
+                    var envPy = standMid - envY;
+                    if (ex === 0) ctx.moveTo(ex, envPy); else ctx.lineTo(ex, envPy);
+                  }
                 }
 
-                for (var x = cW - 1; x >= 0; x--) {
+                // Filled maximum-displacement envelope.
+                ctx.save(); ctx.globalAlpha = 0.15; ctx.fillStyle = accent;
+                traceStandingEnvelope(1);
+                for (var ex2 = cW - 1; ex2 >= 0; ex2--) ctx.lineTo(ex2, standMid + Math.sin(n * Math.PI * ex2 / cW) * amp * dpr);
+                ctx.closePath(); ctx.fill(); ctx.restore();
 
-                  var envelope = Math.sin(n * Math.PI * x / cW) * amp * dpr;
+                // Fine dashed envelope boundaries keep maximum displacement visible.
+                ctx.save(); ctx.globalAlpha = 0.42; ctx.strokeStyle = accent; ctx.lineWidth = 1 * dpr; ctx.setLineDash([5*dpr,5*dpr]);
+                traceStandingEnvelope(1); ctx.stroke(); traceStandingEnvelope(-1); ctx.stroke(); ctx.restore();
 
-                  var py = cH / 2 + envelope;
-
-                  ctx.lineTo(x, py);
-
+                // Node planes remain fixed while the lobes oscillate.
+                ctx.save();
+                for (var nk = 0; nk <= n; nk++) {
+                  var nodeX = nk * cW / n;
+                  var nodeGrad = ctx.createLinearGradient(nodeX, standMid-amp*dpr*1.25, nodeX, standMid+amp*dpr*1.25);
+                  nodeGrad.addColorStop(0,'rgba(248,113,113,0)'); nodeGrad.addColorStop(.5,'rgba(248,113,113,.42)'); nodeGrad.addColorStop(1,'rgba(248,113,113,0)');
+                  ctx.strokeStyle=nodeGrad; ctx.lineWidth=1*dpr; ctx.beginPath(); ctx.moveTo(nodeX,standMid-amp*dpr*1.25); ctx.lineTo(nodeX,standMid+amp*dpr*1.25); ctx.stroke();
                 }
+                ctx.restore();
 
-                ctx.fill();
-
-                ctx.globalAlpha = 1;
-
-                // Draw standing wave (animated)
-
-                ctx.lineWidth = 3 * dpr;
-
-                ctx.strokeStyle = '#22d3ee';
-
-                ctx.shadowColor = '#22d3ee';
-
-                ctx.shadowBlur = 10;
-
-                ctx.beginPath();
-
-                for (var x = 0; x < cW; x++) {
-
-                  var y = Math.sin(n * Math.PI * x / cW) * Math.cos(tick * 0.05 * speed) * amp * dpr;
-
-                  var py = cH / 2 - y;
-
-                  if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-
+                function traceStandingWave() {
+                  ctx.beginPath();
+                  for (var sxw = 0; sxw < cW; sxw++) {
+                    var standY = Math.sin(n * Math.PI * sxw / cW) * standPhase * amp * dpr;
+                    var standPy = standMid - standY;
+                    if (sxw === 0) ctx.moveTo(sxw, standPy); else ctx.lineTo(sxw, standPy);
+                  }
                 }
+                ctx.strokeStyle=accent; ctx.shadowColor=accent;
+                traceStandingWave(); ctx.save(); ctx.globalAlpha=.18; ctx.lineWidth=12*dpr; ctx.shadowBlur=24; ctx.stroke(); ctx.restore();
+                traceStandingWave(); ctx.lineWidth=3*dpr; ctx.shadowBlur=10; ctx.stroke();
+                traceStandingWave(); ctx.save(); ctx.globalAlpha=.3; ctx.strokeStyle='#fff'; ctx.lineWidth=.8*dpr; ctx.shadowBlur=0; ctx.stroke(); ctx.restore();
+                ctx.shadowBlur=0;
 
-                ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Mark nodes and antinodes
-
+                // Accessible HTML below carries the legend; compact N/A marks stay
+                // on-canvas as direct spatial labels.
+                ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='bold '+(11*dpr)+'px sans-serif';
                 for (var k = 0; k <= n; k++) {
-
-                  var nx = k * cW / n;
-
-                  ctx.fillStyle = '#ef4444';
-
-                  ctx.beginPath(); ctx.arc(nx, cH / 2, 5 * dpr, 0, Math.PI * 2); ctx.fill();
-
-                  ctx.fillStyle = '#ffffff';
-
-                  ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
-
-                  ctx.fillText('N', nx - 3 * dpr, cH / 2 - 8 * dpr);
-
+                  var nx = k*cW/n;
+                  ctx.shadowColor='#ef4444'; ctx.shadowBlur=10; ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(nx,standMid,5*dpr,0,Math.PI*2); ctx.fill();
+                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; var nodeLabelX=Math.max(9*dpr,Math.min(cW-9*dpr,nx)); ctx.fillText('N',nodeLabelX,standMid-11*dpr);
                 }
-
-                for (var k = 0; k < n; k++) {
-
-                  var anx = (k + 0.5) * cW / n;
-
-                  ctx.fillStyle = '#22c55e';
-
-                  ctx.beginPath(); ctx.arc(anx, cH / 2, 4 * dpr, 0, Math.PI * 2); ctx.fill();
-
-                  ctx.fillStyle = '#ffffff';
-
-                  ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
-
-                  ctx.fillText('A', anx - 3 * dpr, cH / 2 - 8 * dpr);
-
+                for (var ak = 0; ak < n; ak++) {
+                  var anx=(ak+.5)*cW/n;
+                  var pulseR=(4+1.2*Math.abs(standPhase))*dpr;
+                  ctx.shadowColor='#22c55e'; ctx.shadowBlur=12; ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(anx,standMid,pulseR,0,Math.PI*2); ctx.fill();
+                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.fillText('A',anx,standMid-11*dpr);
                 }
-
-                // Label
-
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-
-                ctx.fillRect(4 * dpr, 4 * dpr, 120 * dpr, 24 * dpr);
-
-                ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-
-                ctx.fillStyle = '#22d3ee';
-
-                ctx.fillText('Standing Wave - Harmonic ' + n, 8 * dpr, 16 * dpr);
-
-                ctx.fillStyle = '#ef4444';
-
-                ctx.fillText('N=Node  ', 8 * dpr, 26 * dpr);
-
-                ctx.fillStyle = '#22c55e';
-                ctx.fillText('           A=Antinode', 8 * dpr, 26 * dpr);
+                ctx.textAlign='start'; ctx.textBaseline='alphabetic';
 
               } else if (currentMode === 'free') {
                 // Free wave mode
-                // Draw main wave
+                // Draw main wave as a layered instrument trace.
                 ctx.lineWidth = 3 * dpr;
-                ctx.strokeStyle = '#22d3ee';
-                ctx.shadowColor = '#22d3ee';
+                ctx.strokeStyle = accent;
+                ctx.shadowColor = accent;
                 ctx.shadowBlur = 8;
-
-                ctx.beginPath();
-
-                for (var x = 0; x < cW; x++) {
-
-                  var t = x / (cW) * Math.PI * 2 * freq - tick * 0.08 * speed;
-
-                  var y = waveVal(t, waveType);
-                  if (dampOn) { y *= Math.exp(-dampAlpha * (x / cW) * 3); }
-
-                  var py = cH / 2 - y * amp * dpr;
-
-                  if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-
+                function tracePrimaryWave() {
+                  ctx.beginPath();
+                  for (var x = 0; x < cW; x++) {
+                    var wt = x / cW * Math.PI * 2 * freq - tick * 0.04 * freq * speed;
+                    var wy = waveVal(wt, waveType);
+                    if (dampOn) wy *= Math.exp(-dampAlpha * (x / cW) * 3);
+                    var wpy = cH / 2 - wy * amp * dpr;
+                    if (x === 0) ctx.moveTo(x, wpy); else ctx.lineTo(x, wpy);
+                  }
                 }
-
-                ctx.stroke();
-
+                tracePrimaryWave();
+                ctx.lineTo(cW, cH / 2); ctx.lineTo(0, cH / 2); ctx.closePath();
+                ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = accent; ctx.fill(); ctx.restore();
+                tracePrimaryWave();
+                ctx.save(); ctx.globalAlpha = 0.18; ctx.lineWidth = 11 * dpr; ctx.shadowBlur = 22; ctx.stroke(); ctx.restore();
+                tracePrimaryWave();
+                ctx.lineWidth = 3 * dpr; ctx.globalAlpha = 1; ctx.shadowBlur = 8; ctx.stroke();
+                tracePrimaryWave();
+                ctx.save(); ctx.globalAlpha = 0.32; ctx.lineWidth = 0.8 * dpr; ctx.strokeStyle = '#ffffff'; ctx.shadowBlur = 0; ctx.stroke(); ctx.restore();
+                ctx.save();
+                for (var pm = 0; pm < 9; pm++) {
+                  var pmx = ((pm / 8 + tick * 0.00055 * speed) % 1) * cW;
+                  var pmt = pmx / cW * Math.PI * 2 * freq - tick * 0.04 * freq * speed;
+                  var pmyVal = waveVal(pmt, waveType);
+                  if (dampOn) pmyVal *= Math.exp(-dampAlpha * (pmx / cW) * 3);
+                  var pmy = cH / 2 - pmyVal * amp * dpr;
+                  ctx.globalAlpha = 0.35 + 0.2 * Math.sin(tick * 0.025 + pm);
+                  ctx.beginPath(); ctx.arc(pmx, pmy, 2.2 * dpr, 0, Math.PI * 2);
+                  ctx.fillStyle = '#ffffff'; ctx.fill();
+                }
+                ctx.restore();
                 ctx.shadowBlur = 0;
 
                 // ── Match the Waveform target ──
@@ -861,7 +991,7 @@ const d = labToolData.wave;
 
                     for (var xt = 0; xt < cW; xt++) {
 
-                      var tt = xt / cW * Math.PI * 2 * targetFreq - tick * 0.08 * speed;
+                      var tt = xt / cW * Math.PI * 2 * targetFreq - tick * 0.04 * targetFreq * speed;
 
                       var yt = Math.sin(tt);
 
@@ -921,7 +1051,7 @@ const d = labToolData.wave;
 
                   for (var x2 = 0; x2 < cW; x2++) {
 
-                    var t2 = x2 / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed + phase2Val;
+                    var t2 = x2 / (cW) * Math.PI * 2 * freq2 - tick * 0.04 * freq2 * speed + phase2Val;
 
                     var y2 = Math.sin(t2);
                     if (dampOn) { y2 *= Math.exp(-dampAlpha * (x2 / cW) * 3); }
@@ -954,13 +1084,17 @@ const d = labToolData.wave;
 
                   for (var xs = 0; xs < cW; xs++) {
 
-                    var ts1 = xs / (cW) * Math.PI * 2 * freq - tick * 0.03 * speed;
+                    // Must use the EXACT phases of the two drawn curves (incl. φ₂ and
+                    // damping) or the "superposition" visibly isn't their sum.
+                    var ts1 = xs / (cW) * Math.PI * 2 * freq - tick * 0.04 * freq * speed;
 
-                    var ts2 = xs / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
+                    var ts2 = xs / (cW) * Math.PI * 2 * freq2 - tick * 0.04 * freq2 * speed + phase2Val;
 
                     var ys1 = waveVal(ts1, waveType) * amp;
 
                     var ys2 = Math.sin(ts2) * amp2;
+
+                    if (dampOn) { var dEnv = Math.exp(-dampAlpha * (xs / cW) * 3); ys1 *= dEnv; ys2 *= dEnv; }
 
                     var combined = ys1 + ys2;
 
@@ -976,37 +1110,10 @@ const d = labToolData.wave;
 
                   ctx.setLineDash([]); ctx.shadowBlur = 0;
 
-                  // Interference type label
-
-                  var interferenceType = freq === freq2 ? (amp === amp2 ? 'Full Constructive' : 'Partial Constructive') : 'Complex';
-
-                  if (freq === freq2 && Math.abs(amp - amp2) < 1) interferenceType = 'Full Constructive';
-
                 }
 
-                // Labels
-
-                ctx.fillStyle = 'rgba(0,0,0,0.4)';
-
-                ctx.fillRect(4 * dpr, 4 * dpr, 130 * dpr, (showSecond ? 42 : 20) * dpr);
-
-                ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-
-                ctx.fillStyle = '#22d3ee';
-
-                ctx.fillText('\uD83C\uDF0A Main: A=' + amp + ' f=' + freq + 'Hz', 8 * dpr, 16 * dpr);
-
-                if (showSecond) {
-
-                  ctx.fillStyle = '#f472b6';
-
-                  ctx.fillText('\u223F Second: A=' + amp2 + ' f=' + freq2 + 'Hz', 8 * dpr, 28 * dpr);
-
-                  ctx.fillStyle = '#a78bfa';
-
-                  ctx.fillText('--- Superposition (' + (interferenceType || 'Complex') + ')', 8 * dpr, 40 * dpr);
-
-                }
+                // (Main/second/superposition legend moved to the HTML overlays and the
+                // second-wave control row \u2014 canvas text was tiny and unlocalizable.)
 
               } else if (currentMode === 'ripple') {
                 // ========== 2D RIPPLE TANK MODE ==========
@@ -1023,39 +1130,77 @@ const d = labToolData.wave;
                 var rippleWL = Math.max(20, cW / (freq * 2));
                 var rippleDamp = parseFloat(canvasEl.dataset.dampingCoeff || '0.002');
 
-                // Draw interference pattern pixel by pixel using imageData for performance
-                var imgData = ctx.createImageData(cW, cH);
+                // Interference field rendered at ¼ resolution into a reusable
+                // offscreen buffer, then scaled up with smoothing — ~4× fewer
+                // per-pixel evaluations than the old full-res 2px-step loop,
+                // which mattered on school Chromebooks. Color mapping unchanged.
+                var rBW = Math.max(80, Math.round(cW / 4)), rBH = Math.max(60, Math.round(cH / 4));
+                if (!canvasEl._rippleBuf || canvasEl._rippleBuf.width !== rBW || canvasEl._rippleBuf.height !== rBH) {
+                  canvasEl._rippleBuf = document.createElement('canvas');
+                  canvasEl._rippleBuf.width = rBW; canvasEl._rippleBuf.height = rBH;
+                }
+                var rbCtx = canvasEl._rippleBuf.getContext('2d');
+                var imgData = rbCtx.createImageData(rBW, rBH);
                 var data = imgData.data;
-                for (var py = 0; py < cH; py += 2) {
-                  for (var px = 0; px < cW; px += 2) {
-                    var d1 = Math.sqrt((px - src1x) * (px - src1x) + (py - src1y) * (py - src1y));
-                    var d2 = Math.sqrt((px - src2x) * (px - src2x) + (py - src2y) * (py - src2y));
+                var rSc = cW / rBW;
+                for (var py = 0; py < rBH; py++) {
+                  for (var px = 0; px < rBW; px++) {
+                    var rcx = px * rSc, rcy = py * rSc;
+                    var d1 = Math.sqrt((rcx - src1x) * (rcx - src1x) + (rcy - src1y) * (rcy - src1y));
+                    var d2 = Math.sqrt((rcx - src2x) * (rcx - src2x) + (rcy - src2y) * (rcy - src2y));
                     var v1 = amp * Math.sin(2 * Math.PI * (d1 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d1);
                     var v2 = amp * Math.sin(2 * Math.PI * (d2 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d2);
                     var vSum = (v1 + v2) / 2;
-                    // Map to color: blue for troughs, cyan/white for crests
-                    var bright = Math.floor(128 + vSum * 127);
-                    bright = Math.max(0, Math.min(255, bright));
-                    var idx = (py * cW + px) * 4;
-                    data[idx] = Math.floor(bright * 0.2);       // R
-                    data[idx + 1] = Math.floor(bright * 0.6);   // G
-                    data[idx + 2] = bright;                       // B
-                    data[idx + 3] = 255;                          // A
-                    // Fill 2x2 block for speed
-                    if (px + 1 < cW) { data[idx + 4] = data[idx]; data[idx + 5] = data[idx + 1]; data[idx + 6] = data[idx + 2]; data[idx + 7] = 255; }
-                    if (py + 1 < cH) {
-                      var idx2 = ((py + 1) * cW + px) * 4;
-                      data[idx2] = data[idx]; data[idx2 + 1] = data[idx + 1]; data[idx2 + 2] = data[idx + 2]; data[idx2 + 3] = 255;
-                      if (px + 1 < cW) { data[idx2 + 4] = data[idx]; data[idx2 + 5] = data[idx + 1]; data[idx2 + 6] = data[idx + 2]; data[idx2 + 7] = 255; }
+                    // Diverging water-light palette: deep indigo troughs, dark
+                    // equilibrium water, and cyan-white constructive crests.
+                    var norm = Math.max(-1, Math.min(1, vSum / Math.max(1, amp)));
+                    var idx = (py * rBW + px) * 4;
+                    if (norm >= 0) {
+                      var crest = Math.pow(norm, 0.72);
+                      data[idx] = Math.floor(8 + crest * 230);
+                      data[idx + 1] = Math.floor(62 + crest * 190);
+                      data[idx + 2] = Math.floor(118 + crest * 137);
+                    } else {
+                      var trough = Math.pow(-norm, 0.78);
+                      data[idx] = Math.floor(7 + (1 - trough) * 13);
+                      data[idx + 1] = Math.floor(18 + (1 - trough) * 55);
+                      data[idx + 2] = Math.floor(52 + (1 - trough) * 90);
                     }
+                    data[idx + 3] = 255;
                   }
                 }
-                ctx.putImageData(imgData, 0, 0);
+                rbCtx.putImageData(imgData, 0, 0);
+                ctx.imageSmoothingEnabled = true;
+                ctx.drawImage(canvasEl._rippleBuf, 0, 0, cW, cH);
+                // Overlay physically aligned crest contours. They preserve the
+                // interference field beneath while giving each source real depth.
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                var maxRippleR = Math.hypot(cW, cH);
+                var crestPhaseR = (t * freq * 0.05 * rippleWL) % rippleWL;
+                function drawCrestContours(cx, cy) {
+                  for (var wr = crestPhaseR; wr < maxRippleR; wr += rippleWL) {
+                    var wrAlpha = Math.max(0.025, 0.24 * Math.exp(-rippleDamp * wr));
+                    ctx.globalAlpha = wrAlpha;
+                    ctx.strokeStyle = '#b8f3ff';
+                    ctx.lineWidth = (wr < rippleWL * 2 ? 1.35 : 0.75) * dpr;
+                    ctx.beginPath(); ctx.arc(cx, cy, wr, 0, Math.PI * 2); ctx.stroke();
+                  }
+                }
+                drawCrestContours(src1x, src1y);
+                drawCrestContours(src2x, src2y);
+                ctx.restore();
 
                 // Mark sources with prominent drag handles (rendered larger
                 // when the user is hovering or dragging them).
                 var active = canvasEl._drag.activeHandle;
                 function drawSourceHandle(x, y, label, isActive) {
+                  var sourceGlow = ctx.createRadialGradient(x, y, 0, x, y, 28 * dpr);
+                  sourceGlow.addColorStop(0, isActive ? 'rgba(255,255,255,0.72)' : 'rgba(255,120,100,0.52)');
+                  sourceGlow.addColorStop(0.25, 'rgba(255,95,95,0.22)');
+                  sourceGlow.addColorStop(1, 'rgba(255,95,95,0)');
+                  ctx.fillStyle = sourceGlow;
+                  ctx.beginPath(); ctx.arc(x, y, 28 * dpr, 0, Math.PI * 2); ctx.fill();
                   // Outer pulsing ring (hint that it's draggable)
                   var ringR = 14 * dpr * (1 + 0.15 * Math.sin(t * 0.1));
                   ctx.strokeStyle = isActive ? 'rgba(255,255,255,0.9)' : 'rgba(255,107,107,0.5)';
@@ -1065,45 +1210,52 @@ const d = labToolData.wave;
                   ctx.fillStyle = '#ff6b6b';
                   ctx.beginPath(); ctx.arc(x, y, 7 * dpr, 0, 2 * Math.PI); ctx.fill();
                   ctx.fillStyle = '#fff';
-                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
-                  ctx.fillText(label, x - 6 * dpr, y + 3 * dpr);
+                  ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
+                  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x, y); ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
                 }
                 drawSourceHandle(src1x, src1y, 'S\u2081', active === 'r1');
                 drawSourceHandle(src2x, src2y, 'S\u2082', active === 'r2');
 
-                // Legend + drag hint
-                ctx.fillStyle = 'rgba(0,0,0,0.65)';
-                ctx.fillRect(4, 4, 220 * dpr, 50 * dpr);
-                ctx.fillStyle = '#67e8f9';
-                ctx.font = (7 * dpr) + 'px sans-serif';
-                ctx.fillText('2D Ripple Tank \u2014 Two-Source Interference', 8 * dpr, 14 * dpr);
-                ctx.fillText('Bright = Constructive | Dark = Destructive', 8 * dpr, 26 * dpr);
-                ctx.fillStyle = '#fbbf24';
-                ctx.fillText('\u2702 DRAG the red sources to explore patterns', 8 * dpr, 40 * dpr);
+                // (Legend moved to the ripple controls row below the canvas.)
 
               } else if (currentMode === 'longitudinal') {
                 // ========== LONGITUDINAL WAVE MODE ==========
                 var numParticles = 60;
                 var particleSpacing = cW / (numParticles + 1);
-                var longAmp = amp * 15 * dpr;
+                // Max displacement = 1/k so particle paths never cross (matter can't
+                // pass through itself); A slider maps 0–100 → 0–100% of that limit.
+                // (Old amp*15*dpr gave ~1500px swings — pure visual noise.)
+                var longAmp = (amp / 100) * cW / (2 * Math.PI * freq);
                 var midY = cH / 2;
 
+                // Moving pressure field behind the particles: warm bands are
+                // compressions, cool bands are rarefactions.
+                ctx.save();
+                var tubeTop=midY-40*dpr, tubeHeight=80*dpr, pressureBands=96, bandW=cW/pressureBands;
+                for(var bi=0;bi<pressureBands;bi++){
+                  var bx=bi*bandW, bp=-Math.cos(2*Math.PI*(bx/cW*freq-t*freq*.05));
+                  var bandAlpha=.035+.13*Math.abs(bp);
+                  ctx.fillStyle=bp>0?'rgba(251,113,133,'+bandAlpha.toFixed(3)+')':'rgba(59,130,246,'+bandAlpha.toFixed(3)+')';
+                  ctx.fillRect(bx,tubeTop,bandW+1,tubeHeight);
+                }
+                var glassGrad=ctx.createLinearGradient(0,tubeTop,0,tubeTop+tubeHeight);
+                glassGrad.addColorStop(0,'rgba(255,255,255,.15)');glassGrad.addColorStop(.18,'rgba(255,255,255,.02)');glassGrad.addColorStop(.82,'rgba(0,15,35,.04)');glassGrad.addColorStop(1,'rgba(0,8,24,.22)');
+                ctx.fillStyle=glassGrad;ctx.fillRect(10,tubeTop,cW-20,tubeHeight);
+                ctx.restore();
                 // Draw tube outline
                 ctx.strokeStyle = 'rgba(100,200,255,0.15)';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(10, midY - 40 * dpr, cW - 20, 80 * dpr);
 
                 // Pressure graph (top)
-                ctx.strokeStyle = '#f472b6';
-                ctx.lineWidth = 2 * dpr;
-                ctx.setLineDash([]);
-                ctx.beginPath();
-                for (var lx = 0; lx < cW; lx += 2) {
-                  var pressure = -Math.cos(2 * Math.PI * (lx / cW * freq - t * freq * 0.05)) * amp * 0.5;
-                  var py_p = midY - 60 * dpr + pressure * 40 * dpr;
-                  if (lx === 0) ctx.moveTo(lx, py_p); else ctx.lineTo(lx, py_p);
+                function tracePressureGraph(){
+                  ctx.beginPath();
+                  for(var lx=0;lx<cW;lx+=2){var pressure=-Math.cos(2*Math.PI*(lx/cW*freq-t*freq*.05))*amp*.5;var py_p=midY-60*dpr+pressure*40*dpr;if(lx===0)ctx.moveTo(lx,py_p);else ctx.lineTo(lx,py_p);}
                 }
-                ctx.stroke();
+                ctx.setLineDash([]);ctx.strokeStyle='#f472b6';ctx.shadowColor='#f472b6';
+                tracePressureGraph();ctx.save();ctx.globalAlpha=.16;ctx.lineWidth=10*dpr;ctx.shadowBlur=20;ctx.stroke();ctx.restore();
+                tracePressureGraph();ctx.lineWidth=2*dpr;ctx.shadowBlur=8;ctx.stroke();
+                tracePressureGraph();ctx.save();ctx.globalAlpha=.3;ctx.strokeStyle='#fff';ctx.lineWidth=.7*dpr;ctx.shadowBlur=0;ctx.stroke();ctx.restore();ctx.shadowBlur=0;
 
                 // Draw particles as vertical lines (density visualization)
                 for (var pi = 0; pi < numParticles; pi++) {
@@ -1115,22 +1267,48 @@ const d = labToolData.wave;
                   var localDensity = 1 - (nextDisp - displacement) / (particleSpacing * 0.8);
                   localDensity = Math.max(0.1, Math.min(2, localDensity));
                   var alpha = Math.min(1, localDensity * 0.7);
-                  ctx.strokeStyle = 'rgba(96,165,250,' + alpha.toFixed(2) + ')';
+                  var particleRGB = localDensity > 1.08 ? '251,113,133' : '96,165,250';
+                  ctx.strokeStyle = 'rgba(' + particleRGB + ',' + alpha.toFixed(2) + ')';
+                  ctx.shadowColor = localDensity > 1.08 ? '#fb7185' : '#60a5fa';
+                  ctx.shadowBlur = Math.max(2, localDensity * 5 * dpr);
                   ctx.lineWidth = Math.max(1, localDensity * 3 * dpr);
-                  ctx.beginPath();
-                  ctx.moveTo(drawX, midY - 30 * dpr);
-                  ctx.lineTo(drawX, midY + 30 * dpr);
-                  ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(drawX, midY - 30 * dpr); ctx.lineTo(drawX, midY + 30 * dpr); ctx.stroke();
+                  ctx.shadowBlur = 0; ctx.globalAlpha = Math.min(1, .25 + localDensity * .35);
+                  ctx.fillStyle = localDensity > 1.08 ? '#fecdd3' : '#bfdbfe';
+                  ctx.beginPath(); ctx.arc(drawX, midY, Math.max(1.8, localDensity * 1.8) * dpr, 0, Math.PI * 2); ctx.fill();
+                  ctx.globalAlpha = 1;
                 }
 
-                // Labels
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4, 4, 220 * dpr, 36 * dpr);
-                ctx.fillStyle = '#60a5fa';
-                ctx.font = (7 * dpr) + 'px sans-serif';
-                ctx.fillText('Longitudinal Wave \u2014 Compression & Rarefaction', 8 * dpr, 14 * dpr);
-                ctx.fillStyle = '#f472b6';
-                ctx.fillText('\u223F Pressure wave (top) | Particles (center)', 8 * dpr, 26 * dpr);
+                // The pressure pattern travels right even though each material
+                // particle only oscillates around its own equilibrium position.
+                ctx.save();ctx.strokeStyle='rgba(255,255,255,.42)';ctx.lineWidth=1.3*dpr;ctx.lineCap='round';
+                var longArrowOffset=(tick*.9*speed)%(100*dpr);
+                for(var la=25*dpr+longArrowOffset;la<cW-20*dpr;la+=100*dpr){ctx.beginPath();ctx.moveTo(la-8*dpr,midY+34*dpr);ctx.lineTo(la+8*dpr,midY+34*dpr);ctx.lineTo(la+3*dpr,midY+30*dpr);ctx.moveTo(la+8*dpr,midY+34*dpr);ctx.lineTo(la+3*dpr,midY+38*dpr);ctx.stroke();}
+                ctx.restore();
+                // Misconception-buster: highlight ONE tracer particle (gold) against a dashed
+                // marker at its equilibrium (rest) position, so students SEE it only jiggles
+                // back and forth in place \u2014 the wave travels right, but matter does not move with it.
+                var _trBaseX = (Math.floor(numParticles / 2) + 1) * particleSpacing;
+                var _trDisp = longAmp * Math.sin(2 * Math.PI * (_trBaseX / cW * freq - t * freq * 0.05));
+                var _trX = _trBaseX + _trDisp;
+                ctx.setLineDash([3 * dpr, 3 * dpr]);
+                ctx.strokeStyle = 'rgba(251,191,36,0.45)';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(_trBaseX, midY - 38 * dpr); ctx.lineTo(_trBaseX, midY + 38 * dpr); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 4 * dpr;
+                ctx.beginPath(); ctx.moveTo(_trX, midY - 32 * dpr); ctx.lineTo(_trX, midY + 32 * dpr); ctx.stroke();
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath(); ctx.arc(_trX, midY, 4 * dpr, 0, 2 * Math.PI); ctx.fill();
+                ctx.save();
+                ctx.strokeStyle='rgba(251,191,36,.72)';ctx.lineWidth=1.5*dpr;
+                ctx.beginPath();ctx.moveTo(_trBaseX,midY);ctx.lineTo(_trX,midY);ctx.stroke();
+                var tracerDir=_trX>=_trBaseX?1:-1;
+                ctx.beginPath();ctx.moveTo(_trX,midY);ctx.lineTo(_trX-tracerDir*5*dpr,midY-3*dpr);ctx.moveTo(_trX,midY);ctx.lineTo(_trX-tracerDir*5*dpr,midY+3*dpr);ctx.stroke();
+                ctx.restore();
+
+                // (Legend + gold-tracer note moved to HTML overlay chips.)
 
               } else if (currentMode === 'doppler') {
                 // ========== DOPPLER EFFECT MODE ==========
@@ -1161,7 +1339,7 @@ const d = labToolData.wave;
                 ctx.fillStyle = '#ef4444';
                 ctx.beginPath(); ctx.arc(sourceX, midY_d, 8 * dpr, 0, 2 * Math.PI); ctx.fill();
                 ctx.fillStyle = '#fff';
-                ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
+                ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
                 ctx.fillText('S', sourceX - 3 * dpr, midY_d + 2 * dpr);
 
                 // Draw observer (right side)
@@ -1171,22 +1349,14 @@ const d = labToolData.wave;
                 ctx.fillStyle = '#fff';
                 ctx.fillText('O', obsX - 3 * dpr, midY_d + 2 * dpr);
 
-                // Frequency display
-                var mach = sourceSpeed;
-                var approachFreq = (freq / (1 - Math.min(mach, 0.95))).toFixed(1);
-                var recedeFreq = (freq / (1 + mach)).toFixed(1);
-
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4, 4, 260 * dpr, 52 * dpr);
-                ctx.fillStyle = '#67e8f9';
-                ctx.font = (7 * dpr) + 'px sans-serif';
-                ctx.fillText('Doppler Effect \u2014 Source speed: ' + (mach * 100).toFixed(0) + '% of sound', 8 * dpr, 14 * dpr);
-                ctx.fillStyle = '#f87171';
-                ctx.fillText('Approaching f\u2032 = ' + approachFreq + ' Hz (compressed)', 8 * dpr, 26 * dpr);
-                ctx.fillStyle = '#60a5fa';
-                ctx.fillText('Receding f\u2032 = ' + recedeFreq + ' Hz (stretched)', 8 * dpr, 38 * dpr);
-                ctx.fillStyle = '#a78bfa';
-                ctx.fillText('f\u2080 = ' + freq.toFixed(1) + ' Hz | v_s = ' + soundSpeed + ' m/s', 8 * dpr, 50 * dpr);
+                // Audible Doppler: if a tone is playing, bend its pitch to the
+                // shifted frequency the right-side observer hears \u2014 higher while
+                // the source approaches, dropping as it passes. (f\u2032 values are
+                // shown in the HTML chips in the Doppler controls row.)
+                if (_waveAudio.osc && _waveAudio.ctx) {
+                  var _dShift = sourceX < obsX ? freq / (1 - Math.min(sourceSpeed, 0.95)) : freq / (1 + sourceSpeed);
+                  try { _waveAudio.osc.frequency.setTargetAtTime(_dShift * 100, _waveAudio.ctx.currentTime, 0.08); } catch (e) {}
+                }
 
               } else if (currentMode === 'spectrum') {
                 // ========== FFT / SPECTRUM MODE ==========
@@ -1202,7 +1372,7 @@ const d = labToolData.wave;
                 ctx.setLineDash([]);
                 ctx.beginPath();
                 for (var sx = 0; sx < cW; sx += 2) {
-                  var sv = amp * Math.sin(2 * Math.PI * (sx / cW * freq - t * freq * 0.05));
+                  var sv = amp * waveVal(2 * Math.PI * (sx / cW * freq - t * freq * 0.05), waveType);
                   if (showSecond) sv += amp2 * Math.sin(2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05));
                   var sy = midY_s * 0.5 + sv * midY_s * 0.35;
                   if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
@@ -1215,37 +1385,44 @@ const d = labToolData.wave;
                 ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
 
-                // Frequency domain bars (bottom half)
-                var maxFreqDisp = Math.max(freq * 3, 1000);
-                var freqBin = maxFreqDisp / barCount;
-                for (var bi = 0; bi < barCount; bi++) {
-                  var binCenterFreq = (bi + 0.5) * freqBin;
-                  // Calculate magnitude: peaks at fundamental frequencies
-                  var mag = 0;
-                  var spread = freqBin * 0.8;
-                  mag += amp * Math.exp(-Math.pow(binCenterFreq - freq, 2) / (2 * spread * spread));
-                  // Add harmonics
-                  mag += amp * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
-                  mag += amp * 0.15 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
-                  if (showSecond) {
-                    mag += amp2 * Math.exp(-Math.pow(binCenterFreq - freq2, 2) / (2 * spread * spread));
-                    mag += amp2 * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq2 * 2, 2) / (2 * spread * spread));
+                // Frequency domain (bottom half): a REAL discrete Fourier transform of ONE period
+                // of the selected waveform, so the spectrum genuinely reflects timbre \u2014
+                // sine = one bar; square = odd harmonics (~1/n); sawtooth = all harmonics (~1/n);
+                // triangle = odd harmonics fading fast (~1/n\u00b2). (A steady tone has a STEADY
+                // spectrum, so unlike the old fake bars these don't jitter \u2014 that's correct.)
+                var NSAMP = 256, maxHarm = 12;
+                var harmMag = [], maxMag = 1e-6;
+                for (var hh = 1; hh <= maxHarm; hh++) {
+                  var dre = 0, dim = 0;
+                  for (var kk = 0; kk < NSAMP; kk++) {
+                    var ph = 2 * Math.PI * kk / NSAMP;
+                    var yk = waveVal(ph, waveType);
+                    dre += yk * Math.cos(hh * ph);
+                    dim += yk * Math.sin(hh * ph);
                   }
-                  // Animate with slight jitter
-                  mag *= (0.9 + 0.1 * Math.sin(t * 2 + bi));
-
-                  var barH = Math.min(midY_s - 20, mag * midY_s * 0.8);
-                  var barX = 20 + bi * barW;
-                  var barY = cH - 10 - barH;
-
-                  // Gradient color based on frequency
-                  var hue = (bi / barCount) * 270;
-                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.85)';
-                  ctx.fillRect(barX, barY, barW - 2, barH);
-
-                  // Glow cap
-                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.9)';
-                  ctx.fillRect(barX, barY, barW - 2, 3 * dpr);
+                  var hmag = 2 * Math.sqrt(dre * dre + dim * dim) / NSAMP; // Fourier amplitude of harmonic hh
+                  harmMag.push(hmag);
+                  if (hmag > maxMag) maxMag = hmag;
+                }
+                var maxFreqDisp = (maxHarm + 1) * freq;
+                var plotBottom = cH - 12, plotTop = midY_s + 8;
+                for (var hb = 1; hb <= maxHarm; hb++) {
+                  var rel = harmMag[hb - 1] / maxMag;
+                  if (rel < 0.012) continue; // omit negligible harmonics for a clean read
+                  var hx = 20 + (hb * freq / maxFreqDisp) * (cW - 40);
+                  var hBarH = rel * (plotBottom - plotTop);
+                  var hue = ((hb - 1) / maxHarm) * 270;
+                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.9)';
+                  ctx.fillRect(hx - 3 * dpr, plotBottom - hBarH, 6 * dpr, hBarH);
+                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.95)';
+                  ctx.fillRect(hx - 3 * dpr, plotBottom - hBarH, 6 * dpr, 3 * dpr);
+                  if (rel > 0.08) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                    ctx.font = (5 * dpr) + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(hb + 'f', hx, plotBottom - hBarH - 3 * dpr);
+                    ctx.textAlign = 'left';
+                  }
                 }
 
                 // Frequency axis labels
@@ -1256,14 +1433,7 @@ const d = labToolData.wave;
                   ctx.fillText(fLabel + ' Hz', 20 + fl * (cW - 40) / 4, cH - 2);
                 }
 
-                // Labels
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4, 4, 230 * dpr, 36 * dpr);
-                ctx.fillStyle = '#60a5fa';
-                ctx.font = (7 * dpr) + 'px sans-serif';
-                ctx.fillText('Spectrum Analyzer \u2014 Time \u2192 Frequency Domain', 8 * dpr, 14 * dpr);
-                ctx.fillStyle = '#c084fc';
-                ctx.fillText('Top: Waveform | Bottom: Frequency Spectrum (FFT)', 8 * dpr, 26 * dpr);
+                // (Timbre note moved to an HTML chip under the canvas.)
 
               } else if (currentMode === 'reflection') {
                 // ========== REFLECTION / BOUNDARY MODE ==========
@@ -1281,29 +1451,42 @@ const d = labToolData.wave;
                 var k = 2 * Math.PI * freq / cW;
                 var omega = freq * 0.05 * speed;
 
+                // Directional energy fields separate the incoming and returning
+                // components before their curves superpose.
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                var incidentField = ctx.createLinearGradient(0, 0, wallX, 0);
+                incidentField.addColorStop(0, 'rgba(59,130,246,0.04)');
+                incidentField.addColorStop(1, 'rgba(59,130,246,0.17)');
+                ctx.fillStyle = incidentField; ctx.fillRect(0, 0, wallX, cH);
+                var reflectedField = ctx.createLinearGradient(wallX, 0, 0, 0);
+                reflectedField.addColorStop(0, 'rgba(244,114,182,' + (0.16 * refReflectivity).toFixed(3) + ')');
+                reflectedField.addColorStop(1, 'rgba(244,114,182,0.02)');
+                ctx.fillStyle = reflectedField; ctx.fillRect(0, 0, wallX, cH);
+                ctx.restore();
                 // Build the incident + reflected wave at each x position.
                 // For x < wallX:
                 //   incident y_i(x,t) = A sin(k x - ω t)
                 //   reflected y_r(x,t) = phaseFlip * R * A sin(k (2*wallX - x) - ω t)
                 //                        = phaseFlip * R * A sin(k (2*wallX - x) - ω t)
                 // For x > wallX: no wave (transmitted = 0 — perfect wall).
-                ctx.lineWidth = 3 * dpr;
-                ctx.strokeStyle = '#22d3ee';
-                ctx.shadowColor = '#22d3ee';
-                ctx.shadowBlur = 6;
-                ctx.beginPath();
-                var started = false;
-                for (var rx = 0; rx < wallX; rx += 2) {
-                  var phaseIn = k * rx - omega * t;
-                  var phaseRe = k * (2 * wallX - rx) - omega * t;
-                  var yi = Math.sin(phaseIn);
-                  var yre = phaseFlip * refReflectivity * Math.sin(phaseRe);
-                  var ry = midY_r - (yi + yre) * refAmp;
-                  if (!started) { ctx.moveTo(rx, ry); started = true; }
-                  else ctx.lineTo(rx, ry);
+                function traceCombinedReflection() {
+                  ctx.beginPath();
+                  var started = false;
+                  for (var rx = 0; rx < wallX; rx += 2) {
+                    var phaseIn = k * rx - omega * t;
+                    var phaseRe = k * (2 * wallX - rx) - omega * t;
+                    var yi = Math.sin(phaseIn);
+                    var yre = phaseFlip * refReflectivity * Math.sin(phaseRe);
+                    var ry = midY_r - (yi + yre) * refAmp;
+                    if (!started) { ctx.moveTo(rx, ry); started = true; } else ctx.lineTo(rx, ry);
+                  }
                 }
-                ctx.stroke();
-                ctx.shadowBlur = 0;
+                ctx.strokeStyle=accent; ctx.shadowColor=accent;
+                traceCombinedReflection(); ctx.save(); ctx.globalAlpha=.18; ctx.lineWidth=12*dpr; ctx.shadowBlur=24; ctx.stroke(); ctx.restore();
+                traceCombinedReflection(); ctx.lineWidth=3*dpr; ctx.globalAlpha=1; ctx.shadowBlur=8; ctx.stroke();
+                traceCombinedReflection(); ctx.save(); ctx.globalAlpha=.3; ctx.strokeStyle='#fff'; ctx.lineWidth=.8*dpr; ctx.shadowBlur=0; ctx.stroke(); ctx.restore();
+                ctx.shadowBlur=0;
 
                 // Faintly show the incident component alone (dashed)
                 ctx.strokeStyle = 'rgba(96,165,250,0.45)';
@@ -1330,6 +1513,24 @@ const d = labToolData.wave;
                 ctx.stroke();
                 ctx.setLineDash([]);
 
+                // Animated energy-direction chevrons make travel direction explicit.
+                ctx.save();
+                function drawEnergyArrow(ax, ay, dir, color, alpha) {
+                  ctx.globalAlpha=alpha; ctx.strokeStyle=color; ctx.lineWidth=1.6*dpr; ctx.lineCap='round';
+                  ctx.beginPath(); ctx.moveTo(ax-dir*8*dpr,ay); ctx.lineTo(ax+dir*8*dpr,ay); ctx.lineTo(ax+dir*3*dpr,ay-4*dpr); ctx.moveTo(ax+dir*8*dpr,ay); ctx.lineTo(ax+dir*3*dpr,ay+4*dpr); ctx.stroke();
+                }
+                var arrowOffset=(tick*1.2*speed)%(90*dpr);
+                for(var ia=35*dpr+arrowOffset;ia<wallX-20*dpr;ia+=90*dpr)drawEnergyArrow(ia,54*dpr,1,'#60a5fa',.72);
+                for(var ra=wallX-35*dpr-arrowOffset;ra>20*dpr;ra-=90*dpr)drawEnergyArrow(ra,72*dpr,-1,'#f472b6',.42+.3*refReflectivity);
+                ctx.restore();
+
+                // Boundary-impact glow tracks the instantaneous arriving amplitude.
+                var impactStrength=.25+.55*Math.abs(Math.sin(k*wallX-omega*t));
+                var impactGlow=ctx.createRadialGradient(wallX,midY_r,0,wallX,midY_r,55*dpr);
+                impactGlow.addColorStop(0,'rgba(251,191,36,'+impactStrength.toFixed(3)+')');
+                impactGlow.addColorStop(.25,'rgba(251,113,133,'+(impactStrength*.28).toFixed(3)+')');
+                impactGlow.addColorStop(1,'rgba(251,191,36,0)');
+                ctx.fillStyle=impactGlow;ctx.beginPath();ctx.arc(wallX,midY_r,55*dpr,0,Math.PI*2);ctx.fill();
                 // Draw the wall (draggable handle)
                 var wallActive = canvasEl._drag.activeHandle === 'wall';
                 ctx.fillStyle = wallActive ? 'rgba(251,191,36,0.95)' : 'rgba(251,191,36,0.75)';
@@ -1347,29 +1548,18 @@ const d = labToolData.wave;
                 ctx.fillStyle = '#fbbf24';
                 ctx.beginPath(); ctx.arc(wallX, midY_r, 10 * dpr, 0, 2 * Math.PI); ctx.fill();
                 ctx.fillStyle = '#000';
-                ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
                 ctx.fillText('⇔', wallX - 6 * dpr, midY_r + 3 * dpr);
 
                 // End-type label near the wall
                 ctx.fillStyle = endType === 'fixed' ? '#ef4444' : '#22c55e';
-                ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+                ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
                 ctx.fillText(endType === 'fixed' ? 'FIXED END' : 'FREE END', wallX - 24 * dpr, 20 * dpr);
                 ctx.fillStyle = 'rgba(255,255,255,0.6)';
-                ctx.font = (5 * dpr) + 'px sans-serif';
+                ctx.font = (11 * dpr) + 'px sans-serif';
                 ctx.fillText(endType === 'fixed' ? '(phase inverts)' : '(phase preserved)', wallX - 28 * dpr, 28 * dpr);
 
-                // Legend
-                ctx.fillStyle = 'rgba(0,0,0,0.65)';
-                ctx.fillRect(4, 4, 280 * dpr, 60 * dpr);
-                ctx.fillStyle = '#67e8f9';
-                ctx.font = (7 * dpr) + 'px sans-serif';
-                ctx.fillText('Reflection / Boundary — Wave hits a wall', 8 * dpr, 14 * dpr);
-                ctx.fillStyle = '#60a5fa';
-                ctx.fillText('— Solid: incident + reflected (real wave)', 8 * dpr, 26 * dpr);
-                ctx.fillStyle = '#f472b6';
-                ctx.fillText('-- Dashed magenta: reflected component', 8 * dpr, 38 * dpr);
-                ctx.fillStyle = '#fbbf24';
-                ctx.fillText('✂ DRAG the gold wall left/right', 8 * dpr, 50 * dpr);
+                // (Color key moved to the reflection controls row below the canvas.)
               }
 
               // Wavelength annotation
@@ -1404,56 +1594,52 @@ const d = labToolData.wave;
 
               }
 
-              canvasEl._waveAnim = requestAnimationFrame(draw);
+              scheduleWaveFrame();
 
             }
 
-            canvasEl._waveAnim = requestAnimationFrame(draw);
+            scheduleWaveFrame();
 
           };
 
 
 
-          // Sound playback
+          // Sound playback — oscillators track the sliders live (see syncOsc).
+          // With the second wave shown, a second oscillator plays f2 so
+          // superposition (and beats, when f1≈f2) is audible, not just visible.
 
           var toggleSound = function () {
 
-            if (d._audioCtx) {
-
-              try { d._audioCtx.close(); } catch (e) { }
-
-              upd('_audioCtx', null);
-
+            if (_waveAudio.ctx) {
+              _waveAudioStop();
               upd('soundPlaying', false);
-
               return;
-
             }
 
             try {
 
-              var ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-              var osc = ctx.createOscillator();
-
-              var gain = ctx.createGain();
-
+              var actx = new (window.AudioContext || window.webkitAudioContext)();
+              var osc = actx.createOscillator();
+              var gain = actx.createGain();
               osc.type = (d.waveType || 'sine');
-
               osc.frequency.value = d.frequency * 100;
-
-              gain.gain.value = 0.15;
-
+              gain.gain.value = d.showSecond ? 0.09 : 0.15;
               osc.connect(gain);
-
-              gain.connect(ctx.destination);
-
+              gain.connect(actx.destination);
               osc.start();
-
-              upd('_audioCtx', ctx);
-
-              upd('_audioOsc', osc);
-
+              _waveAudio.ctx = actx;
+              _waveAudio.osc = osc;
+              if (d.showSecond) {
+                var osc2 = actx.createOscillator();
+                var gain2 = actx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.value = (d.frequency2 || 3) * 100;
+                gain2.gain.value = 0.09;
+                osc2.connect(gain2);
+                gain2.connect(actx.destination);
+                osc2.start();
+                _waveAudio.osc2 = osc2;
+              }
               upd('soundPlaying', true);
 
             } catch (e) {
@@ -1462,6 +1648,17 @@ const d = labToolData.wave;
 
             }
 
+          };
+
+          // Keep a playing tone in sync with the controls (frequency sliders,
+          // waveform buttons, equation inputs, canvas arrow keys).
+          var syncOsc = function (opts) {
+            if (!_waveAudio.osc) return;
+            try {
+              if (opts.freq != null) _waveAudio.osc.frequency.value = opts.freq * 100;
+              if (opts.type) _waveAudio.osc.type = opts.type;
+              if (opts.freq2 != null && _waveAudio.osc2) _waveAudio.osc2.frequency.value = opts.freq2 * 100;
+            } catch (e) {}
           };
 
 
@@ -1503,6 +1700,7 @@ const d = labToolData.wave;
                      type: "number", value: a,
 
                      'aria-label': 'Wave amplitude',
+                     'aria-valuetext': a + ' — amplitude sets the wave height (loudness and energy)',
 
                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('amplitude', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(v, f); } catch(ex){} } },
 
@@ -1521,8 +1719,9 @@ const d = labToolData.wave;
                      type: "number", value: f,
 
                      'aria-label': 'Wave frequency',
+                     'aria-valuetext': f + ' hertz, period ' + (f ? (1 / f).toFixed(2) : '∞') + ' seconds — frequency sets the pitch',
 
-                     onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('frequency', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(a, v); } catch(ex){} } },
+                     onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('frequency', v); syncOsc({ freq: v }); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(a, v); } catch(ex){} } },
 
                      className: "bg-slate-900 border border-cyan-500 text-cyan-300 rounded px-1.5 py-0.5 mx-0.5 text-center focus:outline-none focus:ring-1 focus:ring-cyan-400 w-16 font-mono shadow-sm",
 
@@ -1560,35 +1759,99 @@ const d = labToolData.wave;
 
           // Quiz bank
 
+          // Quiz bank \u2014 each distractor carries corrective feedback that names the
+          // specific mix-up and, where possible, points at the sim mode that shows it.
           var WAVE_QUIZ = [
 
-            { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'] },
+            { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'],
+              demo: { waveMode: 'free' },
+              wrongFeedback: {
+                'Goes down': 'Backwards \u2014 MORE vibrations per second means HIGHER pitch. Slide frequency up with Play Sound on and listen to it climb.',
+                'Stays same': 'Pitch IS your ear\u2019s perception of frequency \u2014 change one and you have changed the other.',
+                'Disappears': 'Sound only disappears when AMPLITUDE reaches zero. Frequency changes the pitch, not whether it exists.'
+              } },
 
-            { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'] },
+            { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'],
+              demo: { waveMode: 'free' },
+              wrongFeedback: {
+                'Speed': 'Wave speed is set by the MEDIUM (air, water, string tension) \u2014 a louder shout does not arrive any sooner.',
+                'Color': 'For light, FREQUENCY sets the color. Amplitude sets brightness \u2014 and for sound, loudness.',
+                'Direction': 'Direction comes from the source and reflections. Amplitude is the wave\u2019s height \u2014 how much energy it carries.'
+              } },
 
-            { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'] },
+            { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'],
+              demo: { waveMode: 'free', showSecond: true },
+              wrongFeedback: {
+                'Waves canceling': 'Canceling is only ONE special case (destructive). Superposition is the general rule: overlapping waves ADD their displacements \u2014 sometimes bigger, sometimes smaller.',
+                'Waves reflecting': 'Reflection is a wave bouncing off a boundary. Superposition is what happens when two waves OVERLAP \u2014 try the Ripple Tank.',
+                'Waves stopping': 'Waves pass straight through each other and continue unchanged \u2014 they never stop each other.'
+              } },
 
-            { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'] },
+            { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'],
+              demo: { waveMode: 'free', showSecond: true, frequency: 3, frequency2: 3, amplitude: 45, amplitude2: 45, phase2: Math.PI },
+              wrongFeedback: {
+                'Peaks meet peaks': 'Peak-on-peak is CONSTRUCTIVE interference \u2014 the wave gets bigger. Destruction needs opposites: peak + trough = flat.',
+                'Waves stop': 'The waves keep traveling \u2014 they only cancel at the spots where they overlap out of phase. Watch the dark bands in the Ripple Tank.',
+                'Amplitude doubles': 'Doubling is constructive interference. Destructive SUBTRACTS \u2014 a peak fills a trough.'
+              } },
 
-            { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'] },
+            { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'],
+              demo: { waveMode: 'longitudinal' },
+              wrongFeedback: {
+                'Transverse': 'Transverse waves wiggle PERPENDICULAR to travel (light, a guitar string). Air molecules push and pull ALONG the direction of travel \u2014 switch to Longitudinal mode and watch the compressions.',
+                'Circular': 'Water ripples spread in circles, but that describes the pattern on the surface, not the wave type.',
+                'Standing': 'Standing waves are trapped between boundaries. Traveling sound is free \u2014 it only forms standing waves inside pipes and rooms.'
+              } },
 
-            { q: 'At a node of a standing wave, the displacement is:', a: 'Always zero', opts: ['Maximum', 'Always zero', 'Half maximum', 'Random'] },
+            { q: 'At a node of a standing wave, the displacement is:', a: 'Always zero', opts: ['Maximum', 'Always zero', 'Half maximum', 'Random'],
+              demo: { waveMode: 'standing', harmonic: 3 },
+              wrongFeedback: {
+                'Maximum': 'Maximum displacement is the ANTInode. Nodes are the still points \u2014 in Standing mode, watch the spots where the string never moves.',
+                'Half maximum': 'Nodes are perfectly still \u2014 zero, not half. Points BETWEEN node and antinode oscillate at partial amplitude.',
+                'Random': 'Standing waves are perfectly ordered \u2014 the nodes stay locked in place. That is exactly why they are called STANDING.'
+              } },
 
-            { q: 'The speed of a wave equals:', a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'] },
+            { q: 'The speed of a wave equals:', a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'],
+              demo: { expSection: 'discoverWave' },
+              wrongFeedback: {
+                'Amplitude \u00D7 Frequency': 'Amplitude carries ENERGY, not speed. v = f \u00D7 \u03BB: waves per second \u00D7 length of each wave = distance per second.',
+                'Period \u00D7 Amplitude': 'Period is just 1/frequency and amplitude is height \u2014 multiplying them gives nothing physical. v = f \u00D7 \u03BB.',
+                'None of these': 'One of them IS right: v = f \u00D7 \u03BB \u2014 how many waves pass per second times how long each one is.'
+              } },
 
           ];
 
 
 
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
 
-            null, // tutorial overlay removed (hub-scope dependency)
+            // First-run 3-step tour (self-contained; localStorage-persisted)
+            (function () {
+              var TOUR = [
+                { icon: '🎚', text: 'Welcome! Drag the Amplitude and Frequency sliders to shape your wave — or focus the wave itself and use the arrow keys. Space pauses.' },
+                { icon: '🌊', text: 'Switch modes above: Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum each show a different piece of wave physics.' },
+                { icon: '∿', text: 'Turn on the Second Wave to see superposition — two waves adding into one. Try the 🎵 Beats preset, then Play Sound to hear it.' }
+              ];
+              var seen = false;
+              try { seen = !!window.localStorage.getItem('allo_wave_tour_done'); } catch (e) {}
+              var step = (d.tourStep === undefined) ? (seen ? -1 : 0) : d.tourStep;
+              if (step == null || step < 0 || step >= TOUR.length) return null;
+              var cur = TOUR[step];
+              var done = function () { try { window.localStorage.setItem('allo_wave_tour_done', '1'); } catch (e) {} upd('tourStep', -1); };
+              return React.createElement("div", { role: "region", "aria-label": "Getting started tips", className: "mb-3 p-3 rounded-xl border-2 border-cyan-300 bg-cyan-50 flex items-center gap-3 flex-wrap" },
+                React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, cur.icon),
+                React.createElement("p", { className: "text-xs text-cyan-900 font-semibold flex-1 min-w-[200px] m-0" }, cur.text),
+                React.createElement("span", { className: "text-[10px] font-bold text-cyan-600" }, (step + 1) + '/' + TOUR.length),
+                React.createElement("button", { onClick: function () { if (step + 1 >= TOUR.length) done(); else upd('tourStep', step + 1); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700 active:scale-[0.97]" }, step + 1 >= TOUR.length ? '✓ Done' : 'Next →'),
+                React.createElement("button", { onClick: done, "aria-label": "Skip the tour", className: "transition-colors px-2 py-1.5 rounded-lg text-xs text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]" }, 'Skip')
+              );
+            })(),
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83C\uDF0A Wave Simulator"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
@@ -1596,7 +1859,7 @@ const d = labToolData.wave;
 
             // Mode tabs
 
-            React.createElement("div", { className: "flex gap-2 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 items-center" },
 
               [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['reflection', '\uD83E\uDE9E Reflection'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
 
@@ -1611,17 +1874,30 @@ const d = labToolData.wave;
                       terse: m[1]
                     });
                   }
-                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
+                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-slate-900 text-white shadow-md ring-1 ring-cyan-300/70' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]') }, m[1]);
 
               }),
+
+              React.createElement("button", {
+                "aria-label": d.paused ? "Play animation" : "Pause animation (or press Space on the wave)",
+                "aria-pressed": !!d.paused,
+                onClick: function () { upd('paused', !d.paused); },
+                className: "sm:ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.paused ? 'bg-cyan-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]')
+              }, d.paused ? '▶ Play' : '⏸ Pause'),
+
+              d.paused && React.createElement("button", {
+                "aria-label": "Step the animation forward one frame",
+                onClick: function () { var c = canvasRef._lastCanvas; if (c && c._waveStep) c._waveStep(8); },
+                className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]"
+              }, '⏭ Step'),
 
               React.createElement("button", { "aria-label": "Toggle Sound",
 
                 onClick: toggleSound,
 
-                className: "ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-700 text-white animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + ((_waveAudio.ctx && d.soundPlaying) ? 'bg-emerald-700 text-white animate-pulse shadow-sm' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.97]')
 
-              }, d.soundPlaying ? '\uD83D\uDD0A Stop Sound' : '\uD83D\uDD08 Play Sound (' + (d.frequency * 100) + 'Hz)')
+              }, (_waveAudio.ctx && d.soundPlaying) ? '\uD83D\uDD0A Stop Sound' : '\uD83D\uDD08 Play Sound (' + (d.frequency * 100) + 'Hz)')
 
             ),
 
@@ -1640,7 +1916,7 @@ const d = labToolData.wave;
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
-                  borderRadius: 12,
+                  borderRadius: 8,
                   background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
                   border: '1px solid ' + meta.accent + '55',
                   borderLeft: '4px solid ' + meta.accent,
@@ -1657,13 +1933,23 @@ const d = labToolData.wave;
 
             // Canvas
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "400px" } },
+            React.createElement("div", {
+              className: "relative rounded-lg overflow-hidden border mb-3",
+              style: {
+                height: "clamp(360px, 52vw, 460px)",
+                background: "radial-gradient(circle at 24% 16%, rgba(34,211,238,0.22), transparent 30%), linear-gradient(180deg, #061827 0%, #082f49 52%, #06202f 100%)",
+                borderColor: "rgba(14,116,144,0.42)",
+                boxShadow: "0 20px 44px rgba(8,47,73,0.24), inset 0 1px 0 rgba(255,255,255,0.18)"
+              }
+            },
 
               React.createElement("canvas", {
 
                 ref: canvasRef,
+                className: "focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-inset",
+                "data-wave-canvas": "true",
 
-                tabIndex: 0, role: "application", "aria-label": "Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed",
+                tabIndex: 0, role: "application", "aria-label": "Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation",
 
                 "data-amp": d.amplitude, "data-freq": d.frequency, "data-wave-type": d.waveType || 'sine',
 
@@ -1674,6 +1960,10 @@ const d = labToolData.wave;
                 "data-speed": d.speed || 1,
 
                 "data-wave-mode": waveMode,
+
+                "data-accent": waveViewMeta.accent,
+
+                "data-paused": d.paused ? 'true' : 'false',
 
                 "data-harmonic": d.harmonic || 1,
                 "data-phase2": d.phase2 || 0,
@@ -1690,36 +1980,93 @@ const d = labToolData.wave;
                 "data-reflectivity": d.reflectivity != null ? d.reflectivity : 0.9,
 
                 onKeyDown: function (e) {
+                  var nv;
+                  var say = function (id, msg) { if (typeof canvasNarrate === 'function') canvasNarrate('wave', id, msg, { debounce: 600 }); };
 
-                  if (e.key === 'ArrowUp') { e.preventDefault(); upd('amplitude', Math.min(100, (d.amplitude || 50) + 5)); }
+                  if (e.key === 'ArrowUp') { e.preventDefault(); nv = Math.min(100, (d.amplitude || 50) + 5); upd('amplitude', nv); say('key_amp', 'Amplitude ' + nv); }
 
-                  else if (e.key === 'ArrowDown') { e.preventDefault(); upd('amplitude', Math.max(5, (d.amplitude || 50) - 5)); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); nv = Math.max(5, (d.amplitude || 50) - 5); upd('amplitude', nv); say('key_amp', 'Amplitude ' + nv); }
 
-                  else if (e.key === 'ArrowRight') { e.preventDefault(); upd('frequency', Math.min(10, Math.round(((d.frequency || 2) + 0.5) * 10) / 10)); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); nv = Math.min(10, Math.round(((d.frequency || 2) + 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', 'Frequency ' + nv + ' hertz'); }
 
-                  else if (e.key === 'ArrowLeft') { e.preventDefault(); upd('frequency', Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10)); }
+                  else if (e.key === 'ArrowLeft') { e.preventDefault(); nv = Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', 'Frequency ' + nv + ' hertz'); }
 
-                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); upd('speed', Math.min(3, Math.round(((d.speed || 1) + 0.25) * 100) / 100)); }
+                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); nv = Math.min(3, Math.round(((d.speed || 1) + 0.25) * 100) / 100); upd('speed', nv); say('key_speed', 'Speed ' + nv + ' x'); }
 
-                  else if (e.key === '-') { e.preventDefault(); upd('speed', Math.max(0.25, Math.round(((d.speed || 1) - 0.25) * 100) / 100)); }
+                  else if (e.key === '-') { e.preventDefault(); nv = Math.max(0.25, Math.round(((d.speed || 1) - 0.25) * 100) / 100); upd('speed', nv); say('key_speed', 'Speed ' + nv + ' x'); }
+
+                  else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); nv = !d.paused; upd('paused', nv); say('key_pause', nv ? 'Animation paused' : 'Animation playing'); }
 
                 },
 
-                style: { width: "100%", height: "100%", display: "block", outline: "none" }
+                style: { width: "100%", height: "100%", display: "block", background: "transparent" }
 
-              })
+              }),
+
+              React.createElement("div", {
+                "aria-hidden": "true",
+                className: "pointer-events-none absolute inset-0",
+                style: {
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.10), transparent 18%, transparent 78%, rgba(2,6,23,0.28)), radial-gradient(circle at 50% 50%, transparent 58%, rgba(2,6,23,0.32) 100%)"
+                }
+              }),
+
+              React.createElement("div", {
+                className: "pointer-events-none absolute left-3 top-3 rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-white shadow-xl backdrop-blur-md"
+              },
+                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/80" }, "Live wave"),
+                React.createElement("p", { className: "text-sm font-black leading-tight" }, waveViewMeta.label),
+                React.createElement("p", { className: "mt-1 text-[11px] text-cyan-50/90" }, "A " + displayAmp + " | f " + displayFreq + " Hz | T " + displayPeriod.toFixed(2) + " s")
+              ),
+
+              React.createElement("div", {
+                className: "pointer-events-none absolute right-3 top-3 hidden rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-right text-white shadow-xl backdrop-blur-md sm:block"
+              },
+                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-slate-200/80" }, waveViewMeta.chip),
+                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Type " + activeWaveType),
+                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Medium " + displayMediumSpeed + " m/s")
+              ),
+
+              React.createElement("div", {
+                className: "pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-end gap-2 text-white"
+              },
+                [
+                  ['Wavelength', displayWavelength.toFixed(1) + ' m'],
+                  ['Speed', displaySpeed.toFixed(1) + 'x'],
+                  ['Energy', (displayAmp * displayAmp).toFixed(0)]
+                ].map(function(item) {
+                  return React.createElement("div", { key: item[0], className: "rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/75" }, item[0]),
+                    React.createElement("p", { className: "text-xs font-black leading-tight" }, item[1])
+                  );
+                }),
+
+                waveMode === 'spectrum' && React.createElement("div", { className: "rounded-lg border border-emerald-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200/80" }, "Timbre = harmonics"),
+                  React.createElement("p", { className: "text-xs font-bold leading-tight" }, timbreNote)
+                ),
+
+                waveMode === 'longitudinal' && React.createElement("div", { className: "rounded-lg border border-amber-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-amber-200/80" }, "● Gold tracer"),
+                  React.createElement("p", { className: "text-xs font-bold leading-tight" }, "Jiggles in place — the wave travels, the matter does not"),
+                  React.createElement("p", { className: "mt-1 flex flex-wrap gap-x-2 text-[11px] font-bold" },
+                    React.createElement("span", { className: "text-rose-200" }, "Warm = compression"),
+                    React.createElement("span", { className: "text-blue-200" }, "Blue = rarefaction"))
+                )
+              )
 
             ),
 
-            // Wave type buttons (free mode only)
+            // Wave type buttons (free + spectrum — spectrum analyzes the selected
+            // waveform, so students need to switch types there to explore timbre)
 
-            waveMode === 'free' && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+            (waveMode === 'free' || waveMode === 'spectrum') && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
 
               ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
 
-                React.createElement("button", { key: wt, onClick: () => upd('waveType', wt),
+                React.createElement("button", { key: wt, onClick: () => { upd('waveType', wt); syncOsc({ type: wt }); },
 
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100')
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]')
 
                 }, wt.charAt(0).toUpperCase() + wt.slice(1))
 
@@ -1735,11 +2082,11 @@ const d = labToolData.wave;
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'transition-colors bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]') }, h);
 
               }),
 
-              React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, (d.harmonic || 1) + " node" + ((d.harmonic || 1) > 1 ? 's' : '') + ", " + ((d.harmonic || 1) + 1) + " antinode" + ((d.harmonic || 1) > 0 ? 's' : ''))
+              React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, ((d.harmonic || 1) + 1) + " nodes, " + (d.harmonic || 1) + " antinode" + ((d.harmonic || 1) > 1 ? 's' : ''))
 
             ),
 
@@ -1761,28 +2108,36 @@ const d = labToolData.wave;
 
             // Controls
 
-            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+            React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-3" },
 
               [
 
-                { k: 'amplitude', label: '\uD83D\uDCC8 Amplitude', min: 10, max: 100, step: 1 },
+                { k: 'amplitude', label: '\uD83D\uDCC8 Amplitude', aria: 'Amplitude', min: 10, max: 100, step: 1 },
 
-                { k: 'frequency', label: '\uD83C\uDFB5 Frequency', min: 0.5, max: 10, step: 0.5 },
+                { k: 'frequency', label: '\uD83C\uDFB5 Frequency', aria: 'Frequency in hertz', min: 0.5, max: 10, step: 0.5 },
 
-                { k: 'speed', label: '\u23E9 Speed', min: 0.1, max: 5, step: 0.1 },
+                { k: 'speed', label: '\u23E9 Speed', aria: 'Animation speed multiplier', min: 0.1, max: 5, step: 0.1 },
 
-                { k: 'waveSpeed', label: '\uD83C\uDF0D Medium v (m/s)', min: 50, max: 1500, step: 10 },
+                { k: 'waveSpeed', label: '\uD83C\uDF0D Medium v (m/s)', aria: 'Medium wave speed in meters per second', min: 50, max: 1500, step: 10 },
 
               ].map(s =>
 
-                React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
+                React.createElement("div", { key: s.k, className: "bg-white rounded-lg p-3 border border-slate-200 shadow-sm" },
 
-                  React.createElement("label", { className: "text-[11px] font-bold text-slate-600 block" }, s.label),
+                  React.createElement("label", { className: "text-[11px] font-black text-slate-600 block uppercase tracking-wide" }, s.label),
 
-                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
+                  React.createElement("span", { className: "mt-1 text-lg font-black text-slate-900 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.label, onChange: function (e) {
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.aria || s.label,
+                  'aria-valuetext': (function () {
+                    var val = d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0);
+                    if (s.k === 'frequency') return val + ' hertz — wavelength ' + ((d.waveSpeed || 343) / val).toFixed(1) + ' meters, period ' + (1 / val).toFixed(2) + ' seconds';
+                    if (s.k === 'amplitude') return val + ' — wave height; energy grows as amplitude squared';
+                    if (s.k === 'speed') return val + ' times animation speed';
+                    return val + ' meters per second through the medium';
+                  })(), onChange: function (e) {
                     var v = parseFloat(e.target.value); upd(s.k, v);
+                    if (s.k === 'frequency') syncOsc({ freq: v });
                     if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); }
                     // Canvas Narration: parameter change
                     if (typeof canvasNarrate === 'function') {
@@ -1790,7 +2145,7 @@ const d = labToolData.wave;
                       var msg = s.label + ': ' + v + (wl ? '. Wavelength: ' + wl.toFixed(1) + ' m' : '');
                       canvasNarrate('wave', 'param_' + s.k, msg, { debounce: 800 });
                     }
-                  }, className: "w-full accent-cyan-600" })
+                  }, className: "mt-2 w-full accent-cyan-600" })
 
                 )
 
@@ -1814,9 +2169,9 @@ const d = labToolData.wave;
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "A2:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, "A2:"),
 
-                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': 'Second wave amplitude', onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': 'Second wave amplitude', onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.amplitude2 || 30)
 
@@ -1826,7 +2181,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "f2:"),
 
-                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': 'Second wave frequency', onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': 'Second wave frequency', onChange: e => { var v2 = parseFloat(e.target.value); upd('frequency2', v2); syncOsc({ freq2: v2 }); }, className: "w-24 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.frequency2 || 3)
 
@@ -1836,13 +2191,29 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
 
-                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': 'Second wave phase', onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': 'Second wave phase', onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
 
                 )
 
-              )
+              ),
+
+              React.createElement("button", {
+                onClick: function () {
+                  upd('showSecond', true); upd('frequency', 4); upd('frequency2', 4.5);
+                  upd('amplitude', 45); upd('amplitude2', 45); upd('phase2', 0);
+                  syncOsc({ freq: 4, freq2: 4.5 });
+                  if (typeof addToast === 'function') addToast('\uD83C\uDFB5 Beats: 4 Hz + 4.5 Hz \u2014 watch (and hear) the slow 0.5 Hz pulse', 'info');
+                },
+                'aria-label': 'Beats preset \u2014 two waves at 4 and 4.5 hertz so the beat envelope is visible',
+                className: "transition-colors px-2.5 py-1 rounded-lg text-[11px] font-bold bg-pink-600 text-white hover:bg-pink-700 active:scale-[0.97]"
+              }, '\uD83C\uDFB5 Beats'),
+
+              d.showSecond && interferenceLabel && React.createElement("span", {
+                role: "status",
+                className: "text-[11px] font-bold text-purple-700 bg-purple-100 border border-purple-300 rounded-full px-2 py-0.5"
+              }, '\u2011\u2011\u2011 ' + interferenceLabel)
 
             ),
 
@@ -1899,12 +2270,15 @@ const d = labToolData.wave;
                   // Reset draggable source positions to centered defaults.
                   var c = canvasRef._lastCanvas;
                   if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; }
+                  upd('rippleSrc1', null); upd('rippleSrc2', null);
                   if (typeof addToast === 'function') addToast('Sources reset to defaults', 'info');
                 },
-                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700",
+                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]",
                 'aria-label': 'Reset source positions to defaults'
               }, '↻ Reset sources'),
-              React.createElement("span", { className: "text-[10px] text-indigo-700 italic ml-auto" }, '💡 Drag the red sources on the canvas')
+              React.createElement("span", { className: "text-[11px] text-indigo-800 ml-auto" },
+                React.createElement("strong", null, 'Bright'), ' = constructive · ',
+                React.createElement("strong", null, 'dark'), ' = destructive · 💡 drag the red sources')
 
             ),
 
@@ -1918,12 +2292,17 @@ const d = labToolData.wave;
                     return React.createElement('button', {
                       key: et,
                       onClick: function() { upd('reflectionEnd', et); },
-                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white') : 'bg-white text-slate-600 hover:bg-amber-100'),
+                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white') : 'transition-colors bg-white text-slate-600 hover:bg-amber-100 active:scale-[0.97]'),
                       'aria-pressed': active,
                       'aria-label': et === 'fixed' ? 'Fixed end (string tied down — phase inverts on reflection)' : 'Free end (string free to move — phase preserved on reflection)'
                     }, et === 'fixed' ? '🔒 Fixed' : '🪁 Free');
                   })
                 )
+              ),
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Wall Position:"),
+                React.createElement("input", { type: "range", min: 0.2, max: 0.95, step: 0.01, value: d.wallFrac != null ? d.wallFrac : 0.75, 'aria-label': 'Wall position across the tank (keyboard equivalent of dragging the gold wall)', onChange: function(e) { var wf = parseFloat(e.target.value); upd('wallFrac', wf); var c = canvasRef._lastCanvas; if (c && c._drag) c._drag.wallX = wf * c.width; }, className: "w-24 accent-amber-600" }),
+                React.createElement("span", { className: "text-xs text-amber-900 font-bold w-10" }, Math.round((d.wallFrac != null ? d.wallFrac : 0.75) * 100) + "%")
               ),
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Reflectivity:"),
@@ -1934,17 +2313,20 @@ const d = labToolData.wave;
                 onClick: function() {
                   var c = canvasRef._lastCanvas;
                   if (c && c._drag) { c._drag.wallX = null; }
+                  upd('wallFrac', null);
                   if (typeof addToast === 'function') addToast('Wall reset to 75% across', 'info');
                 },
-                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700",
+                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.97]",
                 'aria-label': 'Reset wall position'
               }, '↻ Reset wall'),
-              React.createElement("span", { className: "text-[10px] text-amber-800 italic ml-auto" }, '💡 Drag the gold wall on the canvas')
+              React.createElement("span", { className: "text-[11px] text-amber-900 ml-auto" },
+                React.createElement("span", { style: { color: '#f59e0b', fontWeight: 700 } }, '— solid'), ': incident + reflected · ',
+                React.createElement("span", { style: { color: '#db2777', fontWeight: 700 } }, '‑‑ dashed'), ': reflected alone · 💡 drag the gold wall or use the slider')
             ),
 
             // Doppler specific controls
 
-            waveMode === 'doppler' && React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-rose-50 rounded-lg border border-rose-200" },
+            waveMode === 'doppler' && React.createElement("div", { className: "flex items-center flex-wrap gap-3 mb-3 p-2 bg-rose-50 rounded-lg border border-rose-200" },
 
               React.createElement("label", { className: "text-xs font-bold text-rose-700 flex items-center gap-2" },
 
@@ -1956,15 +2338,25 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("span", { className: "text-[11px] text-rose-500" }, "of sound speed (Mach number)")
+              React.createElement("span", { className: "text-[11px] text-rose-500" }, "of sound speed (Mach number)"),
+
+              (function() {
+                var _m = d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3;
+                var _f0 = d.frequency || 2;
+                return React.createElement(React.Fragment, null,
+                  React.createElement("span", { className: "text-[11px] font-bold text-red-700 bg-red-100 border border-red-200 rounded-full px-2 py-0.5" }, "approaching f′ = " + (_f0 / (1 - Math.min(_m, 0.95))).toFixed(1) + " Hz"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-sky-700 bg-sky-100 border border-sky-200 rounded-full px-2 py-0.5" }, "receding f′ = " + (_f0 / (1 + _m)).toFixed(1) + " Hz"),
+                  React.createElement("span", { className: "text-[10px] text-rose-600 italic" }, (_waveAudio.ctx && d.soundPlaying) ? "🔊 the tone bends as the source passes the observer" : "▶ press Play Sound to HEAR the shift")
+                );
+              })()
 
             ),
 
             // Wave equation display
 
-            React.createElement("div", { className: "bg-slate-800 rounded-lg p-3 mb-3 text-center" },
+            React.createElement("div", { className: "bg-slate-900 rounded-lg p-4 mb-3 text-center border border-slate-700 shadow-lg" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
 
               
 
@@ -1972,7 +2364,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "mb-3 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/50 inline-block text-center" },
 
-                 React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-0.5" }, "General Formula"),
+                 React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5" }, "General Formula"),
 
                  React.createElement("p", { className: "text-sm font-mono font-bold text-slate-300" }, 
 
@@ -1990,7 +2382,7 @@ const d = labToolData.wave;
 
                   React.createElement("p", { className: "text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
 
-                  React.createElement("div", { className: "text-lg font-mono font-bold opacity-90" }, 
+                  React.createElement("div", { className: "text-lg font-mono font-bold opacity-90 tracking-tight" }, 
 
                       renderEq(d.matchTarget.amp, d.matchTarget.freq, true, false)
 
@@ -1998,7 +2390,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
 
                   (d.matchTarget && d.matchTarget.isEquation) ? "Your Equation:" : "Current Equation:",
 
@@ -2017,13 +2409,13 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "text-lg font-mono font-bold" },
+              React.createElement("div", { className: "text-lg font-mono font-bold tracking-tight" },
 
                   renderEq(d.amplitude, d.frequency, false, true)
 
               ),
 
-              React.createElement("p", { className: "text-[11px] text-slate-600 mt-2" }, 
+              React.createElement("p", { className: "text-[11px] text-slate-400 mt-2" }, 
 
                   waveMode === 'standing' 
 
@@ -2037,9 +2429,9 @@ const d = labToolData.wave;
 
             // Info cards
 
-            React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3 text-center" },
+            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-3 text-center" },
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
                 React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wavelength \u03BB"),
 
@@ -2047,7 +2439,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
                 React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Period T"),
 
@@ -2055,7 +2447,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
                 React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wave Speed v"),
 
@@ -2063,9 +2455,9 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Energy"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, "Energy"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, "\u221D A\u00B2 = " + (d.amplitude * d.amplitude).toFixed(0))
 
@@ -2073,15 +2465,73 @@ const d = labToolData.wave;
 
             ),
 
+            // ── Investigate — surfaces the two inquiry widgets buried in the library ──
+
+            React.createElement("div", { className: "mb-3 p-3 rounded-xl border-2 border-indigo-200 bg-indigo-50 flex items-center gap-3 flex-wrap" },
+              React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🔬'),
+              React.createElement("p", { className: "text-xs text-indigo-900 font-semibold flex-1 min-w-[220px] m-0" }, 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.'),
+              React.createElement("button", { onClick: function () { upd('expSection', 'discoverWave'); if (typeof addToast === 'function') addToast('🔬 Opened below — scroll down to the Reference Library', 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🔬 Discover f·λ = v'),
+              React.createElement("button", { onClick: function () { upd('expSection', 'standingHunt'); if (typeof addToast === 'function') addToast('🎯 Opened below — scroll down to the Reference Library', 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🎯 Standing-wave hunt')
+            ),
+
+            // ── Wave myths — misconception-busters, each with a live sim demo ──
+
+            (function () {
+              var MYTHS = [
+                { myth: 'Waves carry water (or air) along with them.', truth: 'Waves carry ENERGY, not matter. Each bit of the medium oscillates around its home spot and hands the motion on to its neighbor.', btn: 'Watch the gold tracer', demo: { waveMode: 'longitudinal' } },
+                { myth: 'A bigger (louder) wave travels faster.', truth: 'Speed is set by the MEDIUM — tension, density, temperature. Cranking amplitude adds energy, not speed: the crests arrive no sooner.', btn: 'Crank amplitude, watch the speed', demo: { waveMode: 'free', amplitude: 95 } },
+                { myth: 'Sound can travel through empty space.', truth: 'Sound is matter compressing matter. In a vacuum there is nothing to push, so space is silent. Light is different — EM waves need no medium.', btn: 'See what sound really is', demo: { waveMode: 'longitudinal' } },
+                { myth: 'When waves cancel, their energy is destroyed.', truth: 'Energy is never destroyed — it redistributes. The dark bands in the ripple tank sit right next to extra-bright ones; the total stays constant.', btn: 'Find the dark bands', demo: { waveMode: 'ripple' } }
+              ];
+              var mythsOpen = !!d.mythsOpen;
+              return React.createElement("div", { className: "mb-3 rounded-xl border-2 border-fuchsia-200 bg-fuchsia-50/60 overflow-hidden" },
+                React.createElement("button", {
+                  onClick: function () { upd('mythsOpen', !mythsOpen); },
+                  "aria-expanded": mythsOpen,
+                  className: "transition-colors w-full flex items-center gap-2 p-3 text-left hover:bg-fuchsia-100/60"
+                },
+                  React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🧠'),
+                  React.createElement("span", { className: "text-sm font-black text-fuchsia-900 flex-1" }, 'Wave myths — test your intuition'),
+                  React.createElement("span", { className: "text-xs font-bold text-fuchsia-700" }, mythsOpen ? '▲ Hide' : '▼ Show')
+                ),
+                mythsOpen && React.createElement("div", { className: "px-3 pb-3 grid gap-2 grid-cols-1 md:grid-cols-2" },
+                  MYTHS.map(function (m, mi) {
+                    return React.createElement("div", { key: 'myth' + mi, className: "p-3 rounded-lg bg-white border border-fuchsia-200" },
+                      React.createElement("p", { className: "text-xs font-black text-rose-700 m-0" }, '❌ Myth: ' + m.myth),
+                      React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mt-1 mb-2" }, '✅ ' + m.truth),
+                      React.createElement("button", {
+                        onClick: function () {
+                          setLabToolData(function (prev) { var prior = (prev && prev.wave) || {}; return Object.assign({}, prev, { wave: Object.assign({}, prior, m.demo) }); });
+                          if (typeof addToast === 'function') addToast('👀 ' + m.btn, 'info');
+                        },
+                        className: "transition-colors px-2.5 py-1 rounded-md text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 active:scale-[0.97]"
+                      }, '👀 ' + m.btn)
+                    );
+                  })
+                )
+              );
+            })(),
+
             // Quiz
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
               React.createElement("button", { onClick: function () {
 
-                  var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
+                  // No-repeat cycle through the bank; reshuffle the pool once
+                  // exhausted. Option order is shuffled per question (the authored
+                  // order had the correct answer position-biased toward the front).
+                  var used = (d.quizUsed && d.quizUsed.length < WAVE_QUIZ.length) ? d.quizUsed.slice() : [];
+                  var pool = [];
+                  for (var qi = 0; qi < WAVE_QUIZ.length; qi++) { if (used.indexOf(qi) === -1) pool.push(qi); }
+                  var pick = pool[Math.floor(Math.random() * pool.length)];
+                  used.push(pick);
+                  upd('quizUsed', used);
+                  var q = WAVE_QUIZ[pick];
+                  var opts = q.opts.slice();
+                  for (var oi = opts.length - 1; oi > 0; oi--) { var oj = Math.floor(Math.random() * (oi + 1)); var tmpO = opts[oi]; opts[oi] = opts[oj]; opts[oj] = tmpO; }
 
-                  upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                  upd('quiz', { q: q.q, a: q.a, opts: opts, wrongFeedback: q.wrongFeedback, demo: q.demo || null, answered: false, score: (d.quiz && d.quiz.score) || 0, attempted: (d.quiz && d.quiz.attempted) || 0 });
 
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " transition-all"
 
@@ -2131,11 +2581,31 @@ const d = labToolData.wave;
 
                 onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
 
-                className: "px-2 py-1 rounded-lg text-xs text-slate-600 hover:bg-slate-100"
+                className: "transition-colors px-2 py-1 rounded-lg text-xs text-slate-600 hover:bg-slate-100 active:scale-[0.97]"
 
               }, "\u2715 Clear"),
 
-              d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+              d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + (d.quiz.attempted ? "/" + d.quiz.attempted : "") + " correct"),
+
+              React.createElement("button", { "aria-label": "Reset all wave controls to their defaults",
+                onClick: function () {
+                  setLabToolData(function (prev) {
+                    var prior = (prev && prev.wave) || {};
+                    return Object.assign({}, prev, { wave: Object.assign({}, prior, {
+                      frequency: 2, amplitude: 50, waveType: 'sine', waveSpeed: 343,
+                      speed: 1, showSecond: false, amplitude2: 30, frequency2: 3, phase2: 0,
+                      harmonic: 1, damping: false, dampingAlpha: 0.5, sourceSpeed: 0.3,
+                      rippleSeparation: 80, dampingCoeff: 0.002, reflectionEnd: 'fixed',
+                      reflectivity: 0.9, wallFrac: null, rippleSrc1: null, rippleSrc2: null,
+                      matchTarget: null, matchXpClaimed: false
+                    }) });
+                  });
+                  syncOsc({ freq: 2, type: 'sine', freq2: 3 });
+                  var c = canvasRef._lastCanvas; if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; c._drag.wallX = null; }
+                  if (typeof addToast === 'function') addToast('\u21BB Controls reset to defaults', 'info');
+                },
+                className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-400 hover:bg-slate-50 active:scale-[0.97]"
+              }, '\u21BB Reset controls')
 
             ),
 
@@ -2151,7 +2621,7 @@ const d = labToolData.wave;
 
                   var wasChosen = d.quiz.chosen === opt;
 
-                  var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
+                  var cls = !d.quiz.answered ? 'transition-colors bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
 
                   return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
@@ -2159,11 +2629,15 @@ const d = labToolData.wave;
 
                       var correct = opt === d.quiz.a;
 
-                      upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                      var fb = correct ? '' : ((d.quiz.wrongFeedback && d.quiz.wrongFeedback[opt]) || ('The answer is ' + d.quiz.a + '.'));
+
+                      upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, fb: fb, score: d.quiz.score + (correct ? 1 : 0), attempted: (d.quiz.attempted || 0) + 1 }));
 
                       if (correct) { awardStemXP('wave-quiz', 5, 'Wave quiz: ' + d.quiz.q); }
 
-                      addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.quiz.a, correct ? 'success' : 'error');
+                      if (!correct && typeof announceToSR === 'function') announceToSR('Not quite. ' + fb);
+
+                      addToast(correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 see why below', correct ? 'success' : 'error');
 
                     }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
 
@@ -2171,6 +2645,27 @@ const d = labToolData.wave;
 
                 })
 
+              ),
+
+              // Corrective feedback \u2014 names the specific mix-up instead of just the answer
+              d.quiz.answered && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg text-xs leading-relaxed " + (d.quiz.chosen === d.quiz.a ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-red-50 border border-red-200 text-red-800'), role: "status" },
+                d.quiz.chosen === d.quiz.a
+                  ? '\u2705 Correct!'
+                  : React.createElement(React.Fragment, null,
+                      React.createElement("span", { className: "font-bold" }, '\u274C Not quite \u2014 the answer is \u201C' + d.quiz.a + '\u201D. '),
+                      d.quiz.fb
+                    ),
+                d.quiz.demo && React.createElement("button", {
+                  onClick: function () {
+                    var demoPatch = d.quiz.demo;
+                    setLabToolData(function (prev) {
+                      var prior = (prev && prev.wave) || {};
+                      return Object.assign({}, prev, { wave: Object.assign({}, prior, demoPatch) });
+                    });
+                    if (typeof addToast === 'function') addToast('\uD83D\uDC40 Sim set up to demonstrate this \u2014 watch the wave', 'info');
+                  },
+                  className: "transition-colors ml-2 px-2 py-1 rounded-md text-[11px] font-bold bg-white border " + (d.quiz.chosen === d.quiz.a ? 'border-emerald-400 text-emerald-700 hover:bg-emerald-100' : 'border-red-400 text-red-700 hover:bg-red-100') + " active:scale-[0.97]"
+                }, '\uD83D\uDC40 Show me in the sim')
               )
 
             ),
@@ -2220,7 +2715,7 @@ const d = labToolData.wave;
                         onClick: function () { setAiLevel(L.id); },
                         "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-purple-700 border border-purple-600 hover:bg-purple-100 active:scale-[0.97]')
                       }, L.label);
                     })
                   ),
@@ -2228,12 +2723,12 @@ const d = labToolData.wave;
                     onClick: explain,
                     disabled: aiLoading,
                     "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
-                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                    className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
                   }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
               );
             })()
 
@@ -2378,7 +2873,7 @@ const d = labToolData.wave;
           ),
           expSection && React.createElement('button', {
             onClick: function() { setExp({ expSection: null }); },
-            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-cyan-300 text-cyan-700 hover:bg-cyan-100'
+            className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-cyan-300 text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]'
           }, '✕ Close section')
         );
       }
@@ -2402,7 +2897,8 @@ const d = labToolData.wave;
             { id: 'polarization', label: 'Polarization', icon: '↕' },
             { id: 'doppler', label: 'Doppler effect', icon: '🚓' },
             { id: 'shockwaves', label: 'Shock waves', icon: '✈' },
-            { id: 'standingHunt', label: 'Standing-wave hunt', icon: '🎯' }
+            { id: 'standingHunt', label: 'Standing-wave hunt', icon: '🎯' },
+            { id: 'discoverWave', label: 'Discover f·λ=v', icon: '🔬' }
           ] },
           { id: 'sound', label: 'Sound & Music', color: 'amber', tabs: [
             { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
@@ -2422,7 +2918,7 @@ const d = labToolData.wave;
             { id: 'colorhex', label: 'Named colors', icon: '🖌' },
             { id: 'lasers', label: 'Lasers', icon: '⫸' },
             { id: 'cameras', label: 'Camera lenses', icon: '📷' },
-            { id: 'optical_facts', label: 'Optical illusions', icon: '👁' }
+            { id: 'optical_facts', label: 'Perception & illusions', icon: '👁' }
           ] },
           { id: 'spectrum', label: 'EM Spectrum', color: 'violet', tabs: [
             { id: 'spectrum', label: 'EM spectrum', icon: '⚡' },
@@ -2450,20 +2946,38 @@ const d = labToolData.wave;
             { id: 'famous', label: 'History', icon: '🕰' },
             { id: 'glossary', label: 'Glossary', icon: '📖' }
           ] }
-        , { id: 'discoverWave', label: 'Discover f·λ=v', icon: '🔬' }];
+        ];
         function renderBtn(s, accent) {
           var active = expSection === s.id;
           return React.createElement('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1.5 rounded-md text-[11px] font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
-        return React.createElement('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+        // Accordion: one group open at a time — 47 chips at once was a wall.
+        // Default-open the group that contains the active section, if any.
+        var openGroup = d2.expGroup;
+        if (openGroup === undefined && expSection) {
+          for (var gi = 0; gi < TAB_GROUPS.length; gi++) {
+            if ((TAB_GROUPS[gi].tabs || []).some(function(s) { return s.id === expSection; })) { openGroup = TAB_GROUPS[gi].id; break; }
+          }
+        }
+        return React.createElement('div', { className: 'mb-3 rounded-lg bg-slate-50 border border-slate-200 flex flex-col overflow-hidden' },
           TAB_GROUPS.map(function(g) {
-            return React.createElement('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              React.createElement('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
-              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+            var isOpen = openGroup === g.id;
+            return React.createElement('div', { key: g.id, className: 'border-b border-slate-200 last:border-b-0' },
+              React.createElement('button', {
+                onClick: function() { setExp({ expGroup: isOpen ? null : g.id }); },
+                'aria-expanded': isOpen,
+                className: 'transition-colors w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-' + g.color + '-50'
+              },
+                React.createElement('span', { className: 'text-[11px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 flex-1' }, g.label),
+                React.createElement('span', { className: 'text-[10px] text-slate-500 font-bold' }, (g.tabs || []).length + ' topics ' + (isOpen ? '▲' : '▼'))
+              ),
+              isOpen && React.createElement('div', { role: 'group', 'aria-label': g.label + ' topics', className: 'px-3 pb-2 flex items-center gap-1.5 flex-wrap' },
+                (g.tabs || []).map(function(s) { return renderBtn(s, g.color); })
+              )
             );
           })
         );
@@ -2497,7 +3011,7 @@ const d = labToolData.wave;
             WAVE_QUANTITIES.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-lg font-black text-cyan-700 font-mono min-w-[24px]' }, q.sym),
+                  React.createElement('span', { className: 'text-lg font-black text-cyan-700 font-mono min-w-[24px] tracking-tight' }, q.sym),
                   React.createElement('span', { className: 'text-[12px] font-bold text-slate-800' }, q.name),
                   React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, q.units)
                 ),
@@ -2530,7 +3044,7 @@ const d = labToolData.wave;
             INTERFERENCE_PATTERNS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-2xl font-black text-cyan-700' }, p.icon),
+                  React.createElement('span', { className: 'text-2xl font-black text-cyan-700 tracking-tight' }, p.icon),
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, p.type),
                   React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, p.condition)
                 ),
@@ -2757,9 +3271,9 @@ const d = labToolData.wave;
               h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': 'Tension in newtons' }),
               h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, '(string mass density μ fixed at 0.01 kg/m)'),
               h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-                h('button', { onClick: logObservation, className: 'px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none' }, '📝 Log observation'),
-                h('button', { onClick: reveal, disabled: lab.discovered, className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
-                h('button', { onClick: reset, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none' }, '↻ Reset')
+                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]' }, '📝 Log observation'),
+                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
+                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none active:scale-[0.97]' }, '↻ Reset')
               ),
               (lab.observationsLogged || []).length > 0 && h('div', { className: 'mt-2' },
                 h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, 'Your observations'),
@@ -2892,11 +3406,11 @@ const d = labToolData.wave;
           h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
             h('button', {
               onClick: logObservation,
-              className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300'
+              className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300 active:scale-[0.97]'
             }, '📋 Log this observation'),
             h('button', {
               onClick: function() { setLab({ tension: 50, freq: 4, observationsLogged: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-              className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300'
+              className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300 active:scale-[0.97]'
             }, '↺ Reset'),
             (lab.observationsLogged || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (lab.observationsLogged || []).length + ' observation(s) logged')
           ),
@@ -2941,7 +3455,7 @@ const d = labToolData.wave;
           h('div', { className: 'mb-3' },
             !lab.stuckRevealed && h('button', {
               onClick: function() { setLab({ stuckRevealed: true }); },
-              className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300'
+              className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 active:scale-[0.97]'
             }, '🤔 I\'m stuck — show me some questions to think about (no answers)'),
             lab.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
               h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open questions (no answers — investigate by manipulating):'),

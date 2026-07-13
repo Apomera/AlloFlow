@@ -969,7 +969,8 @@
       try {
         var toolData = ctx.toolData || {};
         var setToolData = ctx.setToolData;
-        var t = ctx.t || function (k, d) { return d || k; };
+        // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+        var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
         // Render the board immediately from an inline default; persist the initial
         // state in the background. This previously returned a "Loading…" placeholder
@@ -1297,6 +1298,24 @@
         for (var gx = 0; gx <= 10; gx++) gridEls.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: sy(wy0), x2: sx(gx), y2: sy(wy1), stroke: GRID, strokeWidth: gx === 0 ? 1.5 : 0.5, opacity: gx === 0 ? 0.9 : 0.4 }));
         for (var gy = 0; gy <= 8; gy++) gridEls.push(h('line', { key: 'gy' + gy, x1: sx(wx0), y1: sy(gy), x2: sx(wx1), y2: sy(gy), stroke: GRID, strokeWidth: gy === 0 ? 1.5 : 0.5, opacity: gy === 0 ? 0.9 : 0.4 }));
 
+        // ── Axis tick numbers + titles ──
+        // A graphing tool must let the student READ coordinates off the grid:
+        // without these, tuning m to reach node (8,4) meant counting unlabeled
+        // gridlines. Integer ticks along the bottom (x) and left (y) edges (inset
+        // so the overflow-hidden viewBox never clips them), a single origin "0",
+        // and x/y axis titles. Bounds come from the world (not hardcoded) so they
+        // track any window. paintOrder halo keeps them legible over grid/sky on
+        // both themes; INK is the WCAG-tested, theme-aware ink colour.
+        var axisEls = [];
+        var _gxMax = Math.round(wx1), _gyMax = Math.round(wy1);
+        var _tickHalo = THEME === 'dark' ? 'rgba(2,8,6,0.55)' : 'rgba(255,255,255,0.7)';
+        var _tickStyle = { paintOrder: 'stroke', stroke: _tickHalo, strokeWidth: 2.5 };
+        axisEls.push(h('text', { key: 'ax0', x: 6, y: H - 5, textAnchor: 'start', fill: INK, fontSize: 10, fontWeight: 600, style: _tickStyle, 'aria-hidden': 'true' }, '0'));
+        for (var _tx = 1; _tx < _gxMax; _tx++) axisEls.push(h('text', { key: 'axx' + _tx, x: sx(_tx), y: H - 5, textAnchor: 'middle', fill: INK, fontSize: 10, fontWeight: 600, style: _tickStyle, 'aria-hidden': 'true' }, String(_tx)));
+        for (var _ty = 1; _ty < _gyMax; _ty++) axisEls.push(h('text', { key: 'axy' + _ty, x: 6, y: sy(_ty) + 3, textAnchor: 'start', fill: INK, fontSize: 10, fontWeight: 600, style: _tickStyle, 'aria-hidden': 'true' }, String(_ty)));
+        axisEls.push(h('text', { key: 'axtX', x: W - 6, y: H - 6, textAnchor: 'end', fill: INK, fontSize: 12, fontWeight: 700, fontStyle: 'italic', style: _tickStyle, 'aria-hidden': 'true' }, 'x'));
+        axisEls.push(h('text', { key: 'axtY', x: 6, y: 14, textAnchor: 'start', fill: INK, fontSize: 12, fontWeight: 700, fontStyle: 'italic', style: _tickStyle, 'aria-hidden': 'true' }, 'y'));
+
         // Gates IGNITE green the moment the beam threads them all (a solved board
         // turns success-green) — ties the visceral payoff straight to the math.
         var litNow = ls.solved || res.result === 'hit';
@@ -1413,7 +1432,7 @@
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return parabolaVertexParams(wx, wy, level); }); }
             }));
-            handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, 'vertex (h, k)'));
+            handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, t('stem.arccity.vertex_h_k', 'vertex (h, k)')));
           } else if (level.family === 'line' && level.params.b && level.params.b.locked) {
             var xH = level.node.x, yH = fnY('line', P, xH);
             handleEls.push(h('circle', {
@@ -1446,7 +1465,7 @@
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return sineCrestParams(wx, wy, level, P.b, P.k); }); }
             }));
-            handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, 'crest — drag onto a window'));
+            handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, t('stem.arccity.crest_drag_onto_a_window', 'crest — drag onto a window')));
           }
         }
 
@@ -1459,11 +1478,31 @@
           });
         }
 
+        // ── Coordinate-reading helpers: the y-intercept (0, b) marker for line
+        // levels + a live readout of where the beam crosses the target's x
+        // column vs the node's own y. The readout only shows when the curve is
+        // visible (respects the hidden-preview anti-fishing gate). All aria-hidden.
+        var mathEls = [];
+        var _mhalo = THEME === 'dark' ? 'rgba(2,8,6,0.55)' : 'rgba(255,255,255,0.7)';
+        if (level.family === 'line' && P.b >= wy0 - 0.5 && P.b <= wy1 + 0.5) {
+          var _byPx = sy(P.b);
+          mathEls.push(h('circle', { key: 'bdot', cx: sx(0), cy: _byPx, r: 4.5, fill: BEAM, stroke: '#06262b', strokeWidth: 1.5, 'aria-hidden': 'true' }));
+          mathEls.push(h('text', { key: 'blabel', x: sx(0) + 8, y: _byPx - 6, fill: BEAM, fontSize: 11, fontWeight: 800, style: { paintOrder: 'stroke', stroke: _mhalo, strokeWidth: 2.6 }, 'aria-hidden': 'true' }, 'b = ' + fmtVal(P.b, level.params.b.step)));
+        }
+        if (showPreview && !isMatch && level.node) {
+          var _nx = level.node.x, _ny = fnY(level.family, P, _nx);
+          if (isFinite(_ny) && _ny >= wy0 - 1 && _ny <= wy1 + 1) {
+            mathEls.push(h('line', { key: 'bhdrop', x1: sx(_nx), y1: sy(_ny), x2: sx(_nx), y2: sy(level.node.y), stroke: INK, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.5, 'aria-hidden': 'true' }));
+            mathEls.push(h('circle', { key: 'bhdot', cx: sx(_nx), cy: sy(_ny), r: 3.5, fill: 'none', stroke: BEAM, strokeWidth: 2, 'aria-hidden': 'true' }));
+            mathEls.push(h('text', { key: 'bhlabel', x: sx(_nx) - 7, y: sy(_ny) - 5, textAnchor: 'end', fill: INK, fontSize: 10, fontWeight: 700, style: { paintOrder: 'stroke', stroke: _mhalo, strokeWidth: 2.6 }, 'aria-hidden': 'true' }, 'y=' + (Math.round(_ny * 10) / 10)));
+          }
+        }
+
         var svg = (gauntlet && gauntlet.empty) ? null : h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat([defs], backdropEls, gridEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
+        }, [].concat([defs], backdropEls, gridEls, axisEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
@@ -1488,8 +1527,8 @@
               padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: current ? 800 : 600,
               border: '1px solid ' + (current ? BEAM : GRID),
               background: current ? 'rgba(34,211,238,0.15)' : 'transparent',
-              color: unlocked ? INK : 'var(--allo-stem-text, #64748b)',
-              opacity: unlocked ? 1 : 0.5, cursor: unlocked ? 'pointer' : 'not-allowed', textAlign: 'center'
+              color: unlocked ? INK : 'var(--allo-stem-text-soft, #475569)',
+              opacity: unlocked ? 1 : 0.7, cursor: unlocked ? 'pointer' : 'not-allowed', textAlign: 'center'
             }
           }, h('div', { key: 'face' }, face), starLine);
         });

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Tutor Link</title>
+<!--
+  AlloFlow Data Lab — CODAP tutor plugin (data interactive).
+
+  CODAP (Concord Consortium, MIT) hosts "data interactives" in iframes and
+  talks to them over iframe-phone. data_lab.html loads CODAP with
+  ?di=<this page>, so this tiny plugin runs INSIDE the CODAP workspace and is
+  the tutor's eyes: when the Data Lab page asks (postMessage from window.top),
+  it queries CODAP for a SCHEMA-level snapshot — data context names,
+  collection names, attribute (column) names, and case counts — and posts it
+  back up. It deliberately never reads case VALUES: the Socratic tutor reasons
+  about the shape of the student's work, not the contents, so nothing a
+  student typed into a table leaves CODAP.
+-->
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 8px 10px; background: #eef2fb; color: #24304f; font-size: 12px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; margin-right: 6px; vertical-align: baseline; }
+  .dot.on { background: #22c55e; }
+</style>
+</head>
+<body>
+  <div><span id="dot" class="dot"></span><strong>AlloFlow tutor link</strong></div>
+  <div id="status">Connecting to CODAP…</div>
+
+<script src="vendor/iframe-phone.js"></script>
+<script>
+(function () {
+  'use strict';
+  var statusEl = document.getElementById('status');
+  var dotEl = document.getElementById('dot');
+  var connected = false;
+
+  // ── CODAP RPC endpoint (plugin side of iframe-phone) ──────────────
+  var endpoint = new iframePhone.IframePhoneRpcEndpoint(function (request, callback) {
+    // CODAP pushes notifications here; acknowledge everything politely.
+    try { callback({ success: true }); } catch (_) {}
+  }, 'data-interactive', window.parent);
+
+  function codapCall(message) {
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = setTimeout(function () { if (!settled) { settled = true; resolve(null); } }, 4000);
+      try {
+        endpoint.call(message, function (response) {
+          if (!settled) { settled = true; clearTimeout(timer); resolve(response || null); }
+        });
+      } catch (_) {
+        if (!settled) { settled = true; clearTimeout(timer); resolve(null); }
+      }
+    });
+  }
+
+  // Register this plugin with CODAP.
+  codapCall({
+    action: 'update',
+    resource: 'interactiveFrame',
+    values: { name: 'AlloFlow Tutor Link', title: 'AlloFlow Tutor Link', version: '1.0', dimensions: { width: 240, height: 84 }, preventDataContextReorg: false }
+  }).then(function (res) {
+    connected = Boolean(res && res.success);
+    statusEl.textContent = connected
+      ? 'Connected. The tutor can see column names and counts — never your data values.'
+      : 'Could not reach CODAP. The tutor will work without a data snapshot.';
+    if (connected) dotEl.className = 'dot on';
+  });
+
+  // ── Schema-level snapshot (names + counts only, NEVER case values) ──
+  function valuesOf(res) { return (res && res.success && res.values) ? res.values : null; }
+
+  async function buildSnapshot() {
+    var snapshot = { contexts: [], components: [], capturedAt: new Date().toISOString() };
+    var ctxList = valuesOf(await codapCall({ action: 'get', resource: 'dataContextList' })) || [];
+    for (var i = 0; i < Math.min(ctxList.length, 6); i++) {
+      var ctxName = ctxList[i] && (ctxList[i].name || ctxList[i].title);
+      if (!ctxName) continue;
+      var ctxEntry = { name: String(ctxName).slice(0, 60), collections: [] };
+      var collList = valuesOf(await codapCall({ action: 'get', resource: 'dataContext[' + ctxName + '].collectionList' })) || [];
+      for (var j = 0; j < Math.min(collList.length, 6); j++) {
+        var collName = collList[j] && (collList[j].name || collList[j].title);
+        if (!collName) continue;
+        var attrs = valuesOf(await codapCall({ action: 'get', resource: 'dataContext[' + ctxName + '].collection[' + collName + '].attributeList' })) || [];
+        var countRes = valuesOf(await codapCall({ action: 'get', resource: 'dataContext[' + ctxName + '].collection[' + collName + '].caseCount' }));
+        ctxEntry.collections.push({
+          name: String(collName).slice(0, 60),
+          caseCount: (typeof countRes === 'number') ? countRes : null,
+          attributes: attrs.slice(0, 30).map(function (a) { return String((a && (a.name || a.title)) || '').slice(0, 50); }).filter(Boolean)
+        });
+      }
+      snapshot.contexts.push(ctxEntry);
+    }
+    var comps = valuesOf(await codapCall({ action: 'get', resource: 'componentList' })) || [];
+    snapshot.components = comps.slice(0, 20).map(function (c) {
+      return { type: String((c && c.type) || '').slice(0, 30), title: String((c && (c.title || c.name)) || '').slice(0, 60) };
+    });
+    return snapshot;
+  }
+
+  // ── Requests from the Data Lab page (window.top) ───────────────────
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || data.type !== 'allodatalab-snapshot-request') return;
+    var requestId = data.id;
+    Promise.resolve()
+      .then(buildSnapshot)
+      .then(function (snapshot) {
+        (event.source || window.top).postMessage({ type: 'allodatalab-snapshot', id: requestId, ok: connected, snapshot: snapshot }, '*');
+      })
+      .catch(function (error) {
+        (event.source || window.top).postMessage({ type: 'allodatalab-snapshot', id: requestId, ok: false, error: String((error && error.message) || error).slice(0, 120) }, '*');
+      });
+  });
+
+  // Tell the Data Lab page the plugin is alive (it may load before or after us).
+  function announce() {
+    try { window.top.postMessage({ type: 'allodatalab-plugin-alive' }, '*'); } catch (_) {}
+  }
+  announce();
+  setTimeout(announce, 1200);
+})();
+</script>
+</body>
+</html>

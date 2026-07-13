@@ -24,6 +24,9 @@ function SessionModal({
   doc,
   handleSetShowGroupModalToTrue,
   handleSetShowSessionModalToFalse,
+  isMailboxSession = false,
+  mailboxJoinUrl = "",
+  onRequestEndSession,
   sessionData,
   setActiveSessionCode,
   setConfirmDialog,
@@ -40,16 +43,138 @@ function SessionModal({
   const Users = window.Users || noop;
   const ChevronRight = window.ChevronRight || noop;
   const XCircle = window.XCircle || noop;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full relative animate-in zoom-in-95 duration-200", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("session.live_title") }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse" }))), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, t("session.live_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 font-medium" }, t("session.live_instruction")), /* @__PURE__ */ React.createElement(
-    "div",
+  const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : "";
+  const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === "local-preview";
+  const [liveQrSvg, setLiveQrSvg] = React.useState("");
+  const [liveQrError, setLiveQrError] = React.useState(false);
+  const dialogRef = React.useRef(null);
+  React.useEffect(function() {
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const getFocusable = function() {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        handleSetShowSessionModalToFalse();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) {
+        event.preventDefault();
+        lastItem.focus();
+      } else if (!event.shiftKey && document.activeElement === lastItem) {
+        event.preventDefault();
+        firstItem.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return function() {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, [handleSetShowSessionModalToFalse]);
+  const liveJoinUrl = React.useMemo(() => {
+    if (mailboxJoinUrl) return mailboxJoinUrl;
+    if (isLocalOnly || !activeSessionCode || typeof window === "undefined") return "";
+    const params = {
+      allo_join: activeSessionCode,
+      allo_host: activeSessionAppId || appId,
+      allo_ai: "off"
+    };
+    if (typeof window.__alloBuildShareUrl === "function") {
+      try {
+        return window.__alloBuildShareUrl(params);
+      } catch (_) {
+      }
+    }
+    try {
+      const url = new URL(window.location.href);
+      const protocol = String(url.protocol || "").toLowerCase();
+      const host = String(url.hostname || "").toLowerCase();
+      if (!/^https?:$/.test(protocol) || host === "localhost" || host === "127.0.0.1" || host.includes("gemini.google") || host === "prismflow-911fe.web.app" || host === "prismflow-911fe.firebaseapp.com") {
+        return "";
+      }
+      url.search = "";
+      url.hash = "";
+      Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, String(value)));
+      return url.toString();
+    } catch (_) {
+      return "";
+    }
+  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly, mailboxJoinUrl]);
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!liveJoinUrl || typeof window === "undefined") {
+      setLiveQrSvg("");
+      setLiveQrError(false);
+      return void 0;
+    }
+    setLiveQrSvg("");
+    setLiveQrError(false);
+    const makeQrSvg = async () => {
+      if (typeof window.__alloMakeQrSvg === "function") {
+        return window.__alloMakeQrSvg(liveJoinUrl, "AlloFlow student join QR");
+      }
+      if (!window.qrcode) throw new Error("QR helper unavailable");
+      const qr = window.qrcode(0, "M");
+      qr.addData(liveJoinUrl);
+      qr.make();
+      return qr.createSvgTag({ cellSize: 5, margin: 20, scalable: true, title: "AlloFlow student join QR" });
+    };
+    makeQrSvg().then((svg) => {
+      if (!cancelled) setLiveQrSvg(svg);
+    }).catch(() => {
+      if (!cancelled) {
+        setLiveQrSvg("");
+        setLiveQrError(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [liveJoinUrl]);
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200", role: "presentation", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-2xl shadow-2xl p-5 sm:p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200 focus:outline-none", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "alloflow-session-modal-title" }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse" }))), /* @__PURE__ */ React.createElement("h2", { id: "alloflow-session-modal-title", className: "text-2xl font-black text-slate-800 mb-2" }, isLocalOnly ? "Local preview" : isMailboxSession ? "Class Mailbox live session" : t("session.live_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 font-medium" }, isLocalOnly ? "Firebase did not create a shareable session. This preview stays on the teacher device." : isMailboxSession ? "Students join through your Class Mailbox without accounts." : t("session.live_instruction")), /* @__PURE__ */ React.createElement(
+    "button",
     {
-      className: "bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative",
+      type: "button",
+      className: "w-full bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-4 sm:p-6 mb-6 cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors group relative",
       onClick: () => copyToClipboard(activeSessionCode),
       title: t("common.click_to_copy")
     },
-    /* @__PURE__ */ React.createElement("div", { className: "text-7xl font-black text-indigo-600 tracking-widest font-mono" }, activeSessionCode),
+    /* @__PURE__ */ React.createElement("div", { className: "text-5xl sm:text-7xl font-black text-indigo-600 tracking-[0.16em] sm:tracking-widest font-mono" }, activeSessionCode),
     /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Copy, { size: 10 }), " ", t("session.click_to_copy"))
-  ), /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1" }, t("session.host_id_share")), /* @__PURE__ */ React.createElement(
+  ), liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center" }, isMailboxSession ? "Class Mailbox QR join" : "Student QR join"), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm" }, liveQrSvg ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full [&_svg]:w-full [&_svg]:h-full", dangerouslySetInnerHTML: { __html: liveQrSvg } }) : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-cyan-700 text-center" }, liveQrError ? "Copy link below" : "QR loading"))), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.copy"),
+      onClick: () => copyToClipboard(liveJoinUrl),
+      className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-white border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all"
+    },
+    "Copy student join link ",
+    /* @__PURE__ */ React.createElement(Copy, { size: 12 })
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800 mt-2 text-center" }, isMailboxSession ? "This QR uses the mailbox session secret and does not require Firebase sign-in." : "QR students join this live session with AI generation off.")), !liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, isLocalOnly ? "Local preview only" : "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, isLocalOnly ? "This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears." : "This host is not configured as a student join path. Use the class code, local network link, or a student app URL.")), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.copy"),
+      onClick: () => copyToClipboard(lanJoinUrl),
+      className: "w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-800 hover:text-emerald-900 bg-white border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all break-all"
+    },
+    lanJoinUrl,
+    " ",
+    /* @__PURE__ */ React.createElement(Copy, { size: 12 })
+  )), !isMailboxSession && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1" }, t("session.host_id_share")), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),
@@ -77,34 +202,25 @@ function SessionModal({
     },
     /* @__PURE__ */ React.createElement("div", { className: `w-10 h-5 rounded-full relative transition-colors ${sessionData.mode === "sync" ? "bg-indigo-500" : "bg-slate-300"}` }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${sessionData.mode === "sync" ? "left-6" : "left-1"}` })),
     /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold uppercase tracking-wider" }, sessionData.mode === "sync" ? t("session.teacher_paced") : t("session.student_paced")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] opacity-70 font-normal" }, sessionData.mode === "sync" ? t("session.teacher_paced_desc") : t("session.student_paced_desc")))
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetShowSessionModalToFalse,
-      className: "px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"
+      className: "w-full sm:w-auto px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"
     },
     t("session.action_close")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: async () => {
-        setConfirmDialog({ message: t("session.end_confirm") || "Are you sure you want to end this session?", onConfirm: async () => {
-          if (activeSessionCode) {
-            try {
-              const sessionRef = doc(db, "artifacts", activeSessionAppId || appId, "public", "data", "sessions", activeSessionCode);
-              await deleteDoc(sessionRef);
-              addToast(t("session.session_ended_toast") || "Session ended.", "success");
-            } catch (e) {
-              warnLog("Error ending session:", e);
-              addToast(t("session.error_end_session") || "Failed to end session.", "error");
-            }
-          }
+      onClick: () => {
+        if (typeof onRequestEndSession === "function") onRequestEndSession();
+        else setConfirmDialog({ message: t("session.end_confirm") || "Are you sure you want to end this session?", onConfirm: () => {
           setActiveSessionCode(null);
           setSessionData(null);
           setShowSessionModal(false);
         } });
       },
-      className: "px-8 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-full transition-colors flex items-center gap-2"
+      className: "w-full sm:w-auto px-8 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-full transition-colors flex items-center justify-center gap-2"
     },
     /* @__PURE__ */ React.createElement(XCircle, { size: 18 }),
     " ",

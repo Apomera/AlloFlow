@@ -47,6 +47,74 @@ describe('view_pdf_audit · _htmlToDocxSpec (accessible Word export)', () => {
     expect(spec.counts.links).toBe(1);
   });
 
+  it('captures superscript/subscript so footnote anchors and formulae survive docx', () => {
+    const spec = _htmlToDocxSpec(wrap('<p>H<sub>2</sub>O and x<sup>2</sup> note<sup class="allo-fn-ref">1</sup></p>'));
+    const runs = spec.blocks[0].runs;
+    expect(runs.find(r => r.text === '2' && r.sub).sub).toBe(true);
+    const sups = runs.filter(r => r.sup);
+    expect(sups.map(r => r.text).join('')).toBe('21'); // x² exponent + footnote marker
+    // plain text carries neither flag
+    expect(runs.find(r => /and/.test(r.text)).sup).toBe(false);
+    expect(runs.find(r => /and/.test(r.text)).sub).toBe(false);
+  });
+
+  it('emits REAL footnotes: anchor → footnoteId run, notes section skipped, spec.footnotes populated (A6)', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<p>Body text<sup class="allo-fn-ref" data-fn-uid="a"><a href="#fn-a">1</a></sup> and more<sup class="allo-fn-ref" data-fn-uid="b"><a href="#fn-b">2</a></sup>.</p>' +
+      '<section class="allo-footnotes"><hr/><ol>' +
+      '<li data-fn-uid="a"><span class="allo-fn-text">First note.</span> <a class="allo-fn-back">↩</a></li>' +
+      '<li data-fn-uid="b"><span class="allo-fn-text">Second note.</span> <a class="allo-fn-back">↩</a></li>' +
+      '</ol></section>'
+    ));
+    // footnote definitions collected in document order (id 1, 2)
+    expect(Object.keys(spec.footnotes)).toEqual(['1', '2']);
+    expect(spec.footnotes['1'].map(r => r.text || '').join('')).toContain('First note');
+    // anchors became footnote-reference runs, NOT superscript digits
+    const runs = spec.blocks[0].runs;
+    expect(runs.filter(r => r.footnoteId).map(r => r.footnoteId)).toEqual([1, 2]);
+    expect(runs.some(r => r.text === '1' && r.sup)).toBe(false);
+    // the footnotes section must NOT also appear as a trailing list / paragraph
+    expect(spec.blocks.some(b => b.type === 'list')).toBe(false);
+    expect(JSON.stringify(spec.blocks)).not.toContain('First note');
+  });
+
+  it('turns a page-break block into a pagebreak block and never leaks its label text', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<p>before</p>' +
+      '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak"><span class="allo-pb-label" aria-hidden="true">— Page Break —</span><span class="allo-sr-only">Page break</span></div>' +
+      '<p>after</p>'
+    ));
+    const types = spec.blocks.map(b => b.type);
+    expect(types).toEqual(['paragraph', 'pagebreak', 'paragraph']);
+    // the "— Page Break —" / "Page break" chrome must not appear as content
+    expect(JSON.stringify(spec.blocks)).not.toContain('Page Break');
+    expect(JSON.stringify(spec.blocks)).not.toContain('Page break');
+  });
+
+  it('centers title-page lines (title + author/affiliation) in any mode', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<section class="allo-titlepage"><h1>Title of Your Paper</h1><p>Author Name</p><p>Institutional Affiliation</p></section>' +
+      '<p>body paragraph after</p>'
+    ));
+    const title = spec.blocks.find(b => b.type === 'heading');
+    expect(title.centered).toBe(true);
+    const author = spec.blocks.find(b => b.type === 'paragraph' && /Author Name/.test((b.runs || []).map(r => r.text).join('')));
+    expect(author.centered).toBe(true);
+    // a normal body paragraph outside the title page is NOT centered
+    expect(spec.blocks.find(b => b.type === 'paragraph' && /body paragraph/.test((b.runs || []).map(r => r.text).join(''))).centered).toBeUndefined();
+  });
+
+  it('flags reference-list entries for hanging indent (APA/MLA/Chicago)', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<p>normal para</p>' +
+      '<section class="allo-references"><h2>References</h2><p class="allo-ref-entry">Author, A. (2020). <em>Title</em>. Source.</p></section>'
+    ));
+    const refPara = spec.blocks.find(b => b.type === 'paragraph' && /Author, A\./.test((b.runs || []).map(r => r.text).join('')));
+    expect(refPara.hanging).toBe(true);
+    // a normal paragraph is not flagged
+    expect(spec.blocks.find(b => b.type === 'paragraph' && /normal para/.test((b.runs || []).map(r => r.text).join(''))).hanging).toBeUndefined();
+  });
+
   it('maps ul/ol with nesting levels and preserves order kind', () => {
     const spec = _htmlToDocxSpec(wrap('<ol><li>first</li><li>second<ul><li>nested</li></ul></li></ol>'));
     const list = spec.blocks.find(b => b.type === 'list');

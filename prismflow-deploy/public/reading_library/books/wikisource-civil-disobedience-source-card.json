@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-civil-disobedience-source-card",
+  "title": "Civil Disobedience",
+  "description": "A Wikisource source card for Henry David Thoreau's essay Civil Disobedience.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Civil disobedience",
+    "Philosophy",
+    "Primary sources",
+    "Civics"
+  ],
+  "authors": [
+    "Henry David Thoreau"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Civil_Disobedience_(Thoreau)",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Civil_Disobedience_(Thoreau)"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Civil Disobedience is useful for studying conscience, law, protest, government, and the relationship between individual ethics and public policy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for argument analysis and for comparing later movements that referenced or responded to Thoreau."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Wikisource hosts public-domain and freely licensed texts. Check the linked work page for its specific license and source notes before assigning or mirroring."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

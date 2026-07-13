@@ -1045,7 +1045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     { tool: 'Wooden spoons + spatula', priority: 'Essential', cost: '$5-20', skillNote: 'Heat-safe, won\'t scratch pans.' },
     { tool: 'Can opener', priority: 'Essential', cost: '$10', skillNote: 'Manual fine; electric for accessibility.' },
     { tool: 'Colander/strainer', priority: 'Essential', cost: '$10-25', skillNote: 'Pasta, draining beans, washing produce.' },
-    { tool: 'Cast iron pan', priority: 'Helpful', cost: '$20-50', skillNote: 'Adds iron to food, retains heat. Care: dry + oil.' },
+{ tool: 'Cast iron pan', priority: 'Helpful', cost: '$20-50', skillNote: 'Adds iron to food, retains heat. Care: dry + oil.' },
     { tool: 'Dutch oven (5-7 qt)', priority: 'Helpful', cost: '$50-300', skillNote: 'Stews, braises, bread, soups. Lifetime tool.' },
     { tool: 'Blender', priority: 'Helpful', cost: '$25-200', skillNote: 'Smoothies, soups, sauces.' },
     { tool: 'Food processor', priority: 'Helpful', cost: '$50-200', skillNote: 'Chopping, hummus, pesto, doughs.' },
@@ -1090,8 +1090,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
   function nlCard(props, children) {
     var p = props || {};
     return nlH('div', { style: Object.assign({
-      padding: 14, borderRadius: 12, background: '#fff',
-      border: '1px solid #d1d5db', boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #ffffff)',
+      border: '1px solid var(--allo-stem-border, #d1d5db)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      color: 'var(--allo-stem-text, #0f172a)',
       marginBottom: 10
     }, p.style || {}) }, children);
   }
@@ -1100,8 +1101,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var variant = p.variant || 'primary';
     var palette = {
       primary:   { bg: '#059669', color: '#fff',   border: '#047857' },
-      secondary: { bg: '#fff',     color: '#0f766e', border: '#0d9488' },
-      ghost:     { bg: '#f1f5f9',  color: '#94a3b8', border: 'var(--allo-stem-border, #cbd5e1)' },
+      secondary: { bg: 'var(--allo-stem-panel, #ffffff)', color: 'var(--allo-stem-text, #0f766e)', border: '#0d9488' },
+      ghost:     { bg: 'var(--allo-stem-deeper, #f1f5f9)',  color: 'var(--allo-stem-text-soft, #94a3b8)', border: 'var(--allo-stem-border, #cbd5e1)' },
       danger:    { bg: '#fee2e2',  color: '#991b1b', border: '#fecaca' },
       success:   { bg: '#dcfce7',  color: '#166534', border: '#86efac' },
       warning:   { bg: '#fef3c7',  color: '#78350f', border: '#fcd34d' }
@@ -1127,8 +1128,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       'aria-label': p['aria-label'] || p.placeholder,
       style: Object.assign({
         width: '100%', padding: '8px 10px', borderRadius: 8,
-        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: '#0f172a',
-        background: '#fff'
+        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: 'var(--allo-stem-text, #0f172a)',
+        background: 'var(--allo-stem-panel, #ffffff)'
       }, p.style || {})
     }, p));
   }
@@ -1142,8 +1143,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       'aria-label': p['aria-label'] || p.placeholder,
       style: Object.assign({
         width: '100%', padding: '8px 10px', borderRadius: 8,
-        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: '#0f172a',
-        background: '#fff', resize: 'vertical', fontFamily: 'inherit'
+        border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13, color: 'var(--allo-stem-text, #0f172a)',
+        background: 'var(--allo-stem-panel, #ffffff)', resize: 'vertical', fontFamily: 'inherit'
       }, p.style || {})
     });
   }
@@ -15723,6 +15724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     icon: '🥗',
     desc: 'Adolescent-safe nutrition science: macronutrients, micronutrients, food labels, metabolism, digestion, common myths, food + mental health, eating-disorder awareness, Maine food reality, and registered-dietitian career pathways. Frame is physiology-first ("what your body uses food for"), not weight-loss. Sources cited inline: USDA FoodData Central, NIH ODS, Harvard T.H. Chan, AAP, NEDA.',
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React || window.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -15785,9 +15787,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 shadow' },
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
-            'aria-label': 'Back to NutritionLab menu',
+            'aria-label': __alloT('stem.nutritionlab.back_to_nutritionlab_menu', 'Back to NutritionLab menu'),
             className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
-          }, '← Menu'),
+          }, __alloT('stem.nutritionlab.menu', '← Menu')),
           h('span', { className: 'text-3xl' }, props.icon),
           h('h1', { className: 'text-xl font-black flex-1' }, props.title)
         );
@@ -15805,21 +15807,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         return h('details', { className: 'nutritionlab-teacher-notes bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
           h('summary', {
             className: 'cursor-pointer text-sm font-bold text-amber-900 hover:text-amber-700 select-none flex items-center justify-between gap-3',
-            'aria-label': 'Teacher Notes — discussion questions, standards alignment, and extension activities'
+            'aria-label': __alloT('stem.nutritionlab.teacher_notes_discussion_questions_sta', 'Teacher Notes — discussion questions, standards alignment, and extension activities')
           },
-            h('span', null, '🍎 Teacher Notes — click to expand'),
+            h('span', null, __alloT('stem.nutritionlab.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand')),
             h('span', {
               role: 'button',
               tabIndex: 0,
-              'aria-label': 'Print this module page (includes Teacher Notes)',
+              'aria-label': __alloT('stem.nutritionlab.print_this_module_page_includes_teache', 'Print this module page (includes Teacher Notes)'),
               onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
               className: 'nutritionlab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800'
-            }, '🖨️ Print')
+            }, __alloT('stem.nutritionlab.print', '🖨️ Print'))
           ),
           h('div', { className: 'mt-3 space-y-3 text-sm' },
             props.standards && props.standards.length > 0 && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'NGSS / CTE Standards'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.nutritionlab.ngss_cte_standards', 'NGSS / CTE Standards')),
               h('div', { className: 'text-slate-700' },
                 props.standards.map(function(s, i) {
                   return h('span', { key: i, className: 'inline-block mr-2 mb-1 px-2 py-0.5 bg-white border border-amber-300 rounded text-xs font-mono' }, s);
@@ -15827,13 +15829,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               )
             ),
             props.questions && props.questions.length > 0 && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'Discussion Questions'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.nutritionlab.discussion_questions', 'Discussion Questions')),
               h('ol', { className: 'list-decimal list-inside space-y-1 text-slate-700' },
                 props.questions.map(function(q, i) { return h('li', { key: i }, q); })
               )
             ),
             props.misconceptions && props.misconceptions.length > 0 && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'Watch for these misconceptions'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.nutritionlab.watch_for_these_misconceptions', 'Watch for these misconceptions')),
               h('ul', { className: 'space-y-1 text-slate-700' },
                 props.misconceptions.map(function(m, i) {
                   return h('li', { key: i, className: 'flex items-start gap-1.5' },
@@ -15844,11 +15846,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               )
             ),
             props.extension && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'Extension Activity'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.nutritionlab.extension_activity', 'Extension Activity')),
               h('div', { className: 'text-slate-700 italic' }, props.extension)
             ),
             props.sources && h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, 'Sources cited'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, __alloT('stem.nutritionlab.sources_cited', 'Sources cited')),
               h('div', { className: 'text-xs text-slate-700' }, props.sources)
             )
           )
@@ -15861,36 +15863,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       function MainMenu() {
         var bigCards = [
           {
-            id: 'myNutritionKit', title: 'My Nutrition Kit', icon: '🥗',
-            subtitle: '127 personal, evidence-based tools',
-            desc: 'Build your own nutrition practice: meal logs, hydration, goals, body-listening, cooking, cultural foods, sports fuel, mental-health x food, NEDA-aligned recovery support, Maine seasonal eating, and more. Physiology-first, never restriction. All data stays in your browser.',
+            id: 'myNutritionKit', title: __alloT('stem.nutritionlab.my_nutrition_kit', 'My Nutrition Kit'), icon: '🥗',
+            subtitle: __alloT('stem.nutritionlab.127_personal_evidence_based_tools', '127 personal, evidence-based tools'),
+            desc: __alloT('stem.nutritionlab.build_your_own_nutrition_practice_meal', 'Build your own nutrition practice: meal logs, hydration, goals, body-listening, cooking, cultural foods, sports fuel, mental-health x food, NEDA-aligned recovery support, Maine seasonal eating, and more. Physiology-first, never restriction. All data stays in your browser.'),
             bullets: ['127 personal tools across 13 categories', 'NEDA-aligned content + safety contacts', 'Maine-specific (fisheries, farmers markets, seasons)', 'Privacy-first — no server sync'],
             color: 'from-emerald-600 to-teal-700',
             ring: 'ring-emerald-500/40',
             ready: true
           },
           {
-            id: 'macroLab', title: 'Macronutrient Lab', icon: '🍽️',
-            subtitle: 'Build a plate, see what your body uses it for',
-            desc: 'Click foods to add them to a plate. Watch the carbs, protein, fat, and fiber totals update from real USDA values. Get a physiology readout: which body systems each meal supports — muscle repair, brain fuel, oxygen delivery, gut health. No calorie targets, no good/bad food labels.',
+            id: 'macroLab', title: __alloT('stem.nutritionlab.macronutrient_lab', 'Macronutrient Lab'), icon: '🍽️',
+            subtitle: __alloT('stem.nutritionlab.build_a_plate_see_what_your_body_uses_', 'Build a plate, see what your body uses it for'),
+            desc: __alloT('stem.nutritionlab.click_foods_to_add_them_to_a_plate_wat', 'Click foods to add them to a plate. Watch the carbs, protein, fat, and fiber totals update from real USDA values. Get a physiology readout: which body systems each meal supports — muscle repair, brain fuel, oxygen delivery, gut health. No calorie targets, no good/bad food labels.'),
             bullets: ['15 real foods with USDA values', 'Live macro totals + fiber', 'Physiology benefit readout', 'Keyboard accessible — no drag-drop required'],
             color: 'from-emerald-500 to-teal-700',
             ring: 'ring-emerald-500/40',
             ready: true
           },
           {
-            id: 'microAtlas', title: 'Micronutrient Atlas', icon: '🌈',
-            subtitle: '13 vitamins, 15 minerals, omega-3',
-            desc: 'Click any nutrient to see what it does, where to find it, and what happens when you don\'t get enough. Maine-relevant: vitamin D (winter sun problem), omega-3 (Maine fisheries), iron (high-need group is teens). Every entry sourced from NIH ODS Fact Sheets.',
+            id: 'microAtlas', title: __alloT('stem.nutritionlab.micronutrient_atlas', 'Micronutrient Atlas'), icon: '🌈',
+            subtitle: __alloT('stem.nutritionlab.13_vitamins_15_minerals_omega_3', '13 vitamins, 15 minerals, omega-3'),
+            desc: __alloT('stem.nutritionlab.click_any_nutrient_to_see_what_it_does', 'Click any nutrient to see what it does, where to find it, and what happens when you don\'t get enough. Maine-relevant: vitamin D (winter sun problem), omega-3 (Maine fisheries), iron (high-need group is teens). Every entry sourced from NIH ODS Fact Sheets.'),
             bullets: ['13 essential vitamins', '15 essential minerals', 'Omega-3 EFA breakdown', 'NIH ODS sourced inline'],
             color: 'from-lime-500 to-emerald-600',
             ring: 'ring-lime-500/40',
             ready: true
           },
           {
-            id: 'labelReader', title: 'Food Label Reader', icon: '🏷️',
-            subtitle: 'Decode a Nutrition Facts panel like a pro',
-            desc: 'Real-style Nutrition Facts panels from common foods. Decode serving-size traps, % Daily Value, added sugars, sodium. Progressive challenges from a simple granola bar up to a multi-serving frozen meal that lies about its real serving count.',
+            id: 'labelReader', title: __alloT('stem.nutritionlab.food_label_reader', 'Food Label Reader'), icon: '🏷️',
+            subtitle: __alloT('stem.nutritionlab.decode_a_nutrition_facts_panel_like_a_', 'Decode a Nutrition Facts panel like a pro'),
+            desc: __alloT('stem.nutritionlab.real_style_nutrition_facts_panels_from', 'Real-style Nutrition Facts panels from common foods. Decode serving-size traps, % Daily Value, added sugars, sodium. Progressive challenges from a simple granola bar up to a multi-serving frozen meal that lies about its real serving count.'),
             bullets: ['4–5 progressive challenges', 'Serving-size deception drills', '% DV, added sugars, sodium', 'FDA label spec aligned'],
             color: 'from-cyan-500 to-blue-600',
             ring: 'ring-cyan-500/40',
@@ -15899,89 +15901,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
         var miniCards = [
           {
-            id: 'energyBalance', title: 'Energy & Metabolism', icon: '⚡',
-            subtitle: 'ATP, mitochondria, and your brain',
-            desc: 'Where your body\'s energy actually comes from. ATP cycle, why brains use ~20% of daily energy, what BMR / TDEE actually mean. Framed as physiology, not weight management.',
+            id: 'energyBalance', title: __alloT('stem.nutritionlab.energy_metabolism', 'Energy & Metabolism'), icon: '⚡',
+            subtitle: __alloT('stem.nutritionlab.atp_mitochondria_and_your_brain', 'ATP, mitochondria, and your brain'),
+            desc: __alloT('stem.nutritionlab.where_your_body_s_energy_actually_come', 'Where your body\'s energy actually comes from. ATP cycle, why brains use ~20% of daily energy, what BMR / TDEE actually mean. Framed as physiology, not weight management.'),
             color: 'from-amber-500 to-orange-600',
             ring: 'ring-amber-500/40',
             ready: true
           },
           {
-            id: 'digestion', title: 'Digestion Walkthrough', icon: '🍽️',
-            subtitle: 'Mouth → stomach → intestines',
-            desc: 'Where each macronutrient is broken down. Hormones (insulin, glucagon, leptin, ghrelin) and what they actually do.',
+            id: 'digestion', title: __alloT('stem.nutritionlab.digestion_walkthrough', 'Digestion Walkthrough'), icon: '🍽️',
+            subtitle: __alloT('stem.nutritionlab.mouth_stomach_intestines', 'Mouth → stomach → intestines'),
+            desc: __alloT('stem.nutritionlab.where_each_macronutrient_is_broken_dow', 'Where each macronutrient is broken down. Hormones (insulin, glucagon, leptin, ghrelin) and what they actually do.'),
             color: 'from-rose-500 to-pink-600',
             ring: 'ring-rose-500/40',
             ready: true
           },
           {
-            id: 'myths', title: 'Common Nutrition Myths', icon: '🔍',
-            subtitle: '8–10 myths debunked with citations',
-            desc: 'Detoxes, "superfoods," gluten-free for non-celiac, vitamin megadosing, fat-free craze, organic = healthier. NIH and Harvard sourced.',
+            id: 'myths', title: __alloT('stem.nutritionlab.common_nutrition_myths', 'Common Nutrition Myths'), icon: '🔍',
+            subtitle: __alloT('stem.nutritionlab.8_10_myths_debunked_with_citations', '8–10 myths debunked with citations'),
+            desc: __alloT('stem.nutritionlab.detoxes_superfoods_gluten_free_for_non', 'Detoxes, "superfoods," gluten-free for non-celiac, vitamin megadosing, fat-free craze, organic = healthier. NIH and Harvard sourced.'),
             color: 'from-violet-500 to-purple-700',
             ring: 'ring-violet-500/40',
             ready: true
           },
           {
-            id: 'foodMood', title: 'Food & Mental Health', icon: '🧠',
-            subtitle: 'Real research, careful framing',
-            desc: 'Omega-3 + depression, iron + ADHD-style fatigue, sugar crashes, caffeine + adolescent anxiety, gut-brain axis. Contributing factors, not cures.',
+            id: 'foodMood', title: __alloT('stem.nutritionlab.food_mental_health', 'Food & Mental Health'), icon: '🧠',
+            subtitle: __alloT('stem.nutritionlab.real_research_careful_framing', 'Real research, careful framing'),
+            desc: __alloT('stem.nutritionlab.omega_3_depression_iron_adhd_style_fat', 'Omega-3 + depression, iron + ADHD-style fatigue, sugar crashes, caffeine + adolescent anxiety, gut-brain axis. Contributing factors, not cures.'),
             color: 'from-indigo-500 to-blue-700',
             ring: 'ring-indigo-500/40',
             ready: true
           },
           {
-            id: 'edAwareness', title: 'Eating Disorder Awareness', icon: '💚',
-            subtitle: 'NEDA-aligned · opt-in content warning',
-            desc: 'Spectrum of disordered eating, signs to watch for, online content red flags + algorithm-awareness, how to support a friend, what to do if it\'s you, recovery paths. NEDA + Surgeon General sourced. Gated by content warning.',
+            id: 'edAwareness', title: __alloT('stem.nutritionlab.eating_disorder_awareness', 'Eating Disorder Awareness'), icon: '💚',
+            subtitle: __alloT('stem.nutritionlab.neda_aligned_opt_in_content_warning', 'NEDA-aligned · opt-in content warning'),
+            desc: __alloT('stem.nutritionlab.spectrum_of_disordered_eating_signs_to', 'Spectrum of disordered eating, signs to watch for, online content red flags + algorithm-awareness, how to support a friend, what to do if it\'s you, recovery paths. NEDA + Surgeon General sourced. Gated by content warning.'),
             color: 'from-teal-500 to-emerald-700',
             ring: 'ring-teal-500/40',
             ready: true
           },
           {
-            id: 'maineReality', title: 'Maine Food Reality', icon: '🌲',
-            subtitle: 'Winter, fisheries, food deserts',
-            desc: 'Maine winters and vitamin D, Maine fisheries (omega-3 powerhouse), Aroostook + Washington food deserts, school meals + SNAP basics, Good Shepherd Food Bank.',
+            id: 'maineReality', title: __alloT('stem.nutritionlab.maine_food_reality', 'Maine Food Reality'), icon: '🌲',
+            subtitle: __alloT('stem.nutritionlab.winter_fisheries_food_deserts', 'Winter, fisheries, food deserts'),
+            desc: __alloT('stem.nutritionlab.maine_winters_and_vitamin_d_maine_fish', 'Maine winters and vitamin D, Maine fisheries (omega-3 powerhouse), Aroostook + Washington food deserts, school meals + SNAP basics, Good Shepherd Food Bank.'),
             color: 'from-stone-500 to-stone-700',
             ring: 'ring-stone-500/40',
             ready: true
           },
           {
-            id: 'careerPaths', title: 'Career Pathways', icon: '🎓',
-            subtitle: 'RDN, public health, food science',
-            desc: 'Registered Dietitian (Master\'s + 1200hr internship), public health nutritionist, food scientist, sports nutritionist, school nutrition director. UMaine + Husson programs.',
+            id: 'careerPaths', title: __alloT('stem.nutritionlab.career_pathways', 'Career Pathways'), icon: '🎓',
+            subtitle: __alloT('stem.nutritionlab.rdn_public_health_food_science', 'RDN, public health, food science'),
+            desc: __alloT('stem.nutritionlab.registered_dietitian_master_s_1200hr_i', 'Registered Dietitian (Master\'s + 1200hr internship), public health nutritionist, food scientist, sports nutritionist, school nutrition director. UMaine + Husson programs.'),
             color: 'from-blue-600 to-indigo-700',
             ring: 'ring-blue-600/40',
             ready: true
           },
           {
-            id: 'maineDay', title: 'Build a Maine Day', icon: '🌲',
-            subtitle: 'Pick 4 meals → see what your day adds up to',
-            desc: 'Pick one food for breakfast, lunch, dinner, and snack from a Maine-realistic short list (Maine wild blueberries, Atlantic salmon, lobster roll, fortified cereal, etc.). Watch six nutrient bars (protein, fiber, vitamin D, omega-3, iron, calcium) update against approximate adolescent DRIs. Final summary names deficits + strengths and ties them to Maine context (winter vit D, fisheries omega-3, adolescent iron).',
+            id: 'maineDay', title: __alloT('stem.nutritionlab.build_a_maine_day', 'Build a Maine Day'), icon: '🌲',
+            subtitle: __alloT('stem.nutritionlab.pick_4_meals_see_what_your_day_adds_up', 'Pick 4 meals → see what your day adds up to'),
+            desc: __alloT('stem.nutritionlab.pick_one_food_for_breakfast_lunch_dinn', 'Pick one food for breakfast, lunch, dinner, and snack from a Maine-realistic short list (Maine wild blueberries, Atlantic salmon, lobster roll, fortified cereal, etc.). Watch six nutrient bars (protein, fiber, vitamin D, omega-3, iron, calcium) update against approximate adolescent DRIs. Final summary names deficits + strengths and ties them to Maine context (winter vit D, fisheries omega-3, adolescent iron).'),
             color: 'from-stone-500 to-emerald-700',
             ring: 'ring-stone-500/40',
             ready: true
           },
           {
-            id: 'deficiencyDetective', title: 'Deficiency Detective', icon: '🕵️',
-            subtitle: '10 vignettes — name the missing nutrient',
-            desc: '10 clinical vignettes; identify which of 6 nutrients (vitamin D, iron, B12, folate, calcium, iodine) is most likely missing. Vignettes target the canonical real-world deficiency cases: Maine winter runner with stress fractures, menstruating teen with ADHD-like inattention, strict vegan with neuropathy, preconception folate, lactose-intolerant teen with low bone density, PPI-induced B12 deficiency.',
+            id: 'deficiencyDetective', title: __alloT('stem.nutritionlab.deficiency_detective', 'Deficiency Detective'), icon: '🕵️',
+            subtitle: __alloT('stem.nutritionlab.10_vignettes_name_the_missing_nutrient', '10 vignettes — name the missing nutrient'),
+            desc: __alloT('stem.nutritionlab.10_clinical_vignettes_identify_which_o', '10 clinical vignettes; identify which of 6 nutrients (vitamin D, iron, B12, folate, calcium, iodine) is most likely missing. Vignettes target the canonical real-world deficiency cases: Maine winter runner with stress fractures, menstruating teen with ADHD-like inattention, strict vegan with neuropathy, preconception folate, lactose-intolerant teen with low bone density, PPI-induced B12 deficiency.'),
             color: 'from-rose-500 to-pink-700',
             ring: 'ring-rose-500/40',
             ready: true
           },
           {
-            id: 'hydrationLab', title: 'Hydration Lab', icon: '💧',
-            subtitle: 'Water, your body, and the science of staying hydrated',
-            desc: 'Daily-needs calculator (NAM Adequate Intake by age/sex), self-check quiz with the 8-point urine-color scale (ACSM/Armstrong), beverage comparison (water vs sports drink vs soda — sodium, sugar, hydration efficacy), and a sweat-rate calculator for student athletes (NATA standard). Physiology-first framing: hydration as body function, never appetite suppression.',
+            id: 'hydrationLab', title: __alloT('stem.nutritionlab.hydration_lab', 'Hydration Lab'), icon: '💧',
+            subtitle: __alloT('stem.nutritionlab.water_your_body_and_the_science_of_sta', 'Water, your body, and the science of staying hydrated'),
+            desc: __alloT('stem.nutritionlab.daily_needs_calculator_nam_adequate_in', 'Daily-needs calculator (NAM Adequate Intake by age/sex), self-check quiz with the 8-point urine-color scale (ACSM/Armstrong), beverage comparison (water vs sports drink vs soda — sodium, sugar, hydration efficacy), and a sweat-rate calculator for student athletes (NATA standard). Physiology-first framing: hydration as body function, never appetite suppression.'),
             color: 'from-sky-500 to-cyan-700',
             ring: 'ring-sky-500/40',
             ready: true
           },
           {
-            id: 'macroInquiry', title: 'Macro Inquiry', icon: '🔬',
-            subtitle: 'Predict energy state from macro ratios',
-            desc: 'Move four sliders (carb / protein / fat / fiber). Predict how the macro pattern shifts the energy state — ketogenic, low-carb, balanced, high-carb, sugar-dominant. Includes a satiety estimate and a fiber-adjusted glycemic index proxy. Discrete states, no score, no reveal — you mark your own understanding.',
+            id: 'macroInquiry', title: __alloT('stem.nutritionlab.macro_inquiry', 'Macro Inquiry'), icon: '🔬',
+            subtitle: __alloT('stem.nutritionlab.predict_energy_state_from_macro_ratios', 'Predict energy state from macro ratios'),
+            desc: __alloT('stem.nutritionlab.move_four_sliders_carb_protein_fat_fib', 'Move four sliders (carb / protein / fat / fiber). Predict how the macro pattern shifts the energy state — ketogenic, low-carb, balanced, high-carb, sugar-dominant. Includes a satiety estimate and a fiber-adjusted glycemic index proxy. Discrete states, no score, no reveal — you mark your own understanding.'),
             color: 'from-teal-500 to-emerald-700',
             ring: 'ring-teal-500/40',
             ready: true
@@ -15992,6 +15994,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
         var totalCount = BADGE_IDS.length;
         var allDone = visitedCount === totalCount;
+        var nutritionRouteCards = ['myNutritionKit', 'labelReader', 'hydrationLab', 'macroInquiry'].map(function(id) {
+          return bigCards.concat(miniCards).find(function(c) { return c.id === id; });
+        }).filter(Boolean);
 
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
@@ -16019,7 +16024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             notReady && h('span', {
               'aria-hidden': true,
               className: 'absolute top-2 right-2 z-10 bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md'
-            }, 'Soon'),
+            }, __alloT('stem.nutritionlab.soon', 'Soon')),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
@@ -16048,18 +16053,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('span', { className: 'nutritionlab-leaf-sway inline-block', 'aria-hidden': true }, '🥗')),
             h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'NutritionLab'),
             h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto' },
-              'Nutrition science from a physiology-first lens. What your body uses food for, why micronutrients matter, how to read a label, and the careers built on this knowledge. No calorie targets, no good/bad food binaries — just real biology.')
+              __alloT('stem.nutritionlab.nutrition_science_from_a_physiology_fi', 'Nutrition science from a physiology-first lens. What your body uses food for, why micronutrients matter, how to read a label, and the careers built on this knowledge. No calorie targets, no good/bad food binaries — just real biology.'))
           ),
           // Framing banner — sets tone immediately, especially for adolescent users
           h('div', { className: 'mb-6 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300' },
             h('div', { className: 'flex items-start gap-3' },
               h('span', { className: 'text-2xl', 'aria-hidden': true }, '💚'),
               h('div', null,
-                h('div', { className: 'font-bold text-emerald-900 mb-1' }, 'A note on how this tool talks about food'),
+                h('div', { className: 'font-bold text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.a_note_on_how_this_tool_talks_about_fo', 'A note on how this tool talks about food')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'No food is "bad." No body type is "right." This tool covers nutrition science the way a registered dietitian or doctor would — focused on what nutrients do for your body and brain, not what to avoid. If you or a friend are struggling with eating, the NEDA helpline is ',
+                  __alloT('stem.nutritionlab.no_food_is_bad_no_body_type_is_right_t', 'No food is "bad." No body type is "right." This tool covers nutrition science the way a registered dietitian or doctor would — focused on what nutrients do for your body and brain, not what to avoid. If you or a friend are struggling with eating, the NEDA helpline is '),
                   h('strong', { className: 'font-mono text-emerald-900' }, '1-800-931-2237'),
-                  ' (text "NEDA" to 741741).')
+                  __alloT('stem.nutritionlab.text_neda_to_741741', ' (text "NEDA" to 741741).'))
               )
             )
           ),
@@ -16084,16 +16089,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               })
             )
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, 'Core Simulators'),
+          h('section', { 'data-nutrition-practice-path': 'true', className: 'mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 p-4 text-white shadow-lg' },
+            h('div', { className: 'grid gap-3 lg:grid-cols-[1.2fr_0.8fr]' },
+              h('div', null,
+                h('div', { className: 'text-[10px] font-black uppercase text-emerald-200' }, __alloT('stem.nutritionlab.practice_path', 'Practice path')),
+                h('div', { className: 'text-xl font-black leading-tight' }, __alloT('stem.nutritionlab.practice_path_title', 'Start with a useful, low-pressure action')),
+                h('p', { className: 'mt-1 mb-3 text-xs leading-relaxed text-emerald-50/85' },
+                  __alloT('stem.nutritionlab.practice_path_copy', 'The full library is still below. These four routes keep the first move concrete: build a private kit, decode a label, check hydration, or explore macro patterns.')),
+                h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+                  nutritionRouteCards.map(function(c) {
+                    return h('button', { key: c.id, type: 'button',
+                      onClick: function() { goto(c.id); },
+                      className: 'min-h-[80px] rounded-xl border border-white/15 bg-white/10 p-3 text-left text-white transition hover:bg-white/15 active:scale-[0.99]' },
+                      h('div', { className: 'text-lg' }, c.icon),
+                      h('div', { className: 'text-xs font-black' }, c.title),
+                      h('div', { className: 'mt-1 text-[10px] leading-snug text-emerald-100/85' }, c.subtitle)
+                    );
+                  })
+                )
+              ),
+              h('div', { className: 'grid grid-cols-2 gap-2 content-start' },
+                [
+                  { label: __alloT('stem.nutritionlab.modules_seen', 'Modules seen'), value: visitedCount + '/' + totalCount },
+                  { label: __alloT('stem.nutritionlab.core_modules', 'Core modules'), value: bigCards.length },
+                  { label: __alloT('stem.nutritionlab.quick_labs', 'Quick labs'), value: miniCards.length },
+                  { label: __alloT('stem.nutritionlab.frame', 'Frame'), value: __alloT('stem.nutritionlab.physiology_first', 'Physiology-first') }
+                ].map(function(card) {
+                  return h('div', { key: card.label, className: 'rounded-xl border border-white/10 bg-slate-950/30 p-3 text-center' },
+                    h('div', { className: 'text-lg font-black tabular-nums text-emerald-100' }, card.value),
+                    h('div', { className: 'text-[10px] font-black uppercase text-emerald-200/80' }, card.label)
+                  );
+                })
+              )
+            )
+          ),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.core_simulators', 'Core Simulators')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, 'Quick Labs'),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.quick_labs', 'Quick Labs')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' },
-            'All 10 modules live — physiology-first nutrition science from a school-psych lens. Explore in any order.')
+            __alloT('stem.nutritionlab.all_10_modules_live_physiology_first_n', 'All 10 modules live — physiology-first nutrition science from a school-psych lens. Explore in any order.'))
         );
       }
 
@@ -16109,7 +16148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var c_kcal = c_g * 4, p_kcal = p_g * 4, f_kcal = f_g * 9;
         var total = c_kcal + p_kcal + f_kcal;
         if (total <= 0) return h('div', { className: 'text-sm italic text-slate-700 text-center py-6' },
-          'Add foods to see how your meal\'s energy is split between carbs, protein, and fat.');
+          __alloT('stem.nutritionlab.add_foods_to_see_how_your_meal_s_energ', 'Add foods to see how your meal\'s energy is split between carbs, protein, and fat.'));
         var W = 220, H = 220;
         var cx = W / 2, cy = H / 2, rOuter = 90, rInner = 60;
         function arcPath(startFrac, endFrac) {
@@ -16135,8 +16174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                  ' A ' + rInner + ',' + rInner + ' 0 ' + largeArc + ' 0 ' + x0i + ',' + y0i + ' Z';
         }
         var slices = [
-          { kcal: c_kcal, color: '#d97706', label: 'Carbs',   g: c_g, kcalPerG: 4 },
-          { kcal: p_kcal, color: '#be123c', label: 'Protein', g: p_g, kcalPerG: 4 },
+          { kcal: c_kcal, color: '#d97706', label: __alloT('stem.nutritionlab.carbs', 'Carbs'),   g: c_g, kcalPerG: 4 },
+          { kcal: p_kcal, color: '#be123c', label: __alloT('stem.nutritionlab.protein', 'Protein'), g: p_g, kcalPerG: 4 },
           { kcal: f_kcal, color: '#a16207', label: 'Fat',     g: f_g, kcalPerG: 9 }
         ];
         var cum = 0;
@@ -16165,13 +16204,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             },
               paths,
               h('text', { x: cx, y: cy - 4, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#1e293b' }, total.toFixed(0)),
-              h('text', { x: cx, y: cy + 16, textAnchor: 'middle', fontSize: 11, fill: '#475569' }, 'kcal in plate')
+              h('text', { x: cx, y: cy + 16, textAnchor: 'middle', fontSize: 11, fill: '#475569' }, __alloT('stem.nutritionlab.kcal_in_plate', 'kcal in plate'))
             ),
             h('div', { className: 'flex-1 space-y-2' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Energy split'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.nutritionlab.energy_split', 'Energy split')),
               slices.map(pctRow),
               h('p', { className: 'text-[11px] text-slate-700 italic mt-3 leading-relaxed' },
-                'Each gram of carb or protein gives ~4 kcal; each gram of fat gives ~9 kcal. The split varies normally across meals — there\'s no single "right" ratio.')
+                __alloT('stem.nutritionlab.each_gram_of_carb_or_protein_gives_4_k', 'Each gram of carb or protein gives ~4 kcal; each gram of fat gives ~9 kcal. The split varies normally across meals — there\'s no single "right" ratio.'))
             )
           )
         );
@@ -16184,10 +16223,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var t = props.totals || {};
         // Adolescent (14-18) DRI references — used as informational anchors only.
         var REFS = [
-          { label: 'Carbs',   value: t.c || 0,   target: 130, unit: 'g', note: 'RDA min for adolescents — minimum to fuel the brain.' },
-          { label: 'Protein', value: t.p || 0,   target: 52,  unit: 'g', note: 'Roughly 0.85 g/kg body weight; varies widely with body size.' },
-          { label: 'Fat',     value: t.f || 0,   target: 70,  unit: 'g', note: '25–35% of daily energy. Dietary fat is essential, not optional.' },
-          { label: 'Fiber',   value: t.fib || 0, target: 28,  unit: 'g', note: 'Most US teens get only ~half this. Fiber feeds gut microbes.' }
+          { label: __alloT('stem.nutritionlab.carbs_2', 'Carbs'),   value: t.c || 0,   target: 130, unit: 'g', note: __alloT('stem.nutritionlab.rda_min_for_adolescents_minimum_to_fue', 'RDA min for adolescents — minimum to fuel the brain.') },
+          { label: __alloT('stem.nutritionlab.protein_2', 'Protein'), value: t.p || 0,   target: 52,  unit: 'g', note: __alloT('stem.nutritionlab.roughly_0_85_g_kg_body_weight_varies_w', 'Roughly 0.85 g/kg body weight; varies widely with body size.') },
+          { label: 'Fat',     value: t.f || 0,   target: 70,  unit: 'g', note: __alloT('stem.nutritionlab.25_35_of_daily_energy_dietary_fat_is_e', '25–35% of daily energy. Dietary fat is essential, not optional.') },
+          { label: __alloT('stem.nutritionlab.fiber', 'Fiber'),   value: t.fib || 0, target: 28,  unit: 'g', note: __alloT('stem.nutritionlab.most_us_teens_get_only_half_this_fiber', 'Most US teens get only ~half this. Fiber feeds gut microbes.') }
         ];
         if ((t.c || 0) + (t.p || 0) + (t.f || 0) + (t.fib || 0) <= 0) return null;
         var W = 480, H = 200;
@@ -16196,10 +16235,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var barH = (H - pad.t - pad.b) / REFS.length - 4;
         return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
           h('div', { className: 'flex items-baseline justify-between mb-2 gap-2 flex-wrap' },
-            h('div', { className: 'text-sm font-black text-slate-800' }, 'How this plate stacks against a typical day'),
-            h('div', { className: 'text-[11px] text-slate-700 italic' }, 'Informational only — not a goal per meal.')
+            h('div', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.nutritionlab.how_this_plate_stacks_against_a_typica', 'How this plate stacks against a typical day')),
+            h('div', { className: 'text-[11px] text-slate-700 italic' }, __alloT('stem.nutritionlab.informational_only_not_a_goal_per_meal', 'Informational only — not a goal per meal.'))
           ),
-          h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Bar chart comparing this meal\'s nutrients to typical adolescent daily reference intakes.' },
+          h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': __alloT('stem.nutritionlab.bar_chart_comparing_this_meal_s_nutrie', 'Bar chart comparing this meal\'s nutrients to typical adolescent daily reference intakes.') },
             // Background grid: 25%/50%/75%/100% of the typical daily target
             REFS.map(function(r, i) {
               var y = pad.t + i * (barH + 4) + barH / 2;
@@ -16227,11 +16266,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })
           ),
           h('details', { className: 'mt-2' },
-            h('summary', { className: 'text-xs font-bold text-slate-700 cursor-pointer hover:text-slate-900' }, 'What these reference values mean'),
+            h('summary', { className: 'text-xs font-bold text-slate-700 cursor-pointer hover:text-slate-900' }, __alloT('stem.nutritionlab.what_these_reference_values_mean', 'What these reference values mean')),
             h('div', { className: 'mt-2 text-xs text-slate-700 leading-relaxed space-y-1' },
               REFS.map(function(r, i) { return h('div', { key: i }, h('strong', { className: 'text-slate-800' }, r.label + ' (~' + r.target + r.unit + '/day): '), r.note); }),
               h('p', { className: 'italic mt-2' },
-                'Reference Intakes from NIH / USDA for ages 14–18. Real needs vary by body size, sex, and activity. This is a science-literacy reference, not a meal target.'
+                __alloT('stem.nutritionlab.reference_intakes_from_nih_usda_for_ag', 'Reference Intakes from NIH / USDA for ages 14–18. Real needs vary by body size, sex, and activity. This is a science-literacy reference, not a meal target.')
               )
             )
           )
@@ -16247,11 +16286,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var fA = FOOD_BY_ID[fA_id], fB = FOOD_BY_ID[fB_id];
         if (!fA || !fB) return null;
         var ROWS = [
-          { key: 'kcal', label: 'Energy', unit: 'kcal' },
-          { key: 'c',    label: 'Carbs',  unit: 'g' },
-          { key: 'p',    label: 'Protein', unit: 'g' },
+          { key: 'kcal', label: __alloT('stem.nutritionlab.energy', 'Energy'), unit: 'kcal' },
+          { key: 'c',    label: __alloT('stem.nutritionlab.carbs_3', 'Carbs'),  unit: 'g' },
+          { key: 'p',    label: __alloT('stem.nutritionlab.protein_3', 'Protein'), unit: 'g' },
           { key: 'f',    label: 'Fat',    unit: 'g' },
-          { key: 'fib',  label: 'Fiber',  unit: 'g' }
+          { key: 'fib',  label: __alloT('stem.nutritionlab.fiber_2', 'Fiber'),  unit: 'g' }
         ];
         var maxes = {};
         ROWS.forEach(function(r) { maxes[r.key] = Math.max(fA[r.key] || 0, fB[r.key] || 0, 1); });
@@ -16260,26 +16299,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var barH = (H - pad.t - pad.b) / ROWS.length - 6;
         return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
           h('div', { className: 'flex items-center justify-between mb-3 gap-2 flex-wrap' },
-            h('div', { className: 'text-sm font-black text-slate-800' }, '⚖️ Compare two foods side-by-side'),
-            h('div', { className: 'text-[11px] text-slate-700 italic' }, 'No good/bad — just what each one brings.')
+            h('div', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.nutritionlab.compare_two_foods_side_by_side', '⚖️ Compare two foods side-by-side')),
+            h('div', { className: 'text-[11px] text-slate-700 italic' }, __alloT('stem.nutritionlab.no_good_bad_just_what_each_one_brings', 'No good/bad — just what each one brings.'))
           ),
           h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
             h('label', { className: 'text-xs font-bold text-slate-700' },
-              h('span', { style: { color: '#0d9488' } }, '◆ Food A'),
+              h('span', { style: { color: '#0d9488' } }, __alloT('stem.nutritionlab.food_a', '◆ Food A')),
               h('select', {
                 value: fA_id, onChange: function(e) { setA(e.target.value); },
                 className: 'mt-1 block w-full rounded-lg border-2 border-slate-300 p-2 text-sm font-semibold focus:outline-none focus:ring-2 ring-emerald-500',
-                'aria-label': 'Food A'
+                'aria-label': __alloT('stem.nutritionlab.food_a_2', 'Food A')
               },
                 FOODS.map(function(f) { return h('option', { key: f.id, value: f.id }, f.emoji + ' ' + f.name); })
               )
             ),
             h('label', { className: 'text-xs font-bold text-slate-700' },
-              h('span', { style: { color: '#9f1239' } }, '◇ Food B'),
+              h('span', { style: { color: '#9f1239' } }, __alloT('stem.nutritionlab.food_b', '◇ Food B')),
               h('select', {
                 value: fB_id, onChange: function(e) { setB(e.target.value); },
                 className: 'mt-1 block w-full rounded-lg border-2 border-slate-300 p-2 text-sm font-semibold focus:outline-none focus:ring-2 ring-rose-500',
-                'aria-label': 'Food B'
+                'aria-label': __alloT('stem.nutritionlab.food_b_2', 'Food B')
               },
                 FOODS.map(function(f) { return h('option', { key: f.id, value: f.id }, f.emoji + ' ' + f.name); })
               )
@@ -16310,8 +16349,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })
           ),
           h('div', { className: 'mt-3 text-xs text-slate-700 leading-relaxed bg-slate-50 border border-slate-200 rounded-lg p-3' },
-            h('strong', { className: 'text-slate-800' }, 'Reading the chart: '),
-            'Each row shows one nutrient. Longer bar = more of that nutrient per typical serving. Two foods can both be excellent for different reasons — there are no winners or losers here, just different physiological roles.'
+            h('strong', { className: 'text-slate-800' }, __alloT('stem.nutritionlab.reading_the_chart', 'Reading the chart: ')),
+            __alloT('stem.nutritionlab.each_row_shows_one_nutrient_longer_bar', 'Each row shows one nutrient. Longer bar = more of that nutrient per typical serving. Two foods can both be excellent for different reasons — there are no winners or losers here, just different physiological roles.')
           )
         );
       }
@@ -16362,43 +16401,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           (f.tags || []).forEach(function(t) { tagSet[t] = (tagSet[t] || 0) + 1; });
         });
         var benefits = [];
-        if (totals.p >= 15) benefits.push({ icon: '💪', text: 'Includes protein — your body uses these amino acids to build muscle, make enzymes, and repair tissue.' });
-        if (tagSet.omega3) benefits.push({ icon: '🐟', text: 'Includes omega-3s (EPA/DHA) — Harvard research links these to brain health and lower inflammation. AHA recommends 2 fatty-fish meals per week.' });
-        if (tagSet.iron) benefits.push({ icon: '🩸', text: 'Includes iron — supports hemoglobin (oxygen transport in blood) and steady energy. Especially important for menstruating teens.' });
-        if (tagSet.vitC) benefits.push({ icon: '🍊', text: 'Includes vitamin C — supports immune function, builds collagen, and helps your body absorb iron from plant foods.' });
-        if (tagSet.calcium) benefits.push({ icon: '🦴', text: 'Includes calcium — supports bones, muscle contraction, and nerve signaling. Adolescent years are peak bone-building years.' });
-        if (tagSet.vitD) benefits.push({ icon: '☀️', text: 'Includes vitamin D — supports calcium absorption, bones, and immune function. Especially valuable in Maine winters.' });
-        if (tagSet.folate) benefits.push({ icon: '🧬', text: 'Includes folate (B9) — supports DNA synthesis and red blood cell formation.' });
-        if (tagSet.b12) benefits.push({ icon: '🧠', text: 'Includes B12 — supports nerve function and red blood cells. B12 only comes from animal foods (or fortified products) — vegans need a supplement.' });
-        if (tagSet.potassium) benefits.push({ icon: '❤️', text: 'Includes potassium — supports heart rhythm, muscle contraction, and healthy blood pressure.' });
-        if (tagSet.magnesium) benefits.push({ icon: '🌿', text: 'Includes magnesium — most US adults under-consume; supports muscle / nerve function and energy production.' });
-        if (totals.fib >= 7) benefits.push({ icon: '🌾', text: 'Includes plenty of fiber — feeds gut bacteria, slows blood-sugar spikes, supports steady energy.' });
-        if (tagSet.choline) benefits.push({ icon: '🥚', text: 'Includes choline — many Americans under-consume; supports brain development and liver function.' });
+        if (totals.p >= 15) benefits.push({ icon: '💪', text: __alloT('stem.nutritionlab.includes_protein_your_body_uses_these_', 'Includes protein — your body uses these amino acids to build muscle, make enzymes, and repair tissue.') });
+        if (tagSet.omega3) benefits.push({ icon: '🐟', text: __alloT('stem.nutritionlab.includes_omega_3s_epa_dha_harvard_rese', 'Includes omega-3s (EPA/DHA) — Harvard research links these to brain health and lower inflammation. AHA recommends 2 fatty-fish meals per week.') });
+        if (tagSet.iron) benefits.push({ icon: '🩸', text: __alloT('stem.nutritionlab.includes_iron_supports_hemoglobin_oxyg', 'Includes iron — supports hemoglobin (oxygen transport in blood) and steady energy. Especially important for menstruating teens.') });
+        if (tagSet.vitC) benefits.push({ icon: '🍊', text: __alloT('stem.nutritionlab.includes_vitamin_c_supports_immune_fun', 'Includes vitamin C — supports immune function, builds collagen, and helps your body absorb iron from plant foods.') });
+        if (tagSet.calcium) benefits.push({ icon: '🦴', text: __alloT('stem.nutritionlab.includes_calcium_supports_bones_muscle', 'Includes calcium — supports bones, muscle contraction, and nerve signaling. Adolescent years are peak bone-building years.') });
+        if (tagSet.vitD) benefits.push({ icon: '☀️', text: __alloT('stem.nutritionlab.includes_vitamin_d_supports_calcium_ab', 'Includes vitamin D — supports calcium absorption, bones, and immune function. Especially valuable in Maine winters.') });
+        if (tagSet.folate) benefits.push({ icon: '🧬', text: __alloT('stem.nutritionlab.includes_folate_b9_supports_dna_synthe', 'Includes folate (B9) — supports DNA synthesis and red blood cell formation.') });
+        if (tagSet.b12) benefits.push({ icon: '🧠', text: __alloT('stem.nutritionlab.includes_b12_supports_nerve_function_a', 'Includes B12 — supports nerve function and red blood cells. B12 only comes from animal foods (or fortified products) — vegans need a supplement.') });
+        if (tagSet.potassium) benefits.push({ icon: '❤️', text: __alloT('stem.nutritionlab.includes_potassium_supports_heart_rhyt', 'Includes potassium — supports heart rhythm, muscle contraction, and healthy blood pressure.') });
+        if (tagSet.magnesium) benefits.push({ icon: '🌿', text: __alloT('stem.nutritionlab.includes_magnesium_most_us_adults_unde', 'Includes magnesium — most US adults under-consume; supports muscle / nerve function and energy production.') });
+        if (totals.fib >= 7) benefits.push({ icon: '🌾', text: __alloT('stem.nutritionlab.includes_plenty_of_fiber_feeds_gut_bac', 'Includes plenty of fiber — feeds gut bacteria, slows blood-sugar spikes, supports steady energy.') });
+        if (tagSet.choline) benefits.push({ icon: '🥚', text: __alloT('stem.nutritionlab.includes_choline_many_americans_under_', 'Includes choline — many Americans under-consume; supports brain development and liver function.') });
 
         // Category filter for food picker
         var categories = [
-          { id: 'all',       label: 'All foods', emoji: '🍽️' },
-          { id: 'fruit',     label: 'Fruit',     emoji: '🍎' },
-          { id: 'vegetable', label: 'Vegetables', emoji: '🥦' },
-          { id: 'protein',   label: 'Protein',   emoji: '🍗' },
-          { id: 'legume',    label: 'Legumes',   emoji: '🫘' },
-          { id: 'grain',     label: 'Grains',    emoji: '🌾' },
+          { id: 'all',       label: __alloT('stem.nutritionlab.all_foods', 'All foods'), emoji: '🍽️' },
+          { id: 'fruit',     label: __alloT('stem.nutritionlab.fruit', 'Fruit'),     emoji: '🍎' },
+          { id: 'vegetable', label: __alloT('stem.nutritionlab.vegetables', 'Vegetables'), emoji: '🥦' },
+          { id: 'protein',   label: __alloT('stem.nutritionlab.protein_4', 'Protein'),   emoji: '🍗' },
+          { id: 'legume',    label: __alloT('stem.nutritionlab.legumes', 'Legumes'),   emoji: '🫘' },
+          { id: 'grain',     label: __alloT('stem.nutritionlab.grains', 'Grains'),    emoji: '🌾' },
           { id: 'fat',       label: 'Nuts/Fats', emoji: '🥜' }
         ];
         var visibleFoods = category === 'all' ? FOODS : FOODS.filter(function(f) { return f.cat === category; });
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🍽️', title: 'Macronutrient Lab' }),
+          h(BackBar, { icon: '🍽️', title: __alloT('stem.nutritionlab.macronutrient_lab_2', 'Macronutrient Lab') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, 'Build a plate. See what your body uses it for.'),
+              h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, __alloT('stem.nutritionlab.build_a_plate_see_what_your_body_uses__2', 'Build a plate. See what your body uses it for.')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'Click any food below to add it to your plate. Watch the macronutrient totals update from real USDA values. The benefit readout shows which body systems your meal supports — muscle, brain, blood, bones, gut. There is no calorie target. There is no "right" plate. Different bodies need different things, and your needs change throughout the day.')
+                __alloT('stem.nutritionlab.click_any_food_below_to_add_it_to_your', 'Click any food below to add it to your plate. Watch the macronutrient totals update from real USDA values. The benefit readout shows which body systems your meal supports — muscle, brain, blood, bones, gut. There is no calorie target. There is no "right" plate. Different bodies need different things, and your needs change throughout the day.'))
             ),
             // Category filter
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Filter by category'),
-              h('div', { 'role': 'radiogroup', 'aria-label': 'Food category', className: 'flex flex-wrap gap-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.filter_by_category', 'Filter by category')),
+              h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.nutritionlab.food_category', 'Food category'), className: 'flex flex-wrap gap-2' },
                 categories.map(function(cc) {
                   var sel = (category === cc.id);
                   return h('button', {
@@ -16414,7 +16453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ),
             // Food picker grid
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Tap a food to add it to your plate'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.tap_a_food_to_add_it_to_your_plate', 'Tap a food to add it to your plate')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2' },
                 visibleFoods.map(function(f) {
                   return h('button', {
@@ -16440,10 +16479,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 plate.length > 0 && h('button', {
                   onClick: clearPlate,
                   className: 'px-3 py-1 rounded bg-slate-200 text-slate-800 text-xs font-bold hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400'
-                }, 'Clear plate')
+                }, __alloT('stem.nutritionlab.clear_plate', 'Clear plate'))
               ),
               plate.length === 0
-                ? h('p', { className: 'text-sm text-slate-700 italic' }, 'Your plate is empty. Add foods above to begin.')
+                ? h('p', { className: 'text-sm text-slate-700 italic' }, __alloT('stem.nutritionlab.your_plate_is_empty_add_foods_above_to', 'Your plate is empty. Add foods above to begin.'))
                 : h('div', { className: 'space-y-2' },
                     plate.map(function(id, idx) {
                       var f = FOOD_BY_ID[id];
@@ -16458,18 +16497,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                           onClick: function() { removeAt(idx); },
                           'aria-label': 'Remove ' + f.name,
                           className: 'px-2 py-1 rounded text-xs font-bold bg-rose-100 text-rose-900 hover:bg-rose-200 transition focus:outline-none focus:ring-2 ring-rose-400'
-                        }, '✕ Remove')
+                        }, __alloT('stem.nutritionlab.remove', '✕ Remove'))
                       );
                     })
                   )
             ),
             // Totals
             h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-3' },
-              h(StatCard, { label: 'Carbs',   value: totals.c.toFixed(0)   + 'g', color: 'text-amber-700' }),
-              h(StatCard, { label: 'Protein', value: totals.p.toFixed(0)   + 'g', color: 'text-rose-700' }),
+              h(StatCard, { label: __alloT('stem.nutritionlab.carbs_4', 'Carbs'),   value: totals.c.toFixed(0)   + 'g', color: 'text-amber-700' }),
+              h(StatCard, { label: __alloT('stem.nutritionlab.protein_5', 'Protein'), value: totals.p.toFixed(0)   + 'g', color: 'text-rose-700' }),
               h(StatCard, { label: 'Fat',     value: totals.f.toFixed(0)   + 'g', color: 'text-yellow-700' }),
-              h(StatCard, { label: 'Fiber',   value: totals.fib.toFixed(0) + 'g', color: 'text-emerald-700' }),
-              h(StatCard, { label: 'Energy',  value: totals.kcal.toFixed(0), unit: 'kcal (informational)', color: 'text-slate-700' })
+              h(StatCard, { label: __alloT('stem.nutritionlab.fiber_3', 'Fiber'),   value: totals.fib.toFixed(0) + 'g', color: 'text-emerald-700' }),
+              h(StatCard, { label: __alloT('stem.nutritionlab.energy_2', 'Energy'),  value: totals.kcal.toFixed(0), unit: 'kcal (informational)', color: 'text-slate-700' })
             ),
             // Visual: macro donut showing carbs/protein/fat split by energy
             h(MacroDonut, { c: totals.c, p: totals.p, f: totals.f }),
@@ -16482,9 +16521,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               'aria-live': 'polite',
               className: 'bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-400 rounded-2xl p-5'
             },
-              h('h2', { className: 'text-base font-black text-emerald-900 mb-3' }, 'What your body uses this meal for'),
+              h('h2', { className: 'text-base font-black text-emerald-900 mb-3' }, __alloT('stem.nutritionlab.what_your_body_uses_this_meal_for', 'What your body uses this meal for')),
               benefits.length === 0
-                ? h('p', { className: 'text-sm text-slate-800 italic' }, 'Add a few more items to see what nutrients this meal contributes.')
+                ? h('p', { className: 'text-sm text-slate-800 italic' }, __alloT('stem.nutritionlab.add_a_few_more_items_to_see_what_nutri', 'Add a few more items to see what nutrients this meal contributes.'))
                 : h('ul', { className: 'space-y-2' },
                     benefits.map(function(b, i) {
                       return h('li', { key: i, className: 'flex items-start gap-3 p-2 bg-white rounded-lg border border-emerald-200' },
@@ -16536,9 +16575,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }, [tab]);
 
         var tabs = [
-          { id: 'vitamins', label: 'Vitamins (13)', data: VITAMINS },
-          { id: 'minerals', label: 'Minerals (15)', data: MINERALS },
-          { id: 'efas',     label: 'Essential Fatty Acids', data: EFAS }
+          { id: 'vitamins', label: __alloT('stem.nutritionlab.vitamins_13', 'Vitamins (13)'), data: VITAMINS },
+          { id: 'minerals', label: __alloT('stem.nutritionlab.minerals_15', 'Minerals (15)'), data: MINERALS },
+          { id: 'efas',     label: __alloT('stem.nutritionlab.essential_fatty_acids', 'Essential Fatty Acids'), data: EFAS }
         ];
         var current = tabs.filter(function(t) { return t.id === tab; })[0] || tabs[0];
 
@@ -16557,19 +16596,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               )
             ),
             h('div', { className: 'p-3 bg-emerald-50 rounded-lg border border-emerald-200' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, 'What it does'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.what_it_does', 'What it does')),
               h('div', { className: 'text-sm text-slate-800' }, item.function)
             ),
             h('div', { className: 'p-3 bg-amber-50 rounded-lg border border-amber-200' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, 'Where to find it'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, __alloT('stem.nutritionlab.where_to_find_it', 'Where to find it')),
               h('div', { className: 'text-sm text-slate-800' }, item.sources)
             ),
             h('div', { className: 'p-3 bg-rose-50 rounded-lg border border-rose-200' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, 'When you don\'t get enough'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, __alloT('stem.nutritionlab.when_you_don_t_get_enough', 'When you don\'t get enough')),
               h('div', { className: 'text-sm text-slate-800' }, item.deficiency)
             ),
             h('div', { className: 'p-3 bg-blue-50 rounded-lg border border-blue-200' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, 'Recommended intake'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, __alloT('stem.nutritionlab.recommended_intake', 'Recommended intake')),
               h('div', { className: 'text-sm font-mono text-slate-800' }, item.rda)
             ),
             h('div', { className: 'text-[11px] text-slate-700 italic font-mono' },
@@ -16578,12 +16617,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🌈', title: 'Micronutrient Atlas' }),
+          h(BackBar, { icon: '🌈', title: __alloT('stem.nutritionlab.micronutrient_atlas_2', 'Micronutrient Atlas') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, '13 vitamins, 15 minerals, and the essential fatty acids'),
+              h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, __alloT('stem.nutritionlab.13_vitamins_15_minerals_and_the_essent', '13 vitamins, 15 minerals, and the essential fatty acids')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'These are the nutrients your body needs in small amounts but cannot make on its own. Click any card to see what it does, where to find it, and what happens when you don\'t get enough. Sources cited inline from NIH Office of Dietary Supplements.')
+                __alloT('stem.nutritionlab.these_are_the_nutrients_your_body_need', 'These are the nutrients your body needs in small amounts but cannot make on its own. Click any card to see what it does, where to find it, and what happens when you don\'t get enough. Sources cited inline from NIH Office of Dietary Supplements.'))
             ),
             // High-priority deficiency callout — surfaces the 5 nutrients adolescents
             // in the US (and Maine specifically) most commonly under-consume. Each card
@@ -16591,18 +16630,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             // Lifts the BirdLab Climate Pressure 4-card grid pattern.
             (function() {
               var PRIORITIES = [
-                { id: 'vitD',     emoji: '☀️', name: 'Vitamin D',  why: 'WIDESPREAD in Maine winters', function_: 'Calcium absorption + immunity + mood', symptom: 'Bone weakness, low mood, frequent illness', stripe: '#f59e0b' },
-                { id: 'iron',     emoji: '🩸', name: 'Iron',       why: 'Menstruating teens at high risk',     function_: 'Hemoglobin carries oxygen + brain fuel', symptom: 'Fatigue, brain fog, ADHD-like attention drop', stripe: '#dc2626' },
-                { id: 'mag',      emoji: '🌿', name: 'Magnesium',  why: 'Most US adults under-consume',      function_: 'Muscle + nerve + sleep + blood sugar', symptom: 'Cramps, fatigue, anxiety-like symptoms', stripe: '#16a34a' },
-                { id: 'b12',      emoji: '🥛', name: 'Vitamin B12', why: 'Vegans / vegetarians at risk',       function_: 'Nerves + red blood cells + DNA',          symptom: 'Anemia, nerve damage, dementia-like symptoms', stripe: '#7c3aed' },
-                { id: 'calcium',  emoji: '🦴', name: 'Calcium',    why: 'Teens build PEAK bone density now', function_: 'Bones + teeth + nerve signaling',         symptom: 'Higher fracture risk, lifelong bone deficit', stripe: '#0ea5e9' }
+                { id: 'vitD',     emoji: '☀️', name: __alloT('stem.nutritionlab.vitamin_d', 'Vitamin D'),  why: 'WIDESPREAD in Maine winters', function_: 'Calcium absorption + immunity + mood', symptom: 'Bone weakness, low mood, frequent illness', stripe: '#f59e0b' },
+                { id: 'iron',     emoji: '🩸', name: __alloT('stem.nutritionlab.iron', 'Iron'),       why: 'Menstruating teens at high risk',     function_: 'Hemoglobin carries oxygen + brain fuel', symptom: 'Fatigue, brain fog, ADHD-like attention drop', stripe: '#dc2626' },
+                { id: 'mag',      emoji: '🌿', name: __alloT('stem.nutritionlab.magnesium', 'Magnesium'),  why: 'Most US adults under-consume',      function_: 'Muscle + nerve + sleep + blood sugar', symptom: 'Cramps, fatigue, anxiety-like symptoms', stripe: '#16a34a' },
+                { id: 'b12',      emoji: '🥛', name: __alloT('stem.nutritionlab.vitamin_b12', 'Vitamin B12'), why: 'Vegans / vegetarians at risk',       function_: 'Nerves + red blood cells + DNA',          symptom: 'Anemia, nerve damage, dementia-like symptoms', stripe: '#7c3aed' },
+                { id: 'calcium',  emoji: '🦴', name: __alloT('stem.nutritionlab.calcium', 'Calcium'),    why: 'Teens build PEAK bone density now', function_: 'Bones + teeth + nerve signaling',         symptom: 'Higher fracture risk, lifelong bone deficit', stripe: '#0ea5e9' }
               ];
               return h('div', { className: 'rounded-2xl overflow-hidden border-2 border-rose-300 shadow bg-gradient-to-br from-rose-50 via-amber-50 to-emerald-50' },
                 h('div', { className: 'px-5 py-3 border-b-2 border-rose-200', style: { background: 'rgba(254, 226, 226, 0.5)' } },
                   h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
                     h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '🚨'),
-                    h('h3', { className: 'text-base font-black text-rose-900' }, 'Watch these in Maine'),
-                    h('span', { className: 'text-xs italic text-slate-700' }, '— nutrients adolescents most often under-consume')
+                    h('h3', { className: 'text-base font-black text-rose-900' }, __alloT('stem.nutritionlab.watch_these_in_maine', 'Watch these in Maine')),
+                    h('span', { className: 'text-xs italic text-slate-700' }, __alloT('stem.nutritionlab.nutrients_adolescents_most_often_under', '— nutrients adolescents most often under-consume'))
                   )
                 ),
                 h('div', { className: 'p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3' },
@@ -16635,12 +16674,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       // Cascade: Function → Symptom
                       h('div', { className: 'flex items-stretch gap-1.5' },
                         h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#ecfdf5', color: '#064e3b', border: '1px solid #a7f3d0' } },
-                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, 'Function'),
+                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, __alloT('stem.nutritionlab.function', 'Function')),
                           n.function_
                         ),
                         h('span', { 'aria-hidden': 'true', className: 'self-center text-slate-400 font-bold' }, '→'),
                         h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#fef2f2', color: '#7f1d1d', border: '1px solid #fecaca' } },
-                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, 'Without it'),
+                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, __alloT('stem.nutritionlab.without_it', 'Without it')),
                           n.symptom
                         )
                       )
@@ -16650,7 +16689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               );
             })(),
             // Tab strip
-            h('div', { 'role': 'tablist', 'aria-label': 'Nutrient categories', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.nutrient_categories', 'Nutrient categories'), className: 'flex flex-wrap gap-2' },
               tabs.map(function(t) {
                 var sel = (tab === t.id);
                 return h('button', {
@@ -16688,7 +16727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             !picked && h('div', { className: 'bg-slate-100 rounded-2xl border border-slate-300 p-5 text-center' },
               h('div', { className: 'text-3xl mb-2', 'aria-hidden': true }, '👆'),
               h('p', { className: 'text-sm text-slate-700' },
-                'Click any nutrient above to see its function, food sources, and what happens when you don\'t get enough.')
+                __alloT('stem.nutritionlab.click_any_nutrient_above_to_see_its_fu', 'Click any nutrient above to see its function, food sources, and what happens when you don\'t get enough.'))
             ),
             h(TeacherNotes, {
               standards: ['HS-LS1-3 (Homeostasis)', 'HS-LS1-7 (Cellular processes)', 'CTE Family & Consumer Sciences', 'USDA Dietary Guidelines'],
@@ -16721,29 +16760,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var LABELS = [
         {
           id: 'granola',
-          name: 'Granola Bar',
+          name: __alloT('stem.nutritionlab.granola_bar', 'Granola Bar'),
           difficulty: 'Beginner',
           context: 'A single-serving granola bar — the simplest case. Read the label and answer.',
           servings: 1,
           servingSize: '1 bar (24 g)',
           calories: 90,
           rows: [
-            { label: 'Total Fat',      val: '2 g',  dv: '3%',  bold: true },
-            { label: 'Saturated Fat',  val: '1 g',  dv: '5%',  indent: true },
-            { label: 'Trans Fat',      val: '0 g',           indent: true },
-            { label: 'Cholesterol',    val: '0 mg', dv: '0%', bold: true },
-            { label: 'Sodium',         val: '70 mg', dv: '3%', bold: true },
-            { label: 'Total Carbs',    val: '18 g', dv: '7%', bold: true },
-            { label: 'Dietary Fiber',  val: '1 g',  dv: '4%', indent: true },
-            { label: 'Total Sugars',   val: '7 g',           indent: true },
-            { label: 'Includes 6 g Added Sugars', val: '',  dv: '12%', indent: true, indentMore: true },
-            { label: 'Protein',        val: '1 g',           bold: true }
+            { label: __alloT('stem.nutritionlab.total_fat', 'Total Fat'),      val: '2 g',  dv: '3%',  bold: true },
+            { label: __alloT('stem.nutritionlab.saturated_fat', 'Saturated Fat'),  val: '1 g',  dv: '5%',  indent: true },
+            { label: __alloT('stem.nutritionlab.trans_fat', 'Trans Fat'),      val: '0 g',           indent: true },
+            { label: __alloT('stem.nutritionlab.cholesterol', 'Cholesterol'),    val: '0 mg', dv: '0%', bold: true },
+            { label: __alloT('stem.nutritionlab.sodium', 'Sodium'),         val: '70 mg', dv: '3%', bold: true },
+            { label: __alloT('stem.nutritionlab.total_carbs', 'Total Carbs'),    val: '18 g', dv: '7%', bold: true },
+            { label: __alloT('stem.nutritionlab.dietary_fiber', 'Dietary Fiber'),  val: '1 g',  dv: '4%', indent: true },
+            { label: __alloT('stem.nutritionlab.total_sugars', 'Total Sugars'),   val: '7 g',           indent: true },
+            { label: __alloT('stem.nutritionlab.includes_6_g_added_sugars', 'Includes 6 g Added Sugars'), val: '',  dv: '12%', indent: true, indentMore: true },
+            { label: __alloT('stem.nutritionlab.protein_6', 'Protein'),        val: '1 g',           bold: true }
           ],
           micros: [
-            { label: 'Vitamin D', val: '0 mcg', dv: '0%' },
-            { label: 'Calcium',   val: '6 mg',  dv: '0%' },
-            { label: 'Iron',      val: '0.7 mg', dv: '4%' },
-            { label: 'Potassium', val: '50 mg', dv: '1%' }
+            { label: __alloT('stem.nutritionlab.vitamin_d_2', 'Vitamin D'), val: '0 mcg', dv: '0%' },
+            { label: __alloT('stem.nutritionlab.calcium_2', 'Calcium'),   val: '6 mg',  dv: '0%' },
+            { label: __alloT('stem.nutritionlab.iron_2', 'Iron'),      val: '0.7 mg', dv: '4%' },
+            { label: __alloT('stem.nutritionlab.potassium', 'Potassium'), val: '50 mg', dv: '1%' }
           ],
           questions: [
             {
@@ -16773,29 +16812,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'chips',
-          name: 'Potato Chips (small bag)',
+          name: __alloT('stem.nutritionlab.potato_chips_small_bag', 'Potato Chips (small bag)'),
           difficulty: 'Common deception',
           context: 'A standard "small" bag of chips at a gas station. Read carefully — most people eat the whole bag in one sitting.',
           servings: 2,
           servingSize: 'About 28 chips (28 g)',
           calories: 150,
           rows: [
-            { label: 'Total Fat',      val: '10 g',  dv: '13%', bold: true },
-            { label: 'Saturated Fat',  val: '1.5 g', dv: '8%',  indent: true },
-            { label: 'Trans Fat',      val: '0 g',            indent: true },
-            { label: 'Cholesterol',    val: '0 mg',  dv: '0%',  bold: true },
-            { label: 'Sodium',         val: '170 mg', dv: '7%', bold: true },
-            { label: 'Total Carbs',    val: '15 g',  dv: '5%',  bold: true },
-            { label: 'Dietary Fiber',  val: '1 g',   dv: '4%',  indent: true },
-            { label: 'Total Sugars',   val: '0 g',            indent: true },
-            { label: 'Includes 0 g Added Sugars', val: '', dv: '0%', indent: true, indentMore: true },
-            { label: 'Protein',        val: '2 g',           bold: true }
+            { label: __alloT('stem.nutritionlab.total_fat_2', 'Total Fat'),      val: '10 g',  dv: '13%', bold: true },
+            { label: __alloT('stem.nutritionlab.saturated_fat_2', 'Saturated Fat'),  val: '1.5 g', dv: '8%',  indent: true },
+            { label: __alloT('stem.nutritionlab.trans_fat_2', 'Trans Fat'),      val: '0 g',            indent: true },
+            { label: __alloT('stem.nutritionlab.cholesterol_2', 'Cholesterol'),    val: '0 mg',  dv: '0%',  bold: true },
+            { label: __alloT('stem.nutritionlab.sodium_2', 'Sodium'),         val: '170 mg', dv: '7%', bold: true },
+            { label: __alloT('stem.nutritionlab.total_carbs_2', 'Total Carbs'),    val: '15 g',  dv: '5%',  bold: true },
+            { label: __alloT('stem.nutritionlab.dietary_fiber_2', 'Dietary Fiber'),  val: '1 g',   dv: '4%',  indent: true },
+            { label: __alloT('stem.nutritionlab.total_sugars_2', 'Total Sugars'),   val: '0 g',            indent: true },
+            { label: __alloT('stem.nutritionlab.includes_0_g_added_sugars', 'Includes 0 g Added Sugars'), val: '', dv: '0%', indent: true, indentMore: true },
+            { label: __alloT('stem.nutritionlab.protein_7', 'Protein'),        val: '2 g',           bold: true }
           ],
           micros: [
-            { label: 'Vitamin D', val: '0 mcg', dv: '0%' },
-            { label: 'Calcium',   val: '0 mg',  dv: '0%' },
-            { label: 'Iron',      val: '0.4 mg', dv: '2%' },
-            { label: 'Potassium', val: '350 mg', dv: '7%' }
+            { label: __alloT('stem.nutritionlab.vitamin_d_3', 'Vitamin D'), val: '0 mcg', dv: '0%' },
+            { label: __alloT('stem.nutritionlab.calcium_3', 'Calcium'),   val: '0 mg',  dv: '0%' },
+            { label: __alloT('stem.nutritionlab.iron_3', 'Iron'),      val: '0.4 mg', dv: '2%' },
+            { label: __alloT('stem.nutritionlab.potassium_2', 'Potassium'), val: '350 mg', dv: '7%' }
           ],
           questions: [
             {
@@ -16825,29 +16864,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'frozen',
-          name: 'Frozen "Family" Lasagna',
+          name: __alloT('stem.nutritionlab.frozen_family_lasagna', 'Frozen "Family" Lasagna'),
           difficulty: 'Multi-serving deception',
           context: 'A frozen meal in a tray that looks like 1-2 dinners. Label says "3 servings per container." Most people split the box for 1 or 2 people.',
           servings: 3,
           servingSize: '1 cup (213 g)',
           calories: 240,
           rows: [
-            { label: 'Total Fat',      val: '11 g',  dv: '14%', bold: true },
-            { label: 'Saturated Fat',  val: '4 g',   dv: '20%', indent: true },
-            { label: 'Trans Fat',      val: '0 g',            indent: true },
-            { label: 'Cholesterol',    val: '30 mg', dv: '10%', bold: true },
-            { label: 'Sodium',         val: '720 mg', dv: '31%', bold: true },
-            { label: 'Total Carbs',    val: '24 g',  dv: '9%',  bold: true },
-            { label: 'Dietary Fiber',  val: '2 g',   dv: '7%',  indent: true },
-            { label: 'Total Sugars',   val: '4 g',            indent: true },
-            { label: 'Includes 0 g Added Sugars', val: '', dv: '0%', indent: true, indentMore: true },
-            { label: 'Protein',        val: '12 g',           bold: true }
+            { label: __alloT('stem.nutritionlab.total_fat_3', 'Total Fat'),      val: '11 g',  dv: '14%', bold: true },
+            { label: __alloT('stem.nutritionlab.saturated_fat_3', 'Saturated Fat'),  val: '4 g',   dv: '20%', indent: true },
+            { label: __alloT('stem.nutritionlab.trans_fat_3', 'Trans Fat'),      val: '0 g',            indent: true },
+            { label: __alloT('stem.nutritionlab.cholesterol_3', 'Cholesterol'),    val: '30 mg', dv: '10%', bold: true },
+            { label: __alloT('stem.nutritionlab.sodium_3', 'Sodium'),         val: '720 mg', dv: '31%', bold: true },
+            { label: __alloT('stem.nutritionlab.total_carbs_3', 'Total Carbs'),    val: '24 g',  dv: '9%',  bold: true },
+            { label: __alloT('stem.nutritionlab.dietary_fiber_3', 'Dietary Fiber'),  val: '2 g',   dv: '7%',  indent: true },
+            { label: __alloT('stem.nutritionlab.total_sugars_3', 'Total Sugars'),   val: '4 g',            indent: true },
+            { label: __alloT('stem.nutritionlab.includes_0_g_added_sugars_2', 'Includes 0 g Added Sugars'), val: '', dv: '0%', indent: true, indentMore: true },
+            { label: __alloT('stem.nutritionlab.protein_8', 'Protein'),        val: '12 g',           bold: true }
           ],
           micros: [
-            { label: 'Vitamin D', val: '0 mcg', dv: '0%' },
-            { label: 'Calcium',   val: '180 mg', dv: '15%' },
-            { label: 'Iron',      val: '1.5 mg', dv: '8%' },
-            { label: 'Potassium', val: '350 mg', dv: '7%' }
+            { label: __alloT('stem.nutritionlab.vitamin_d_4', 'Vitamin D'), val: '0 mcg', dv: '0%' },
+            { label: __alloT('stem.nutritionlab.calcium_4', 'Calcium'),   val: '180 mg', dv: '15%' },
+            { label: __alloT('stem.nutritionlab.iron_4', 'Iron'),      val: '1.5 mg', dv: '8%' },
+            { label: __alloT('stem.nutritionlab.potassium_3', 'Potassium'), val: '350 mg', dv: '7%' }
           ],
           questions: [
             {
@@ -16887,7 +16926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'yogurt',
-          name: 'Plain vs Vanilla Greek Yogurt',
+          name: __alloT('stem.nutritionlab.plain_vs_vanilla_greek_yogurt', 'Plain vs Vanilla Greek Yogurt'),
           difficulty: 'Added vs Total Sugars',
           context: 'A "plain" Greek yogurt (left column below) compared to a "vanilla" flavored version of the same brand (right column). Find the difference.',
           servings: 1,
@@ -16897,23 +16936,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           dualOther: {
             calories: 150,
             rows: [
-              { label: 'Total Fat',      val: '0 g',           bold: true },
-              { label: 'Total Carbs',    val: '24 g', dv: '9%', bold: true },
-              { label: 'Total Sugars',   val: '20 g',          indent: true },
-              { label: 'Includes 14 g Added Sugars', val: '', dv: '28%', indent: true, indentMore: true },
-              { label: 'Protein',        val: '12 g',          bold: true }
+              { label: __alloT('stem.nutritionlab.total_fat_4', 'Total Fat'),      val: '0 g',           bold: true },
+              { label: __alloT('stem.nutritionlab.total_carbs_4', 'Total Carbs'),    val: '24 g', dv: '9%', bold: true },
+              { label: __alloT('stem.nutritionlab.total_sugars_4', 'Total Sugars'),   val: '20 g',          indent: true },
+              { label: __alloT('stem.nutritionlab.includes_14_g_added_sugars', 'Includes 14 g Added Sugars'), val: '', dv: '28%', indent: true, indentMore: true },
+              { label: __alloT('stem.nutritionlab.protein_9', 'Protein'),        val: '12 g',          bold: true }
             ]
           },
           rows: [
-            { label: 'Total Fat',      val: '0 g',           bold: true },
-            { label: 'Total Carbs',    val: '8 g',  dv: '3%', bold: true },
-            { label: 'Total Sugars',   val: '6 g',           indent: true },
-            { label: 'Includes 0 g Added Sugars', val: '', dv: '0%', indent: true, indentMore: true },
-            { label: 'Protein',        val: '17 g',          bold: true }
+            { label: __alloT('stem.nutritionlab.total_fat_5', 'Total Fat'),      val: '0 g',           bold: true },
+            { label: __alloT('stem.nutritionlab.total_carbs_5', 'Total Carbs'),    val: '8 g',  dv: '3%', bold: true },
+            { label: __alloT('stem.nutritionlab.total_sugars_5', 'Total Sugars'),   val: '6 g',           indent: true },
+            { label: __alloT('stem.nutritionlab.includes_0_g_added_sugars_3', 'Includes 0 g Added Sugars'), val: '', dv: '0%', indent: true, indentMore: true },
+            { label: __alloT('stem.nutritionlab.protein_10', 'Protein'),        val: '17 g',          bold: true }
           ],
           micros: [
-            { label: 'Calcium',   val: '180 mg', dv: '15%' },
-            { label: 'Vitamin B12', val: '1.4 mcg', dv: '60%' }
+            { label: __alloT('stem.nutritionlab.calcium_5', 'Calcium'),   val: '180 mg', dv: '15%' },
+            { label: __alloT('stem.nutritionlab.vitamin_b12_2', 'Vitamin B12'), val: '1.4 mcg', dv: '60%' }
           ],
           questions: [
             {
@@ -16963,20 +17002,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           role: 'img',
           'aria-label': 'Nutrition Facts panel for ' + lab.name + (props.suffix ? ' (' + props.suffix + ')' : '')
         },
-          h('div', { className: 'text-3xl font-black text-black border-b-8 border-black pb-1 mb-1' }, 'Nutrition Facts'),
+          h('div', { className: 'text-3xl font-black text-black border-b-8 border-black pb-1 mb-1' }, __alloT('stem.nutritionlab.nutrition_facts', 'Nutrition Facts')),
           h('div', { className: 'text-xs text-black' }, lab.servings + ' serving' + (lab.servings === 1 ? '' : 's') + ' per container'),
           h('div', { className: 'flex justify-between text-sm font-bold text-black border-b-4 border-black pb-1 mb-1' },
-            h('span', null, 'Serving size'),
+            h('span', null, __alloT('stem.nutritionlab.serving_size', 'Serving size')),
             h('span', null, lab.servingSize)
           ),
           h('div', { className: 'flex justify-between items-end mb-1' },
             h('div', null,
-              h('div', { className: 'text-[10px] font-bold text-black' }, 'Amount per serving'),
-              h('div', { className: 'text-2xl font-black text-black' }, 'Calories')
+              h('div', { className: 'text-[10px] font-bold text-black' }, __alloT('stem.nutritionlab.amount_per_serving', 'Amount per serving')),
+              h('div', { className: 'text-2xl font-black text-black' }, __alloT('stem.nutritionlab.calories', 'Calories'))
             ),
             h('div', { className: 'text-3xl font-black text-black' }, props.calories || lab.calories)
           ),
-          h('div', { className: 'border-t-4 border-black pt-1 text-right text-[10px] font-bold text-black' }, '% Daily Value*'),
+          h('div', { className: 'border-t-4 border-black pt-1 text-right text-[10px] font-bold text-black' }, __alloT('stem.nutritionlab.daily_value', '% Daily Value*')),
           h('div', null,
             rows.map(function(r, i) {
               var pad = r.indentMore ? 'pl-8' : r.indent ? 'pl-4' : '';
@@ -16998,7 +17037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })
           ),
           h('div', { className: 'mt-2 text-[9px] leading-tight text-black' },
-            '* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.')
+            __alloT('stem.nutritionlab.the_daily_value_dv_tells_you_how_much_', '* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.'))
         );
       }
 
@@ -17028,12 +17067,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         });
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🏷️', title: 'Food Label Reader' }),
+          h(BackBar, { icon: '🏷️', title: __alloT('stem.nutritionlab.food_label_reader_2', 'Food Label Reader') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             h('div', { className: 'bg-cyan-50 border-2 border-cyan-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-cyan-900 mb-2' }, 'Read a Nutrition Facts panel like a registered dietitian'),
+              h('h2', { className: 'text-lg font-black text-cyan-900 mb-2' }, __alloT('stem.nutritionlab.read_a_nutrition_facts_panel_like_a_re', 'Read a Nutrition Facts panel like a registered dietitian')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'The Nutrition Facts panel is required by the FDA on every packaged food. It tells the truth — but the manufacturer chooses how to slice that truth. Common tricks: dividing one bag into "2 servings" so per-serving numbers look smaller, putting "0 g trans fat" on something that\'s 49% saturated fat, calling something "fat-free" while it\'s loaded with added sugar. Once you can read these labels, you can\'t un-read them.')
+                __alloT('stem.nutritionlab.the_nutrition_facts_panel_is_required_', 'The Nutrition Facts panel is required by the FDA on every packaged food. It tells the truth — but the manufacturer chooses how to slice that truth. Common tricks: dividing one bag into "2 servings" so per-serving numbers look smaller, putting "0 g trans fat" on something that\'s 49% saturated fat, calling something "fat-free" while it\'s loaded with added sugar. Once you can read these labels, you can\'t un-read them.'))
             ),
             // Per-challenge completion + accuracy across all challenges (lifts the BirdLab pattern).
             // A challenge is 'complete' when every question is answered AND every answer is correct.
@@ -17100,11 +17139,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 lab.dual
                   ? h('div', { className: 'space-y-3' },
                       h('div', null,
-                        h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, 'Plain version'),
+                        h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, __alloT('stem.nutritionlab.plain_version', 'Plain version')),
                         h(NutritionFactsPanel, { label: lab, rows: lab.rows, calories: lab.calories, suffix: 'plain' })
                       ),
                       h('div', null,
-                        h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, 'Vanilla flavored version'),
+                        h('div', { className: 'text-xs font-bold uppercase text-slate-700 mb-1' }, __alloT('stem.nutritionlab.vanilla_flavored_version', 'Vanilla flavored version')),
                         h(NutritionFactsPanel, { label: lab, rows: lab.dualOther.rows, calories: lab.dualOther.calories, suffix: 'vanilla flavored' })
                       )
                     )
@@ -17112,7 +17151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               ),
               // RIGHT: questions
               h('div', { className: 'space-y-3' },
-                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' }, 'Decode this label'),
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.decode_this_label', 'Decode this label')),
                 lab.questions.map(function(q, qi) {
                   var key = labelIdx + '_' + qi;
                   var picked = answers[key];
@@ -17147,8 +17186,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   );
                 }),
                 allAnswered && h('div', { className: 'p-4 bg-emerald-50 border-2 border-emerald-300 rounded-xl text-emerald-900' },
-                  h('div', { className: 'font-black text-lg' }, '✓ Challenge complete'),
-                  h('p', { className: 'text-sm' }, 'You decoded this label correctly. Move to the next challenge.')
+                  h('div', { className: 'font-black text-lg' }, __alloT('stem.nutritionlab.challenge_complete', '✓ Challenge complete')),
+                  h('p', { className: 'text-sm' }, __alloT('stem.nutritionlab.you_decoded_this_label_correctly_move_', 'You decoded this label correctly. Move to the next challenge.'))
                 )
               )
             ),
@@ -17221,12 +17260,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     style: { width: 84, height: 84, borderRadius: '50%', background: tierColor, color: 'var(--allo-stem-text, #ffffff)', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: '0 4px 14px ' + tierColor + '44, inset 0 1px 0 rgba(255,255,255,0.25)', border: '4px solid #ffffff' }
                   },
                     h('div', { style: { fontSize: 26, lineHeight: 1 } }, '🏷'),
-                    h('div', { style: { fontSize: 9, fontWeight: 900, letterSpacing: '0.04em', textAlign: 'center', textTransform: 'uppercase', marginTop: 4 } }, 'Decoder')
+                    h('div', { style: { fontSize: 9, fontWeight: 900, letterSpacing: '0.04em', textAlign: 'center', textTransform: 'uppercase', marginTop: 4 } }, __alloT('stem.nutritionlab.decoder', 'Decoder'))
                   )
                 ),
                 // Per-challenge checklist
                 h('div', { className: 'p-4 bg-white border-t border-emerald-200' },
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-2' }, '✓ All five challenges decoded'),
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.all_five_challenges_decoded', '✓ All five challenges decoded')),
                   h('ul', { className: 'space-y-1 text-sm text-slate-800' },
                     LABELS.map(function(L) {
                       return h('li', { key: L.id, className: 'flex items-center gap-2' },
@@ -17272,48 +17311,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var tab = tab_state[0], setTab = tab_state[1];
 
         var tabs = [
-          { id: 'atp',          label: '1. ATP & Mitochondria' },
-          { id: 'systems',      label: '2. Three Energy Systems' },
-          { id: 'distribution', label: '3. Where Energy Goes' }
+          { id: 'atp',          label: __alloT('stem.nutritionlab.1_atp_mitochondria', '1. ATP & Mitochondria') },
+          { id: 'systems',      label: __alloT('stem.nutritionlab.2_three_energy_systems', '2. Three Energy Systems') },
+          { id: 'distribution', label: __alloT('stem.nutritionlab.3_where_energy_goes', '3. Where Energy Goes') }
         ];
         // Topic-accent hero metadata — keys off tab id so each section feels distinct.
         var TAB_META = {
-          atp:          { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '⚡', title: 'ATP — your cellular energy currency', hint: 'Every cell holds ~50g of ATP and recycles it ~1,000× per day.' },
-          systems:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '🔥', title: 'Three energy systems run side by side', hint: 'PCr · glycolysis · oxidative — each peaks at a different duration.' },
-          distribution: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '🧠', title: 'Where your energy actually goes at rest', hint: 'Brain ≈ 20% of resting energy at only ~2% of body weight.' }
+          atp:          { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '⚡', title: __alloT('stem.nutritionlab.atp_your_cellular_energy_currency', 'ATP — your cellular energy currency'), hint: __alloT('stem.nutritionlab.every_cell_holds_50g_of_atp_and_recycl', 'Every cell holds ~50g of ATP and recycles it ~1,000× per day.') },
+          systems:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '🔥', title: __alloT('stem.nutritionlab.three_energy_systems_run_side_by_side', 'Three energy systems run side by side'), hint: __alloT('stem.nutritionlab.pcr_glycolysis_oxidative_each_peaks_at', 'PCr · glycolysis · oxidative — each peaks at a different duration.') },
+          distribution: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '🧠', title: __alloT('stem.nutritionlab.where_your_energy_actually_goes_at_res', 'Where your energy actually goes at rest'), hint: __alloT('stem.nutritionlab.brain_20_of_resting_energy_at_only_2_o', 'Brain ≈ 20% of resting energy at only ~2% of body weight.') }
         };
 
         // Resting energy distribution (approximate, healthy adult average)
         // Source: Brody, Nutritional Biochemistry (1999); Wang et al., 2010
         var ENERGY_DIST = [
-          { organ: 'Liver',           pct: 21, color: 'bg-rose-500',    note: 'Constantly processing nutrients, detoxifying, making proteins.' },
-          { organ: 'Skeletal muscle', pct: 22, color: 'bg-orange-500',  note: 'Even at rest, muscles maintain tone and run baseline metabolism.' },
-          { organ: 'Brain',           pct: 20, color: 'bg-violet-500',  note: 'Neurons fire constantly. Brain uses ~20% of resting energy despite being ~2% of body weight.' },
-          { organ: 'Heart',           pct: 9,  color: 'bg-red-600',     note: 'Beats ~100,000 times/day, never stops.' },
-          { organ: 'Kidneys',         pct: 8,  color: 'bg-amber-500',   note: 'Filter your entire blood volume ~60 times/day.' },
-          { organ: 'Other tissues',   pct: 20, color: 'bg-slate-500',   note: 'Skin, gut, immune cells, fat tissue, nervous system.' }
+          { organ: 'Liver',           pct: 21, color: 'bg-rose-500',    note: __alloT('stem.nutritionlab.constantly_processing_nutrients_detoxi', 'Constantly processing nutrients, detoxifying, making proteins.') },
+          { organ: 'Skeletal muscle', pct: 22, color: 'bg-orange-500',  note: __alloT('stem.nutritionlab.even_at_rest_muscles_maintain_tone_and', 'Even at rest, muscles maintain tone and run baseline metabolism.') },
+          { organ: 'Brain',           pct: 20, color: 'bg-violet-500',  note: __alloT('stem.nutritionlab.neurons_fire_constantly_brain_uses_20_', 'Neurons fire constantly. Brain uses ~20% of resting energy despite being ~2% of body weight.') },
+          { organ: 'Heart',           pct: 9,  color: 'bg-red-600',     note: __alloT('stem.nutritionlab.beats_100_000_times_day_never_stops', 'Beats ~100,000 times/day, never stops.') },
+          { organ: 'Kidneys',         pct: 8,  color: 'bg-amber-500',   note: __alloT('stem.nutritionlab.filter_your_entire_blood_volume_60_tim', 'Filter your entire blood volume ~60 times/day.') },
+          { organ: 'Other tissues',   pct: 20, color: 'bg-slate-500',   note: __alloT('stem.nutritionlab.skin_gut_immune_cells_fat_tissue_nervo', 'Skin, gut, immune cells, fat tissue, nervous system.') }
         ];
 
         var ACTIVITY_KCAL = [
-          { activity: 'Sleep',         kcalPerMin: 1.0,  desc: 'Slightly below BMR. Brain and organs are still busy.' },
-          { activity: 'Sit / read',    kcalPerMin: 1.2,  desc: 'BMR baseline plus a tiny bit for posture.' },
-          { activity: 'Walk (3 mph)',  kcalPerMin: 4.0,  desc: 'Most accessible activity for nearly any body.' },
-          { activity: 'Bike (light)',  kcalPerMin: 6.0,  desc: 'Joint-friendly, sustained exercise.' },
-          { activity: 'Run (6 mph)',   kcalPerMin: 10,   desc: 'Aerobic system in full use; oxidative + glycolysis.' },
-          { activity: 'Swim laps',     kcalPerMin: 9,    desc: 'Whole-body, low-impact, high-energy.' },
-          { activity: 'Sprint (max)',  kcalPerMin: 20,   desc: 'Phosphocreatine + anaerobic glycolysis. Cannot sustain.' }
+          { activity: 'Sleep',         kcalPerMin: 1.0,  desc: __alloT('stem.nutritionlab.slightly_below_bmr_brain_and_organs_ar', 'Slightly below BMR. Brain and organs are still busy.') },
+          { activity: 'Sit / read',    kcalPerMin: 1.2,  desc: __alloT('stem.nutritionlab.bmr_baseline_plus_a_tiny_bit_for_postu', 'BMR baseline plus a tiny bit for posture.') },
+          { activity: 'Walk (3 mph)',  kcalPerMin: 4.0,  desc: __alloT('stem.nutritionlab.most_accessible_activity_for_nearly_an', 'Most accessible activity for nearly any body.') },
+          { activity: 'Bike (light)',  kcalPerMin: 6.0,  desc: __alloT('stem.nutritionlab.joint_friendly_sustained_exercise', 'Joint-friendly, sustained exercise.') },
+          { activity: 'Run (6 mph)',   kcalPerMin: 10,   desc: __alloT('stem.nutritionlab.aerobic_system_in_full_use_oxidative_g', 'Aerobic system in full use; oxidative + glycolysis.') },
+          { activity: 'Swim laps',     kcalPerMin: 9,    desc: __alloT('stem.nutritionlab.whole_body_low_impact_high_energy', 'Whole-body, low-impact, high-energy.') },
+          { activity: 'Sprint (max)',  kcalPerMin: 20,   desc: __alloT('stem.nutritionlab.phosphocreatine_anaerobic_glycolysis_c', 'Phosphocreatine + anaerobic glycolysis. Cannot sustain.') }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '⚡', title: 'Energy & Metabolism' }),
+          h(BackBar, { icon: '⚡', title: __alloT('stem.nutritionlab.energy_metabolism_2', 'Energy & Metabolism') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, 'How your body actually makes and uses energy'),
+              h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, __alloT('stem.nutritionlab.how_your_body_actually_makes_and_uses_', 'How your body actually makes and uses energy')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'This module covers the BIOLOGY of energy — molecules, cells, organ systems. Numbers like "BMR" and "kcal/min" are descriptive (this is what your body is doing), not prescriptive (this is your daily target). Different bodies need different amounts. Growth, illness, sleep quality, weather, and life stage all change the numbers. None of this is a goal to hit.')
+                __alloT('stem.nutritionlab.this_module_covers_the_biology_of_ener', 'This module covers the BIOLOGY of energy — molecules, cells, organ systems. Numbers like "BMR" and "kcal/min" are descriptive (this is what your body is doing), not prescriptive (this is your daily target). Different bodies need different amounts. Growth, illness, sleep quality, weather, and life stage all change the numbers. None of this is a goal to hit.'))
             ),
             // Tab strip
-            h('div', { 'role': 'tablist', 'aria-label': 'Energy metabolism sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.energy_metabolism_sections', 'Energy metabolism sections'), className: 'flex flex-wrap gap-2' },
               tabs.map(function(t) {
                 var sel = (tab === t.id);
                 return h('button', {
@@ -17348,9 +17387,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })(),
             tab === 'atp' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, 'ATP — your cellular energy currency'),
+                h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.atp_your_cellular_energy_currency_2', 'ATP — your cellular energy currency')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  'Every cell in your body runs on a tiny molecule called ATP (adenosine triphosphate). When ATP gives up one phosphate group, it becomes ADP and releases energy your cells use to do work — contract muscles, fire neurons, build proteins, push molecules across membranes.'),
+                  __alloT('stem.nutritionlab.every_cell_in_your_body_runs_on_a_tiny', 'Every cell in your body runs on a tiny molecule called ATP (adenosine triphosphate). When ATP gives up one phosphate group, it becomes ADP and releases energy your cells use to do work — contract muscles, fire neurons, build proteins, push molecules across membranes.')),
                 // ATP cycle visualization
                 h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4 mb-3' },
                   h('div', { className: 'flex items-center justify-around flex-wrap gap-3' },
@@ -17361,48 +17400,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     ),
                     h('div', { className: 'flex flex-col items-center' },
                       h('span', { className: 'text-2xl', 'aria-hidden': true }, '→'),
-                      h('span', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, 'releases energy')
+                      h('span', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, __alloT('stem.nutritionlab.releases_energy', 'releases energy'))
                     ),
                     h('div', { className: 'text-center' },
                       h('div', { className: 'text-5xl mb-1', 'aria-hidden': true }, '🔋'),
-                      h('div', { className: 'font-mono font-bold text-slate-800' }, 'ADP + Pi'),
+                      h('div', { className: 'font-mono font-bold text-slate-800' }, __alloT('stem.nutritionlab.adp_pi', 'ADP + Pi')),
                       h('div', { className: 'text-[10px] text-slate-700' }, 'discharged')
                     ),
                     h('div', { className: 'flex flex-col items-center' },
                       h('span', { className: 'text-2xl', 'aria-hidden': true }, '↩'),
-                      h('span', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, 'recharged in mitochondria')
+                      h('span', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, __alloT('stem.nutritionlab.recharged_in_mitochondria', 'recharged in mitochondria'))
                     )
                   )
                 ),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Your body holds only ~50 g of ATP at any moment, but recycles it constantly: each ATP molecule cycles ATP → ADP → ATP about 1,000+ times per day. Total ATP turnover roughly equals your body weight per day. The recycling happens in tiny organelles called mitochondria, which use oxygen and food (glucose, fatty acids) to charge ADP back into ATP.')
+                  __alloT('stem.nutritionlab.your_body_holds_only_50_g_of_atp_at_an', 'Your body holds only ~50 g of ATP at any moment, but recycles it constantly: each ATP molecule cycles ATP → ADP → ATP about 1,000+ times per day. Total ATP turnover roughly equals your body weight per day. The recycling happens in tiny organelles called mitochondria, which use oxygen and food (glucose, fatty acids) to charge ADP back into ATP.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, 'Mitochondria — the cellular powerhouses'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.mitochondria_the_cellular_powerhouses', 'Mitochondria — the cellular powerhouses')),
                 h('div', { className: 'space-y-3 text-sm text-slate-800' },
-                  h('p', null, 'Mitochondria are tiny organelles inside almost every cell of your body. They take glucose (from carbs) or fatty acids (from fats), combine them with oxygen, and release CO₂ + water — capturing the energy in ATP along the way.'),
+                  h('p', null, __alloT('stem.nutritionlab.mitochondria_are_tiny_organelles_insid', 'Mitochondria are tiny organelles inside almost every cell of your body. They take glucose (from carbs) or fatty acids (from fats), combine them with oxygen, and release CO₂ + water — capturing the energy in ATP along the way.')),
                   h('div', { className: 'p-3 bg-blue-50 border border-blue-200 rounded-lg font-mono text-xs' },
-                    'Glucose + 6 O₂ → 6 CO₂ + 6 H₂O + ~30-32 ATP',
+                    __alloT('stem.nutritionlab.glucose_6_o_6_co_6_h_o_30_32_atp', 'Glucose + 6 O₂ → 6 CO₂ + 6 H₂O + ~30-32 ATP'),
                     h('br'),
-                    h('span', { className: 'text-slate-700' }, '(this is cellular respiration — the chemistry that powers you right now)')
+                    h('span', { className: 'text-slate-700' }, __alloT('stem.nutritionlab.this_is_cellular_respiration_the_chemi', '(this is cellular respiration — the chemistry that powers you right now)'))
                   ),
                   h('p', null,
-                    'Cells with high energy demand have ',
-                    h('strong', null, 'lots of mitochondria'),
-                    ': heart muscle (~5,000 per cell), liver, brain. Endurance training increases mitochondrial density in your muscles — that\'s a big part of why trained athletes can sustain effort longer.')
+                    __alloT('stem.nutritionlab.cells_with_high_energy_demand_have', 'Cells with high energy demand have '),
+                    h('strong', null, __alloT('stem.nutritionlab.lots_of_mitochondria', 'lots of mitochondria')),
+                    __alloT('stem.nutritionlab.heart_muscle_5_000_per_cell_liver_brai', ': heart muscle (~5,000 per cell), liver, brain. Endurance training increases mitochondrial density in your muscles — that\'s a big part of why trained athletes can sustain effort longer.'))
                 )
               )
             ),
             tab === 'systems' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, 'Three energy systems run side by side'),
+                h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.three_energy_systems_run_side_by_side_2', 'Three energy systems run side by side')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Your body has three different ways to make ATP. They\'re all running constantly, but the dominant system depends on how hard and how long you\'re working.')
+                  __alloT('stem.nutritionlab.your_body_has_three_different_ways_to_', 'Your body has three different ways to make ATP. They\'re all running constantly, but the dominant system depends on how hard and how long you\'re working.'))
               ),
               h('div', { className: 'space-y-3' },
                 [
                   {
-                    name: 'Phosphocreatine (PCr)',
+                    name: __alloT('stem.nutritionlab.phosphocreatine_pcr', 'Phosphocreatine (PCr)'),
                     duration: '0–10 seconds',
                     fuel: 'Stored creatine phosphate',
                     oxygen: 'No oxygen needed',
@@ -17412,7 +17451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     icon: '🚀'
                   },
                   {
-                    name: 'Anaerobic glycolysis',
+                    name: __alloT('stem.nutritionlab.anaerobic_glycolysis', 'Anaerobic glycolysis'),
                     duration: '10 seconds – 2 minutes',
                     fuel: 'Glucose / glycogen, no oxygen',
                     oxygen: 'No oxygen needed',
@@ -17422,7 +17461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     icon: '🔥'
                   },
                   {
-                    name: 'Oxidative (aerobic)',
+                    name: __alloT('stem.nutritionlab.oxidative_aerobic', 'Oxidative (aerobic)'),
                     duration: '2 minutes onward',
                     fuel: 'Glucose AND fat, with oxygen',
                     oxygen: 'Requires oxygen',
@@ -17441,7 +17480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                           h('div', null, h('strong', null, 'Duration: '), sys.duration),
                           h('div', null, h('strong', null, 'Fuel: '), sys.fuel),
                           h('div', null, h('strong', null, 'Oxygen: '), sys.oxygen),
-                          h('div', null, h('strong', null, 'ATP yield: '), sys.yield)
+                          h('div', null, h('strong', null, __alloT('stem.nutritionlab.atp_yield', 'ATP yield: ')), sys.yield)
                         ),
                         h('div', { className: 'text-sm text-slate-800 italic' }, sys.example)
                       )
@@ -17450,17 +17489,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 })
               ),
               h('div', { className: 'p-3 bg-slate-100 rounded text-sm text-slate-800' },
-                h('span', { className: 'font-bold' }, 'All three systems run all the time. '),
-                'They overlap. A 1500m race shifts from PCr → anaerobic → aerobic across the four minutes. Endurance training boosts the oxidative system; sprint training boosts the anaerobic. Both adapt with practice.')
+                h('span', { className: 'font-bold' }, __alloT('stem.nutritionlab.all_three_systems_run_all_the_time', 'All three systems run all the time. ')),
+                __alloT('stem.nutritionlab.they_overlap_a_1500m_race_shifts_from_', 'They overlap. A 1500m race shifts from PCr → anaerobic → aerobic across the four minutes. Endurance training boosts the oxidative system; sprint training boosts the anaerobic. Both adapt with practice.'))
             ),
             tab === 'distribution' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, 'Where your energy actually goes'),
+                h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.where_your_energy_actually_goes', 'Where your energy actually goes')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  'Even when you\'re resting, your body uses energy. The minimum to keep your heart beating, brain firing, lungs breathing, kidneys filtering, and core temperature stable is called Basal Metabolic Rate (BMR). Most adolescents have a BMR somewhere between 1,200 and 1,800 kcal/day — the wide range is normal biological variation.')
+                  __alloT('stem.nutritionlab.even_when_you_re_resting_your_body_use', 'Even when you\'re resting, your body uses energy. The minimum to keep your heart beating, brain firing, lungs breathing, kidneys filtering, and core temperature stable is called Basal Metabolic Rate (BMR). Most adolescents have a BMR somewhere between 1,200 and 1,800 kcal/day — the wide range is normal biological variation.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'Resting energy distribution by organ'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.resting_energy_distribution_by_organ', 'Resting energy distribution by organ')),
                 h('div', { className: 'space-y-2' },
                   ENERGY_DIST.map(function(d, i) {
                     return h('div', { key: i },
@@ -17476,12 +17515,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   })
                 ),
                 h('div', { className: 'mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-slate-800 italic' },
-                  'These percentages describe a healthy adult at rest. Children and adolescents typically have a brain that uses an even larger share (up to 50% in young kids) because of growth and learning.')
+                  __alloT('stem.nutritionlab.these_percentages_describe_a_healthy_a', 'These percentages describe a healthy adult at rest. Children and adolescents typically have a brain that uses an even larger share (up to 50% in young kids) because of growth and learning.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'Activity adds energy use on top of BMR'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.activity_adds_energy_use_on_top_of_bmr', 'Activity adds energy use on top of BMR')),
                 h('p', { className: 'text-sm text-slate-800 mb-3' },
-                  'These are descriptive averages — actual energy use varies with body size, fitness, and how hard you\'re going.'),
+                  __alloT('stem.nutritionlab.these_are_descriptive_averages_actual_', 'These are descriptive averages — actual energy use varies with body size, fitness, and how hard you\'re going.')),
                 h('div', { className: 'space-y-2' },
                   ACTIVITY_KCAL.map(function(a, i) {
                     var maxBar = 100;
@@ -17503,9 +17542,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { className: 'flex items-start gap-3' },
                   h('span', { className: 'text-2xl', 'aria-hidden': true }, '💡'),
                   h('div', null,
-                    h('div', { className: 'font-bold text-emerald-900 mb-1' }, 'Important framing'),
+                    h('div', { className: 'font-bold text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.important_framing', 'Important framing')),
                     h('p', { className: 'text-sm text-slate-800' },
-                      'Your body needs at least your BMR worth of energy to keep its essential systems working. Eating well below BMR for an extended time forces the body to slow metabolism, break down muscle, weaken immunity, and impair concentration. The goal isn\'t to "minimize calories" — it\'s to give your body what it needs to do its job. If anything in this module triggers worry about how much you\'re eating, please talk with a trusted adult, your doctor, or NEDA (1-800-931-2237).')
+                      __alloT('stem.nutritionlab.your_body_needs_at_least_your_bmr_wort', 'Your body needs at least your BMR worth of energy to keep its essential systems working. Eating well below BMR for an extended time forces the body to slow metabolism, break down muscle, weaken immunity, and impair concentration. The goal isn\'t to "minimize calories" — it\'s to give your body what it needs to do its job. If anything in this module triggers worry about how much you\'re eating, please talk with a trusted adult, your doctor, or NEDA (1-800-931-2237).'))
                   )
                 )
               )
@@ -17540,7 +17579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         {
           id: 'mouth',
           icon: '👄',
-          name: 'Mouth',
+          name: __alloT('stem.nutritionlab.mouth', 'Mouth'),
           time: '~30 seconds (chewing)',
           pH: '6.5–7 (slightly acidic)',
           mechanical: 'Teeth break food into smaller pieces; tongue mixes it with saliva to form a moist bolus that can be swallowed.',
@@ -17552,14 +17591,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             fiber: 'Mechanically broken up by chewing but not digested.'
           },
           hormones: [
-            { name: 'Ghrelin', role: 'The "hunger hormone." Levels typically peak BEFORE you eat (telling you to eat) and drop after.' }
+            { name: __alloT('stem.nutritionlab.ghrelin', 'Ghrelin'), role: 'The "hunger hormone." Levels typically peak BEFORE you eat (telling you to eat) and drop after.' }
           ],
           color: 'from-rose-400 to-pink-500'
         },
         {
           id: 'stomach',
           icon: '🫃',
-          name: 'Stomach',
+          name: __alloT('stem.nutritionlab.stomach', 'Stomach'),
           time: '2–4 hours (varies by meal)',
           pH: '1.5–3 (very acidic)',
           mechanical: 'Strong muscular contractions churn food into a soupy mixture called chyme.',
@@ -17571,15 +17610,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             fiber: 'Just sits in the chyme. Slows stomach emptying — which is part of why high-fiber meals keep you full longer.'
           },
           hormones: [
-            { name: 'Gastrin', role: 'Triggers HCl release. Stomach distension and dietary protein both stimulate gastrin.' },
-            { name: 'Ghrelin', role: 'Drops as food fills the stomach.' }
+            { name: __alloT('stem.nutritionlab.gastrin', 'Gastrin'), role: 'Triggers HCl release. Stomach distension and dietary protein both stimulate gastrin.' },
+            { name: __alloT('stem.nutritionlab.ghrelin_2', 'Ghrelin'), role: 'Drops as food fills the stomach.' }
           ],
           color: 'from-amber-400 to-orange-500'
         },
         {
           id: 'smallIntestine',
           icon: '🌀',
-          name: 'Small Intestine',
+          name: __alloT('stem.nutritionlab.small_intestine', 'Small Intestine'),
           time: '3–5 hours',
           pH: '6–7 (neutralized by pancreatic bicarbonate)',
           mechanical: 'Wave-like peristalsis moves food through 20+ feet of intestinal tube. Villi and microvilli give a surface area roughly the size of a tennis court for absorption.',
@@ -17591,17 +17630,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             fiber: 'Still not digested. Continues to the large intestine.'
           },
           hormones: [
-            { name: 'CCK (Cholecystokinin)', role: 'Triggers gallbladder to release bile and pancreas to release enzymes. Also signals fullness to the brain.' },
-            { name: 'Secretin', role: 'Tells pancreas to release bicarbonate, neutralizing stomach acid as chyme arrives.' },
+            { name: __alloT('stem.nutritionlab.cck_cholecystokinin', 'CCK (Cholecystokinin)'), role: 'Triggers gallbladder to release bile and pancreas to release enzymes. Also signals fullness to the brain.' },
+            { name: __alloT('stem.nutritionlab.secretin', 'Secretin'), role: 'Tells pancreas to release bicarbonate, neutralizing stomach acid as chyme arrives.' },
             { name: 'GLP-1', role: 'Stimulates insulin release from the pancreas, which helps cells absorb the glucose now arriving in blood.' },
-            { name: 'Insulin', role: 'Released by pancreas in response to rising blood glucose. Tells cells to absorb glucose and tells liver to store excess as glycogen.' }
+            { name: __alloT('stem.nutritionlab.insulin', 'Insulin'), role: 'Released by pancreas in response to rising blood glucose. Tells cells to absorb glucose and tells liver to store excess as glycogen.' }
           ],
           color: 'from-emerald-500 to-teal-600'
         },
         {
           id: 'largeIntestine',
           icon: '🦠',
-          name: 'Large Intestine (Colon)',
+          name: __alloT('stem.nutritionlab.large_intestine_colon', 'Large Intestine (Colon)'),
           time: '12–48 hours',
           pH: '5.5–7 (varies by section)',
           mechanical: 'Slower peristalsis. Water and electrolytes are reabsorbed, gradually solidifying waste.',
@@ -17613,15 +17652,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             fiber: 'THIS IS WHERE FIBER PAYS OFF. Gut bacteria ferment soluble fiber into short-chain fatty acids — fuel for colon cells, anti-inflammatory effects, blood sugar regulation. Insoluble fiber bulks up stool.'
           },
           hormones: [
-            { name: 'PYY (Peptide YY)', role: 'Released by intestinal cells in response to food. Signals fullness to the brain — a key reason high-fiber, high-protein meals feel filling longer.' },
-            { name: 'Leptin', role: 'Released by fat tissue (not gut), but interacts with the gut-brain axis. Signals long-term energy stores to the brain.' }
+            { name: __alloT('stem.nutritionlab.pyy_peptide_yy', 'PYY (Peptide YY)'), role: 'Released by intestinal cells in response to food. Signals fullness to the brain — a key reason high-fiber, high-protein meals feel filling longer.' },
+            { name: __alloT('stem.nutritionlab.leptin', 'Leptin'), role: 'Released by fat tissue (not gut), but interacts with the gut-brain axis. Signals long-term energy stores to the brain.' }
           ],
           color: 'from-indigo-500 to-violet-700'
         },
         {
           id: 'end',
           icon: '🏁',
-          name: 'Brain Integration',
+          name: __alloT('stem.nutritionlab.brain_integration', 'Brain Integration'),
           time: 'Total: 24–72 hours mouth-to-elimination',
           pH: 'N/A',
           mechanical: 'Solid waste is eliminated; nothing more is absorbed.',
@@ -17633,8 +17672,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             fiber: 'Fermentation byproducts have nourished colon cells; remaining bulk has been eliminated.'
           },
           hormones: [
-            { name: 'Insulin / Glucagon balance', role: 'Long after the meal, insulin (storage signal) and glucagon (release signal) coordinate stable blood sugar between meals.' },
-            { name: 'Leptin', role: 'Continues to communicate energy stores to the brain over hours and days.' }
+            { name: __alloT('stem.nutritionlab.insulin_glucagon_balance', 'Insulin / Glucagon balance'), role: 'Long after the meal, insulin (storage signal) and glucagon (release signal) coordinate stable blood sugar between meals.' },
+            { name: __alloT('stem.nutritionlab.leptin_2', 'Leptin'), role: 'Continues to communicate energy stores to the brain over hours and days.' }
           ],
           color: 'from-slate-500 to-slate-700'
         }
@@ -17660,16 +17699,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🍽️', title: 'Digestion Walkthrough' }),
+          h(BackBar, { icon: '🍽️', title: __alloT('stem.nutritionlab.digestion_walkthrough_2', 'Digestion Walkthrough') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, 'Follow your food through your body'),
+              h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, __alloT('stem.nutritionlab.follow_your_food_through_your_body', 'Follow your food through your body')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'Digestion is mechanical (chewing, churning, peristalsis) AND chemical (enzymes breaking molecules apart). Different parts of the journey handle different macronutrients. Hormones coordinate the whole process — from "I\'m hungry" to "I\'m full" — across hours and days.')
+                __alloT('stem.nutritionlab.digestion_is_mechanical_chewing_churni', 'Digestion is mechanical (chewing, churning, peristalsis) AND chemical (enzymes breaking molecules apart). Different parts of the journey handle different macronutrients. Hormones coordinate the whole process — from "I\'m hungry" to "I\'m full" — across hours and days.'))
             ),
             // Progress strip
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-              h('div', { 'role': 'tablist', 'aria-label': 'Digestion stages', className: 'flex flex-wrap gap-2' },
+              h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.digestion_stages', 'Digestion stages'), className: 'flex flex-wrap gap-2' },
                 DIGESTION_STAGES.map(function(s, i) {
                   var sel = (stageIdx === i);
                   return h('button', {
@@ -17697,7 +17736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 text-sm' },
                 h('div', null,
-                  h('span', { className: 'opacity-80 text-xs uppercase tracking-wider font-bold' }, 'Time spent: '),
+                  h('span', { className: 'opacity-80 text-xs uppercase tracking-wider font-bold' }, __alloT('stem.nutritionlab.time_spent', 'Time spent: ')),
                   h('span', null, stage.time)
                 ),
                 h('div', null,
@@ -17709,23 +17748,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             // Mechanical + chemical
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, '🔨 Mechanical action'),
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.mechanical_action', '🔨 Mechanical action')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, stage.mechanical)
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
-                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, '⚗️ Chemical action'),
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.chemical_action', '⚗️ Chemical action')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, stage.chemical)
               )
             ),
             // What happens to each macro
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-              h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-3' }, 'What happens to each macronutrient at this stage'),
+              h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-3' }, __alloT('stem.nutritionlab.what_happens_to_each_macronutrient_at_', 'What happens to each macronutrient at this stage')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 [
-                  { key: 'carb',    label: 'Carbohydrates', emoji: '🌾', color: 'bg-amber-50 border-amber-300' },
-                  { key: 'protein', label: 'Protein',       emoji: '💪', color: 'bg-rose-50 border-rose-300' },
+                  { key: 'carb',    label: __alloT('stem.nutritionlab.carbohydrates', 'Carbohydrates'), emoji: '🌾', color: 'bg-amber-50 border-amber-300' },
+                  { key: 'protein', label: __alloT('stem.nutritionlab.protein_11', 'Protein'),       emoji: '💪', color: 'bg-rose-50 border-rose-300' },
                   { key: 'fat',     label: 'Fat',           emoji: '🥑', color: 'bg-yellow-50 border-yellow-300' },
-                  { key: 'fiber',   label: 'Fiber',         emoji: '🌿', color: 'bg-emerald-50 border-emerald-300' }
+                  { key: 'fiber',   label: __alloT('stem.nutritionlab.fiber_4', 'Fiber'),         emoji: '🌿', color: 'bg-emerald-50 border-emerald-300' }
                 ].map(function(m) {
                   return h('div', { key: m.key, className: 'p-3 rounded-lg border-2 ' + m.color },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -17739,7 +17778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ),
             // Hormones
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-              h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-3' }, '🧪 Key hormones at this stage'),
+              h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-3' }, __alloT('stem.nutritionlab.key_hormones_at_this_stage', '🧪 Key hormones at this stage')),
               h('ul', { className: 'space-y-2' },
                 stage.hormones.map(function(hm, i) {
                   return h('li', { key: i, className: 'p-2 bg-slate-50 rounded border border-slate-200' },
@@ -17756,7 +17795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 'aria-disabled': stageIdx === 0 ? 'true' : 'false',
                 className: 'px-4 py-2 rounded-xl font-bold text-sm transition focus:outline-none focus:ring-4 ring-emerald-500/40 ' +
                   (stageIdx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700')
-              }, '← Previous stage'),
+              }, __alloT('stem.nutritionlab.previous_stage', '← Previous stage')),
               h('div', { className: 'text-xs font-mono text-slate-700' },
                 'Stage ' + (stageIdx + 1) + ' / ' + DIGESTION_STAGES.length),
               h('button', {
@@ -17764,7 +17803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 'aria-disabled': stageIdx === DIGESTION_STAGES.length - 1 ? 'true' : 'false',
                 className: 'px-4 py-2 rounded-xl font-bold text-sm transition focus:outline-none focus:ring-4 ring-emerald-500/40 ' +
                   (stageIdx === DIGESTION_STAGES.length - 1 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700')
-              }, 'Next stage →')
+              }, __alloT('stem.nutritionlab.next_stage', 'Next stage →'))
             ),
             h(TeacherNotes, {
               standards: ['NGSS HS-LS1-3 (Homeostasis)', 'NGSS HS-LS1-7 (Cellular processes)', 'CTE Family & Consumer Sciences'],
@@ -17956,12 +17995,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }).length;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🔍', title: 'Common Nutrition Myths' }),
+          h(BackBar, { icon: '🔍', title: __alloT('stem.nutritionlab.common_nutrition_myths_2', 'Common Nutrition Myths') }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
             h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, 'The most-Googled bad nutrition advice'),
+              h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, __alloT('stem.nutritionlab.the_most_googled_bad_nutrition_advice', 'The most-Googled bad nutrition advice')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'These ten claims show up constantly in social media, advertising, and well-meaning advice from family. We picked them because each is a documented misconception with a clear evidence base. Where research is genuinely mixed, we say so explicitly. Sources cited inline (NIH, Harvard, CDC, FDA, AHA).')
+                __alloT('stem.nutritionlab.these_ten_claims_show_up_constantly_in', 'These ten claims show up constantly in social media, advertising, and well-meaning advice from family. We picked them because each is a documented misconception with a clear evidence base. Where research is genuinely mixed, we say so explicitly. Sources cited inline (NIH, Harvard, CDC, FDA, AHA).'))
             ),
             // Progress
             h('div', { className: 'flex items-center justify-between text-sm font-bold text-slate-700' },
@@ -17971,11 +18010,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             // Myth card
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
               h('div', { className: 'p-3 bg-slate-100 border-l-4 border-violet-500 rounded' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700 mb-1' }, 'The claim'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700 mb-1' }, __alloT('stem.nutritionlab.the_claim', 'The claim')),
                 h('p', { className: 'text-base text-slate-800 italic' }, myth.claim)
               ),
               h('div', null,
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'What\'s the truth?'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.what_s_the_truth', 'What\'s the truth?')),
                 h('div', { 'role': 'radiogroup', 'aria-label': myth.claim, className: 'space-y-2' },
                   myth.choices.map(function(ch, ci) {
                     var sel = (picked === ci);
@@ -18015,11 +18054,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 'aria-disabled': idx === 0 ? 'true' : 'false',
                 className: 'px-4 py-2 rounded-xl font-bold text-sm transition focus:outline-none focus:ring-4 ring-violet-500/40 ' +
                   (idx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-700')
-              }, '← Previous'),
+              }, __alloT('stem.nutritionlab.previous', '← Previous')),
               picked != null && idx + 1 < MYTHS.length && h('button', {
                 onClick: nextMyth,
                 className: 'px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 transition focus:outline-none focus:ring-4 ring-emerald-500/40'
-              }, 'Next myth →'),
+              }, __alloT('stem.nutritionlab.next_myth', 'Next myth →')),
               picked != null && idx + 1 >= MYTHS.length && h('div', { className: 'px-3 py-2 rounded bg-emerald-100 text-emerald-900 font-bold text-sm' },
                 '🎉 You\'ve seen all ' + MYTHS.length + ' myths!')
             ),
@@ -18053,7 +18092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var FOOD_MOOD = [
         {
           id: 'omega3',
-          title: 'Omega-3 fatty acids and depression',
+          title: __alloT('stem.nutritionlab.omega_3_fatty_acids_and_depression', 'Omega-3 fatty acids and depression'),
           icon: '🐟',
           claim: 'Higher omega-3 (EPA + DHA) intake is associated with lower rates of depression in observational studies. Some clinical trials show omega-3 supplementation as an ADJUNCT (alongside therapy and medication) helps treatment-resistant depression.',
           mechanism: 'DHA is a major structural component of brain cell membranes. EPA may have anti-inflammatory effects; some depression involves inflammation. Both reduce omega-6/omega-3 ratio imbalance common in standard Western diets.',
@@ -18063,7 +18102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'iron',
-          title: 'Iron and ADHD-style fatigue',
+          title: __alloT('stem.nutritionlab.iron_and_adhd_style_fatigue', 'Iron and ADHD-style fatigue'),
           icon: '🩸',
           claim: 'AAP notes iron deficiency in adolescents can present with fatigue, brain fog, and attention symptoms similar to ADHD. Some studies suggest treating iron deficiency in adolescents with low ferritin can improve attention and energy.',
           mechanism: 'Iron is required for hemoglobin (oxygen transport) and for several brain neurotransmitter pathways. Low iron means tissues — including brain — get less oxygen and fewer neurotransmitter precursors.',
@@ -18073,7 +18112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'sugar',
-          title: 'Blood sugar swings and mood',
+          title: __alloT('stem.nutritionlab.blood_sugar_swings_and_mood', 'Blood sugar swings and mood'),
           icon: '📉',
           claim: 'Big swings in blood sugar (a sugar-heavy snack on an empty stomach, then a crash 1-2 hours later) can trigger irritability, fatigue, and difficulty concentrating. This is most pronounced in adolescents and during periods of stress.',
           mechanism: 'A large pulse of simple sugar triggers a large insulin response, which can drive blood sugar BELOW baseline (reactive hypoglycemia). Brain depends on steady glucose; rapid drops feel like brain fog, irritability, or shakiness.',
@@ -18083,7 +18122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'caffeine',
-          title: 'Caffeine and adolescent anxiety',
+          title: __alloT('stem.nutritionlab.caffeine_and_adolescent_anxiety', 'Caffeine and adolescent anxiety'),
           icon: '☕',
           claim: 'Adolescents process caffeine more slowly than adults — caffeine\'s half-life is roughly 5-7 hours in teens (vs 5 hours in adults), but baseline anxiety sensitivity is higher. Energy drinks combine high caffeine with high sugar AND other stimulants. AAP advises against energy drinks for anyone under 18.',
           mechanism: 'Caffeine blocks adenosine receptors (creating wakefulness) but also stimulates adrenaline release. In sensitive individuals (more common in adolescence), this can trigger or worsen anxiety symptoms — racing heart, jitteriness, rumination, sleep disruption.',
@@ -18093,7 +18132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'gutBrain',
-          title: 'The gut-brain axis',
+          title: __alloT('stem.nutritionlab.the_gut_brain_axis', 'The gut-brain axis'),
           icon: '🦠',
           claim: 'Your gut and brain are connected via the vagus nerve, immune signaling, and microbiome metabolites. About 90% of your body\'s serotonin (a mood-relevant neurotransmitter) is made in the gut. Research increasingly links gut microbiome composition to mood, anxiety, and stress response — though much of this is still being studied.',
           mechanism: 'Gut bacteria ferment fiber into short-chain fatty acids (especially butyrate), which influence brain function via inflammation pathways. Microbiome composition is shaped by diet (especially fiber), antibiotics, stress, and genetics.',
@@ -18103,7 +18142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'vitD',
-          title: 'Vitamin D and mood (especially in Maine)',
+          title: __alloT('stem.nutritionlab.vitamin_d_and_mood_especially_in_maine', 'Vitamin D and mood (especially in Maine)'),
           icon: '☀️',
           claim: 'Some research links low vitamin D to higher rates of depression, particularly seasonal patterns (Seasonal Affective Disorder, SAD). Maine\'s northern latitude means many residents have low vitamin D from October through March — sunlight is too low-angled for skin to make vitamin D from UVB.',
           mechanism: 'Vitamin D receptors are present throughout the brain. Vitamin D may regulate serotonin synthesis. Causation is debated — low D may CONTRIBUTE to mood symptoms or simply CORRELATE with general health and outdoor activity.',
@@ -18113,7 +18152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         },
         {
           id: 'hydration',
-          title: 'Hydration and concentration',
+          title: __alloT('stem.nutritionlab.hydration_and_concentration', 'Hydration and concentration'),
           icon: '💧',
           claim: 'Even mild dehydration (1-2% body weight in fluid loss) measurably impairs attention, short-term memory, and mood in studies. This is especially relevant during exercise, hot weather, illness, or busy days when you forget to drink.',
           mechanism: 'Brain is ~75% water. Fluid loss reduces blood volume, alters electrolyte balance, and stresses the system. Adolescents have higher relative water turnover than adults.',
@@ -18128,20 +18167,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var picked = picked_state[0], setPicked = picked_state[1];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🧠', title: 'Food & Mental Health' }),
+          h(BackBar, { icon: '🧠', title: __alloT('stem.nutritionlab.food_mental_health_2', 'Food & Mental Health') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             // CRITICAL FRAMING BANNER — visible at top
             h('div', { className: 'bg-indigo-50 border-2 border-indigo-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-indigo-900 mb-2' }, 'How food affects mood, attention, and mental health'),
+              h('h2', { className: 'text-lg font-black text-indigo-900 mb-2' }, __alloT('stem.nutritionlab.how_food_affects_mood_attention_and_me', 'How food affects mood, attention, and mental health')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                'There are real, well-studied connections between nutrition and mental health. This module covers seven of them — each as a CONTRIBUTING FACTOR, not a cure. Diet alone does not treat depression, anxiety, or ADHD. But poor nutrition can make any of those harder to manage, and addressing nutrition is part of comprehensive care.'),
+                __alloT('stem.nutritionlab.there_are_real_well_studied_connection', 'There are real, well-studied connections between nutrition and mental health. This module covers seven of them — each as a CONTRIBUTING FACTOR, not a cure. Diet alone does not treat depression, anxiety, or ADHD. But poor nutrition can make any of those harder to manage, and addressing nutrition is part of comprehensive care.')),
               h('div', { className: 'p-3 bg-white border border-indigo-300 rounded text-sm text-slate-800' },
-                h('strong', { className: 'text-indigo-900' }, '⚠ Important: '),
-                'If you are struggling with mental health, please reach out to a doctor, therapist, school counselor, or trusted adult. Crisis support is available 24/7: ',
+                h('strong', { className: 'text-indigo-900' }, __alloT('stem.nutritionlab.important', '⚠ Important: ')),
+                __alloT('stem.nutritionlab.if_you_are_struggling_with_mental_heal', 'If you are struggling with mental health, please reach out to a doctor, therapist, school counselor, or trusted adult. Crisis support is available 24/7: '),
                 h('strong', { className: 'font-mono' }, '988'),
-                ' (Suicide & Crisis Lifeline) · ',
-                h('strong', { className: 'font-mono' }, 'Text HOME to 741741'),
-                ' (Crisis Text Line). This module is education, not treatment.')
+                __alloT('stem.nutritionlab.suicide_crisis_lifeline', ' (Suicide & Crisis Lifeline) · '),
+                h('strong', { className: 'font-mono' }, __alloT('stem.nutritionlab.text_home_to_741741', 'Text HOME to 741741')),
+                __alloT('stem.nutritionlab.crisis_text_line_this_module_is_educat', ' (Crisis Text Line). This module is education, not treatment.'))
             ),
             // Topic grid
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -18172,19 +18211,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('h3', { className: 'text-2xl font-black text-slate-800' }, picked.title)
               ),
               h('div', { className: 'p-3 bg-blue-50 rounded-lg border border-blue-200' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, '📚 What the research says'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, __alloT('stem.nutritionlab.what_the_research_says', '📚 What the research says')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.claim)
               ),
               h('div', { className: 'p-3 bg-violet-50 rounded-lg border border-violet-200' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' }, '🔬 Mechanism (how it works)'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' }, __alloT('stem.nutritionlab.mechanism_how_it_works', '🔬 Mechanism (how it works)')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.mechanism)
               ),
               h('div', { className: 'p-3 bg-emerald-50 rounded-lg border border-emerald-200' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '🥗 Food sources'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.food_sources', '🥗 Food sources')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.food)
               ),
               h('div', { className: 'p-3 bg-amber-50 rounded-lg border-2 border-amber-400' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, '⚠ Important caution'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, __alloT('stem.nutritionlab.important_caution', '⚠ Important caution')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.caution)
               ),
               h('div', { className: 'text-[11px] font-mono text-slate-700 italic' }, 'Sources: ' + picked.cite)
@@ -18192,16 +18231,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             !picked && h('div', { className: 'bg-slate-100 rounded-2xl border border-slate-300 p-5 text-center' },
               h('div', { className: 'text-3xl mb-2', 'aria-hidden': true }, '👆'),
               h('p', { className: 'text-sm text-slate-700' },
-                'Click any topic above to see what research says, the proposed mechanism, food sources, and important cautions.')
+                __alloT('stem.nutritionlab.click_any_topic_above_to_see_what_rese', 'Click any topic above to see what research says, the proposed mechanism, food sources, and important cautions.'))
             ),
             // Closing reminder
             h('div', { className: 'bg-rose-50 border-2 border-rose-400 rounded-2xl p-5' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-3xl', 'aria-hidden': true }, '💚'),
                 h('div', null,
-                  h('h3', { className: 'text-base font-black text-rose-900 mb-1' }, 'A reminder before you leave this module'),
+                  h('h3', { className: 'text-base font-black text-rose-900 mb-1' }, __alloT('stem.nutritionlab.a_reminder_before_you_leave_this_modul', 'A reminder before you leave this module')),
                   h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                    'These connections are real but partial. Mental-health symptoms have many contributors — genetics, sleep, exercise, social support, life events, brain chemistry — and nutrition is one piece. If something here applies to you or someone you love, the next step is talking with a professional, not a diet change. School counselor, family doctor, NAMI helpline (1-800-950-6264), or crisis line 988 are all good places to start.')
+                    __alloT('stem.nutritionlab.these_connections_are_real_but_partial', 'These connections are real but partial. Mental-health symptoms have many contributors — genetics, sleep, exercise, social support, life events, brain chemistry — and nutrition is one piece. If something here applies to you or someone you love, the next step is talking with a professional, not a diet change. School counselor, family doctor, NAMI helpline (1-800-950-6264), or crisis line 988 are all good places to start.'))
                 )
               )
             ),
@@ -18257,15 +18296,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { className: 'flex items-start gap-2' },
               h('span', { className: 'text-xl flex-shrink-0', 'aria-hidden': true }, '💚'),
               h('div', null,
-                h('strong', { className: 'text-emerald-900' }, 'Help is available right now: '),
+                h('strong', { className: 'text-emerald-900' }, __alloT('stem.nutritionlab.help_is_available_right_now', 'Help is available right now: ')),
                 h('span', { className: 'text-slate-800' },
-                  'NEDA helpline ',
+                  __alloT('stem.nutritionlab.neda_helpline', 'NEDA helpline '),
                   h('strong', { className: 'font-mono text-emerald-900' }, '1-800-931-2237'),
-                  ' · text ',
+                  __alloT('stem.nutritionlab.text', ' · text '),
                   h('strong', { className: 'font-mono text-emerald-900' }, 'NEDA'),
                   ' to ',
                   h('strong', { className: 'font-mono text-emerald-900' }, '741741'),
-                  ' · 988 Crisis Lifeline · Maine 211 · or talk with a trusted adult.')
+                  __alloT('stem.nutritionlab.988_crisis_lifeline_maine_211_or_talk_', ' · 988 Crisis Lifeline · Maine 211 · or talk with a trusted adult.'))
               )
             )
           );
@@ -18274,44 +18313,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         if (!consented) {
           // CONTENT WARNING GATE
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '💚', title: 'Eating Disorder Awareness' }),
+            h(BackBar, { icon: '💚', title: __alloT('stem.nutritionlab.eating_disorder_awareness_2', 'Eating Disorder Awareness') }),
             h('div', { className: 'p-6 max-w-2xl mx-auto' },
               h('div', { className: 'bg-white rounded-2xl shadow border-2 border-amber-400 p-6 space-y-4' },
                 h('div', { className: 'flex items-start gap-3 pb-3 border-b border-slate-200' },
                   h('span', { className: 'text-4xl', 'aria-hidden': true }, '⚠️'),
-                  h('h2', { className: 'text-2xl font-black text-amber-900' }, 'Content note before you continue')
+                  h('h2', { className: 'text-2xl font-black text-amber-900' }, __alloT('stem.nutritionlab.content_note_before_you_continue', 'Content note before you continue'))
                 ),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'This module discusses eating disorders, which are serious mental-health conditions. It covers:'),
+                  __alloT('stem.nutritionlab.this_module_discusses_eating_disorders', 'This module discusses eating disorders, which are serious mental-health conditions. It covers:')),
                 h('ul', { className: 'list-disc list-inside space-y-1 text-sm text-slate-800 ml-2' },
-                  h('li', null, 'The spectrum of disordered eating'),
-                  h('li', null, 'Signs to watch for in yourself or a friend'),
-                  h('li', null, 'How to support someone who is struggling'),
-                  h('li', null, 'How and when to talk with an adult'),
-                  h('li', null, 'Resources, including helplines that can help right now')
+                  h('li', null, __alloT('stem.nutritionlab.the_spectrum_of_disordered_eating', 'The spectrum of disordered eating')),
+                  h('li', null, __alloT('stem.nutritionlab.signs_to_watch_for_in_yourself_or_a_fr', 'Signs to watch for in yourself or a friend')),
+                  h('li', null, __alloT('stem.nutritionlab.how_to_support_someone_who_is_struggli', 'How to support someone who is struggling')),
+                  h('li', null, __alloT('stem.nutritionlab.how_and_when_to_talk_with_an_adult', 'How and when to talk with an adult')),
+                  h('li', null, __alloT('stem.nutritionlab.resources_including_helplines_that_can', 'Resources, including helplines that can help right now'))
                 ),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-blue-900' }, 'What this module does NOT include: '),
-                  'specific weights, calorie numbers, BMI numbers, descriptions of restrictive behaviors, "before/after" framing, or any content that could function as a how-to. The information is intentionally general — focused on awareness, support, and recovery.'),
+                  h('strong', { className: 'text-blue-900' }, __alloT('stem.nutritionlab.what_this_module_does_not_include', 'What this module does NOT include: ')),
+                  __alloT('stem.nutritionlab.specific_weights_calorie_numbers_bmi_n', 'specific weights, calorie numbers, BMI numbers, descriptions of restrictive behaviors, "before/after" framing, or any content that could function as a how-to. The information is intentionally general — focused on awareness, support, and recovery.')),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-amber-900' }, 'If reading about eating concerns is hard for you right now, '),
-                  'please consider:',
+                  h('strong', { className: 'text-amber-900' }, __alloT('stem.nutritionlab.if_reading_about_eating_concerns_is_ha', 'If reading about eating concerns is hard for you right now, ')),
+                  __alloT('stem.nutritionlab.please_consider', 'please consider:'),
                   h('ul', { className: 'list-disc list-inside mt-1 ml-2 space-y-1' },
-                    h('li', null, 'Talking with a trusted adult before continuing'),
-                    h('li', null, 'Skipping this module and exploring others in NutritionLab'),
-                    h('li', null, 'Calling NEDA right now: ', h('strong', { className: 'font-mono' }, '1-800-931-2237'), ' (Mon-Thu 11am-9pm, Fri 11am-5pm ET)'),
-                    h('li', null, 'Texting ', h('strong', { className: 'font-mono' }, 'NEDA'), ' to ', h('strong', { className: 'font-mono' }, '741741'), ' for 24/7 crisis support')
+                    h('li', null, __alloT('stem.nutritionlab.talking_with_a_trusted_adult_before_co', 'Talking with a trusted adult before continuing')),
+                    h('li', null, __alloT('stem.nutritionlab.skipping_this_module_and_exploring_oth', 'Skipping this module and exploring others in NutritionLab')),
+                    h('li', null, __alloT('stem.nutritionlab.calling_neda_right_now', 'Calling NEDA right now: '), h('strong', { className: 'font-mono' }, '1-800-931-2237'), __alloT('stem.nutritionlab.mon_thu_11am_9pm_fri_11am_5pm_et', ' (Mon-Thu 11am-9pm, Fri 11am-5pm ET)')),
+                    h('li', null, __alloT('stem.nutritionlab.texting', 'Texting '), h('strong', { className: 'font-mono' }, 'NEDA'), ' to ', h('strong', { className: 'font-mono' }, '741741'), __alloT('stem.nutritionlab.for_24_7_crisis_support', ' for 24/7 crisis support'))
                   )
                 ),
                 h('div', { className: 'flex flex-col sm:flex-row gap-3 pt-2' },
                   h('button', {
                     onClick: function() { setConsented(true); announce('Continuing to Eating Disorder Awareness module'); },
                     className: 'flex-1 px-5 py-3 rounded-xl bg-emerald-600 text-white font-black hover:bg-emerald-700 transition focus:outline-none focus:ring-4 ring-emerald-500/40'
-                  }, '✓ I understand — continue'),
+                  }, __alloT('stem.nutritionlab.i_understand_continue', '✓ I understand — continue')),
                   h('button', {
                     onClick: function() { setView('menu'); upd('view', 'menu'); },
                     className: 'flex-1 px-5 py-3 rounded-xl bg-slate-200 text-slate-800 font-black hover:bg-slate-300 transition focus:outline-none focus:ring-4 ring-slate-500/40'
-                  }, '← Take me back to the menu')
+                  }, __alloT('stem.nutritionlab.take_me_back_to_the_menu', '← Take me back to the menu'))
                 )
               )
             )
@@ -18320,20 +18359,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
         // Content sections
         var sections = [
-          { id: 'overview',  label: '1. What disordered eating is' },
-          { id: 'signs',     label: '2. Signs to watch for' },
-          { id: 'media',     label: '3. Online content red flags' },
-          { id: 'support',   label: '4. Supporting a friend' },
-          { id: 'self',      label: '5. If it\'s YOU' },
-          { id: 'recovery',  label: '6. Recovery is real' }
+          { id: 'overview',  label: __alloT('stem.nutritionlab.1_what_disordered_eating_is', '1. What disordered eating is') },
+          { id: 'signs',     label: __alloT('stem.nutritionlab.2_signs_to_watch_for', '2. Signs to watch for') },
+          { id: 'media',     label: __alloT('stem.nutritionlab.3_online_content_red_flags', '3. Online content red flags') },
+          { id: 'support',   label: __alloT('stem.nutritionlab.4_supporting_a_friend', '4. Supporting a friend') },
+          { id: 'self',      label: __alloT('stem.nutritionlab.5_if_it_s_you', '5. If it\'s YOU') },
+          { id: 'recovery',  label: __alloT('stem.nutritionlab.6_recovery_is_real', '6. Recovery is real') }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '💚', title: 'Eating Disorder Awareness' }),
+          h(BackBar, { icon: '💚', title: __alloT('stem.nutritionlab.eating_disorder_awareness_3', 'Eating Disorder Awareness') }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
             ResourceBar(),
             // Section nav
-            h('div', { 'role': 'tablist', 'aria-label': 'Module sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.module_sections', 'Module sections'), className: 'flex flex-wrap gap-2' },
               sections.map(function(s) {
                 var sel = (section === s.id);
                 return h('button', {
@@ -18348,32 +18387,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ),
             section === 'overview' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Disordered eating is on a spectrum'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.disordered_eating_is_on_a_spectrum', 'Disordered eating is on a spectrum')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Most people\'s relationship with food has bumps. There\'s a difference between an OCCASIONAL hard day with food (which is part of being human) and a PATTERN that interferes with your life or your health.'),
+                  __alloT('stem.nutritionlab.most_people_s_relationship_with_food_h', 'Most people\'s relationship with food has bumps. There\'s a difference between an OCCASIONAL hard day with food (which is part of being human) and a PATTERN that interferes with your life or your health.')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Eating disorders are real medical conditions, not choices and not phases. Like depression or anxiety, they involve brain chemistry, genetics, life experiences, and culture. They are also TREATABLE — most people who get support recover.'),
+                  __alloT('stem.nutritionlab.eating_disorders_are_real_medical_cond', 'Eating disorders are real medical conditions, not choices and not phases. Like depression or anxiety, they involve brain chemistry, genetics, life experiences, and culture. They are also TREATABLE — most people who get support recover.')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Eating disorders affect people of every body size, gender, race, age, and background. The stereotype of "thin teenage girl" causes real harm — boys, athletes, kids of color, larger-bodied kids, and adults all struggle and are often missed by the people around them.'),
+                  __alloT('stem.nutritionlab.eating_disorders_affect_people_of_ever', 'Eating disorders affect people of every body size, gender, race, age, and background. The stereotype of "thin teenage girl" causes real harm — boys, athletes, kids of color, larger-bodied kids, and adults all struggle and are often missed by the people around them.')),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-blue-900' }, 'Key idea: '),
-                  'Concern is justified when someone\'s thinking about food, body, or exercise starts taking up so much mental space that it interferes with school, friendships, hobbies, or health. The frequency, intensity, and disruption matter more than any specific behavior in isolation.')
+                  h('strong', { className: 'text-blue-900' }, __alloT('stem.nutritionlab.key_idea', 'Key idea: ')),
+                  __alloT('stem.nutritionlab.concern_is_justified_when_someone_s_th', 'Concern is justified when someone\'s thinking about food, body, or exercise starts taking up so much mental space that it interferes with school, friendships, hobbies, or health. The frequency, intensity, and disruption matter more than any specific behavior in isolation.'))
               )
             ),
             section === 'signs' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Signs that someone may be struggling'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.signs_that_someone_may_be_struggling', 'Signs that someone may be struggling')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'These are GENERAL patterns the National Eating Disorders Association (NEDA) names as warning signs. None of these alone proves an eating disorder; the concerning pattern is a CLUSTER of changes happening together over time.'),
+                  __alloT('stem.nutritionlab.these_are_general_patterns_the_nationa', 'These are GENERAL patterns the National Eating Disorders Association (NEDA) names as warning signs. None of these alone proves an eating disorder; the concerning pattern is a CLUSTER of changes happening together over time.')),
                 h('div', { className: 'space-y-2' },
                   [
-                    { icon: '💭', text: 'Strong, frequent preoccupation with food, body, weight, or "good vs bad" foods' },
-                    { icon: '😟', text: 'Withdrawing from social activities that involve food (lunch, parties, family meals)' },
-                    { icon: '🌀', text: 'Significant mood changes connected to eating (extreme guilt, shame, or anxiety after meals)' },
-                    { icon: '⏳', text: 'Rigid rituals around food, exercise, or daily structure that disrupt normal life' },
-                    { icon: '🩹', text: 'Frequent comments about feeling "too big," "too small," or wanting to change body shape' },
-                    { icon: '😴', text: 'Fatigue, dizziness, brain fog, hair changes, sleep problems, or feeling cold often' },
-                    { icon: '👀', text: 'Noticing peers / influencers / family making comments that reinforce harmful patterns' }
+                    { icon: '💭', text: __alloT('stem.nutritionlab.strong_frequent_preoccupation_with_foo', 'Strong, frequent preoccupation with food, body, weight, or "good vs bad" foods') },
+                    { icon: '😟', text: __alloT('stem.nutritionlab.withdrawing_from_social_activities_tha', 'Withdrawing from social activities that involve food (lunch, parties, family meals)') },
+                    { icon: '🌀', text: __alloT('stem.nutritionlab.significant_mood_changes_connected_to_', 'Significant mood changes connected to eating (extreme guilt, shame, or anxiety after meals)') },
+                    { icon: '⏳', text: __alloT('stem.nutritionlab.rigid_rituals_around_food_exercise_or_', 'Rigid rituals around food, exercise, or daily structure that disrupt normal life') },
+                    { icon: '🩹', text: __alloT('stem.nutritionlab.frequent_comments_about_feeling_too_bi', 'Frequent comments about feeling "too big," "too small," or wanting to change body shape') },
+                    { icon: '😴', text: __alloT('stem.nutritionlab.fatigue_dizziness_brain_fog_hair_chang', 'Fatigue, dizziness, brain fog, hair changes, sleep problems, or feeling cold often') },
+                    { icon: '👀', text: __alloT('stem.nutritionlab.noticing_peers_influencers_family_maki', 'Noticing peers / influencers / family making comments that reinforce harmful patterns') }
                   ].map(function(s, i) {
                     return h('div', { key: i, className: 'flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-200' },
                       h('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': true }, s.icon),
@@ -18383,20 +18422,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 ),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-slate-800' },
                   h('strong', { className: 'text-amber-900' }, 'Important: '),
-                  'Body changes alone are NOT a reliable sign. People in every body size can have eating disorders. The behavior, thinking patterns, and disruption to life matter more than appearance.')
+                  __alloT('stem.nutritionlab.body_changes_alone_are_not_a_reliable_', 'Body changes alone are NOT a reliable sign. People in every body size can have eating disorders. The behavior, thinking patterns, and disruption to life matter more than appearance.'))
               )
             ),
             section === 'media' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Online content red flags'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.online_content_red_flags', 'Online content red flags')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'A LOT of what shapes how people think about food and bodies today comes from social media — TikTok, Instagram, YouTube, Snapchat. Some of this content is helpful (registered dietitians, intuitive eating coaches, body-diverse fitness creators). A lot of it is not. The 2023 Surgeon General Advisory on Social Media and Youth Mental Health flagged content that promotes disordered eating as a documented driver of body-image concerns and eating disorders in adolescents. Recognizing the patterns is itself protective.'),
+                  __alloT('stem.nutritionlab.a_lot_of_what_shapes_how_people_think_', 'A LOT of what shapes how people think about food and bodies today comes from social media — TikTok, Instagram, YouTube, Snapchat. Some of this content is helpful (registered dietitians, intuitive eating coaches, body-diverse fitness creators). A lot of it is not. The 2023 Surgeon General Advisory on Social Media and Youth Mental Health flagged content that promotes disordered eating as a documented driver of body-image concerns and eating disorders in adolescents. Recognizing the patterns is itself protective.')),
                 h('div', { className: 'p-3 bg-violet-50 border border-violet-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-violet-900' }, 'How algorithms feed this: '),
-                  'Recommendation algorithms (the "For You" page, IG Reels, YouTube\'s "Up Next") track what you watch and feed you more of it. A single search for "weight loss" or lingering on a body-comparison reel can cascade into an increasingly extreme feed. The algorithm doesn\'t know what\'s good for you — it knows what holds your attention. Strong feelings (especially anxiety, comparison, or self-criticism) hold attention well, which is why harmful content surfaces.')
+                  h('strong', { className: 'text-violet-900' }, __alloT('stem.nutritionlab.how_algorithms_feed_this', 'How algorithms feed this: ')),
+                  __alloT('stem.nutritionlab.recommendation_algorithms_the_for_you_', 'Recommendation algorithms (the "For You" page, IG Reels, YouTube\'s "Up Next") track what you watch and feed you more of it. A single search for "weight loss" or lingering on a body-comparison reel can cascade into an increasingly extreme feed. The algorithm doesn\'t know what\'s good for you — it knows what holds your attention. Strong feelings (especially anxiety, comparison, or self-criticism) hold attention well, which is why harmful content surfaces.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, '🚩 Patterns to watch for in food / body content'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.patterns_to_watch_for_in_food_body_con', '🚩 Patterns to watch for in food / body content')),
                 h('div', { className: 'space-y-2' },
                   [
                     { icon: '🍽️', t: '"What I eat in a day" videos showing tiny / extreme intake', d: 'Especially when posed as aspirational. Real intake varies day-to-day and across bodies; a single curated day is not a template.' },
@@ -18420,156 +18459,156 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 )
               ),
               h('div', { className: 'bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-5' },
-                h('h3', { className: 'text-base font-black text-emerald-900 mb-2' }, '✓ What you can do — your feed is yours to shape'),
+                h('h3', { className: 'text-base font-black text-emerald-900 mb-2' }, __alloT('stem.nutritionlab.what_you_can_do_your_feed_is_yours_to_', '✓ What you can do — your feed is yours to shape')),
                 h('ul', { className: 'space-y-2 text-sm text-slate-800' },
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '1.'),
                     h('span', null,
-                      h('strong', null, 'Use platform tools. '),
-                      'On TikTok, long-press a video → "Not interested." On Instagram, three-dot menu → "Not interested." On YouTube, three-dot menu → "Don\'t recommend channel." Each tap retrains the algorithm. After a few days the feed shifts.')
+                      h('strong', null, __alloT('stem.nutritionlab.use_platform_tools', 'Use platform tools. ')),
+                      __alloT('stem.nutritionlab.on_tiktok_long_press_a_video_not_inter', 'On TikTok, long-press a video → "Not interested." On Instagram, three-dot menu → "Not interested." On YouTube, three-dot menu → "Don\'t recommend channel." Each tap retrains the algorithm. After a few days the feed shifts.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '2.'),
                     h('span', null,
-                      h('strong', null, 'Block, mute, and unfollow without guilt. '),
-                      'You don\'t owe anyone your attention. Removing harmful accounts is a self-care move, not rudeness.')
+                      h('strong', null, __alloT('stem.nutritionlab.block_mute_and_unfollow_without_guilt', 'Block, mute, and unfollow without guilt. ')),
+                      __alloT('stem.nutritionlab.you_don_t_owe_anyone_your_attention_re', 'You don\'t owe anyone your attention. Removing harmful accounts is a self-care move, not rudeness.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '3.'),
                     h('span', null,
-                      h('strong', null, 'Curate actively in the other direction. '),
-                      'Follow creators with bodies of varied sizes who DO NOT center food/weight conversations. Athletes, scientists, comedians, gardeners, artists. The algorithm starts feeding you more of who you watch.')
+                      h('strong', null, __alloT('stem.nutritionlab.curate_actively_in_the_other_direction', 'Curate actively in the other direction. ')),
+                      __alloT('stem.nutritionlab.follow_creators_with_bodies_of_varied_', 'Follow creators with bodies of varied sizes who DO NOT center food/weight conversations. Athletes, scientists, comedians, gardeners, artists. The algorithm starts feeding you more of who you watch.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '4.'),
                     h('span', null,
-                      h('strong', null, 'Report content that promotes eating disorders. '),
-                      'Every major platform has a category for this. Reporting is anonymous; the creator doesn\'t see you reported them. NEDA tracks platform responses and pushes for stronger moderation.')
+                      h('strong', null, __alloT('stem.nutritionlab.report_content_that_promotes_eating_di', 'Report content that promotes eating disorders. ')),
+                      __alloT('stem.nutritionlab.every_major_platform_has_a_category_fo', 'Every major platform has a category for this. Reporting is anonymous; the creator doesn\'t see you reported them. NEDA tracks platform responses and pushes for stronger moderation.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '5.'),
                     h('span', null,
-                      h('strong', null, 'Take breaks when you notice the spiral. '),
-                      'If you\'ve been on a platform for 30 minutes and feel worse about yourself than when you started, close it. Body comparison is one of the most well-documented harms of social media.')
+                      h('strong', null, __alloT('stem.nutritionlab.take_breaks_when_you_notice_the_spiral', 'Take breaks when you notice the spiral. ')),
+                      __alloT('stem.nutritionlab.if_you_ve_been_on_a_platform_for_30_mi', 'If you\'ve been on a platform for 30 minutes and feel worse about yourself than when you started, close it. Body comparison is one of the most well-documented harms of social media.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '6.'),
                     h('span', null,
-                      h('strong', null, 'Talk about what you see. '),
-                      'Naming a pattern out loud, with a friend or trusted adult, is one of the fastest ways to recognize it for what it is. "That video felt weird, did you see it?" is enough to start.')
+                      h('strong', null, __alloT('stem.nutritionlab.talk_about_what_you_see', 'Talk about what you see. ')),
+                      __alloT('stem.nutritionlab.naming_a_pattern_out_loud_with_a_frien', 'Naming a pattern out loud, with a friend or trusted adult, is one of the fastest ways to recognize it for what it is. "That video felt weird, did you see it?" is enough to start.'))
                   )
                 )
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-4' },
-                h('h3', { className: 'text-base font-black text-blue-900 mb-1' }, 'A note about "wellness" specifically'),
+                h('h3', { className: 'text-base font-black text-blue-900 mb-1' }, __alloT('stem.nutritionlab.a_note_about_wellness_specifically', 'A note about "wellness" specifically')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'A lot of harmful food content today is packaged as "wellness," "biohacking," "lifestyle," or "high-performance habits." The aesthetic is calm, white-marble, soft-lit, and professional-looking. The substance — extreme restriction, "earning" food, treating bodies as projects — is the same diet culture older generations were sold. Looking polished doesn\'t make content true. The same red flags above apply.')
+                  __alloT('stem.nutritionlab.a_lot_of_harmful_food_content_today_is', 'A lot of harmful food content today is packaged as "wellness," "biohacking," "lifestyle," or "high-performance habits." The aesthetic is calm, white-marble, soft-lit, and professional-looking. The substance — extreme restriction, "earning" food, treating bodies as projects — is the same diet culture older generations were sold. Looking polished doesn\'t make content true. The same red flags above apply.'))
               ),
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-4' },
-                h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, 'Where to learn more about media literacy'),
+                h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, __alloT('stem.nutritionlab.where_to_learn_more_about_media_litera', 'Where to learn more about media literacy')),
                 h('ul', { className: 'list-disc list-inside text-sm text-slate-800 space-y-1' },
                   h('li', null,
-                    h('strong', null, 'Common Sense Media '),
-                    '(commonsensemedia.org) — independent reviews of platforms, apps, and content from a kid/family lens'),
+                    h('strong', null, __alloT('stem.nutritionlab.common_sense_media', 'Common Sense Media ')),
+                    __alloT('stem.nutritionlab.commonsensemedia_org_independent_revie', '(commonsensemedia.org) — independent reviews of platforms, apps, and content from a kid/family lens')),
                   h('li', null,
-                    h('strong', null, 'NEDA Social Media + Body Image '),
-                    '(nationaleatingdisorders.org) — research-backed guidance and free educator toolkits'),
+                    h('strong', null, __alloT('stem.nutritionlab.neda_social_media_body_image', 'NEDA Social Media + Body Image ')),
+                    __alloT('stem.nutritionlab.nationaleatingdisorders_org_research_b', '(nationaleatingdisorders.org) — research-backed guidance and free educator toolkits')),
                   h('li', null,
-                    h('strong', null, 'U.S. Surgeon General\'s 2023 Advisory on Social Media and Youth Mental Health '),
-                    '(hhs.gov/surgeongeneral) — official report on documented harms and what platforms / families / schools can do'),
+                    h('strong', null, __alloT('stem.nutritionlab.u_s_surgeon_general_s_2023_advisory_on', 'U.S. Surgeon General\'s 2023 Advisory on Social Media and Youth Mental Health ')),
+                    __alloT('stem.nutritionlab.hhs_gov_surgeongeneral_official_report', '(hhs.gov/surgeongeneral) — official report on documented harms and what platforms / families / schools can do')),
                   h('li', null,
-                    h('strong', null, 'Your school counselor or school psychologist '),
-                    'can help you think through your own social media use without judgment.')
+                    h('strong', null, __alloT('stem.nutritionlab.your_school_counselor_or_school_psycho', 'Your school counselor or school psychologist ')),
+                    __alloT('stem.nutritionlab.can_help_you_think_through_your_own_so', 'can help you think through your own social media use without judgment.'))
                 )
               )
             ),
             section === 'support' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'How to support a friend'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.how_to_support_a_friend', 'How to support a friend')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                   'You are not their therapist, and that\'s OK. What matters most is that you remain a caring presence and connect them with professional help.'),
                 h('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2' }, '✓ Things that help'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2' }, __alloT('stem.nutritionlab.things_that_help', '✓ Things that help')),
                   h('ul', { className: 'list-disc list-inside space-y-1 text-sm text-slate-800' },
-                    h('li', null, 'LISTEN without trying to fix or convince'),
-                    h('li', null, 'Talk about who they ARE — interests, humor, projects — not what they look like'),
-                    h('li', null, 'Tell them you care about them, full stop'),
-                    h('li', null, 'Encourage them to talk with a trusted adult: parent, school counselor, doctor, or older sibling'),
-                    h('li', null, 'Offer to sit with them while they call a helpline or set up an appointment'),
-                    h('li', null, 'Keep including them in social plans, even if they say no the first time')
+                    h('li', null, __alloT('stem.nutritionlab.listen_without_trying_to_fix_or_convin', 'LISTEN without trying to fix or convince')),
+                    h('li', null, __alloT('stem.nutritionlab.talk_about_who_they_are_interests_humo', 'Talk about who they ARE — interests, humor, projects — not what they look like')),
+                    h('li', null, __alloT('stem.nutritionlab.tell_them_you_care_about_them_full_sto', 'Tell them you care about them, full stop')),
+                    h('li', null, __alloT('stem.nutritionlab.encourage_them_to_talk_with_a_trusted_', 'Encourage them to talk with a trusted adult: parent, school counselor, doctor, or older sibling')),
+                    h('li', null, __alloT('stem.nutritionlab.offer_to_sit_with_them_while_they_call', 'Offer to sit with them while they call a helpline or set up an appointment')),
+                    h('li', null, __alloT('stem.nutritionlab.keep_including_them_in_social_plans_ev', 'Keep including them in social plans, even if they say no the first time'))
                   )
                 ),
                 h('div', { className: 'p-3 bg-rose-50 border border-rose-300 rounded' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-2' }, '× Things that don\'t help (even if well-intentioned)'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-2' }, __alloT('stem.nutritionlab.things_that_don_t_help_even_if_well_in', '× Things that don\'t help (even if well-intentioned)')),
                   h('ul', { className: 'list-disc list-inside space-y-1 text-sm text-slate-800' },
-                    h('li', null, 'Commenting on their body, weight, or appearance — positive OR negative'),
-                    h('li', null, 'Trying to argue them into eating, or making meals into a battle'),
-                    h('li', null, 'Telling them "just eat" or "just stop" — eating disorders aren\'t a choice'),
-                    h('li', null, 'Comparing their struggle to someone who has it "worse"'),
-                    h('li', null, 'Keeping a serious concern secret because you promised — safety overrides secrecy')
+                    h('li', null, __alloT('stem.nutritionlab.commenting_on_their_body_weight_or_app', 'Commenting on their body, weight, or appearance — positive OR negative')),
+                    h('li', null, __alloT('stem.nutritionlab.trying_to_argue_them_into_eating_or_ma', 'Trying to argue them into eating, or making meals into a battle')),
+                    h('li', null, __alloT('stem.nutritionlab.telling_them_just_eat_or_just_stop_eat', 'Telling them "just eat" or "just stop" — eating disorders aren\'t a choice')),
+                    h('li', null, __alloT('stem.nutritionlab.comparing_their_struggle_to_someone_wh', 'Comparing their struggle to someone who has it "worse"')),
+                    h('li', null, __alloT('stem.nutritionlab.keeping_a_serious_concern_secret_becau', 'Keeping a serious concern secret because you promised — safety overrides secrecy'))
                   )
                 ),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-blue-900' }, 'When to tell an adult: '),
-                  'If a friend\'s health or safety is at risk — they\'ve mentioned hurting themselves, are passing out, can\'t function in daily life, or you\'re seriously worried — tell a trusted adult right away. Telling someone who can help is not a betrayal; it\'s the most loyal thing a friend can do. NEDA, school counselors, and parents are all good places to start.')
+                  h('strong', { className: 'text-blue-900' }, __alloT('stem.nutritionlab.when_to_tell_an_adult', 'When to tell an adult: ')),
+                  __alloT('stem.nutritionlab.if_a_friend_s_health_or_safety_is_at_r', 'If a friend\'s health or safety is at risk — they\'ve mentioned hurting themselves, are passing out, can\'t function in daily life, or you\'re seriously worried — tell a trusted adult right away. Telling someone who can help is not a betrayal; it\'s the most loyal thing a friend can do. NEDA, school counselors, and parents are all good places to start.'))
               )
             ),
             section === 'self' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'If you\'re the one struggling'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.if_you_re_the_one_struggling', 'If you\'re the one struggling')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'First: nothing you are experiencing makes you "broken" or "weak." Eating disorders are medical conditions that affect millions of people. They are TREATABLE. Most people who get support do recover.'),
+                  __alloT('stem.nutritionlab.first_nothing_you_are_experiencing_mak', 'First: nothing you are experiencing makes you "broken" or "weak." Eating disorders are medical conditions that affect millions of people. They are TREATABLE. Most people who get support do recover.')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'You don\'t have to wait for things to get worse to ask for help. You don\'t have to "earn" support by being sick enough. You just have to reach out.'),
+                  __alloT('stem.nutritionlab.you_don_t_have_to_wait_for_things_to_g', 'You don\'t have to wait for things to get worse to ask for help. You don\'t have to "earn" support by being sick enough. You just have to reach out.')),
                 h('div', { className: 'p-4 bg-emerald-50 border-2 border-emerald-400 rounded-xl' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2' }, 'Where to start, in order of urgency'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2' }, __alloT('stem.nutritionlab.where_to_start_in_order_of_urgency', 'Where to start, in order of urgency')),
                   h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-800' },
                     h('li', null,
-                      h('strong', null, 'If you\'re in crisis right now '),
-                      '(thinking about hurting yourself, can\'t keep food down, feeling unsafe): call ',
+                      h('strong', null, __alloT('stem.nutritionlab.if_you_re_in_crisis_right_now', 'If you\'re in crisis right now ')),
+                      __alloT('stem.nutritionlab.thinking_about_hurting_yourself_can_t_', '(thinking about hurting yourself, can\'t keep food down, feeling unsafe): call '),
                       h('span', { className: 'font-mono font-bold' }, '988'),
-                      ' or text ',
+                      __alloT('stem.nutritionlab.or_text', ' or text '),
                       h('span', { className: 'font-mono font-bold' }, 'HOME'),
                       ' to ',
                       h('span', { className: 'font-mono font-bold' }, '741741'),
                       '.'
                     ),
                     h('li', null,
-                      h('strong', null, 'For ED-specific support 24/7: '),
-                      'NEDA helpline ',
+                      h('strong', null, __alloT('stem.nutritionlab.for_ed_specific_support_24_7', 'For ED-specific support 24/7: ')),
+                      __alloT('stem.nutritionlab.neda_helpline_2', 'NEDA helpline '),
                       h('span', { className: 'font-mono font-bold' }, '1-800-931-2237'),
-                      ' (Mon-Fri business hours) or text ',
+                      __alloT('stem.nutritionlab.mon_fri_business_hours_or_text', ' (Mon-Fri business hours) or text '),
                       h('span', { className: 'font-mono font-bold' }, 'NEDA'),
                       ' to ',
                       h('span', { className: 'font-mono font-bold' }, '741741'),
-                      ' (24/7 crisis text). Free, confidential, trained.'
+                      __alloT('stem.nutritionlab.24_7_crisis_text_free_confidential_tra', ' (24/7 crisis text). Free, confidential, trained.')
                     ),
                     h('li', null,
-                      h('strong', null, 'In school: '),
-                      'school counselor or school psychologist. They are bound to follow up appropriately and can connect you to outside care.'
+                      h('strong', null, __alloT('stem.nutritionlab.in_school', 'In school: ')),
+                      __alloT('stem.nutritionlab.school_counselor_or_school_psychologis', 'school counselor or school psychologist. They are bound to follow up appropriately and can connect you to outside care.')
                     ),
                     h('li', null,
-                      h('strong', null, 'A trusted adult: '),
-                      'parent, older sibling, coach, teacher, family friend, family doctor. You don\'t need a script — "I\'ve been having a hard time and could use some help" is enough.'
+                      h('strong', null, __alloT('stem.nutritionlab.a_trusted_adult', 'A trusted adult: ')),
+                      __alloT('stem.nutritionlab.parent_older_sibling_coach_teacher_fam', 'parent, older sibling, coach, teacher, family friend, family doctor. You don\'t need a script — "I\'ve been having a hard time and could use some help" is enough.')
                     ),
                     h('li', null,
                       h('strong', null, 'Maine-specific: '),
-                      'Maine 211 (call 211) connects to local mental-health services. Maine Behavioral Healthcare has crisis services statewide. NAMI Maine: ',
+                      __alloT('stem.nutritionlab.maine_211_call_211_connects_to_local_m', 'Maine 211 (call 211) connects to local mental-health services. Maine Behavioral Healthcare has crisis services statewide. NAMI Maine: '),
                       h('span', { className: 'font-mono' }, 'namimaine.org'),
                       '.'
                     )
                   )
                 ),
                 h('div', { className: 'p-3 bg-violet-50 border border-violet-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-violet-900' }, 'On the helpline: '),
-                  'You don\'t need to know what to say. They\'re trained to start the conversation. You can call back. You can hang up. You can\'t do it wrong.')
+                  h('strong', { className: 'text-violet-900' }, __alloT('stem.nutritionlab.on_the_helpline', 'On the helpline: ')),
+                  __alloT('stem.nutritionlab.you_don_t_need_to_know_what_to_say_the', 'You don\'t need to know what to say. They\'re trained to start the conversation. You can call back. You can hang up. You can\'t do it wrong.'))
               )
             ),
             section === 'recovery' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Recovery is real'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.recovery_is_real', 'Recovery is real')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Most people with eating disorders recover, especially when they get support EARLIER rather than later. Recovery isn\'t linear — it has hard days, setbacks, and slow improvement — but the trajectory is real and well-documented.'),
+                  __alloT('stem.nutritionlab.most_people_with_eating_disorders_reco', 'Most people with eating disorders recover, especially when they get support EARLIER rather than later. Recovery isn\'t linear — it has hard days, setbacks, and slow improvement — but the trajectory is real and well-documented.')),
                 h('div', { className: 'space-y-3' },
                   [
                     { icon: '🌱', t: 'Earlier is better', d: 'Treatment in the first year of an eating disorder has higher success rates than treatment after years of illness. Reaching out fast is genuinely helpful.' },
@@ -18587,7 +18626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   })
                 ),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800 text-center font-bold' },
-                  'You — or someone you love — can come through this.')
+                  __alloT('stem.nutritionlab.you_or_someone_you_love_can_come_throu', 'You — or someone you love — can come through this.'))
               )
             ),
             // Bottom resource bar — always visible at exit
@@ -18630,29 +18669,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var tab = tab_state[0], setTab = tab_state[1];
 
         var tabs = [
-          { id: 'seasons',  label: 'Seasons + vitamin D' },
-          { id: 'fisheries', label: 'Fisheries + omega-3' },
-          { id: 'access',   label: 'Food access' },
-          { id: 'school',   label: 'School meals + SNAP' },
-          { id: 'local',    label: 'Local food + Wabanaki' }
+          { id: 'seasons',  label: __alloT('stem.nutritionlab.seasons_vitamin_d', 'Seasons + vitamin D') },
+          { id: 'fisheries', label: __alloT('stem.nutritionlab.fisheries_omega_3', 'Fisheries + omega-3') },
+          { id: 'access',   label: __alloT('stem.nutritionlab.food_access', 'Food access') },
+          { id: 'school',   label: __alloT('stem.nutritionlab.school_meals_snap', 'School meals + SNAP') },
+          { id: 'local',    label: __alloT('stem.nutritionlab.local_food_wabanaki', 'Local food + Wabanaki') }
         ];
         var TAB_META = {
-          seasons:   { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',  icon: '☀️',  title: 'Maine winters are a vitamin D problem', hint: 'At 43–47°N, Oct–Mar sun is too low for skin to make D — no matter how long you’re outside.' },
-          fisheries: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '🐟',   title: 'Cold-water fisheries → omega-3 powerhouse', hint: 'Maine lobster, herring, and farm-raised salmon are world-class EPA/DHA sources.' },
-          access:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🚗',   title: 'Rural distance + seasonal employment = real food-access issues', hint: 'Aroostook and Washington counties have documented food deserts and long drive times.' },
-          school:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '🍱',   title: 'Free school meals + SNAP basics', hint: 'Maine is the second state to permanently fund free meals for all K-12 kids (2022).' },
-          local:     { accent: '#a16207', soft: 'rgba(161,98,7,0.10)',   icon: '🌾',   title: 'Local food systems + Wabanaki food sovereignty', hint: 'CSAs, farmers markets, and tribal food-sovereignty efforts shape what’s actually on Maine plates.' }
+          seasons:   { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',  icon: '☀️',  title: __alloT('stem.nutritionlab.maine_winters_are_a_vitamin_d_problem', 'Maine winters are a vitamin D problem'), hint: __alloT('stem.nutritionlab.at_43_47_n_oct_mar_sun_is_too_low_for_', 'At 43–47°N, Oct–Mar sun is too low for skin to make D — no matter how long you’re outside.') },
+          fisheries: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '🐟',   title: __alloT('stem.nutritionlab.cold_water_fisheries_omega_3_powerhous', 'Cold-water fisheries → omega-3 powerhouse'), hint: __alloT('stem.nutritionlab.maine_lobster_herring_and_farm_raised_', 'Maine lobster, herring, and farm-raised salmon are world-class EPA/DHA sources.') },
+          access:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🚗',   title: __alloT('stem.nutritionlab.rural_distance_seasonal_employment_rea', 'Rural distance + seasonal employment = real food-access issues'), hint: __alloT('stem.nutritionlab.aroostook_and_washington_counties_have', 'Aroostook and Washington counties have documented food deserts and long drive times.') },
+          school:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '🍱',   title: __alloT('stem.nutritionlab.free_school_meals_snap_basics', 'Free school meals + SNAP basics'), hint: __alloT('stem.nutritionlab.maine_is_the_second_state_to_permanent', 'Maine is the second state to permanently fund free meals for all K-12 kids (2022).') },
+          local:     { accent: '#a16207', soft: 'rgba(161,98,7,0.10)',   icon: '🌾',   title: __alloT('stem.nutritionlab.local_food_systems_wabanaki_food_sover', 'Local food systems + Wabanaki food sovereignty'), hint: __alloT('stem.nutritionlab.csas_farmers_markets_and_tribal_food_s', 'CSAs, farmers markets, and tribal food-sovereignty efforts shape what’s actually on Maine plates.') }
         };
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🌲', title: 'Maine Food Reality' }),
+          h(BackBar, { icon: '🌲', title: __alloT('stem.nutritionlab.maine_food_reality_2', 'Maine Food Reality') }),
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-stone-100 border-2 border-stone-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, 'Nutrition science as it actually plays out in Maine'),
+              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, __alloT('stem.nutritionlab.nutrition_science_as_it_actually_plays', 'Nutrition science as it actually plays out in Maine')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'Maine\'s geography, climate, history, and economy all shape what food looks like here. Long winters and northern latitude make vitamin D a documented public-health issue. World-class cold-water fisheries make Maine an omega-3 powerhouse. Rural distances and seasonal employment create real food-access challenges. Maine became the second state in the country to permanently fund free school meals for all kids. This module names the realities students live inside.')
+                __alloT('stem.nutritionlab.maine_s_geography_climate_history_and_', 'Maine\'s geography, climate, history, and economy all shape what food looks like here. Long winters and northern latitude make vitamin D a documented public-health issue. World-class cold-water fisheries make Maine an omega-3 powerhouse. Rural distances and seasonal employment create real food-access challenges. Maine became the second state in the country to permanently fund free school meals for all kids. This module names the realities students live inside.'))
             ),
-            h('div', { 'role': 'tablist', 'aria-label': 'Maine Food Reality sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.maine_food_reality_sections', 'Maine Food Reality sections'), className: 'flex flex-wrap gap-2' },
               tabs.map(function(t) {
                 var sel = (tab === t.id);
                 return h('button', {
@@ -18687,38 +18726,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })(),
             tab === 'seasons' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Maine winters are a vitamin D problem'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_winters_are_a_vitamin_d_problem_2', 'Maine winters are a vitamin D problem')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Maine sits at roughly 43-47°N latitude. From October through March, the sun angle is too low for human skin to make vitamin D from sunlight, no matter how much time you spend outside. Most Mainers are vitamin D insufficient through winter. The Maine CDC has flagged this as a documented public-health issue.'),
+                  __alloT('stem.nutritionlab.maine_sits_at_roughly_43_47_n_latitude', 'Maine sits at roughly 43-47°N latitude. From October through March, the sun angle is too low for human skin to make vitamin D from sunlight, no matter how much time you spend outside. Most Mainers are vitamin D insufficient through winter. The Maine CDC has flagged this as a documented public-health issue.')),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-amber-900' }, 'Why this matters: '),
-                  'Vitamin D supports calcium absorption (bones), immune function, and possibly mood (some research links low D to seasonal affective disorder). Adolescents are in peak bone-building years — adequate D matters more than usual.'),
+                  h('strong', { className: 'text-amber-900' }, __alloT('stem.nutritionlab.why_this_matters', 'Why this matters: ')),
+                  __alloT('stem.nutritionlab.vitamin_d_supports_calcium_absorption_', 'Vitamin D supports calcium absorption (bones), immune function, and possibly mood (some research links low D to seasonal affective disorder). Adolescents are in peak bone-building years — adequate D matters more than usual.')),
                 h('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-emerald-900' }, 'What works in Maine: '),
-                  'Fatty fish (salmon, sardines, herring), egg yolks, fortified milk and plant milks, fortified cereals. Many Mainers benefit from a winter vitamin D supplement — but dose should be guided by a blood test (ask your doctor for a 25-hydroxy vitamin D test). Don\'t guess.')
+                  h('strong', { className: 'text-emerald-900' }, __alloT('stem.nutritionlab.what_works_in_maine', 'What works in Maine: ')),
+                  __alloT('stem.nutritionlab.fatty_fish_salmon_sardines_herring_egg', 'Fatty fish (salmon, sardines, herring), egg yolks, fortified milk and plant milks, fortified cereals. Many Mainers benefit from a winter vitamin D supplement — but dose should be guided by a blood test (ask your doctor for a 25-hydroxy vitamin D test). Don\'t guess.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-2' },
-                h('h3', { className: 'text-base font-black text-slate-800' }, 'Local growing season is short'),
+                h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.nutritionlab.local_growing_season_is_short', 'Local growing season is short')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  'Maine\'s frost-free growing season runs roughly mid-May to early October — about 130 days statewide, shorter in Aroostook. Outside that window, fresh local produce is limited. Frozen local berries, canned tomatoes, root vegetables (potatoes, carrots, beets, parsnips, winter squash), and apples in cold storage are real Maine winter staples. Frozen vegetables retain nearly all their nutrients and are typically cheaper than out-of-season fresh.')
+                  __alloT('stem.nutritionlab.maine_s_frost_free_growing_season_runs', 'Maine\'s frost-free growing season runs roughly mid-May to early October — about 130 days statewide, shorter in Aroostook. Outside that window, fresh local produce is limited. Frozen local berries, canned tomatoes, root vegetables (potatoes, carrots, beets, parsnips, winter squash), and apples in cold storage are real Maine winter staples. Frozen vegetables retain nearly all their nutrients and are typically cheaper than out-of-season fresh.'))
               )
             ),
             tab === 'fisheries' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Maine is an omega-3 powerhouse'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_is_an_omega_3_powerhouse', 'Maine is an omega-3 powerhouse')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Maine\'s cold North Atlantic waters support some of the richest fatty-fish populations in the world. Cold water means more omega-3 (EPA + DHA) per gram of fish — these fats serve as antifreeze in cold-water species. Maine fisheries land roughly $700M+ in seafood per year (DMR, varies year to year), making it Maine\'s most economically significant agricultural sector after wild blueberries.')
+                  __alloT('stem.nutritionlab.maine_s_cold_north_atlantic_waters_sup', 'Maine\'s cold North Atlantic waters support some of the richest fatty-fish populations in the world. Cold water means more omega-3 (EPA + DHA) per gram of fish — these fats serve as antifreeze in cold-water species. Maine fisheries land roughly $700M+ in seafood per year (DMR, varies year to year), making it Maine\'s most economically significant agricultural sector after wild blueberries.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'Maine\'s key fatty fish'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.maine_s_key_fatty_fish', 'Maine\'s key fatty fish')),
                 h('div', { className: 'space-y-2' },
                   [
-                    { fish: 'Atlantic salmon (farmed)', omega3: '~2.3 g per 3oz serving', note: 'Cooke Aquaculture in eastern Maine. Higher omega-3 than wild salmon due to feed.' },
-                    { fish: 'Atlantic herring', omega3: '~2.0 g per 3oz', note: 'Maine\'s most abundant pelagic fish. Often canned as sardines.' },
-                    { fish: 'Atlantic mackerel', omega3: '~1.8 g per 3oz', note: 'Strong-flavored oily fish; underused in American kitchens.' },
-                    { fish: 'Atlantic sardines (canned)', omega3: '~1.5 g per 3oz', note: 'Tiny fish = lower mercury. Canned sardines are cheap and shelf-stable.' },
-                    { fish: 'Maine bluefin tuna (sport / commercial)', omega3: '~1.3 g per 3oz', note: 'High mercury for adolescents — limit to occasional.' },
-                    { fish: 'Lobster', omega3: '~0.2 g per 3oz', note: 'Iconic but lower omega-3 than fatty fish. Excellent protein, low fat.' }
+                    { fish: 'Atlantic salmon (farmed)', omega3: '~2.3 g per 3oz serving', note: __alloT('stem.nutritionlab.cooke_aquaculture_in_eastern_maine_hig', 'Cooke Aquaculture in eastern Maine. Higher omega-3 than wild salmon due to feed.') },
+                    { fish: 'Atlantic herring', omega3: '~2.0 g per 3oz', note: __alloT('stem.nutritionlab.maine_s_most_abundant_pelagic_fish_oft', 'Maine\'s most abundant pelagic fish. Often canned as sardines.') },
+                    { fish: 'Atlantic mackerel', omega3: '~1.8 g per 3oz', note: __alloT('stem.nutritionlab.strong_flavored_oily_fish_underused_in', 'Strong-flavored oily fish; underused in American kitchens.') },
+                    { fish: 'Atlantic sardines (canned)', omega3: '~1.5 g per 3oz', note: __alloT('stem.nutritionlab.tiny_fish_lower_mercury_canned_sardine', 'Tiny fish = lower mercury. Canned sardines are cheap and shelf-stable.') },
+                    { fish: 'Maine bluefin tuna (sport / commercial)', omega3: '~1.3 g per 3oz', note: __alloT('stem.nutritionlab.high_mercury_for_adolescents_limit_to_', 'High mercury for adolescents — limit to occasional.') },
+                    { fish: 'Lobster', omega3: '~0.2 g per 3oz', note: __alloT('stem.nutritionlab.iconic_but_lower_omega_3_than_fatty_fi', 'Iconic but lower omega-3 than fatty fish. Excellent protein, low fat.') }
                   ].map(function(f, i) {
                     return h('div', { key: i, className: 'p-2 bg-slate-50 rounded border border-slate-200' },
                       h('div', { className: 'flex items-center justify-between flex-wrap gap-1' },
@@ -18730,95 +18769,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   })
                 ),
                 h('div', { className: 'mt-3 p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-blue-900' }, 'AHA recommendation: '),
-                  '2 fatty-fish meals per week (about 8 oz total). For Mainers, this is achievable with mostly local seafood — and canned sardines or herring keep it affordable.')
+                  h('strong', { className: 'text-blue-900' }, __alloT('stem.nutritionlab.aha_recommendation', 'AHA recommendation: ')),
+                  __alloT('stem.nutritionlab.2_fatty_fish_meals_per_week_about_8_oz', '2 fatty-fish meals per week (about 8 oz total). For Mainers, this is achievable with mostly local seafood — and canned sardines or herring keep it affordable.'))
               )
             ),
             tab === 'access' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Food access in Maine is uneven'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.food_access_in_maine_is_uneven', 'Food access in Maine is uneven')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'The USDA tracks "food deserts" — areas where residents have limited access to affordable, nutritious food. In Maine, the most affected areas are Aroostook County (the largest county east of the Mississippi by area, with the lowest population density), Washington County (down east), and pockets of inland rural Penobscot, Piscataquis, and Somerset counties. Lewiston and parts of Portland also have urban food-access challenges.')
+                  __alloT('stem.nutritionlab.the_usda_tracks_food_deserts_areas_whe', 'The USDA tracks "food deserts" — areas where residents have limited access to affordable, nutritious food. In Maine, the most affected areas are Aroostook County (the largest county east of the Mississippi by area, with the lowest population density), Washington County (down east), and pockets of inland rural Penobscot, Piscataquis, and Somerset counties. Lewiston and parts of Portland also have urban food-access challenges.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, 'What "food access" actually means'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.what_food_access_actually_means', 'What "food access" actually means')),
                 h('ul', { className: 'space-y-2 text-sm text-slate-800' },
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-stone-700 font-bold flex-shrink-0' }, '◆'),
                     h('span', null,
                       h('strong', null, 'Distance: '),
-                      'In rural Maine, the nearest grocery store with fresh produce can be 30+ minutes away. Without a car, that\'s functionally inaccessible.')
+                      __alloT('stem.nutritionlab.in_rural_maine_the_nearest_grocery_sto', 'In rural Maine, the nearest grocery store with fresh produce can be 30+ minutes away. Without a car, that\'s functionally inaccessible.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-stone-700 font-bold flex-shrink-0' }, '◆'),
                     h('span', null,
                       h('strong', null, 'Cost: '),
-                      'Fresh fruits, vegetables, and lean proteins cost more per calorie than ultra-processed pantry food. For families on tight budgets, the calorie math pushes toward the latter.')
+                      __alloT('stem.nutritionlab.fresh_fruits_vegetables_and_lean_prote', 'Fresh fruits, vegetables, and lean proteins cost more per calorie than ultra-processed pantry food. For families on tight budgets, the calorie math pushes toward the latter.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-stone-700 font-bold flex-shrink-0' }, '◆'),
                     h('span', null,
                       h('strong', null, 'Time: '),
-                      'Cooking from scratch takes time. Working two jobs, single parenting, or shift work all compress the time available for food prep.')
+                      __alloT('stem.nutritionlab.cooking_from_scratch_takes_time_workin', 'Cooking from scratch takes time. Working two jobs, single parenting, or shift work all compress the time available for food prep.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-stone-700 font-bold flex-shrink-0' }, '◆'),
                     h('span', null,
                       h('strong', null, 'Knowledge: '),
-                      'How to cook beans, how to use frozen vegetables, what to do with cheap cuts of meat — these are learned skills, often passed down through families. When food culture is disrupted, the skills can fade.')
+                      __alloT('stem.nutritionlab.how_to_cook_beans_how_to_use_frozen_ve', 'How to cook beans, how to use frozen vegetables, what to do with cheap cuts of meat — these are learned skills, often passed down through families. When food culture is disrupted, the skills can fade.'))
                   )
                 )
               ),
               h('div', { className: 'p-3 bg-emerald-50 border-2 border-emerald-300 rounded text-sm text-slate-800' },
-                h('strong', { className: 'text-emerald-900' }, 'Important framing: '),
-                'Food access is a SYSTEMIC issue, not an individual moral failing. People making food choices in food deserts are not "lazy" or "uninformed" — they\'re solving an optimization problem with constraints most middle-class shoppers don\'t face. Public-health nutrition focuses on changing the system (more grocery stores, better school meals, SNAP-eligibility expansions, school food gardens) rather than blaming individuals.')
+                h('strong', { className: 'text-emerald-900' }, __alloT('stem.nutritionlab.important_framing_2', 'Important framing: ')),
+                __alloT('stem.nutritionlab.food_access_is_a_systemic_issue_not_an', 'Food access is a SYSTEMIC issue, not an individual moral failing. People making food choices in food deserts are not "lazy" or "uninformed" — they\'re solving an optimization problem with constraints most middle-class shoppers don\'t face. Public-health nutrition focuses on changing the system (more grocery stores, better school meals, SNAP-eligibility expansions, school food gardens) rather than blaming individuals.'))
             ),
             tab === 'school' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'School meals — Maine led the country'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.school_meals_maine_led_the_country', 'School meals — Maine led the country')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'In 2022, Maine became the second state in the U.S. (after California) to permanently fund free school breakfast and lunch for ALL public-school students, regardless of family income. The law (LD 1679, signed by Governor Mills) eliminated the means-tested application process and the social stigma that came with it. Other states have since followed.'),
+                  __alloT('stem.nutritionlab.in_2022_maine_became_the_second_state_', 'In 2022, Maine became the second state in the U.S. (after California) to permanently fund free school breakfast and lunch for ALL public-school students, regardless of family income. The law (LD 1679, signed by Governor Mills) eliminated the means-tested application process and the social stigma that came with it. Other states have since followed.')),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-blue-900' }, 'Why universal free meals matter: '),
-                  'Research shows kids who eat breakfast at school perform better academically, have fewer behavioral incidents, and have better attendance. Removing the application step means kids who qualify but were embarrassed to apply now eat. Maine\'s law also expanded local-food sourcing into school cafeterias.')
+                  h('strong', { className: 'text-blue-900' }, __alloT('stem.nutritionlab.why_universal_free_meals_matter', 'Why universal free meals matter: ')),
+                  __alloT('stem.nutritionlab.research_shows_kids_who_eat_breakfast_', 'Research shows kids who eat breakfast at school perform better academically, have fewer behavioral incidents, and have better attendance. Removing the application step means kids who qualify but were embarrassed to apply now eat. Maine\'s law also expanded local-food sourcing into school cafeterias.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h3', { className: 'text-base font-black text-slate-800' }, 'SNAP — the federal food-assistance program'),
+                h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.nutritionlab.snap_the_federal_food_assistance_progr', 'SNAP — the federal food-assistance program')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  'SNAP (Supplemental Nutrition Assistance Program, formerly food stamps) provides monthly food benefits to eligible low-income families. In Maine, ~13% of residents receive SNAP at any given time (USDA). Benefits are loaded onto an EBT card and used at most grocery stores, farmers markets, and some online retailers.'),
+                  __alloT('stem.nutritionlab.snap_supplemental_nutrition_assistance', 'SNAP (Supplemental Nutrition Assistance Program, formerly food stamps) provides monthly food benefits to eligible low-income families. In Maine, ~13% of residents receive SNAP at any given time (USDA). Benefits are loaded onto an EBT card and used at most grocery stores, farmers markets, and some online retailers.')),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-slate-800' },
-                  h('strong', { className: 'text-amber-900' }, 'Common misconception: '),
-                  'SNAP is not a flat amount per family. The benefit is calculated based on income, household size, expenses, and other factors. Average benefit is roughly $6 per person per day in Maine — meaningful, but tight. SNAP can be used for groceries (including seeds and food-producing plants) but not for prepared hot food, alcohol, or non-food items.')
+                  h('strong', { className: 'text-amber-900' }, __alloT('stem.nutritionlab.common_misconception', 'Common misconception: ')),
+                  __alloT('stem.nutritionlab.snap_is_not_a_flat_amount_per_family_t', 'SNAP is not a flat amount per family. The benefit is calculated based on income, household size, expenses, and other factors. Average benefit is roughly $6 per person per day in Maine — meaningful, but tight. SNAP can be used for groceries (including seeds and food-producing plants) but not for prepared hot food, alcohol, or non-food items.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h3', { className: 'text-base font-black text-slate-800' }, 'Good Shepherd Food Bank + Maine food-pantry network'),
+                h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.nutritionlab.good_shepherd_food_bank_maine_food_pan', 'Good Shepherd Food Bank + Maine food-pantry network')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  'Good Shepherd Food Bank (Auburn) is Maine\'s largest hunger-relief organization, distributing food through ~600 pantries and meal programs statewide. Other Maine food resources: Wayside Food Programs (Portland), Preble Street, Locker Project (school-based pantries), and a strong network of regional food hubs.'),
+                  __alloT('stem.nutritionlab.good_shepherd_food_bank_auburn_is_main', 'Good Shepherd Food Bank (Auburn) is Maine\'s largest hunger-relief organization, distributing food through ~600 pantries and meal programs statewide. Other Maine food resources: Wayside Food Programs (Portland), Preble Street, Locker Project (school-based pantries), and a strong network of regional food hubs.')),
                 h('div', { className: 'p-2 bg-emerald-50 border border-emerald-200 rounded text-xs text-slate-800' },
-                  h('strong', { className: 'text-emerald-900' }, 'Maine 211: '),
-                  'Dial 211 (or visit 211maine.org) for connections to food pantries, SNAP application help, school meal info, and other services. Free, confidential, available 24/7.')
+                  h('strong', { className: 'text-emerald-900' }, __alloT('stem.nutritionlab.maine_211', 'Maine 211: ')),
+                  __alloT('stem.nutritionlab.dial_211_or_visit_211maine_org_for_con', 'Dial 211 (or visit 211maine.org) for connections to food pantries, SNAP application help, school meal info, and other services. Free, confidential, available 24/7.'))
               )
             ),
             tab === 'local' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Maine\'s local food economy'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_s_local_food_economy', 'Maine\'s local food economy')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Maine has more farms per capita than most states and a vibrant local food economy: farmers markets in nearly every town, CSA (community-supported agriculture) shares from spring through fall, regional food hubs, an active aquaculture industry, and signature crops like wild blueberries (Maine produces about 99% of U.S. wild blueberries, mostly from Washington and Hancock counties).')
+                  __alloT('stem.nutritionlab.maine_has_more_farms_per_capita_than_m', 'Maine has more farms per capita than most states and a vibrant local food economy: farmers markets in nearly every town, CSA (community-supported agriculture) shares from spring through fall, regional food hubs, an active aquaculture industry, and signature crops like wild blueberries (Maine produces about 99% of U.S. wild blueberries, mostly from Washington and Hancock counties).'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, 'Wabanaki food sovereignty'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.wabanaki_food_sovereignty', 'Wabanaki food sovereignty')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                  'The Wabanaki Confederacy (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq) have stewarded land in present-day Maine for thousands of years. Traditional Wabanaki food systems include moose, deer, salmon, eels, wild rice, fiddleheads, sweet grass, blueberries, corn, beans, and squash (the Three Sisters companion-planting system).'),
+                  __alloT('stem.nutritionlab.the_wabanaki_confederacy_penobscot_pas', 'The Wabanaki Confederacy (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq) have stewarded land in present-day Maine for thousands of years. Traditional Wabanaki food systems include moose, deer, salmon, eels, wild rice, fiddleheads, sweet grass, blueberries, corn, beans, and squash (the Three Sisters companion-planting system).')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                  'Food sovereignty — the right of communities to control their own food systems — is an active issue for Maine\'s tribes. Recent decades have seen Wabanaki-led restoration of native crops, traditional fishing rights, and food-system education programs.'),
+                  __alloT('stem.nutritionlab.food_sovereignty_the_right_of_communit', 'Food sovereignty — the right of communities to control their own food systems — is an active issue for Maine\'s tribes. Recent decades have seen Wabanaki-led restoration of native crops, traditional fishing rights, and food-system education programs.')),
                 h('div', { className: 'p-2 bg-blue-50 border border-blue-200 rounded text-xs text-slate-800' },
                   h('strong', { className: 'text-blue-900' }, 'Resources: '),
-                  'Wabanaki Public Health & Wellness (wabanakiphw.org), Penobscot Nation Department of Natural Resources, Passamaquoddy Tribe at Pleasant Point, Indian Township.')
+                  __alloT('stem.nutritionlab.wabanaki_public_health_wellness_wabana', 'Wabanaki Public Health & Wellness (wabanakiphw.org), Penobscot Nation Department of Natural Resources, Passamaquoddy Tribe at Pleasant Point, Indian Township.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, 'Climate change is reshaping Maine food'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.climate_change_is_reshaping_maine_food', 'Climate change is reshaping Maine food')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  'The Gulf of Maine is warming faster than 99% of the world\'s ocean (Gulf of Maine Research Institute). Lobster populations are shifting north into Canadian waters; cod stocks remain depressed. On land, the growing season is lengthening (by ~15 days since 1900) but with more extreme weather. New crops (peaches, kiwi, longer-season corn) are now possible; some traditional crops face new challenges.')
+                  __alloT('stem.nutritionlab.the_gulf_of_maine_is_warming_faster_th', 'The Gulf of Maine is warming faster than 99% of the world\'s ocean (Gulf of Maine Research Institute). Lobster populations are shifting north into Canadian waters; cod stocks remain depressed. On land, the growing season is lengthening (by ~15 days since 1900) but with more extreme weather. New crops (peaches, kiwi, longer-season corn) are now possible; some traditional crops face new challenges.'))
               )
             ),
             h(TeacherNotes, {
@@ -18856,50 +18895,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var view = view_state[0], setLocalView = view_state[1];
 
         var tabs = [
-          { id: 'overview', label: '1. Why Nutrition' },
-          { id: 'ladder',   label: '2. RDN Ladder' },
-          { id: 'roles',    label: '3. Career Types' },
-          { id: 'maine',    label: '4. Maine Programs' }
+          { id: 'overview', label: __alloT('stem.nutritionlab.1_why_nutrition', '1. Why Nutrition') },
+          { id: 'ladder',   label: __alloT('stem.nutritionlab.2_rdn_ladder', '2. RDN Ladder') },
+          { id: 'roles',    label: __alloT('stem.nutritionlab.3_career_types', '3. Career Types') },
+          { id: 'maine',    label: __alloT('stem.nutritionlab.4_maine_programs', '4. Maine Programs') }
         ];
 
         var CAREER_LADDER = [
           {
-            tier: 1, name: 'Bachelor\'s degree',
+            tier: 1, name: __alloT('stem.nutritionlab.bachelor_s_degree', 'Bachelor\'s degree'),
             time: '4 years',
             what: 'Undergraduate degree from an ACEND-accredited Didactic Program in Dietetics (DPD) — typically a B.S. in Nutrition, Food Science, or related. Coursework: organic chemistry, biochemistry, anatomy & physiology, microbiology, medical nutrition therapy, food science, community nutrition.',
             pay: 'No professional pay yet — student stage',
             how: 'Apply to ACEND-accredited DPD program. Maine: UMaine Orono (Human Nutrition + Foods, B.S.), Husson University (DPD pathway).'
           },
           {
-            tier: 2, name: 'Supervised Practice (Dietetic Internship)',
+            tier: 2, name: __alloT('stem.nutritionlab.supervised_practice_dietetic_internshi', 'Supervised Practice (Dietetic Internship)'),
             time: '~10-12 months',
             what: '1200 hours of supervised practice in clinical, community, and food-service settings. Highly competitive — fewer slots than applicants. Many internships are now combined Master\'s programs (since the 2024 RDN exam requirement change).',
             pay: 'Often unpaid or low stipend; some are paid through hospital systems',
             how: 'Apply through D&D Digital matching service (similar to medical-residency match). Acceptance rate ~50% nationally. Plan B options if not matched.'
           },
           {
-            tier: 3, name: 'Master\'s degree (NEW 2024 requirement)',
+            tier: 3, name: __alloT('stem.nutritionlab.master_s_degree_new_2024_requirement', 'Master\'s degree (NEW 2024 requirement)'),
             time: '~2 years (often combined with internship)',
             what: 'As of January 2024, the RDN exam REQUIRES a Master\'s degree (in addition to the bachelor\'s + internship). This is a major change from pre-2024 requirements. Most programs now combine Master\'s coursework with the internship.',
             pay: 'Student stage — but combined programs often include some stipend or paid work',
             how: 'Apply to ACEND-accredited Coordinated Program (CP) or graduate program. Husson has a combined Master\'s + DI option in development.'
           },
           {
-            tier: 4, name: 'CDR Registration Examination',
+            tier: 4, name: __alloT('stem.nutritionlab.cdr_registration_examination', 'CDR Registration Examination'),
             time: 'Take after completing internship + Master\'s',
             what: 'National exam administered by the Commission on Dietetic Registration. Pass rate ~70% first attempt. Multi-section, computer-based, ~3 hours.',
             pay: '~$200 exam fee. After passing: RDN credential = job-ready',
             how: 'Apply through CDR. Study materials: CDR study guides, JeanInman, Pocket Prep RD app.'
           },
           {
-            tier: 5, name: 'Entry-level RDN',
+            tier: 5, name: __alloT('stem.nutritionlab.entry_level_rdn', 'Entry-level RDN'),
             time: 'First job after credentialing',
             what: 'Hospital clinical RDN, community nutrition educator, WIC nutritionist, school nutrition director, long-term-care facility RDN. State licensure may also be required (Maine DOES require license to practice as RDN — check Maine Office of Professional and Occupational Regulation).',
             pay: '$50-65K typical entry; varies by setting (hospital > community in most cases)',
             how: 'Job boards, professional networks (Maine Academy of Nutrition and Dietetics), hospital career sites.'
           },
           {
-            tier: 6, name: 'Specialized / Senior RDN',
+            tier: 6, name: __alloT('stem.nutritionlab.specialized_senior_rdn', 'Specialized / Senior RDN'),
             time: '5+ years experience',
             what: 'Specialized practice: pediatric, oncology, kidney disease, sports nutrition, eating disorders, diabetes education (CDCES credential), bariatric, food allergy. Some go into private practice; others move into academia, food industry R&D, public health policy.',
             pay: '$70-95K typical mid-career; private practice and food industry can exceed $100K with experience',
@@ -18908,31 +18947,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
 
         var ROLES = [
-          { name: 'Clinical RDN', icon: '🏥', desc: 'Hospital, ICU, dialysis, long-term care. Diagnose nutrition needs, design tube-feeding regimens, work alongside MDs and nurses.', pay: '$55-90K' },
-          { name: 'Community Nutritionist', icon: '🏘️', desc: 'WIC programs, community health centers, public housing nutrition education, SNAP-Ed. Direct patient education + community programming.', pay: '$45-65K' },
-          { name: 'Public Health Nutritionist', icon: '📊', desc: 'State / federal health departments, USDA, CDC. Population-level nutrition policy, school food standards, food labeling.', pay: '$60-95K' },
-          { name: 'School Nutrition Director', icon: '🍎', desc: 'Manage K-12 school food service programs. Menu planning, USDA compliance, local-food procurement, budget management.', pay: '$50-80K' },
-          { name: 'Sports / Performance RDN', icon: '🏃', desc: 'Athletic departments, professional sports teams, fitness centers. Performance nutrition, hydration, recovery, eating disorder awareness in athletes.', pay: '$55-100K+ in pro sports' },
-          { name: 'Food Industry / R&D', icon: '🔬', desc: 'Food companies (Kraft, General Mills, Maine-based companies like Stonewall Kitchen). Product formulation, nutrition labeling, marketing review.', pay: '$70-120K typical' },
-          { name: 'Pediatric RDN', icon: '👶', desc: 'Children\'s hospitals, pediatric clinics, feeding-disorder programs. Specialized in growth, allergy, NICU nutrition, eating disorders.', pay: '$60-90K' },
-          { name: 'Eating Disorder RDN', icon: '💚', desc: 'Specialized clinics, residential treatment centers, outpatient practices. Often paired with therapist; works under medical team. Highly specialized training.', pay: '$60-90K' },
-          { name: 'Private Practice / Counseling', icon: '💼', desc: 'Self-employed or small group. Build client base over time. Telehealth options. Insurance billing varies by state.', pay: 'Wide range; $30-150K+ depending on practice size' }
+          { name: __alloT('stem.nutritionlab.clinical_rdn', 'Clinical RDN'), icon: '🏥', desc: __alloT('stem.nutritionlab.hospital_icu_dialysis_long_term_care_d', 'Hospital, ICU, dialysis, long-term care. Diagnose nutrition needs, design tube-feeding regimens, work alongside MDs and nurses.'), pay: '$55-90K' },
+          { name: __alloT('stem.nutritionlab.community_nutritionist', 'Community Nutritionist'), icon: '🏘️', desc: __alloT('stem.nutritionlab.wic_programs_community_health_centers_', 'WIC programs, community health centers, public housing nutrition education, SNAP-Ed. Direct patient education + community programming.'), pay: '$45-65K' },
+          { name: __alloT('stem.nutritionlab.public_health_nutritionist', 'Public Health Nutritionist'), icon: '📊', desc: __alloT('stem.nutritionlab.state_federal_health_departments_usda_', 'State / federal health departments, USDA, CDC. Population-level nutrition policy, school food standards, food labeling.'), pay: '$60-95K' },
+          { name: __alloT('stem.nutritionlab.school_nutrition_director', 'School Nutrition Director'), icon: '🍎', desc: __alloT('stem.nutritionlab.manage_k_12_school_food_service_progra', 'Manage K-12 school food service programs. Menu planning, USDA compliance, local-food procurement, budget management.'), pay: '$50-80K' },
+          { name: __alloT('stem.nutritionlab.sports_performance_rdn', 'Sports / Performance RDN'), icon: '🏃', desc: __alloT('stem.nutritionlab.athletic_departments_professional_spor', 'Athletic departments, professional sports teams, fitness centers. Performance nutrition, hydration, recovery, eating disorder awareness in athletes.'), pay: '$55-100K+ in pro sports' },
+          { name: __alloT('stem.nutritionlab.food_industry_r_d', 'Food Industry / R&D'), icon: '🔬', desc: __alloT('stem.nutritionlab.food_companies_kraft_general_mills_mai', 'Food companies (Kraft, General Mills, Maine-based companies like Stonewall Kitchen). Product formulation, nutrition labeling, marketing review.'), pay: '$70-120K typical' },
+          { name: __alloT('stem.nutritionlab.pediatric_rdn', 'Pediatric RDN'), icon: '👶', desc: __alloT('stem.nutritionlab.children_s_hospitals_pediatric_clinics', 'Children\'s hospitals, pediatric clinics, feeding-disorder programs. Specialized in growth, allergy, NICU nutrition, eating disorders.'), pay: '$60-90K' },
+          { name: __alloT('stem.nutritionlab.eating_disorder_rdn', 'Eating Disorder RDN'), icon: '💚', desc: __alloT('stem.nutritionlab.specialized_clinics_residential_treatm', 'Specialized clinics, residential treatment centers, outpatient practices. Often paired with therapist; works under medical team. Highly specialized training.'), pay: '$60-90K' },
+          { name: __alloT('stem.nutritionlab.private_practice_counseling', 'Private Practice / Counseling'), icon: '💼', desc: __alloT('stem.nutritionlab.self_employed_or_small_group_build_cli', 'Self-employed or small group. Build client base over time. Telehealth options. Insurance billing varies by state.'), pay: 'Wide range; $30-150K+ depending on practice size' }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🎓', title: 'Career Pathways' }),
+          h(BackBar, { icon: '🎓', title: __alloT('stem.nutritionlab.career_pathways_2', 'Career Pathways') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             h('div', { className: 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-6 shadow-lg' },
               h('div', { className: 'flex items-start gap-4' },
                 h('span', { className: 'text-5xl' }, '🥗'),
                 h('div', null,
-                  h('h2', { className: 'text-2xl font-black mb-1' }, 'Nutrition careers — clear and honest'),
+                  h('h2', { className: 'text-2xl font-black mb-1' }, __alloT('stem.nutritionlab.nutrition_careers_clear_and_honest', 'Nutrition careers — clear and honest')),
                   h('p', { className: 'text-sm opacity-95 leading-relaxed' },
-                    'The Registered Dietitian Nutritionist (RDN) credential is the gold standard. As of 2024, RDN requires a Master\'s degree, an accredited supervised-practice internship (1200 hours), and passing a national exam. There are also paths in public health, food science, sports, and school nutrition that don\'t require RDN but offer related careers. This module is honest about timelines, pay, and the recent 2024 Master\'s change.')
+                    __alloT('stem.nutritionlab.the_registered_dietitian_nutritionist_', 'The Registered Dietitian Nutritionist (RDN) credential is the gold standard. As of 2024, RDN requires a Master\'s degree, an accredited supervised-practice internship (1200 hours), and passing a national exam. There are also paths in public health, food science, sports, and school nutrition that don\'t require RDN but offer related careers. This module is honest about timelines, pay, and the recent 2024 Master\'s change.'))
                 )
               )
             ),
-            h('div', { 'role': 'tablist', 'aria-label': 'Career Pathway sections', className: 'flex flex-wrap gap-2' },
+            h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.career_pathway_sections', 'Career Pathway sections'), className: 'flex flex-wrap gap-2' },
               tabs.map(function(t) {
                 var sel = (view === t.id);
                 return h('button', {
@@ -18948,9 +18987,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             view === 'overview' && h('div', { className: 'space-y-4' },
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 [
-                  { stat: '$55-95K', label: 'typical RDN pay', sub: 'wide range by setting + region', color: 'text-emerald-700' },
-                  { stat: '~7 yrs', label: 'school + supervised practice', sub: 'undergrad + grad + internship', color: 'text-blue-700' },
-                  { stat: '2024', label: 'Master\'s now required', sub: 'major change for the RDN credential', color: 'text-amber-700' }
+                  { stat: '$55-95K', label: __alloT('stem.nutritionlab.typical_rdn_pay', 'typical RDN pay'), sub: 'wide range by setting + region', color: 'text-emerald-700' },
+                  { stat: '~7 yrs', label: __alloT('stem.nutritionlab.school_supervised_practice', 'school + supervised practice'), sub: 'undergrad + grad + internship', color: 'text-blue-700' },
+                  { stat: '2024', label: __alloT('stem.nutritionlab.master_s_now_required', 'Master\'s now required'), sub: 'major change for the RDN credential', color: 'text-amber-700' }
                 ].map(function(s, i) {
                   return h('div', { key: i, className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 text-center' },
                     h('div', { className: 'text-3xl font-black ' + s.color }, s.stat),
@@ -18960,41 +18999,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 })
               ),
               h('div', { className: 'bg-amber-50 border-2 border-amber-400 rounded-2xl p-5' },
-                h('h3', { className: 'text-base font-black text-amber-900 mb-2' }, '⚠ "Nutritionist" vs "Registered Dietitian Nutritionist"'),
+                h('h3', { className: 'text-base font-black text-amber-900 mb-2' }, __alloT('stem.nutritionlab.nutritionist_vs_registered_dietitian_n', '⚠ "Nutritionist" vs "Registered Dietitian Nutritionist"')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                  'In many states (and online), anyone can call themselves a "nutritionist." The term is unregulated. There are real certified nutrition professionals (CNS — Certified Nutrition Specialist), but there are also Instagram "nutritionists" with no formal training selling supplements and meal plans.'),
+                  __alloT('stem.nutritionlab.in_many_states_and_online_anyone_can_c', 'In many states (and online), anyone can call themselves a "nutritionist." The term is unregulated. There are real certified nutrition professionals (CNS — Certified Nutrition Specialist), but there are also Instagram "nutritionists" with no formal training selling supplements and meal plans.')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  h('strong', { className: 'text-amber-900' }, 'Registered Dietitian Nutritionist (RDN) is regulated. '),
-                  'Earning the credential requires accredited education, supervised practice, a national exam, continuing education, and (in Maine) state licensure. RDN = regulated profession. "Nutritionist" alone = often not. When choosing whose food advice to trust, the credential matters.')
+                  h('strong', { className: 'text-amber-900' }, __alloT('stem.nutritionlab.registered_dietitian_nutritionist_rdn_', 'Registered Dietitian Nutritionist (RDN) is regulated. ')),
+                  __alloT('stem.nutritionlab.earning_the_credential_requires_accred', 'Earning the credential requires accredited education, supervised practice, a national exam, continuing education, and (in Maine) state licensure. RDN = regulated profession. "Nutritionist" alone = often not. When choosing whose food advice to trust, the credential matters.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'Why this career path?'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.why_this_career_path', 'Why this career path?')),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-800' },
                   h('div', { className: 'p-3 bg-emerald-50 rounded-lg border border-emerald-200' },
-                    h('div', { className: 'font-bold text-emerald-800 mb-1' }, '✓ The good'),
+                    h('div', { className: 'font-bold text-emerald-800 mb-1' }, __alloT('stem.nutritionlab.the_good', '✓ The good')),
                     h('ul', { className: 'space-y-1 list-disc list-inside' },
-                      h('li', null, 'Real, evidence-based way to help people'),
-                      h('li', null, 'Stable demand — every hospital and school needs nutrition staff'),
-                      h('li', null, 'Diverse settings: clinical, community, public health, industry'),
-                      h('li', null, 'Path to private practice + flexibility over time'),
-                      h('li', null, 'Maine has a tight, supportive professional community')
+                      h('li', null, __alloT('stem.nutritionlab.real_evidence_based_way_to_help_people', 'Real, evidence-based way to help people')),
+                      h('li', null, __alloT('stem.nutritionlab.stable_demand_every_hospital_and_schoo', 'Stable demand — every hospital and school needs nutrition staff')),
+                      h('li', null, __alloT('stem.nutritionlab.diverse_settings_clinical_community_pu', 'Diverse settings: clinical, community, public health, industry')),
+                      h('li', null, __alloT('stem.nutritionlab.path_to_private_practice_flexibility_o', 'Path to private practice + flexibility over time')),
+                      h('li', null, __alloT('stem.nutritionlab.maine_has_a_tight_supportive_professio', 'Maine has a tight, supportive professional community'))
                     )
                   ),
                   h('div', { className: 'p-3 bg-amber-50 rounded-lg border border-amber-200' },
-                    h('div', { className: 'font-bold text-amber-900 mb-1' }, '⚠ The hard parts'),
+                    h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.nutritionlab.the_hard_parts', '⚠ The hard parts')),
                     h('ul', { className: 'space-y-1 list-disc list-inside' },
-                      h('li', null, '7+ year path with a Master\'s requirement'),
-                      h('li', null, 'Internship match is competitive (~50% match rate)'),
-                      h('li', null, 'Entry pay ($50-65K) is modest for the education investment'),
-                      h('li', null, 'Insurance coverage of nutrition counseling is uneven'),
-                      h('li', null, 'Working with eating disorders requires emotional sustainability')
+                      h('li', null, __alloT('stem.nutritionlab.7_year_path_with_a_master_s_requiremen', '7+ year path with a Master\'s requirement')),
+                      h('li', null, __alloT('stem.nutritionlab.internship_match_is_competitive_50_mat', 'Internship match is competitive (~50% match rate)')),
+                      h('li', null, __alloT('stem.nutritionlab.entry_pay_50_65k_is_modest_for_the_edu', 'Entry pay ($50-65K) is modest for the education investment')),
+                      h('li', null, __alloT('stem.nutritionlab.insurance_coverage_of_nutrition_counse', 'Insurance coverage of nutrition counseling is uneven')),
+                      h('li', null, __alloT('stem.nutritionlab.working_with_eating_disorders_requires', 'Working with eating disorders requires emotional sustainability'))
                     )
                   )
                 )
               )
             ),
             view === 'ladder' && h('div', { className: 'space-y-3' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'RDN credential ladder — 2024 requirements'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.nutritionlab.rdn_credential_ladder_2024_requirement', 'RDN credential ladder — 2024 requirements')),
               CAREER_LADDER.map(function(c) {
                 return h('div', { key: c.tier, className: 'bg-white rounded-2xl shadow border border-slate-300 p-4 flex items-start gap-4' },
                   h('div', { className: 'flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-black shadow' },
@@ -19007,7 +19046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('div', { className: 'text-[11px] uppercase tracking-wider text-slate-700 font-bold mb-1' }, c.time),
                     h('div', { className: 'text-sm text-slate-800 mb-2' }, c.what),
                     h('div', { className: 'text-xs text-slate-700' },
-                      h('span', { className: 'font-bold text-slate-800' }, 'How to get there: '), c.how)
+                      h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.nutritionlab.how_to_get_there', 'How to get there: ')), c.how)
                   )
                 );
               })
@@ -19030,15 +19069,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ),
             view === 'maine' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
-                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Maine education programs'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_education_programs', 'Maine education programs')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  'Maine has a small but solid set of nutrition programs. The two main pathways are at UMaine (Orono) and Husson (Bangor).'),
+                  __alloT('stem.nutritionlab.maine_has_a_small_but_solid_set_of_nut', 'Maine has a small but solid set of nutrition programs. The two main pathways are at UMaine (Orono) and Husson (Bangor).')),
                 h('div', { className: 'space-y-3' },
                   [
-                    { name: 'University of Maine — Human Nutrition + Foods', loc: 'Orono', what: 'B.S. Human Nutrition, ACEND-accredited DPD pathway. Strong agricultural-school context. Internships often through northeast hospital systems.', site: 'umaine.edu/foodsciencehumannutrition' },
-                    { name: 'Husson University — Dietetics', loc: 'Bangor', what: 'B.S. + integrated DPD pathway. Smaller program, hands-on faculty. Combined Master\'s pathway expanding for the new 2024 RDN requirement.', site: 'husson.edu' },
-                    { name: 'University of Southern Maine — Public Health', loc: 'Portland', what: 'Not RDN-track, but B.S. and M.P.H. options for those interested in public-health nutrition (food policy, community programming, epidemiology).', site: 'usm.maine.edu' },
-                    { name: 'University of New England — Health Sciences', loc: 'Biddeford / Portland', what: 'M.S. Applied Nutrition (online program) — popular for working professionals adding the Master\'s required for the 2024 RDN exam.', site: 'online.une.edu' }
+                    { name: __alloT('stem.nutritionlab.university_of_maine_human_nutrition_fo', 'University of Maine — Human Nutrition + Foods'), loc: 'Orono', what: 'B.S. Human Nutrition, ACEND-accredited DPD pathway. Strong agricultural-school context. Internships often through northeast hospital systems.', site: 'umaine.edu/foodsciencehumannutrition' },
+                    { name: __alloT('stem.nutritionlab.husson_university_dietetics', 'Husson University — Dietetics'), loc: 'Bangor', what: 'B.S. + integrated DPD pathway. Smaller program, hands-on faculty. Combined Master\'s pathway expanding for the new 2024 RDN requirement.', site: 'husson.edu' },
+                    { name: __alloT('stem.nutritionlab.university_of_southern_maine_public_he', 'University of Southern Maine — Public Health'), loc: 'Portland', what: 'Not RDN-track, but B.S. and M.P.H. options for those interested in public-health nutrition (food policy, community programming, epidemiology).', site: 'usm.maine.edu' },
+                    { name: __alloT('stem.nutritionlab.university_of_new_england_health_scien', 'University of New England — Health Sciences'), loc: 'Biddeford / Portland', what: 'M.S. Applied Nutrition (online program) — popular for working professionals adding the Master\'s required for the 2024 RDN exam.', site: 'online.une.edu' }
                   ].map(function(p, i) {
                     return h('div', { key: i, className: 'p-3 bg-slate-50 rounded-lg border border-slate-200' },
                       h('div', { className: 'flex items-center justify-between flex-wrap gap-1 mb-1' },
@@ -19052,20 +19091,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 )
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-2xl p-4' },
-                h('h3', { className: 'text-base font-black text-blue-900 mb-2' }, 'Other places to look'),
+                h('h3', { className: 'text-base font-black text-blue-900 mb-2' }, __alloT('stem.nutritionlab.other_places_to_look', 'Other places to look')),
                 h('ul', { className: 'space-y-1 text-sm text-slate-800' },
                   h('li', null,
-                    h('strong', null, 'Maine Academy of Nutrition and Dietetics '),
-                    '(eatrightmaine.org) — state professional organization. Job board, mentorship, networking events.'),
+                    h('strong', null, __alloT('stem.nutritionlab.maine_academy_of_nutrition_and_dieteti', 'Maine Academy of Nutrition and Dietetics ')),
+                    __alloT('stem.nutritionlab.eatrightmaine_org_state_professional_o', '(eatrightmaine.org) — state professional organization. Job board, mentorship, networking events.')),
                   h('li', null,
-                    h('strong', null, 'Commission on Dietetic Registration '),
-                    '(cdrnet.org) — official credentialing body. Practice exam information.'),
+                    h('strong', null, __alloT('stem.nutritionlab.commission_on_dietetic_registration', 'Commission on Dietetic Registration ')),
+                    __alloT('stem.nutritionlab.cdrnet_org_official_credentialing_body', '(cdrnet.org) — official credentialing body. Practice exam information.')),
                   h('li', null,
                     h('strong', null, 'ACEND '),
-                    '(eatrightpro.org/acend) — accreditation council. Lists every accredited DPD and DI program nationwide.'),
+                    __alloT('stem.nutritionlab.eatrightpro_org_acend_accreditation_co', '(eatrightpro.org/acend) — accreditation council. Lists every accredited DPD and DI program nationwide.')),
                   h('li', null,
-                    h('strong', null, 'CareerCenter Maine '),
-                    '(mainecareercenter.gov) — entry-level openings, often through WIC, hospitals, and school food programs.')
+                    h('strong', null, __alloT('stem.nutritionlab.careercenter_maine', 'CareerCenter Maine ')),
+                    __alloT('stem.nutritionlab.mainecareercenter_gov_entry_level_open', '(mainecareercenter.gov) — entry-level openings, often through WIC, hospitals, and school food programs.'))
                 )
               )
             ),
@@ -19108,29 +19147,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var DRI = { protein: 50, fiber: 28, vitD: 15, omega3: 1.3, iron: 12, calcium: 1300 };
         var FOODS = [
           // Breakfast
-          { id: 'bOatBlue', meal: 'breakfast', icon: '🫐', name: 'Maine wild blueberries on oatmeal', protein: 7, fiber: 5, vitD: 0.5, omega3: 0.4, iron: 2.5, calcium: 105, note: 'Maine wild blueberries pack 33% more antioxidants than cultivated.' },
-          { id: 'bEggs',    meal: 'breakfast', icon: '🍳', name: 'Two eggs, any style',                protein: 12, fiber: 0, vitD: 2.0, omega3: 0.1, iron: 1.8, calcium: 50, note: 'Eggs are one of the few natural vitamin-D foods.' },
-          { id: 'bYogurt',  meal: 'breakfast', icon: '🍯', name: 'Greek yogurt with honey',            protein: 17, fiber: 0, vitD: 1.5, omega3: 0,   iron: 0.1, calcium: 230, note: 'Calcium standout.' },
-          { id: 'bToast',   meal: 'breakfast', icon: '🍞', name: 'Whole-grain toast with butter',      protein: 4, fiber: 3, vitD: 0.2, omega3: 0.05, iron: 1.4, calcium: 35, note: 'Quick carbs + fiber, low everything else.' },
-          { id: 'bCereal',  meal: 'breakfast', icon: '🥣', name: 'Fortified cereal with milk',         protein: 8, fiber: 3, vitD: 3.5, omega3: 0.05, iron: 9.0, calcium: 320, note: 'Fortified iron + vit D + calcium — nutrient-dense for the price.' },
+          { id: 'bOatBlue', meal: 'breakfast', icon: '🫐', name: __alloT('stem.nutritionlab.maine_wild_blueberries_on_oatmeal', 'Maine wild blueberries on oatmeal'), protein: 7, fiber: 5, vitD: 0.5, omega3: 0.4, iron: 2.5, calcium: 105, note: __alloT('stem.nutritionlab.maine_wild_blueberries_pack_33_more_an', 'Maine wild blueberries pack 33% more antioxidants than cultivated.') },
+          { id: 'bEggs',    meal: 'breakfast', icon: '🍳', name: __alloT('stem.nutritionlab.two_eggs_any_style', 'Two eggs, any style'),                protein: 12, fiber: 0, vitD: 2.0, omega3: 0.1, iron: 1.8, calcium: 50, note: __alloT('stem.nutritionlab.eggs_are_one_of_the_few_natural_vitami', 'Eggs are one of the few natural vitamin-D foods.') },
+          { id: 'bYogurt',  meal: 'breakfast', icon: '🍯', name: __alloT('stem.nutritionlab.greek_yogurt_with_honey', 'Greek yogurt with honey'),            protein: 17, fiber: 0, vitD: 1.5, omega3: 0,   iron: 0.1, calcium: 230, note: __alloT('stem.nutritionlab.calcium_standout', 'Calcium standout.') },
+          { id: 'bToast',   meal: 'breakfast', icon: '🍞', name: __alloT('stem.nutritionlab.whole_grain_toast_with_butter', 'Whole-grain toast with butter'),      protein: 4, fiber: 3, vitD: 0.2, omega3: 0.05, iron: 1.4, calcium: 35, note: __alloT('stem.nutritionlab.quick_carbs_fiber_low_everything_else', 'Quick carbs + fiber, low everything else.') },
+          { id: 'bCereal',  meal: 'breakfast', icon: '🥣', name: __alloT('stem.nutritionlab.fortified_cereal_with_milk', 'Fortified cereal with milk'),         protein: 8, fiber: 3, vitD: 3.5, omega3: 0.05, iron: 9.0, calcium: 320, note: __alloT('stem.nutritionlab.fortified_iron_vit_d_calcium_nutrient_', 'Fortified iron + vit D + calcium — nutrient-dense for the price.') },
           // Lunch
-          { id: 'lLobster', meal: 'lunch',     icon: '🦞', name: 'Lobster roll (Maine summer)',         protein: 22, fiber: 1, vitD: 0,   omega3: 0.2, iron: 0.8, calcium: 90, note: 'Maine lobster — protein-dense; vit D negligible.' },
-          { id: 'lTuna',    meal: 'lunch',     icon: '🐟', name: 'Tuna sandwich (canned light)',        protein: 24, fiber: 2, vitD: 1.0, omega3: 0.5, iron: 2.2, calcium: 70, note: 'Canned light tuna — solid omega-3, low mercury.' },
-          { id: 'lTurkey',  meal: 'lunch',     icon: '🥪', name: 'Turkey sandwich on whole wheat',     protein: 22, fiber: 4, vitD: 0.2, omega3: 0.1, iron: 2.5, calcium: 180, note: 'Balanced protein + fiber.' },
-          { id: 'lSalad',   meal: 'lunch',     icon: '🥗', name: 'Mixed greens with chickpeas & feta', protein: 14, fiber: 8, vitD: 0,   omega3: 0.2, iron: 4.0, calcium: 220, note: 'Iron + fiber standout. Add citrus for iron absorption.' },
-          { id: 'lPizza',   meal: 'lunch',     icon: '🍕', name: 'Cheese pizza (school slice)',        protein: 12, fiber: 2, vitD: 0.3, omega3: 0,   iron: 2.0, calcium: 220, note: 'Calcium from cheese; modest fiber/iron.' },
+          { id: 'lLobster', meal: 'lunch',     icon: '🦞', name: __alloT('stem.nutritionlab.lobster_roll_maine_summer', 'Lobster roll (Maine summer)'),         protein: 22, fiber: 1, vitD: 0,   omega3: 0.2, iron: 0.8, calcium: 90, note: __alloT('stem.nutritionlab.maine_lobster_protein_dense_vit_d_negl', 'Maine lobster — protein-dense; vit D negligible.') },
+          { id: 'lTuna',    meal: 'lunch',     icon: '🐟', name: __alloT('stem.nutritionlab.tuna_sandwich_canned_light', 'Tuna sandwich (canned light)'),        protein: 24, fiber: 2, vitD: 1.0, omega3: 0.5, iron: 2.2, calcium: 70, note: __alloT('stem.nutritionlab.canned_light_tuna_solid_omega_3_low_me', 'Canned light tuna — solid omega-3, low mercury.') },
+          { id: 'lTurkey',  meal: 'lunch',     icon: '🥪', name: __alloT('stem.nutritionlab.turkey_sandwich_on_whole_wheat', 'Turkey sandwich on whole wheat'),     protein: 22, fiber: 4, vitD: 0.2, omega3: 0.1, iron: 2.5, calcium: 180, note: __alloT('stem.nutritionlab.balanced_protein_fiber', 'Balanced protein + fiber.') },
+          { id: 'lSalad',   meal: 'lunch',     icon: '🥗', name: __alloT('stem.nutritionlab.mixed_greens_with_chickpeas_feta', 'Mixed greens with chickpeas & feta'), protein: 14, fiber: 8, vitD: 0,   omega3: 0.2, iron: 4.0, calcium: 220, note: __alloT('stem.nutritionlab.iron_fiber_standout_add_citrus_for_iro', 'Iron + fiber standout. Add citrus for iron absorption.') },
+          { id: 'lPizza',   meal: 'lunch',     icon: '🍕', name: __alloT('stem.nutritionlab.cheese_pizza_school_slice', 'Cheese pizza (school slice)'),        protein: 12, fiber: 2, vitD: 0.3, omega3: 0,   iron: 2.0, calcium: 220, note: __alloT('stem.nutritionlab.calcium_from_cheese_modest_fiber_iron', 'Calcium from cheese; modest fiber/iron.') },
           // Dinner
-          { id: 'dSalmon',  meal: 'dinner',    icon: '🍣', name: 'Baked Atlantic salmon, rice, greens', protein: 32, fiber: 4, vitD: 14.0, omega3: 1.8, iron: 1.5, calcium: 85, note: 'Maine fisheries powerhouse — vit D + omega-3 in one plate.' },
-          { id: 'dPasta',   meal: 'dinner',    icon: '🍝', name: 'Spaghetti with marinara',             protein: 12, fiber: 5, vitD: 0,   omega3: 0.2, iron: 3.0, calcium: 60, note: 'Carb-forward; modest iron from sauce + pasta.' },
-          { id: 'dChicken', meal: 'dinner',    icon: '🍗', name: 'Roasted chicken, sweet potato, peas', protein: 30, fiber: 7, vitD: 0.5, omega3: 0.1, iron: 2.5, calcium: 80, note: 'Balanced protein + complex carbs + fiber.' },
-          { id: 'dChili',   meal: 'dinner',    icon: '🌶️', name: 'Beef chili with beans',                protein: 26, fiber: 11, vitD: 0.3, omega3: 0.1, iron: 5.5, calcium: 110, note: 'Iron + fiber standout. Beef + beans together stack well.' },
-          { id: 'dTacos',   meal: 'dinner',    icon: '🌮', name: 'Black bean tacos with cheese',        protein: 18, fiber: 12, vitD: 0.2, omega3: 0.1, iron: 4.0, calcium: 230, note: 'Plant-based protein + huge fiber + calcium from cheese.' },
+          { id: 'dSalmon',  meal: 'dinner',    icon: '🍣', name: __alloT('stem.nutritionlab.baked_atlantic_salmon_rice_greens', 'Baked Atlantic salmon, rice, greens'), protein: 32, fiber: 4, vitD: 14.0, omega3: 1.8, iron: 1.5, calcium: 85, note: __alloT('stem.nutritionlab.maine_fisheries_powerhouse_vit_d_omega', 'Maine fisheries powerhouse — vit D + omega-3 in one plate.') },
+          { id: 'dPasta',   meal: 'dinner',    icon: '🍝', name: __alloT('stem.nutritionlab.spaghetti_with_marinara', 'Spaghetti with marinara'),             protein: 12, fiber: 5, vitD: 0,   omega3: 0.2, iron: 3.0, calcium: 60, note: __alloT('stem.nutritionlab.carb_forward_modest_iron_from_sauce_pa', 'Carb-forward; modest iron from sauce + pasta.') },
+          { id: 'dChicken', meal: 'dinner',    icon: '🍗', name: __alloT('stem.nutritionlab.roasted_chicken_sweet_potato_peas', 'Roasted chicken, sweet potato, peas'), protein: 30, fiber: 7, vitD: 0.5, omega3: 0.1, iron: 2.5, calcium: 80, note: __alloT('stem.nutritionlab.balanced_protein_complex_carbs_fiber', 'Balanced protein + complex carbs + fiber.') },
+          { id: 'dChili',   meal: 'dinner',    icon: '🌶️', name: __alloT('stem.nutritionlab.beef_chili_with_beans', 'Beef chili with beans'),                protein: 26, fiber: 11, vitD: 0.3, omega3: 0.1, iron: 5.5, calcium: 110, note: __alloT('stem.nutritionlab.iron_fiber_standout_beef_beans_togethe', 'Iron + fiber standout. Beef + beans together stack well.') },
+          { id: 'dTacos',   meal: 'dinner',    icon: '🌮', name: __alloT('stem.nutritionlab.black_bean_tacos_with_cheese', 'Black bean tacos with cheese'),        protein: 18, fiber: 12, vitD: 0.2, omega3: 0.1, iron: 4.0, calcium: 230, note: __alloT('stem.nutritionlab.plant_based_protein_huge_fiber_calcium', 'Plant-based protein + huge fiber + calcium from cheese.') },
           // Snack
-          { id: 'sApple',   meal: 'snack',     icon: '🍎', name: 'Apple',                                protein: 0.5, fiber: 4, vitD: 0,   omega3: 0,   iron: 0.2, calcium: 11, note: 'Fiber-only standout; minimal everything else.' },
-          { id: 'sCheese',  meal: 'snack',     icon: '🧀', name: 'Cheese stick',                         protein: 7, fiber: 0, vitD: 0.4, omega3: 0,   iron: 0.1, calcium: 200, note: 'Calcium-dense, protein-dense.' },
-          { id: 'sTrail',   meal: 'snack',     icon: '🥜', name: 'Trail mix (almonds + cranberries)',   protein: 6, fiber: 4, vitD: 0,   omega3: 0.1, iron: 1.5, calcium: 80, note: 'Healthy fats, fiber, plant iron.' },
-          { id: 'sHummus',  meal: 'snack',     icon: '🥕', name: 'Carrot sticks with hummus',           protein: 5, fiber: 6, vitD: 0,   omega3: 0.1, iron: 1.5, calcium: 60, note: 'Plant fiber + protein.' },
-          { id: 'sIceCream', meal: 'snack',    icon: '🍦', name: 'Maine maple ice cream',                protein: 4, fiber: 0, vitD: 0.5, omega3: 0,   iron: 0.1, calcium: 130, note: 'Treat — calcium present, low everything else.' }
+          { id: 'sApple',   meal: 'snack',     icon: '🍎', name: __alloT('stem.nutritionlab.apple', 'Apple'),                                protein: 0.5, fiber: 4, vitD: 0,   omega3: 0,   iron: 0.2, calcium: 11, note: __alloT('stem.nutritionlab.fiber_only_standout_minimal_everything', 'Fiber-only standout; minimal everything else.') },
+          { id: 'sCheese',  meal: 'snack',     icon: '🧀', name: __alloT('stem.nutritionlab.cheese_stick', 'Cheese stick'),                         protein: 7, fiber: 0, vitD: 0.4, omega3: 0,   iron: 0.1, calcium: 200, note: __alloT('stem.nutritionlab.calcium_dense_protein_dense', 'Calcium-dense, protein-dense.') },
+          { id: 'sTrail',   meal: 'snack',     icon: '🥜', name: __alloT('stem.nutritionlab.trail_mix_almonds_cranberries', 'Trail mix (almonds + cranberries)'),   protein: 6, fiber: 4, vitD: 0,   omega3: 0.1, iron: 1.5, calcium: 80, note: __alloT('stem.nutritionlab.healthy_fats_fiber_plant_iron', 'Healthy fats, fiber, plant iron.') },
+          { id: 'sHummus',  meal: 'snack',     icon: '🥕', name: __alloT('stem.nutritionlab.carrot_sticks_with_hummus', 'Carrot sticks with hummus'),           protein: 5, fiber: 6, vitD: 0,   omega3: 0.1, iron: 1.5, calcium: 60, note: __alloT('stem.nutritionlab.plant_fiber_protein', 'Plant fiber + protein.') },
+          { id: 'sIceCream', meal: 'snack',    icon: '🍦', name: __alloT('stem.nutritionlab.maine_maple_ice_cream', 'Maine maple ice cream'),                protein: 4, fiber: 0, vitD: 0.5, omega3: 0,   iron: 0.1, calcium: 130, note: __alloT('stem.nutritionlab.treat_calcium_present_low_everything_e', 'Treat — calcium present, low everything else.') }
         ];
 
         var picks = d.bmd_picks || {};
@@ -19196,15 +19235,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             : 'Your day looks pretty balanced. Maine context — winter vitamin D and adolescent iron — both look covered.';
 
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🌲', title: 'Build a Maine Day — summary' }),
+            h(BackBar, { icon: '🌲', title: __alloT('stem.nutritionlab.build_a_maine_day_summary', 'Build a Maine Day — summary') }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, 'Your day, in numbers'),
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, __alloT('stem.nutritionlab.your_day_in_numbers', 'Your day, in numbers')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Six nutrients tracked against approximate adolescent DRIs. The point is not to hit 100% on every bar — it is to see what a real day actually adds up to and what tends to be over- or under-represented.')
+                  __alloT('stem.nutritionlab.six_nutrients_tracked_against_approxim', 'Six nutrients tracked against approximate adolescent DRIs. The point is not to hit 100% on every bar — it is to see what a real day actually adds up to and what tends to be over- or under-represented.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'Nutrient totals'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.nutrient_totals', 'Nutrient totals')),
                 nutBar('protein', 'Protein', 'g'),
                 nutBar('fiber', 'Fiber', 'g'),
                 nutBar('vitD', 'Vitamin D', 'mcg', 1),
@@ -19213,24 +19252,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nutBar('calcium', 'Calcium', 'mg', 0)
               ),
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-4' },
-                h('h3', { className: 'text-sm font-black text-amber-900 mb-2' }, '🌲 Maine context'),
+                h('h3', { className: 'text-sm font-black text-amber-900 mb-2' }, __alloT('stem.nutritionlab.maine_context', '🌲 Maine context')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, maineHighlight)
               ),
               strengths.length > 0 && h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-4' },
-                h('h3', { className: 'text-sm font-black text-emerald-900 mb-2' }, '✅ Standout strengths'),
+                h('h3', { className: 'text-sm font-black text-emerald-900 mb-2' }, __alloT('stem.nutritionlab.standout_strengths', '✅ Standout strengths')),
                 h('ul', { className: 'list-disc list-inside text-xs text-slate-800 space-y-0.5' },
                   strengths.map(function(s, si) { return h('li', { key: si }, s.label + ' at ' + s.pct + '% of DRI'); })
                 )
               ),
               deficits.length > 0 && h('div', { className: 'bg-rose-50 border border-rose-300 rounded-xl p-4' },
-                h('h3', { className: 'text-sm font-black text-rose-900 mb-2' }, '⚠️ Below 50% of DRI'),
+                h('h3', { className: 'text-sm font-black text-rose-900 mb-2' }, __alloT('stem.nutritionlab.below_50_of_dri', '⚠️ Below 50% of DRI')),
                 h('ul', { className: 'list-disc list-inside text-xs text-slate-800 space-y-0.5' },
                   deficits.map(function(s, si) { return h('li', { key: si }, s.label + ' at ' + s.pct + '%'); })
                 ),
-                h('p', { className: 'text-xs text-slate-700 italic mt-2' }, 'Reminder: this is one day. Nutrient needs balance over a week, not within a day. Persistent deficits across multiple days are what matter.')
+                h('p', { className: 'text-xs text-slate-700 italic mt-2' }, __alloT('stem.nutritionlab.reminder_this_is_one_day_nutrient_need', 'Reminder: this is one day. Nutrient needs balance over a week, not within a day. Persistent deficits across multiple days are what matter.'))
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-300 p-4' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, 'What you ate today'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.what_you_ate_today', 'What you ate today')),
                 ['breakfast','lunch','dinner','snack'].map(function(m) {
                   var f = FOODS.filter(function(x) { return x.id === picks[m]; })[0];
                   if (!f) return null;
@@ -19247,24 +19286,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('button', {
                 onClick: reset,
                 className: 'w-full px-5 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 focus:outline-none focus:ring-2 ring-emerald-400'
-              }, '🔄 Build another day')
+              }, __alloT('stem.nutritionlab.build_another_day', '🔄 Build another day'))
             )
           );
         }
 
         // ── Builder screen ──
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🌲', title: 'Build a Maine Day' }),
+          h(BackBar, { icon: '🌲', title: __alloT('stem.nutritionlab.build_a_maine_day_2', 'Build a Maine Day') }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
             h('div', { className: 'bg-stone-100 border-2 border-stone-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, 'What does a balanced Maine day actually look like?'),
+              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, __alloT('stem.nutritionlab.what_does_a_balanced_maine_day_actuall', 'What does a balanced Maine day actually look like?')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'Pick one food for each meal from a Maine-realistic short list. Watch the six nutrient bars update as you go. The bars are tied to approximate adolescent DRIs — but the point is not to "win" by hitting 100% on each one. It is to see what a real day adds up to and what tends to be over- or under-represented.')
+                __alloT('stem.nutritionlab.pick_one_food_for_each_meal_from_a_mai', 'Pick one food for each meal from a Maine-realistic short list. Watch the six nutrient bars update as you go. The bars are tied to approximate adolescent DRIs — but the point is not to "win" by hitting 100% on each one. It is to see what a real day adds up to and what tends to be over- or under-represented.'))
             ),
             // Live totals (sticky-ish at top of meal pickers)
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
               h('div', { className: 'flex justify-between items-baseline mb-2' },
-                h('h3', { className: 'text-sm font-black text-slate-800' }, 'Live nutrient totals'),
+                h('h3', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.nutritionlab.live_nutrient_totals', 'Live nutrient totals')),
                 h('span', { className: 'text-xs text-slate-500' }, pickedCount + ' of 4 meals chosen')
               ),
               nutBar('protein', 'Protein', 'g'),
@@ -19284,7 +19323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-3 flex items-center gap-2' },
                   h('span', null, mealIcon),
                   h('span', null, mealLabel),
-                  pickedId && h('span', { className: 'ml-auto text-xs font-normal text-emerald-700' }, '✓ chosen')
+                  pickedId && h('span', { className: 'ml-auto text-xs font-normal text-emerald-700' }, __alloT('stem.nutritionlab.chosen', '✓ chosen'))
                 ),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                   foods.map(function(f) {
@@ -19316,7 +19355,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               },
               disabled: pickedCount < 4,
               className: 'w-full px-5 py-3 rounded-xl font-bold focus:outline-none focus:ring-2 ring-emerald-400 ' +
-                (pickedCount >= 4 ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed')
+                (pickedCount >= 4 ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
             }, pickedCount >= 4 ? '📊 See my day' : 'Pick ' + (4 - pickedCount) + ' more meal' + (4 - pickedCount === 1 ? '' : 's'))
           )
         );
@@ -19331,17 +19370,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // ─────────────────────────────────────────────────────
       function DeficiencyDetective() {
         var NUTRIENTS = [
-          { id: 'vitD',    label: 'Vitamin D', color: '#f59e0b', icon: '☀️',
+          { id: 'vitD',    label: __alloT('stem.nutritionlab.vitamin_d_5', 'Vitamin D'), color: '#f59e0b', icon: '☀️',
             def: 'Skin makes it from sunlight; few foods (fatty fish, fortified milk). At Maine\'s latitude, sun is too low Oct–Mar. Bone health + immune.' },
-          { id: 'iron',    label: 'Iron',      color: '#dc2626', icon: '🩸',
+          { id: 'iron',    label: __alloT('stem.nutritionlab.iron_5', 'Iron'),      color: '#dc2626', icon: '🩸',
             def: 'Carries oxygen via hemoglobin. Plant iron (lentils, spinach) absorbs poorly without vitamin C. Menstruating teens + endurance athletes high-risk.' },
           { id: 'b12',     label: 'B12',       color: '#a855f7', icon: '🧬',
             def: 'Animal products only (meat, fish, eggs, dairy) + fortified plant milks. Vegans + PPI-users + older adults at risk. Nerve + RBC formation.' },
-          { id: 'folate',  label: 'Folate',    color: '#16a34a', icon: '🥬',
+          { id: 'folate',  label: __alloT('stem.nutritionlab.folate', 'Folate'),    color: '#16a34a', icon: '🥬',
             def: 'Leafy greens, lentils, fortified grains. Critical preconception + early pregnancy for neural-tube development. Often supplemented as folic acid.' },
-          { id: 'calcium', label: 'Calcium',   color: '#0ea5e9', icon: '🦴',
+          { id: 'calcium', label: __alloT('stem.nutritionlab.calcium_6', 'Calcium'),   color: '#0ea5e9', icon: '🦴',
             def: 'Dairy, fortified plant milks, leafy greens. Adolescence = peak bone-building years; teen intake shapes lifelong bone density. Lactose-intolerance is risk.' },
-          { id: 'iodine',  label: 'Iodine',    color: '#7c3aed', icon: '🦋',
+          { id: 'iodine',  label: __alloT('stem.nutritionlab.iodine', 'Iodine'),    color: '#7c3aed', icon: '🦋',
             def: 'Iodized salt, seafood, dairy. Thyroid hormone production. US iodized-salt program nearly eliminated this; still common in low-iodine soil regions.' }
         ];
         var V = [
@@ -19406,18 +19445,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
         if (ddIdx < 0) {
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🕵️', title: 'Deficiency Detective' }),
+            h(BackBar, { icon: '🕵️', title: __alloT('stem.nutritionlab.deficiency_detective_2', 'Deficiency Detective') }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '10 clinical vignettes — name the missing nutrient'),
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, __alloT('stem.nutritionlab.10_clinical_vignettes_name_the_missing', '10 clinical vignettes — name the missing nutrient')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  'For each scenario, identify which of 6 common nutrients is most likely deficient. Coaching after each pick names what makes this nutrient more likely than the others (and what would have to be different to make a different answer right).'),
+                  __alloT('stem.nutritionlab.for_each_scenario_identify_which_of_6_', 'For each scenario, identify which of 6 common nutrients is most likely deficient. Coaching after each pick names what makes this nutrient more likely than the others (and what would have to be different to make a different answer right).')),
                 h('div', { className: 'p-3 rounded-lg bg-amber-50 border border-amber-300 text-xs text-slate-800 leading-relaxed' },
-                  h('strong', { className: 'text-amber-900' }, '⚠️ This is not a diagnostic tool. '),
-                  'Real deficiencies require lab tests, not vignettes. The game teaches pattern recognition for screening; treatment + diagnosis stay with a clinician.')
+                  h('strong', { className: 'text-amber-900' }, __alloT('stem.nutritionlab.this_is_not_a_diagnostic_tool', '⚠️ This is not a diagnostic tool. ')),
+                  __alloT('stem.nutritionlab.real_deficiencies_require_lab_tests_no', 'Real deficiencies require lab tests, not vignettes. The game teaches pattern recognition for screening; treatment + diagnosis stay with a clinician.'))
               ),
               h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700 mb-2' }, 'The six nutrients'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700 mb-2' }, __alloT('stem.nutritionlab.the_six_nutrients', 'The six nutrients')),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                   NUTRIENTS.map(function(n) {
                     return h('div', { key: n.id, style: { padding: '8px 10px', borderRadius: 8, background: n.color + '15', border: '1px solid ' + n.color + '55' } },
@@ -19433,7 +19472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('button', {
                 onClick: startDd,
                 className: 'w-full px-5 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
-              }, '🕵️ Start — vignette 1 of 10')
+              }, __alloT('stem.nutritionlab.start_vignette_1_of_10', '🕵️ Start — vignette 1 of 10'))
             )
           );
         }
@@ -19446,15 +19485,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var pickedNut = ddPick ? NUTRIENTS.filter(function(n) { return n.id === ddPick; })[0] : null;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🕵️', title: 'Deficiency Detective' }),
+          h(BackBar, { icon: '🕵️', title: __alloT('stem.nutritionlab.deficiency_detective_3', 'Deficiency Detective') }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
             // Score header
             h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-700' },
-              h('span', null, 'Vignette ', h('strong', { className: 'text-slate-900' }, ddShown.length)),
-              h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, ddScore + ' / ' + ddRounds)),
-              ddRounds > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
-              h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, ddStreak)),
-              h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, ddBest))
+              h('span', null, __alloT('stem.nutritionlab.vignette', 'Vignette '), h('strong', { className: 'text-slate-900' }, ddShown.length)),
+              h('span', null, __alloT('stem.nutritionlab.score', 'Score '), h('strong', { className: 'text-emerald-700' }, ddScore + ' / ' + ddRounds)),
+              ddRounds > 0 && h('span', null, __alloT('stem.nutritionlab.accuracy', 'Accuracy '), h('strong', { className: 'text-cyan-700' }, pct + '%')),
+              h('span', null, __alloT('stem.nutritionlab.streak', 'Streak '), h('strong', { className: 'text-amber-700' }, ddStreak)),
+              h('span', null, __alloT('stem.nutritionlab.best', 'Best '), h('strong', { className: 'text-fuchsia-700' }, ddBest))
             ),
             // The vignette
             h('section', { className: 'p-5 rounded-2xl bg-rose-50 border-2 border-rose-300' },
@@ -19462,7 +19501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario)
             ),
             // 6 nutrient picker buttons
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the most likely missing nutrient' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.nutritionlab.pick_the_most_likely_missing_nutrient', 'Pick the most likely missing nutrient') },
               NUTRIENTS.map(function(n) {
                 var picked = ddAns && ddPick === n.id;
                 var isRight = ddAns && n.id === v.correct;
@@ -19506,7 +19545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
               allDone
                 ? h('div', { className: 'p-3 rounded-lg bg-rose-100 border border-rose-300' },
-                    h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, '🏆 All 10 vignettes complete'),
+                    h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, __alloT('stem.nutritionlab.all_10_vignettes_complete', '🏆 All 10 vignettes complete')),
                     h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
                       'Final: ', h('strong', null, ddScore + ' / ' + V.length + ' (' + Math.round((ddScore / V.length) * 100) + '%)'),
                       ddScore === V.length ? ' — every deficiency correctly identified. The clinical pattern reflexes are in place.' :
@@ -19517,12 +19556,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('button', {
                       onClick: function() { upd('ddIdx', -1); upd('ddShown', []); upd('ddScore', 0); upd('ddRounds', 0); upd('ddStreak', 0); },
                       className: 'mt-3 px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700'
-                    }, '🔄 Restart')
+                    }, __alloT('stem.nutritionlab.restart', '🔄 Restart'))
                   )
                 : h('button', {
                     onClick: startDd,
                     className: 'px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
-                  }, '➡️ Next vignette')
+                  }, __alloT('stem.nutritionlab.next_vignette', '➡️ Next vignette'))
             )
           )
         );
@@ -19563,14 +19602,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // Urine color reference (Armstrong 8-point scale; ACSM-cited).
       // Each entry: hex swatch, status word, what-it-means line.
       var URINE_COLORS = [
-        { hex: '#fcfdf2', n: 1, label: 'Very pale',     status: 'Hydrated',           note: 'Often clear or nearly so. Fine if you have not been pushing fluids; overdrinking water has its own risks.' },
-        { hex: '#fafad9', n: 2, label: 'Pale yellow',   status: 'Hydrated',           note: 'The classic "well-hydrated" target color most clinicians teach.' },
-        { hex: '#f3edaa', n: 3, label: 'Light yellow',  status: 'Hydrated',           note: 'Still in the green zone. Body has enough water for routine function.' },
-        { hex: '#e6db5c', n: 4, label: 'Yellow',        status: 'Borderline',         note: 'Drink water in the next hour. Not an emergency, but you are trending toward thirsty.' },
-        { hex: '#d3b73c', n: 5, label: 'Dark yellow',   status: 'Mildly dehydrated',  note: 'About 1-2% body-weight fluid deficit. Attention, mood, short-term memory measurably drop here. Drink now.' },
-        { hex: '#b08c2a', n: 6, label: 'Amber',         status: 'Dehydrated',         note: 'Definitely behind. Sip water steadily over the next 1-2 hours. Avoid soda or caffeine right now.' },
-        { hex: '#8b6420', n: 7, label: 'Brown-amber',   status: 'Very dehydrated',    note: 'If this is post-exercise or after illness, rehydrate with water + a salty snack or oral rehydration solution.' },
-        { hex: '#6b4015', n: 8, label: 'Dark brown',    status: 'Severely dehydrated', note: 'Or possibly a sign of something else (medication, liver, blood in urine). If you cannot rehydrate or it persists, see a clinician.' }
+        { hex: '#fcfdf2', n: 1, label: __alloT('stem.nutritionlab.very_pale', 'Very pale'),     status: 'Hydrated',           note: __alloT('stem.nutritionlab.often_clear_or_nearly_so_fine_if_you_h', 'Often clear or nearly so. Fine if you have not been pushing fluids; overdrinking water has its own risks.') },
+        { hex: '#fafad9', n: 2, label: __alloT('stem.nutritionlab.pale_yellow', 'Pale yellow'),   status: 'Hydrated',           note: __alloT('stem.nutritionlab.the_classic_well_hydrated_target_color', 'The classic "well-hydrated" target color most clinicians teach.') },
+        { hex: '#f3edaa', n: 3, label: __alloT('stem.nutritionlab.light_yellow', 'Light yellow'),  status: 'Hydrated',           note: __alloT('stem.nutritionlab.still_in_the_green_zone_body_has_enoug', 'Still in the green zone. Body has enough water for routine function.') },
+        { hex: '#e6db5c', n: 4, label: __alloT('stem.nutritionlab.yellow', 'Yellow'),        status: 'Borderline',         note: __alloT('stem.nutritionlab.drink_water_in_the_next_hour_not_an_em', 'Drink water in the next hour. Not an emergency, but you are trending toward thirsty.') },
+        { hex: '#d3b73c', n: 5, label: __alloT('stem.nutritionlab.dark_yellow', 'Dark yellow'),   status: 'Mildly dehydrated',  note: __alloT('stem.nutritionlab.about_1_2_body_weight_fluid_deficit_at', 'About 1-2% body-weight fluid deficit. Attention, mood, short-term memory measurably drop here. Drink now.') },
+        { hex: '#b08c2a', n: 6, label: __alloT('stem.nutritionlab.amber', 'Amber'),         status: 'Dehydrated',         note: __alloT('stem.nutritionlab.definitely_behind_sip_water_steadily_o', 'Definitely behind. Sip water steadily over the next 1-2 hours. Avoid soda or caffeine right now.') },
+        { hex: '#8b6420', n: 7, label: 'Brown-amber',   status: 'Very dehydrated',    note: __alloT('stem.nutritionlab.if_this_is_post_exercise_or_after_illn', 'If this is post-exercise or after illness, rehydrate with water + a salty snack or oral rehydration solution.') },
+        { hex: '#6b4015', n: 8, label: __alloT('stem.nutritionlab.dark_brown', 'Dark brown'),    status: 'Severely dehydrated', note: __alloT('stem.nutritionlab.or_possibly_a_sign_of_something_else_m', 'Or possibly a sign of something else (medication, liver, blood in urine). If you cannot rehydrate or it persists, see a clinician.') }
       ];
 
       // Beverage comparison data (per 8 oz / ~240 mL serving).
@@ -19579,28 +19618,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // 2018); NATA position statement on fluid replacement.
       var BEVERAGES = [
         {
-          id: 'water', name: 'Water', icon: '💧',
+          id: 'water', name: __alloT('stem.nutritionlab.water', 'Water'), icon: '💧',
           sodium: 0, sugar: 0, caffeine: 0, kcal: 0,
           efficacy: 'Best baseline hydrator for sub-1-hour activity. Replenishes fluid without adding sugar or sodium your body did not lose.',
           when: 'The default. Carry a bottle. Refill at school fountains.',
           source: 'NATA 2017 fluid replacement position'
         },
         {
-          id: 'sports', name: 'Sports drink (typical)', icon: '🏃',
+          id: 'sports', name: __alloT('stem.nutritionlab.sports_drink_typical', 'Sports drink (typical)'), icon: '🏃',
           sodium: 110, sugar: 14, caffeine: 0, kcal: 50,
           efficacy: 'Replaces sodium lost in sweat AND adds quick-burning sugar. Useful for endurance over 60-90 minutes or for athletes practicing in heat.',
           when: 'Long practices in heat, two-a-days, athletic events. Not a default thirst-quencher for routine school days.',
           source: 'AAP 2011 Clinical Report; NATA 2017'
         },
         {
-          id: 'soda', name: 'Soda (cola)', icon: '🥤',
+          id: 'soda', name: __alloT('stem.nutritionlab.soda_cola', 'Soda (cola)'), icon: '🥤',
           sodium: 35, sugar: 26, caffeine: 30, kcal: 100,
           efficacy: 'Provides fluid but the sugar and caffeine produce a small diuretic effect. Net hydration is positive but lower per ounce than water or a sports drink.',
           when: 'Occasional. Not a hydration tool. The 26 g of sugar per cup is well above the daily added-sugar guideline for adolescents.',
           source: 'USDA FoodData Central; AAP added-sugar guidance'
         },
         {
-          id: 'milk', name: 'Milk (1%)', icon: '🥛',
+          id: 'milk', name: __alloT('stem.nutritionlab.milk_1', 'Milk (1%)'), icon: '🥛',
           sodium: 100, sugar: 13, caffeine: 0, kcal: 100,
           efficacy: 'Some of the best post-exercise rehydration in studies. Fluid plus electrolytes plus protein support recovery, and the natural sugar (lactose) is part of the food, not added sugar.',
           when: 'Post-practice recovery, breakfast, snack. Plant milks vary; check the label for added sugar.',
@@ -19612,20 +19651,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var iq = d.macroInquiry || { carbs: 50, protein: 20, fat: 30, fiber: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd('macroInquiry', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-        var total = iq.carbs + iq.protein + iq.fat;
-        var pC = total > 0 ? iq.carbs / total : 0.33;
-        var pP = total > 0 ? iq.protein / total : 0.33;
-        var pF = total > 0 ? iq.fat / total : 0.33;
+        var total = iq.carbs + iq.protein + iq.fat; // grams — for the "total macros" readout
+        // Macro split must be by ENERGY (kcal), not grams: the % labels, the DGA-AMDR state
+        // buckets, and the pie all describe calorie share. Fat is 9 kcal/g vs 4 for carb/protein,
+        // so a grams-based split understated fat's share and mislabeled the energy state.
+        var cKcal = iq.carbs * 4, pKcal = iq.protein * 4, fKcal = iq.fat * 9;
+        var totalKcal = cKcal + pKcal + fKcal;
+        var pC = totalKcal > 0 ? cKcal / totalKcal : 0.33;
+        var pP = totalKcal > 0 ? pKcal / totalKcal : 0.33;
+        var pF = totalKcal > 0 ? fKcal / totalKcal : 0.33;
         // satiety proxy: protein + fiber + fat dominate
         var satiety = pP * 100 * 1.5 + iq.fiber * 1.0 + pF * 100 * 0.7 + pC * 100 * 0.3;
         var fiberAdjGI = Math.max(0, Math.min(100, pC * 100 * 1.3 - iq.fiber * 1.4));
         var state = pC < 0.10 ? 'keto' : pC < 0.30 ? 'lowcarb' : pC < 0.55 ? 'balanced' : pC < 0.75 ? 'highcarb' : 'sugarheavy';
         var sm = ({
-          keto: { label: 'Ketogenic', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Carbs <10% of macros. Body shifts to fat oxidation; ketone production likely after several days.' },
-          lowcarb: { label: 'Low-carb', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Carbs 10–30%. Stable blood sugar likely; common Mediterranean/paleo range.' },
-          balanced: { label: 'Balanced', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Carbs 30–55%. Within the broader balanced range; the full Dietary Guidelines for Americans AMDR for carbs is 45–65%, so the upper end of this bucket and the start of "high-carb" both still fall inside DGA. Sustainable for most people.' },
-          highcarb: { label: 'High-carb', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Carbs 55–75%. The 55–65% segment is squarely within the DGA AMDR. The 65–75% segment is the endurance-athlete or traditional Asian-rice-based pattern; fine with fiber + protein.' },
-          sugarheavy: { label: 'Sugar-heavy', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Carbs >75% with low fiber → high glycemic load. Common in heavily-processed snack-dominated days, but well above the US average (NHANES puts US carb intake at ~46–50%).' }
+          keto: { label: __alloT('stem.nutritionlab.ketogenic', 'Ketogenic'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.nutritionlab.carbs_10_of_macros_body_shifts_to_fat_', 'Carbs <10% of macros. Body shifts to fat oxidation; ketone production likely after several days.') },
+          lowcarb: { label: 'Low-carb', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.nutritionlab.carbs_10_30_stable_blood_sugar_likely_', 'Carbs 10–30%. Stable blood sugar likely; common Mediterranean/paleo range.') },
+          balanced: { label: __alloT('stem.nutritionlab.balanced', 'Balanced'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.nutritionlab.carbs_30_55_within_the_broader_balance', 'Carbs 30–55%. Within the broader balanced range; the full Dietary Guidelines for Americans AMDR for carbs is 45–65%, so the upper end of this bucket and the start of "high-carb" both still fall inside DGA. Sustainable for most people.') },
+          highcarb: { label: 'High-carb', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.nutritionlab.carbs_55_75_the_55_65_segment_is_squar', 'Carbs 55–75%. The 55–65% segment is squarely within the DGA AMDR. The 65–75% segment is the endurance-athlete or traditional Asian-rice-based pattern; fine with fiber + protein.') },
+          sugarheavy: { label: 'Sugar-heavy', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.nutritionlab.carbs_75_with_low_fiber_high_glycemic_', 'Carbs >75% with low fiber → high glycemic load. Common in heavily-processed snack-dominated days, but well above the US average (NHANES puts US carb intake at ~46–50%).') }
         })[state];
         // SVG: stacked bar + macro pie
         var cy = 80;
@@ -19640,10 +19684,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           return 'M' + x0 + ',' + y0 + ' A' + r + ',' + r + ' 0 ' + large + ',1 ' + x1 + ',' + y1 + ' L' + x1i + ',' + y1i + ' A' + ir + ',' + ir + ' 0 ' + large + ',0 ' + x0i + ',' + y0i + ' Z';
         }
         return h('div', { className: 'p-4' },
-          h(BackBar, { icon: '🔬', title: 'Macro Inquiry — Predict the Energy State' }),
+          h(BackBar, { icon: '🔬', title: __alloT('stem.nutritionlab.macro_inquiry_predict_the_energy_state', 'Macro Inquiry — Predict the Energy State') }),
           h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
-            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Macro Inquiry Widget'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set carbohydrate, protein, fat (grams) plus fiber. Predict the energy state before reading it. No score, no reveal.'),
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.nutritionlab.macro_inquiry_widget', '🔬 Macro Inquiry Widget')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.nutritionlab.set_carbohydrate_protein_fat_grams_plu', 'Set carbohydrate, protein, fat (grams) plus fiber. Predict the energy state before reading it. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + (pC * 100).toFixed(0) + '% carb / ' + (pP * 100).toFixed(0) + '% protein / ' + (pF * 100).toFixed(0) + '% fat'),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 } },
@@ -19652,37 +19696,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 pP > 0.001 && h('path', { d: arc(pC, pC + pP, 55, 28), fill: '#4ade80', opacity: 0.85 }),
                 pF > 0.001 && h('path', { d: arc(pC + pP, 1, 55, 28), fill: '#fb923c', opacity: 0.85 }),
                 h('text', { x: 100, y: 80, textAnchor: 'middle', fill: sm.color, fontSize: 14, fontWeight: 800 }, total + 'g'),
-                h('text', { x: 100, y: 96, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'total macros')
+                h('text', { x: 100, y: 96, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.nutritionlab.total_macros', 'total macros'))
               ),
               h('div', { style: { flex: '1 1 auto', fontSize: 11 } },
                 h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#22d3ee', marginRight: 6, verticalAlign: 'middle' } }), 'Carbs: ', h('b', null, iq.carbs + 'g')),
                 h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#4ade80', marginRight: 6, verticalAlign: 'middle' } }), 'Protein: ', h('b', null, iq.protein + 'g')),
                 h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#fb923c', marginRight: 6, verticalAlign: 'middle' } }), 'Fat: ', h('b', null, iq.fat + 'g')),
                 h('div', { style: { marginTop: 10, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, 'Satiety index'),
+                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, __alloT('stem.nutritionlab.satiety_index', 'Satiety index')),
                   h('div', { style: { fontSize: 13, fontWeight: 700, color: sm.color } }, satiety.toFixed(0))
                 ),
                 h('div', { style: { marginTop: 6, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, 'Fiber-adj glycemic proxy'),
+                  h('div', { style: { fontSize: 9, opacity: 0.6 } }, __alloT('stem.nutritionlab.fiber_adj_glycemic_proxy', 'Fiber-adj glycemic proxy')),
                   h('div', { style: { fontSize: 13, fontWeight: 700, color: sm.color } }, fiberAdjGI.toFixed(0))
                 )
               )
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Carbs (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.carbs)),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.carbs_g', 'Carbs (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.carbs)),
                 h('input', { type: 'range', min: 0, max: 300, step: 5, value: iq.carbs, onChange: function(e) { setKey('carbs', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Protein (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.protein)),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.protein_g', 'Protein (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.protein)),
                 h('input', { type: 'range', min: 0, max: 200, step: 5, value: iq.protein, onChange: function(e) { setKey('protein', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Fat (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fat)),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.fat_g', 'Fat (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fat)),
                 h('input', { type: 'range', min: 0, max: 150, step: 2, value: iq.fat, onChange: function(e) { setKey('fat', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Fiber (g)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fiber)),
+                h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.fiber_g', 'Fiber (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fiber)),
                 h('input', { type: 'range', min: 0, max: 100, step: 1, value: iq.fiber, onChange: function(e) { setKey('fiber', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
@@ -19690,30 +19734,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, c: iq.carbs, p: iq.protein, f: iq.fat, fb: iq.fiber, sat: satiety.toFixed(0), gi: fiberAdjGI.toFixed(0), state: sm.label }]) });
-              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this macro profile'),
-              h('button', { onClick: function() { setIQ({ carbs: 50, protein: 20, fat: 30, fiber: 25 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.nutritionlab.log_this_macro_profile', '📋 Log this macro profile')),
+              h('button', { onClick: function() { setIQ({ carbs: 50, protein: 20, fat: 30, fiber: 25 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.nutritionlab.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · c' + e.c + ' p' + e.p + ' f' + e.f + ' fb' + e.fb + ' → sat ' + e.sat + ' gi ' + e.gi); })
             ),
-            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which macro most affects satiety? Glycemic load? They\'re different.)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., fiber blunts the glycemic load almost 1-for-1 with carb increase...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.nutritionlab.your_hypothesis_which_macro_most_affec', 'Your hypothesis (which macro most affects satiety? Glycemic load? They\'re different.)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.e_g_fiber_blunts_the_glycemic_load_alm', 'e.g., fiber blunts the glycemic load almost 1-for-1 with carb increase...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.nutritionlab.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.nutritionlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, 'Why might a "high-carb" meal feel different at 200g of oats vs 200g of white rice + sugar?'),
-                h('li', null, 'How does fat slow glycemic response? Try 80g carbs with 5g fat vs 30g fat.'),
-                h('li', null, 'A 100g protein day — what trade-offs would you need to make in the other macros to keep total calories sensible?'),
-                h('li', null, 'When could ketogenic help or harm? Consider: ketogenic-diet therapy for refractory epilepsy is well-established (decades of RCTs); nutrient gaps, hypoglycemia risk on diabetes meds, social/sustainability cost, and contested questions about long-term kidney/cardiovascular impact are all open. (For CKD specifically, high-protein patterns are the more-supported concern; isolated ketosis-vs-CKD evidence is mixed.)')
+                h('li', null, __alloT('stem.nutritionlab.why_might_a_high_carb_meal_feel_differ', 'Why might a "high-carb" meal feel different at 200g of oats vs 200g of white rice + sugar?')),
+                h('li', null, __alloT('stem.nutritionlab.how_does_fat_slow_glycemic_response_tr', 'How does fat slow glycemic response? Try 80g carbs with 5g fat vs 30g fat.')),
+                h('li', null, __alloT('stem.nutritionlab.a_100g_protein_day_what_trade_offs_wou', 'A 100g protein day — what trade-offs would you need to make in the other macros to keep total calories sensible?')),
+                h('li', null, __alloT('stem.nutritionlab.when_could_ketogenic_help_or_harm_cons', 'When could ketogenic help or harm? Consider: ketogenic-diet therapy for refractory epilepsy is well-established (decades of RCTs); nutrient gaps, hypoglycemia risk on diabetes meds, social/sustainability cost, and contested questions about long-term kidney/cardiovascular impact are all open. (For CKD specifically, high-protein patterns are the more-supported concern; isolated ketosis-vs-CKD evidence is mixed.)'))
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this macro split yields this energy state.')
+              h('span', null, __alloT('stem.nutritionlab.i_can_explain_why_this_macro_split_yie', 'I can explain why this macro split yields this energy state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Satiety + GI proxies are illustrative; real glycemic response varies with food matrix, cooking, and individual metabolism. Not medical advice.')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.nutritionlab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Satiety + GI proxies are illustrative; real glycemic response varies with food matrix, cooking, and individual metabolism. Not medical advice.'))
           )
         );
       }
@@ -19766,10 +19810,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var sweatReplaceTarget = !isNaN(sweatLossKg) ? Math.round(sweatLossKg * 1000 * 1.25) : NaN;
 
         var TABS = [
-          { id: 'needs',     label: 'Daily Needs',       icon: '🎯' },
-          { id: 'status',    label: 'Status Check',      icon: '🪞' },
-          { id: 'beverages', label: 'Beverage Compare',  icon: '🥤' },
-          { id: 'sweat',     label: 'Sweat Rate',        icon: '🏃' }
+          { id: 'needs',     label: __alloT('stem.nutritionlab.daily_needs', 'Daily Needs'),       icon: '🎯' },
+          { id: 'status',    label: __alloT('stem.nutritionlab.status_check', 'Status Check'),      icon: '🪞' },
+          { id: 'beverages', label: __alloT('stem.nutritionlab.beverage_compare', 'Beverage Compare'),  icon: '🥤' },
+          { id: 'sweat',     label: __alloT('stem.nutritionlab.sweat_rate', 'Sweat Rate'),        icon: '🏃' }
         ];
 
         function tabBtn(t) {
@@ -19810,63 +19854,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '💧', title: 'Hydration Lab' }),
+          h(BackBar, { icon: '💧', title: __alloT('stem.nutritionlab.hydration_lab_2', 'Hydration Lab') }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
             // Intro
             h('div', { className: 'bg-sky-50 border-2 border-sky-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, 'Hydration is body function, not body shape.'),
+              h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, __alloT('stem.nutritionlab.hydration_is_body_function_not_body_sh', 'Hydration is body function, not body shape.')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                'Roughly 60% of your body weight is water. Every cell uses it. The brain runs about 75% water and the first thing that drops with mild dehydration (1-2% body-weight fluid loss) is attention, short-term memory, and mood. This lab covers four things: how much fluid you actually need, how to read your own body for status, which drinks help and which do not, and how to handle hydration as a student athlete. Hydration is never a substitute for eating. If you find yourself using water to feel full or skip meals, talk to a trusted adult and call NEDA at 1-800-931-2237.')
+                __alloT('stem.nutritionlab.roughly_60_of_your_body_weight_is_wate', 'Roughly 60% of your body weight is water. Every cell uses it. The brain runs about 75% water and the first thing that drops with mild dehydration (1-2% body-weight fluid loss) is attention, short-term memory, and mood. This lab covers four things: how much fluid you actually need, how to read your own body for status, which drinks help and which do not, and how to handle hydration as a student athlete. Hydration is never a substitute for eating. If you find yourself using water to feel full or skip meals, talk to a trusted adult and call NEDA at 1-800-931-2237.'))
             ),
             // Tabs
-            h('div', { role: 'tablist', 'aria-label': 'Hydration Lab sections', className: 'flex flex-wrap gap-2' },
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.nutritionlab.hydration_lab_sections', 'Hydration Lab sections'), className: 'flex flex-wrap gap-2' },
               TABS.map(tabBtn)
             ),
 
             // ──────────── Tab: Daily Needs ────────────
             tab === 'needs' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
-                h('h3', { className: 'text-lg font-black text-slate-800' }, 'How much fluid do I need today?'),
+                h('h3', { className: 'text-lg font-black text-slate-800' }, __alloT('stem.nutritionlab.how_much_fluid_do_i_need_today', 'How much fluid do I need today?')),
                 h('p', { className: 'text-xs text-slate-700' },
-                  'Tell us your age band, sex assigned at birth (the reference values are biological, not gender), and how active you are. The result is a fluid-intake estimate, not a daily quota you must hit. Body size, climate, illness, and pregnancy all shift this. Listen to thirst.'),
+                  __alloT('stem.nutritionlab.tell_us_your_age_band_sex_assigned_at_', 'Tell us your age band, sex assigned at birth (the reference values are biological, not gender), and how active you are. The result is a fluid-intake estimate, not a daily quota you must hit. Body size, climate, illness, and pregnancy all shift this. Listen to thirst.')),
 
                 // Age + Sex inputs
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                   h('label', { className: 'block' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Age band'),
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.age_band', 'Age band')),
                     h('select', {
                       value: ageBand,
                       onChange: function(e) { setAgeBand(e.target.value); },
                       className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
                     },
-                      h('option', { value: '4-8' }, 'Ages 4-8'),
-                      h('option', { value: '9-13' }, 'Ages 9-13'),
-                      h('option', { value: '14-18' }, 'Ages 14-18'),
-                      h('option', { value: '19+' }, 'Ages 19+')
+                      h('option', { value: '4-8' }, __alloT('stem.nutritionlab.ages_4_8', 'Ages 4-8')),
+                      h('option', { value: '9-13' }, __alloT('stem.nutritionlab.ages_9_13', 'Ages 9-13')),
+                      h('option', { value: '14-18' }, __alloT('stem.nutritionlab.ages_14_18', 'Ages 14-18')),
+                      h('option', { value: '19+' }, __alloT('stem.nutritionlab.ages_19', 'Ages 19+'))
                     )
                   ),
                   h('label', { className: 'block' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Reference (sex assigned at birth)'),
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.reference_sex_assigned_at_birth', 'Reference (sex assigned at birth)')),
                     h('select', {
                       value: sex,
                       onChange: function(e) { setSex(e.target.value); },
                       className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
                     },
-                      h('option', { value: 'female' }, 'Female reference'),
-                      h('option', { value: 'male' }, 'Male reference')
+                      h('option', { value: 'female' }, __alloT('stem.nutritionlab.female_reference', 'Female reference')),
+                      h('option', { value: 'male' }, __alloT('stem.nutritionlab.male_reference', 'Male reference'))
                     )
                   ),
                   h('label', { className: 'block' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Activity level today'),
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.activity_level_today', 'Activity level today')),
                     h('select', {
                       value: activity,
                       onChange: function(e) { setActivity(e.target.value); },
                       className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
                     },
-                      h('option', { value: 'sedentary' }, 'Mostly sitting'),
-                      h('option', { value: 'light' }, 'Light (walking, easy PE)'),
-                      h('option', { value: 'moderate' }, 'Moderate (1 hr practice)'),
-                      h('option', { value: 'vigorous' }, 'Vigorous (long practice / heat)')
+                      h('option', { value: 'sedentary' }, __alloT('stem.nutritionlab.mostly_sitting', 'Mostly sitting')),
+                      h('option', { value: 'light' }, __alloT('stem.nutritionlab.light_walking_easy_pe', 'Light (walking, easy PE)')),
+                      h('option', { value: 'moderate' }, __alloT('stem.nutritionlab.moderate_1_hr_practice', 'Moderate (1 hr practice)')),
+                      h('option', { value: 'vigorous' }, __alloT('stem.nutritionlab.vigorous_long_practice_heat', 'Vigorous (long practice / heat)'))
                     )
                   )
                 ),
@@ -19883,19 +19927,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 ),
 
                 h('p', { className: 'text-[11px] text-slate-700 italic mt-2 leading-relaxed' },
-                  'Sources: Institute of Medicine (2005) Dietary Reference Intakes for Water, still cited by AAP and NIH ODS. Activity adder from NATA 2017 Position Statement on Fluid Replacement.')
+                  __alloT('stem.nutritionlab.sources_institute_of_medicine_2005_die', 'Sources: Institute of Medicine (2005) Dietary Reference Intakes for Water, still cited by AAP and NIH ODS. Activity adder from NATA 2017 Position Statement on Fluid Replacement.'))
               )
             ),
 
             // ──────────── Tab: Status Check ────────────
             tab === 'status' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
-                h('h3', { className: 'text-lg font-black text-slate-800' }, 'The 8-point urine-color check'),
+                h('h3', { className: 'text-lg font-black text-slate-800' }, __alloT('stem.nutritionlab.the_8_point_urine_color_check', 'The 8-point urine-color check')),
                 h('p', { className: 'text-xs text-slate-700' },
-                  'Look at your urine the next time you use the bathroom. Pick the color closest to what you saw. The Armstrong 8-point scale is widely used in athletic training and clinical hydration assessment.'),
+                  __alloT('stem.nutritionlab.look_at_your_urine_the_next_time_you_u', 'Look at your urine the next time you use the bathroom. Pick the color closest to what you saw. The Armstrong 8-point scale is widely used in athletic training and clinical hydration assessment.')),
 
                 // Color swatches
-                h('div', { role: 'radiogroup', 'aria-label': 'Urine color', className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
+                h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.nutritionlab.urine_color', 'Urine color'), className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
                   URINE_COLORS.map(function(c, i) {
                     var sel = (urineIdx === i);
                     return h('button', {
@@ -19926,25 +19970,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
               // Body-signal checklist (companion to the color check)
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, 'Other body signals worth tracking'),
+                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.other_body_signals_worth_tracking', 'Other body signals worth tracking')),
                 h('ul', { className: 'space-y-1.5 text-sm text-slate-800 list-disc list-inside' },
-                  h('li', null, 'Thirst is a useful late signal, not an early one — by the time you feel thirsty you are usually already at 1-2% deficit.'),
-                  h('li', null, 'Lightheaded standing up, heart pounding at rest, headache without other cause: classic mild-moderate dehydration in clinical guides.'),
-                  h('li', null, 'Foggy attention, slower math, irritability: documented in studies as effects of mild dehydration in adolescents.'),
-                  h('li', null, 'Dry lips and dry mouth are real signals — but skin "tenting" (slow snap-back) only shows up at moderate-to-severe dehydration.'),
-                  h('li', null, 'Persistent dark urine despite drinking water? See a clinician — could be liver, medication, or blood-related.')
+                  h('li', null, __alloT('stem.nutritionlab.thirst_is_a_useful_late_signal_not_an_', 'Thirst is a useful late signal, not an early one — by the time you feel thirsty you are usually already at 1-2% deficit.')),
+                  h('li', null, __alloT('stem.nutritionlab.lightheaded_standing_up_heart_pounding', 'Lightheaded standing up, heart pounding at rest, headache without other cause: classic mild-moderate dehydration in clinical guides.')),
+                  h('li', null, __alloT('stem.nutritionlab.foggy_attention_slower_math_irritabili', 'Foggy attention, slower math, irritability: documented in studies as effects of mild dehydration in adolescents.')),
+                  h('li', null, __alloT('stem.nutritionlab.dry_lips_and_dry_mouth_are_real_signal', 'Dry lips and dry mouth are real signals — but skin "tenting" (slow snap-back) only shows up at moderate-to-severe dehydration.')),
+                  h('li', null, __alloT('stem.nutritionlab.persistent_dark_urine_despite_drinking', 'Persistent dark urine despite drinking water? See a clinician — could be liver, medication, or blood-related.'))
                 ),
                 h('p', { className: 'text-[11px] italic text-slate-700 mt-2' },
-                  'If you find yourself using water to feel "full" or override hunger, that is a body-cue mismatch worth talking about with a trusted adult. NEDA helpline: 1-800-931-2237.')
+                  __alloT('stem.nutritionlab.if_you_find_yourself_using_water_to_fe', 'If you find yourself using water to feel "full" or override hunger, that is a body-cue mismatch worth talking about with a trusted adult. NEDA helpline: 1-800-931-2237.'))
               )
             ),
 
             // ──────────── Tab: Beverage Compare ────────────
             tab === 'beverages' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
-                h('h3', { className: 'text-lg font-black text-slate-800 mb-2' }, 'What is in 8 oz of...'),
+                h('h3', { className: 'text-lg font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.what_is_in_8_oz_of', 'What is in 8 oz of...')),
                 h('p', { className: 'text-xs text-slate-700 mb-4' },
-                  'Sodium and added sugar matter for hydration efficacy AND for daily nutrient targets. AAP guidance: added sugar under 25 g/day for ages 2-18; sodium under ~2,300 mg/day for adolescents.'),
+                  __alloT('stem.nutritionlab.sodium_and_added_sugar_matter_for_hydr', 'Sodium and added sugar matter for hydration efficacy AND for daily nutrient targets. AAP guidance: added sugar under 25 g/day for ages 2-18; sodium under ~2,300 mg/day for adolescents.')),
 
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                   BEVERAGES.map(function(b) {
@@ -19955,15 +19999,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       ),
                       h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                         h('div', { className: 'rounded-lg bg-white p-2 border border-slate-300' },
-                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, 'Sodium'),
+                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.sodium_4', 'Sodium')),
                           h('div', { className: 'text-sm font-black text-slate-800' }, b.sodium + ' mg')
                         ),
                         h('div', { className: 'rounded-lg bg-white p-2 border border-slate-300' },
-                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, 'Sugar'),
+                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.sugar', 'Sugar')),
                           h('div', { className: 'text-sm font-black ' + (b.sugar >= 14 ? 'text-rose-700' : 'text-slate-800') }, b.sugar + ' g')
                         ),
                         h('div', { className: 'rounded-lg bg-white p-2 border border-slate-300' },
-                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, 'Caffeine'),
+                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.caffeine', 'Caffeine')),
                           h('div', { className: 'text-sm font-black text-slate-800' }, b.caffeine + ' mg')
                         )
                       ),
@@ -19971,7 +20015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                         h('span', { className: 'font-bold' }, 'Hydration: '), b.efficacy
                       ),
                       h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
-                        h('span', { className: 'font-bold' }, 'When it fits: '), b.when
+                        h('span', { className: 'font-bold' }, __alloT('stem.nutritionlab.when_it_fits', 'When it fits: ')), b.when
                       ),
                       h('div', { className: 'text-[10px] italic text-slate-700' }, 'Source: ' + b.source)
                     );
@@ -19980,53 +20024,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               ),
 
               h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-4' },
-                h('h4', { className: 'text-sm font-black text-amber-900 mb-1' }, 'A note on energy drinks'),
+                h('h4', { className: 'text-sm font-black text-amber-900 mb-1' }, __alloT('stem.nutritionlab.a_note_on_energy_drinks', 'A note on energy drinks')),
                 h('p', { className: 'text-xs text-slate-800 leading-relaxed' },
-                  'AAP says outright that energy drinks (Monster, Red Bull, etc.) "should not be consumed by children or adolescents." High caffeine doses, heart-rhythm effects, and added stimulants are the reason. They are not in this comparison because they should not be on this list.')
+                  __alloT('stem.nutritionlab.aap_says_outright_that_energy_drinks_m', 'AAP says outright that energy drinks (Monster, Red Bull, etc.) "should not be consumed by children or adolescents." High caffeine doses, heart-rhythm effects, and added stimulants are the reason. They are not in this comparison because they should not be on this list.'))
               )
             ),
 
             // ──────────── Tab: Sweat Rate ────────────
             tab === 'sweat' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
-                h('h3', { className: 'text-lg font-black text-slate-800' }, 'How fast do you sweat? (NATA standard)'),
+                h('h3', { className: 'text-lg font-black text-slate-800' }, __alloT('stem.nutritionlab.how_fast_do_you_sweat_nata_standard', 'How fast do you sweat? (NATA standard)')),
                 h('p', { className: 'text-xs text-slate-700' },
-                  'For student athletes. Weigh yourself before practice, weigh yourself after, log the fluid you drank during, and the duration. The math: 1 kg of weight lost = 1 L of sweat. NATA recommends replacing 100-150% of fluid lost over the next 2-6 hours.'),
+                  __alloT('stem.nutritionlab.for_student_athletes_weigh_yourself_be', 'For student athletes. Weigh yourself before practice, weigh yourself after, log the fluid you drank during, and the duration. The math: 1 kg of weight lost = 1 L of sweat. NATA recommends replacing 100-150% of fluid lost over the next 2-6 hours.')),
 
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                   h('label', { className: 'block' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Weight before (kg)'),
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.weight_before_kg', 'Weight before (kg)')),
                     h('input', {
                       type: 'number', step: '0.1', min: '0', value: sweatBefore,
                       onChange: function(e) { setSweatBefore(e.target.value); },
-                      placeholder: 'e.g. 65.0',
+                      placeholder: __alloT('stem.nutritionlab.e_g_65_0', 'e.g. 65.0'),
                       className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
                     })
                   ),
                   h('label', { className: 'block' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Weight after (kg)'),
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.weight_after_kg', 'Weight after (kg)')),
                     h('input', {
                       type: 'number', step: '0.1', min: '0', value: sweatAfter,
                       onChange: function(e) { setSweatAfter(e.target.value); },
-                      placeholder: 'e.g. 64.2',
+                      placeholder: __alloT('stem.nutritionlab.e_g_64_2', 'e.g. 64.2'),
                       className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
                     })
                   ),
                   h('label', { className: 'block' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Fluid drunk during (mL)'),
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.fluid_drunk_during_ml', 'Fluid drunk during (mL)')),
                     h('input', {
                       type: 'number', step: '50', min: '0', value: sweatFluid,
                       onChange: function(e) { setSweatFluid(e.target.value); },
-                      placeholder: 'e.g. 500',
+                      placeholder: __alloT('stem.nutritionlab.e_g_500', 'e.g. 500'),
                       className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
                     })
                   ),
                   h('label', { className: 'block' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Duration (minutes)'),
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.duration_minutes', 'Duration (minutes)')),
                     h('input', {
                       type: 'number', step: '5', min: '0', value: sweatMins,
                       onChange: function(e) { setSweatMins(e.target.value); },
-                      placeholder: 'e.g. 90',
+                      placeholder: __alloT('stem.nutritionlab.e_g_90', 'e.g. 90'),
                       className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
                     })
                   )
@@ -20034,9 +20078,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
                 !isNaN(sweatRateMlHr) && h('div', { className: 'rounded-xl border-2 border-sky-300 bg-sky-50 p-4 space-y-2' },
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
-                    h(StatCard, { label: 'Fluid lost', value: (sweatLossKg * 1000).toFixed(0) + ' mL', color: 'text-sky-800' }),
-                    h(StatCard, { label: 'Sweat rate', value: sweatRateMlHr + ' mL/hr', color: 'text-sky-800' }),
-                    h(StatCard, { label: 'Replace target', value: sweatReplaceTarget + ' mL', color: 'text-emerald-700' })
+                    h(StatCard, { label: __alloT('stem.nutritionlab.fluid_lost', 'Fluid lost'), value: (sweatLossKg * 1000).toFixed(0) + ' mL', color: 'text-sky-800' }),
+                    h(StatCard, { label: __alloT('stem.nutritionlab.sweat_rate_2', 'Sweat rate'), value: sweatRateMlHr + ' mL/hr', color: 'text-sky-800' }),
+                    h(StatCard, { label: __alloT('stem.nutritionlab.replace_target', 'Replace target'), value: sweatReplaceTarget + ' mL', color: 'text-emerald-700' })
                   ),
                   h('p', { className: 'text-xs text-slate-800 leading-relaxed' },
                     sweatRateMlHr < 600 ? 'Lower-end sweat rate — typical for cool weather or moderate effort.' :
@@ -20044,11 +20088,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     'High sweat rate — common in heat or vigorous training. Plan electrolytes (sports drink or salty snack) plus water. NATA flags rates above 2 L/hr as a heat-illness risk if not replaced.'
                   ),
                   h('p', { className: 'text-[11px] italic text-slate-700' },
-                    'Replace target uses NATA\'s 125% recommendation (midpoint of the 100-150% guideline) to account for ongoing post-exercise sweat and urine loss.')
+                    __alloT('stem.nutritionlab.replace_target_uses_nata_s_125_recomme', 'Replace target uses NATA\'s 125% recommendation (midpoint of the 100-150% guideline) to account for ongoing post-exercise sweat and urine loss.'))
                 ),
 
                 h('p', { className: 'text-[11px] text-slate-700 italic mt-2 leading-relaxed' },
-                  'Sources: NATA 2017 Position Statement on Fluid Replacement; ACSM Position Stand on Exercise and Fluid Replacement (2007).')
+                  __alloT('stem.nutritionlab.sources_nata_2017_position_statement_o', 'Sources: NATA 2017 Position Statement on Fluid Replacement; ACSM Position Stand on Exercise and Fluid Replacement (2007).'))
               )
             ),
 
@@ -20092,7 +20136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       if (view === 'macroInquiry') return h(MacroInquiryWidget);
       if (view === 'myNutritionKit') {
         return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: '🥗', title: 'My Nutrition Kit' }),
+          h(BackBar, { icon: '🥗', title: __alloT('stem.nutritionlab.my_nutrition_kit_2', 'My Nutrition Kit') }),
           h('div', { className: 'max-w-6xl mx-auto' },
             h(MyNutritionKit, { d: d, upd: function(key, val) { upd(key, val); } })
           )

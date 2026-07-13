@@ -162,6 +162,17 @@ const WordSoundsReviewPanel = ({
     }, []);
     const [expandedIndex, setExpandedIndex] = React.useState(null);
     const [showPhonemeBank, setShowPhonemeBank] = React.useState(null);
+    // Phoneme-bank display: IPA-first (the language-neutral spine) by default,
+    // with a toggle to letters-first for young readers, and a per-chip reveal of
+    // the graphemes that spell each sound. Persisted so a teacher's choice sticks.
+    const [bankLabelMode, setBankLabelMode] = React.useState(() => {
+        try { return localStorage.getItem('alloWsBankLabelMode') || 'ipa'; } catch (_) { return 'ipa'; }
+    });
+    const [expandedBankKey, setExpandedBankKey] = React.useState(null);
+    const setBankLabelModePersist = (m) => {
+        setBankLabelMode(m);
+        try { localStorage.setItem('alloWsBankLabelMode', m); } catch (_) {}
+    };
     const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
     const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
     const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -169,11 +180,59 @@ const WordSoundsReviewPanel = ({
     const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
     const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
     const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
+    const [showProbeEndConfirm, setShowProbeEndConfirm] = React.useState(false);
+    const reviewDialogRef = React.useRef(null);
+    const reviewBackRef = React.useRef(null);
+    const probeConfirmRef = React.useRef(null);
+    const probeCancelRef = React.useRef(null);
+    const finishBackToSetup = () => (onBackToSetup || onClose)?.();
+    const requestBackToSetup = () => {
+        if (isProbeMode) setShowProbeEndConfirm(true);
+        else finishBackToSetup();
+    };
+    const trapReviewFocus = (event, container, onEscape) => {
+        if (!event || !container) return;
+        if (event.key === 'Escape') { event.preventDefault(); if (onEscape) onEscape(); return; }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+        if (!focusable.length) { event.preventDefault(); container.focus(); return; }
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    React.useEffect(() => {
+        const previouslyFocused = document.activeElement;
+        const timer = setTimeout(() => reviewBackRef.current?.focus(), 0);
+        return () => {
+            clearTimeout(timer);
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+        };
+    }, []);
+    React.useEffect(() => {
+        if (!showProbeEndConfirm) return undefined;
+        const previouslyFocused = document.activeElement;
+        const timer = setTimeout(() => probeCancelRef.current?.focus(), 0);
+        return () => {
+            clearTimeout(timer);
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+        };
+    }, [showProbeEndConfirm]);
     React.useEffect(() => {
         if (!preloadedWords || preloadedWords.length === 0) return;
+        // A word is audio-ready when the portable pack carries its clip or a
+        // prewarm actually cached one (ttsReady). Merely having phonemes was a
+        // false positive — it counted every word as ready on sight.
+        const normalizeAudioKey = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
         const checkAudio = () => {
+             const portableKeys = new Set();
+             preloadedWords.forEach((item) => {
+                 const assets = item && item._ttsAssets;
+                 if (assets && typeof assets === 'object') {
+                     Object.keys(assets).forEach((key) => portableKeys.add(normalizeAudioKey(key)));
+                 }
+             });
              setAudioProgress({
-                 ready: preloadedWords.filter(w => w.ttsReady || w.phonemes).length,
+                 ready: preloadedWords.filter(w => w.ttsReady === true || portableKeys.has(normalizeAudioKey(w.targetWord || w.word || w.term))).length,
                  total: preloadedWords.length
              });
         };
@@ -243,6 +302,26 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
     const ipa = GRAPHEME_TO_IPA[grapheme] || grapheme;
     return { ipa, grapheme: defaultGrapheme || grapheme };
 };
+    // Resolve a phoneme-bank key (a grapheme like "sh"/"ee"/"ar") to its IPA +
+    // the graphemes that spell that sound + a key word, from the shared
+    // GRAPHOPHONEME_ANCHORS table (exposed by word_sounds as window.__alloAnchor),
+    // falling back to the local grapheme→IPA map. The graphemes list is what the
+    // per-chip "spellings" reveal shows — the letters this sound corresponds with.
+    const _bankIpaFallback = {
+        oo_short: 'ʊ', zh: 'ʒ', q: 'kw', ie: 'aɪ', ea: 'i', oy: 'ɔɪ',
+        air: 'ɛr', ear: 'ɪr', ay: 'eɪ', ar: 'ɑr', aw: 'ɔ', ow: 'aʊ', ue: 'u'
+    };
+    const resolvePhonemeDisplay = (key) => {
+        const anchors = (typeof window !== 'undefined' && window.__alloAnchor && window.__alloAnchor.GRAPHOPHONEME_ANCHORS) || {};
+        const a = anchors[key];
+        if (a) return {
+            ipa: a.ipa || normalizePhoneme(key).ipa || key,
+            graphemes: (Array.isArray(a.graphemes) && a.graphemes.length) ? a.graphemes : [key],
+            keyWord: a.keyWord || ''
+        };
+        return { ipa: _bankIpaFallback[key] || normalizePhoneme(key).ipa || key, graphemes: [key], keyWord: '' };
+    };
+    const _bankDisplayGrapheme = (key) => (key === 'oo_short' ? 'ŏŏ' : key);
     const addPhoneme = (wordIdx, phoneme) => {
         const word = preloadedWords[wordIdx];
         const newPhonemes = [...(word.phonemes || []), phoneme];
@@ -305,10 +384,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
         setExpandedIndex(null);
     };
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div role="presentation" className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none">
+            <div ref={reviewDialogRef} role="dialog" aria-modal="true" aria-labelledby="word-sounds-review-title" aria-describedby="word-sounds-review-description" tabIndex={-1} onKeyDown={(event) => { const nested = event.target?.closest?.('[role="alertdialog"]'); if (nested) return; trapReviewFocus(event, reviewDialogRef.current, requestBackToSetup); }} className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 <div className="p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0">
-                    <h2 className="text-2xl font-black flex items-center gap-2">{t('word_sounds.pre_activity_review') || '📋 Pre-Activity Review'}
+                    <h2 id="word-sounds-review-title" className="text-2xl font-black flex items-center gap-2">{t('word_sounds.pre_activity_review') || '📋 Pre-Activity Review'}
                         <span className="relative group ml-2">
                             <span className="cursor-help text-white/70 hover:text-white text-base">ℹ️</span>
                             <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 pointer-events-none">
@@ -318,7 +397,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             </div>
                         </span>
                     </h2>
-                    <p className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
+                    <p id="word-sounds-review-description" className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
                         {isLoading && <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse"><div className="w-2 h-2 bg-white rounded-full animate-bounce"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
                         {!isLoading && preloadedWords.some(w => w && w._ttsFailed) && (
@@ -337,6 +416,46 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     </p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    {/* Pack completeness: what the student device will actually
+                        have, per activity — portable audio, board answers,
+                        decoding pictures. Rendered only when something is
+                        missing so a complete pack stays uncluttered. */}
+                    {!isLoading && preloadedWords.length > 0 && (() => {
+                        const norm = (v) => String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+                        const portableKeys = new Set();
+                        const imageKeys = new Set();
+                        preloadedWords.forEach((item) => {
+                            if (item && item._ttsAssets && typeof item._ttsAssets === 'object') Object.keys(item._ttsAssets).forEach((k) => portableKeys.add(norm(k)));
+                            if (item && item._decodingAssets && typeof item._decodingAssets === 'object') Object.keys(item._decodingAssets).forEach((k) => imageKeys.add(norm(k)));
+                            if (item && item._aacAssets && typeof item._aacAssets === 'object') Object.keys(item._aacAssets).forEach((k) => imageKeys.add(norm(k)));
+                            const w = norm(item && (item.targetWord || item.word || item.term));
+                            if (w && item.image) imageKeys.add(w);
+                        });
+                        const gaps = [];
+                        const noAudio = preloadedWords.filter((w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term))).length;
+                        if (noAudio > 0) gaps.push(`🔇 ${noAudio} word${noAudio === 1 ? '' : 's'} without portable audio`);
+                        const noRhyme = preloadedWords.filter((w) => w && !(w.rhymeWord || (w.rhymes || [])[0])).length;
+                        if (noRhyme > 0) gaps.push(`🎵 ${noRhyme} without a rhyme answer (board is built on-device)`);
+                        const noTask = preloadedWords.filter((w) => w && !(w.manipulationTask && w.manipulationTask.answer)).length;
+                        if (noTask > 0) gaps.push(`🔁 ${noTask} without a Sound Swap task (fallback task used)`);
+                        const missingDecodingImgs = preloadedWords.reduce((sum, w) => {
+                            const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
+                            if (!Array.isArray(choices)) return sum;
+                            return sum + choices.filter((c) => !imageKeys.has(norm(c))).length;
+                        }, 0);
+                        if (missingDecodingImgs > 0) gaps.push(`🖼️ ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? '' : 's'} missing`);
+                        const edited = preloadedWords.filter((w) => w && w._packEdited).length;
+                        if (edited > 0) gaps.push(`✏️ ${edited} word${edited === 1 ? '' : 's'} edited since preparation (boards rebuild from your edits)`);
+                        const letterSplit = preloadedWords.filter((w) => w && w._fallbackUsed).length;
+                        if (letterSplit > 0) gaps.push(`⚠️ ${letterSplit} using letter-split sounds (generation failed)`);
+                        if (!gaps.length) return null;
+                        return (
+                            <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900">
+                                <div className="font-bold mb-1">{t('word_sounds.pack_gaps_title') || 'Student-device readiness'}</div>
+                                <ul className="space-y-0.5">{gaps.map((g, i) => <li key={i}>{g}</li>)}</ul>
+                            </div>
+                        );
+                    })()}
                     {preloadedWords.length === 0 ? (
                         <div className="text-center py-12 text-slate-600">
                             <div className="text-4xl mb-2">⏳</div>
@@ -488,7 +607,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 <span className="text-sm font-bold">🔤</span>
                                             </button>
                                         )}
-                                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }}} className="relative group/img" onClick={(e) => e.stopPropagation()}>
+                                        <div className="relative group/img" onClick={(e) => e.stopPropagation()}>
                                             {word.image && !word.imageFailed ? (
                                                 <div className="relative">
                                                     <img loading="lazy"
@@ -501,7 +620,6 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         }}
                                                     />
                                                     <button
-                                                        aria-label={t('common.regenerate_image')}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
@@ -509,7 +627,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         disabled={generatingImageIndex === idx}
                                                         aria-busy={generatingImageIndex === idx}
                                                         aria-label={generatingImageIndex === idx ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
-                                                        className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-indigo-200"
+                                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity border border-indigo-200"
                                                         data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
                                                     >
                                                         {generatingImageIndex === idx ? <RefreshCw size={10} className="animate-spin text-indigo-500" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-500" aria-hidden="true"/>}
@@ -542,7 +660,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         <span className="text-xl font-bold text-slate-800">{word.targetWord || word.word}</span>
                                         <select aria-label={t('common.selection')}
                                             value={word.difficulty || 'medium'}
-                                            role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
+                                            onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => onUpdateWord(idx, { ...word, difficulty: e.target.value })}
                                             className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none ${
                                                 word.difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-300' :
@@ -595,6 +713,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <div
                                                         key={i}
                                                         className={`group relative cursor-grab active:cursor-grabbing ${dragOverIndex === i ? 'ring-2 ring-pink-400' : ''}`}
+                                                        role="group" aria-label={`${typeof p === 'string' ? p : 'Phoneme'}, position ${i + 1} of ${(word.phonemes || []).length}`}
                                                         draggable
                                                         onDragStart={(e) => handleDragStart(e, p, 'word', idx, i)}
                                                         onDragOver={(e) => handleDragOver(e, i)}
@@ -604,10 +723,12 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200" title={typeof p === "string" && typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : (typeof p === "string" ? p : "")}>
                                                             <span className="text-slate-600 text-xs mr-1">⠿</span>
                                                             {p}
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${typeof p === 'string' ? p : 'phoneme'} earlier`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move earlier">â—€</button>
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${typeof p === 'string' ? p : 'phoneme'} later`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move later">â–¶</button>
                                                             <button
                                                                 aria-label={t('common.remove')}
                                                                 onClick={() => removePhoneme(idx, i)}
-                                                                className="w-4 h-4 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+                                                                className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity"
                                                                 title={t('common.remove')}
                                                             >×</button>
                                                         </span>
@@ -619,8 +740,21 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             </div>
                                             {showPhonemeBank === idx && (
                                                 <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2">
-                                                    <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                                                         <span className="text-xs text-slate-600 italic">{t('word_sounds.phoneme_bank_hover_hint') || '💡 Hover any sound for teaching tips'}</span>
+                                                        {/* IPA-first vs letters-first toggle. IPA is the language-neutral
+                                                            spine (default); letters-first suits young readers. Each chip's
+                                                            "spellings" reveal shows the graphemes the sound corresponds with. */}
+                                                        <div className="inline-flex rounded-lg border border-slate-300 overflow-hidden text-[11px] font-bold shrink-0" role="group" aria-label={t('word_sounds.bank_label_mode') || 'Sound label style'}>
+                                                            <button type="button" onClick={() => setBankLabelModePersist('ipa')}
+                                                                aria-pressed={bankLabelMode === 'ipa'}
+                                                                title={t('word_sounds.bank_show_ipa') || 'Show the sound in IPA (international phonetic symbols) first'}
+                                                                className={`px-2 py-1 transition-colors ${bankLabelMode === 'ipa' ? 'bg-pink-600 text-white' : 'bg-white text-slate-500 hover:bg-pink-50'}`}>/ʃ/ IPA</button>
+                                                            <button type="button" onClick={() => setBankLabelModePersist('letters')}
+                                                                aria-pressed={bankLabelMode === 'letters'}
+                                                                title={t('word_sounds.bank_show_letters') || 'Show the letters (graphemes) first'}
+                                                                className={`px-2 py-1 border-l border-slate-300 transition-colors ${bankLabelMode === 'letters' ? 'bg-pink-600 text-white' : 'bg-white text-slate-500 hover:bg-pink-50'}`}>Aa letters</button>
+                                                        </div>
                                                     </div>
                                                     {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
                                                         <div key={category} className="mb-3">
@@ -634,23 +768,65 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 category
                                                             }>{category}</div>
                                                             <div className="flex flex-wrap gap-1">
-                                                                {(Array.isArray(phonemes) ? phonemes : []).map(p => (
-                                                                    <div key={p} className="inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors">
-                                                                        <button
-                                                                            onClick={() => onPlayAudio && onPlayAudio(p)}
-                                                                            className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"
-                                                                            title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `🔊 ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : `Play sound: ${p}`}
-                                                                        >🔊</button>
-                                                                        <button
-                                                                            onClick={() => addPhoneme(idx, p)}
-                                                                            draggable
-                                                                            onDragStart={(e) => handleDragStart(e, p, 'bank')}
-                                                                            onDragEnd={handleDragEnd}
-                                                                            className="px-2 py-1 bg-white hover:bg-pink-100 text-sm font-mono transition-colors cursor-grab active:cursor-grabbing"
-                                                                            title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? '\n⚠️ Often confused with: ' + PHONEME_GUIDE[p].confusesWith.join(', ') : ''}` : `Click or drag to add "${p}"`}
-                                                                        >{p === 'oo_short' ? 'ŏŏ' : p}</button>
-                                                                    </div>
-                                                                ))}
+                                                                {(Array.isArray(phonemes) ? phonemes : []).map(p => {
+                                                                    // IPA-first chip: the sound (IPA) leads, the canonical
+                                                                    // grapheme is the small caption; an expander reveals every
+                                                                    // grapheme that spells the sound. `letters` mode flips lead
+                                                                    // + caption for young readers. Click/drag still adds by the
+                                                                    // grapheme key `p` (word phonemes stay grapheme-based).
+                                                                    const _disp = resolvePhonemeDisplay(p);
+                                                                    const _graph = _bankDisplayGrapheme(p);
+                                                                    const _ipaLabel = '/' + _disp.ipa + '/';
+                                                                    const _lead = bankLabelMode === 'ipa' ? _ipaLabel : _graph;
+                                                                    const _caption = bankLabelMode === 'ipa' ? _graph : _ipaLabel;
+                                                                    const _bankKey = idx + ':' + p;
+                                                                    const _isExp = expandedBankKey === _bankKey;
+                                                                    const _hasSpellings = Array.isArray(_disp.graphemes) && _disp.graphemes.length > 1;
+                                                                    const _addTitle = typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p]
+                                                                        ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? '\n⚠️ Often confused with: ' + PHONEME_GUIDE[p].confusesWith.join(', ') : ''}`
+                                                                        : `Click or drag to add the ${_ipaLabel} sound (${_graph})`;
+                                                                    return (
+                                                                        <div key={p} className="inline-flex flex-col">
+                                                                            <div className="inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors">
+                                                                                <button
+                                                                                    onClick={() => onPlayAudio && onPlayAudio(p)}
+                                                                                    className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"
+                                                                                    title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `🔊 ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : `Play the ${_ipaLabel} sound`}
+                                                                                >🔊</button>
+                                                                                <button
+                                                                                    onClick={() => addPhoneme(idx, p)}
+                                                                                    draggable
+                                                                                    onDragStart={(e) => handleDragStart(e, p, 'bank')}
+                                                                                    onDragEnd={handleDragEnd}
+                                                                                    className="px-2 py-1 bg-white hover:bg-pink-100 transition-colors cursor-grab active:cursor-grabbing flex flex-col items-center leading-none"
+                                                                                    title={_addTitle}
+                                                                                >
+                                                                                    <span className={bankLabelMode === 'ipa' ? 'text-sm font-bold text-slate-800' : 'text-sm font-mono text-slate-800'}>{_lead}</span>
+                                                                                    <span className={bankLabelMode === 'ipa' ? 'text-[10px] font-mono text-slate-400 mt-0.5' : 'text-[10px] text-slate-400 mt-0.5'}>{_caption}</span>
+                                                                                </button>
+                                                                                {_hasSpellings && (
+                                                                                    <button
+                                                                                        onClick={() => setExpandedBankKey(_isExp ? null : _bankKey)}
+                                                                                        aria-expanded={_isExp}
+                                                                                        className="px-1 py-1 bg-slate-50 hover:bg-pink-100 text-slate-400 hover:text-pink-600 transition-colors border-l border-slate-300 text-[10px]"
+                                                                                        title={t('word_sounds.bank_show_spellings') || 'Show the letters that spell this sound'}
+                                                                                    >{_isExp ? '▴' : '⋯'}</button>
+                                                                                )}
+                                                                            </div>
+                                                                            {_isExp && (
+                                                                                <div className="mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-600 max-w-[220px]">
+                                                                                    <span className="font-bold text-pink-600">{_ipaLabel}</span>
+                                                                                    {_disp.keyWord ? <span className="text-slate-400"> · as in {_disp.keyWord}</span> : null}
+                                                                                    <div className="mt-0.5 flex flex-wrap gap-1">
+                                                                                        {_disp.graphemes.map((g, gi) => (
+                                                                                            <span key={gi} className="px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700">{g}</span>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -1016,8 +1192,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                 </div>
                 <div className="p-4 border-t bg-slate-50 flex justify-between items-center flex-shrink-0">
                     <button
+                        ref={reviewBackRef}
+                        type="button"
                         aria-label={t('common.previous')}
-                        onClick={() => { if (isProbeMode && !window.confirm("End probe early? Progress will be lost.")) return; (onBackToSetup || onClose)?.(); }}
+                        onClick={requestBackToSetup}
                         data-help-key="word_sounds_review_back" className="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center gap-2 hover:bg-slate-100 rounded-lg transition-colors"
                     >
                         <ChevronLeft size={18} />
@@ -1034,6 +1212,18 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     </div>
                 </div>
             </div>
+            {showProbeEndConfirm && (
+                <div role="presentation" className="fixed inset-0 z-[220] bg-black/70 flex items-center justify-center p-4">
+                    <div ref={probeConfirmRef} role="alertdialog" aria-modal="true" aria-labelledby="probe-end-title" aria-describedby="probe-end-message" tabIndex={-1} onKeyDown={(event) => { event.stopPropagation(); trapReviewFocus(event, probeConfirmRef.current, () => setShowProbeEndConfirm(false)); }} className="w-full max-w-sm rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-2xl">
+                        <h3 id="probe-end-title" className="text-lg font-black text-slate-900">End probe early?</h3>
+                        <p id="probe-end-message" className="mt-2 text-sm text-slate-700">Current probe progress will be lost.</p>
+                        <div className="mt-5 flex justify-end gap-2">
+                            <button ref={probeCancelRef} type="button" onClick={() => setShowProbeEndConfirm(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Continue probe</button>
+                            <button type="button" onClick={() => { setShowProbeEndConfirm(false); finishBackToSetup(); }} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">End probe</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

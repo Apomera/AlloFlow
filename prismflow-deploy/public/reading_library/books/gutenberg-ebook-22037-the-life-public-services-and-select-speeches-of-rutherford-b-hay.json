@@ -1,0 +1,54 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22037-the-life-public-services-and-select-speeches-of-rutherford-b-hay",
+  "title": "The Life, Public Services and Select Speeches of Rutherford B. Hayes",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Hayes, Rutherford Birchard, 1822-1893",
+    "Presidents -- United States -- Biography",
+    "United States -- Politics and government -- 1865-1877"
+  ],
+  "authors": [
+    "Howard, J. Q. (James Quay)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22037"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/22037/pg22037.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Life, Public Services and Select Speeches of Rutherford B. Hayes\" by Howard, J. Q. (James Quay). Metadata tags include: Hayes, Rutherford Birchard, 1822-1893; Presidents -- United States -- Biography; United States -- Politics and government -- 1865-1877."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  }
+}

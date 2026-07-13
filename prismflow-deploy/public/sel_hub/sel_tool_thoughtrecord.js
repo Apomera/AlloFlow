@@ -76,6 +76,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
     color: 'purple',
     category: 'inner-work',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _thT = (ctx && ctx.theme) || {};
+      var _thHC = !!_thT.isContrast, _thL = !_thHC && !_thT.isDark;
+      var _th_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _th_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#fff':'#000000'};
+      var _th_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fde68a':'#92400e','#c7d2fe':'#312e81','#fcd34d':'#78350f'}, _th_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#ec4899':'#ffff00','#22c55e':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#fde68a':'#ffff00','#bbf7d0':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
+      var _th_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1','#1e293b':'#e5e7eb'}, _th_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#cbd5e1':'#ffff00','#7c3aed':'#ffff00','#f59e0b':'#ffff00'};
+      var _thBg = function(h){ return _thHC ? (_th_BGH[h]||h) : (_thL ? (_th_BGL[h]||h) : h); };
+      var _thFg = function(h){ return _thHC ? (_th_FGH[h]||h) : (_thL ? (_th_FGL[h]||h) : h); };
+      var _thBd = function(h){ return _thHC ? (_th_BDH[h]||h) : (_thL ? (_th_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -100,10 +109,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _thFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#c4b5fd', fontSize: 22, fontWeight: 900 } }, '📓 CBT Thought Record'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'Walk through a hard moment in seven steps.')
+            h('h2', { style: { margin: 0, color: _thFg('#c4b5fd'), fontSize: 22, fontWeight: 900 } }, '📓 CBT Thought Record'),
+            h('div', { style: { fontSize: 12, color: _thFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Walk through a hard moment in seven steps.')
           )
         );
       }
@@ -122,15 +131,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : '#334155'),
-                background: active ? 'rgba(167,139,250,0.18)' : '#1e293b',
-                color: active ? '#e9d5ff' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(167,139,250,0.18)' : _thBg('#1e293b'),
+                color: active ? _thFg('#e9d5ff') : _thFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
       }
 
       function safetyBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '3px solid #a78bfa', marginBottom: 12, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '3px solid #a78bfa', marginBottom: 12, fontSize: 12.5, color: _thFg('#e9d5ff'), lineHeight: 1.65 } },
           h('strong', null, '📓 What this is: '),
           'a CBT (Cognitive Behavioral Therapy) reflection. CBT helps when the thoughts driving a hard feeling are out of proportion to the actual situation. It does NOT help when the situation itself is the problem (an injustice, a real loss, an unsafe environment). If your honest answer to "is this thought really distorted, or is something genuinely wrong?" is the second one, this tool is the wrong tool, and you deserve an adult on the situation with you.'
         );
@@ -138,9 +147,67 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _thFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Thought records are a CBT technique, not therapy. If you find yourself doing many records about the same theme and it is not shifting, that is a sign to bring it to a counselor or therapist. Crisis Text Line: text HOME to 741741.'
+        );
+      }
+
+      function commandMetric(label, value, blurb, color) {
+        return h('div', { style: { padding: 12, borderRadius: 8, background: _thBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, minHeight: 92 } },
+          h('div', { style: { fontSize: 11, color: _thFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
+          h('div', { style: { fontSize: 20, color: color, fontWeight: 900, marginBottom: 4 } }, value),
+          h('div', { style: { fontSize: 11.5, color: _thFg('#cbd5e1'), lineHeight: 1.5 } }, blurb)
+        );
+      }
+
+      function thoughtCommandPanel(draft) {
+        var fields = [
+          draft.situation,
+          draft.emotion1,
+          draft.thought,
+          draft.evidenceFor,
+          draft.evidenceAgainst,
+          draft.balanced
+        ];
+        var completed = fields.filter(function(v) { return v && String(v).trim(); }).length;
+        if (typeof draft.emotion2Rating === 'number' && draft.emotion2Rating !== 50) completed += 1;
+        var initial = typeof draft.emotion1Rating === 'number' ? draft.emotion1Rating : 50;
+        var current = typeof draft.emotion2Rating === 'number' ? draft.emotion2Rating : 50;
+        var shift = initial - current;
+        var savedCount = (d.entries || []).length;
+        var rail = [
+          { label: 'Facts', done: !!(draft.situation && String(draft.situation).trim()) },
+          { label: 'Feeling', done: !!(draft.emotion1 && String(draft.emotion1).trim()) },
+          { label: 'Thought', done: !!(draft.thought && String(draft.thought).trim()) },
+          { label: 'For', done: !!(draft.evidenceFor && String(draft.evidenceFor).trim()) },
+          { label: 'Against', done: !!(draft.evidenceAgainst && String(draft.evidenceAgainst).trim()) },
+          { label: 'Balanced', done: !!(draft.balanced && String(draft.balanced).trim()) },
+          { label: 'Re-rate', done: current !== 50 }
+        ];
+        return h('section', { className: 'no-print', 'aria-label': 'Thought Record workspace summary',
+          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(124,58,237,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(167,139,250,0.34)', marginBottom: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 12, color: _thFg('#c4b5fd'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Thought lab'),
+              h('div', { style: { fontSize: 13, color: _thFg('#e2e8f0'), lineHeight: 1.55 } }, 'Start with facts, test the thought, then check whether the feeling shifted.')
+            ),
+            h('button', { onClick: function() { goto('past'); }, 'aria-label': 'View past thought records',
+              style: { padding: '8px 12px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.14)', color: _thFg('#e9d5ff'), cursor: 'pointer', fontWeight: 800, fontSize: 12 } },
+              'Past records')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
+            commandMetric('Entry progress', completed + '/7', 'Each box can be short. Complete what helps today.', '#a78bfa'),
+            commandMetric('Feeling shift', (shift > 0 ? '-' : shift < 0 ? '+' : '') + Math.abs(shift), shift > 0 ? 'Intensity is moving down.' : shift < 0 ? 'Intensity rose; pause and get support if needed.' : 'Re-rate after the balanced thought.', '#22c55e'),
+            commandMetric('Saved records', String(savedCount), savedCount ? 'Patterns get easier to see over time.' : 'Nothing saved yet. Drafts stay local until saved.', '#0ea5e9')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))', gap: 6 } },
+            rail.map(function(item) {
+              return h('div', { key: item.label, style: { padding: '7px 6px', borderRadius: 8, textAlign: 'center', background: item.done ? 'rgba(34,197,94,0.16)' : _thBg('#1e293b'), border: '1px solid ' + (item.done ? '#22c55e' : '#334155'), color: item.done ? _thFg('#bbf7d0') : _thFg('#94a3b8'), fontSize: 10.5, fontWeight: 800 } },
+                item.label
+              );
+            })
+          )
         );
       }
 
@@ -182,6 +249,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
         function clearDraft() { setTR({ activeEntry: null }); }
 
         return h('div', null,
+          thoughtCommandPanel(draft),
           safetyBanner(),
 
           // 1 Situation
@@ -194,7 +262,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           ),
 
           // 2 Emotion + rating
-          stepBox('Step 2', '😔 Emotion (and 0-100 rating)', '#ec4899',
+          stepBox('Step 2', '😔 Emotion (and 0-100 rating)', _thFg('#ec4899'),
             'Name the emotion in one word (sad, embarrassed, angry, anxious, ashamed). Then rate how intense it was at the time, 0 to 100.',
             h('div', null,
               h('input', { id: 'tr-emotion1', type: 'text', value: draft.emotion1,
@@ -202,11 +270,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
                 placeholder: 'e.g. embarrassed',
                 style: inputStyle }),
               h('div', { style: { marginTop: 10, display: 'flex', alignItems: 'center', gap: 10 } },
-                h('label', { htmlFor: 'tr-emotion1-rating', style: { fontSize: 12, color: '#94a3b8', minWidth: 90 } }, 'Intensity:'),
+                h('label', { htmlFor: 'tr-emotion1-rating', style: { fontSize: 12, color: _thFg('#94a3b8'), minWidth: 90 } }, 'Intensity:'),
                 h('input', { id: 'tr-emotion1-rating', type: 'range', min: 0, max: 100, value: draft.emotion1Rating,
                   onChange: function(e) { setDraft({ emotion1Rating: parseInt(e.target.value, 10) }); },
                   style: { flex: 1 } }),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: '#ec4899', minWidth: 40, textAlign: 'right' } }, draft.emotion1Rating + '/100')
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _thFg('#ec4899'), minWidth: 40, textAlign: 'right' } }, draft.emotion1Rating + '/100')
               )
             )
           ),
@@ -221,7 +289,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           ),
 
           // 4 Evidence for
-          stepBox('Step 4', '➕ Evidence FOR the thought', '#94a3b8',
+          stepBox('Step 4', '➕ Evidence FOR the thought', _thFg('#94a3b8'),
             'What facts (not feelings, facts) actually support the thought? Be honest; sometimes there is some real evidence.',
             h('textarea', { id: 'tr-evfor', value: draft.evidenceFor,
               onChange: function(e) { setDraft({ evidenceFor: e.target.value }); },
@@ -230,7 +298,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           ),
 
           // 5 Evidence against
-          stepBox('Step 5', '➖ Evidence AGAINST the thought', '#22c55e',
+          stepBox('Step 5', '➖ Evidence AGAINST the thought', _thFg('#22c55e'),
             'What facts do NOT support the thought? Things you know that the automatic thought ignored.',
             h('textarea', { id: 'tr-evagainst', value: draft.evidenceAgainst,
               onChange: function(e) { setDraft({ evidenceAgainst: e.target.value }); },
@@ -241,15 +309,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           // Distortion check
           h('div', { style: stepBoxStyle('#6366f1') },
             h('div', { style: stepHeaderStyle('Optional', '🔎 Common thinking traps', '#6366f1') }),
-            h('div', { style: { fontSize: 11.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5, fontStyle: 'italic' } },
+            h('div', { style: { fontSize: 11.5, color: _thFg('#94a3b8'), marginBottom: 10, lineHeight: 1.5, fontStyle: 'italic' } },
               'Does your automatic thought have any of these patterns? Click any that apply.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6 } },
               DISTORTIONS.map(function(dist) {
                 var on = (draft.distortions || []).indexOf(dist.id) !== -1;
                 return h('button', { key: dist.id, onClick: function() { toggleDistortion(dist.id); }, 'aria-label': dist.label, 'aria-pressed': on,
-                  style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid ' + (on ? '#6366f1' : '#334155'), background: on ? 'rgba(99,102,241,0.18)' : '#1e293b', color: on ? '#c7d2fe' : '#cbd5e1', cursor: 'pointer' } },
+                  style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid ' + (on ? '#6366f1' : '#334155'), background: on ? 'rgba(99,102,241,0.18)' : _thBg('#1e293b'), color: on ? _thFg('#c7d2fe') : _thFg('#cbd5e1'), cursor: 'pointer' } },
                   h('div', { style: { fontSize: 12, fontWeight: 700 } }, (on ? '✓ ' : '') + dist.label),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, lineHeight: 1.45 } }, dist.desc)
+                  h('div', { style: { fontSize: 10, color: _thFg('#94a3b8'), marginTop: 2, lineHeight: 1.45 } }, dist.desc)
                 );
               })
             )
@@ -265,35 +333,35 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           ),
 
           // 7 Emotion re-rating
-          stepBox('Step 7', '🌤 Re-rate the emotion', '#22c55e',
+          stepBox('Step 7', '🌤 Re-rate the emotion', _thFg('#22c55e'),
             'After working through the balanced thought, how intense is the emotion now, 0 to 100?',
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-              h('label', { htmlFor: 'tr-emotion2-rating', style: { fontSize: 12, color: '#94a3b8', minWidth: 90 } }, 'Intensity now:'),
+              h('label', { htmlFor: 'tr-emotion2-rating', style: { fontSize: 12, color: _thFg('#94a3b8'), minWidth: 90 } }, 'Intensity now:'),
               h('input', { id: 'tr-emotion2-rating', type: 'range', min: 0, max: 100, value: draft.emotion2Rating,
                 onChange: function(e) { setDraft({ emotion2Rating: parseInt(e.target.value, 10) }); },
                 style: { flex: 1 } }),
-              h('span', { style: { fontSize: 14, fontWeight: 800, color: '#22c55e', minWidth: 40, textAlign: 'right' } }, draft.emotion2Rating + '/100')
+              h('span', { style: { fontSize: 14, fontWeight: 800, color: _thFg('#22c55e'), minWidth: 40, textAlign: 'right' } }, draft.emotion2Rating + '/100')
             )
           ),
 
           // Save / clear
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
             h('button', { onClick: saveEntry, 'aria-label': 'Save this thought record',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✓ Save this record'),
             h('button', { onClick: clearDraft, 'aria-label': 'Clear and start over',
-              style: { padding: '10px 22px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, 'Clear')
+              style: { padding: '10px 22px', borderRadius: 10, border: '1px solid #475569', background: _thBg('#1e293b'), color: _thFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, 'Clear')
           ),
 
           softPointer()
         );
       }
 
-      var inputStyle = { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit' };
-      var textareaStyle = { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' };
+      var inputStyle = { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: _thBg('#1e293b'), color: _thFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit' };
+      var textareaStyle = { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _thBg('#1e293b'), color: _thFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' };
 
       function stepBoxStyle(color) {
-        return { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 };
+        return { padding: 14, borderRadius: 10, background: _thBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 };
       }
       function stepHeaderStyle(stepNum, title, color) {
         return { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 };
@@ -301,10 +369,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       function stepBox(stepNum, title, color, blurb, content) {
         return h('div', { style: stepBoxStyle(color) },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
-            h('span', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, stepNum),
+            h('span', { style: { fontSize: 10, color: _thFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, stepNum),
             h('span', { style: { fontSize: 14, fontWeight: 800, color: color } }, title)
           ),
-          h('div', { style: { fontSize: 11.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
+          h('div', { style: { fontSize: 11.5, color: _thFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
           content
         );
       }
@@ -316,11 +384,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
         var entries = (d.entries || []).slice().reverse();
         if (entries.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _thBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📚'),
-              h('div', { style: { color: '#cbd5e1', fontSize: 14, marginBottom: 4 } }, 'No past records yet'),
+              h('div', { style: { color: _thFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'No past records yet'),
               h('button', { onClick: function() { goto('new'); }, 'aria-label': 'Start one',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.18)', color: '#e9d5ff', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '+ Start a new record')
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.18)', color: _thFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '+ Start a new record')
             )
           );
         }
@@ -330,22 +398,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
         }
 
         return h('div', null,
-          h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, entries.length + ' record' + (entries.length === 1 ? '' : 's')),
+          h('div', { style: { fontSize: 12, color: _thFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, entries.length + ' record' + (entries.length === 1 ? '' : 's')),
           entries.map(function(e) {
             var shift = (e.emotion1Rating || 0) - (e.emotion2Rating || 0);
             var distortionLabels = (e.distortions || []).map(function(id) { var di = DISTORTIONS.find(function(x) { return x.id === id; }); return di ? di.label : ''; }).filter(Boolean);
-            return h('div', { key: e.id, style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
+            return h('div', { key: e.id, style: { padding: 12, borderRadius: 10, background: _thBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-                h('span', { style: { fontSize: 11, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } }, e.date),
-                h('span', { style: { fontSize: 12, color: '#e9d5ff', fontWeight: 700 } }, (e.emotion1 || 'emotion') + ' · ' + e.emotion1Rating + ' → ' + e.emotion2Rating),
-                shift > 0 ? h('span', { style: { fontSize: 11, color: '#22c55e' } }, '↓ ' + shift + ' points') : null,
+                h('span', { style: { fontSize: 11, color: _thFg('#94a3b8'), fontFamily: 'ui-monospace, monospace' } }, e.date),
+                h('span', { style: { fontSize: 12, color: _thFg('#e9d5ff'), fontWeight: 700 } }, (e.emotion1 || 'emotion') + ' · ' + e.emotion1Rating + ' → ' + e.emotion2Rating),
+                shift > 0 ? h('span', { style: { fontSize: 11, color: _thFg('#22c55e') } }, '↓ ' + shift + ' points') : null,
                 h('button', { onClick: function() { deleteEntry(e.id); }, 'aria-label': 'Delete record',
-                  style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: '#94a3b8', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _thFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               ),
-              e.situation ? h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, h('strong', null, 'Situation: '), e.situation) : null,
-              e.thought ? h('div', { style: { fontSize: 12.5, color: '#fde68a', fontStyle: 'italic', marginBottom: 4 } }, '💭 "' + e.thought + '"') : null,
-              e.balanced ? h('div', { style: { fontSize: 12.5, color: '#bbf7d0', marginBottom: 4 } }, '⚖️ ' + e.balanced) : null,
-              distortionLabels.length > 0 ? h('div', { style: { fontSize: 11, color: '#c7d2fe', marginTop: 4 } }, '🔎 ' + distortionLabels.join(', ')) : null
+              e.situation ? h('div', { style: { fontSize: 12, color: _thFg('#94a3b8'), marginBottom: 4 } }, h('strong', null, 'Situation: '), e.situation) : null,
+              e.thought ? h('div', { style: { fontSize: 12.5, color: _thFg('#fde68a'), fontStyle: 'italic', marginBottom: 4 } }, '💭 "' + e.thought + '"') : null,
+              e.balanced ? h('div', { style: { fontSize: 12.5, color: _thFg('#bbf7d0'), marginBottom: 4 } }, '⚖️ ' + e.balanced) : null,
+              distortionLabels.length > 0 ? h('div', { style: { fontSize: 11, color: _thFg('#c7d2fe'), marginTop: 4 } }, '🔎 ' + distortionLabels.join(', ')) : null
             );
           })
         );
@@ -358,18 +426,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
         var entries = (d.entries || []).slice().reverse();
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(167,139,250,0.10)', borderRadius: 8, border: '1px solid rgba(167,139,250,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _thFg('#e9d5ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('past'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _thBg('#1e293b'), color: _thFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'tr-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _thBg('#fff'), color: _thFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -380,15 +448,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #7c3aed' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'CBT Thought Records'),
+              h('div', { style: { fontSize: 10, color: _thFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'CBT Thought Records'),
               h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Thought Records'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _thFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             entries.length > 0
               ? entries.map(function(e) {
                   return h('div', { key: e.id, style: { marginBottom: 22, pageBreakInside: 'avoid', borderTop: '1px solid #cbd5e1', paddingTop: 14 } },
-                    h('div', { style: { fontSize: 11, color: '#64748b', fontFamily: 'ui-monospace, monospace', marginBottom: 8 } }, e.date),
+                    h('div', { style: { fontSize: 11, color: _thFg('#64748b'), fontFamily: 'ui-monospace, monospace', marginBottom: 8 } }, e.date),
                     printRow('1. Situation', e.situation),
                     printRow('2. Emotion (intensity)', (e.emotion1 || '–') + ' · ' + e.emotion1Rating + '/100'),
                     printRow('3. Automatic thought', e.thought),
@@ -398,9 +466,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
                     printRow('7. Emotion re-rating', e.emotion2Rating + '/100')
                   );
                 })
-              : h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'No records yet.'),
+              : h('div', { style: { fontSize: 12, color: _thFg('#94a3b8'), fontStyle: 'italic' } }, 'No records yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _thFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'CBT Thought Record from Beck, Burns, Padesky. Created with AlloFlow SEL Hub.'
             )
           ),
@@ -411,8 +479,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
 
       function printRow(label, value) {
         return h('div', { style: { marginBottom: 8 } },
-          h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 2 } }, label),
-          h('div', { style: { fontSize: 13, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.6 } }, value || '(not filled in)')
+          h('div', { style: { fontSize: 10, color: _thFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 2 } }, label),
+          h('div', { style: { fontSize: 13, color: _thFg('#0f172a'), whiteSpace: 'pre-wrap', lineHeight: 1.6 } }, value || '(not filled in)')
         );
       }
 
@@ -422,27 +490,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       function renderAbout() {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('thoughtRecord', h, ctx) : null),
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#c4b5fd', fontSize: 16 } }, 'What a CBT Thought Record is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _thBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _thFg('#c4b5fd'), fontSize: 16 } }, 'What a CBT Thought Record is'),
+            h('p', { style: { margin: '0 0 10px', color: _thFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'A thought record is the central self-help technique of Cognitive Behavioral Therapy. The idea behind CBT is that situations do not directly cause feelings; the thoughts a person has ABOUT the situation cause the feelings. Different people in the same situation have different feelings because they have different thoughts about it.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _thFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'When the thoughts are accurate, the feelings are usually proportionate. When the thoughts are distorted (catastrophizing, mind-reading, all-or-nothing thinking, and so on), the feelings get out of proportion to what is actually happening. A thought record is a structured way to catch a distorted thought, examine it against the actual evidence, and arrive at a more accurate take.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#c4b5fd', fontSize: 16 } }, 'Where CBT comes from'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _thBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _thFg('#c4b5fd'), fontSize: 16 } }, 'Where CBT comes from'),
+            h('p', { style: { margin: 0, color: _thFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'Cognitive Behavioral Therapy was developed by psychiatrist Aaron T. Beck at the University of Pennsylvania, starting in the 1960s. Beck originally trained as a psychoanalyst and developed CBT after observing that his depressed patients had recurrent negative thought patterns that were not addressed by classical psychoanalysis. CBT became one of the most heavily researched psychotherapies; it has consistently been shown effective for depression, anxiety, PTSD, OCD, and many other conditions. The thought record format you are using is essentially unchanged from the one Beck taught in the 1970s.'
             )
           ),
 
           // Sources
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#c4b5fd', fontSize: 16 } }, '📚 Sources and learn more'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for CBT and the thought record.'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _thBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _thFg('#c4b5fd'), fontSize: 16 } }, '📚 Sources and learn more'),
+            h('div', { style: { fontSize: 12, color: _thFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for CBT and the thought record.'),
             sourceCard('Beck, A. T. (1979)', 'Cognitive Therapy of Depression, Guilford Press', 'The foundational text of CBT. Heavily cited.', null),
             sourceCard('Burns, D. D. (1980)', 'Feeling Good: The New Mood Therapy, William Morrow', 'The book that brought CBT to general audiences. Includes the 10 cognitive distortions taught in this tool.', null),
             sourceCard('Greenberger, D. and Padesky, C. A. (2015)', 'Mind Over Mood: Change How You Feel by Changing the Way You Think (2nd ed.), Guilford Press', 'The most widely-used CBT self-help workbook. The 7-column thought record in its current form.', null),
@@ -452,8 +520,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
 
           // Honest limits
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _thFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _thFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'CBT can be misused. The assumption that distorted thinking is the source of suffering presumes the situation is okay; sometimes it is not. A student in a genuinely unsafe environment who is told their fear is a "catastrophizing distortion" is being gaslit, not helped.'),
               h('li', null, 'CBT was developed in a particular cultural context (mid-century US clinical psychology) and rests on assumptions about the value of rational analysis and the locus of agency that not all traditions share. Some critiques argue it pulls toward individualizing problems that are actually relational or structural.'),
               h('li', null, 'A thought record is one technique among many. If thought records do not help you, that is not a failure; it might mean a different approach (somatic, narrative, relational, structural) fits better.'),
@@ -461,7 +529,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', fontSize: 12.5, color: _thFg('#e9d5ff'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Thought records are a clinical-grade tool that students can use as self-help. They work best when paired with a skill-building conversation: walking through a record together once or twice, then handing it back as a private practice. If a student is doing thought records every day and they are not helping, that is a sign the underlying situation needs adult attention, not more records.'
           ),
@@ -471,13 +539,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#c4b5fd', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _thBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _thFg('#c4b5fd'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#e9d5ff', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#e9d5ff', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _thFg('#e9d5ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _thFg('#e9d5ff'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _thFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 

@@ -32,8 +32,15 @@ export function loadAlloModule(filename) {
   if (_loadedModules.has(filename)) return;
   const modulePath = resolve(process.cwd(), filename);
   const moduleSource = readFileSync(modulePath, 'utf-8');
+  // Append a //# sourceURL so V8 attributes this eval'd script to the real file
+  // path — this makes stack traces in module errors point at the file instead of
+  // "<anonymous>". (Note: it does NOT make @vitest/coverage-v8 report the module —
+  // that provider doesn't instrument new Function() eval'd scripts; see
+  // vitest.config.js coverage note.) Appended at the END so existing line numbers
+  // are unchanged.
+  const sourceUrl = modulePath.replace(/\\/g, '/');
   // eslint-disable-next-line no-new-func
-  new Function(moduleSource)();
+  new Function(moduleSource + '\n//# sourceURL=' + sourceUrl)();
   _loadedModules.add(filename);
 }
 

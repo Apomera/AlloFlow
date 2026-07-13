@@ -790,6 +790,7 @@ window.SelHub = window.SelHub || {
           'Rate their argument strength: Developing / Solid / Compelling / Master Debater\n' +
           'Be encouraging and age-appropriate.';
 
+        _runSafetyAssess(((d.debateArgs || '') + '\n' + (d.debateCounter || '')).trim(), 'debate'); // triage student free-text before AI
         callGemini(prompt).then(function(resp) {
           var completed = (d.debatesCompleted || 0) + 1;
           updMulti({ debateFeedback: resp, aiLoading: false, debatesCompleted: completed });
@@ -820,6 +821,7 @@ window.SelHub = window.SelHub || {
           '4. End with an encouraging thought about their moral growth.\n\n' +
           'IMPORTANT: Be warm, encouraging, and age-appropriate. Never make the student feel judged. All levels are valid developmental stages. Frame everything as "your reasoning style" not "your level."';
 
+        _runSafetyAssess(answerTexts.join('\n'), 'kohlberg'); // triage student free-text before AI
         callGemini(prompt).then(function(resp) {
           updMulti({ kohlbergFeedback: resp, kohlbergComplete: true, aiLoading: false });
           ctx.awardXP(15);
@@ -878,7 +880,7 @@ window.SelHub = window.SelHub || {
             { id: 'debate', label: '\uD83C\uDFA4 Debate' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' },
           ].map(function(t) {
-            return h('button', { 'aria-label': 'aria-selected', key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
+            return h('button', { key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
               className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700')
             }, t.label);
           })
@@ -925,7 +927,7 @@ window.SelHub = window.SelHub || {
           h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a dilemma to explore. Each one has no single right answer.'),
           h('div', {  className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             DILEMMAS.map(function(dl) {
-              return h('button', { 'aria-label': 'Explore', key: dl.id, onClick: function() {
+              return h('button', { key: dl.id, onClick: function() {
                 var explored = (d.deepDilemmasExplored || []).slice();
                 if (explored.indexOf(dl.id) === -1) explored.push(dl.id);
                 updMulti({ dilemmaId: dl.id, tab: 'explore', frameworkAnalysis: null, dialogue: [], deepDilemmasExplored: explored });
@@ -957,7 +959,7 @@ window.SelHub = window.SelHub || {
           !d.branchingId && h('div', {  className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             (BRANCHING_SCENARIOS[gradeBand] || BRANCHING_SCENARIOS.elementary).map(function(sc) {
               var completed = (d.dilemmasCompleted || []).indexOf(sc.id) !== -1;
-              return h('button', { 'aria-label': 'Back to scenarios', key: sc.id, onClick: function() { updMulti({ branchingId: sc.id, branchChoice: null, branchReflection: '' }); },
+              return h('button', { key: sc.id, onClick: function() { updMulti({ branchingId: sc.id, branchChoice: null, branchReflection: '' }); },
                 className: 'p-4 rounded-2xl border-2 bg-white text-left hover:border-emerald-600 hover:shadow-md transition-all ' + (completed ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200')
               },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -978,7 +980,7 @@ window.SelHub = window.SelHub || {
 
             return h('div', {  className: 'space-y-4' },
               // Back button
-              h('button', { 'aria-label': '},', onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
+              h('button', {  onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
 
               // Scenario card
               h('div', {  className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 p-5' },
@@ -987,7 +989,7 @@ window.SelHub = window.SelHub || {
                   h('h3', { className: 'text-lg font-black text-slate-800' }, sc.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, sc.scenario),
-                callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(sc.scenario); }, className: 'mt-2 text-[10px] text-emerald-600 hover:text-emerald-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
+                callTTS && h('button', {  onClick: function() { callTTS(sc.scenario); }, className: 'mt-2 text-[10px] text-emerald-600 hover:text-emerald-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
               ),
 
               // Choices
@@ -1073,6 +1075,7 @@ window.SelHub = window.SelHub || {
                       '2. Offers one new perspective they might not have considered\n' +
                       '3. Asks one follow-up question\n' +
                       'Be warm, age-appropriate, and non-judgmental.';
+                    _runSafetyAssess(d.branchReflection || '', 'branch'); // triage student free-text before AI
                     callGemini(prompt).then(function(resp) {
                       updMulti({ branchAIDiscussion: resp, aiLoading: false });
                       ctx.awardXP(5);
@@ -1107,7 +1110,7 @@ window.SelHub = window.SelHub || {
           // Grade band indicator
           h('div', {  className: 'flex justify-center gap-2 mb-3' },
             ['elementary', 'middle', 'high'].map(function(band) {
-              return h('button', { 'aria-label': 'frameworkBand', key: band, onClick: function() { upd('frameworkBand', band); },
+              return h('button', { key: band, onClick: function() { upd('frameworkBand', band); },
                 className: 'px-3 py-1 rounded-full text-[10px] font-bold transition-all ' +
                   ((d.frameworkBand || gradeBand) === band ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
               }, band === 'elementary' ? '\uD83C\uDF1F Elementary' : band === 'middle' ? '\uD83D\uDE80 Middle' : '\uD83C\uDF93 High');
@@ -1120,7 +1123,7 @@ window.SelHub = window.SelHub || {
             return h('div', {  key: fw.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isActive ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 bg-white hover:border-indigo-300')
             },
-              h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
+              h('button', {  onClick: function() {
                 upd('frameworkId', isActive ? null : fw.id);
                 if (!isActive) {
                   var studied = (d.frameworksStudied || []).slice();
@@ -1159,7 +1162,7 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // Apply to active dilemma
-                selectedDilemma && h('button', { 'aria-label': 'explore', onClick: function() { analyzeWithFramework(fw.id); upd('tab', 'explore'); },
+                selectedDilemma && h('button', { onClick: function() { analyzeWithFramework(fw.id); upd('tab', 'explore'); },
                   disabled: aiLoading,
                   className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40 flex items-center gap-2'
                 }, h(Sparkles, { size: 14 }), 'Analyze "' + selectedDilemma.title + '" with this framework')
@@ -1192,12 +1195,12 @@ window.SelHub = window.SelHub || {
                 h('h3', { className: 'text-lg font-black text-slate-800' }, selectedDilemma.title),
                 h('span', {  className: 'text-[10px] text-slate-600 font-bold uppercase' }, selectedDilemma.category)
               ),
-              h('button', { 'aria-label': '},', onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
+              h('button', {  onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
             ),
             h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
               gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario
             ),
-            callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario); }, className: 'mt-2 text-[10px] text-indigo-500 hover:text-indigo-700 font-bold' }, '\uD83D\uDD0A Read Aloud')
+            callTTS && h('button', {  onClick: function() { callTTS(gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario); }, className: 'mt-2 text-[10px] text-indigo-500 hover:text-indigo-700 font-bold' }, '\uD83D\uDD0A Read Aloud')
           ),
 
           // Stakeholders
@@ -1264,7 +1267,7 @@ window.SelHub = window.SelHub || {
         // ═══ EXPLORE TAB - no dilemma selected ═══
         tab === 'explore' && !selectedDilemma && h('div', {  className: 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center' },
           h('p', { className: 'text-slate-600 font-bold' }, 'Choose a dilemma from the Dilemmas tab first, then come here to explore it deeply.'),
-          h('button', { 'aria-label': '},', onClick: function() { upd('tab', 'dilemmas'); }, className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700' }, 'Go to Dilemmas')
+          h('button', { onClick: function() { upd('tab', 'dilemmas'); }, className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700' }, 'Go to Dilemmas')
         ),
 
         // ═══ SOCRATIC DIALOGUE TAB ═══
@@ -1357,7 +1360,7 @@ window.SelHub = window.SelHub || {
               // Scenario
               h('div', {  className: 'bg-white rounded-2xl border-2 border-purple-200 p-5' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-4' }, sc.scenario),
-                callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
+                callTTS && h('button', {  onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
 
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-2' }, 'What would you do, and WHY? (The "why" is what matters most)'),
                 h('textarea', { value: answers[sc.id] || '', onChange: function(e) {
@@ -1383,7 +1386,7 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', {  className: 'flex gap-2' },
-                step > 0 && h('button', { 'aria-label': 'kohlbergStep', onClick: function() { upd('kohlbergStep', step - 1); },
+                step > 0 && h('button', { onClick: function() { upd('kohlbergStep', step - 1); },
                   className: 'px-4 py-2 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
                 }, '\u2190 Previous'),
                 h('div', {  className: 'flex-1' }),
@@ -1456,7 +1459,7 @@ window.SelHub = window.SelHub || {
           !d.debateTopicObj && h('div', {  className: 'space-y-3' },
             h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a topic to debate:'),
             (DEBATE_TOPICS[gradeBand] || DEBATE_TOPICS.elementary).map(function(topic) {
-              return h('button', { 'aria-label': ', debateCounter:', key: topic.id, onClick: function() { updMulti({ debateTopicObj: topic, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
+              return h('button', { key: topic.id, onClick: function() { updMulti({ debateTopicObj: topic, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
                 className: 'w-full p-4 rounded-xl border-2 border-slate-200 bg-white text-left hover:border-violet-600 hover:shadow-md transition-all'
               },
                 h('p', { className: 'text-sm font-bold text-slate-800' }, topic.topic),
@@ -1471,7 +1474,7 @@ window.SelHub = window.SelHub || {
           // Active debate
           d.debateTopicObj && h('div', {  className: 'space-y-4' },
             // Back button
-            h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
+            h('button', {  onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
               className: 'text-xs text-slate-600 hover:text-slate-600 font-bold'
             }, '\u2190 All Topics'),
 
@@ -1498,7 +1501,7 @@ window.SelHub = window.SelHub || {
                 h('p', { className: 'text-lg font-bold text-emerald-700' }, '\u2713'),
                 h('p', { className: 'text-sm font-bold text-emerald-700' }, 'Argue FOR')
               ),
-              h('button', { 'aria-label': 'against', onClick: function() { upd('debateSide', 'against'); ctx.awardXP(3); },
+              h('button', { onClick: function() { upd('debateSide', 'against'); ctx.awardXP(3); },
                 className: 'flex-1 p-4 rounded-xl border-2 border-red-600 bg-red-50 hover:bg-red-100 transition-all text-center'
               },
                 h('p', { className: 'text-lg font-bold text-red-700' }, '\u2717'),
@@ -1567,7 +1570,7 @@ window.SelHub = window.SelHub || {
               // Challenge: argue the other side
               h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
                 h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, '\uD83C\uDFC6 Challenge: Can you argue the OTHER side just as well?'),
-                h('button', { 'aria-label': 'Switch sides and try again', onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
+                h('button', { onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
                   className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
                 }, 'Switch Sides & Try Again')
               ),
@@ -1727,6 +1730,7 @@ window.SelHub = window.SelHub || {
                         'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
                         histCtx + '\nStudent says: "' + userInput + '"\n\n' +
                         'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
+                      _runSafetyAssess(userInput, 'casestudy'); // CRISIS-3: Send-button path now triages like the Enter path
                       callGemini(prompt).then(function(resp) {
                         var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
                         updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
@@ -1740,7 +1744,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Mark complete & get AI insight
-              callGemini && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { 'aria-label': 'Mark complete & get AI insight', onClick: function() {
+              callGemini && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { onClick: function() {
                 upd('aiLoading', true);
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student just analyzed an ethical case study.\n' +
                   'Case: "' + cs.title + '": ' + cs.background + '\n' +
@@ -1805,7 +1809,7 @@ window.SelHub = window.SelHub || {
                 VALUES_LIST.map(function(v) {
                   var isSelected = selected.indexOf(v.id) !== -1;
                   var canSelect = selected.length < 5 || isSelected;
-                  return h('button', { 'aria-label': 'text-slate-700', key: v.id, onClick: function() {
+                  return h('button', { key: v.id, onClick: function() {
                     var newSelected = selected.slice();
                     if (isSelected) {
                       newSelected = newSelected.filter(function(s) { return s !== v.id; });
@@ -1885,7 +1889,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Complete button
-              callGemini && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { 'aria-label': 'Complete button', onClick: function() {
+              callGemini && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { onClick: function() {
                 upd('aiLoading', true);
                 var rankedNames = ranked.map(function(vid) { var v = VALUES_LIST.find(function(val) { return val.id === vid; }); return v ? v.name : vid; });
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student completed a values clarification exercise.\n' +
@@ -1896,6 +1900,7 @@ window.SelHub = window.SelHub || {
                   '2. Notes how their top value might guide them in ethical dilemmas\n' +
                   '3. Gently mentions one value NOT in their top 5 that could complement their choices\n' +
                   '4. Affirms that their values are valid and will serve them well.\nBe warm, non-judgmental, and age-appropriate.';
+                _runSafetyAssess(d.valuesReflection || '', 'values'); // triage student free-text before AI
                 callGemini(prompt).then(function(resp) {
                   updMulti({ valuesAIResp: resp, valuesComplete: true, aiLoading: false });
                   ctx.awardXP(10);
@@ -1951,7 +1956,7 @@ window.SelHub = window.SelHub || {
             h('span', {  className: 'text-4xl block mb-3' }, '\uD83C\uDF32'),
             h('h4', { className: 'text-base font-bold text-green-800 mb-2' }, 'Build Your Ethical Decision Tree'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'Think through an ethical question step by step. At each step, you\u2019ll go deeper into the reasoning. At the end, you\u2019ll have a clear summary of your thinking process.'),
-            h('button', { 'aria-label': ', dtDecision:', onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
+            h('button', { onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
               className: 'px-6 py-3 bg-green-700 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors'
             }, 'Start Building')
           ),
@@ -2008,7 +2013,7 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', {  className: 'flex gap-2' },
-                step > 0 && h('button', { 'aria-label': 'dtStep', onClick: function() { upd('dtStep', step - 1); },
+                step > 0 && h('button', { onClick: function() { upd('dtStep', step - 1); },
                   className: 'px-4 py-2 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
                 }, '\u2190 Previous'),
                 h('div', {  className: 'flex-1' }),
@@ -2063,7 +2068,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full px-4 py-2 bg-green-100 border border-green-600 rounded-lg text-xs font-bold text-green-700 hover:bg-green-200 transition-colors'
             }, '\uD83D\uDCCB Copy to Clipboard'),
 
-            h('button', { 'aria-label': ', dtDecision:', onClick: function() { updMulti({ dtStarted: false, decisionTreeComplete: false, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', dtSummary: null }); },
+            h('button', { onClick: function() { updMulti({ dtStarted: false, decisionTreeComplete: false, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', dtSummary: null }); },
               className: 'w-full px-4 py-2 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
             }, '\uD83C\uDF32 Build Another Decision Tree')
           )
@@ -2079,7 +2084,7 @@ window.SelHub = window.SelHub || {
           // Grade band selector
           h('div', {  className: 'flex justify-center gap-2 mb-3' },
             ['elementary', 'middle', 'high'].map(function(band) {
-              return h('button', { 'aria-label': 'philBand', key: band, onClick: function() { upd('philBand', band); },
+              return h('button', { key: band, onClick: function() { upd('philBand', band); },
                 className: 'px-3 py-1 rounded-full text-[10px] font-bold transition-all ' +
                   ((d.philBand || gradeBand) === band ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
               }, band === 'elementary' ? '\uD83C\uDF1F Elementary' : band === 'middle' ? '\uD83D\uDE80 Middle' : '\uD83C\uDF93 High');
@@ -2093,7 +2098,7 @@ window.SelHub = window.SelHub || {
             return h('div', {  key: phil.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isExpanded ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-white hover:border-purple-300')
             },
-              h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
+              h('button', {  onClick: function() {
                 if (!isExpanded) {
                   if (explored.indexOf(phil.id) === -1) explored.push(phil.id);
                   updMulti({ philExpanded: phil.id, philosophersExplored: explored });

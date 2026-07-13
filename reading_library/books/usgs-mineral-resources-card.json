@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-mineral-resources-card",
+  "title": "USGS Mineral Resources",
+  "description": "A USGS source card about minerals, materials, supply chains, maps, and economic geology.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Minerals",
+    "Geology",
+    "Economics",
+    "Technology"
+  ],
+  "authors": [
+    "USGS National Minerals Information Center"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/centers/national-minerals-information-center",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/centers/national-minerals-information-center"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS mineral resources explain where important materials come from, how they are measured, and why minerals matter for technology, infrastructure, and trade."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for cross-curricular reading that connects geology with economics, engineering, environmental questions, and everyday products."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked media may have separate credit or rights requirements. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 63
+  }
+}

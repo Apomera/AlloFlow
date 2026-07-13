@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8" /><title>veraPDF warm LIBRARY reuse</title>
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+</head><body>
+<pre id="out">starting…</pre>
+<script>
+  const out = document.getElementById('out');
+  function log(m) { out.textContent += '\n' + m; console.log('[lib] ' + m); }
+  (async () => {
+    window.__done = null;
+    try {
+      await cheerpjInit();
+      log('cheerpjInit done');
+      // Load veraPDF as a LIBRARY (no main/System.exit) so we can call validate() repeatedly.
+      const lib = await cheerpjRunLibrary('/app/verapdf-cli.jar');
+      log('library handle obtained');
+      const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
+      await Provider.initialise();
+      log('foundry initialised');
+      const Foundries = await lib.org.verapdf.pdfa.Foundries;
+      const foundry = await Foundries.defaultInstance();
+      log('got default foundry');
+      const PDFAFlavour = await lib.org.verapdf.pdfa.flavours.PDFAFlavour;
+      const ua1 = await PDFAFlavour.fromString('ua1');
+      log('flavour ua1 resolved');
+      const FileInputStream = await lib.java.io.FileInputStream;
+
+      async function validate(path) {
+        const fis = await new FileInputStream(path);
+        const parser = await foundry.createParser(fis, ua1);
+        const validator = await foundry.createValidator(ua1, false);
+        const result = await validator.validate(parser);
+        const compliant = await result.isCompliant();
+        try { await parser.close(); } catch (e) {}
+        return compliant;
+      }
+
+      const times = [];
+      for (let i = 1; i <= 3; i++) {
+        const t = performance.now();
+        const c = await validate('/app/sample.pdf');
+        const ms = Math.round(performance.now() - t);
+        times.push(ms);
+        log('validate #' + i + ': compliant=' + c + '  ' + ms + 'ms' + (i === 1 ? '  (first — classes loading)' : '  (WARM)'));
+      }
+      window.__done = { ok: true, times: times };
+    } catch (e) {
+      log('ERROR: ' + (e && (e.stack || e.message) || e));
+      window.__done = { ok: false, err: String(e && (e.message || e)) };
+    }
+  })();
+</script>
+</body></html>

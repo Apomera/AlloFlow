@@ -1,5 +1,7 @@
 # UI_STRINGS Taxonomy
 
+> **Historical taxonomy snapshot, not current i18n coverage (2026-07-09):** This May 2026 map predates the July language-pack expansion. Use `lang/README.md`, current `ui_strings.js`/`help_strings.js`, and the i18n verification tools for present pack coverage and key counts.
+
 **As of**: 2026-05-17
 **Total keys**: 9,307 (8,525 in `ui_strings.js` + 782 in `help_strings.js`)
 **Top-level sections**: 143

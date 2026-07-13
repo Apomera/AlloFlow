@@ -39,7 +39,8 @@
     _st.textContent = [
       '@keyframes cellularlab-pop { 0% { transform: scale(0.4); opacity: 0.2; } 100% { transform: scale(1); opacity: 1; } }',
       '.cellularlab-svg rect.born { animation: cellularlab-pop 220ms ease-out; transform-box: fill-box; transform-origin: center; }',
-      '.cellularlab-tab:focus-visible { outline: 3px solid #6366f1; outline-offset: 2px; }'
+      '.cellularlab-tab:focus-visible, .cellularlab-route-button:focus-visible { outline: 3px solid #6366f1; outline-offset: 2px; }',
+      '@media (max-width: 720px) { [data-cellularlab-focus-panel] { grid-template-columns: 1fr !important; } [data-cellularlab-route-grid] { grid-template-columns: 1fr !important; } [data-cellularlab-status-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(_st);
   }
@@ -238,6 +239,7 @@
     var sBrush = useState(1); var brush = sBrush[0], setBrush = sBrush[1]; // 1 draw, 0 erase
     var sCursor = useState([13, 18]); var cursor = sCursor[0], setCursor = sCursor[1];
     var sStamp = useState('glider'); var stampKey = sStamp[0], setStampKey = sStamp[1];
+    var sPopHist = useState([]); var popHist = sPopHist[0], setPopHist = sPopHist[1]; // live-cell count per generation (capped)
 
     // Elementary CA
     var CA_COLS = 81, CA_ROWS = 60, CA_PX = 6;
@@ -284,6 +286,16 @@
     useEffect(function () {
       if (running && countPop(grid) === 0) { setRunning(false); announce('All cells died — paused.'); }
     }, [grid, running, announce]);
+
+    // record live-cell population per generation for the population sparkline.
+    // Keyed on `gen` (grid updates in the same batched render) so painting between
+    // generations doesn't double-count; gen===0 (reset/clear/new pattern) restarts it.
+    useEffect(function () {
+      setPopHist(function (h) {
+        var p = countPop(grid);
+        return gen === 0 ? [p] : h.concat([p]).slice(-90);
+      });
+    }, [gen]);
 
     // record generations-run milestone whenever gen advances past thresholds
     useEffect(function () {
@@ -384,8 +396,10 @@
         title: opts.title || label,
         style: {
           padding: '7px 12px', borderRadius: '9px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
-          border: '1px solid ' + (opts.primary ? C.accent : C.border),
-          background: opts.pressed ? C.accent : (opts.primary ? C.accent : C.panel),
+          // primary/pressed buttons use a fixed emerald-700 so white text clears
+          // 4.5:1 in both themes (the shared C.accent is emerald-400/600 → fails).
+          border: '1px solid ' + ((opts.primary || opts.pressed) ? '#047857' : C.border),
+          background: (opts.pressed || opts.primary) ? '#047857' : C.panel,
           color: (opts.pressed || opts.primary) ? '#ffffff' : C.text,
           whiteSpace: 'nowrap'
         }
@@ -413,6 +427,10 @@
             }));
           }
         }
+      }
+      // empty-state hint (only when no cells are alive; default seed has a glider so the golden is unaffected)
+      if (pop === 0) {
+        rects.push(h('text', { key: 'empty', x: W / 2, y: H / 2, textAnchor: 'middle', fill: C.sub, style: { fontSize: '13px', fontStyle: 'italic' } }, 'Click or drag to draw cells — or press Random'));
       }
       // cursor
       rects.push(h('rect', {
@@ -455,6 +473,19 @@
           h('div', { 'aria-hidden': 'true', style: { fontSize: '11px', color: C.sub, maxWidth: '230px', lineHeight: 1.4 } },
             'A cell lives with 2–3 neighbours, is born with exactly 3, otherwise dies.')
         ),
+        popHist.length > 1 && (function () {
+          var W = 320, H = 44, pad = 3, n = popHist.length;
+          var maxP = Math.max.apply(null, popHist) || 1;
+          var sx = function (i) { return pad + (n === 1 ? 0 : i / (n - 1)) * (W - 2 * pad); };
+          var sy = function (p) { return pad + (1 - p / maxP) * (H - 2 * pad); };
+          var pts = popHist.map(function (p, i) { return sx(i).toFixed(1) + ',' + sy(p).toFixed(1); }).join(' ');
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('div', { style: { fontSize: '10px', color: C.sub, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' } }, 'Population history'),
+            h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { flex: 1, height: H + 'px', maxWidth: '100%' }, role: 'img', 'aria-label': 'Live-cell population over the last ' + n + ' generations; currently ' + pop + ', peak ' + maxP + '.' },
+              h('polyline', { points: pts, fill: 'none', stroke: '#22c55e', strokeWidth: 1.5 }),
+              h('circle', { cx: sx(n - 1), cy: sy(popHist[n - 1]), r: 2.5, fill: '#22c55e' })),
+            h('div', { style: { fontSize: '10px', color: C.sub, fontWeight: 700, whiteSpace: 'nowrap' } }, 'peak ' + maxP));
+        })(),
         renderLifeGrid(),
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
           btn(running ? '⏸ Pause' : '▶ Play', toggleRun, { primary: true, title: running ? 'Pause the simulation' : 'Run the simulation' }),
@@ -539,6 +570,8 @@
         ),
         renderRuleTable(),
         renderCaDiagram(),
+        h('div', { style: { fontSize: '11px', color: C.sub, marginTop: '-4px', textAlign: 'center' } },
+          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · time runs downward (top row = start)'),
         h('div', null,
           h('div', { style: { fontSize: '12px', color: C.sub, fontWeight: 700, marginBottom: '6px' } }, 'Try a famous rule:'),
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
@@ -633,8 +666,19 @@
       : tab === 'rules' ? renderRulesTab()
       : tab === 'patterns' ? renderPatternsTab()
       : renderLearnTab();
+    var cellularRoutes = [
+      { id: 'life', label: 'Life grid', detail: 'Draw, stamp, run.' },
+      { id: 'rules', label: 'Rule lab', detail: 'Test 1-D rules.' },
+      { id: 'patterns', label: 'Pattern shelf', detail: 'Load classic forms.' },
+      { id: 'learn', label: 'Field notes', detail: 'Connect the ideas.' }
+    ];
+    function focusMetric(label, value) {
+      return h('div', { key: label, style: { minWidth: 0, background: C.bg, border: '1px solid ' + C.border, borderRadius: '11px', padding: '9px 10px' } },
+        h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.04em' } }, label),
+        h('div', { style: { marginTop: '3px', fontSize: '14px', fontWeight: 900, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, value));
+    }
 
-    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
+    return h('div', { 'data-cellularlab-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
       // header
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         (ctx.setStemLabTool ? h('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, 'aria-label': 'Back to STEM Lab',
@@ -643,6 +687,33 @@
         h('div', null,
           h('div', { style: { fontSize: '17px', fontWeight: 800 } }, 'Cellular Automaton Lab'),
           h('div', { style: { fontSize: '11px', color: C.sub } }, 'Simple rules · surprising worlds'))
+      ),
+      h('section', { 'data-cellularlab-focus-panel': 'true', 'aria-label': 'Cellular Automaton Lab focus panel',
+        style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(220px, 0.75fr)', gap: '12px',
+          background: C.panel, border: '1px solid ' + C.border, borderRadius: '14px', padding: '12px',
+          boxShadow: dark ? '0 18px 42px rgba(0,0,0,0.22)' : '0 16px 36px rgba(15,23,42,0.08)' } },
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '9px', minWidth: 0 } },
+          h('div', null,
+            h('div', { style: { fontSize: '10px', fontWeight: 900, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Start here'),
+            h('div', { style: { marginTop: '2px', fontSize: '16px', fontWeight: 900, color: C.text } }, 'Pick the world you want to investigate')),
+          h('div', { 'data-cellularlab-route-grid': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '8px' } },
+            cellularRoutes.map(function (route) {
+              var active = tab === route.id;
+              return h('button', { key: route.id, type: 'button', className: 'cellularlab-route-button',
+                'aria-pressed': active ? 'true' : 'false',
+                onClick: function () { setTab(route.id); announce(route.label + ' selected.'); },
+                style: { minHeight: '76px', textAlign: 'left', cursor: 'pointer', borderRadius: '12px', padding: '10px',
+                  border: '1px solid ' + (active ? C.accent : C.border), background: active ? C.accentBg : C.bg,
+                  color: C.text, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' } },
+                h('span', { style: { fontSize: '12px', fontWeight: 900 } }, route.label),
+                h('span', { style: { fontSize: '11px', lineHeight: 1.35, color: active ? C.text : C.sub } }, route.detail));
+            }))
+        ),
+        h('div', { 'data-cellularlab-status-grid': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', alignContent: 'start' } },
+          focusMetric('Mode', running ? 'Running' : 'Paused'),
+          focusMetric('Cells', pop),
+          focusMetric('Generation', gen),
+          focusMetric('Rule', 'R' + rule))
       ),
       // tabs
       h('div', { role: 'tablist', 'aria-label': 'Cellular Automaton Lab sections', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid ' + C.border, paddingBottom: '8px' } },

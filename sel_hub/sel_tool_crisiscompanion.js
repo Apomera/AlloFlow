@@ -83,6 +83,12 @@ window.SelHub = window.SelHub || {
   // localStorage helpers
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+  // Per-student namespace for crisis data. Without it, every student on a shared
+  // device read/wrote the SAME global key — so the next student loaded the
+  // previous one's suicide safety plan / coping toolkit. _ccNs is set at render
+  // time (session + codename); ccKey() suffixes every crisis key with it.
+  var _ccNs = '';
+  function ccKey(key) { return _ccNs ? (key + '::' + _ccNs) : key; }
 
   // Theme palette — calming teal / emerald, NOT alarming reds for this tool.
   // TEAL is teal-700 (not teal-600) so white-on-TEAL buttons hit 5.48:1
@@ -669,7 +675,7 @@ window.SelHub = window.SelHub || {
       ),
       atEnd ? h('div', { style: { textAlign: 'center', padding: '20px 12px' }, 'aria-live': 'polite' },
         h('div', { style: { fontSize: '32px', marginBottom: '8px' }, 'aria-hidden': 'true' }, '🌿'),
-        h('h3', { style: { fontSize: '17px', color: EMERALD_DARK, margin: '0 0 8px', fontWeight: 800 } }, 'You\'ve come back to the present.'),
+        h('h3', { style: { fontSize: '17px', color: _ccC(EMERALD_DARK), margin: '0 0 8px', fontWeight: 800 } }, 'You\'ve come back to the present.'),
         h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 16px' } },
           'Grounding doesn\'t make hard feelings disappear. It just gives them a smaller place to live for a moment, so the wave can pass.'
         ),
@@ -679,7 +685,7 @@ window.SelHub = window.SelHub || {
           style: { padding: '10px 20px', background: TEAL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
         }, '↻ Do it again')
       ) : h('div', null,
-        h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '16px', marginBottom: '12px' } },
+        h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '16px', marginBottom: '12px' } },
           h('div', { style: { fontSize: '13px', fontWeight: 700, color: TEAL_DARK, marginBottom: '6px' } }, 'Step ' + (stepIdx + 1) + ' of ' + GROUND_STEPS.length),
           h('p', { style: { fontSize: '17px', fontWeight: 700, color: SLATE_TEXT, lineHeight: 1.5, margin: '0 0 6px' } }, current.prompt),
           h('p', { style: { fontSize: '12px', fontStyle: 'italic', color: SLATE_MID, margin: 0, lineHeight: 1.55 } }, current.helper)
@@ -714,11 +720,11 @@ window.SelHub = window.SelHub || {
   // Tap any strategy to add it to your personal "toolkit". Persisted in
   // localStorage. Toolkit shows highlighted strategies first as a "go-to" list.
   function _CopingToolkit(h, d, upd) {
-    var saved = d.toolkitIds || lsGet('crisisCompanion.toolkit.v1', []) || [];
+    var saved = d.toolkitIds || lsGet(ccKey('crisisCompanion.toolkit.v1'), []) || [];
     function toggle(id) {
       var next = saved.indexOf(id) === -1 ? saved.concat([id]) : saved.filter(function(x) { return x !== id; });
       upd('toolkitIds', next);
-      lsSet('crisisCompanion.toolkit.v1', next);
+      lsSet(ccKey('crisisCompanion.toolkit.v1'), next);
       announce(saved.indexOf(id) === -1 ? 'Added to your toolkit' : 'Removed from your toolkit');
     }
     var byCategory = {};
@@ -734,7 +740,7 @@ window.SelHub = window.SelHub || {
         'Tap any strategy to add it to your personal toolkit. Saved on your device only — nothing is uploaded. Build a list of 5-7 things that have actually worked for you in the past, so when a hard moment comes you don\'t have to think from scratch.'
       ),
       // "My toolkit" summary at top
-      saved.length > 0 && h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '12px 14px', marginBottom: '14px' } },
+      saved.length > 0 && h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '12px 14px', marginBottom: '14px' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '✓ My toolkit (' + saved.length + ')'),
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
           saved.map(function(id) {
@@ -793,16 +799,16 @@ window.SelHub = window.SelHub || {
       { id: 'professionals', label: '5. Professionals + crisis lines', sub: 'My therapist (if I have one), psychiatrist, doctor, school counselor, plus 24/7 crisis lines.', placeholder: 'e.g., "988 Lifeline (call or text), Crisis Text Line (text HOME to 741741), Dr. ____ at clinic ____, school counselor"' },
       { id: 'environment', label: '6. Making my environment safer', sub: 'What can I (or someone I trust) do to put distance between me and anything I might use to hurt myself? This is the single most evidence-based step.', placeholder: 'e.g., "Give my medications to mom to lock up. Stay out of the basement. Stay with someone overnight if it\'s really bad."' }
     ];
-    var entries = d.safetyPlan || lsGet('crisisCompanion.safetyPlan.v1', null) || {};
+    var entries = d.safetyPlan || lsGet(ccKey('crisisCompanion.safetyPlan.v1'), null) || {};
     function setStep(id, val) {
       var ne = Object.assign({}, entries); ne[id] = val;
       upd('safetyPlan', ne);
-      lsSet('crisisCompanion.safetyPlan.v1', ne);
+      lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne);
     }
     function clearAll() {
       if (typeof window !== 'undefined' && !window.confirm('Clear your saved safety plan? This cannot be undone.')) return;
       upd('safetyPlan', {});
-      lsSet('crisisCompanion.safetyPlan.v1', {});
+      lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
       announce('Safety plan cleared.');
     }
     function printPlan() {
@@ -845,7 +851,7 @@ window.SelHub = window.SelHub || {
     var filledCount = STEPS.filter(function(s) { return (entries[s.id] || '').trim().length > 0; }).length;
     return h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
       h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '📋 My safety plan (Stanley-Brown)'),
-      h('div', { style: { background: AMBER_LIGHT, border: '1px solid #fcd34d', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' } },
+      h('div', { style: { background: _ccC(AMBER_LIGHT), border: '1px solid #fcd34d', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' } },
         h('p', { style: { fontSize: '12px', color: '#78350f', lineHeight: 1.6, margin: 0 } },
           h('strong', null, 'Best built WITH a counselor or therapist. '),
           'A safety plan is most effective when an adult who knows you helps you fill it in — they think of things you\'d miss, and they\'re a person you\'ve already practiced reaching out to. You can start it here, save it, and finish it together. Saved on this device only.'
@@ -930,7 +936,7 @@ window.SelHub = window.SelHub || {
         h('p', { style: { fontSize: '13px', color: '#7f1d1d', lineHeight: 1.7, margin: 0 } },
           'If you\'re losing sleep, having intrusive thoughts, feeling numb, or starting to have your own thoughts of self-harm — those are signs that you need support too. Call 988, text HOME to 741741, or talk to a school counselor. Helpers need help too. There is no shame in needing it.')
       ),
-      h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
+      h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
         h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0, fontWeight: 600 } },
           'You showed up. You noticed. You said something. You told someone. That is enough. That is everything.')
       )
@@ -1388,12 +1394,35 @@ window.SelHub = window.SelHub || {
     color: 'teal',
     category: 'peer-support',
     render: function(ctx) {
+      // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
+      var _ccCTheme = (ctx && ctx.theme) || {};
+      var _ccCHC = !!_ccCTheme.isContrast, _ccCDark = !_ccCHC && !!_ccCTheme.isDark;
+      var _CCC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#f1f5f9':'#1e293b','#fffbeb':'#2e2410','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#f0fdf4':'#0b2e22','#f0fdfa':'#0c2e2a','#ccfbf1':'#0c3e38','#eff6ff':'#0e1f3a','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#dc2626':'#f87171','#b91c1c':'#f87171','#9f1239':'#fda4af','#1e40af':'#93c5fd','#0369a1':'#7dd3fc','#9a3412':'#fdba74','#fff1f2':'#2e1418','#065f46':'#6ee7b7'};
+      var _CCC_HC = {'#fff':'#000000','#f8fafc':'#000000','#f1f5f9':'#000000','#fffbeb':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#f0fdf4':'#000000','#f0fdfa':'#000000','#ccfbf1':'#000000','#eff6ff':'#000000','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#dc2626':'#ffff00','#b91c1c':'#ffff00','#9f1239':'#ffff00','#1e40af':'#ffff00','#0369a1':'#ffff00','#9a3412':'#ffff00','#fff1f2':'#000000','#065f46':'#ffff00'};
+      var _ccC = function(hex){ return _ccCHC ? (_CCC_HC[hex]||hex) : (_ccCDark ? (_CCC_DARK[hex]||hex) : hex); };
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast || function(){};
       var band = ctx.gradeBand || 'middle';
 
       var d = (ctx.toolData && ctx.toolData.crisiscompanion) || {};
+
+      // ── Per-student isolation for crisis localStorage keys ──
+      // Namespace by live session + student codename so a shared classroom
+      // device never exposes one student's safety plan / toolkit / badges to
+      // the next. One-time cleanup: in solo use, migrate a pre-namespacing plan
+      // into this student's namespace; then delete the old global key so the
+      // previously-shared data can't be read by anyone else.
+      _ccNs = [ctx.activeSessionCode, ctx.studentCodename].filter(Boolean).join('.') || 'student';
+      try {
+        var _ccSolo = !ctx.activeSessionCode;
+        ['crisisCompanion.safetyPlan.v1', 'crisisCompanion.toolkit.v1', 'crisisCompanion.badges.v1'].forEach(function (k) {
+          var legacy = localStorage.getItem(k);
+          if (legacy == null) return;
+          if (_ccSolo && localStorage.getItem(ccKey(k)) == null) { localStorage.setItem(ccKey(k), legacy); }
+          localStorage.removeItem(k);
+        });
+      } catch (e) {}
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('crisiscompanion', key); else { Object.keys(key).forEach(function(k) { ctx.update && ctx.update('crisiscompanion', k, key[k]); }); } }
         else { ctx.update && ctx.update('crisiscompanion', key, val); }
@@ -1401,7 +1430,7 @@ window.SelHub = window.SelHub || {
 
       // Hydrate persisted badges
       if (!d._hydrated) {
-        var savedBadges = lsGet('crisisCompanion.badges.v1', null);
+        var savedBadges = lsGet(ccKey('crisisCompanion.badges.v1'), null);
         if (savedBadges && d.badges === undefined) upd({ badges: savedBadges, _hydrated: true });
         else upd('_hydrated', true);
       }
@@ -1432,7 +1461,7 @@ window.SelHub = window.SelHub || {
         if (!badges[id]) {
           var nb = Object.assign({}, badges); nb[id] = true;
           upd('badges', nb);
-          lsSet('crisisCompanion.badges.v1', nb);
+          lsSet(ccKey('crisisCompanion.badges.v1'), nb);
         }
       }
 
@@ -1447,10 +1476,10 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════════
       if (!consented) {
         return h('div', { className: 'selh-crisiscompanion', style: { padding: '24px', maxWidth: '640px', margin: '0 auto', color: SLATE_TEXT } },
-          h('div', { style: { background: '#fff', border: '3px solid ' + AMBER, borderRadius: '16px', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' } },
+          h('div', { style: { background: _ccC('#fff'), border: '3px solid ' + AMBER, borderRadius: '16px', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '14px', borderBottom: '1px solid #e5e7eb', marginBottom: '14px' } },
               h('span', { style: { fontSize: '38px' }, 'aria-hidden': 'true' }, '⚠️'),
-              h('h1', { style: { fontSize: '20px', fontWeight: 800, color: '#92400e', margin: 0 } }, 'Content note before you continue')
+              h('h1', { style: { fontSize: '20px', fontWeight: 800, color: _ccC('#92400e'), margin: 0 } }, 'Content note before you continue')
             ),
             h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 12px' } },
               'This module is about what to do if a friend is depressed, in crisis, or thinking about hurting themselves — including suicide. It covers:'),
@@ -1462,16 +1491,16 @@ window.SelHub = window.SelHub || {
               h('li', null, 'Crisis helplines and what to say when you call'),
               h('li', null, 'How to take care of yourself when you\'ve supported a friend')
             ),
-            h('div', { style: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', marginBottom: '14px' } },
+            h('div', { style: { background: _ccC('#eff6ff'), border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', marginBottom: '14px' } },
               h('p', { style: { fontSize: '13px', lineHeight: 1.6, color: SLATE_TEXT, margin: 0 } },
-                h('strong', { style: { color: '#1e40af' } }, 'What this module does NOT include: '),
+                h('strong', { style: { color: _ccC('#1e40af') } }, 'What this module does NOT include: '),
                 'specific methods of self-harm, descriptions of suicide attempts, "before/after" stories, or any content that could function as a how-to. The information is intentionally general — focused on awareness, support, and connecting people to help.')
             ),
-            h('div', { style: { background: AMBER_LIGHT, border: '1px solid #fcd34d', borderRadius: '10px', padding: '12px', marginBottom: '18px' } },
-              h('p', { style: { fontSize: '13px', lineHeight: 1.6, color: '#78350f', margin: '0 0 8px' } },
+            h('div', { style: { background: _ccC(AMBER_LIGHT), border: '1px solid #fcd34d', borderRadius: '10px', padding: '12px', marginBottom: '18px' } },
+              h('p', { style: { fontSize: '13px', lineHeight: 1.6, color: _ccC('#78350f'), margin: '0 0 8px' } },
                 h('strong', null, 'If reading about these topics is hard for you right now, '),
                 'please consider one of these instead:'),
-              h('ul', { style: { fontSize: '13px', color: '#78350f', margin: 0, paddingLeft: '22px', lineHeight: 1.7 } },
+              h('ul', { style: { fontSize: '13px', color: _ccC('#78350f'), margin: 0, paddingLeft: '22px', lineHeight: 1.7 } },
                 h('li', null, 'Talk with a trusted adult before continuing — a school counselor, parent, or teacher'),
                 h('li', null, 'Skip this module and explore other SEL Hub tools'),
                 h('li', null, 'Call or text ', h('strong', { style: { fontFamily: 'monospace' } }, '988'), ' — the 988 Suicide & Crisis Lifeline (free, confidential, 24/7)'),
@@ -1487,7 +1516,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { addToast('Returning to SEL Hub menu'); if (ctx.setSelHubTool) ctx.setSelHubTool(null); },
                 'aria-label': 'Take me back to the SEL Hub menu without continuing',
-                style: { padding: '12px 18px', background: '#f1f5f9', color: SLATE_TEXT, border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
+                style: { padding: '12px 18px', background: _ccC('#f1f5f9'), color: _ccCHC ? '#ffff00' : (_ccCDark ? '#e2e8f0' : SLATE_TEXT), border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
               }, '← Take me back to the menu')
             )
           )
@@ -1502,7 +1531,7 @@ window.SelHub = window.SelHub || {
       var visitedCount = SECTIONS.filter(function(s) { return badges[s.id]; }).length;
 
       function navStrip() {
-        return h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '10px 12px', marginBottom: '14px' } },
+        return h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '10px 12px', marginBottom: '14px' } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Crisis Companion'),
             h('div', { style: { fontSize: '11px', color: TEAL_DARK, fontWeight: 600 } }, visitedCount + ' / ' + SECTIONS.length + ' sections visited')
@@ -1520,8 +1549,8 @@ window.SelHub = window.SelHub || {
                 style: {
                   padding: '6px 12px',
                   borderRadius: '8px',
-                  border: '2px solid ' + (sel ? TEAL_DARK : (visited ? TEAL : '#e2e8f0')),
-                  background: sel ? TEAL : (visited ? '#fff' : '#f8fafc'),
+                  border: '2px solid ' + (sel ? TEAL_DARK : (visited ? TEAL : _ccC('#e2e8f0'))),
+                  background: sel ? TEAL : (visited ? _ccC('#fff') : _ccC('#f8fafc')),
                   color: sel ? '#fff' : (visited ? TEAL_DARK : SLATE_MID),
                   fontSize: '12px',
                   fontWeight: sel ? 800 : 600,
@@ -1565,7 +1594,7 @@ window.SelHub = window.SelHub || {
       // Reusable card component for content sections
       function card(title, body, accentColor) {
         var c = accentColor || TEAL;
-        return h('div', { style: { background: '#fff', border: '2px solid ' + (c === TEAL ? TEAL_BORDER : '#e5e7eb'), borderLeft: '6px solid ' + c, borderRadius: '12px', padding: '14px 16px', marginBottom: '12px' } },
+        return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + (c === TEAL ? TEAL_BORDER : _ccC('#e5e7eb')), borderLeft: '6px solid ' + c, borderRadius: '12px', padding: '14px 16px', marginBottom: '12px' } },
           h('h3', { style: { fontSize: '14px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' } }, title),
           body
         );
@@ -1647,7 +1676,7 @@ window.SelHub = window.SelHub || {
 
         content = h('div', null,
           sectionHero({ icon: '🫧', label: 'Breath pacer' }),
-          h('div', { style: { background: '#fff', borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
+          h('div', { style: { background: _ccC('#fff'), borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
             h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
               'A visual breathing pacer. Watch the circle expand and contract; let your breath follow. Useful for moments of acute stress before a hard conversation, after one, or any time the body is ahead of the mind. This is a tool to USE — it doesn\'t replace any of the supports in the rest of this module.'),
 
@@ -1656,8 +1685,8 @@ window.SelHub = window.SelHub || {
               Object.keys(BREATH_MODES).map(function(k) {
                 var picked = bMode === k;
                 return h('button', { key: k, onClick: function() { upd('breathMode', k); stop(); }, 'aria-pressed': picked,
-                  style: { padding: '8px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? TEAL : '#d1d5db'),
-                    background: picked ? '#ccfbf1' : '#fff', color: picked ? TEAL_DARK : SLATE_TEXT, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                  style: { padding: '8px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? TEAL : _ccC('#d1d5db')),
+                    background: picked ? _ccC('#ccfbf1') : _ccC('#fff'), color: picked ? TEAL_DARK : SLATE_TEXT, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                   BREATH_MODES[k].name);
               })
             ),
@@ -1683,14 +1712,14 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 8, marginTop: 14 } },
                 !bRunning
                   ? h('button', { onClick: start, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '▶ Start')
-                  : h('button', { onClick: stop, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#dc2626', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '■ Stop'),
+                  : h('button', { onClick: stop, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _ccC('#dc2626'), color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '■ Stop'),
                 bRunning && h('button', { onClick: function() { upd('breathStart', Date.now()); upd('breathSession', { cycles: 0 }); },
-                  style: { padding: '10px 20px', borderRadius: 10, border: '1.5px solid #d1d5db', background: '#fff', color: SLATE_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '↺ Restart')
+                  style: { padding: '10px 20px', borderRadius: 10, border: '1.5px solid #d1d5db', background: _ccC('#fff'), color: SLATE_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '↺ Restart')
               )
             )
           ),
 
-          h('div', { style: { marginTop: 12, padding: 12, background: '#f0fdfa', borderRadius: 10, border: '1px solid ' + TEAL, fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65 } },
+          h('div', { style: { marginTop: 12, padding: 12, background: _ccC('#f0fdfa'), borderRadius: 10, border: '1px solid ' + TEAL, fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65 } },
             h('strong', { style: { color: TEAL_DARK } }, '💡 When to use which: '),
             'Box breathing (4-4-4-4) for general regulation — military and first responders use it. ',
             '4-7-8 for falling asleep or quick acute calm — the long exhale activates the parasympathetic system. ',
@@ -1730,18 +1759,18 @@ window.SelHub = window.SelHub || {
         function reset() { upd('groundStep', 0); upd('groundItems', { sight: [], touch: [], hear: [], smell: [], taste: [] }); }
         content = h('div', null,
           sectionHero({ icon: '🌿', label: 'Grounding 5-4-3-2-1' }),
-          h('div', { style: { background: '#fff', borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
+          h('div', { style: { background: _ccC('#fff'), borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
             h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
               'When your mind is racing or anxiety is climbing, the 5-4-3-2-1 technique pulls attention back to the body and the present moment. Use any of the 5 senses, even if some aren\'t accessible — name what you remember, what you imagine, what you wish you smelled. It still works.'),
             // Progress dots
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, justifyContent: 'center' } },
               STEPS.map(function(s, i) {
                 return h('div', { key: i, style: { width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800,
-                  background: i < gStep ? '#22c55e' : (i === gStep ? TEAL : '#e5e7eb'),
-                  color: i < gStep ? '#fff' : (i === gStep ? '#fff' : '#94a3b8') } }, i < gStep ? '✓' : s.count);
+                  background: i < gStep ? '#22c55e' : (i === gStep ? TEAL : _ccC('#e5e7eb')),
+                  color: i < gStep ? '#fff' : (i === gStep ? '#fff' : _ccC('#94a3b8')) } }, i < gStep ? '✓' : s.count);
               })
             ),
-            !allDone && h('div', { style: { padding: 16, background: '#f0fdfa', borderRadius: 10, marginBottom: 12 } },
+            !allDone && h('div', { style: { padding: 16, background: _ccC('#f0fdfa'), borderRadius: 10, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 h('span', { style: { fontSize: 32 } }, current.icon),
                 h('div', null,
@@ -1759,10 +1788,10 @@ window.SelHub = window.SelHub || {
               // List
               items.length > 0 && h('div', { style: { marginTop: 10 } },
                 items.map(function(it, idx) {
-                  return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 8, background: '#fff', borderRadius: 6, marginBottom: 4, border: '1px solid #d1fae5' } },
+                  return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 8, background: _ccC('#fff'), borderRadius: 6, marginBottom: 4, border: '1px solid #d1fae5' } },
                     h('span', { style: { fontSize: 16, color: '#22c55e' } }, '✓'),
                     h('span', { style: { flex: 1, fontSize: 13, color: SLATE_TEXT } }, it),
-                    h('button', { onClick: function() { removeItem(idx); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 } }, '×'));
+                    h('button', { onClick: function() { removeItem(idx); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: _ccC('#94a3b8'), cursor: 'pointer', fontSize: 16 } }, '×'));
                 })
               ),
               complete && h('button', { onClick: nextStep,
@@ -1774,7 +1803,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 16, fontWeight: 800, color: TEAL_DARK, marginBottom: 6 } }, 'Grounding complete'),
               h('p', { style: { fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } }, 'You named 15 specific things in your present moment. Notice how you feel now compared to when you started.'),
               h('button', { onClick: reset,
-                style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid ' + TEAL, background: '#fff', color: TEAL_DARK, fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '↺ Start again')
+                style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid ' + TEAL, background: _ccC('#fff'), color: TEAL_DARK, fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '↺ Start again')
             )
           )
         );
@@ -1801,7 +1830,7 @@ window.SelHub = window.SelHub || {
           ? (sevenDayReadings.reduce(function(s, r) { return s + r.value; }, 0) / sevenDayReadings.length).toFixed(1)
           : null;
 
-        var levelColors = ['#22c55e','#22c55e','#84cc16','#eab308','#eab308','#f59e0b','#f97316','#f97316','#ef4444','#ef4444','#b91c1c'];
+        var levelColors = ['#22c55e','#22c55e','#84cc16','#eab308','#eab308','#f59e0b','#f97316','#f97316','#ef4444','#ef4444',_ccC('#b91c1c')];
         var levelLabel = function(v) {
           if (v <= 2) return 'Calm';
           if (v <= 4) return 'Mild stress';
@@ -1812,19 +1841,19 @@ window.SelHub = window.SelHub || {
 
         content = h('div', null,
           sectionHero({ icon: '🌡', label: 'Distress check' }),
-          h('div', { style: { background: '#fff', borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
+          h('div', { style: { background: _ccC('#fff'), borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
             h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
               'A quick way to track how you\'re feeling over time. Rate your distress 0–10. Add an optional note. The pattern over a week tells you something words alone won\'t. ',
               h('strong', null, 'If your reading is 8 or above for more than an hour, please reach out to a trusted adult or text HOME to 741741.')),
 
             // Current reading slider
-            h('div', { style: { padding: 14, background: '#f0fdfa', borderRadius: 10, marginBottom: 14 } },
+            h('div', { style: { padding: 14, background: _ccC('#f0fdfa'), borderRadius: 10, marginBottom: 14 } },
               h('label', { htmlFor: 'distress-slider', style: { display: 'block', fontSize: 12, fontWeight: 700, color: TEAL_DARK, marginBottom: 8 } }, 'Right now I\'m feeling:'),
               h('input', { id: 'distress-slider', type: 'range', min: 0, max: 10, step: 1, value: nowMood,
                 onChange: function(e) { upd('distressNow', parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: levelColors[nowMood] }
               }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 2 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _ccC('#94a3b8'), marginTop: 2 } },
                 h('span', null, '0 · calm'), h('span', null, '5'), h('span', null, '10 · crisis')
               ),
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 12 } },
@@ -1841,31 +1870,31 @@ window.SelHub = window.SelHub || {
                 style: { marginTop: 12, padding: '10px 18px', borderRadius: 8, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '💾 Log this reading'),
 
               // Adaptive guidance based on level
-              nowMood >= 8 && h('div', { style: { marginTop: 12, padding: 12, background: '#fef2f2', borderRadius: 8, border: '1px solid #fca5a5' } },
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#b91c1c', marginBottom: 4 } }, '⚠ This is a hard moment.'),
-                h('p', { style: { fontSize: 12, color: '#7f1d1d', lineHeight: 1.6, margin: 0 } },
+              nowMood >= 8 && h('div', { style: { marginTop: 12, padding: 12, background: _ccC('#fef2f2'), borderRadius: 8, border: '1px solid #fca5a5' } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: _ccC('#b91c1c'), marginBottom: 4 } }, '⚠ This is a hard moment.'),
+                h('p', { style: { fontSize: 12, color: _ccC('#7f1d1d'), lineHeight: 1.6, margin: 0 } },
                   'You\'re in real distress. The Breath pacer (one section up) and Grounding 5-4-3-2-1 are both right here. ',
                   h('strong', null, 'If thoughts of self-harm are present, text HOME to 741741 (Crisis Text Line) or call/text 988 right now.'))),
-              nowMood >= 5 && nowMood < 8 && h('div', { style: { marginTop: 12, padding: 12, background: '#fffbeb', borderRadius: 8, border: '1px solid #fcd34d' } },
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#92400e', marginBottom: 4 } }, 'Above average distress.'),
-                h('p', { style: { fontSize: 12, color: '#78350f', lineHeight: 1.6, margin: 0 } },
+              nowMood >= 5 && nowMood < 8 && h('div', { style: { marginTop: 12, padding: 12, background: _ccC('#fffbeb'), borderRadius: 8, border: '1px solid #fcd34d' } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: _ccC('#92400e'), marginBottom: 4 } }, 'Above average distress.'),
+                h('p', { style: { fontSize: 12, color: _ccC('#78350f'), lineHeight: 1.6, margin: 0 } },
                   'Worth pausing for. Try the Breath pacer or Grounding tool. If this level keeps coming back, telling a trusted adult is a good move.'))
             ),
 
             // History chart
-            readings.length > 0 && h('div', { style: { padding: 14, background: '#fff', borderRadius: 10, marginBottom: 14 } },
+            readings.length > 0 && h('div', { style: { padding: 14, background: _ccC('#fff'), borderRadius: 10, marginBottom: 14 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 } },
                 h('h4', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: SLATE_TEXT } }, '📊 Your pattern'),
                 avg7 && h('span', { style: { fontSize: 11, color: SLATE_MID } }, '7-day avg: ' + avg7 + ' · ' + sevenDayReadings.length + ' readings')
               ),
               // Mini timeline
               h('svg', { viewBox: '0 0 320 100', style: { width: '100%', height: 100 }, 'aria-label': 'Distress over time chart' },
-                h('line', { x1: 30, y1: 90, x2: 310, y2: 90, stroke: '#cbd5e1' }),
+                h('line', { x1: 30, y1: 90, x2: 310, y2: 90, stroke: _ccC('#cbd5e1') }),
                 [0, 5, 10].map(function(g) {
                   var y = 90 - g * 8;
                   return h('g', { key: g },
-                    h('line', { x1: 30, y1: y, x2: 310, y2: y, stroke: '#f1f5f9', strokeWidth: 0.5 }),
-                    h('text', { x: 26, y: y + 3, textAnchor: 'end', fontSize: 8, fill: '#64748b' }, g));
+                    h('line', { x1: 30, y1: y, x2: 310, y2: y, stroke: _ccC('#f1f5f9'), strokeWidth: 0.5 }),
+                    h('text', { x: 26, y: y + 3, textAnchor: 'end', fontSize: 8, fill: _ccC('#64748b') }, g));
                 }),
                 readings.slice(-30).map(function(r, idx, arr) {
                   var x = 30 + (arr.length === 1 ? 140 : (idx / (arr.length - 1)) * 280);
@@ -1884,7 +1913,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Recent log
-            readings.length > 0 && h('details', { style: { padding: 12, background: '#f8fafc', borderRadius: 10, marginBottom: 14 } },
+            readings.length > 0 && h('details', { style: { padding: 12, background: _ccC('#f8fafc'), borderRadius: 10, marginBottom: 14 } },
               h('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: TEAL_DARK } }, '📋 Recent readings (' + readings.length + ')'),
               h('div', { style: { marginTop: 10, maxHeight: 200, overflowY: 'auto' } },
                 readings.slice().reverse().slice(0, 20).map(function(r) {
@@ -1893,11 +1922,11 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 14, fontWeight: 700, color: levelColors[r.value], minWidth: 28 } }, r.value),
                     h('span', { style: { fontSize: 11, color: SLATE_MID, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 100 } }, when.toLocaleString()),
                     h('span', { style: { flex: 1, fontSize: 12, color: SLATE_TEXT, lineHeight: 1.5 } }, r.note || ''),
-                    h('button', { onClick: function() { removeReading(r.id); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14 } }, '×')
+                    h('button', { onClick: function() { removeReading(r.id); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: _ccC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
                   );
                 })
               ),
-              h('button', { onClick: clearAll, style: { marginTop: 8, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: '#fff', color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all readings')
+              h('button', { onClick: clearAll, style: { marginTop: 8, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _ccC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all readings')
             )
           )
         );
@@ -1907,7 +1936,7 @@ window.SelHub = window.SelHub || {
       else if (section === 'whyMatters') {
         content = h('div', null,
           sectionHero({ icon: '🫂', label: 'Why this matters' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 12px' } },
               'You don\'t have to be a counselor. You don\'t have to know what to say. You don\'t have to fix anything.'),
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 12px' } },
@@ -1935,7 +1964,7 @@ window.SelHub = window.SelHub || {
             ),
             EMERALD
           ),
-          h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
+          h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('div', { style: { fontSize: '12px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.04em' } }, 'Sources & framework'),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
               'This module aligns with safe-messaging guidelines from AFSP (afsp.org), SAMHSA, the Reporting on Suicide media guidelines (reportingonsuicide.org), Sources of Strength (sourcesofstrength.org), the QPR Institute, NIMH, and AAP adolescent health guidance. It was designed by a school psychologist for use with middle- and high-school students, with editorial review against safe-messaging guidelines.')
@@ -1948,7 +1977,7 @@ window.SelHub = window.SelHub || {
       else if (section === 'recognizeDepression') {
         content = h('div', null,
           sectionHero({ icon: '🌧️', label: 'Recognizing depression in a friend' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               'Every kid has bad days. Every kid has a hard week now and then. That\'s being human, not depression.'),
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
@@ -1960,7 +1989,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: '12px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Patterns to notice (over weeks, not days)'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px', marginBottom: '14px' } },
             DEPRESSION_PATTERNS.map(function(p) {
-              return h('div', { key: p.id, style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '12px 14px' } },
+              return h('div', { key: p.id, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '12px 14px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
                   h('span', { style: { fontSize: '24px' }, 'aria-hidden': 'true' }, p.icon),
                   h('h3', { style: { fontSize: '14px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, p.label)
@@ -1969,14 +1998,14 @@ window.SelHub = window.SelHub || {
               );
             })
           ),
-          h('div', { style: { background: AMBER_LIGHT, border: '2px solid #fcd34d', borderRadius: '12px', padding: '14px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC(AMBER_LIGHT), border: '2px solid #fcd34d', borderRadius: '12px', padding: '14px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
               h('span', { style: { fontSize: '24px', flexShrink: 0 }, 'aria-hidden': 'true' }, '⚠️'),
               h('div', null,
-                h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#78350f', marginBottom: '6px' } }, 'Important nuance'),
-                h('p', { style: { fontSize: '13px', color: '#78350f', lineHeight: 1.7, margin: '0 0 8px' } },
+                h('div', { style: { fontSize: '14px', fontWeight: 800, color: _ccC('#78350f'), marginBottom: '6px' } }, 'Important nuance'),
+                h('p', { style: { fontSize: '13px', color: _ccC('#78350f'), lineHeight: 1.7, margin: '0 0 8px' } },
                   'In adolescents especially, depression often shows up as IRRITABILITY rather than sadness. A friend who\'s been snappy for weeks, raw at small things, or looking like they\'re burning at low temperature could be struggling more than someone who\'s visibly sad.'),
-                h('p', { style: { fontSize: '13px', color: '#78350f', lineHeight: 1.7, margin: 0 } },
+                h('p', { style: { fontSize: '13px', color: _ccC('#78350f'), lineHeight: 1.7, margin: 0 } },
                   'Boys, athletes, kids of color, larger-bodied kids, and high-achievers are often missed because they don\'t match the stereotype of "depressed teenager." Take the cluster of changes seriously regardless of how the friend looks.')
               )
             )
@@ -1998,7 +2027,7 @@ window.SelHub = window.SelHub || {
       else if (section === 'crisisSigns') {
         content = h('div', null,
           sectionHero({ icon: '🚨', label: 'Crisis warning signs' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               'When depression deepens into crisis — including thoughts of suicide — there are usually warning signs. The American Foundation for Suicide Prevention (AFSP) groups these into three buckets: ',
               h('strong', { style: { color: TEAL_DARK } }, 'TALK'), ', ',
@@ -2009,7 +2038,7 @@ window.SelHub = window.SelHub || {
           ),
           ['talk', 'mood', 'behavior'].map(function(k) {
             var sg = CRISIS_SIGNS[k];
-            return h('div', { key: k, style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
+            return h('div', { key: k, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
                 h('span', { style: { fontSize: '30px' }, 'aria-hidden': 'true' }, sg.icon),
                 h('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, sg.title)
@@ -2019,16 +2048,16 @@ window.SelHub = window.SelHub || {
               h('ul', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 10px', paddingLeft: '20px' } },
                 sg.examples.map(function(ex, i) { return h('li', { key: i }, ex); })
               ),
-              h('div', { style: { background: TEAL_LIGHT, padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: TEAL_DARK, lineHeight: 1.7 } },
+              h('div', { style: { background: _ccC(TEAL_LIGHT), padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: TEAL_DARK, lineHeight: 1.7 } },
                 h('strong', null, 'Note: '), sg.note)
             );
           }),
-          h('div', { style: { background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: '12px', padding: '14px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: '12px', padding: '14px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
               h('span', { style: { fontSize: '24px', flexShrink: 0 }, 'aria-hidden': 'true' }, '⚠️'),
               h('div', null,
-                h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#991b1b', marginBottom: '6px' } }, 'If you see ANY of these signs, the next moves are:'),
-                h('ol', { style: { fontSize: '13px', color: '#7f1d1d', lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
+                h('div', { style: { fontSize: '14px', fontWeight: 800, color: _ccC('#991b1b'), marginBottom: '6px' } }, 'If you see ANY of these signs, the next moves are:'),
+                h('ol', { style: { fontSize: '13px', color: _ccC('#7f1d1d'), lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
                   h('li', null, h('strong', null, 'Stay with them if you can. '), 'Don\'t leave them alone if they\'re in immediate distress.'),
                   h('li', null, h('strong', null, 'Ask directly. '), '"Are you thinking about hurting yourself?" Asking does NOT plant the idea (next section explains the research).'),
                   h('li', null, h('strong', null, 'Tell a trusted adult — today. '), 'Not next week. Today.'),
@@ -2046,7 +2075,7 @@ window.SelHub = window.SelHub || {
       else if (section === 'qpr') {
         content = h('div', null,
           sectionHero({ icon: '🧭', label: 'Question · Persuade · Refer' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               'QPR (',
               h('strong', null, 'Question, Persuade, Refer'),
@@ -2055,22 +2084,22 @@ window.SelHub = window.SelHub || {
               'You\'re not the therapist. You\'re the link between someone struggling and the people trained to help. That link is exactly what saves lives.')
           ),
           // Q
-          h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
               h('div', { style: { width: '42px', height: '42px', borderRadius: '50%', background: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800 } }, 'Q'),
               h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'Question — ask directly')
             ),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
               'If you suspect your friend is thinking about suicide, ask. Directly and gently. The exact words matter less than the willingness to ask.'),
-            h('div', { style: { background: TEAL_LIGHT, padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: TEAL_DARK, lineHeight: 1.7, marginBottom: '8px' } },
+            h('div', { style: { background: _ccC(TEAL_LIGHT), padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: TEAL_DARK, lineHeight: 1.7, marginBottom: '8px' } },
               h('strong', null, 'Examples: '),
               '"Are you thinking about hurting yourself?" · "Are you having thoughts of suicide?" · "Are you thinking about ending your life?"'),
-            h('div', { style: { background: '#eff6ff', border: '1px solid #bfdbfe', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: '#1e40af', lineHeight: 1.7 } },
+            h('div', { style: { background: _ccC('#eff6ff'), border: '1px solid #bfdbfe', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: _ccC('#1e40af'), lineHeight: 1.7 } },
               h('strong', null, '🔬 The most-cited barrier to asking is wrong: '),
               'Asking does NOT plant the idea. Multiple meta-analyses (Dazzi et al., 2014, Psychological Medicine) and decades of research from AFSP, NIMH, and QPR Institute confirm: asking directly is protective. It often comes as a relief — the person was waiting for someone to notice.')
           ),
           // P
-          h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
               h('div', { style: { width: '42px', height: '42px', borderRadius: '50%', background: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800 } }, 'P'),
               h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'Persuade — listen and stay')
@@ -2083,12 +2112,12 @@ window.SelHub = window.SelHub || {
               h('li', null, h('strong', null, 'Don\'t promise secrecy. '), 'You can say: "I care about you too much to keep this to myself. I want us to talk to someone who can really help."'),
               h('li', null, h('strong', null, 'Stay with them. '), 'Don\'t leave them alone if they\'re in immediate distress. Sit. Walk. Just be present.')
             ),
-            h('div', { style: { background: '#fff7ed', border: '1px solid #fdba74', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: '#9a3412', lineHeight: 1.7 } },
+            h('div', { style: { background: _ccC('#fff7ed'), border: '1px solid #fdba74', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: _ccC('#9a3412'), lineHeight: 1.7 } },
               h('strong', null, '⚠ Skip the "promise me" trap: '),
               'Don\'t ask them to "promise" they won\'t do anything. It puts them in the position of making a promise they may not be able to keep, which adds shame. Instead: "I want you to be safe. Let\'s find help right now, together."')
           ),
           // R
-          h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
               h('div', { style: { width: '42px', height: '42px', borderRadius: '50%', background: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800 } }, 'R'),
               h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'Refer — connect them to help')
@@ -2104,7 +2133,7 @@ window.SelHub = window.SelHub || {
               h('li', null, 'If immediate physical danger: 911. Not next week. Now.')
             )
           ),
-          h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
+          h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
               h('strong', { style: { color: TEAL_DARK } }, 'The whole framework in one sentence: '),
               'Ask directly, listen fully, and bring in an adult who can help.')
@@ -2117,7 +2146,7 @@ window.SelHub = window.SelHub || {
       else if (section === 'whatToSay') {
         content = h('div', null,
           sectionHero({ icon: '💬', label: 'What to say (and what not to say)' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               'You don\'t need a perfect script. You don\'t need to be wise. You need to be present, honest, and willing to bring an adult in. The wording below is example-level — your real conversation will be your own words.'),
             h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.7, margin: 0, fontStyle: 'italic' } },
@@ -2128,11 +2157,11 @@ window.SelHub = window.SelHub || {
             h('div', null,
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '22px', color: EMERALD }, 'aria-hidden': 'true' }, '✓'),
-                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: EMERALD_DARK, margin: 0 } }, 'These help')
+                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: 0 } }, 'These help')
               ),
               SAY_DO.map(function(it, i) {
-                return h('div', { key: i, style: { background: '#f0fdf4', border: '2px solid ' + EMERALD, borderRadius: '10px', padding: '12px', marginBottom: '8px' } },
-                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: EMERALD_DARK, marginBottom: '6px' } }, it.say),
+                return h('div', { key: i, style: { background: _ccC('#f0fdf4'), border: '2px solid ' + EMERALD, borderRadius: '10px', padding: '12px', marginBottom: '8px' } },
+                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: _ccC(EMERALD_DARK), marginBottom: '6px' } }, it.say),
                   h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } }, h('strong', null, 'Why: '), it.why)
                 );
               })
@@ -2141,17 +2170,17 @@ window.SelHub = window.SelHub || {
             h('div', null,
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '22px', color: ROSE }, 'aria-hidden': 'true' }, '×'),
-                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: '#9f1239', margin: 0 } }, 'These don\'t help (even when well-meant)')
+                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: _ccC('#9f1239'), margin: 0 } }, 'These don\'t help (even when well-meant)')
               ),
               SAY_DONT.map(function(it, i) {
-                return h('div', { key: i, style: { background: ROSE_LIGHT, border: '2px solid ' + ROSE, borderRadius: '10px', padding: '12px', marginBottom: '8px' } },
-                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#9f1239', marginBottom: '6px' } }, it.say),
+                return h('div', { key: i, style: { background: _ccC(ROSE_LIGHT), border: '2px solid ' + ROSE, borderRadius: '10px', padding: '12px', marginBottom: '8px' } },
+                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: _ccC('#9f1239'), marginBottom: '6px' } }, it.say),
                   h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } }, h('strong', null, 'Why: '), it.why)
                 );
               })
             )
           ),
-          h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
+          h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
               h('strong', { style: { color: TEAL_DARK } }, 'If you said one of the "don\'t" things in the past — '),
               'that\'s OK. You didn\'t know. None of us were born knowing this. Now you have other words. The next conversation can be different.')
@@ -2164,13 +2193,13 @@ window.SelHub = window.SelHub || {
       else if (section === 'tellingAdult') {
         content = h('div', null,
           sectionHero({ icon: '🍎', label: 'Telling a trusted adult' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               h('strong', null, 'This is the most important skill in the whole module. '),
               'Telling an adult is what turns your concern into help that actually changes the outcome. It is the load-bearing move — the moment that lets professionals do what they\'re trained to do.')
           ),
-          h('div', { style: { background: '#f0fdf4', border: '2px solid ' + EMERALD, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
-            h('h2', { style: { fontSize: '16px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 8px' } }, 'Loyalty, not betrayal'),
+          h('div', { style: { background: _ccC('#f0fdf4'), border: '2px solid ' + EMERALD, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
+            h('h2', { style: { fontSize: '16px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: '0 0 8px' } }, 'Loyalty, not betrayal'),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
               'A friend in crisis may ask you not to tell anyone. They may make you promise. They may be scared, ashamed, or convinced it will make things worse.'),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
@@ -2178,8 +2207,8 @@ window.SelHub = window.SelHub || {
               'Safety overrides secrecy. Telling an adult when a friend\'s life or wellbeing is at risk is the most loyal thing a friend can do. Most people who are protected this way are GRATEFUL afterward — even when they were upset in the moment. The friendship can survive a hard conversation; it cannot survive losing the friend.')
           ),
           h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'When to tell — every time'),
-          h('div', { style: { background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '10px', padding: '14px', marginBottom: '12px' } },
-            h('ul', { style: { fontSize: '14px', color: '#7f1d1d', lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
+          h('div', { style: { background: _ccC('#fef2f2'), border: '1px solid #fca5a5', borderRadius: '10px', padding: '14px', marginBottom: '12px' } },
+            h('ul', { style: { fontSize: '14px', color: _ccC('#7f1d1d'), lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
               h('li', null, 'Your friend mentioned wanting to die, hurt themselves, or end their life — even casually'),
               h('li', null, 'You\'re seeing a cluster of crisis warning signs (TALK / MOOD / BEHAVIOR)'),
               h('li', null, 'Your friend has a plan, a means, or a timeline — even if vague'),
@@ -2190,7 +2219,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Who to tell — pick whoever you can reach fastest'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '10px', marginBottom: '14px' } },
             TRUSTED_ADULTS.map(function(a, i) {
-              return h('div', { key: i, style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '12px 14px' } },
+              return h('div', { key: i, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '12px 14px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
                   h('span', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, a.icon),
                   h('h3', { style: { fontSize: '14px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, a.label)
@@ -2211,7 +2240,7 @@ window.SelHub = window.SelHub || {
             ),
             EMERALD
           ),
-          h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
+          h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('div', { style: { fontSize: '13px', fontWeight: 700, color: TEAL_DARK, marginBottom: '4px' } }, '🍎 In Maine schools'),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
               'School counselors and school psychologists are mandated reporters — they are legally required to act on safety concerns. They will NOT just tell your parents and walk away. They will follow a protocol that includes assessing your friend, contacting their family safely, and connecting them to ongoing care. Mandated reporting is a guard rail, not a punishment.')
@@ -2236,7 +2265,7 @@ window.SelHub = window.SelHub || {
 
         content = h('div', null,
           sectionHero({ icon: '🔍', label: 'Myths debunked' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               'Six of the most-cited myths that prevent people from helping a friend in crisis. For each one, decide: is the claim a MYTH or a TRUTH? Then read the evidence-based answer with citations.'),
             h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.7, margin: 0, fontStyle: 'italic' } },
@@ -2245,25 +2274,25 @@ window.SelHub = window.SelHub || {
           MYTHS.map(function(m, i) {
             var picked = picks[i];
             var revealed = picked != null;
-            return h('div', { key: i, style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
+            return h('div', { key: i, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
               h('div', { style: { fontSize: '11px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Myth ' + (i + 1) + ' of ' + MYTHS.length),
-              h('div', { style: { background: '#f1f5f9', borderLeft: '4px solid #94a3b8', padding: '10px 14px', borderRadius: '6px', marginBottom: '12px' } },
+              h('div', { style: { background: _ccC('#f1f5f9'), borderLeft: '4px solid #94a3b8', padding: '10px 14px', borderRadius: '6px', marginBottom: '12px' } },
                 h('p', { style: { fontSize: '14px', fontStyle: 'italic', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } }, '"' + m.claim + '"')
               ),
               !revealed && h('div', { 'role': 'radiogroup', 'aria-label': m.claim, style: { display: 'flex', gap: '8px', marginBottom: '10px' } },
                 h('button', {
                   onClick: function() { pickMyth(i, 0); },
                   role: 'radio', 'aria-checked': 'false',
-                  style: { flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #e5e7eb', background: '#fff', color: SLATE_TEXT, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                  style: { flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #e5e7eb', background: _ccC('#fff'), color: SLATE_TEXT, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                 }, 'This is a MYTH'),
                 h('button', {
                   onClick: function() { pickMyth(i, 1); },
                   role: 'radio', 'aria-checked': 'false',
-                  style: { flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #e5e7eb', background: '#fff', color: SLATE_TEXT, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                  style: { flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #e5e7eb', background: _ccC('#fff'), color: SLATE_TEXT, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                 }, 'This is TRUE')
               ),
               revealed && h('div', { 'aria-live': 'polite' },
-                h('div', { style: { padding: '10px 12px', background: picked === 0 ? '#f0fdf4' : '#fff7ed', border: '1px solid ' + (picked === 0 ? EMERALD : '#fdba74'), borderRadius: '8px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: picked === 0 ? EMERALD_DARK : '#9a3412' } },
+                h('div', { style: { padding: '10px 12px', background: picked === 0 ? _ccC('#f0fdf4') : _ccC('#fff7ed'), border: '1px solid ' + (picked === 0 ? EMERALD : '#fdba74'), borderRadius: '8px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: picked === 0 ? EMERALD_DARK : _ccC('#9a3412') } },
                   picked === 0 ? '✓ Correct — this is a myth.' : '⚠ Common misconception — this is actually a myth.'),
                 h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
                   h('strong', { style: { color: TEAL_DARK } }, 'What the evidence says: '),
@@ -2281,14 +2310,14 @@ window.SelHub = window.SelHub || {
       else if (section === 'resources') {
         // Render one resource card
         function resourceCard(r) {
-          return h('div', { key: r.id, style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' } },
+          return h('div', { key: r.id, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' } },
             h('div', { style: { fontSize: '15px', fontWeight: 800, color: TEAL_DARK, marginBottom: '4px' } }, r.label),
             h('div', { style: { fontSize: '14px', color: SLATE_TEXT, fontFamily: 'monospace', fontWeight: 700, marginBottom: '8px' } }, r.contact),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, 'Who: '), r.who),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, 'What: '), r.what),
-            h('p', { style: { fontSize: '13px', color: TEAL_DARK, lineHeight: 1.6, margin: '0 0 6px', background: TEAL_LIGHT, padding: '8px 10px', borderRadius: '6px' } },
+            h('p', { style: { fontSize: '13px', color: TEAL_DARK, lineHeight: 1.6, margin: '0 0 6px', background: _ccC(TEAL_LIGHT), padding: '8px 10px', borderRadius: '6px' } },
               h('strong', null, 'What to say: '), r.script),
-            r.url && h('div', { style: { fontSize: '12px', color: '#0369a1', fontFamily: 'monospace' } }, '🔗 ', r.url)
+            r.url && h('div', { style: { fontSize: '12px', color: _ccC('#0369a1'), fontFamily: 'monospace' } }, '🔗 ', r.url)
           );
         }
 
@@ -2307,7 +2336,7 @@ window.SelHub = window.SelHub || {
 
         content = h('div', null,
           sectionHero({ icon: '☎️', label: 'Crisis resources' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               'Every resource here is free, confidential, and trained. You can call FOR your friend, WITH your friend, or for yourself. Helplines are not just for the person in crisis — they are also for the friend, parent, or supporter trying to figure out what to do.'),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 10px' } },
@@ -2323,8 +2352,8 @@ window.SelHub = window.SelHub || {
           // Render each group in order
           RESOURCE_GROUPS.map(resourceGroupBlock),
           // LGBTQ+ closing note
-          h('div', { style: { background: '#f0fdf4', border: '2px solid ' + EMERALD, borderRadius: '12px', padding: '14px' } },
-            h('h2', { style: { fontSize: '14px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px' } }, 'A note about LGBTQ+ youth'),
+          h('div', { style: { background: _ccC('#f0fdf4'), border: '2px solid ' + EMERALD, borderRadius: '12px', padding: '14px' } },
+            h('h2', { style: { fontSize: '14px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: '0 0 6px' } }, 'A note about LGBTQ+ youth'),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
               'Research consistently shows LGBTQ+ youth — and especially transgender youth — face significantly higher rates of suicidal thoughts and attempts than their non-LGBTQ+ peers. The reasons are well-documented: family rejection, school harassment, lack of affirming care, and minority stress. The Trevor Project (1-866-488-7386 / text START to 678-678) is staffed by people specifically trained for these realities. If your friend is LGBTQ+, this resource is built for them.')
           ),
@@ -2355,7 +2384,7 @@ window.SelHub = window.SelHub || {
               onClick: function() { setSub(t.id); },
               style: {
                 padding: '8px 14px',
-                background: sel ? TEAL : '#fff',
+                background: sel ? TEAL : _ccC('#fff'),
                 color: sel ? '#fff' : TEAL_DARK,
                 border: '2px solid ' + (sel ? TEAL_DARK : TEAL_BORDER),
                 borderRadius: '10px',
@@ -2380,7 +2409,7 @@ window.SelHub = window.SelHub || {
         } else {
           // Default: Read — the existing static content
           subContent = h('div', null,
-            h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+            h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
               h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
                 'Supporting a friend through a mental-health crisis is heavy. It changes you. Researchers call this ',
                 h('em', null, 'secondary stress'),
@@ -2389,7 +2418,7 @@ window.SelHub = window.SelHub || {
                 'Taking care of yourself is not selfish. It\'s how you stay able to keep showing up.')
             ),
             // Pointer to the interactive tools
-            h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '12px 14px', marginBottom: '12px' } },
+            h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '12px 14px', marginBottom: '12px' } },
               h('div', { style: { fontSize: '12px', fontWeight: 700, color: TEAL_DARK, marginBottom: '4px' } }, '🧰 Interactive tools above'),
               h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } },
                 'The tabs at the top of this section have practical tools you can use right now: a guided ',
@@ -2431,7 +2460,7 @@ window.SelHub = window.SelHub || {
 
         content = h('div', null,
           sectionHero({ icon: '🎭', label: 'Practice — three scenarios' }),
-          h('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
               'Three short scenarios drawn from typical adolescent experience. For each, pick the response you think would help most. There\'s no perfect answer — just answers that are more or less helpful in context. Modeled on Sources of Strength practice protocols.')
           ),
@@ -2444,14 +2473,14 @@ window.SelHub = window.SelHub || {
                 key: s.id,
                 onClick: function() { upd('practiceIdx', i); announce('Loaded scenario: ' + s.title); },
                 'aria-pressed': sel ? 'true' : 'false',
-                style: { padding: '8px 14px', borderRadius: '10px', border: '2px solid ' + (sel ? TEAL_DARK : TEAL_BORDER), background: sel ? TEAL : '#fff', color: sel ? '#fff' : TEAL_DARK, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '8px 14px', borderRadius: '10px', border: '2px solid ' + (sel ? TEAL_DARK : TEAL_BORDER), background: sel ? TEAL : _ccC('#fff'), color: sel ? '#fff' : TEAL_DARK, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
               }, 'Scenario ' + (i + 1), done ? ' ✓' : '');
             })
           ),
           // Scenario card
-          h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('h2', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 8px' } }, sc.title),
-            h('div', { style: { background: SLATE_BG, borderLeft: '4px solid ' + TEAL, padding: '12px 14px', borderRadius: '6px', marginBottom: '14px' } },
+            h('div', { style: { background: _ccC(SLATE_BG), borderLeft: '4px solid ' + TEAL, padding: '12px 14px', borderRadius: '6px', marginBottom: '14px' } },
               h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } }, sc.setting)
             ),
             h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'How would you respond?'),
@@ -2459,11 +2488,11 @@ window.SelHub = window.SelHub || {
               sc.responses.map(function(r, ri) {
                 var sel = (picked === ri);
                 var revealed = picked != null;
-                var bg = '#fff'; var border = '#e5e7eb'; var text = SLATE_TEXT;
+                var bg = '#fff'; var border = _ccC('#e5e7eb'); var text = SLATE_TEXT;
                 if (revealed) {
-                  if (r.rating === 'helpful') { bg = '#f0fdf4'; border = EMERALD; text = EMERALD_DARK; }
-                  else if (r.rating === 'harmful') { bg = ROSE_LIGHT; border = ROSE; text = '#9f1239'; }
-                  else { bg = '#fff7ed'; border = '#fdba74'; text = '#9a3412'; }
+                  if (r.rating === 'helpful') { bg = _ccC('#f0fdf4'); border = EMERALD; text = EMERALD_DARK; }
+                  else if (r.rating === 'harmful') { bg = ROSE_LIGHT; border = ROSE; text = _ccC('#9f1239'); }
+                  else { bg = _ccC('#fff7ed'); border = '#fdba74'; text = _ccC('#9a3412'); }
                 }
                 return h('button', {
                   key: ri,
@@ -2481,7 +2510,7 @@ window.SelHub = window.SelHub || {
               })
             )
           ),
-          h('div', { style: { background: TEAL_LIGHT, border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
+          h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
               h('strong', { style: { color: TEAL_DARK } }, 'A note on practice: '),
               'Real conversations are messier than scripted scenarios. The point of practice isn\'t to memorize lines — it\'s to develop the INSTINCT to ask, listen, stay, and tell. With practice, that instinct gets faster.')

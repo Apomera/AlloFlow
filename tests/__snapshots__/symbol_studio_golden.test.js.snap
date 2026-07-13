@@ -249,8 +249,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 </div>
 <button aria-label="From Sentence" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Type a sentence and let AI map each word to an AAC symbol">🔤 From Sentence</button>
 <button aria-label="️ From Gallery" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Add a symbol from your gallery directly to the board">🖼️ From Gallery</button>
-<button aria-label="Import Board" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Import a board from a .json file">📥 Import Board</button>
-<input type="file" accept=".json" style="display:none"/>
+<button aria-label="Import Board" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file">📥 Import Board</button>
+<input type="file" accept=".json,.obf,.obz" style="display:none"/>
 </div>
 <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;flex-direction:column;gap:10px">
 <div style="font-size:48px">📋</div>
@@ -1086,7 +1086,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 </button>
 </div>
 <div style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap">
-<button aria-label="Print clinical report" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">📊 Clinical Report</button>
+<button aria-label="Print practice report" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">📊 Practice Report</button>
 <button aria-label="Print home note for family" style="padding:8px 14px;background:#dcfce7;color:#15803d;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">🏠 Home Note</button>
 <button aria-label="Export research CSV" style="padding:8px 14px;background:#dbeafe;color:#1d4ed8;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">🔬 Research CSV</button>
 </div>
@@ -2234,18 +2234,19 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 </div>
 <div>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Additional context (optional)</label>
-<textarea placeholder="e.g. Marcus is 7, has autism, loves trains" aria-label="Additional context for social story" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;background:#fff;color:inherit;height:55px">
+<textarea placeholder="e.g. likes trains, gets nervous at drop-off (avoid real names / diagnoses)" aria-label="Additional context for social story" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;background:#fff;color:inherit;height:55px">
 </textarea>
+<p style="font-size:10px;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin:4px 0 0">Story and image prompts are sent to a cloud AI (Google Gemini / Imagen). Do not enter real student names, diagnoses, or other identifying details (FERPA).</p>
 </div>
 <button disabled="" aria-label="Generate social story" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Create Social Story</button>
-<p style="font-size:10px;color:#6b7280">Uses Carol Gray format — descriptive, perspective, and directive sentences. Illustrations auto-generate for each page.</p>
+<p style="font-size:10px;color:#6b7280">Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.</p>
 </div>
 <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;flex-direction:column;gap:10px;padding:20px">
 <div style="font-size:52px">📖</div>
 <p style="font-weight:600">Create an AI-illustrated Social Story</p>
 <div style="max-width:420px;font-size:13px;line-height:1.7;text-align:center">
-<p>Describe a social situation and AlloFlow writes a Carol Gray-format story, then generates a custom illustration for every page.</p>
-<p>Add a Student Avatar to make every illustration feature your specific student — no other tool does this.</p>
+<p>Describe a social situation and AlloFlow drafts a Carol Gray-informed story (review and edit before use), then generates a custom illustration for every page.</p>
+<p>Add a Student Avatar to make every illustration feature your specific student.</p>
 </div>
 </div>
 </div>
@@ -2479,6 +2480,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
+<p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
 <div style="flex:1;overflow-y:auto">
@@ -2726,6 +2729,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
+<p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
 <div style="flex:1;overflow-y:auto">
@@ -2973,6 +2978,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
+<p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
 <div style="flex:1;overflow-y:auto">
@@ -3220,6 +3227,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
+<p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
 <div style="flex:1;overflow-y:auto">

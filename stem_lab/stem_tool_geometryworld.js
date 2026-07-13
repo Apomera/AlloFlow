@@ -1291,12 +1291,24 @@
       { id: 'build_10', label: 'Place 10 blocks in the world', icon: '\uD83E\uDDF1', check: function(d) { return (d.blocksPlaced || 0) >= 10; }, progress: function(d) { return Math.min(d.blocksPlaced || 0, 10) + '/10 blocks'; } }
     ],
     render: function (ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.geometryWorld) || {};
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
+      // WebXR: "Enter VR" shows ONLY while a headset is present (reactive to
+      // connect/unplug via devicechange) — no clutter for the 2D majority.
+      var _xrSup = React.useState(false); var xrSupported = _xrSup[0]; var setXrSupported = _xrSup[1];
+      React.useEffect(function() {
+        var alive = true;
+        var check = function() { try { if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(function(ok){ if (alive) setXrSupported(!!ok); }).catch(function(){}); } catch(e){} };
+        check();
+        var dc = function() { check(); };
+        try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
+        return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
+      }, []);
       var upd = function (key, val) {
         if (typeof key === 'object') { ctx.updateMulti('geometryWorld', key); }
         else { ctx.update('geometryWorld', key, val); }
@@ -1643,6 +1655,26 @@
 
       // ── Engine refs (stored on window to persist across renders) ──
       var engineKey = '__geoWorldEngine';
+
+      // Lazy-load the shared AlloVR layer from this tool's CDN base (only when a
+      // headset is present, so non-VR users never download it).
+      function ensureAlloVR(cb) {
+        if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+        var base = 'https://alloflow-cdn.pages.dev/', q = '';
+        try {
+          var scr = document.querySelectorAll('script[src]');
+          for (var i = 0; i < scr.length; i++) {
+            var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+            if (m) { base = m[1]; q = m[2] || ''; break; }
+          }
+        } catch (e) {}
+        try {
+          var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+          s.onload = function(){ cb(window.AlloModules && window.AlloModules.AlloVR); };
+          s.onerror = function(){ cb(null); };
+          document.head.appendChild(s);
+        } catch (e) { cb(null); }
+      }
 
       // ── Initialize 3D engine ──
       function initEngine(container) {
@@ -3824,6 +3856,7 @@
 
         // Handle resize
         var ro = new ResizeObserver(function() {
+          if (!container.isConnected) { ro.disconnect(); return; }
           if (!container.clientWidth) return;
           engine.camera.aspect = container.clientWidth / container.clientHeight;
           engine.camera.updateProjectionMatrix();
@@ -4068,6 +4101,32 @@
 
         window[engineKey] = engine;
 
+        // ── WebXR (optional): walk THROUGH the geometry world at room scale —
+        //    thumbstick glide + teleport + comfort vignette. Loads AlloVR only when
+        //    a headset is present; presenting-only, so the 2D world is untouched.
+        //    (Grabbing/stretching shapes in-VR is the natural Tier-4 follow-up — the
+        //    HandWaver/IMRE angle for Justin Dimmel.) ──
+        try {
+          if (navigator.xr && navigator.xr.isSessionSupported) {
+            navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
+              if (!ok || engine._destroyed) return;
+              ensureAlloVR(function(V) {
+                if (!V || engine._destroyed || !engine.renderer) return;
+                try {
+                  engine.vr = V.enable({
+                    THREE: THREE, renderer: engine.renderer, scene: engine.scene, camera: engine.camera,
+                    seat: { position: [0, 0, 6], scale: 1 },
+                    bounds: { minX: -35, maxX: 35, minZ: -35, maxZ: 35 },
+                    render: function() { if (engine.composer) { try { engine.composer.render(); return; } catch (e) { engine.composer = null; } } engine.renderer.render(engine.scene, engine.camera); },
+                    pauseLoop: function() { if (engine._rafId) { cancelAnimationFrame(engine._rafId); engine._rafId = null; } },
+                    resumeLoop: function() { try { animate(); } catch (e) {} }
+                  });
+                } catch(e){}
+              });
+            }).catch(function(){});
+          }
+        } catch(e){}
+
         // Auto-load default lesson
         engine.loadLesson(SAMPLE_LESSONS.volumeExplorer);
         } catch(e) {
@@ -4082,6 +4141,7 @@
         var engine = window[engineKey];
         if (engine) {
           engine._destroyed = true;
+          try { if (engine.vr && engine.vr.destroy) engine.vr.destroy(); engine.vr = null; } catch(e){}
           if (engine._rafId) cancelAnimationFrame(engine._rafId); // stop the FPS render loop on teardown
           // Remove every listener registered during initEngine. Without this
           // step, document-scoped handlers (mousemove / keydown / keyup /
@@ -4113,6 +4173,17 @@
           if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
           if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
           if (engine._dimTimer) clearTimeout(engine._dimTimer);
+          // Clear the auto-clear measurement timers, the collab position-sync interval + Firestore listener,
+          // and the typewriter timer that teardown previously missed (they kept firing after unmount / mid-collab).
+          if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
+          if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
+          if (engine._collabSyncTimer) clearTimeout(engine._collabSyncTimer);
+          if (engine._collabPosInterval) clearInterval(engine._collabPosInterval);
+          if (typeof collabUnsubscribe === 'function') { try { collabUnsubscribe(); } catch (e) {} }
+          if (typeof window !== 'undefined' && window._gwTypewriterTimer) { clearTimeout(window._gwTypewriterTimer); window._gwTypewriterTimer = null; }
+          // Dispose the angle / net / ruler measurement helper meshes (only _dimLines were disposed before)
+          var _dispGeo = function(o) { if (!o) return; if (Array.isArray(o)) { o.forEach(_dispGeo); return; } if (engine.scene) engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } };
+          _dispGeo(engine._angleHelpers); _dispGeo(engine._netHelpers); _dispGeo(engine._rulerLine); _dispGeo(engine._rulerLabel);
           // Dispose sky elements
           if (engine._sunSprite) engine.scene.remove(engine._sunSprite);
           if (engine._cloudPlane) engine.scene.remove(engine._cloudPlane);
@@ -4356,7 +4427,7 @@
         });
         var fixes = 0;
         if (lesson.structures.length === 0) { lesson.structures.push({ type: 'fill', x1: 0, y1: 0, z1: 0, x2: 8, y2: 0, z2: 8, block: 'stone' }); fixes++; }
-        if (lesson.npcs.length === 0) { lesson.npcs.push({ position: [4, 1, 4], name: 'Guide', color: 8048861, dialogue: 'Welcome! Explore the structures and use M to measure.', question: null }); fixes++; }
+        if (lesson.npcs.length === 0) { lesson.npcs.push({ position: [4, 1, 4], name: __alloT('stem.geometryworld.guide', 'Guide'), color: 8048861, dialogue: 'Welcome! Explore the structures and use M to measure.', question: null }); fixes++; }
         if (fixes > 0 && addToast) addToast('\u26A0\uFE0F Fixed ' + fixes + ' issue(s) in AI lesson', 'info');
         return lesson;
       }
@@ -4429,16 +4500,16 @@
 
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
       var OPEN_MODALS = [
-        { flag: showNpcDialog,    key: 'showNpcDialog',    label: 'NPC Dialog',            emoji: '💬' },
-        { flag: showMyLessons,    key: 'showMyLessons',    label: 'My Lessons',            emoji: '📚' },
-        { flag: showLessonEditor, key: 'showLessonEditor', label: 'Lesson Editor',         emoji: '✏️' },
-        { flag: showLessonIntro,  key: 'showLessonIntro',  label: 'Lesson Intro',          emoji: '📖' },
-        { flag: showReflection,   key: 'showReflection',   label: 'Reflection',            emoji: '🔍' },
-        { flag: showHelp,         key: 'showHelp',         label: 'Help',                  emoji: '❓' },
-        { flag: showCreatorPanel, key: 'showCreatorPanel', label: 'Creator Panel',         emoji: '🎨' },
-        { flag: showGrowthNudge,  key: 'showGrowthNudge',  label: 'Growth Nudge',          emoji: '🌱' },
-        { flag: showTeacherView,  key: 'showTeacherView',  label: 'Teacher Dashboard',     emoji: '📊' },
-        { flag: showPeerWorlds,   key: 'showPeerWorlds',   label: 'Class Worlds',          emoji: '🌐' }
+        { flag: showNpcDialog,    key: 'showNpcDialog',    label: __alloT('stem.geometryworld.npc_dialog', 'NPC Dialog'),            emoji: '💬' },
+        { flag: showMyLessons,    key: 'showMyLessons',    label: __alloT('stem.geometryworld.my_lessons', 'My Lessons'),            emoji: '📚' },
+        { flag: showLessonEditor, key: 'showLessonEditor', label: __alloT('stem.geometryworld.lesson_editor', 'Lesson Editor'),         emoji: '✏️' },
+        { flag: showLessonIntro,  key: 'showLessonIntro',  label: __alloT('stem.geometryworld.lesson_intro', 'Lesson Intro'),          emoji: '📖' },
+        { flag: showReflection,   key: 'showReflection',   label: __alloT('stem.geometryworld.reflection', 'Reflection'),            emoji: '🔍' },
+        { flag: showHelp,         key: 'showHelp',         label: __alloT('stem.geometryworld.help', 'Help'),                  emoji: '❓' },
+        { flag: showCreatorPanel, key: 'showCreatorPanel', label: __alloT('stem.geometryworld.creator_panel', 'Creator Panel'),         emoji: '🎨' },
+        { flag: showGrowthNudge,  key: 'showGrowthNudge',  label: __alloT('stem.geometryworld.growth_nudge', 'Growth Nudge'),          emoji: '🌱' },
+        { flag: showTeacherView,  key: 'showTeacherView',  label: __alloT('stem.geometryworld.teacher_dashboard', 'Teacher Dashboard'),     emoji: '📊' },
+        { flag: showPeerWorlds,   key: 'showPeerWorlds',   label: __alloT('stem.geometryworld.class_worlds', 'Class Worlds'),          emoji: '🌐' }
       ];
       var openModals = OPEN_MODALS.filter(function(m) { return m.flag; });
       function closeAllModals() {
@@ -4451,9 +4522,9 @@
         }
       }
 
-      return el('div', { role: 'application', 'aria-label': 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.', style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: '#000' } },
+      return el('div', { role: 'application', 'aria-label': __alloT('stem.geometryworld.geometry_world_3d_block_based_math_exp', 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         // Top bar — glass style
-        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
+        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
           el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
           el('span', { style: { fontWeight: 800, color: '#fff', fontSize: '14px' } }, 'Geometry World'),
           el('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 'auto' } }, currentLesson.title || ''),
@@ -4515,13 +4586,13 @@
                 var eng = window[engineKey];
                 if (eng && eng.logEvent) eng.logEvent('manipulative_card', { L: measureResult.L, W: measureResult.W, H: measureResult.H, V: measureResult.boundingVolume });
               },
-              title: 'Print a card to build this structure with physical cubes',
+              title: __alloT('stem.geometryworld.print_a_card_to_build_this_structure_w', 'Print a card to build this structure with physical cubes'),
               style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '2px 8px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 700, marginTop: '2px' }
             }, '\uD83E\uDDF1 Build This!')
           ),
           // Lesson selector (built-in + AI-generated)
           el('select', {
-            'aria-label': 'Choose lesson',
+            'aria-label': __alloT('stem.geometryworld.choose_lesson', 'Choose lesson'),
             value: activeLesson,
             onChange: function(ev) {
               var lessonKey = ev.target.value;
@@ -4529,7 +4600,7 @@
             },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
-            el('optgroup', { label: 'Built-in Lessons' },
+            el('optgroup', { label: __alloT('stem.geometryworld.built_in_lessons', 'Built-in Lessons') },
               el('option', { value: 'volumeExplorer' }, '\uD83D\uDCCF Volume Explorer'),
               el('option', { value: 'areaSurface' }, '\uD83D\uDCD0 Area & Surface'),
               el('option', { value: 'buildChallenge' }, '\uD83C\uDFD7\uFE0F Build Challenge'),
@@ -4550,10 +4621,10 @@
           ),
           // Home language selector (multilingual NPC voices)
           el('select', {
-            'aria-label': 'Student home language for bilingual NPC speech',
+            'aria-label': __alloT('stem.geometryworld.student_home_language_for_bilingual_np', 'Student home language for bilingual NPC speech'),
             value: homeLang,
             onChange: function(ev) { upd({ homeLang: ev.target.value, npcTranslations: {} }); },
-            title: 'Student home language \u2014 NPCs will speak bilingually',
+            title: __alloT('stem.geometryworld.student_home_language_npcs_will_speak_', 'Student home language \u2014 NPCs will speak bilingually'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: homeLang !== 'en' ? '#fbbf24' : '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
             el('option', { value: 'en' }, '\uD83C\uDDFA\uD83C\uDDF8 English'),
@@ -4589,7 +4660,7 @@
           }, soundMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
           // Environment preset selector
           el('select', {
-            'aria-label': 'Time of day / environment preset',
+            'aria-label': __alloT('stem.geometryworld.time_of_day_environment_preset', 'Time of day / environment preset'),
             value: d.envPreset || 'day',
             onChange: function(ev) {
               var key = ev.target.value;
@@ -4597,7 +4668,7 @@
               var eng = window[engineKey];
               if (eng) applyEnvPreset(eng, key);
             },
-            title: 'Time of day / environment',
+            title: __alloT('stem.geometryworld.time_of_day_environment', 'Time of day / environment'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
             Object.keys(ENV_PRESETS).map(function(k) {
@@ -4615,7 +4686,7 @@
             onClick: function() {
               var eng = window[engineKey];
               if (!eng) return;
-              var worldData = { title: 'Student Build', blocks: [] };
+              var worldData = { title: __alloT('stem.geometryworld.student_build', 'Student Build'), blocks: [] };
               Object.keys(eng.blocks).forEach(function(key) {
                 var m = eng.blocks[key];
                 if (m && m.userData.gridPos) {
@@ -4705,7 +4776,7 @@
               if (addToast) addToast('\uD83E\uDE78 STL exported! ' + blockKeys.length + ' blocks \u2192 ' + numTriangles + ' triangles. Ready for 3D printing!', 'success');
               if (eng.logEvent) eng.logEvent('stl_export', { blocks: blockKeys.length, triangles: numTriangles });
             },
-            title: 'Export structures as STL file for 3D printing',
+            title: __alloT('stem.geometryworld.export_structures_as_stl_file_for_3d_p', 'Export structures as STL file for 3D printing'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f472b6', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83E\uDE78 3D Print'),
           // Screenshot capture
@@ -4731,7 +4802,7 @@
                 if (addToast) addToast('Screenshot failed — try again.', 'info');
               }
             },
-            title: 'Capture a screenshot of your world (saves to downloads)',
+            title: __alloT('stem.geometryworld.capture_a_screenshot_of_your_world_sav', 'Capture a screenshot of your world (saves to downloads)'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCF8 Photo'),
           // Print companion worksheet
@@ -4744,7 +4815,7 @@
               var eng = window[engineKey];
               if (eng && eng.logEvent) eng.logEvent('worksheet_print', { lesson: currentLesson.title });
             },
-            title: 'Print companion worksheet for this lesson',
+            title: __alloT('stem.geometryworld.print_companion_worksheet_for_this_les', 'Print companion worksheet for this lesson'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f59e0b', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDDA8\uFE0F Worksheet'),
           // Creator Mode toggle
@@ -4786,7 +4857,7 @@
               };
               input.click();
             },
-            title: 'Import a world from JSON file',
+            title: __alloT('stem.geometryworld.import_a_world_from_json_file', 'Import a world from JSON file'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCC2 Load'),
           // Research data export (session analytics as CSV)
@@ -4803,7 +4874,7 @@
               URL.revokeObjectURL(a.href);
               if (addToast) addToast('\uD83D\uDCCA Session data exported (' + eng.sessionLog.length + ' events)', 'success');
             },
-            title: 'Export session analytics as CSV for research',
+            title: __alloT('stem.geometryworld.export_session_analytics_as_csv_for_re', 'Export session analytics as CSV for research'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#22d3ee', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCCA Data'),
           // MTSS Progress Report export
@@ -4814,7 +4885,7 @@
               var report = eng.exportProgressReport();
               if (addToast) addToast('\uD83D\uDCCB MTSS Report: ' + report.accuracy + ' accuracy \u2192 ' + report.rtiTierSuggestion, 'success');
             },
-            title: 'Export MTSS progress monitoring report (RTI tier classification, longitudinal data)',
+            title: __alloT('stem.geometryworld.export_mtss_progress_monitoring_report', 'Export MTSS progress monitoring report (RTI tier classification, longitudinal data)'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCCB MTSS'),
           // ── Peer Worlds: Share button ──
@@ -4835,13 +4906,13 @@
               }
               shareWorldToClass(worldData);
             },
-            title: 'Share this world to the class library',
+            title: __alloT('stem.geometryworld.share_this_world_to_the_class_library', 'Share this world to the class library'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83C\uDF10 Share'),
           // ── Peer Worlds: Browse class library ──
           sessionCode && el('button', {
             onClick: loadPeerWorlds,
-            title: 'Browse worlds shared by classmates',
+            title: __alloT('stem.geometryworld.browse_worlds_shared_by_classmates', 'Browse worlds shared by classmates'),
             style: { background: showPeerWorlds ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showPeerWorlds ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showPeerWorlds ? '#fff' : '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCDA Class Worlds'),
           // ── Collaborative Mode toggle ──
@@ -4870,15 +4941,15 @@
           // ── AI Lesson Generator (enhanced) ──
           callGemini && el('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
             el('input', {
-              type: 'text', value: aiPrompt, 'aria-label': 'Describe a geometry lesson topic for AI generation',
+              type: 'text', value: aiPrompt, 'aria-label': __alloT('stem.geometryworld.describe_a_geometry_lesson_topic_for_a', 'Describe a geometry lesson topic for AI generation'),
               onChange: function(ev) { upd('aiPrompt', ev.target.value); },
               onKeyDown: function(ev) { if (ev.key === 'Enter') generateWorld(); },
-              placeholder: 'Describe a lesson topic...',
+              placeholder: __alloT('stem.geometryworld.describe_a_lesson_topic', 'Describe a lesson topic...'),
               style: { width: '150px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' }
             }),
             // Grade level selector
             el('select', {
-              'aria-label': 'Target grade level', value: aiGradeLevel,
+              'aria-label': __alloT('stem.geometryworld.target_grade_level', 'Target grade level'), value: aiGradeLevel,
               onChange: function(ev) { upd('aiGradeLevel', ev.target.value); },
               style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 4px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' }
             },
@@ -4888,9 +4959,9 @@
             ),
             // Depth (API calls) selector
             el('select', {
-              'aria-label': 'Generation depth: number of AI passes', value: String(aiPassCount),
+              'aria-label': __alloT('stem.geometryworld.generation_depth_number_of_ai_passes', 'Generation depth: number of AI passes'), value: String(aiPassCount),
               onChange: function(ev) { upd('aiPassCount', parseInt(ev.target.value)); },
-              title: '1=Quick (1 call), 2=Refined (2 calls), 3=Full scaffolding (3 calls)',
+              title: __alloT('stem.geometryworld.1_quick_1_call_2_refined_2_calls_3_ful', '1=Quick (1 call), 2=Refined (2 calls), 3=Full scaffolding (3 calls)'),
               style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 4px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' }
             },
               el('option', { value: '1' }, '\u26A1 Quick'), el('option', { value: '2' }, '\u2728 Refine'), el('option', { value: '3' }, '\uD83C\uDF1F Full')
@@ -4923,23 +4994,23 @@
                 var pool = gradeTopics[aiGradeLevel] || gradeTopics['5'];
                 upd('aiPrompt', pool[Math.floor(Math.random() * pool.length)]);
               },
-              disabled: aiGenerating, title: 'Random topic',
+              disabled: aiGenerating, title: __alloT('stem.geometryworld.random_topic', 'Random topic'),
               style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
             }, '\uD83C\uDFB2'),
             // My Lessons library button
             el('button', {
               onClick: function() { upd('showMyLessons', !showMyLessons); },
-              title: 'Browse saved AI-generated lessons',
+              title: __alloT('stem.geometryworld.browse_saved_ai_generated_lessons', 'Browse saved AI-generated lessons'),
               style: { background: showMyLessons ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showMyLessons ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 8px', color: showMyLessons ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
             }, '\uD83D\uDCDA ' + getMyLessons().length)
           ),
           // ── Refine bar (shown when a lesson was just generated) ──
           callGemini && lastGeneratedLesson && !aiGenerating && el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center', marginTop: '2px' } },
             el('input', {
-              type: 'text', value: aiRefinePrompt, 'aria-label': 'Refine the generated lesson',
+              type: 'text', value: aiRefinePrompt, 'aria-label': __alloT('stem.geometryworld.refine_the_generated_lesson', 'Refine the generated lesson'),
               onChange: function(ev) { upd('aiRefinePrompt', ev.target.value); },
               onKeyDown: function(ev) { if (ev.key === 'Enter') refineLesson(); },
-              placeholder: 'Refine: "Make it harder" / "Add more NPCs" / "Change theme to ocean"...',
+              placeholder: __alloT('stem.geometryworld.refine_make_it_harder_add_more_npcs_ch', 'Refine: "Make it harder" / "Add more NPCs" / "Change theme to ocean"...'),
               style: { flex: 1, minWidth: '180px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid #7c3aed33', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '10px', fontFamily: 'inherit' }
             }),
             el('button', {
@@ -4948,7 +5019,7 @@
             }, '\uD83D\uDD04 Refine'),
             el('button', {
               onClick: function() { upd('showLessonEditor', !showLessonEditor); },
-              title: 'Edit the raw lesson JSON manually',
+              title: __alloT('stem.geometryworld.edit_the_raw_lesson_json_manually', 'Edit the raw lesson JSON manually'),
               style: { background: showLessonEditor ? '#f59e0b' : '#1e293b', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: showLessonEditor ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
             }, '\u270F\uFE0F JSON')
           )
@@ -4966,13 +5037,13 @@
             el('span', { style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' } }, currentLesson.title || 'Geometry Lesson')
           ),
           el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', fontSize: '10px' } },
-            totalQ > 0 && el('span', { title: 'NPCs answered', style: { color: Object.keys(answeredNpcs).length === totalQ ? '#4ade80' : '#94a3b8' } },
+            totalQ > 0 && el('span', { title: __alloT('stem.geometryworld.npcs_answered', 'NPCs answered'), style: { color: Object.keys(answeredNpcs).length === totalQ ? '#4ade80' : '#94a3b8' } },
               '💬 ' + Object.keys(answeredNpcs).length + '/' + totalQ),
-            el('span', { title: 'Blocks placed this session', style: { color: '#fbbf24' } },
+            el('span', { title: __alloT('stem.geometryworld.blocks_placed_this_session', 'Blocks placed this session'), style: { color: '#fbbf24' } },
               '🧱 ' + ((engine && engine.blocksPlaced) || 0)),
-            el('span', { title: 'Correct answers this session', style: { color: '#34d399' } },
+            el('span', { title: __alloT('stem.geometryworld.correct_answers_this_session', 'Correct answers this session'), style: { color: '#34d399' } },
               '⭐ ' + score),
-            ((engine && engine._sessionXP) || 0) > 0 && el('span', { title: 'XP earned this session', style: { color: '#c084fc' } },
+            ((engine && engine._sessionXP) || 0) > 0 && el('span', { title: __alloT('stem.geometryworld.xp_earned_this_session', 'XP earned this session'), style: { color: '#c084fc' } },
               '✨ +' + (engine._sessionXP) + ' XP')
           ),
           // NPC progress bar (only if there are NPCs in this lesson)
@@ -4997,7 +5068,7 @@
               // 2. Fallback auto-generated objectives from lesson shape
               if (totalQ > 0) objectives.push({ text: 'Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'), done: Object.keys(answeredNpcs).length >= totalQ });
               if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: (measureHistory && measureHistory.length > 0) });
-              objectives.push({ text: 'Place at least 5 blocks', done: ((engine && engine.blocksPlaced) || 0) >= 5 });
+              objectives.push({ text: __alloT('stem.geometryworld.place_at_least_5_blocks', 'Place at least 5 blocks'), done: ((engine && engine.blocksPlaced) || 0) >= 5 });
             }
             var allDone = objectives.length > 0 && objectives.every(function(o) { return o.done; });
             return el('div', { style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed rgba(148,163,184,0.2)' } },
@@ -5096,7 +5167,7 @@
             requestAnimationFrame(render);
           },
           style: { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 5, pointerEvents: 'none', borderRadius: '16px' },
-          role: 'img', 'aria-label': 'NPC compass strip showing relative direction to each NPC from camera facing'
+          role: 'img', 'aria-label': __alloT('stem.geometryworld.npc_compass_strip_showing_relative_dir', 'NPC compass strip showing relative direction to each NPC from camera facing')
         })
         ,
 
@@ -5130,8 +5201,8 @@
           // Main "Back to Game" button (prominent)
           el('button', {
             onClick: closeAllModals,
-            'aria-label': 'Close all open overlays and return to the game view',
-            title: 'Close all overlays & return to the 3D game (or press Shift+Esc)',
+            'aria-label': __alloT('stem.geometryworld.close_all_open_overlays_and_return_to_', 'Close all open overlays and return to the game view'),
+            title: __alloT('stem.geometryworld.close_all_overlays_return_to_the_3d_ga', 'Close all overlays & return to the 3D game (or press Shift+Esc)'),
             style: { pointerEvents: 'auto', padding: '10px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.45), 0 0 0 2px rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.15s' },
             onMouseEnter: function(ev) { ev.currentTarget.style.transform = 'scale(1.03)'; },
             onMouseLeave: function(ev) { ev.currentTarget.style.transform = 'scale(1)'; }
@@ -5238,7 +5309,7 @@
         showMyLessons && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' } },
             '\uD83D\uDCDA My Lessons (' + getMyLessons().length + ')',
-            el('button', { 'aria-label': 'Close My Lessons', onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': __alloT('stem.geometryworld.close_my_lessons', 'Close My Lessons'), onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           getMyLessons().length === 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
           getMyLessons().map(function(lesson, li) {
@@ -5257,7 +5328,7 @@
               }, '\u25B6'),
               el('button', {
                 onClick: function() { deleteMyLesson(lesson._id); upd('showMyLessons', true); /* force re-render */ },
-                title: 'Delete this saved lesson',
+                title: __alloT('stem.geometryworld.delete_this_saved_lesson', 'Delete this saved lesson'),
                 style: { background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', flexShrink: 0, padding: '2px' }
               }, '\u00d7')
             );
@@ -5267,7 +5338,7 @@
         showLessonEditor && lastGeneratedLesson && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#f59e0b', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\u270F\uFE0F Lesson JSON Editor',
-            el('button', { 'aria-label': 'Close editor', onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': __alloT('stem.geometryworld.close_editor', 'Close editor'), onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', margin: '0 0 6px', lineHeight: 1.3 } }, 'Edit the lesson JSON directly. Change NPC dialogue, add questions, move structures. Click Apply to reload.'),
           el('textarea', {
@@ -5311,16 +5382,16 @@
         creatorMode && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\uD83C\uDFA8 Lesson Creator',
-            el('button', { 'aria-label': 'Close creator panel', onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': __alloT('stem.geometryworld.close_creator_panel', 'Close creator panel'), onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', margin: '0 0 8px', lineHeight: 1.4 } }, 'Build structures with blocks (right-click), then add an NPC teacher below. Save your world to share with classmates!'),
           // NPC Creator form
           el('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
-            el('input', { type: 'text', value: creatorNpcName, 'aria-label': 'NPC name', onChange: function(ev) { upd('creatorNpcName', ev.target.value); }, placeholder: 'NPC Name (e.g. Professor Volume)', style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
-            el('textarea', { value: creatorNpcDialogue, 'aria-label': 'NPC dialogue', onChange: function(ev) { upd('creatorNpcDialogue', ev.target.value); }, placeholder: 'What should the NPC say? (e.g. "Look at the structure behind me!")', rows: 2, style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', resize: 'vertical' } }),
-            el('input', { type: 'text', value: creatorNpcQuestion, 'aria-label': 'NPC question (optional)', onChange: function(ev) { upd('creatorNpcQuestion', ev.target.value); }, placeholder: 'Question (optional, e.g. "What is the volume?")', style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+            el('input', { type: 'text', value: creatorNpcName, 'aria-label': __alloT('stem.geometryworld.npc_name', 'NPC name'), onChange: function(ev) { upd('creatorNpcName', ev.target.value); }, placeholder: __alloT('stem.geometryworld.npc_name_e_g_professor_volume', 'NPC Name (e.g. Professor Volume)'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+            el('textarea', { value: creatorNpcDialogue, 'aria-label': __alloT('stem.geometryworld.npc_dialogue', 'NPC dialogue'), onChange: function(ev) { upd('creatorNpcDialogue', ev.target.value); }, placeholder: __alloT('stem.geometryworld.what_should_the_npc_say_e_g_look_at_th', 'What should the NPC say? (e.g. "Look at the structure behind me!")'), rows: 2, style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', resize: 'vertical' } }),
+            el('input', { type: 'text', value: creatorNpcQuestion, 'aria-label': __alloT('stem.geometryworld.npc_question_optional', 'NPC question (optional)'), onChange: function(ev) { upd('creatorNpcQuestion', ev.target.value); }, placeholder: __alloT('stem.geometryworld.question_optional_e_g_what_is_the_volu', 'Question (optional, e.g. "What is the volume?")'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
             creatorNpcQuestion.trim() && el('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px' } },
-              el('input', { type: 'text', value: creatorNpcChoices, 'aria-label': 'Answer choices, separated by pipe character', onChange: function(ev) { upd('creatorNpcChoices', ev.target.value); }, placeholder: 'Answers separated by | (e.g. 24 units|12 units|36 units)', style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
+              el('input', { type: 'text', value: creatorNpcChoices, 'aria-label': __alloT('stem.geometryworld.answer_choices_separated_by_pipe_chara', 'Answer choices, separated by pipe character'), onChange: function(ev) { upd('creatorNpcChoices', ev.target.value); }, placeholder: __alloT('stem.geometryworld.answers_separated_by_e_g_24_units_12_u', 'Answers separated by | (e.g. 24 units|12 units|36 units)'), style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' } }),
               el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
                 el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' } }, 'Correct answer #:'),
                 el('input', { type: 'number', min: 1, max: 5, value: creatorNpcCorrect + 1, onChange: function(ev) { upd('creatorNpcCorrect', Math.max(0, parseInt(ev.target.value, 10) - 1)); }, style: { width: '40px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '3px 6px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', textAlign: 'center' } })
@@ -5513,7 +5584,7 @@
           el('span', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
           // Rotation badge (only when non-cube shape selected)
           selectedShape > 0 && el('span', {
-            style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#475569', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
+            style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#94a3b8', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
             onClick: function() { upd('blockRotation', (blockRotation + 1) % 4); },
             title: 'Click or press R to rotate (' + (blockRotation * 90) + '\u00b0)'
           }, '\u21BB' + (blockRotation > 0 ? blockRotation * 90 + '\u00b0' : '')),
@@ -5554,7 +5625,7 @@
                 boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.5), inset 0 0 8px rgba(124,58,237,0.2)' : 'none' }
             },
               bt.emoji,
-              el('span', { style: { position: 'absolute', bottom: '1px', right: '3px', fontSize: '8px', color: isActive ? '#c4b5fd' : '#4b5563', fontWeight: 700, lineHeight: 1 } }, String(i + 1))
+              el('span', { style: { position: 'absolute', bottom: '1px', right: '3px', fontSize: '8px', color: isActive ? '#c4b5fd' : '#94a3b8', fontWeight: 700, lineHeight: 1 } }, String(i + 1))
             );
           })
         ),
@@ -5609,8 +5680,8 @@
             },
             onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.currentTarget.click(); } },
             'aria-pressed': engine._coordAnnounce ? 'true' : 'false',
-            'aria-label': 'Toggle coordinate screen-reader announcements (key C)',
-            title: 'Announce coordinates to screen reader (C)',
+            'aria-label': __alloT('stem.geometryworld.toggle_coordinate_screen_reader_announ', 'Toggle coordinate screen-reader announcements (key C)'),
+            title: __alloT('stem.geometryworld.announce_coordinates_to_screen_reader_', 'Announce coordinates to screen reader (C)'),
             style: { marginTop: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.5px', display: 'inline-block',
               background: engine._coordAnnounce ? 'rgba(34,211,238,0.25)' : 'rgba(100,116,139,0.15)',
               color: engine._coordAnnounce ? '#67e8f9' : '#94a3b8',
@@ -5631,7 +5702,7 @@
               eng.flyMode = !eng.flyMode; eng.velocity.y = 0;
               if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON — Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
             },
-            title: 'Toggle fly mode (or double-tap Space)',
+            title: __alloT('stem.geometryworld.toggle_fly_mode_or_double_tap_space', 'Toggle fly mode (or double-tap Space)'),
             style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#94a3b8', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
           }, engine.flyMode ? '\uD83D\uDD4A\uFE0F FLY' : '\uD83D\uDD4A\uFE0F Fly'),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
@@ -5651,7 +5722,7 @@
           worldActive && el('div', {
             style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
-            title: 'Return to spawn point (H)'
+            title: __alloT('stem.geometryworld.return_to_spawn_point_h', 'Return to spawn point (H)')
           }, '\uD83C\uDFE0 Home'),
           // Clear my blocks
           worldActive && el('div', {
@@ -5673,7 +5744,7 @@
                 if (addToast) addToast('🗑️ Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');
               }
             },
-            title: 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.'
+            title: __alloT('stem.geometryworld.clear_only_your_placed_blocks_lesson_s', 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.')
           }, '\uD83D\uDDD1\uFE0F Clear Mine')
         ),
         // ── Mobile touch controls overlay (visible on touch devices) ──
@@ -5807,7 +5878,7 @@
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
             return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
               el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
-              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#475569' } }, '=' + mh.vol)
+              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#94a3b8' } }, '=' + mh.vol)
             );
           })
         ),
@@ -5870,12 +5941,12 @@
             ),
             el('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', pointerEvents: 'auto' } },
               el('button', {
-                'aria-label': 'Skip tutorial and proceed to lesson',
+                'aria-label': __alloT('stem.geometryworld.skip_tutorial_and_proceed_to_lesson', 'Skip tutorial and proceed to lesson'),
                 onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
                 style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
               }, 'Skip all'),
               el('button', {
-                'aria-label': 'Next tutorial step',
+                'aria-label': __alloT('stem.geometryworld.next_tutorial_step', 'Next tutorial step'),
                 onClick: function() {
                   var nextStep = tutorialStep + 1;
                   if (nextStep >= 4) { upd({ tutorialStep: 4, tutorialDismissed: true }); }
@@ -5957,7 +6028,7 @@
           el('textarea', {
             value: reflectionText,
             onChange: function(ev) { upd('reflectionText', ev.target.value); },
-            placeholder: 'What was the most interesting thing you discovered? What strategy helped you solve problems?',
+            placeholder: __alloT('stem.geometryworld.what_was_the_most_interesting_thing_yo', 'What was the most interesting thing you discovered? What strategy helped you solve problems?'),
             style: { width: '100%', height: '70px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '8px', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
           }),
           el('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' } },
@@ -6111,7 +6182,7 @@
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
-              el('button', { 'aria-label': 'Close NPC dialog', onClick: function() { upd({ showNpcDialog: false }); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+              el('button', { 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
             el('div', { style: { padding: '12px 16px' } },
@@ -6134,13 +6205,13 @@
                   window.speechSynthesis.speak(utt);
                 }
               },
-              title: 'Click to hear translation spoken aloud',
+              title: __alloT('stem.geometryworld.click_to_hear_translation_spoken_aloud', 'Click to hear translation spoken aloud'),
               style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
             homeLang !== 'en' && !translation && npcIsTranslating && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
             homeLang !== 'en' && !translation && !npcIsTranslating && ctx && ctx.aiHintsEnabled && callGemini && el('button', {
               onClick: doTranslate,
-              title: 'Translate this dialogue with AI (uses an AI request)',
+              title: __alloT('stem.geometryworld.translate_this_dialogue_with_ai_uses_a', 'Translate this dialogue with AI (uses an AI request)'),
               style: { fontSize: '11px', color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px', padding: '4px 10px', marginBottom: '10px', cursor: 'pointer', fontWeight: 700 }
             }, '\uD83C\uDF10 Translate (AI)'),
             data.question && !isAnswered && (function() {
@@ -6158,7 +6229,7 @@
                     return el('div', { key: 'stepdot-' + di, style: { width: 8, height: 8, borderRadius: '50%', background: di < curStep ? '#22c55e' : di === curStep ? '#7c3aed' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
                   })
                 ),
-                el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#7c3aed', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
+                el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
                 homeLang !== 'en' && translation && translation.question && curStep === 0 && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
                 curQ.choices.map(function(choice, ci) {
                   return el('button', {
@@ -6262,7 +6333,7 @@
                         announceToSR('Not quite right. ' + hintText.replace(/^❌\s*Not quite\.\s*/, ''));
                       }
                     },
-                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
+                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', boxShadow: 'inset 0 0 0 1px #475569' }
                   }, choice);
                 }),
                 // Gated AI hint (slice-2 pilot). Only shows when the teacher has
@@ -6271,7 +6342,7 @@
                 // attempt floor + one-per-question cap + reveal-check.
                 ctx && ctx.aiHintsEnabled && ((d.npcWrongCount || {})[dialogNpcIdx] || 0) >= 2 && el('button', {
                   key: 'aihint',
-                  'aria-label': 'Ask the AI for a hint',
+                  'aria-label': __alloT('stem.geometryworld.ask_the_ai_for_a_hint', 'Ask the AI for a hint'),
                   onClick: function() {
                     var wc = (d.npcWrongCount || {})[dialogNpcIdx] || 0;
                     var lw = (d.npcLastWrong || {})[dialogNpcIdx];
@@ -6338,7 +6409,7 @@
                         if (eng && eng.logEvent) eng.logEvent('npc_chat', { npc: data.name, question: userMsg, response: response.substring(0, 100) });
                       }).catch(function() {
                         var updatedHist = Object.assign({}, npcChatHistory);
-                        updatedHist[dialogNpcIdx] = history.concat([{ role: 'npc', text: 'Hmm, I\u2019m having trouble thinking right now. Try asking in a different way!' }]);
+                        updatedHist[dialogNpcIdx] = history.concat([{ role: 'npc', text: __alloT('stem.geometryworld.hmm_i_m_having_trouble_thinking_right_', 'Hmm, I\u2019m having trouble thinking right now. Try asking in a different way!') }]);
                         upd({ npcChatHistory: updatedHist, npcChatLoading: false });
                       });
                     }
@@ -6425,7 +6496,7 @@
             el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
             el('div', { style: { display: 'flex', gap: '6px' } },
               el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#7c3aed', fontSize: '12px', cursor: 'pointer', fontWeight: 600 } }, '\u21BB Refresh'),
-              el('button', { 'aria-label': 'Close class worlds browser', onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
+              el('button', { 'aria-label': __alloT('stem.geometryworld.close_class_worlds_browser', 'Close class worlds browser'), onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
             )
           ),
           peerWorldsList.length === 0
@@ -6476,7 +6547,7 @@
         },
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
             el('div', { style: { fontWeight: 800, color: '#f87171', fontSize: '14px' } }, '\uD83D\uDCCA Teacher Dashboard'),
-            el('button', { 'aria-label': 'Close teacher dashboard', onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': __alloT('stem.geometryworld.close_teacher_dashboard', 'Close teacher dashboard'), onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
           ),
           // Live session info
           el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '6px' } },
@@ -6601,15 +6672,15 @@
               // and the canvas coexist as siblings. zIndex keeps the button
               // above the WebGL surface.
               el('button', {
-                'aria-label': 'Toggle fullscreen for the 3D world',
-                title: 'Fullscreen',
+                'aria-label': __alloT('stem.geometryworld.toggle_fullscreen_for_the_3d_world', 'Toggle fullscreen for the 3D world'),
+                title: __alloT('stem.geometryworld.fullscreen', 'Fullscreen'),
                 onClick: function(ev) {
                   ev.stopPropagation();
                   var fsEl = document.getElementById('geoworld-fs-wrap');
                   if (!fsEl) return;
                   var inFull = document.fullscreenElement === fsEl || document.webkitFullscreenElement === fsEl || document.mozFullScreenElement === fsEl;
                   if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
-                  else { var rq = fsEl.requestFullscreen || fsEl.webkitRequestFullscreen || fsEl.mozRequestFullScreen; if (rq) rq.call(fsEl); }
+                  else { if (window.__alloStemFS) window.__alloStemFS(fsEl); }
                 },
                 style: {
                   position: 'absolute', top: 8, right: 8, zIndex: 100,
@@ -6619,7 +6690,19 @@
                   border: '1px solid rgba(167,139,250,0.55)', color: '#c4b5fd',
                   fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
                 }
-              }, '⛶')
+              }, '⛶'),
+              xrSupported && el('button', {
+                'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                title: __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                onClick: function(ev) { ev.stopPropagation(); var eng = window[engineKey]; if (eng && eng.vr && eng.vr.enterVR) eng.vr.enterVR(); },
+                style: {
+                  position: 'absolute', top: 8, left: 8, zIndex: 100,
+                  height: 32, padding: '0 12px', borderRadius: 8,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  background: '#4f46e5', border: '1px solid rgba(129,140,248,0.6)', color: '#fff',
+                  fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }
+              }, '🥽 ' + __alloT('vr.enter', 'VR'))
             ),
             // === H7b'' inquiry widget: transformation discovery ===
             (function() {
@@ -6631,11 +6714,12 @@
               else if (Math.abs(iq.shear) > 30) state = 'skewed';
               else if (iq.scale < 0.9 || iq.scale > 1.1) state = 'scaled';
               else state = 'aligned';
+              // Dark-surface tokens — these were light pastel pills on the dark (#0f172a) HUD panel
               var sm = {
-                aligned:    { label: '🟢 Aligned (axes preserved)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-                scaled:     { label: '🔵 Scaled (volume changed)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-                skewed:     { label: '🟠 Skewed (shape deformed)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-                degenerate: { label: '💀 Degenerate (volume → 0)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+                aligned:    { label: __alloT('stem.geometryworld.aligned_axes_preserved', '🟢 Aligned (axes preserved)'), color: '#6ee7b7', bg: 'rgba(110,231,183,0.12)', border: 'rgba(110,231,183,0.4)' },
+                scaled:     { label: __alloT('stem.geometryworld.scaled_volume_changed', '🔵 Scaled (volume changed)'), color: '#67e8f9', bg: 'rgba(103,232,249,0.12)', border: 'rgba(103,232,249,0.4)' },
+                skewed:     { label: __alloT('stem.geometryworld.skewed_shape_deformed', '🟠 Skewed (shape deformed)'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.4)' },
+                degenerate: { label: __alloT('stem.geometryworld.degenerate_volume_0', '💀 Degenerate (volume → 0)'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.4)' }
               }[state];
               return el('div', { style: { position: 'absolute', top: 12, right: 12, zIndex: 30, background: '#0f172a', border: '1px solid #a78bfa', borderRadius: 8, padding: 10, color: '#e2e8f0', maxWidth: 280 } },
                 el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', margin: '0 0 4px 0' } }, '📐 Transform discovery'),
@@ -6648,13 +6732,13 @@
                     el('label', { htmlFor: 'tr-' + k, style: { fontSize: 10, fontWeight: 'bold' } }, conf.l + ': ', el('span', { style: { fontFamily: 'monospace', color: '#a78bfa' } }, iq[k])),
                     el('input', { id: 'tr-' + k, type: 'range', min: conf.mn, max: conf.mx, step: conf.st, value: iq[k],
                       onChange: function(e) { var p = {}; p[k] = parseFloat(e.target.value); setIQ(p); },
-                      style: { width: '100%' }, 'aria-label': conf.l }));
+                      style: { width: '100%' }, 'aria-valuetext': (k === 'scale' ? (iq[k] + 'x scale') : (iq[k] + '°')), 'aria-label': conf.l }));
                 }),
                 el('div', { style: { display: 'flex', gap: 4, marginTop: 6 } },
                   el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
                   el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
                 ),
-                el('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#64748b', marginTop: 4 } }, 'Design: discrete 4-state transform marker; no reveal.')
+                el('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#94a3b8', marginTop: 4 } }, 'Design: discrete 4-state transform marker; no reveal.')
               );
             })()
       );

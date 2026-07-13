@@ -1,0 +1,223 @@
+// Guided Mode banner — completion-honesty + new affordances (2026-06-30).
+//
+// THE BUG (reported by the maintainer): the encouraging "✅ Analysis done" success
+// note appeared the instant the teacher *clicked* the highlighted analysis tool —
+// before Analyze had actually run. Root cause: the monolith flips `guidedEngaged`
+// on the first click of the ringed control, and the banner rendered step.success
+// directly off that flag. The async tool result lands later (or never, if they only
+// clicked to look), so the banner was claiming work that hadn't happened.
+//
+// THE FIX: the ✅/success note now keys on a real completion signal —
+//   - generate steps (analysis, faq, …): a NEW history item appeared since we
+//     arrived at this step (the tool genuinely produced output);
+//   - the source step: real text was entered;
+//   - the few interaction-only steps: still the click (best signal available).
+// `guidedEngaged` is retained ONLY for the "Next step" button affordance.
+//
+// These mount the real component with a real React renderer and drive the exact
+// click-vs-completion transition, so a regression to the old behavior fails here.
+// Also covers the source-step "Try this example" loader and the About read-aloud.
+
+import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+const require = createRequire(import.meta.url);
+const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+
+let React, ReactDOMClient, act, GuidedModeBanner;
+
+// A small, realistic slice of the real GUIDED_STEPS (3 steps so the analysis step at
+// index 1 is NOT the last — otherwise the end-of-flow recap renders and muddies text).
+const STEPS = [
+  { id: 'source-input', label: 'Source Material', action: 'Paste or type the text you want to adapt.', success: 'Source captured.' },
+  { id: 'analysis', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level.', success: 'Analysis done. That shows you where to scaffold.' },
+  { id: 'faq', label: 'FAQ Generator', action: 'Generate an FAQ.', success: 'FAQ ready.' },
+];
+const TOUR_MAP = { 'source-input': 'tour-input-panel', 'analysis': 'tour-tool-analysis', 'faq': 'tour-tool-faq' };
+const TOUR_STEPS = [{ id: 'tour-tool-analysis', title: 'About Analysis', text: 'Analysis scans your text for **reading level** and key vocabulary.' }];
+
+beforeAll(() => {
+  React = require(resolve(MODULES_DIR, 'react'));
+  ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
+  ({ act } = require(resolve(MODULES_DIR, 'react-dom/test-utils')));
+  global.React = window.React = React;
+  global.IS_REACT_ACT_ENVIRONMENT = true;
+  if (!global.requestAnimationFrame) global.requestAnimationFrame = () => 0;
+  if (!global.cancelAnimationFrame) global.cancelAnimationFrame = () => {};
+  // jsdom has no real audio; stub Audio so playAbout's play() resolves cleanly.
+  const AudioStub = function () { return { play: () => Promise.resolve(), pause() {}, set src(_v) {}, set onended(_v) {}, set onerror(_v) {} }; };
+  global.Audio = window.Audio = AudioStub;
+  loadAlloModule('view_guided_mode_banner_module.js');
+  GuidedModeBanner = window.AlloModules && window.AlloModules.GuidedModeBanner && window.AlloModules.GuidedModeBanner.GuidedModeBanner;
+  if (!GuidedModeBanner) throw new Error('GuidedModeBanner not registered on window.AlloModules');
+});
+
+// t() returns '' so every `t('guided.x') || 'English fallback'` shows its fallback
+// (and the few bare t() calls render empty). step.success/action are literal, not t()'d.
+function baseProps(overrides) {
+  return {
+    GUIDED_STEPS: STEPS, allGuidedSteps: STEPS, guidedSelectedIds: null, toggleGuidedStepId: null,
+    GUIDED_TOUR_MAP: TOUR_MAP, guidedStep: 1, guidedRect: null, guidedEngaged: false, wizardOpen: false,
+    handleExitGuidedMode: () => {}, handleGuidedSkip: () => {}, setGuidedStep: () => {}, setShowGuidedTip: () => {},
+    showGuidedTip: false, t: () => '', tourSteps: TOUR_STEPS, history: [], getDefaultTitle: (type) => type,
+    inputText: '', setInputText: () => {},
+    ...overrides,
+  };
+}
+
+function mountBanner(props) {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root = ReactDOMClient.createRoot(host);
+  const api = {
+    host, root,
+    render(p) { act(() => { root.render(React.createElement(GuidedModeBanner, p)); }); },
+    async renderAsync(p) { await act(async () => { root.render(React.createElement(GuidedModeBanner, p)); }); },
+    text() { return host.textContent || ''; },
+    button(substr) { return Array.from(host.querySelectorAll('button')).find(b => (b.textContent || '').includes(substr)); },
+    cleanup() { try { act(() => root.unmount()); } catch (_) {} host.remove(); },
+  };
+  api.render(props);
+  return api;
+}
+
+describe('Guided banner — success note is gated on real completion, not the click', () => {
+  it('THE BUG: analysis step shows the ACTION (not "done") even when guidedEngaged is true, while history is empty', () => {
+    const b = mountBanner(baseProps({ guidedStep: 1, guidedEngaged: true, history: [] }));
+    const txt = b.text();
+    // The old code showed step.success off guidedEngaged → would contain "Analysis done" here.
+    expect(txt).not.toContain('Analysis done');
+    expect(txt).toContain('Run Analyze');     // the still-pending action instruction
+    expect(txt).toContain('👉');               // pending marker, not ✅
+    expect(txt).not.toContain('✅');
+    // A click alone now stays honest: the teacher may skip, but Next step waits for real output.
+    expect(b.button('Next step')).toBeFalsy();
+    expect(b.button('Skip')).toBeTruthy();
+    b.cleanup();
+  });
+
+  it('shows "✅ Analysis done" only after a new history item appears on this step', () => {
+    const b = mountBanner(baseProps({ guidedStep: 1, guidedEngaged: true, history: [] }));
+    expect(b.text()).not.toContain('Analysis done');
+    // The async analysis result lands in history (same step, same component instance):
+    b.render(baseProps({ guidedStep: 1, guidedEngaged: true, history: [{ type: 'analysis', id: 'a1', title: 'Analysis' }] }));
+    const txt = b.text();
+    expect(txt).toContain('Analysis done');
+    expect(txt).toContain('✅');
+    expect(b.button('Next step')).toBeTruthy();
+    b.cleanup();
+  });
+
+  it('does NOT flash "done" on a fresh step that a prior step\'s history would otherwise satisfy', () => {
+    // Arrive at analysis with nothing produced yet, then its result lands → done:
+    const b = mountBanner(baseProps({ guidedStep: 1, history: [] }));
+    b.render(baseProps({ guidedStep: 1, history: [{ type: 'analysis', id: 'a1' }] }));
+    expect(b.text()).toContain('Analysis done');
+    // Advance to FAQ with the SAME history — re-baselined on step change, so FAQ is NOT yet "done"
+    // even though an (unrelated) analysis item sits in history:
+    b.render(baseProps({ guidedStep: 2, history: [{ type: 'analysis', id: 'a1' }] }));
+    expect(b.text()).not.toContain('FAQ ready');
+    expect(b.text()).toContain('Generate an FAQ');
+    // Now FAQ produces its own output → done:
+    b.render(baseProps({ guidedStep: 2, history: [{ type: 'analysis', id: 'a1' }, { type: 'faq', id: 'f1' }] }));
+    expect(b.text()).toContain('FAQ ready');
+    b.cleanup();
+  });
+
+  it('source step keys "done" on real entered text, not the click', () => {
+    const b = mountBanner(baseProps({ guidedStep: 0, guidedEngaged: true, inputText: '' }));
+    expect(b.text()).not.toContain('Source captured');   // clicked but no text → not done
+    b.render(baseProps({ guidedStep: 0, guidedEngaged: true, inputText: 'A passage that is well over twenty characters long.' }));
+    expect(b.text()).toContain('Source captured');
+    b.cleanup();
+  });
+});
+
+describe('Guided banner — source-step "Try this example" loader (integrity-safe sample data)', () => {
+  it('offers the example only on the empty source step, and loads a real passage via setInputText', () => {
+    const setInputText = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: '', setInputText }));
+    const btn = b.button('example passage');
+    expect(btn).toBeTruthy();
+    act(() => { btn.click(); });
+    expect(setInputText).toHaveBeenCalledTimes(1);
+    const loaded = setInputText.mock.calls[0][0];
+    expect(typeof loaded).toBe('string');
+    expect(loaded.length).toBeGreaterThan(200);          // a substantial starter passage
+    expect(loaded).toMatch(/^Photosynthesis/);           // real content, not a placeholder
+    b.cleanup();
+  });
+
+  it('hides the example button once the source step already has text', () => {
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: 'Teacher already pasted plenty of their own source text here.' }));
+    expect(b.button('example passage')).toBeFalsy();
+    expect(b.button('Worked example')).toBeFalsy();
+    b.cleanup();
+  });
+
+  it('never offers the example on a non-source step', () => {
+    const b = mountBanner(baseProps({ guidedStep: 1, inputText: '' }));
+    expect(b.button('example passage')).toBeFalsy();
+    expect(b.button('Worked example')).toBeTruthy();
+    b.cleanup();
+  });
+});
+
+describe('Guided banner — About-panel read-aloud reuses window.callTTS', () => {
+  it('renders a Listen button in the About panel and calls window.callTTS with the step explanation', async () => {
+    const callTTS = vi.fn(() => Promise.resolve('blob:fake-url'));
+    window.callTTS = callTTS;
+    const b = mountBanner(baseProps({ guidedStep: 1, showGuidedTip: true }));
+    const listen = b.button('Listen');
+    expect(listen).toBeTruthy();
+    await act(async () => { listen.click(); });
+    expect(callTTS).toHaveBeenCalled();
+    const spoken = callTTS.mock.calls[0][0];
+    expect(spoken).toContain('Analysis scans');          // the About text, read aloud
+    expect(spoken).not.toContain('**');                  // markdown stripped before TTS
+    b.cleanup();
+    delete window.callTTS;
+  });
+
+  it('omits the Listen button when no TTS backend is available', () => {
+    delete window.callTTS;
+    const b = mountBanner(baseProps({ guidedStep: 1, showGuidedTip: true }));
+    expect(b.button('Listen')).toBeFalsy();
+    b.cleanup();
+  });
+});
+
+describe('Guided banner - per-step "Worked example" tab', () => {
+  it('opens a display-only worked example on a generate step', () => {
+    const b = mountBanner(baseProps({ guidedStep: 1 }));
+    const btn = b.button('Worked example');
+    expect(btn).toBeTruthy();
+    act(() => { btn.click(); });
+    const txt = b.text();
+    expect(txt).toContain('Example output');
+    expect(txt).toContain('Photosynthesis');
+    expect(txt).toContain('View the full worked lesson');
+    b.cleanup();
+  });
+
+  it('toggles the worked example panel locally without a host callback', () => {
+    const onShowGuidedExample = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 1, onShowGuidedExample }));
+    const btn = b.button('Worked example');
+    act(() => { btn.click(); });
+    expect(b.text()).toContain('Example output');
+    act(() => { btn.click(); });
+    expect(b.text()).not.toContain('Example output');
+    expect(onShowGuidedExample).not.toHaveBeenCalled();
+    b.cleanup();
+  });
+
+  it('does NOT offer the worked-example tab on the source step (it has the load-text example instead)', () => {
+    const b = mountBanner(baseProps({ guidedStep: 0 }));
+    expect(b.button('Worked example')).toBeFalsy();
+    expect(b.button('example passage')).toBeTruthy();
+    b.cleanup();
+  });
+});

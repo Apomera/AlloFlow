@@ -1,0 +1,53 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-23800-contemporary-american-composers-being-a-study-of-the-music-of-th",
+  "title": "Contemporary American Composers: Being a Study of the Music of This Country, Its Present; Conditions and Its Future, with Critical Estimates and; Biographies of the Principal Living Composers; and an; Abundance of Portraits, Fac-simile Musical Autographs, and; Compositions",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Composers -- United States -- Biography",
+    "Music -- United States -- History and criticism"
+  ],
+  "authors": [
+    "Hughes, Rupert"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/23800"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/23800/pg23800.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Contemporary American Composers: Being a Study of the Music of This Country, Its Present; Conditions and Its Future, with Critical Estimates and; Biographies of the Principal Living Composers; and an; Abundance of Portraits, Fac-simile Musical Autographs, and; Compositions\" by Hughes, Rupert. Metadata tags include: Composers -- United States -- Biography; Music -- United States -- History and criticism."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 108
+  }
+}

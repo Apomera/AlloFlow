@@ -54,9 +54,60 @@ function HistoryPanel(props) {
     pendingSync, projectFileInputRef, sanitizeString, setActiveStation, setActiveUnitId,
     setEditTitle, setIsCommunityCatalogOpen, setMovingItemId, setNewUnitName,
     setSelHubTab, setShowSelHub, setShowStemLab, setStemLabTab, t, units,
+    onVisualizeUnit,
     activeSelStation = null,
     setActiveSelStation = (() => {}),
   } = props;
+  const shareResourcePackToCommunity = () => {
+    const visibleItems = (typeof getFilteredHistory === 'function' ? getFilteredHistory() : history) || [];
+    if (visibleItems.length === 0) {
+      addToast && addToast(t('history.empty_general') || 'No resources to share yet.', 'info');
+      return;
+    }
+    const activeUnit = Array.isArray(units) ? units.find(u => u.id === activeUnitId) : null;
+    const packTitle = activeUnit && activeUnitId !== 'all' && activeUnitId !== 'uncategorized'
+      ? activeUnit.name
+      : (isTeacherMode ? 'AlloFlow resource pack' : 'My AlloFlow resources');
+    // Privacy + size gate: run the pack through the same sanitizer the cloud
+    // sync uses (strips child voice audioRecording, base64 images/avatars,
+    // adventure scene blobs) before it leaves the device as a community
+    // submission. Fail CLOSED if the sanitizer module hasn't loaded — raw
+    // history items can carry biometric-class student audio.
+    const sanitizeForCloud = (typeof window !== 'undefined' && typeof window.sanitizeHistoryForCloud === 'function') ? window.sanitizeHistoryForCloud : null;
+    const stripU = (typeof window !== 'undefined' && typeof window.stripUndefined === 'function') ? window.stripUndefined : (x => x);
+    if (!sanitizeForCloud) {
+      addToast && addToast(t('history.share_pack_not_ready') || 'Sharing is still warming up — try again in a moment.', 'info');
+      return;
+    }
+    try {
+      const cleanedItems = stripU(sanitizeForCloud(visibleItems.map(item => ({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        timestamp: item.timestamp,
+        data: item.data,
+        meta: item.meta
+      }))));
+      localStorage.setItem('alloflow_pending_submission', JSON.stringify({
+        title: packTitle,
+        source_type: 'resource-pack',
+        payload: {
+          type: 'resource-pack',
+          title: packTitle,
+          activeUnitId,
+          unitName: activeUnit ? activeUnit.name : null,
+          itemCount: visibleItems.length,
+          // Media/audio were stripped by the sanitizer above; catalog UIs
+          // should disclose this rather than implying full-fidelity resources.
+          mediaStripped: true,
+          items: cleanedItems
+        }
+      }));
+      setIsCommunityCatalogOpen(true);
+    } catch (err) {
+      addToast && addToast('Could not open submission form: ' + (err && err.message), 'error');
+    }
+  };
 
   return (
             <div id="tour-history-panel" data-help-key="history_panel" className={`bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo-900/50 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}>
@@ -145,6 +196,16 @@ function HistoryPanel(props) {
                             >
                                 {isTeacherMode ? <Lock size={14} /> : <Save size={14} />}
                             </button>
+                            <button
+                                onClick={shareResourcePackToCommunity}
+                                disabled={history.length === 0}
+                                className="p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={t('history.share_pack_tooltip') || 'Share this resource pack to the AlloFlow community catalog'}
+                                aria-label={t('history.share_pack_aria') || 'Share resource pack to AlloFlow community catalog'}
+                                data-help-key="history_share_pack"
+                            >
+                                <Share2 size={14} />
+                            </button>
                             {isTeacherMode && (
                                 <button
                                     onClick={handleSetIsProjectSettingsOpenToTrue}
@@ -203,6 +264,16 @@ function HistoryPanel(props) {
                             >
                                 <FolderPlus size={14}/>
                             </button>
+                            {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && typeof onVisualizeUnit === 'function' && (
+                                <button
+                                    onClick={() => onVisualizeUnit(activeUnitId)}
+                                    className="p-1 rounded bg-amber-700/40 hover:bg-amber-600 text-amber-200 hover:text-white transition-colors"
+                                    title={t('history.visualize_unit_tooltip') || 'Visualize this unit in Throughline'}
+                                    aria-label={t('history.visualize_unit_tooltip') || 'Visualize this unit in Throughline'}
+                                >
+                                    <span style={{fontSize:'13px',lineHeight:1}}>🧭</span>
+                                </button>
+                            )}
                             {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && (
                                 <button
                                     data-help-key="history_delete_unit_btn"
@@ -531,26 +602,6 @@ function HistoryPanel(props) {
                                     </button>
                                 )}
                                 <button
-                                    aria-label={t('history.share_to_community_aria') || 'Share to AlloFlow community catalog'}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        try {
-                                            localStorage.setItem('alloflow_pending_submission', JSON.stringify({
-                                                title: item.title || '',
-                                                source_type: item.type || '',
-                                                payload: { id: item.id, type: item.type, title: item.title, timestamp: item.timestamp, data: item.data, meta: item.meta }
-                                            }));
-                                            setIsCommunityCatalogOpen(true);
-                                        } catch (err) {
-                                            addToast && addToast('Could not open submission form: ' + (err && err.message), 'error');
-                                        }
-                                    }}
-                                    className="p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]"
-                                    title={t('history.share_to_community_tooltip') || 'Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)'}
-                                >
-                                    <Share2 size={12} /> {t('history.share_button') || 'Share'}
-                                </button>
-                                <button
                                     aria-label={t('common.delete')}
                                     onClick={(e) => handleDeleteHistoryItem(e, item.id)}
                                     className="p-1 text-indigo-300 hover:text-red-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]"
@@ -558,30 +609,6 @@ function HistoryPanel(props) {
                                     data-help-key="resource_delete_button"
                                 >
                                     <Trash2 size={12} /> {t('actions.remove')}
-                                </button>
-                            </div>
-                            )}
-                            {(isParentMode || isIndependentMode) && !isTeacherMode && (
-                            <div className="flex items-center justify-end mt-2 pt-2 border-t border-indigo-800/30" onClick={e => e.stopPropagation()}>
-                                <button
-                                    aria-label={t('history.share_to_community_aria') || 'Share to AlloFlow community catalog'}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        try {
-                                            localStorage.setItem('alloflow_pending_submission', JSON.stringify({
-                                                title: item.title || '',
-                                                source_type: item.type || '',
-                                                payload: { id: item.id, type: item.type, title: item.title, timestamp: item.timestamp, data: item.data, meta: item.meta }
-                                            }));
-                                            setIsCommunityCatalogOpen(true);
-                                        } catch (err) {
-                                            addToast && addToast('Could not open submission form: ' + (err && err.message), 'error');
-                                        }
-                                    }}
-                                    className="p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]"
-                                    title={t('history.share_to_community_tooltip') || 'Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)'}
-                                >
-                                    <Share2 size={12} /> {t('history.share_button') || 'Share'}
                                 </button>
                             </div>
                             )}

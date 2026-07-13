@@ -50,17 +50,30 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     setConfirmDialog(null);
   }, [confirmDialog, setConfirmDialog]);
 
+  const dialogRef = React.useRef(null);
+  const cancelBtnRef = React.useRef(null);
   React.useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); handleCancel(); }
-      else if (e.key === 'Enter') { e.preventDefault(); handleConfirm(); }
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    (cancelBtnRef.current || dialog).focus();
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); handleCancel(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [handleCancel, handleConfirm]);
-
-  const confirmBtnRef = React.useRef(null);
-  React.useEffect(() => { try { confirmBtnRef.current && confirmBtnRef.current.focus(); } catch (_) {} }, []);
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [handleCancel]);
 
   return (
     <div
@@ -69,15 +82,17 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
       onClick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}
     >
       <div
-        role="dialog"
+        ref={dialogRef}
+        tabIndex={-1}
+        role="alertdialog"
         aria-modal="true"
         aria-labelledby="alloflow-confirm-title"
         aria-describedby="alloflow-confirm-message"
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border-2 border-slate-200"
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border-2 border-slate-200 focus:outline-none"
       >
         <div className="flex items-center gap-3 mb-4">
           <div className={`w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0`}>
-            <Icon size={20} className={palette.iconText} />
+            <Icon size={20} className={palette.iconText} aria-hidden="true" />
           </div>
           <h3 id="alloflow-confirm-title" className="text-lg font-bold text-slate-800">
             {confirmDialog.title || t('common.confirm') || 'Confirm'}
@@ -91,6 +106,7 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
         ) : <div className="mb-6" />}
         <div className="flex gap-3 justify-end">
           <button
+            ref={cancelBtnRef}
             type="button"
             onClick={handleCancel}
             className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300"
@@ -98,7 +114,6 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
             {confirmDialog.cancelText || t('common.cancel') || 'Cancel'}
           </button>
           <button
-            ref={confirmBtnRef}
             type="button"
             onClick={handleConfirm}
             className={`px-5 py-2.5 ${palette.btn} text-white font-semibold rounded-xl transition-colors shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-red-300`}

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-chemistry-2e-catalog",
+  "title": "OpenStax Chemistry 2e",
+  "description": "A source card for the OpenStax Chemistry 2e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Chemistry",
+    "Textbooks",
+    "Matter",
+    "Scientific modeling"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/chemistry-2e"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Chemistry 2e introduces atoms, bonding, reactions, gases, thermodynamics, equilibrium, acids and bases, electrochemistry, and organic chemistry foundations."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source when students need textbook-style explanations, worked examples, diagrams, vocabulary, and problem sets to support chemistry reading or lab preparation."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

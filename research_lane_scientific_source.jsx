@@ -95,17 +95,33 @@
  *     check?" After 6+ loop-backs in 10 min: "Looping is good — also OK
  *     to commit and gather more evidence."
  */
-(function () {
+(function initResearchLaneScientific(retriesLeft) {
   'use strict';
+  // Loader visibility: the host's loadModule() checks window.AlloModules[name]
+  // at script onload to decide SUCCESS vs FAILED. Stamp a key immediately
+  // (upgraded to __tier 2 at registration) so a legitimate defer isn't
+  // misread as a failed load — which used to trigger a pointless GitHub-raw
+  // double-fetch on every page load.
+  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules.ResearchLaneScientific) window.AlloModules.ResearchLaneScientific = { __pending: true };
   if (window.ResearchHub && window.ResearchHub._lanes && window.ResearchHub._lanes.scientific
       && window.ResearchHub._lanes.scientific.__tier >= 2) {
     console.log('[CDN] ResearchLaneScientific already registered, skipping');
     return;
   }
   if (!window.ResearchHub || typeof window.ResearchHub.registerLane !== 'function') {
+    // The hub and its lanes load concurrently, so completion order is
+    // network-dependent. NOTE: this branch used `arguments.callee`, which
+    // THROWS in the strict-mode build the moment a lane beats the hub —
+    // recurse via the named IIFE instead, bounded so a permanently missing
+    // hub can't spin forever.
+    if (retriesLeft === undefined) retriesLeft = 50; // ≈10s at 200ms
+    if (retriesLeft <= 0) {
+      console.error('[ResearchLaneScientific] window.ResearchHub never became available — giving up');
+      return;
+    }
     console.warn('[ResearchLaneScientific] window.ResearchHub not yet available — deferring');
-    // Retry on next tick in case loadModule order is non-deterministic
-    setTimeout(arguments.callee || function(){}, 200);
+    setTimeout(function () { initResearchLaneScientific(retriesLeft - 1); }, 200);
     return;
   }
 
@@ -2382,5 +2398,7 @@
     __tier: 2,
   });
 
+  // Upgrade the loader-visibility stamp now that the lane is really in.
+  window.AlloModules.ResearchLaneScientific = { __tier: 2, lane: 'scientific' };
   console.log('[CDN] ResearchLaneScientific registered (Tier 2)');
 })();

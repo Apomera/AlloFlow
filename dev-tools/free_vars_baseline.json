@@ -1,0 +1,28 @@
+{
+  "doc_pipeline_source.jsx": [
+    "Infinity",
+    "NaN",
+    "NodeFilter",
+    "TIER2_RULE_IDS",
+    "UI_STRINGS",
+    "chunkReport",
+    "chunkWeightedScore",
+    "storageDB"
+  ],
+  "view_pdf_audit_source.jsx": [
+    "FileDown",
+    "NodeFilter",
+    "RefreshCw",
+    "Sparkles",
+    "Wrench",
+    "X",
+    "g",
+    "unescape",
+    "useEffect",
+    "useRef",
+    "useState",
+    "warnLog"
+  ],
+  "gemini_api_source.jsx": [],
+  "immersive_reader_source.jsx": []
+}

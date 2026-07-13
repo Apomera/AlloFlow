@@ -2,6 +2,8 @@
 
 **Status: NOT YET POPULATED — needs a human WCAG reviewer (rank 11 of the 2026-06-08 pipeline audit).**
 
+> **Fixture note (2026-07-09):** This is a calibration harness, not public compliance documentation. Use it to compare AlloFlow's advisory PDF score against expert/tool-grade ground truth; do not cite an empty or partially populated corpus as proof of WCAG, PDF/UA, or accessibility conformance.
+
 ## Why this exists
 
 AlloFlow's PDF accessibility score is a 50/50 blend of an **AI rubric** score and an **axe-core**

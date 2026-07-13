@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-12T21:42:15.382Z",
+  "libraryId": "eppp-learning-library",
+  "standard": {
+    "checks": [
+      "source-support",
+      "accuracy-and-currency",
+      "instructional-quality",
+      "accessibility",
+      "bias-and-context",
+      "expert-review"
+    ],
+    "meaning": "Content remains review-required until claim-level source, accuracy, instructional, accessibility, bias/context, and qualified expert gates are complete.",
+    "accessibilityBaseline": "The shared renderer provides keyboard controls, persistent section progress, diagram text alternatives, learner motion controls, and reduced-motion support."
+  },
+  "summary": {
+    "chapters": 49,
+    "sections": 278,
+    "diagrams": 25,
+    "diagramPlacements": 52,
+    "knowledgeChecks": 91,
+    "flashcards": 415,
+    "memoryAids": 255,
+    "qaPassedChapters": 0,
+    "sourceReviewedChapters": 26,
+    "qaPassedFlashcards": 0,
+    "sourceReviewedFlashcards": 9,
+    "qaPassedMemoryAids": 0,
+    "sourceReviewedMemoryAids": 8,
+    "editorialReviewedSourcePendingMemoryAids": 2
+  },
+  "status": "review-in-progress",
+  "findings": [
+    "Legacy content is preserved but is not automatically approved for native publication.",
+    "Shared renderer accessibility controls are implemented; each diagram still needs concept and label review.",
+    "Claim-level content, flashcard, and memory-aid source review remains pending."
+  ]
+}

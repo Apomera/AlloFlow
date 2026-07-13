@@ -1,21 +1,31 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`STEM tool render goldens (default state) > renders + pins a digest for accessLens 1`] = `
+{
+  "buttons": 8,
+  "inputs": 1,
+  "lengthBucket": 25,
+  "sha": "bf03cdc1005db76b",
+  "svgs": 0,
+}
+`;
+
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquacultureLab 1`] = `
 {
-  "buttons": 140,
+  "buttons": 144,
   "inputs": 0,
-  "lengthBucket": 266,
-  "sha": "fbf55e8d416d13cc",
+  "lengthBucket": 289,
+  "sha": "6eda6f86e2be1180",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquarium 1`] = `
 {
-  "buttons": 20,
+  "buttons": 24,
   "inputs": 0,
-  "lengthBucket": 50,
-  "sha": "7c8dfa7b675f261d",
+  "lengthBucket": 146,
+  "sha": "59627a0487005215",
   "svgs": 0,
 }
 `;
@@ -24,49 +34,59 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 24,
   "inputs": 4,
-  "lengthBucket": 52,
-  "sha": "58da9f91d2cdfaba",
+  "lengthBucket": 63,
+  "sha": "1dcac7aa647f3ec1",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for cellularLab 1`] = `
 {
-  "buttons": 18,
+  "buttons": 22,
   "inputs": 1,
-  "lengthBucket": 43,
-  "sha": "592091d05fa606fa",
+  "lengthBucket": 64,
+  "sha": "2a9ac91a885482ba",
   "svgs": 1,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for climateExplorer 1`] = `
 {
-  "buttons": 36,
+  "buttons": 39,
   "inputs": 0,
-  "lengthBucket": 146,
-  "sha": "0306be38e49c8e6a",
+  "lengthBucket": 166,
+  "sha": "696fdd3f1eed883f",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for ecosystem 1`] = `
 {
-  "buttons": 29,
+  "buttons": 33,
   "inputs": 8,
-  "lengthBucket": 94,
-  "sha": "b21ebb5ea323a940",
+  "lengthBucket": 120,
+  "sha": "f46ac9d995832500",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for evoLab 1`] = `
 {
-  "buttons": 20,
+  "buttons": 28,
   "inputs": 0,
-  "lengthBucket": 130,
-  "sha": "c7b633c76f3a91e0",
+  "lengthBucket": 190,
+  "sha": "e2e34f4ae9930c66",
   "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for geologyExplorer 1`] = `
+{
+  "buttons": 23,
+  "inputs": 1,
+  "lengthBucket": 73,
+  "sha": "f5c21a481f6fdb76",
+  "svgs": 1,
 }
 `;
 
@@ -82,20 +102,20 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for musicSynth 1`] = `
 {
-  "buttons": 114,
+  "buttons": 118,
   "inputs": 14,
-  "lengthBucket": 217,
-  "sha": "cb04c66acc568437",
+  "lengthBucket": 239,
+  "sha": "8dca4d2f6262516b",
   "svgs": 1,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for opticsLab 1`] = `
 {
-  "buttons": 0,
+  "buttons": 34,
   "inputs": 0,
-  "lengthBucket": 1,
-  "sha": "205b5913e8a456e9",
+  "lengthBucket": 103,
+  "sha": "7c6acc929fd45b85",
   "svgs": 0,
 }
 `;
@@ -104,8 +124,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 13,
   "inputs": 6,
-  "lengthBucket": 56,
-  "sha": "9e141d3fce968ef4",
+  "lengthBucket": 78,
+  "sha": "505ea1ba503a8131",
   "svgs": 1,
 }
 `;
@@ -115,7 +135,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 15,
   "inputs": 7,
   "lengthBucket": 62,
-  "sha": "785f99df9fff6bdd",
+  "sha": "a067214b0d2a7bcd",
   "svgs": 1,
 }
 `;

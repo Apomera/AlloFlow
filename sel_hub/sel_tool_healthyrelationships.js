@@ -113,6 +113,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
     color: 'pink',
     category: 'relationship-skills',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _hreT = (ctx && ctx.theme) || {};
+      var _hreHC = !!_hreT.isContrast, _hreL = !_hreHC && !_hreT.isDark;
+      var _hre_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _hre_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#ffffff':'#000000','#fef2f2':'#000000'};
+      var _hre_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#be185d','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#fbcfe8':'#9d174d','#fde68a':'#92400e','#fee2e2':'#991b1b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fdba74':'#9a3412','#d8b4fe':'#6b21a8','#67e8f9':'#155e75','#c7d2fe':'#312e81','#e0e7ff':'#3730a3','#5eead4':'#0f766e','#a7f3d0':'#047857','#fcd34d':'#78350f'}, _hre_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fbcfe8':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fde68a':'#ffff00','#fef3c7':'#ffff00','#fee2e2':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#bae6fd':'#ffff00','#fdba74':'#ffff00','#fed7aa':'#ffff00','#d8b4fe':'#ffff00','#67e8f9':'#ffff00','#cffafe':'#ffff00','#c7d2fe':'#ffff00','#e0e7ff':'#ffff00','#5eead4':'#ffff00','#a7f3d0':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
+      var _hre_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#0f172a':'#cbd5e1'}, _hre_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#ec4899':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#f97316':'#ffff00','#0891b2':'#ffff00','#6366f1':'#ffff00','#14b8a6':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#cbd5e1':'#ffff00'};
+      var _hreBg = function(h){ return _hreHC ? (_hre_BGH[h]||h) : (_hreL ? (_hre_BGL[h]||h) : h); };
+      var _hreFg = function(h){ return _hreHC ? (_hre_FGH[h]||h) : (_hreL ? (_hre_FGL[h]||h) : h); };
+      var _hreBd = function(h){ return _hreHC ? (_hre_BDH[h]||h) : (_hreL ? (_hre_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -134,10 +143,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _hreFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#f9a8d4', fontSize: 22, fontWeight: 900 } }, '💞 Healthy Relationships'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'The spectrum, the consent basics, the safety map.')
+            h('h2', { style: { margin: 0, color: _hreFg('#f9a8d4'), fontSize: 22, fontWeight: 900 } }, '💞 Healthy Relationships'),
+            h('div', { style: { fontSize: 12, color: _hreFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'The spectrum, the consent basics, the safety map.')
           )
         );
       }
@@ -160,32 +169,32 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ec4899' : '#334155'),
-                background: active ? 'rgba(236,72,153,0.18)' : '#1e293b',
-                color: active ? '#fbcfe8' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(236,72,153,0.18)' : _hreBg('#1e293b'),
+                color: active ? _hreFg('#fbcfe8') : _hreFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: _hreFg('#fecaca'), lineHeight: 1.65 } },
           h('strong', null, '🆘 If you are in a relationship that is hurting you: '),
           'help exists. ',
           h('a', { href: 'https://www.loveisrespect.org/', target: '_blank', rel: 'noopener noreferrer',
-            style: { color: '#fca5a5', textDecoration: 'underline', fontWeight: 800 } }, 'loveisrespect.org ↗'),
+            style: { color: _hreFg('#fca5a5'), textDecoration: 'underline', fontWeight: 800 } }, 'loveisrespect.org ↗'),
           ' (text LOVEIS to 22522, or call 1-866-331-9474) is for teens. ',
           h('a', { href: 'https://www.thehotline.org/', target: '_blank', rel: 'noopener noreferrer',
-            style: { color: '#fca5a5', textDecoration: 'underline', fontWeight: 800 } }, 'thehotline.org ↗'),
+            style: { color: _hreFg('#fca5a5'), textDecoration: 'underline', fontWeight: 800 } }, 'thehotline.org ↗'),
           ' is the National Domestic Violence Hotline: 1-800-799-7233 or text START to 88788. ',
           h('a', { href: 'https://www.rainn.org/', target: '_blank', rel: 'noopener noreferrer',
-            style: { color: '#fca5a5', textDecoration: 'underline', fontWeight: 800 } }, 'rainn.org ↗'),
+            style: { color: _hreFg('#fca5a5'), textDecoration: 'underline', fontWeight: 800 } }, 'rainn.org ↗'),
           ' is for sexual assault: 1-800-656-4673. All are free, confidential, 24/7.'
         );
       }
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _hreFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This tool is education, not therapy. For specific help with a relationship: see Loveisrespect (teens), NDVH (adults), or talk to a school counselor or therapist.'
         );
@@ -194,16 +203,102 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       // ═══════════════════════════════════════════════════════════
       // HOME — the spectrum
       // ═══════════════════════════════════════════════════════════
+      function hrRouteCard(label, detail, target, color) {
+        var active = view === target;
+        return h('button', {
+          key: target,
+          onClick: function() { goto(target); },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 88,
+            padding: '12px 14px',
+            borderRadius: 10,
+            borderTop: '1px solid ' + (active ? color : _hreBd('#334155')),
+            borderRight: '1px solid ' + (active ? color : _hreBd('#334155')),
+            borderBottom: '1px solid ' + (active ? color : _hreBd('#334155')),
+            borderLeft: '4px solid ' + color,
+            background: active ? color + '18' : _hreBg('#0f172a'),
+            color: _hreFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: _hreFg('#94a3b8'), lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function hrStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 10,
+            background: _hreBg('#0f172a'),
+            border: '1px solid ' + color + '44',
+            minHeight: 62
+          }
+        },
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: _hreFg('#94a3b8'), lineHeight: 1.35 } }, label)
+        );
+      }
+
+      function renderRelationshipLaunch() {
+        var check = d.check || {};
+        var rated = Object.keys(check).length;
+        var concernCount = Object.keys(check).filter(function(k) { return check[k] === 'unhealthy' || check[k] === 'abusive'; }).length;
+        return h('section', {
+          role: 'region',
+          'aria-label': 'Healthy relationships launch panel',
+          style: {
+            marginBottom: 14,
+            padding: 16,
+            borderRadius: 14,
+            background: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(14,165,233,0.07)), ' + _hreBg('#0f172a'),
+            border: '1px solid rgba(236,72,153,0.35)'
+          }
+        },
+          h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: '1 1 260px' } },
+              h('div', { style: { fontSize: 11, color: _hreFg('#f9a8d4'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Relationship safety map'),
+              h('h3', { style: { margin: 0, color: _hreFg('#fbcfe8'), fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Start with clarity, not a verdict.'),
+              h('p', { style: { margin: '6px 0 0', color: _hreFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
+                'Review the spectrum, privately check one relationship, learn consent basics, or jump straight to safety resources.'
+              )
+            ),
+            h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
+              hrStat('dimensions rated', rated + '/' + DIMENSIONS.length, '#0ea5e9'),
+              hrStat('concern flags', concernCount, concernCount ? '#ef4444' : '#22c55e'),
+              hrStat('consent principles', CONSENT_PRINCIPLES.length, '#ec4899'),
+              hrStat('private notes', d.notes ? 'yes' : 'empty', '#a855f7')
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+            hrRouteCard('See the spectrum', 'Compare healthy, unhealthy, and abusive patterns.', 'home', '#ec4899'),
+            hrRouteCard('Check one relationship', 'Rate the 8 dimensions privately.', 'check', '#0ea5e9'),
+            hrRouteCard('Review consent', 'Use the 7 specific consent principles.', 'consent', '#f97316'),
+            hrRouteCard('Find safety help', 'Open resources and safer next steps.', 'safety', '#ef4444'),
+            hrRouteCard('Make a private packet', 'Print or save the check artifact for yourself.', 'print', '#14b8a6')
+          )
+        );
+      }
+
       function renderHome() {
         return h('div', null,
           safetyBanner(),
+          renderRelationshipLaunch(),
 
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(236,72,153,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(236,72,153,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbcfe8', marginBottom: 4 } }, 'Relationships exist on a spectrum.'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _hreFg('#fbcfe8'), marginBottom: 4 } }, 'Relationships exist on a spectrum.'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Most relationships have HEALTHY parts, UNHEALTHY parts, and (sometimes) ABUSIVE parts. No relationship is perfect. The point of this tool is not to find a perfect one; it is to know the difference between "we\'re working on stuff" and "this is hurting me."'
             ),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _hreFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'The framework below works for ANY relationship — friend, partner, family member, coach. It comes from Loveisrespect, the leading youth dating-violence prevention program in the US.'
             )
           ),
@@ -211,28 +306,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           // The 3 zones
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '4px solid #22c55e' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 6 } }, '✓ HEALTHY'),
-              h('p', { style: { margin: 0, color: '#dcfce7', fontSize: 12.5, lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#bbf7d0'), marginBottom: 6 } }, '✓ HEALTHY'),
+              h('p', { style: { margin: 0, color: _hreFg('#dcfce7'), fontSize: 12.5, lineHeight: 1.65 } },
                 'Mutual respect, communication, trust, support, independence, fairness, consent, safety. Not perfect, but the pattern is good.')
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '4px solid #f59e0b' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 6 } }, '~ UNHEALTHY'),
-              h('p', { style: { margin: 0, color: '#fef3c7', fontSize: 12.5, lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fde68a'), marginBottom: 6 } }, '~ UNHEALTHY'),
+              h('p', { style: { margin: 0, color: _hreFg('#fef3c7'), fontSize: 12.5, lineHeight: 1.65 } },
                 'Imbalance: one person controls more, one gives more, communication breaks down. Not abuse, but the pattern is wearing you down. Can often be repaired with effort from both people.')
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '✕ ABUSIVE'),
-              h('p', { style: { margin: 0, color: '#fee2e2', fontSize: 12.5, lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fca5a5'), marginBottom: 6 } }, '✕ ABUSIVE'),
+              h('p', { style: { margin: 0, color: _hreFg('#fee2e2'), fontSize: 12.5, lineHeight: 1.65 } },
                 'One person controls or harms the other through fear, manipulation, threats, isolation, physical or sexual violence. Cannot be fixed by the person being harmed. NOT your fault. Help exists.')
             )
           ),
 
           // 8 dimensions overview
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 14 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 10 } }, '🔍 The 8 dimensions every relationship has'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 14 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fbcfe8'), marginBottom: 10 } }, '🔍 The 8 dimensions every relationship has'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6 } },
               DIMENSIONS.map(function(dim) {
-                return h('div', { key: dim.id, style: { padding: 8, borderRadius: 6, background: '#1e293b', borderLeft: '2px solid ' + dim.color, display: 'flex', alignItems: 'center', gap: 6 } },
+                return h('div', { key: dim.id, style: { padding: 8, borderRadius: 6, background: _hreBg('#1e293b'), borderLeft: '2px solid ' + dim.color, display: 'flex', alignItems: 'center', gap: 6 } },
                   h('span', { style: { fontSize: 16 } }, dim.icon),
                   h('span', { style: { fontSize: 12, fontWeight: 700, color: dim.color } }, dim.label)
                 );
@@ -241,7 +336,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Inclusive note
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 12.5, color: _hreFg('#e9d5ff'), lineHeight: 1.65 } },
             h('strong', null, '🌐 Applies across all kinds of relationships. '),
             'These principles work the same for friend / romantic, queer / straight, monogamous / non-monogamous, neurotypical / neurodivergent. Disabled folks have higher rates of being abused; this is structural, not their fault. Trans youth face specific dating-violence risks; the Trevor Project (1-866-488-7386) has identity-specific resources.'
           ),
@@ -257,9 +352,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: '#0f172a', cursor: 'pointer', marginBottom: 8, color: '#e2e8f0' } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _hreBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _hreFg('#e2e8f0') } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } }, blurb)
+          h('div', { style: { fontSize: 12, color: _hreFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
 
@@ -280,24 +375,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: '#bae6fd', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: _hreFg('#bae6fd'), lineHeight: 1.7 } },
             h('strong', null, '🔍 Run a specific relationship through the 8 dimensions. '),
             'Be honest. This is private. The point is clarity, not judgment of the other person. You can think about a friend, a partner, a family member, a coach — any close relationship.'
           ),
 
           // Context
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 12 } },
-            h('label', { htmlFor: 'hr-context', style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Which relationship am I checking? (optional, private)'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 12 } },
+            h('label', { htmlFor: 'hr-context', style: { display: 'block', fontSize: 11, color: _hreFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Which relationship am I checking? (optional, private)'),
             h('input', { id: 'hr-context', type: 'text', value: d.checkContext || '',
               placeholder: 'e.g. me and Sam (friend), me and my partner, me and my mom',
               onChange: function(e) { setHR({ checkContext: e.target.value }); },
-              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } })
+              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _hreBg('#1e293b'), color: _hreFg('#e2e8f0'), fontSize: 13 } })
           ),
 
           // Each dimension
           DIMENSIONS.map(function(dim) {
             var current = check[dim.id];
-            return h('div', { key: dim.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
+            return h('div', { key: dim.id, style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                 h('span', { style: { fontSize: 20 } }, dim.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: dim.color } }, dim.label)
@@ -306,32 +401,32 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
               // Three descriptions
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 6, marginBottom: 10 } },
                 h('button', { onClick: function() { setDim(dim.id, 'healthy'); }, 'aria-pressed': current === 'healthy',
-                  style: { textAlign: 'left', padding: 10, borderRadius: 6, border: '2px solid ' + (current === 'healthy' ? '#22c55e' : '#1e293b'), background: current === 'healthy' ? 'rgba(34,197,94,0.10)' : '#1e293b', cursor: 'pointer', color: '#e2e8f0' } },
-                  h('div', { style: { fontSize: 11, color: '#bbf7d0', fontWeight: 800, marginBottom: 4 } }, '✓ HEALTHY'),
-                  h('div', { style: { fontSize: 11.5, color: '#dcfce7', lineHeight: 1.6 } }, dim.healthy)
+                  style: { textAlign: 'left', padding: 10, borderRadius: 6, border: '2px solid ' + (current === 'healthy' ? '#22c55e' : _hreBg('#1e293b')), background: current === 'healthy' ? 'rgba(34,197,94,0.10)' : _hreBg('#1e293b'), cursor: 'pointer', color: _hreFg('#e2e8f0') } },
+                  h('div', { style: { fontSize: 11, color: _hreFg('#bbf7d0'), fontWeight: 800, marginBottom: 4 } }, '✓ HEALTHY'),
+                  h('div', { style: { fontSize: 11.5, color: _hreFg('#dcfce7'), lineHeight: 1.6 } }, dim.healthy)
                 ),
                 h('button', { onClick: function() { setDim(dim.id, 'unhealthy'); }, 'aria-pressed': current === 'unhealthy',
-                  style: { textAlign: 'left', padding: 10, borderRadius: 6, border: '2px solid ' + (current === 'unhealthy' ? '#f59e0b' : '#1e293b'), background: current === 'unhealthy' ? 'rgba(245,158,11,0.10)' : '#1e293b', cursor: 'pointer', color: '#e2e8f0' } },
-                  h('div', { style: { fontSize: 11, color: '#fde68a', fontWeight: 800, marginBottom: 4 } }, '~ UNHEALTHY'),
-                  h('div', { style: { fontSize: 11.5, color: '#fef3c7', lineHeight: 1.6 } }, dim.unhealthy)
+                  style: { textAlign: 'left', padding: 10, borderRadius: 6, border: '2px solid ' + (current === 'unhealthy' ? '#f59e0b' : _hreBg('#1e293b')), background: current === 'unhealthy' ? 'rgba(245,158,11,0.10)' : _hreBg('#1e293b'), cursor: 'pointer', color: _hreFg('#e2e8f0') } },
+                  h('div', { style: { fontSize: 11, color: _hreFg('#fde68a'), fontWeight: 800, marginBottom: 4 } }, '~ UNHEALTHY'),
+                  h('div', { style: { fontSize: 11.5, color: _hreFg('#fef3c7'), lineHeight: 1.6 } }, dim.unhealthy)
                 ),
                 h('button', { onClick: function() { setDim(dim.id, 'abusive'); }, 'aria-pressed': current === 'abusive',
-                  style: { textAlign: 'left', padding: 10, borderRadius: 6, border: '2px solid ' + (current === 'abusive' ? '#ef4444' : '#1e293b'), background: current === 'abusive' ? 'rgba(239,68,68,0.10)' : '#1e293b', cursor: 'pointer', color: '#e2e8f0' } },
-                  h('div', { style: { fontSize: 11, color: '#fca5a5', fontWeight: 800, marginBottom: 4 } }, '✕ ABUSIVE'),
-                  h('div', { style: { fontSize: 11.5, color: '#fee2e2', lineHeight: 1.6 } }, dim.abusive)
+                  style: { textAlign: 'left', padding: 10, borderRadius: 6, border: '2px solid ' + (current === 'abusive' ? '#ef4444' : _hreBg('#1e293b')), background: current === 'abusive' ? 'rgba(239,68,68,0.10)' : _hreBg('#1e293b'), cursor: 'pointer', color: _hreFg('#e2e8f0') } },
+                  h('div', { style: { fontSize: 11, color: _hreFg('#fca5a5'), fontWeight: 800, marginBottom: 4 } }, '✕ ABUSIVE'),
+                  h('div', { style: { fontSize: 11.5, color: _hreFg('#fee2e2'), lineHeight: 1.6 } }, dim.abusive)
                 )
               )
             );
           }),
 
           // Summary
-          Object.keys(check).length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginTop: 14 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 8 } }, '📊 What this is showing'),
-            abuseCount >= 1 ? h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(239,68,68,0.10)', borderLeft: '3px solid #ef4444', marginBottom: 8, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
+          Object.keys(check).length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginTop: 14 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fbcfe8'), marginBottom: 8 } }, '📊 What this is showing'),
+            abuseCount >= 1 ? h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(239,68,68,0.10)', borderLeft: '3px solid #ef4444', marginBottom: 8, fontSize: 13, color: _hreFg('#fecaca'), lineHeight: 1.7 } },
               h('strong', null, '⚠️ ' + abuseCount + ' dimension' + (abuseCount === 1 ? '' : 's') + ' marked abusive. '),
               'This is not "working through stuff." This is harm. Please reach out: loveisrespect.org (text LOVEIS to 22522), NDVH (1-800-799-7233), or a school counselor. It is NOT your fault.'
             ) : null,
-            unhealthyCount >= 3 && abuseCount === 0 ? h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(245,158,11,0.10)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+            unhealthyCount >= 3 && abuseCount === 0 ? h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(245,158,11,0.10)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 13, color: _hreFg('#fde68a'), lineHeight: 1.7 } },
               h('strong', null, '⚖️ Multiple unhealthy dimensions. '),
               'The relationship is wearing you down. Two paths: have a real conversation with the other person and see if both of you can work on it, or step back. A counselor or therapist can help you think it through.'
             ) : null
@@ -349,29 +444,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           safetyBanner(),
 
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(236,72,153,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(236,72,153,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbcfe8', marginBottom: 4 } }, 'Consent is not the absence of no.'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _hreFg('#fbcfe8'), marginBottom: 4 } }, 'Consent is not the absence of no.'),
+            h('p', { style: { margin: 0, color: _hreFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Consent is a clear, enthusiastic, ongoing yes. It can be withdrawn. It is specific. It cannot be given by someone who lacks capacity (drunk, asleep, underage). Sex without consent is sexual assault, regardless of relationship status.'
             )
           ),
 
           CONSENT_PRINCIPLES.map(function(p) {
-            return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 8 } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 4 } }, p.label),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } }, p.what)
+            return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fbcfe8'), marginBottom: 4 } }, p.label),
+              h('p', { style: { margin: 0, color: _hreFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } }, p.what)
             );
           }),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 13, color: '#fecaca', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginTop: 14, fontSize: 13, color: _hreFg('#fecaca'), lineHeight: 1.7 } },
             h('strong', null, '⚠️ Coercion is not consent. '),
             'If someone wears you down, threatens to break up with you, threatens to spread photos or rumors, threatens self-harm if you don\'t — that is coercion, and consent under coercion is not consent. If someone has sex with you while you are drunk, high, or asleep, that is sexual assault. If you are not sure: RAINN has trained advocates 24/7 at 1-800-656-4673 or ',
             h('a', { href: 'https://www.rainn.org/', target: '_blank', rel: 'noopener noreferrer',
-              style: { color: '#fca5a5', textDecoration: 'underline', fontWeight: 800 } }, 'rainn.org ↗'),
+              style: { color: _hreFg('#fca5a5'), textDecoration: 'underline', fontWeight: 800 } }, 'rainn.org ↗'),
             '.'
           ),
 
           // Age of consent reminder
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 10, fontSize: 13, color: '#fde68a', lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginTop: 10, fontSize: 13, color: _hreFg('#fde68a'), lineHeight: 1.7 } },
             h('strong', null, '⚖️ Age of consent varies by state. '),
             'In Maine, the age of consent is 16. In some states it is 17 or 18. Power-imbalance laws often apply when one person is much older or in a position of authority (teacher, coach, supervisor) regardless of age. A relationship with significant age gap may not be legal even if you both feel like you want it. This is structural, not about your feelings.'
           ),
@@ -388,39 +483,39 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           safetyBanner(),
 
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(239,68,68,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(239,68,68,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fecaca', marginBottom: 4 } }, 'If a relationship is hurting you — please read this.'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _hreFg('#fecaca'), marginBottom: 4 } }, 'If a relationship is hurting you — please read this.'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Being in an unhealthy or abusive relationship is NOT a sign of weakness or stupidity. Abusers are often charming, often start subtly, and the relationship escalates over months. By the time the harm is clear, you are often isolated from people who would help you see it. It is not your fault.'
             ),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _hreFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Leaving an abusive relationship is genuinely dangerous (the most dangerous time for survivors is the period right around leaving). DO NOT leave without a plan. The hotlines below can help you plan safely.'
             )
           ),
 
           // How abuse builds — grooming as a process
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fdba74', marginBottom: 6 } }, '🧩 How abuse builds: grooming as a process'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f97316', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fdba74'), marginBottom: 6 } }, '🧩 How abuse builds: grooming as a process'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } },
               'Grooming is not just a checklist of warning signs. It is a sequence. Naming the stage you might be in is often the only way to recognize the pattern from the inside, because each stage by itself can look like care, attention, or love. This is true for adult predators AND for peer perpetrators (older partners, older siblings, friends).'
             ),
-            h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: '#fed7aa', fontSize: 13, lineHeight: 1.8 } },
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Targeting. '), 'Someone notices a vulnerability: family conflict, isolation, recent loss, low self-worth, an identity that feels unseen at home. The vulnerability is not the survivor\'s fault; it is what is being exploited.'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Trust and access. '), 'They build trust with you AND often with the adults around you. Teachers, parents, friends say "they seem so nice." That is part of the access.'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Filling a need. '), 'Attention, validation, mentorship, gifts, money, drugs, a sense of belonging, sexual attention, "you are mature for your age." The unmet need is real; the way it is being met has strings.'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Isolating. '), 'Slowly, your other supports get cut off. The relationship feels exclusive ("we get each other in a way no one else does"). Friends and family drift away or get framed as the problem.'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Desensitizing. '), 'Physical, emotional, or sexual lines get crossed, slowly. Secrecy becomes normal. "This is just between us." Each crossing makes the next one feel smaller than it is.'),
-              h('li', null, h('strong', { style: { color: '#fdba74' } }, 'Maintaining. '), 'Shame, blackmail, gaslighting, threats, or trauma bonds (see below) keep the situation hidden. By this point, the survivor often feels they cannot leave even when they want to.')
+            h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: _hreFg('#fed7aa'), fontSize: 13, lineHeight: 1.8 } },
+              h('li', null, h('strong', { style: { color: _hreFg('#fdba74') } }, 'Targeting. '), 'Someone notices a vulnerability: family conflict, isolation, recent loss, low self-worth, an identity that feels unseen at home. The vulnerability is not the survivor\'s fault; it is what is being exploited.'),
+              h('li', null, h('strong', { style: { color: _hreFg('#fdba74') } }, 'Trust and access. '), 'They build trust with you AND often with the adults around you. Teachers, parents, friends say "they seem so nice." That is part of the access.'),
+              h('li', null, h('strong', { style: { color: _hreFg('#fdba74') } }, 'Filling a need. '), 'Attention, validation, mentorship, gifts, money, drugs, a sense of belonging, sexual attention, "you are mature for your age." The unmet need is real; the way it is being met has strings.'),
+              h('li', null, h('strong', { style: { color: _hreFg('#fdba74') } }, 'Isolating. '), 'Slowly, your other supports get cut off. The relationship feels exclusive ("we get each other in a way no one else does"). Friends and family drift away or get framed as the problem.'),
+              h('li', null, h('strong', { style: { color: _hreFg('#fdba74') } }, 'Desensitizing. '), 'Physical, emotional, or sexual lines get crossed, slowly. Secrecy becomes normal. "This is just between us." Each crossing makes the next one feel smaller than it is.'),
+              h('li', null, h('strong', { style: { color: _hreFg('#fdba74') } }, 'Maintaining. '), 'Shame, blackmail, gaslighting, threats, or trauma bonds (see below) keep the situation hidden. By this point, the survivor often feels they cannot leave even when they want to.')
             ),
-            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 6, fontSize: 11.5, color: '#fed7aa', lineHeight: 1.55 } },
+            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 6, fontSize: 11.5, color: _hreFg('#fed7aa'), lineHeight: 1.55 } },
               h('strong', null, 'If you recognize a stage you are in: '),
               'that recognition is the work. Call a hotline before you decide what to do. They can help you plan safely.'
             )
           ),
 
           // The cycle of abuse — Walker (1979)
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, '🔄 The cycle of abuse'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#d8b4fe'), marginBottom: 6 } }, '🔄 The cycle of abuse'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } },
               'Lenore Walker described this in 1979 and it is still the standard frame in intimate-partner-violence training. The reason "but they apologized and things were good for a while" feels true is because reconciliation is part of the cycle, not evidence the cycle is over.'
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 } },
@@ -431,40 +526,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
                 { name: '4. Calm', desc: 'Things feel okay again. The relationship feels worth saving. Then tension begins to build.' }
               ].map(function(p, i) {
                 return h('div', { key: i, style: { padding: 8, background: 'rgba(168,85,247,0.08)', borderRadius: 6, border: '1px solid rgba(168,85,247,0.25)' } },
-                  h('div', { style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', marginBottom: 3 } }, p.name),
-                  h('div', { style: { fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.5 } }, p.desc)
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: _hreFg('#d8b4fe'), marginBottom: 3 } }, p.name),
+                  h('div', { style: { fontSize: 11.5, color: _hreFg('#e9d5ff'), lineHeight: 1.5 } }, p.desc)
                 );
               })
             ),
-            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 6, fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.55 } },
+            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 6, fontSize: 11.5, color: _hreFg('#e9d5ff'), lineHeight: 1.55 } },
               h('strong', null, 'Important: '),
               'incidents tend to escalate over time, and the reconciliation/calm phase tends to shrink. "They were so good after the last fight" is not safety. It is the cycle.'
             )
           ),
 
           // Coercive control — Stark (2007)
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0891b2', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#67e8f9', marginBottom: 6 } }, '🕸️ Coercive control: the umbrella pattern'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0891b2', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#67e8f9'), marginBottom: 6 } }, '🕸️ Coercive control: the umbrella pattern'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } },
               'Evan Stark, 2007, argued that the core dynamic of intimate-partner abuse is not isolated violent incidents but an ongoing pattern of domination. This is now criminalized in the UK, Ireland, France, and several US states (CA, CT, HI). Most teen abuse is coercive-control-shaped, not punch-shaped, which is why it can be invisible to outside observers, parents, friends, even to the survivor.'
             ),
-            h('p', { style: { margin: '0 0 6px', color: '#cffafe', fontSize: 12.5, lineHeight: 1.65 } }, 'The four tactics that show up together:'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#cffafe', fontSize: 12.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: '0 0 6px', color: _hreFg('#cffafe'), fontSize: 12.5, lineHeight: 1.65 } }, 'The four tactics that show up together:'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _hreFg('#cffafe'), fontSize: 12.5, lineHeight: 1.7 } },
               h('li', null, h('strong', null, 'Violence: '), 'physical, sexual, or threats of either.'),
               h('li', null, h('strong', null, 'Intimidation: '), 'tone, anger displays, punching walls, harming pets, "look what you made me do."'),
               h('li', null, h('strong', null, 'Isolation: '), 'cutting off friends, family, school, work; demanding all your time and attention.'),
               h('li', null, h('strong', null, 'Control: '), 'monitoring phone, location, money, clothes, food, sleep, who you talk to; managing your daily life in ways framed as care.')
             ),
-            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(8,145,178,0.08)', border: '1px solid rgba(8,145,178,0.3)', borderRadius: 6, fontSize: 11.5, color: '#cffafe', lineHeight: 1.55 } },
+            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(8,145,178,0.08)', border: '1px solid rgba(8,145,178,0.3)', borderRadius: 6, fontSize: 11.5, color: _hreFg('#cffafe'), lineHeight: 1.55 } },
               h('strong', null, 'Each individual control act can look like love. '),
               'The pattern across many small acts is what makes it coercive control. If you find yourself explaining away ten small things, that is information.'
             )
           ),
 
           // Names for the patterns — psychoeducation
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '📖 Names for the patterns'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#c7d2fe'), marginBottom: 6 } }, '📖 Names for the patterns'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } },
               'These are common patterns that show up across abusive relationships. Having a name for what is happening is power: you can google it, find others who have experienced it, and stop blaming yourself for not seeing it sooner.'
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -477,20 +572,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
                 { name: 'Hoovering', what: 'After a breakup or pull-back, sudden return with intense affection, a crisis ("I am suicidal because of you"), or a gesture meant to pull you back in. Named for the vacuum that sucks you back.' }
               ].map(function(p, i) {
                 return h('div', { key: i, style: { padding: 8, background: 'rgba(99,102,241,0.08)', borderRadius: 6, border: '1px solid rgba(99,102,241,0.25)' } },
-                  h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#c7d2fe', marginBottom: 3 } }, p.name),
-                  h('div', { style: { fontSize: 12, color: '#e0e7ff', lineHeight: 1.55 } }, p.what)
+                  h('div', { style: { fontSize: 12.5, fontWeight: 800, color: _hreFg('#c7d2fe'), marginBottom: 3 } }, p.name),
+                  h('div', { style: { fontSize: 12, color: _hreFg('#e0e7ff'), lineHeight: 1.55 } }, p.what)
                 );
               })
             )
           ),
 
           // Identity-specific control tactics
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #14b8a6', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', marginBottom: 6 } }, '🌈 Identity-specific control tactics'),
-            h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #14b8a6', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#5eead4'), marginBottom: 6 } }, '🌈 Identity-specific control tactics'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } },
               'Abusers exploit whatever leverage your identity gives them. None of these mean the abuse is your fault. All of them are recognized in domestic-violence training. Help exists that understands these specifics; the hotlines below will not out you, will not call ICE, will not call the police without your consent.'
             ),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#a7f3d0', fontSize: 12.5, lineHeight: 1.75 } },
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _hreFg('#a7f3d0'), fontSize: 12.5, lineHeight: 1.75 } },
               h('li', null, h('strong', null, 'LGBTQ+: '), 'threatening to out you to family, school, sports team, work. Saying "no one else will accept you." Weaponizing community gatekeeping. Trevor Project (1-866-488-7386) and Loveisrespect both have LGBTQ+-affirming staff.'),
               h('li', null, h('strong', null, 'Disability: '), 'controlling medications, mobility aids, transportation, or financial access. Withholding care or PCA hours. Using "I am your caregiver" as a control tactic. The National Domestic Violence Hotline has disability-specific resources.'),
               h('li', null, h('strong', null, 'Immigration status: '), 'threatening to call ICE, withholding documents, using your status as leverage. There are protections (VAWA, U-visas) for survivors of intimate-partner violence regardless of status. Tahirih Justice Center (1-571-282-6161) specializes in immigrant survivors.'),
@@ -500,9 +595,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Red flags
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 10 } }, '🚩 Red flags (early warning signs)'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#fee2e2', fontSize: 13, lineHeight: 1.85 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fca5a5'), marginBottom: 10 } }, '🚩 Red flags (early warning signs)'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _hreFg('#fee2e2'), fontSize: 13, lineHeight: 1.85 } },
               h('li', null, 'Pressuring you for sex or pictures'),
               h('li', null, 'Wanting your passwords, location, social media'),
               h('li', null, 'Telling you who you can hang out with, talk to, see'),
@@ -518,9 +613,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // What to do
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 10 } }, '✓ What to do (in this order)'),
-            h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: '#dcfce7', fontSize: 13, lineHeight: 1.85 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#bbf7d0'), marginBottom: 10 } }, '✓ What to do (in this order)'),
+            h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: _hreFg('#dcfce7'), fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', null, 'Tell someone. '), 'A trusted adult — parent, school counselor, school psych, coach, aunt, family friend. Isolation is part of how abuse works; breaking it is the first step.'),
               h('li', null, h('strong', null, 'Call or text a hotline. '), 'Loveisrespect (teens): text LOVEIS to 22522 or call 1-866-331-9474. NDVH: 1-800-799-7233. Free, confidential, 24/7. They can help you plan.'),
               h('li', null, h('strong', null, 'Do NOT confront the abuser. '), 'Especially if they have been physical. The most dangerous time is right before / during leaving. A plan, ideally with adults involved, comes first.'),
@@ -531,8 +626,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           // Helplines
-          h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899' } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 10 } }, '📞 Free, confidential, 24/7'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899' } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fbcfe8'), marginBottom: 10 } }, '📞 Free, confidential, 24/7'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
               helplineCard('Loveisrespect (teens, dating violence)', 'Text LOVEIS to 22522', 'Call 1-866-331-9474', 'https://www.loveisrespect.org/'),
               helplineCard('National Domestic Violence Hotline', 'Text START to 88788', 'Call 1-800-799-7233', 'https://www.thehotline.org/'),
@@ -548,11 +643,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       }
 
       function helplineCard(name, line1, line2, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', borderLeft: '3px solid #ec4899' } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _hreBg('#1e293b'), borderLeft: '3px solid #ec4899' } },
           h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-            style: { fontSize: 12.5, color: '#fbcfe8', fontWeight: 800, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, name + ' ↗'),
-          h('div', { style: { fontSize: 12, color: '#e2e8f0' } }, line1),
-          line2 ? h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, line2) : null
+            style: { fontSize: 12.5, color: _hreFg('#fbcfe8'), fontWeight: 800, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, name + ' ↗'),
+          h('div', { style: { fontSize: 12, color: _hreFg('#e2e8f0') } }, line1),
+          line2 ? h('div', { style: { fontSize: 12, color: _hreFg('#cbd5e1') } }, line2) : null
         );
       }
 
@@ -563,18 +658,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('healthyRelationships', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#f9a8d4', fontSize: 16 } }, 'What this tool is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _hreBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _hreFg('#f9a8d4'), fontSize: 16 } }, 'What this tool is'),
+            h('p', { style: { margin: '0 0 10px', color: _hreFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'Adolescent relationship education across friendship and romantic relationships, built on the Loveisrespect / National Domestic Violence Hotline framework. The spectrum (healthy / unhealthy / abusive) is widely used in evidence-based teen dating violence prevention. The consent material is current best-practice in sexual education.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _hreFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'This tool is educational, not therapeutic. For students in or leaving abusive relationships, please use the hotlines (which are staffed by trained advocates) and a school counselor, not just this tool.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#f9a8d4', fontSize: 16 } }, '📚 Sources and learn more'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _hreBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _hreFg('#f9a8d4'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('Loveisrespect', 'loveisrespect.org', 'Project of NDVH; the leading youth dating violence prevention resource. 24/7 hotline, online chat, text line.', 'https://www.loveisrespect.org/'),
             sourceCard('National Domestic Violence Hotline', 'thehotline.org', 'Adult-focused but serves youth too. Free, confidential, 24/7.', 'https://www.thehotline.org/'),
             sourceCard('RAINN (Rape, Abuse & Incest National Network)', 'rainn.org', 'Largest US anti-sexual-violence organization. Free hotline and online support.', 'https://www.rainn.org/'),
@@ -585,8 +680,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _hreFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _hreFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Teen dating violence rates are roughly 1 in 3 high schoolers (CDC data). This is common; many students reading this are in or have been in unhealthy relationships. Stigma keeps it hidden.'),
               h('li', null, 'LGBTQ+ youth experience dating violence at similar or higher rates than straight youth; trans youth especially. The Trevor Project has identity-specific resources.'),
               h('li', null, 'Disabled youth experience dating violence at higher rates (research is clear). Reduced privacy, dependence on caregivers, and ableist assumptions make this both more common and harder to disclose.'),
@@ -596,7 +691,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', fontSize: 12.5, color: _hreFg('#fbcfe8'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Teen dating violence is one of the most-missed adolescent health issues. Educators are the most common adults to first hear about it. Listen, believe, don\'t pressure (the student knows their situation better than you do), and connect them to a counselor or hotline. Loveisrespect has free educator training and curriculum at loveisrespect.org/for-professionals. For sexual assault disclosures: most states make educators mandatory reporters; know your state\'s laws. Have hotline numbers visible in your classroom.'
           ),
@@ -606,30 +701,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#f9a8d4', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _hreBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _hreFg('#f9a8d4'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#fbcfe8', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#fbcfe8', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _hreFg('#fbcfe8'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _hreFg('#fbcfe8'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _hreFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 
       function renderPrintView() {
         var check = d.check || {};
         var any = Object.keys(check).length > 0;
-        var ratingColor = { healthy: '#16a34a', mixed: '#d97706', unhealthy: '#dc2626', abusive: '#7f1d1d' };
+        var ratingColor = { healthy: '#16a34a', mixed: '#d97706', unhealthy: '#dc2626', abusive: _hreFg('#7f1d1d') };
         var ratingLabel = { healthy: 'Healthy', mixed: 'Mixed', unhealthy: 'Unhealthy', abusive: 'Abusive' };
 
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.4)', borderRight: '1px solid rgba(236,72,153,0.4)', borderBottom: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: '#fbcfe8', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.4)', borderRight: '1px solid rgba(236,72,153,0.4)', borderBottom: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: _hreFg('#fbcfe8'), lineHeight: 1.65 } },
             h('strong', null, '🖨 Print my relationship-check artifact. '),
             'This is private. Print only for yourself or to bring to a counselor / school psych you trust. The 8-dimension Loveisrespect spectrum + your ratings + safety contacts. Nothing is saved or shared anywhere.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be185d 0%, #ec4899 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be185d 0%, #ec4899 100%)', color: _hreFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
 
           h('style', null,
@@ -640,45 +735,45 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             '.no-print { display: none !important; } }'
           ),
 
-          h('div', { id: 'hr-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+          h('div', { id: 'hr-print-region', style: { padding: 18, borderRadius: 12, background: _hreBg('#ffffff'), color: _hreFg('#0f172a'), border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
-              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Relationship Check'),
-              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Loveisrespect / NDVH spectrum')
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _hreFg('#0f172a') } }, 'Relationship Check'),
+              h('div', { style: { fontSize: 11, color: _hreFg('#475569') } }, 'Loveisrespect / NDVH spectrum')
             ),
 
-            h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#7f1d1d' } },
+            h('div', { style: { padding: 10, background: _hreBg('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _hreFg('#7f1d1d') } },
               h('strong', null, 'Confidential. '),
               'This artifact is for the person who filled it out. If you are in a dating relationship that is hurting you, help: loveisrespect.org (text LOVEIS to 22522 or 1-866-331-9474). 24/7: NDVH 1-800-799-7233 (text START to 88788). Sexual violence: RAINN 1-800-656-4673.'
             ),
 
             d.checkContext ? h('div', { style: { padding: 10, border: '2px solid #0f172a', borderRadius: 8, marginBottom: 12 } },
-              h('div', { style: { fontSize: 10.5, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Who / what relationship'),
-              h('div', { style: { fontSize: 13, color: '#0f172a' } }, d.checkContext)
+              h('div', { style: { fontSize: 10.5, color: _hreFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Who / what relationship'),
+              h('div', { style: { fontSize: 13, color: _hreFg('#0f172a') } }, d.checkContext)
             ) : null,
 
             h('div', { style: { marginBottom: 12 } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'My ratings across the 8 dimensions'),
-              !any ? h('div', { style: { fontSize: 13, fontStyle: 'italic', color: '#475569' } }, '(no ratings yet — open the Check tab and answer for each dimension)') : null,
+              h('div', { style: { fontSize: 12, color: _hreFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'My ratings across the 8 dimensions'),
+              !any ? h('div', { style: { fontSize: 13, fontStyle: 'italic', color: _hreFg('#475569') } }, '(no ratings yet — open the Check tab and answer for each dimension)') : null,
               DIMENSIONS.map(function(dim) {
                 var r = check[dim.id];
                 return h('div', { key: dim.id, style: { padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, marginBottom: 6, pageBreakInside: 'avoid' } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 } },
-                    h('div', { style: { fontSize: 13, fontWeight: 700, color: '#0f172a' } }, dim.label),
-                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (ratingColor[r] || '#475569'), color: ratingColor[r] || '#475569' } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: '#94a3b8' } }, 'not rated')
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: _hreFg('#0f172a') } }, dim.label),
+                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (ratingColor[r] || _hreFg('#475569')), color: ratingColor[r] || _hreFg('#475569') } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: _hreFg('#94a3b8') } }, 'not rated')
                   ),
-                  r ? h('div', { style: { fontSize: 11.5, color: '#475569', lineHeight: 1.55 } }, dim[r] || '') : null
+                  r ? h('div', { style: { fontSize: 11.5, color: _hreFg('#475569'), lineHeight: 1.55 } }, dim[r] || '') : null
                 );
               })
             ),
 
             d.notes ? h('div', { style: { padding: 10, border: '2px solid #0f172a', borderRadius: 8, marginBottom: 12 } },
-              h('div', { style: { fontSize: 10.5, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'My private notes'),
-              h('div', { style: { fontSize: 12.5, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.55 } }, d.notes)
+              h('div', { style: { fontSize: 10.5, color: _hreFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'My private notes'),
+              h('div', { style: { fontSize: 12.5, color: _hreFg('#0f172a'), whiteSpace: 'pre-wrap', lineHeight: 1.55 } }, d.notes)
             ) : null,
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12 } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Help, available 24/7'),
-              h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.7 } },
+              h('div', { style: { fontSize: 12, color: _hreFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Help, available 24/7'),
+              h('div', { style: { fontSize: 12, color: _hreFg('#0f172a'), lineHeight: 1.7 } },
                 'Loveisrespect (teens): 1-866-331-9474, text LOVEIS to 22522, loveisrespect.org', h('br'),
                 'National Domestic Violence Hotline: 1-800-799-7233, text START to 88788', h('br'),
                 'RAINN (sexual violence): 1-800-656-4673, online.rainn.org', h('br'),
@@ -687,7 +782,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
               )
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5, textAlign: 'center' } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _hreFg('#475569'), lineHeight: 1.5, textAlign: 'center' } },
               'A relationship check is information for you, not a final verdict. Bring this to a school counselor, school psych, trusted adult, or hotline if any rating leans unhealthy or abusive. Printed from AlloFlow SEL Hub.'
             )
           )

@@ -6,6 +6,8 @@ var useState = React.useState; var useEffect = React.useEffect; var useRef = Rea
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
 var CheckCircle2 = _lazyIcon('CheckCircle2');
+var ChevronDown = _lazyIcon('ChevronDown');
+var ChevronUp = _lazyIcon('ChevronUp');
 var GripVertical = _lazyIcon('GripVertical');
 var Lock = _lazyIcon('Lock');
 var Pencil = _lazyIcon('Pencil');
@@ -146,23 +148,48 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const [reorderStatus, setReorderStatus] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const getReadableToolLabel = (id) => String(id || '')
+    .split('-')
+    .map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : '')
+    .join(' ');
+  const getPlanItems = (cfg) => {
+    if (!cfg) return [];
+    const rawPlan = Array.isArray(cfg.resourcePlan) && cfg.resourcePlan.length > 0
+      ? cfg.resourcePlan
+      : (Array.isArray(cfg.recommendedResources) ? cfg.recommendedResources : []);
+    return rawPlan.map((item, idx) => {
+      const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.toolId || item.resourceType || item.id));
+      if (!type) return null;
+      const directive = typeof item === 'string'
+        ? (cfg.toolDirectives?.[type] || "")
+        : (item.directive || item.instructions || item.customInstructions || cfg.toolDirectives?.[type] || "");
+      return {
+        id: (typeof item === 'object' && item.uiId) || `step-${idx}-${type}`,
+        type,
+        directive,
+      };
+    }).filter(Boolean);
+  };
   useEffect(() => {
-    if (config && config.recommendedResources) {
-      const unifiedItems = config.recommendedResources.map((type, idx) => ({
-        id: `step-${idx}-${Date.now()}`,
-        type: type,
-        directive: config.toolDirectives?.[type] || "",
-      }));
-      setItems(unifiedItems);
-    }
+    setItems(getPlanItems(config));
   }, [config]);
   const syncChanges = (newItems) => {
     setItems(newItems);
+    const resourcePlan = newItems.map(i => ({
+      tool: i.type,
+      directive: i.directive || "",
+    }));
+    const toolDirectives = resourcePlan.reduce((acc, curr) => {
+      if (!acc[curr.tool]) acc[curr.tool] = curr.directive || "";
+      return acc;
+    }, {});
     const newConfig = {
       ...config,
-      recommendedResources: newItems.map(i => i.type),
-      toolDirectives: newItems.reduce((acc, curr) => ({ ...acc, [curr.type]: curr.directive }), {})
+      resourcePlan,
+      recommendedResources: resourcePlan.map(i => i.tool),
+      toolDirectives
     };
     onUpdate(newConfig);
   };
@@ -182,6 +209,15 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
   };
   const handleDragEnd = () => {
     setDraggedItemIndex(null);
+  };
+  const handleMoveItem = (index, delta) => {
+    const nextIndex = index + delta;
+    if (nextIndex < 0 || nextIndex >= items.length) return;
+    const newItems = [...items];
+    const [movedItem] = newItems.splice(index, 1);
+    newItems.splice(nextIndex, 0, movedItem);
+    syncChanges(newItems);
+    setReorderStatus(t('blueprint.moved_position', { position: nextIndex + 1 }) || `Moved plan step to position ${nextIndex + 1}.`);
   };
   const handleTypeChange = (index, newType) => {
     const newItems = [...items];
@@ -205,21 +241,42 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
     };
     syncChanges([...items, newItem]);
   };
-  const toolOptions = [
-    { value: 'analysis', label: t('sidebar.tool_analysis') || 'Analysis' },
-    { value: 'simplified', label: t('blueprint.tools.simplified') },
-    { value: 'glossary', label: t('blueprint.tools.glossary') },
-    { value: 'quiz', label: t('blueprint.tools.quiz') },
-    { value: 'outline', label: t('blueprint.tools.outline') },
-    { value: 'image', label: t('blueprint.tools.image') },
-    { value: 'timeline', label: t('blueprint.tools.timeline') },
-    { value: 'concept-sort', label: t('blueprint.tools.concept_sort') },
-    { value: 'sentence-frames', label: t('blueprint.tools.scaffolds') },
-    { value: 'brainstorm', label: t('blueprint.tools.brainstorm') },
-    { value: 'adventure', label: t('blueprint.tools.adventure') },
-    { value: 'faq', label: t('blueprint.tools.faq') },
-    { value: 'lesson-plan', label: t('blueprint.tools.lesson_plan') }
-  ];
+  const toolOptions = useMemo(() => {
+    const catalogModule = window.AlloModules?.ToolCatalog;
+    const catalog = (catalogModule && catalogModule.TOOL_CATALOG) || window.TOOL_CATALOG;
+    if (Array.isArray(catalog) && catalog.length > 0) {
+      return catalog.map(entry => {
+        const localized = entry.sidebarKey ? t(entry.sidebarKey) : "";
+        const fallbackLabel = entry.id === 'dbq' ? 'DBQ' : getReadableToolLabel(entry.id);
+        return {
+          value: entry.id,
+          label: (localized && localized !== entry.sidebarKey) ? localized : (entry.label || fallbackLabel)
+        };
+      });
+    }
+    return [
+      { value: 'analysis', label: t('sidebar.tool_analysis') || 'Analysis' },
+      { value: 'simplified', label: t('sidebar.tool_simplified') || 'Simplified Text' },
+      { value: 'glossary', label: t('sidebar.tool_glossary') || 'Glossary' },
+      { value: 'outline', label: t('sidebar.tool_outline') || 'Outline' },
+      { value: 'image', label: t('sidebar.tool_visual') || 'Visual' },
+      { value: 'quiz', label: t('sidebar.tool_quiz') || 'Quiz' },
+      { value: 'sentence-frames', label: t('sidebar.tool_scaffolds') || 'Sentence Frames' },
+      { value: 'brainstorm', label: t('sidebar.tool_brainstorm') || 'Brainstorm' },
+      { value: 'timeline', label: t('sidebar.tool_timeline') || 'Timeline' },
+      { value: 'concept-sort', label: t('sidebar.tool_concept') || 'Concept Sort' },
+      { value: 'adventure', label: t('sidebar.tool_adventure') || 'Adventure' },
+      { value: 'faq', label: t('sidebar.tool_faq') || 'FAQ' },
+      { value: 'persona', label: t('sidebar.tool_persona') || 'Persona Chat' },
+      { value: 'dbq', label: 'DBQ' },
+      { value: 'note-taking', label: t('sidebar.tool_note_taking') || 'Note Taking' },
+      { value: 'anchor-chart', label: t('sidebar.tool_anchor_chart') || 'Anchor Chart' },
+      { value: 'math', label: t('sidebar.tool_math') || 'STEM Lab' },
+      { value: 'lesson-plan', label: t('sidebar.tool_lesson') || 'Lesson Plan' },
+      { value: 'gemini-bridge', label: t('sidebar.tool_bridge') || 'Interactive App' },
+      { value: 'alignment-report', label: t('sidebar.tool_alignment') || 'Alignment Report' },
+    ];
+  }, [t]);
   const getToolLabel = (type) => {
       const opt = toolOptions.find(o => o.value === type);
       return opt ? opt.label : type;
@@ -236,7 +293,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                     {t('blueprint.header')} {isEditing ? `(${t('common.edit')})` : ""}
                 </h4>
                 <p className="text-xs text-slate-600">
-                    {isEditing ? t('blueprint.drag_instruction') : t('blueprint.review_instruction')}
+                    {isEditing ? (t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.')) : t('blueprint.review_instruction')}
                 </p>
             </div>
         </div>
@@ -251,6 +308,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
         </button>
       </div>
       <GoldenThreadPanel config={config} isEditing={isEditing} onUpdate={onUpdate} />
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{reorderStatus}</div>
       {isEditing ? (
           <>
             <div data-help-key="blueprint_resource_list" className="space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
@@ -261,10 +319,14 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                         onDragStart={(e) => handleDragStart(e, idx)}
                         onDragOver={(e) => handleDragOver(e, idx)}
                         onDragEnd={handleDragEnd}
+                        role="group"
+                        aria-label={t('blueprint.step_position_aria', { position: idx + 1, total: items.length }) || `Plan step ${idx + 1} of ${items.length}`}
                         className={`group flex items-start gap-2 p-3 rounded-lg border-2 transition-all ${draggedItemIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-slate-50 border-slate-200 hover:border-indigo-200'}`}
                     >
-                        <div className="mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500">
-                            <GripVertical size={16} />
+                        <div className="mt-1 flex flex-col items-center gap-1 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500">
+                            <GripVertical size={16} aria-hidden="true" />
+                            <button type="button" onClick={() => handleMoveItem(idx, -1)} disabled={idx === 0} className="w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" aria-label={t('blueprint.move_up_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} up`}><ChevronUp size={16} aria-hidden="true" /></button>
+                            <button type="button" onClick={() => handleMoveItem(idx, 1)} disabled={idx === items.length - 1} className="w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" aria-label={t('blueprint.move_down_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} down`}><ChevronUp size={16} aria-hidden="true" /></button>
                         </div>
                         <div className="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div className="col-span-1">
@@ -377,9 +439,12 @@ const HarmonyMeter = ({ score }) => {
 const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
     const { t } = useContext(LanguageContext);
     if (!character) return <div className="flex-1 bg-slate-50/50"></div>;
+    // Active objectives first — what the student can still pursue belongs on
+    // top; completed secrets settle to the bottom (matches single-mode order
+    // and quest-log convention).
     const sortedQuests = [...(character.quests || [])].sort((a, b) => {
         if (a.isCompleted === b.isCompleted) return 0;
-        return a.isCompleted ? -1 : 1;
+        return a.isCompleted ? 1 : -1;
     });
     return (
     <div className="flex flex-col items-center text-center h-full p-2">
@@ -425,12 +490,12 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
         <div className="w-full max-w-[260px] px-2">
             <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mb-1">
                 <span>{t('persona.rapport_label')}</span>
-                <span className={`${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`}>{character.rapport || 30}%</span>
+                <span className={`${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`}>{character.rapport ?? character.initialRapport ?? 30}%</span>
             </div>
             <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
                 <div
                     className={`h-full transition-all duration-500 ${side === 'left' ? 'bg-indigo-500' : 'bg-rose-500'}`}
-                    style={{ width: `${character.rapport || 30}%` }}
+                    style={{ width: `${character.rapport ?? character.initialRapport ?? 30}%` }}
                 ></div>
             </div>
         </div>
@@ -440,7 +505,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
             </h4>
             <div className="space-y-2">
                 {sortedQuests.map((q, i) => {
-                    const currentRapport = character.rapport || 10;
+                    const currentRapport = character.rapport ?? character.initialRapport ?? 30;
                     const isLocked = currentRapport < q.difficulty;
                     return (
                         <div key={i} className={`

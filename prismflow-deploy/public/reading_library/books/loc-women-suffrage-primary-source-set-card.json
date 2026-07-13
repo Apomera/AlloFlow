@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-women-suffrage-primary-source-set-card",
+  "title": "Library of Congress Women Suffrage Primary Sources",
+  "description": "A LOC source card for women suffrage primary sources and classroom materials.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Women's history",
+    "Voting rights",
+    "Primary sources",
+    "Civics"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/primary-source-sets/women-suffrage/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Library of Congress women suffrage source set includes historical documents and images about organizing, argument, protest, voting rights, and constitutional change."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students comparing arguments, tactics, audiences, and historical context across primary sources."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress source sets include public-domain and rights-unknown primary sources. Use the item pages to confirm rights before mirroring individual documents."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

@@ -192,6 +192,30 @@ window.SelHub = window.SelHub || {
       var useCallback = ctx.React.useCallback;
       var useRef = ctx.React.useRef;
 
+      // ── Host theme remap (consumes ctx.theme) — same pattern as Growth Mindset ──
+      // Voice Detective is light-base: _vdC('#hex') returns the ORIGINAL hex on a light
+      // host (light-mode byte-identical), a same-hue DARK value on .theme-dark, WCAG
+      // yellow/black on high-contrast. Generic chrome + the amber/purple tinted surfaces
+      // (and their text) flip together; the per-EMOTION identity hues (module-level data)
+      // and vivid accent fills/gradients stay constant. Only render-body literals wrapped.
+      var _vdTheme = (ctx && ctx.theme) || {};
+      var _vdHC = !!_vdTheme.isContrast, _vdDark = !_vdHC && !!_vdTheme.isDark;
+      var _VD_DARK = {
+        '#1e293b':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1','#9ca3af':'#cbd5e1',
+        '#fff':'#1e293b','#ffffff':'#1e293b','#f8fafc':'#0f172a','#e5e7eb':'#334155','#d1d5db':'#475569',
+        '#faf5ff':'#2e1b4d','#f5f3ff':'#2a1a45','#ede9fe':'#2a1a45','#6b21a8':'#d8b4fe',
+        '#fef3c7':'#3a2e12','#fef9c3':'#3a3410','#92400e':'#fde68a',
+        '#f0fdf4':'#0b2e22','#eff6ff':'#0e1f3a','#1e40af':'#93c5fd','#f1f5f9':'#1e293b','#dcfce7':'#14532d','#fee2e2':'#3a1a1a'
+      };
+      var _VD_HC = {
+        '#1e293b':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#9ca3af':'#ffff00','#94a3b8':'#ffff00',
+        '#fff':'#000000','#ffffff':'#000000','#f8fafc':'#000000','#e5e7eb':'#ffff00','#d1d5db':'#ffff00',
+        '#faf5ff':'#000000','#f5f3ff':'#000000','#ede9fe':'#000000',
+        '#fef3c7':'#000000','#fef9c3':'#000000','#92400e':'#ffff00',
+        '#f0fdf4':'#000000','#eff6ff':'#000000','#1e40af':'#ffff00','#f1f5f9':'#000000','#dcfce7':'#000000','#fee2e2':'#000000'
+      };
+      var _vdC = function(hex) { return _vdHC ? (_VD_HC[hex] || hex) : (_vdDark ? (_VD_DARK[hex] || hex) : hex); };
+
       var gradeBand = ctx.gradeBand || 'elementary';
       var callTTS = ctx.callTTS;
       var addToast = ctx.addToast;
@@ -427,9 +451,10 @@ window.SelHub = window.SelHub || {
       }
 
       // ── Styles ──
-      var card = { background: '#fff', borderRadius: '14px', padding: '20px', border: '1px solid #e5e7eb', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' };
-      var btn = function(bg, fg, dis) { return { padding: '10px 18px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
+      var card = { background: _vdC('#fff'), borderRadius: '14px', padding: '20px', border: '1px solid ' + _vdC('#e5e7eb'), marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' };
+      var btn = function(bg, fg, dis) { return { padding: '10px 18px', background: dis ? _vdC('#e5e7eb') : bg, color: dis ? _vdC('#9ca3af') : fg, border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
       var PURPLE = '#7c3aed';
+      var PURPLE_TEXT = _vdC('#6b21a8');
 
       // ═══ RENDER ═══
 
@@ -440,8 +465,8 @@ window.SelHub = window.SelHub || {
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('voicedetective', h, ctx) : null),
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🔊'),
-            h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Voice Detective'),
-            h('p', { style: { color: '#94a3b8', fontSize: '14px', maxWidth: '400px', margin: '0 auto' } },
+            h('h2', { style: { fontSize: '24px', fontWeight: 900, color: _vdC('#1e293b') } }, 'Voice Detective'),
+            h('p', { style: { color: _vdC('#94a3b8'), fontSize: '14px', maxWidth: '400px', margin: '0 auto' } },
               'Listen carefully to how people say things — not just what they say. Can you tell how someone feels just from their voice?')
           ),
           // Difficulty selector
@@ -449,39 +474,39 @@ window.SelHub = window.SelHub || {
             [['basic', '3 Emotions', '😊😢😠'], ['intermediate', '6 Emotions', '+ 😮😨🤢'], ['advanced', '10 Emotions', '+ 😏😰🤩😑']].map(function(d) {
               return h('button', { key: d[0], onClick: function() { setDifficulty(d[0]); },
                 role: 'radio', 'aria-checked': difficulty === d[0], 'aria-label': d[1] + ' difficulty',
-                style: { padding: '8px 16px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? PURPLE : '#d1d5db'), background: difficulty === d[0] ? '#f5f3ff' : '#fff', color: difficulty === d[0] ? PURPLE : '#94a3b8', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? PURPLE : _vdC('#d1d5db')), background: difficulty === d[0] ? _vdC('#f5f3ff') : _vdC('#fff'), color: difficulty === d[0] ? PURPLE_TEXT : _vdC('#94a3b8'), fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, h('div', null, d[1]), h('div', { style: { fontSize: '16px', marginTop: '2px' } }, d[2]));
             })
           ),
           // All-time stats
           (toolData._totalTrials || 0) > 0 && h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' } },
-            h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px 16px', textAlign: 'center' } },
+            h('div', { style: { background: _vdC('#f0fdf4'), borderRadius: '10px', padding: '10px 16px', textAlign: 'center' } },
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#16a34a' } }, toolData._totalCorrect || 0),
-              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'all-time correct')
+              h('div', { style: { fontSize: '10px', color: _vdC('#94a3b8') } }, 'all-time correct')
             ),
-            h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px 16px', textAlign: 'center' } },
+            h('div', { style: { background: _vdC('#f5f3ff'), borderRadius: '10px', padding: '10px 16px', textAlign: 'center' } },
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: PURPLE } }, allTimeAcc + '%'),
-              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'accuracy')
+              h('div', { style: { fontSize: '10px', color: _vdC('#94a3b8') } }, 'accuracy')
             )
           ),
           // Badges
           earnedBadges.length > 0 && h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' } },
             earnedBadges.map(function(b) {
-              return h('div', { key: b.id, title: b.desc, style: { background: '#fef3c7', borderRadius: '10px', padding: '4px 10px', border: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: '4px' } },
+              return h('div', { key: b.id, title: b.desc, style: { background: _vdC('#fef3c7'), borderRadius: '10px', padding: '4px 10px', border: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: '4px' } },
                 h('span', { style: { fontSize: '16px' }, 'aria-hidden': 'true' }, b.emoji),
-                h('span', { style: { fontSize: '10px', fontWeight: 700, color: '#92400e' } }, b.label)
+                h('span', { style: { fontSize: '10px', fontWeight: 700, color: _vdC('#92400e') } }, b.label)
               );
             })
           ),
           // Prosody Cue Cards — teach what to listen for
-          h('div', { style: { marginBottom: '20px', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '14px', padding: '14px' } },
+          h('div', { style: { marginBottom: '20px', background: _vdC('#faf5ff'), border: '1px solid #e9d5ff', borderRadius: '14px', padding: '14px' } },
             h('div', { style: { fontSize: '12px', fontWeight: 700, color: PURPLE, marginBottom: '8px' } }, '🎓 What to Listen For'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' } },
               emotions.map(function(em) {
-                return h('div', { key: em.id, style: { background: '#fff', borderRadius: '10px', padding: '8px', border: '2px solid ' + em.color + '33', textAlign: 'center' } },
+                return h('div', { key: em.id, style: { background: _vdC('#fff'), borderRadius: '10px', padding: '8px', border: '2px solid ' + em.color + '33', textAlign: 'center' } },
                   h('div', { style: { fontSize: '24px', marginBottom: '2px' } }, em.emoji),
                   h('div', { style: { fontSize: '11px', fontWeight: 700, color: em.color } }, em.label),
-                  h('div', { style: { fontSize: '9px', color: '#94a3b8', lineHeight: 1.3 } },
+                  h('div', { style: { fontSize: '9px', color: _vdC('#94a3b8'), lineHeight: 1.3 } },
                     em.id === 'happy' ? 'Voice goes UP. Fast & bright. Smiling sound.' :
                     em.id === 'sad' ? 'Voice goes DOWN. Slow & quiet. Like sighing.' :
                     em.id === 'angry' ? 'LOUD & sharp. Words come fast. Tight sound.' :
@@ -499,28 +524,28 @@ window.SelHub = window.SelHub || {
             )
           ),
           // Confusion Matrix (if has data)
-          Object.keys(confusionMatrix).length > 5 && h('div', { style: { marginBottom: '20px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '14px', padding: '14px' } },
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '📊 Your Emotion Confusion Patterns'),
-            h('p', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '8px' } }, 'Shows which emotions you mix up most often. Brighter = more frequent.'),
+          Object.keys(confusionMatrix).length > 5 && h('div', { style: { marginBottom: '20px', background: _vdC('#fff'), border: '1px solid ' + _vdC('#e5e7eb'), borderRadius: '14px', padding: '14px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: _vdC('#374151'), marginBottom: '8px' } }, '📊 Your Emotion Confusion Patterns'),
+            h('p', { style: { fontSize: '10px', color: _vdC('#94a3b8'), marginBottom: '8px' } }, 'Shows which emotions you mix up most often. Brighter = more frequent.'),
             h('div', { style: { overflowX: 'auto' } },
               h('table', { style: { borderCollapse: 'collapse', fontSize: '10px', width: '100%' } },
                 h('thead', null,
                   h('tr', null,
-                    h('th', { style: { padding: '4px 6px', border: '1px solid #e5e7eb', background: '#f8fafc', fontSize: '9px' } }, 'Target ↓ / Picked →'),
-                    emotions.map(function(em) { return h('th', { key: em.id, style: { padding: '4px', border: '1px solid #e5e7eb', background: '#f8fafc', textAlign: 'center' } }, em.emoji); })
+                    h('th', { style: { padding: '4px 6px', border: '1px solid ' + _vdC('#e5e7eb'), background: _vdC('#f8fafc'), fontSize: '9px' } }, 'Target ↓ / Picked →'),
+                    emotions.map(function(em) { return h('th', { key: em.id, style: { padding: '4px', border: '1px solid ' + _vdC('#e5e7eb'), background: _vdC('#f8fafc'), textAlign: 'center' } }, em.emoji); })
                   )
                 ),
                 h('tbody', null,
                   emotions.map(function(targetEm) {
                     return h('tr', { key: targetEm.id },
-                      h('td', { style: { padding: '4px 6px', border: '1px solid #e5e7eb', fontWeight: 700, color: targetEm.color } }, targetEm.emoji + ' ' + targetEm.label),
+                      h('td', { style: { padding: '4px 6px', border: '1px solid ' + _vdC('#e5e7eb'), fontWeight: 700, color: targetEm.color } }, targetEm.emoji + ' ' + targetEm.label),
                       emotions.map(function(pickedEm) {
                         var key = targetEm.id + '→' + pickedEm.id;
                         var count = confusionMatrix[key] || 0;
                         var isCorrect = targetEm.id === pickedEm.id;
                         var maxCount = Math.max.apply(null, Object.values(confusionMatrix).concat([1]));
                         var intensity = count / maxCount;
-                        return h('td', { key: pickedEm.id, style: { padding: '4px', border: '1px solid #e5e7eb', textAlign: 'center', fontWeight: count > 0 ? 700 : 400, color: isCorrect ? '#16a34a' : count > 0 ? '#dc2626' : '#d1d5db', background: isCorrect ? 'rgba(34,197,94,' + (intensity * 0.3) + ')' : count > 0 ? 'rgba(239,68,68,' + (intensity * 0.2) + ')' : 'transparent' } }, count || '·');
+                        return h('td', { key: pickedEm.id, style: { padding: '4px', border: '1px solid ' + _vdC('#e5e7eb'), textAlign: 'center', fontWeight: count > 0 ? 700 : 400, color: isCorrect ? '#16a34a' : count > 0 ? '#dc2626' : _vdC('#d1d5db'), background: isCorrect ? 'rgba(34,197,94,' + (intensity * 0.3) + ')' : count > 0 ? 'rgba(239,68,68,' + (intensity * 0.2) + ')' : 'transparent' } }, count || '·');
                       })
                     );
                   })
@@ -531,7 +556,7 @@ window.SelHub = window.SelHub || {
             (() => {
               var confusions = Object.entries(confusionMatrix).filter(function(p) { return !p[0].includes('→' + p[0].split('→')[0]) && p[1] > 0; }).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 3);
               if (confusions.length === 0) return null;
-              return h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8' } },
+              return h('div', { style: { marginTop: '8px', fontSize: '10px', color: _vdC('#94a3b8') } },
                 h('strong', null, 'Most common mix-ups: '),
                 confusions.map(function(c, i) {
                   var parts = c[0].split('→');
@@ -555,18 +580,18 @@ window.SelHub = window.SelHub || {
                   else if (m[0] === 'discriminate') pickMode2Round();
                   else if (m[0] === 'scene') pickMode3Round();
                 },
-                style: { display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '14px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }
+                style: { display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: _vdC('#fff'), border: '2px solid ' + _vdC('#e5e7eb'), borderRadius: '14px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }
               },
                 h('div', { style: { fontSize: '32px' } }, m[3]),
                 h('div', null,
-                  h('div', { style: { fontWeight: 800, fontSize: '15px', color: '#1e293b' } }, m[1]),
-                  h('div', { style: { fontSize: '12px', color: '#94a3b8', marginTop: '2px' } }, m[2])
+                  h('div', { style: { fontWeight: 800, fontSize: '15px', color: _vdC('#1e293b') } }, m[1]),
+                  h('div', { style: { fontSize: '12px', color: _vdC('#94a3b8'), marginTop: '2px' } }, m[2])
                 )
               );
             })
           ),
           // Clinical note
-          h('div', { style: { marginTop: '20px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', fontSize: '11px', color: '#1e40af' } },
+          h('div', { style: { marginTop: '20px', background: _vdC('#eff6ff'), border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', fontSize: '11px', color: _vdC('#1e40af') } },
             h('strong', null, 'Clinical note: '),
             'Voice Detective trains vocal prosody recognition — the ability to identify emotions from tone of voice. ',
             'This is a core social communication skill targeted in ASD intervention (CASEL Social Awareness). ',
@@ -576,17 +601,17 @@ window.SelHub = window.SelHub || {
       }
 
       // ── Score bar (shared across modes) ──
-      var scoreBar = h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px', padding: '10px 16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
+      var scoreBar = h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px', padding: '10px 16px', background: _vdC('#f8fafc'), borderRadius: '12px', border: '1px solid ' + _vdC('#e5e7eb') } },
         h('button', { onClick: function() { setMode('menu'); if (audioRef.current) { audioRef.current.pause(); } if (window.speechSynthesis) window.speechSynthesis.cancel(); },
-          style: btn('#f1f5f9', '#374151', false) }, '← Back'),
+          style: btn(_vdC('#f1f5f9'), _vdC('#374151'), false) }, '← Back'),
         h('span', { style: { fontWeight: 700, color: '#16a34a', fontSize: '13px' } }, '✅ ' + score + '/' + total),
         streak >= 3 && h('span', { style: { fontWeight: 700, color: '#f97316', fontSize: '13px' } }, '🔥 ' + streak + 'x streak'),
-        h('span', { style: { fontSize: '12px', color: '#94a3b8', marginLeft: 'auto' } }, 'Round ' + round)
+        h('span', { style: { fontSize: '12px', color: _vdC('#94a3b8'), marginLeft: 'auto' } }, 'Round ' + round)
       );
 
       var feedbackBar = feedback && h('div', { role: 'status', 'aria-live': 'assertive',
         style: { padding: '12px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, textAlign: 'center', marginBottom: '12px',
-          background: feedback.ok ? '#dcfce7' : '#fee2e2', color: feedback.ok ? '#166534' : '#991b1b', border: '1px solid ' + (feedback.ok ? '#86efac' : '#fca5a5') }
+          background: feedback.ok ? _vdC('#dcfce7') : _vdC('#fee2e2'), color: feedback.ok ? '#166534' : '#991b1b', border: '1px solid ' + (feedback.ok ? '#86efac' : '#fca5a5') }
       }, feedback.msg);
 
       // ── Mode 1: What Am I Feeling? ──
@@ -594,17 +619,17 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
           scoreBar,
           // Audio prompt
-          h('div', { style: { textAlign: 'center', padding: '24px', background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
+          h('div', { style: { textAlign: 'center', padding: '24px', background: 'linear-gradient(135deg, ' + _vdC('#f5f3ff') + ', ' + _vdC('#ede9fe') + ')', borderRadius: '16px', border: '2px solid #c4b5fd', marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: _vdC('#94a3b8'), marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
             h('button', { onClick: function() { speakEmotion(target.sentence, target.emotion.id, target.voice); }, disabled: speaking,
-              style: { padding: '16px 32px', fontSize: '28px', background: speaking ? '#e5e7eb' : PURPLE, color: '#fff', border: 'none', borderRadius: '50%', cursor: speaking ? 'wait' : 'pointer', boxShadow: speaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', width: '80px', height: '80px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }
+              style: { padding: '16px 32px', fontSize: '28px', background: speaking ? _vdC('#e5e7eb') : PURPLE, color: '#fff', border: 'none', borderRadius: '50%', cursor: speaking ? 'wait' : 'pointer', boxShadow: speaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', width: '80px', height: '80px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }
             }, speaking ? '🔊' : '▶'),
             h('p', { style: { marginTop: '10px', fontSize: '12px', color: '#7c3aed', fontWeight: 600 } }, speaking ? 'Playing...' : 'Tap to hear again'),
             // Animated face during playback
             speaking && h('div', { style: { marginTop: '10px', fontSize: '48px', animation: 'pulse 1s infinite' }, 'aria-hidden': 'true' }, '🗣️'),
-            h('p', { style: { marginTop: '6px', fontSize: '13px', color: '#475569', fontStyle: 'italic' } }, '"' + target.sentence + '"'),
+            h('p', { style: { marginTop: '6px', fontSize: '13px', color: _vdC('#475569'), fontStyle: 'italic' } }, '"' + target.sentence + '"'),
             // Listening tip for current emotion (shown after first wrong answer)
-            total > 0 && score < total && h('div', { style: { marginTop: '8px', background: '#fef3c7', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#92400e', border: '1px solid #fde68a' } },
+            total > 0 && score < total && h('div', { style: { marginTop: '8px', background: _vdC('#fef3c7'), borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: _vdC('#92400e'), border: '1px solid #fde68a' } },
               h('strong', null, '💡 Listening tip: '),
               'Focus on the SPEED (fast or slow?), PITCH (high or low?), and VOLUME (loud or quiet?) of the voice.'
             )
@@ -619,7 +644,7 @@ window.SelHub = window.SelHub || {
               return h('button', { key: em.id, onClick: function() { if (!feedback) checkAnswer(em); }, disabled: !!feedback,
                 'aria-label': em.label + (isCorrect ? ' - correct answer' : isAnswer ? ' - this was the correct answer' : isWrong ? ' - incorrect' : ''),
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '16px 12px', borderRadius: '14px', cursor: feedback ? 'default' : 'pointer',
-                  border: '3px solid ' + (isCorrect || isAnswer ? '#22c55e' : isWrong ? '#fca5a5' : em.color + '66'), background: isCorrect || isAnswer ? '#dcfce7' : '#fff',
+                  border: '3px solid ' + (isCorrect || isAnswer ? '#22c55e' : isWrong ? '#fca5a5' : em.color + '66'), background: isCorrect || isAnswer ? _vdC('#dcfce7') : _vdC('#fff'),
                   opacity: isWrong ? 0.4 : 1, transform: isCorrect ? 'scale(1.05)' : 'scale(1)', transition: 'all 0.15s' }
               },
                 h('span', { style: { fontSize: '32px' }, 'aria-hidden': 'true' }, em.emoji),
@@ -627,7 +652,7 @@ window.SelHub = window.SelHub || {
                 // Text label for correct/wrong (non-color indicator)
                 isCorrect && h('span', { style: { fontSize: '10px', fontWeight: 700, color: '#16a34a' } }, '✓ Correct'),
                 isAnswer && h('span', { style: { fontSize: '10px', fontWeight: 700, color: '#16a34a' } }, '← Answer'),
-                gradeBand !== 'elementary' && !isCorrect && !isAnswer && h('span', { style: { fontSize: '10px', color: '#9ca3af' } }, em.desc)
+                gradeBand !== 'elementary' && !isCorrect && !isAnswer && h('span', { style: { fontSize: '10px', color: _vdC('#9ca3af') } }, em.desc)
               );
             })
           )
@@ -640,20 +665,20 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, '🔀 Same Words, Different Feelings'),
-            h('p', { style: { color: '#94a3b8', fontSize: '13px' } }, 'Each voice says the same sentence — but with a different emotion. Match each one!')
+            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: _vdC('#1e293b') } }, '🔀 Same Words, Different Feelings'),
+            h('p', { style: { color: _vdC('#94a3b8'), fontSize: '13px' } }, 'Each voice says the same sentence — but with a different emotion. Match each one!')
           ),
-          h('p', { style: { textAlign: 'center', fontSize: '14px', color: '#475569', fontStyle: 'italic', marginBottom: '16px', background: '#f8fafc', padding: '10px', borderRadius: '10px' } }, '"' + (variants[0] || {}).sentence + '"'),
+          h('p', { style: { textAlign: 'center', fontSize: '14px', color: _vdC('#475569'), fontStyle: 'italic', marginBottom: '16px', background: _vdC('#f8fafc'), padding: '10px', borderRadius: '10px' } }, '"' + (variants[0] || {}).sentence + '"'),
           feedbackBar,
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' } },
             variants.map(function(v, vi) {
               return h('div', { key: v.id, style: Object.assign({}, card, { display: 'flex', alignItems: 'center', gap: '12px' }) },
                 h('button', { onClick: function() { speakEmotion(v.sentence, v.emotion.id, v.emotion.voice); }, disabled: speaking,
-                  style: { width: '48px', height: '48px', borderRadius: '50%', background: speaking ? '#e5e7eb' : PURPLE, color: '#fff', border: 'none', cursor: 'pointer', fontSize: '18px', flexShrink: 0 }
+                  style: { width: '48px', height: '48px', borderRadius: '50%', background: speaking ? _vdC('#e5e7eb') : PURPLE, color: '#fff', border: 'none', cursor: 'pointer', fontSize: '18px', flexShrink: 0 }
                 }, speaking ? '🔊' : '▶'),
-                h('span', { style: { fontSize: '14px', fontWeight: 700, color: '#374151', flexShrink: 0 } }, 'Voice ' + (vi + 1)),
+                h('span', { style: { fontSize: '14px', fontWeight: 700, color: _vdC('#374151'), flexShrink: 0 } }, 'Voice ' + (vi + 1)),
                 h('select', { value: variantAnswers[v.id] || '', onChange: function(ev) { setVariantAnswers(function(prev) { var n = Object.assign({}, prev); n[v.id] = ev.target.value; return n; }); },
-                  style: { flex: 1, padding: '8px 12px', borderRadius: '10px', border: '2px solid #d1d5db', fontSize: '14px', fontWeight: 600 },
+                  style: { flex: 1, padding: '8px 12px', borderRadius: '10px', border: '2px solid ' + _vdC('#d1d5db'), fontSize: '14px', fontWeight: 600 },
                   'aria-label': 'Emotion for voice ' + (vi + 1)
                 },
                   h('option', { value: '' }, '— Select emotion —'),
@@ -674,25 +699,25 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, '🎬 Match the Scene'),
-            h('p', { style: { color: '#94a3b8', fontSize: '13px' } }, 'Read what happened, then pick the voice that matches how the person would feel.')
+            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: _vdC('#1e293b') } }, '🎬 Match the Scene'),
+            h('p', { style: { color: _vdC('#94a3b8'), fontSize: '13px' } }, 'Read what happened, then pick the voice that matches how the person would feel.')
           ),
           // Scene description
-          h('div', { style: { background: 'linear-gradient(135deg, #fef3c7, #fef9c3)', border: '2px solid #fde68a', borderRadius: '14px', padding: '20px', marginBottom: '16px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#92400e', textTransform: 'uppercase', marginBottom: '6px' } }, 'The Scenario'),
-            h('p', { style: { fontSize: '15px', color: '#1e293b', lineHeight: 1.6, fontWeight: 500 } }, scene.text)
+          h('div', { style: { background: 'linear-gradient(135deg, ' + _vdC('#fef3c7') + ', ' + _vdC('#fef9c3') + ')', border: '2px solid #fde68a', borderRadius: '14px', padding: '20px', marginBottom: '16px', textAlign: 'center' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: _vdC('#92400e'), textTransform: 'uppercase', marginBottom: '6px' } }, 'The Scenario'),
+            h('p', { style: { fontSize: '15px', color: _vdC('#1e293b'), lineHeight: 1.6, fontWeight: 500 } }, scene.text)
           ),
           feedbackBar,
-          h('p', { style: { textAlign: 'center', fontSize: '13px', color: '#94a3b8', marginBottom: '12px' } }, 'Which voice matches how this person would sound?'),
+          h('p', { style: { textAlign: 'center', fontSize: '13px', color: _vdC('#94a3b8'), marginBottom: '12px' } }, 'Which voice matches how this person would sound?'),
           h('div', { style: { display: 'flex', gap: '12px', justifyContent: 'center' } },
             sceneVoices.map(function(sv, vi) {
               return h('div', { key: sv.id, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' } },
                 h('button', { onClick: function() { speakEmotion(sv.sentence, sv.emotion.id, sv.emotion.voice); }, disabled: speaking,
-                  style: { width: '72px', height: '72px', borderRadius: '50%', background: speaking ? '#e5e7eb' : '#f1f5f9', border: '3px solid #d1d5db', cursor: 'pointer', fontSize: '24px', transition: 'all 0.15s' }
+                  style: { width: '72px', height: '72px', borderRadius: '50%', background: speaking ? _vdC('#e5e7eb') : _vdC('#f1f5f9'), border: '3px solid ' + _vdC('#d1d5db'), cursor: 'pointer', fontSize: '24px', transition: 'all 0.15s' }
                 }, '🔊'),
-                h('span', { style: { fontSize: '13px', fontWeight: 600, color: '#374151' } }, 'Voice ' + (vi + 1)),
+                h('span', { style: { fontSize: '13px', fontWeight: 600, color: _vdC('#374151') } }, 'Voice ' + (vi + 1)),
                 h('button', { onClick: function() { if (!feedback) checkMode3(sv.id); }, disabled: !!feedback,
-                  style: btn(feedback ? '#e5e7eb' : PURPLE, feedback ? '#9ca3af' : '#fff', !!feedback) }, 'This one!')
+                  style: btn(feedback ? _vdC('#e5e7eb') : PURPLE, feedback ? _vdC('#9ca3af') : '#fff', !!feedback) }, 'This one!')
               );
             })
           )
@@ -700,7 +725,7 @@ window.SelHub = window.SelHub || {
       }
 
       // Fallback
-      return h('div', { style: { textAlign: 'center', padding: '40px', color: '#94a3b8' } }, 'Loading...');
+      return h('div', { style: { textAlign: 'center', padding: '40px', color: _vdC('#94a3b8') } }, 'Loading...');
     }
   });
 

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Water Cycle — Two-Column Reference</title>
+<style>
+  @page { size: Letter; margin: 0.75in; }
+  html, body { font-family: Georgia, 'Times New Roman', serif; color: #111; font-size: 11.5pt; line-height: 1.45; }
+  h1 { font-size: 20pt; margin: 0 0 4px 0; text-align: center; }
+  .subtitle { text-align: center; color: #444; font-size: 10pt; margin: 0 0 14px 0; font-style: italic; }
+  .rule { border: none; border-top: 2px solid #333; margin: 0 0 14px 0; }
+  /* Two genuine columns: text flows down the LEFT column, then continues in the RIGHT column.
+     A correct reading order is paragraphs 1 → 2 → 3 → ... → 8 in numeric order. */
+  .cols { column-count: 2; column-gap: 0.4in; column-rule: 1px solid #bbb; }
+  h2 { font-size: 12.5pt; margin: 10px 0 4px 0; break-after: avoid; }
+  p { margin: 0 0 9px 0; text-align: justify; }
+  .num { font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 10pt; }
+  caption { caption-side: top; text-align: left; font-weight: bold; padding: 4px 0; }
+  th, td { border: 1px solid #999; padding: 4px 6px; text-align: left; }
+  th { background: #eee; }
+  .footer { margin-top: 16px; font-size: 9pt; color: #555; text-align: center; }
+</style>
+</head>
+<body>
+  <h1>The Water Cycle</h1>
+  <p class="subtitle">A two-column reference sheet — reading order should run 1 → 2 → 3 → … → 8</p>
+  <hr class="rule">
+
+  <div class="cols">
+    <h2>Part One — The Visible Cycle</h2>
+    <p><span class="num">(1) Evaporation.</span> The sun heats water in oceans, lakes, and rivers, and the liquid turns into invisible water vapor that rises into the air. Most of the water that enters the atmosphere each day evaporates from the surface of the ocean.</p>
+    <p><span class="num">(2) Condensation.</span> As the warm vapor rises, it cools. The cooling vapor gathers around tiny particles of dust and forms the visible droplets we see as clouds and fog. This is the reverse of evaporation.</p>
+    <p><span class="num">(3) Precipitation.</span> When the droplets in a cloud grow heavy enough, they fall back toward the ground as rain, snow, sleet, or hail. The form depends mostly on the temperature of the air the droplets pass through.</p>
+    <p><span class="num">(4) Collection.</span> Fallen water collects in oceans, lakes, rivers, and streams, or it soaks into the soil. From these collecting places the cycle begins again, and the same water is used over and over.</p>
+
+    <h2>Part Two — The Hidden Cycle</h2>
+    <p><span class="num">(5) Groundwater.</span> Some precipitation seeps down through the soil and rock until it reaches a layer it cannot pass. This stored underground water, called groundwater, supplies wells and feeds springs during dry seasons.</p>
+    <p><span class="num">(6) Transpiration.</span> Plants draw water up through their roots and release it as vapor through tiny openings in their leaves. A single large tree can transpire hundreds of liters of water on a hot day.</p>
+    <p><span class="num">(7) Runoff.</span> Water that does not soak in flows downhill across the surface as runoff, carving channels and carrying sediment toward larger bodies of water. Runoff is fastest on steep, bare, or paved ground.</p>
+    <p><span class="num">(8) Human Impact.</span> Cities, farms, and dams change how water moves through the cycle. Paving land speeds runoff, irrigation moves water far from its source, and pollution can follow the water through every stage.</p>
+  </div>
+
+  <table>
+    <caption>Average residence time of water by reservoir</caption>
+    <thead>
+      <tr><th scope="col">Reservoir</th><th scope="col">Typical residence time</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Atmosphere</td><td>About 9 days</td></tr>
+      <tr><td>Rivers</td><td>About 2 weeks</td></tr>
+      <tr><td>Soil moisture</td><td>1 to 2 months</td></tr>
+      <tr><td>Deep groundwater</td><td>Up to 10,000 years</td></tr>
+    </tbody>
+  </table>
+
+  <p class="footer">Sample document generated for AlloFlow multi-column reading-order testing.</p>
+</body>
+</html>

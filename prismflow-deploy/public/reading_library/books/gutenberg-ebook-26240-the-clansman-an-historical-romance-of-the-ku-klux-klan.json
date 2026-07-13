@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-26240-the-clansman-an-historical-romance-of-the-ku-klux-klan",
+  "title": "The Clansman: An Historical Romance of the Ku Klux Klan",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Historical fiction",
+    "Ku Klux Klan (19th century) -- Fiction",
+    "Political fiction",
+    "Racism -- Fiction",
+    "Reconstruction (U.S. history, 1865-1877) -- Fiction",
+    "South Carolina -- Fiction"
+  ],
+  "authors": [
+    "Dixon, Thomas, Jr."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/26240"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/26240/pg26240.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Clansman: An Historical Romance of the Ku Klux Klan\" by Dixon, Thomas, Jr.. Metadata tags include: Historical fiction; Ku Klux Klan (19th century) -- Fiction; Political fiction; Racism -- Fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 81
+  }
+}

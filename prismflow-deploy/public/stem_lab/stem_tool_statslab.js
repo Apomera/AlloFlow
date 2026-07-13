@@ -439,6 +439,7 @@ window.StemLab = window.StemLab || {
       num += dx * (ys[i2] - my);
       denom += dx * dx;
     }
+    if (denom === 0) return { error: 'All x values are identical — the slope is undefined (a vertical line has no finite slope). Vary the predictor and try again.' };
     var slope = num / denom;
     var intercept = my - slope * mx;
     // SS calculations
@@ -1423,6 +1424,7 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return (d.quizCompletedCount || 0) > 0 ? 'best: ' + (d.quizCorrect || 0) + '/5' : 'pending'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -1430,11 +1432,16 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
+      var setStemLabTool = ctx.setStemLabTool; // host nav setter — used by the Back button (was undeclared → render crash)
 
       // ── State init ──
-      if (!labToolData || !labToolData.statsLab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { statsLab: {
+      // Seed defaults, but DO NOT early-return a Loading screen: this render calls
+      // hooks (useRef/useState/useEffect) below, so a conditional early-return changes
+      // the hook count between the empty and seeded renders and throws "Rendered more
+      // hooks than during the previous render" on that transition (the bucket is not
+      // persisted, so it is empty on every reload). Seed and fall through; the body
+      // reads state only via the local `d`. (Rules-of-Hooks fix, 2026-06-20.)
+      var STATSLAB_DEFAULTS = {
             testsRun: 0,
             mode: 'home',                  // 'home' | 'wizard' | 'data' | 'test' | 'results'
             wizardStep: 0,
@@ -1443,7 +1450,7 @@ window.StemLab = window.StemLab || {
             // Data — flexible holder for current test's input
             sampleId: null,                // active sample dataset
             twoColData: { aLabel: 'Group A', bLabel: 'Group B', a: [], b: [] },
-            multiColData: { groups: [{ label: 'Group 1', values: [] }, { label: 'Group 2', values: [] }] },
+            multiColData: { groups: [{ label: __alloT('stem.statslab.group_1', 'Group 1'), values: [] }, { label: __alloT('stem.statslab.group_2', 'Group 2'), values: [] }] },
             oneColData: { values: [], mu0: 0 },
             chiGofData: { observed: [], expected: [], labels: [] },
             chiIndepData: { rows: ['Row 1', 'Row 2'], cols: ['Col 1', 'Col 2'], table: [[0, 0], [0, 0]] },
@@ -1462,12 +1469,13 @@ window.StemLab = window.StemLab || {
             // Show toggles
             showMath: false,
             showWizard: false
-          }});
+          };
+      if (!labToolData || !labToolData.statsLab) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { statsLab: STATSLAB_DEFAULTS });
         });
-        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } },
-          '📊 Initializing Statistics Lab...');
       }
-      var d = labToolData.statsLab;
+      var d = labToolData.statsLab || STATSLAB_DEFAULTS;
 
       // ── Concept-mastery state + Canvas-survival persistence ──
       // The StemLab host's localStorage block does not include statsLab,
@@ -1742,6 +1750,13 @@ window.StemLab = window.StemLab || {
         });
       }
 
+      var analysisMission = !d.sampleId ? { icon: '📚', title: 'Choose a question and sample', detail: 'Start with a sample dataset or enter evidence that matches your research question.' }
+        : !d.selectedTest ? { icon: '🧭', title: 'Match the test to the design', detail: 'Use variable type, groups, and independence to justify the analysis.' }
+        : !(d.testsRun > 0) ? { icon: '⚖️', title: 'Check assumptions, then run', detail: 'Inspect the data before calculating significance and effect size.' }
+        : { icon: '📝', title: 'Interpret magnitude and uncertainty', detail: 'Connect p-value, effect size, confidence, and the original question.' };
+      var analysisStage = !d.sampleId ? 1 : !d.selectedTest ? 2 : !(d.testsRun > 0) ? 3 : 4;
+
+
       // ── Build UI ──
       return h('div', {
         style: {
@@ -1754,28 +1769,48 @@ window.StemLab = window.StemLab || {
       },
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
+          h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM tools', 'data-sl-focusable': 'true', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid rgba(99,102,241,.45)', background: 'rgba(99,102,241,.10)', color: '#c7d2fe', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),
           h('div', { style: { fontSize: 36 } }, '📊'),
           h('div', { style: { flex: 1 } },
-            h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 24, fontWeight: 900 } }, 'Statistics Lab'),
-            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.')
+            h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 24, fontWeight: 900 } }, __alloT('stem.statslab.statistics_lab', 'Statistics Lab')),
+            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, __alloT('stem.statslab.inferential_stats_with_ap_psych_ap_bio', 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.'))
+          )
+        ),
+
+        h('section', { 'data-statslab-command': 'true', 'aria-labelledby': 'statslab-command-title', className: 'relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/65 via-slate-900 to-cyan-950/45 p-4 sm:p-5 mb-4' },
+          h('div', { className: 'absolute -right-6 -top-8 text-8xl opacity-[0.06]', 'aria-hidden': 'true' }, '📊'),
+          h('div', { className: 'relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]' },
+            h('div', null,
+              h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-indigo-300' }, 'Research analysis command · Stage ' + analysisStage + '/4'),
+              h('h2', { id: 'statslab-command-title', className: 'mt-2 text-xl sm:text-2xl font-black text-white' }, analysisMission.icon + ' ' + analysisMission.title),
+              h('p', { className: 'mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed' }, analysisMission.detail),
+              h('div', { className: 'mt-4 grid grid-cols-3 gap-2', 'aria-label': 'Statistics workflow status' },
+                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[10px] font-bold text-slate-400' }, metric[1])); })
+              )
+            ),
+            h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': 'Statistics evidence route' },
+              h('div', { className: 'flex items-center justify-between gap-3' }, h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, 'Evidence route'), h('span', { className: 'text-lg font-black text-white' }, analysisStage + '/4')),
+              h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-800', role: 'progressbar', 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': analysisStage, 'aria-label': 'Statistics analysis stage ' + analysisStage + ' of 4' }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400', style: { width: (analysisStage / 4 * 100) + '%' } })),
+              h('ol', { className: 'mt-4 space-y-1.5 text-[11px] text-slate-300' }, ['Question', 'Sample', 'Test', 'Conclusion'].map(function(step, i) { return h('li', { key: step, className: 'flex items-center gap-2' }, h('span', { className: i < analysisStage ? 'text-emerald-400' : 'text-slate-600', 'aria-hidden': 'true' }, i < analysisStage ? '●' : '○'), h('span', null, step)); }))
+            )
           )
         ),
 
         // Mode tabs
         h('div', {
           role: 'tablist',
-          'aria-label': 'Statistics Lab navigation',
+          'aria-label': __alloT('stem.statslab.statistics_lab_navigation', 'Statistics Lab navigation'),
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }
         },
           [
-            { id: 'home', label: '🏠 Home', desc: 'Sample datasets + about' },
-            { id: 'wizard', label: '🧙 Wizard', desc: 'Pick the right test' },
-            { id: 'data', label: '📋 Data', desc: 'Enter / paste data' },
-            { id: 'test', label: '⚖️ Test', desc: 'Choose + run a test' },
-            { id: 'results', label: '📈 Results', desc: 'View results + AI grade' },
-            { id: 'power', label: '🔋 Power', desc: 'Sample size calc' },
-            { id: 'mastery', label: '🏅 Mastery', desc: 'AP-quiz concept progress' },
-            { id: 'inquiry', label: '🔬 Inquiry', desc: 'Power × effect × alpha sandbox' }
+            { id: 'home', label: __alloT('stem.statslab.home', '🏠 Home'), desc: __alloT('stem.statslab.sample_datasets_about', 'Sample datasets + about') },
+            { id: 'wizard', label: __alloT('stem.statslab.wizard', '🧙 Wizard'), desc: __alloT('stem.statslab.pick_the_right_test', 'Pick the right test') },
+            { id: 'data', label: __alloT('stem.statslab.data', '📋 Data'), desc: __alloT('stem.statslab.enter_paste_data', 'Enter / paste data') },
+            { id: 'test', label: __alloT('stem.statslab.test', '⚖️ Test'), desc: __alloT('stem.statslab.choose_run_a_test', 'Choose + run a test') },
+            { id: 'results', label: __alloT('stem.statslab.results', '📈 Results'), desc: __alloT('stem.statslab.view_results_ai_grade', 'View results + AI grade') },
+            { id: 'power', label: __alloT('stem.statslab.power', '🔋 Power'), desc: __alloT('stem.statslab.sample_size_calc', 'Sample size calc') },
+            { id: 'mastery', label: __alloT('stem.statslab.mastery', '🏅 Mastery'), desc: __alloT('stem.statslab.ap_quiz_concept_progress', 'AP-quiz concept progress') },
+            { id: 'inquiry', label: __alloT('stem.statslab.inquiry', '🔬 Inquiry'), desc: __alloT('stem.statslab.power_effect_alpha_sandbox', 'Power × effect × alpha sandbox') }
           ].map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
@@ -1799,14 +1834,14 @@ window.StemLab = window.StemLab || {
         // Topic-accent hero band (swaps with the active mode)
         (function() {
           var TAB_META = {
-            home:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '🏠', title: 'Sample datasets + tool overview',           hint: 'Eight pre-loaded datasets cover AP Psych and AP Bio canonical examples — load one to skip data entry.' },
-            wizard:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '🧙', title: 'Pick the right test for your data',          hint: 'Answer 4 questions about your variables. The wizard maps to t-test, ANOVA, chi-square, regression, or non-parametric.' },
-            data:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',   icon: '📋', title: 'Enter or paste your data',                    hint: 'Paste from Sheets/Excel, or type by hand. The lab auto-detects two-group vs. paired vs. categorical layouts.' },
-            test:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '⚖️', title: 'Run the test with full transparency',         hint: 'Every formula and intermediate step is shown — no SPSS black box. You see what the test actually computes.' },
-            results: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '📈', title: 'Interpret + AI-graded write-up',              hint: 'Effect-size context + Cohen-band labels. AI grades your interpretation against AP-rubric criteria.' },
-            power:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',   icon: '🔋', title: 'Sample-size + power calculator',              hint: 'How many subjects do you need to detect a real effect? Underpowered studies are why most psych findings fail to replicate.' },
-            mastery: { accent: '#eab308', soft: 'rgba(234,179,8,0.10)',   icon: '🏅', title: 'Concept mastery tracker',                    hint: 'Track your progress through AP-style quiz concepts.' },
-            inquiry: { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '🔬', title: 'Inquiry sandbox — power × effect × alpha',   hint: 'Move three sliders. Predict where a study moves from underpowered to well-powered to wasteful. No score, no reveal — you mark your own understanding.' }
+            home:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '🏠', title: __alloT('stem.statslab.sample_datasets_tool_overview', 'Sample datasets + tool overview'),           hint: __alloT('stem.statslab.eight_pre_loaded_datasets_cover_ap_psy', 'Eight pre-loaded datasets cover AP Psych and AP Bio canonical examples — load one to skip data entry.') },
+            wizard:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '🧙', title: __alloT('stem.statslab.pick_the_right_test_for_your_data', 'Pick the right test for your data'),          hint: __alloT('stem.statslab.answer_4_questions_about_your_variable', 'Answer 4 questions about your variables. The wizard maps to t-test, ANOVA, chi-square, regression, or non-parametric.') },
+            data:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',   icon: '📋', title: __alloT('stem.statslab.enter_or_paste_your_data', 'Enter or paste your data'),                    hint: __alloT('stem.statslab.paste_from_sheets_excel_or_type_by_han', 'Paste from Sheets/Excel, or type by hand. The lab auto-detects two-group vs. paired vs. categorical layouts.') },
+            test:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '⚖️', title: __alloT('stem.statslab.run_the_test_with_full_transparency', 'Run the test with full transparency'),         hint: __alloT('stem.statslab.every_formula_and_intermediate_step_is', 'Every formula and intermediate step is shown — no SPSS black box. You see what the test actually computes.') },
+            results: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '📈', title: __alloT('stem.statslab.interpret_ai_graded_write_up', 'Interpret + AI-graded write-up'),              hint: __alloT('stem.statslab.effect_size_context_cohen_band_labels_', 'Effect-size context + Cohen-band labels. AI grades your interpretation against AP-rubric criteria.') },
+            power:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',   icon: '🔋', title: __alloT('stem.statslab.sample_size_power_calculator', 'Sample-size + power calculator'),              hint: __alloT('stem.statslab.how_many_subjects_do_you_need_to_detec', 'How many subjects do you need to detect a real effect? Underpowered studies are why most psych findings fail to replicate.') },
+            mastery: { accent: '#eab308', soft: 'rgba(234,179,8,0.10)',   icon: '🏅', title: __alloT('stem.statslab.concept_mastery_tracker', 'Concept mastery tracker'),                    hint: __alloT('stem.statslab.track_your_progress_through_ap_style_q', 'Track your progress through AP-style quiz concepts.') },
+            inquiry: { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '🔬', title: __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha', 'Inquiry sandbox — power × effect × alpha'),   hint: __alloT('stem.statslab.move_three_sliders_predict_where_a_stu', 'Move three sliders. Predict where a study moves from underpowered to well-powered to wasteful. No score, no reveal — you mark your own understanding.') }
           };
           var meta = TAB_META[d.mode] || TAB_META.home;
           return h('div', {
@@ -1821,7 +1856,7 @@ window.StemLab = window.StemLab || {
             }
           },
             h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-            h('div', { style: { flex: 1, minWidth: 220 } },
+            h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
               h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
             )
@@ -1854,11 +1889,11 @@ window.StemLab = window.StemLab || {
           var power = Math.max(0, Math.min(1, normCdf(ncp - zalpha)));
           var state = power < 0.30 ? 'futile' : power < 0.60 ? 'underpowered' : power < 0.80 ? 'borderline' : power < 0.95 ? 'wellpowered' : 'overkill';
           var sm = ({
-            futile: { label: 'Futile', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Power < 30% — most replications will miss the effect even if it is real.' },
-            underpowered: { label: 'Underpowered', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Power 30–60% — coin-flip-like ability to detect a true effect. Common in psych replications.' },
-            borderline: { label: 'Borderline', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Power 60–80% — typical funded study, but Cohen recommended ≥80%.' },
-            wellpowered: { label: 'Well-powered', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Power 80–95% — sound design. Effect, if real, will likely be detected.' },
-            overkill: { label: 'Overkill', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Power > 95% — diminishing returns; consider tightening alpha or splitting cohort.' }
+            futile: { label: __alloT('stem.statslab.futile', 'Futile'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.statslab.power_30_most_replications_will_miss_t', 'Power < 30% — most replications will miss the effect even if it is real.') },
+            underpowered: { label: __alloT('stem.statslab.underpowered', 'Underpowered'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.statslab.power_30_60_coin_flip_like_ability_to_', 'Power 30–60% — coin-flip-like ability to detect a true effect. Common in psych replications.') },
+            borderline: { label: __alloT('stem.statslab.borderline', 'Borderline'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.statslab.power_60_80_typical_funded_study_but_c', 'Power 60–80% — typical funded study, but Cohen recommended ≥80%.') },
+            wellpowered: { label: 'Well-powered', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.statslab.power_80_95_sound_design_effect_if_rea', 'Power 80–95% — sound design. Effect, if real, will likely be detected.') },
+            overkill: { label: __alloT('stem.statslab.overkill', 'Overkill'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.statslab.power_95_diminishing_returns_consider_', 'Power > 95% — diminishing returns; consider tightening alpha or splitting cohort.') }
           })[state];
           // SVG: power curve over n at fixed effect & alpha
           var ns = [];
@@ -1873,32 +1908,32 @@ window.StemLab = window.StemLab || {
           var hereX = ((Math.min(200, n) - 5) / 195) * 260 + 36;
           var hereY = 130 - power * 110;
           return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h3', { style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Inquiry Sandbox — Power, Effect, Alpha'),
-            h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, 'Set true effect size, alpha, and per-group sample size. Predict where the design moves between futile, underpowered, well-powered, and overkill. No score, no reveal.'),
+            h('h3', { style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha_2', '🔬 Inquiry Sandbox — Power, Effect, Alpha')),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.statslab.set_true_effect_size_alpha_and_per_gro', 'Set true effect size, alpha, and per-group sample size. Predict where the design moves between futile, underpowered, well-powered, and overkill. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 12px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' (Power ≈ ' + (power * 100).toFixed(0) + '%)'),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
               h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: '#1e293b' }),
               h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: '#1e293b' }),
               h('line', { x1: 36, y1: 130 - 0.8 * 110, x2: 296, y2: 130 - 0.8 * 110, stroke: '#16a34a', strokeDasharray: '3 3', opacity: 0.6 }),
-              h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: '#16a34a', fontSize: 8, textAnchor: 'end' }, 'power = 80%'),
-              [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
-              [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: '#64748b', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
+              h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: '#16a34a', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.power_80', 'power = 80%')),
+              [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
+              [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
               h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px ' + sm.color + ')' } }),
               h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
               h('text', { x: 160, y: 156, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at d=' + iq.effect.toFixed(2) + ', α=' + iq.alpha)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 } },
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'True effect (Cohen d)'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.effect.toFixed(2))),
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.true_effect_cohen_d', 'True effect (Cohen d)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.effect.toFixed(2))),
                 h('input', { type: 'range', min: 0.05, max: 1.5, step: 0.05, value: iq.effect, onChange: function(e) { setKey('effect', parseFloat(e.target.value)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Alpha'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.alpha)),
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.alpha', 'Alpha')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.alpha)),
                 h('input', { type: 'range', min: 0.001, max: 0.2, step: 0.001, value: iq.alpha, onChange: function(e) { setKey('alpha', parseFloat(e.target.value)); }, style: { width: '100%' } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'n per group'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.nGroup)),
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.n_per_group', 'n per group')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.nGroup)),
                 h('input', { type: 'range', min: 5, max: 200, step: 1, value: iq.nGroup, onChange: function(e) { setKey('nGroup', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
@@ -1906,30 +1941,30 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, d: iq.effect.toFixed(2), a: iq.alpha, n: iq.nGroup, power: (power * 100).toFixed(0) + '%', state: sm.label }]) });
-              }, style: { flex: 1, padding: 8, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this design'),
-              h('button', { onClick: function() { setIQ({ effect: 0.5, alpha: 0.05, nGroup: 30 }); }, style: { padding: '8px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              }, style: { flex: 1, padding: 8, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.statslab.log_this_design', '📋 Log this design')),
+              h('button', { 'data-sl-focusable': 'true', onClick: function() { setIQ({ effect: 0.5, alpha: 0.05, nGroup: 30 }); }, style: { padding: '8px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.statslab.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · d' + e.d + ' α' + e.a + ' n' + e.n + ' → ' + e.power); })
             ),
-            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider has the biggest leverage in your range?)'),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., halving alpha needs almost double n to recover the same power...', style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.statslab.your_hypothesis_which_slider_has_the_b', 'Your hypothesis (which slider has the biggest leverage in your range?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.statslab.e_g_halving_alpha_needs_almost_double_', 'e.g., halving alpha needs almost double n to recover the same power...'), style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.statslab.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 12, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.statslab.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, 'If your effect is d=0.2 (small), what n per group do you need for 80% power at α=.05?'),
-                h('li', null, 'A study with n=20 per group and d=0.5 — what is its replication probability?'),
-                h('li', null, 'When does it make sense to *lower* power on purpose (e.g., pilot, screening)?'),
-                h('li', null, 'How does tightening α (e.g., for multiple comparisons) trade off against n?')
+                h('li', null, __alloT('stem.statslab.if_your_effect_is_d_0_2_small_what_n_p', 'If your effect is d=0.2 (small), what n per group do you need for 80% power at α=.05?')),
+                h('li', null, __alloT('stem.statslab.a_study_with_n_20_per_group_and_d_0_5_', 'A study with n=20 per group and d=0.5 — what is its replication probability?')),
+                h('li', null, __alloT('stem.statslab.when_does_it_make_sense_to_lower_power', 'When does it make sense to *lower* power on purpose (e.g., pilot, screening)?')),
+                h('li', null, __alloT('stem.statslab.how_does_tightening_e_g_for_multiple_c', 'How does tightening α (e.g., for multiple comparisons) trade off against n?'))
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, 'I can explain why this d × α × n combination yields this power state.')
+              h('span', null, __alloT('stem.statslab.i_can_explain_why_this_d_n_combination', 'I can explain why this d × α × n combination yields this power state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Power approximated via normal-z; for small n, true power from non-central t will differ slightly (use the Power tab for the formal calc).')
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.statslab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.statslab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Power approximated via normal-z; for small n, true power from non-central t will differ slightly (use the Power tab for the formal calc).'))
           );
         })(),
         // Concept-mastery celebration overlay — same shape as Optics/Pets/BirdLab.
@@ -1957,7 +1992,7 @@ window.StemLab = window.StemLab || {
           },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🏅'),
             h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Concept locked in'),
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, __alloT('stem.statslab.concept_locked_in', 'Concept locked in')),
               h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, slCeleb.question.length > 90 ? (slCeleb.question.substring(0, 87) + '…') : slCeleb.question),
               h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, slCeleb.total + ' / ' + AP_QUIZ_BANK.length + ' AP questions mastered')
             )
@@ -1992,7 +2027,7 @@ window.StemLab = window.StemLab || {
           h('div', { style: { fontSize: 26, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, _hMasteredCount + ' / ' + _hTotal),
           h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'AP mastered')
         ),
-        h('div', { style: { flex: 1, minWidth: 200 } },
+        h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, '🏅 AP Stats Concept Mastery'),
           h('div', { style: { height: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 3, overflow: 'hidden', marginBottom: 5 }, 'aria-hidden': 'true' },
             h('div', { style: { width: _hPct + '%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)', transition: 'width 0.3s' } })
@@ -2019,7 +2054,7 @@ window.StemLab = window.StemLab || {
         )
       ),
       h('div', {
-        style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }
+        className: 'grid gap-2 sm:grid-cols-2 xl:grid-cols-3'
       },
         SAMPLE_DATASETS.map(function(s) {
           return h('button', {
@@ -2201,11 +2236,11 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { color: '#fbbf24', fontWeight: 800, marginBottom: 4 } }, label + ' (n = ' + x.length + ')'),
         h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 } },
-          h('span', null, 'M = ', h('b', { style: { color: '#fef3c7' } }, isFinite(m) ? m.toFixed(2) : '—')),
-          h('span', null, 'SD = ', h('b', { style: { color: '#fef3c7' } }, isFinite(sd) ? sd.toFixed(2) : '—')),
-          h('span', null, 'Mdn = ', h('b', { style: { color: '#fef3c7' } }, isFinite(md) ? md.toFixed(2) : '—')),
-          h('span', null, 'min = ', h('b', { style: { color: '#fef3c7' } }, min)),
-          h('span', null, 'max = ', h('b', { style: { color: '#fef3c7' } }, max)),
+          h('span', null, 'M = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(m) ? m.toFixed(2) : '—')),
+          h('span', null, 'SD = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(sd) ? sd.toFixed(2) : '—')),
+          h('span', null, 'Mdn = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(md) ? md.toFixed(2) : '—')),
+          h('span', null, 'min = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, min)),
+          h('span', null, 'max = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, max)),
           h('span', null, 'skew = ', h('b', { style: { color: skBadge.color } }, isFinite(sk) ? sk.toFixed(2) : '—'))
         ),
         h('div', { style: { marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' } },
@@ -2436,7 +2471,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { labels: labels }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Category ' + (i + 1) + ' label',
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
             }),
             h('input', {
               type: 'number', value: row.obs,
@@ -2514,7 +2549,7 @@ window.StemLab = window.StemLab || {
                         upd('chiIndepData', Object.assign({}, d.chiIndepData, { cols: cols }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Column ' + (ci + 1) + ' label',
-                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
+                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
                     })
                   );
                 }),
@@ -2543,7 +2578,7 @@ window.StemLab = window.StemLab || {
                         upd('chiIndepData', Object.assign({}, d.chiIndepData, { rows: rows }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' label',
-                      style: { width: 100, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700 }
+                      style: { width: 100, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700 }
                     })
                   ),
                   d.chiIndepData.cols.map(function(_, ci) {
@@ -2634,7 +2669,7 @@ window.StemLab = window.StemLab || {
               type: 'text', value: d.multiRegData.yLabel || 'Y',
               onChange: function(e) { upd('multiRegData', Object.assign({}, d.multiRegData, { yLabel: e.target.value })); },
               'data-sl-focusable': 'true', 'aria-label': 'Outcome variable label',
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           h('button', {
@@ -2673,7 +2708,7 @@ window.StemLab = window.StemLab || {
                   );
                 }),
                 h('th', { style: { padding: 4 } },
-                  h('div', { style: { width: 80, padding: 4, color: '#fef3c7', fontSize: 11, fontWeight: 800, textAlign: 'center' } }, d.multiRegData.yLabel || 'Y')
+                  h('div', { style: { width: 80, padding: 4, color: 'var(--allo-stem-text, #fef3c7)', fontSize: 11, fontWeight: 800, textAlign: 'center' } }, d.multiRegData.yLabel || 'Y')
                 ),
                 h('th', null)
               )
@@ -2707,7 +2742,7 @@ window.StemLab = window.StemLab || {
                         upd('multiRegData', Object.assign({}, d.multiRegData, { y: y }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' outcome',
-                      style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
+                      style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
                     })
                   ),
                   h('td', { style: { padding: 2 } },
@@ -2860,7 +2895,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '⚠ Assumption checks'),
         assumptionPreview.map(function(w, i) {
-          return h('div', { key: i, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.5, marginBottom: 4 } }, '• ' + w.msg);
+          return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, marginBottom: 4 } }, '• ' + w.msg);
         })
       ),
       // Visual preview of the loaded data for the selected test
@@ -2972,7 +3007,7 @@ window.StemLab = window.StemLab || {
           var statusLabel = cs.doneCount === 0 ? 'Untouched'
             : cs.doneCount === cs.questions.length ? '✓ All mastered'
             : cs.doneCount + ' / ' + cs.questions.length;
-          var statusColor = cs.doneCount === 0 ? '#64748b'
+          var statusColor = cs.doneCount === 0 ? '#94a3b8'
             : cs.doneCount === cs.questions.length ? '#22c55e'
             : cs.concept.color;
           return h('div', {
@@ -2999,7 +3034,7 @@ window.StemLab = window.StemLab || {
                   style: {
                     display: 'flex', alignItems: 'flex-start', gap: 6,
                     fontSize: 11,
-                    color: done ? '#cbd5e1' : '#64748b',
+                    color: done ? '#cbd5e1' : '#94a3b8',
                     lineHeight: 1.45
                   }
                 },
@@ -3286,7 +3321,7 @@ window.StemLab = window.StemLab || {
               style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, padding: '6px 8px' }
             },
               h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, s[0]),
-              h('div', { style: { color: '#fef3c7', fontWeight: 700 } }, s[1])
+              h('div', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, s[1])
             );
           })
         ),
@@ -3604,7 +3639,7 @@ window.StemLab = window.StemLab || {
               }
             },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Question ' + (qi + 1) + ' of ' + d.quizQuestions.length),
-              h('div', { style: { fontSize: 13, color: '#fef3c7', fontWeight: 700, marginBottom: 8, lineHeight: 1.45 } }, q.q),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700, marginBottom: 8, lineHeight: 1.45 } }, q.q),
               q.choices.map(function(choice, ci) {
                 var isPicked = pickedIdx === ci;
                 var isThisCorrect = ci === q.correct;
@@ -3816,7 +3851,7 @@ window.StemLab = window.StemLab || {
           d.aiGradeResponse.error
             ? h('div', { style: { fontSize: 12, color: '#fca5a5' } }, '⚠ ' + d.aiGradeResponse.error)
             : h('div', null,
-                _isNum(d.aiGradeResponse.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fef3c7', marginBottom: 6 } },
+                _isNum(d.aiGradeResponse.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 6 } },
                   'Score: ' + d.aiGradeResponse.score + ' / 10'
                 ),
                 Array.isArray(d.aiGradeResponse.strengths) && d.aiGradeResponse.strengths.length > 0 && h('div', { style: { marginBottom: 8 } },
@@ -3833,7 +3868,7 @@ window.StemLab = window.StemLab || {
                 ),
                 d.aiGradeResponse.improved_version && h('div', null,
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a5b4fc', marginBottom: 2 } }, '📝 Model interpretation'),
-                  h('div', { style: { fontSize: 11, color: '#fef3c7', fontStyle: 'italic', padding: 8, background: 'rgba(99,102,241,0.10)', borderRadius: 6, lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fef3c7)', fontStyle: 'italic', padding: 8, background: 'rgba(99,102,241,0.10)', borderRadius: 6, lineHeight: 1.6 } },
                     d.aiGradeResponse.improved_version
                   )
                 )
@@ -4344,7 +4379,7 @@ window.StemLab = window.StemLab || {
               h('span', { style: { color: '#fca5a5' } }, 'Type I (α): ', h('b', null, va.toFixed(3))),
               h('span', { style: { color: '#93c5fd' } }, 'Type II (β): ', h('b', null, beta.toFixed(3))),
               h('span', { style: { color: '#86efac' } }, 'Power (1−β): ', h('b', null, power.toFixed(3))),
-              h('span', { style: { color: '#fef3c7' } }, 'NCP: ', h('b', null, ncp.toFixed(2)))
+              h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, 'NCP: ', h('b', null, ncp.toFixed(2)))
             ),
             power < 0.50 && h('div', { style: { marginTop: 6, color: '#fbbf24', fontStyle: 'italic' } },
               '⚠ Power below 0.50 — fewer than half of studies of this size would detect this effect. Consider larger n.'
@@ -4430,6 +4465,9 @@ window.StemLab = window.StemLab || {
       // Mean line
       h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 3' }),
       h('text', { x: sx(m), y: pad.t - 4, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, 'M=' + m.toFixed(1)),
+      // Median line — the gap between this and the mean reveals skew at a glance
+      h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: '#10b981', strokeWidth: 2, strokeDasharray: '2 3' }),
+      h('text', { x: sx(md), y: pad.t + 9, fill: '#10b981', fontSize: 9, textAnchor: 'middle' }, 'Mdn=' + md.toFixed(1)),
       // X axis ticks
       ticks.map(function(t, ti) {
         return h('g', { key: 'xt' + ti },
@@ -4556,8 +4594,15 @@ window.StemLab = window.StemLab || {
           h('line', { x1: cx - bw / 4, y1: sy(whiskerHigh), x2: cx + bw / 4, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.5 }),
           // Box
           h('rect', { x: cx - bw / 2, y: sy(q.q3), width: bw, height: sy(q.q1) - sy(q.q3), fill: color, opacity: 0.30, stroke: color, strokeWidth: 1.5 }),
-          // Median line
-          h('line', { x1: cx - bw / 2, y1: sy(q.median), x2: cx + bw / 2, y2: sy(q.median), stroke: '#fef3c7', strokeWidth: 2 }),
+          // Median line (quartiles() returns q2 as the median — q.median was undefined → NaN → the line never drew)
+          h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: '#fef3c7', strokeWidth: 2 }),
+          // Quartile value annotations (Q3 / Md / Q1) beside the box — only when
+          // there are few groups, so the labels never crowd adjacent boxes.
+          validGroups.length <= 4 ? h('g', { key: 'qlab' },
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q3) + 3, fill: '#cbd5e1', fontSize: 8 }, 'Q3 ' + q.q3.toFixed(1)),
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q2) + 3, fill: '#fde68a', fontSize: 8, fontWeight: 700 }, 'Md ' + q.q2.toFixed(1)),
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q1) + 3, fill: '#cbd5e1', fontSize: 8 }, 'Q1 ' + q.q1.toFixed(1))
+          ) : null,
           // Mean dot
           h('circle', { cx: cx, cy: sy(mean(x)), r: 3, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1 }),
           // Outliers
@@ -4626,7 +4671,7 @@ window.StemLab = window.StemLab || {
     children.push(h('text', { key: 'yl', x: 12, y: H / 2, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, transform: 'rotate(-90 12 ' + (H / 2) + ')' }, yLabel));
     if (hasFit) {
       children.push(h('text', { key: 'fitnote', x: W - pad.r, y: pad.t + 4, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' },
-        'ŷ = ' + lr.intercept.toFixed(2) + ' + ' + lr.slope.toFixed(2) + 'x  (r=' + (lr.r != null ? lr.r.toFixed(2) : '?') + ')'
+        'ŷ = ' + lr.intercept.toFixed(2) + ' + ' + lr.slope.toFixed(2) + 'x  (r=' + (lr.r != null ? lr.r.toFixed(2) : '?') + ', r²=' + (lr.r != null ? (lr.r * lr.r).toFixed(2) : '?') + ')'
       ));
     }
     return h('svg', {
@@ -5496,8 +5541,8 @@ window.StemLab = window.StemLab || {
     },
       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⚠ Common misconceptions to avoid'),
       items.map(function(it, i) {
-        return h('div', { key: i, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
-          h('div', { style: { fontWeight: 700, color: '#fef3c7', marginBottom: 2 } }, '✗ ' + it.wrong),
+        return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
+          h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 2 } }, '✗ ' + it.wrong),
           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, '✓ ' + it.right)
         );
       })

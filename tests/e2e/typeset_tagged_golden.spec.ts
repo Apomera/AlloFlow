@@ -6,6 +6,7 @@
 // proves the full chain deterministically (no AI).
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
+import { TAGGED_PDF_INVARIANTS_JS, PAKO_CDN } from './_tagged_pdf_invariants';
 
 const PIPELINE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
@@ -17,8 +18,10 @@ test.describe('createTypesetTaggedPdf — Office-input tagged-PDF chain', () => 
     const page = await browser.newPage();
     await page.goto('about:blank');
     await page.addScriptTag({ url: PDFLIB_CDN });
-    await page.waitForFunction(() => !!(window as any).PDFLib, null, { timeout: 30000 });
+    await page.addScriptTag({ url: PAKO_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).pako, null, { timeout: 30000 });
     await page.addScriptTag({ path: PIPELINE_PATH });
+    await page.addScriptTag({ content: TAGGED_PDF_INVARIANTS_JS });
 
     r = await page.evaluate(async () => {
       try {
@@ -44,12 +47,17 @@ test.describe('createTypesetTaggedPdf — Office-input tagged-PDF chain', () => 
         // Re-open the output to confirm it parses and has a structure root.
         const outDoc = await (window as any).PDFLib.PDFDocument.load(result.bytes);
         const hasRoot = !!outDoc.catalog.get((window as any).PDFLib.PDFName.of('StructTreeRoot'));
+        // Shared structural-invariant sweep (2026-07-09): dup claims, dangling MCRs, balance,
+        // artifact-only StructParents — the typeset chain must pass the same set the scanned path does.
+        const sweep = await (window as any).__alloTaggedPdfInvariants(result.bytes);
         return {
           summary: { uaDeclared: s.uaDeclared, reachableLeaves: s.reachableLeaves, orphanedLeaves: s.orphanedLeaves },
           roundTripOk: !(result.roundTrip && result.roundTrip.ok === false),
           hasRoot,
           pageCount: outDoc.getPageCount(),
           byteLength: result.bytes.length,
+          sweepViolations: sweep.violations,
+          sweepMcrCount: sweep.mcrCount,
         };
       } catch (e: any) { return { error: String((e && e.stack) || e) }; }
     });
@@ -67,5 +75,10 @@ test.describe('createTypesetTaggedPdf — Office-input tagged-PDF chain', () => 
     expect(r.summary.orphanedLeaves, 'typeset text comes from the same html — nothing should orphan').toBe(0);
     expect(r.summary.reachableLeaves).toBeGreaterThanOrEqual(8);
     expect(r.summary.uaDeclared, 'the evidence-gated declaration should be EARNED').toBeTruthy();
+  });
+
+  test('the FULL structural-invariant sweep is clean', () => {
+    expect(r.sweepViolations, JSON.stringify(r.sweepViolations)).toEqual([]);
+    expect(r.sweepMcrCount).toBeGreaterThan(0);
   });
 });

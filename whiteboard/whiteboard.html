@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Whiteboard</title>
+<!--
+  AlloFlow Whiteboard — Excalidraw + education graphic-organizer templates
+  (companion window).
+
+  Opened by stem_lab/stem_tool_whiteboard.js with window.open (the escape-hatch
+  pattern: a TOP-LEVEL browsing context, unaffected by Gemini Canvas's sandboxed
+  iframe). A freehand sketch/diagram surface for "multiple means of expression"
+  (UDL) — students draw their thinking; teachers make quick visuals.
+
+  The canvas is Excalidraw (excalidraw.com, MIT), loaded as a UMD library +
+  React 18 from a CDN and mounted into a <div> (no iframe → no X-Frame-Options
+  problem; same CDN-library pattern as the Molecule/Zoom shelves). Its own CSS
+  is self-injected by the bundle; fonts load from EXCALIDRAW_ASSET_PATH.
+
+  The AlloFlow layer is a set of EDUCATION TEMPLATES — graphic organizers
+  (Venn, T-chart, story map, KWL, concept web, number line) that seed the canvas
+  as a starting scaffold — plus a one-click PNG export. Excalidraw's own menu
+  handles save / open / export to SVG / .excalidraw. Nothing is sent anywhere;
+  drawings live in this window until you export them.
+
+  NOTE (2026-07-06): Excalidraw@0.17.6 UMD (window.ExcalidrawLib) +
+  convertToExcalidrawElements + exportToBlob verified present on the CDN, and
+  React 18 UMD loads, but the full canvas render is NOT yet browser-smoke-tested.
+-->
+<style>
+  :root { --bg:#0f172a; --panel:#1e293b; --line:#334155; --text:#e2e8f0; --dim:#94a3b8; --accent:#6366f1; --accent2:#4f46e5; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
+  header h1 { font-size: 14px; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 11px; }
+  header .spacer { flex: 1 1 auto; }
+  .tpl { display: flex; align-items: center; gap: 6px; }
+  .tpl label { font-size: 11px; color: var(--dim); }
+  select, button.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-family: inherit; }
+  button.hdr:hover, select:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 700; }
+  button.primary:hover { background: var(--accent); }
+  #excal { flex: 1 1 auto; min-height: 0; position: relative; }
+  .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 14px; text-align: center; padding: 24px; }
+  .privacy { padding: 5px 12px; background: var(--panel); border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; flex: 0 0 auto; }
+  /* Excalidraw renders light by default; give it a clean light ground below the dark chrome. */
+  .excalidraw { --color-primary: #4f46e5; }
+  input.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; }
+  input.hdr::placeholder { color: var(--dim); }
+  input.hdr:focus { outline: none; border-color: var(--accent); }
+  .nameinput { max-width: 170px; }
+  button.hdr:disabled { pointer-events: none; }
+  .flash { font-size: 11px; font-weight: 600; opacity: 0; transition: opacity .3s ease; white-space: nowrap; }
+  .aibar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 7px 12px; background: #172033; border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+  .aibar .ailabel { font-size: 12px; font-weight: 700; color: #a5b4fc; white-space: nowrap; }
+  .aiinput { flex: 1 1 220px; min-width: 160px; max-width: 520px; }
+  .aistatus { font-size: 11px; font-weight: 600; color: var(--dim); }
+  .aibar button.hdr:disabled { opacity: 0.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>✏️ AlloFlow Whiteboard</h1>
+  <span class="sub">Excalidraw · draw, diagram, and organize ideas</span>
+  <span class="spacer"></span>
+  <div class="tpl">
+    <label for="tplSel">📋 Template</label>
+    <select id="tplSel" aria-label="Insert a graphic-organizer template">
+      <option value="">Blank canvas</option>
+      <option value="venn">Venn diagram (compare 2)</option>
+      <option value="tchart">T-chart (2 columns)</option>
+      <option value="story">Story map (beginning · middle · end)</option>
+      <option value="kwl">KWL chart (Know · Want · Learned)</option>
+      <option value="web">Concept web</option>
+      <option value="numline">Number line (0–10)</option>
+    </select>
+  </div>
+  <input id="nameInput" class="hdr nameinput" type="text" maxlength="120" placeholder="Name this sketch" aria-label="Name for this whiteboard resource" />
+  <button class="hdr primary" id="saveBtn" aria-label="Save this drawing into your AlloFlow resource history">📥 Save to AlloFlow</button>
+  <button class="hdr" id="exportBtn" aria-label="Export the drawing as a PNG image to this device">⬇️ Export PNG</button>
+  <span id="flashmsg" class="flash" role="status" aria-live="polite"></span>
+</header>
+<div class="aibar" id="aibar">
+  <span class="ailabel">✨ AI assist</span>
+  <input id="aiPrompt" class="hdr aiinput" type="text" maxlength="600" placeholder="Describe a diagram or image to add — e.g. “water cycle” or “a friendly robot”…" aria-label="Describe what the AI should draw or generate" />
+  <button class="hdr" id="aiDiagramBtn" aria-label="Generate a labeled diagram from your description">◇ Diagram</button>
+  <button class="hdr" id="aiImageBtn" aria-label="Generate a picture from your description">🖼️ Image</button>
+  <button class="hdr" id="aiEditImgBtn" aria-label="Edit the selected image with AI" disabled>✏️ Edit selected image</button>
+  <span id="aiStatus" class="aistatus" role="status" aria-live="polite"></span>
+</div>
+<div id="excal"><div class="loadmsg" id="loadmsg">Loading the whiteboard…</div></div>
+<div class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there. <strong>AI assist</strong> sends your prompt (and, for image edits, the selected image) to Google’s Gemini through AlloFlow.</div>
+
+<script>window.EXCALIDRAW_ASSET_PATH = "https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/";</script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var loadmsg = document.getElementById('loadmsg');
+  if (typeof window.ExcalidrawLib === 'undefined' || !window.ExcalidrawLib.Excalidraw || !window.React || !window.ReactDOM) {
+    loadmsg.textContent = 'The whiteboard could not load. Check your internet connection and try again.';
+    return;
+  }
+  var E = window.ExcalidrawLib;
+  var React = window.React, ReactDOM = window.ReactDOM;
+  // The opener's origin is learned from its ack (see the message listener in Boot);
+  // until then we post with '*'. Outbound is the user's own drawing, not a secret,
+  // and postMessage still only reaches window.opener regardless of targetOrigin.
+  var openerOrigin = null;
+  var toOpener = function (payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(payload, openerOrigin || '*'); } catch (_) {} };
+
+  // ── Graphic-organizer templates as Excalidraw element skeletons ──
+  // convertToExcalidrawElements fills in ids/bindings; each is a starting
+  // scaffold the student/teacher then writes into.
+  var IND = '#4f46e5', TXT = '#1e293b';
+  var TEMPLATES = {
+    venn: [
+      { type: 'ellipse', x: 120, y: 140, width: 320, height: 320, strokeColor: IND, backgroundColor: 'transparent', strokeWidth: 2 },
+      { type: 'ellipse', x: 360, y: 140, width: 320, height: 320, strokeColor: '#0e7490', backgroundColor: 'transparent', strokeWidth: 2 },
+      { type: 'text', x: 180, y: 110, text: 'Topic A', fontSize: 24, strokeColor: TXT },
+      { type: 'text', x: 520, y: 110, text: 'Topic B', fontSize: 24, strokeColor: TXT },
+      { type: 'text', x: 360, y: 470, text: 'Both', fontSize: 20, strokeColor: TXT }
+    ],
+    tchart: [
+      { type: 'line', x: 400, y: 120, points: [[0, 0], [0, 420]], strokeColor: TXT, strokeWidth: 2 },
+      { type: 'line', x: 120, y: 170, points: [[0, 0], [560, 0]], strokeColor: TXT, strokeWidth: 2 },
+      { type: 'text', x: 230, y: 130, text: 'Heading 1', fontSize: 22, strokeColor: IND },
+      { type: 'text', x: 510, y: 130, text: 'Heading 2', fontSize: 22, strokeColor: IND }
+    ],
+    story: [
+      { type: 'rectangle', x: 90, y: 220, width: 180, height: 120, strokeColor: IND, label: { text: 'Beginning' } },
+      { type: 'rectangle', x: 330, y: 220, width: 180, height: 120, strokeColor: IND, label: { text: 'Middle' } },
+      { type: 'rectangle', x: 570, y: 220, width: 180, height: 120, strokeColor: IND, label: { text: 'End' } },
+      { type: 'arrow', x: 275, y: 280, points: [[0, 0], [50, 0]], strokeColor: TXT },
+      { type: 'arrow', x: 515, y: 280, points: [[0, 0], [50, 0]], strokeColor: TXT },
+      { type: 'text', x: 330, y: 160, text: 'Story Map', fontSize: 26, strokeColor: TXT }
+    ],
+    kwl: [
+      { type: 'rectangle', x: 90, y: 160, width: 210, height: 320, strokeColor: IND, backgroundColor: '#eef2ff' },
+      { type: 'rectangle', x: 300, y: 160, width: 210, height: 320, strokeColor: '#0e7490', backgroundColor: '#ecfeff' },
+      { type: 'rectangle', x: 510, y: 160, width: 210, height: 320, strokeColor: '#15803d', backgroundColor: '#f0fdf4' },
+      { type: 'text', x: 120, y: 175, text: 'K — Know', fontSize: 20, strokeColor: TXT },
+      { type: 'text', x: 320, y: 175, text: 'W — Want to know', fontSize: 18, strokeColor: TXT },
+      { type: 'text', x: 540, y: 175, text: 'L — Learned', fontSize: 20, strokeColor: TXT }
+    ],
+    web: [
+      { type: 'ellipse', x: 340, y: 260, width: 160, height: 100, strokeColor: IND, backgroundColor: '#eef2ff', label: { text: 'Main idea' } },
+      { type: 'ellipse', x: 120, y: 120, width: 140, height: 80, strokeColor: TXT, label: { text: 'Detail' } },
+      { type: 'ellipse', x: 580, y: 120, width: 140, height: 80, strokeColor: TXT, label: { text: 'Detail' } },
+      { type: 'ellipse', x: 120, y: 420, width: 140, height: 80, strokeColor: TXT, label: { text: 'Detail' } },
+      { type: 'ellipse', x: 580, y: 420, width: 140, height: 80, strokeColor: TXT, label: { text: 'Detail' } },
+      { type: 'line', x: 340, y: 300, points: [[0, 0], [-150, -120]], strokeColor: TXT },
+      { type: 'line', x: 500, y: 300, points: [[0, 0], [150, -120]], strokeColor: TXT },
+      { type: 'line', x: 340, y: 320, points: [[0, 0], [-150, 130]], strokeColor: TXT },
+      { type: 'line', x: 500, y: 320, points: [[0, 0], [150, 130]], strokeColor: TXT }
+    ],
+    numline: (function () {
+      var els = [{ type: 'line', x: 120, y: 300, points: [[0, 0], [600, 0]], strokeColor: TXT, strokeWidth: 2 }];
+      for (var i = 0; i <= 10; i++) {
+        var x = 120 + i * 60;
+        els.push({ type: 'line', x: x, y: 290, points: [[0, 0], [0, 20]], strokeColor: TXT, strokeWidth: 2 });
+        els.push({ type: 'text', x: x - 5, y: 325, text: String(i), fontSize: 18, strokeColor: TXT });
+      }
+      return els;
+    })()
+  };
+
+  var excalidrawAPI = null;
+  var reactRoot = null;
+
+  function mount() {
+    var container = document.getElementById('excal');
+    container.innerHTML = '';
+    reactRoot = ReactDOM.createRoot(container);
+    reactRoot.render(React.createElement(E.Excalidraw, {
+      excalidrawAPI: function (api) { excalidrawAPI = api; },
+      onChange: function () { scheduleAiButtonSync(); },
+      // Warm, classroom-friendly defaults.
+      initialData: { appState: { viewBackgroundColor: '#ffffff', currentItemStrokeColor: IND } },
+      UIOptions: { canvasActions: { loadScene: true, saveToActiveFile: true, export: { saveFileToDisk: true }, toggleTheme: true } }
+    }));
+  }
+
+  function loadTemplate(key) {
+    if (!excalidrawAPI || !key || !TEMPLATES[key]) return;
+    try {
+      var skeleton = TEMPLATES[key];
+      var elements = (typeof E.convertToExcalidrawElements === 'function')
+        ? E.convertToExcalidrawElements(skeleton) : skeleton;
+      excalidrawAPI.updateScene({ elements: elements });
+      try { excalidrawAPI.scrollToContent(elements, { fitToContent: true }); } catch (_) {}
+      toOpener({ type: 'allocwb-template', template: key });
+    } catch (e) { console.warn('[Whiteboard] template load failed', e); }
+  }
+
+  function exportPng() {
+    if (!excalidrawAPI || typeof E.exportToBlob !== 'function') return;
+    var els = excalidrawAPI.getSceneElements();
+    if (!els || !els.length) { alert('Draw something first, or pick a template.'); return; }
+    E.exportToBlob({
+      elements: els, appState: excalidrawAPI.getAppState(), files: excalidrawAPI.getFiles(),
+      mimeType: 'image/png', quality: 1, exportPadding: 16
+    }).then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'alloflow-whiteboard.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toOpener({ type: 'allocwb-export' });
+    }).catch(function (e) { console.warn('[Whiteboard] export failed', e); });
+  }
+
+  // Small inline status line in the header (also an aria-live region).
+  function flash(msg, good) {
+    var el = document.getElementById('flashmsg');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = good === false ? '#f87171' : '#34d399';
+    el.style.opacity = '1';
+    clearTimeout(flash._t);
+    flash._t = setTimeout(function () { el.style.opacity = '0'; }, 2600);
+  }
+
+  // "Save to AlloFlow" — export the scene to a PNG and hand BOTH the image and
+  // the editable Excalidraw scene to the opener (AlloFlow), which files it in the
+  // resource history. Unlike Export PNG (a local download), this leaves the window,
+  // so it is a deliberate, separate action.
+  function saveToAlloFlow() {
+    if (!window.opener || window.opener.closed) { flash('Open the Whiteboard from AlloFlow to use this.', false); return; }
+    if (!excalidrawAPI || typeof E.exportToBlob !== 'function') return;
+    var els = excalidrawAPI.getSceneElements();
+    if (!els || !els.length) { flash('Draw something first, or pick a template.', false); return; }
+    var appState = excalidrawAPI.getAppState() || {};
+    var files = excalidrawAPI.getFiles() || {};
+    E.exportToBlob({ elements: els, appState: appState, files: files, mimeType: 'image/png', quality: 0.92, exportPadding: 16 })
+      .then(function (blob) {
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          var nameEl = document.getElementById('nameInput');
+          var name = (nameEl && nameEl.value ? nameEl.value : '').trim().slice(0, 120) || 'Whiteboard sketch';
+          // The editable scene, in the .excalidraw shape, so the resource can be
+          // re-opened/edited later. Kept only when compact (drawings with big
+          // embedded photos are handed over as the PNG alone to avoid bloating
+          // saved projects).
+          var scene = null;
+          try {
+            var candidate = { type: 'excalidraw', version: 2, source: 'https://alloflow-cdn.pages.dev/whiteboard', elements: els, appState: { viewBackgroundColor: appState.viewBackgroundColor || '#ffffff' }, files: files };
+            if (JSON.stringify(candidate).length < 240000) scene = candidate;
+          } catch (_s) {}
+          toOpener({ type: 'allocwb-save', title: name, png: reader.result, scene: scene, elementCount: els.length });
+          flash('Saved “' + name + '” to AlloFlow ✓', true);
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(function (e) { console.warn('[Whiteboard] save failed', e); flash('Could not save — try Export PNG instead.', false); });
+  }
+
+  // ── AI assist ──
+  // Round-trips through the AlloFlow opener, which holds the API key + quota: we
+  // POST a request; the app runs Gemini/Imagen and posts the result back to the
+  // message listener in Boot. Everything the AI produces is re-sanitized here
+  // before it reaches the canvas (whitelisted element types, clamped geometry,
+  // hex-checked colors, capped counts).
+  var aiPending = {};      // requestId -> { mode }
+  var aiBusyFlag = false;
+  var aiButtonsRAF = 0;
+
+  function aiStatus(msg, good) {
+    var el = document.getElementById('aiStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = good === false ? '#f87171' : (good === true ? '#34d399' : '#94a3b8');
+  }
+  function setAiBusy(busy) {
+    aiBusyFlag = busy;
+    var diag = document.getElementById('aiDiagramBtn'); if (diag) diag.disabled = busy;
+    var img = document.getElementById('aiImageBtn'); if (img) img.disabled = busy;
+    updateAiButtons();
+  }
+  function scheduleAiButtonSync() {
+    if (aiButtonsRAF) return;
+    aiButtonsRAF = requestAnimationFrame(function () { aiButtonsRAF = 0; updateAiButtons(); });
+  }
+  function updateAiButtons() {
+    var b = document.getElementById('aiEditImgBtn');
+    if (b) b.disabled = aiBusyFlag || !getSelectedImage();
+  }
+  function getSelectedImage() {
+    try {
+      if (!excalidrawAPI) return null;
+      var st = excalidrawAPI.getAppState() || {};
+      var ids = st.selectedElementIds || {};
+      var els = excalidrawAPI.getSceneElements() || [];
+      var files = excalidrawAPI.getFiles() || {};
+      var picked = els.filter(function (e) { return ids[e.id] && e.type === 'image' && !e.isDeleted; });
+      if (picked.length !== 1) return null;
+      var el = picked[0];
+      var f = el.fileId && files[el.fileId];
+      if (!f || !f.dataURL) return null;
+      return { element: el, dataURL: f.dataURL };
+    } catch (_) { return null; }
+  }
+  function aiRequest(mode) {
+    if (!window.opener || window.opener.closed) { aiStatus('Open the Whiteboard from AlloFlow to use AI assist.', false); return; }
+    if (!excalidrawAPI) return;
+    var promptEl = document.getElementById('aiPrompt');
+    var prompt = (promptEl && promptEl.value || '').trim();
+    if (mode !== 'edit-image' && !prompt) { aiStatus('Type what you want first.', false); return; }
+    var payload = { type: 'allocwb-ai-request', requestId: 'r' + Date.now() + Math.random().toString(36).slice(2, 7), mode: mode, prompt: prompt };
+    if (mode === 'edit-image') {
+      var sel = getSelectedImage();
+      if (!sel) { aiStatus('Select exactly one image on the canvas first.', false); return; }
+      payload.imageDataUrl = sel.dataURL;
+    }
+    aiPending[payload.requestId] = { mode: mode };
+    setAiBusy(true);
+    aiStatus(mode === 'image' ? 'Generating image…' : mode === 'edit-image' ? 'Editing image…' : 'Drawing diagram…', null);
+    toOpener(payload);
+  }
+
+  function clampNum(v, lo, hi, dflt) { v = Number(v); if (!isFinite(v)) return dflt; return Math.max(lo, Math.min(hi, v)); }
+  function sanitizeSkeleton(list) {
+    var ALLOWED = { rectangle: 1, ellipse: 1, diamond: 1, text: 1, arrow: 1, line: 1 };
+    var hex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+    var out = [];
+    (Array.isArray(list) ? list : []).slice(0, 60).forEach(function (e) {
+      if (!e || typeof e !== 'object' || !ALLOWED[e.type]) return;
+      var o = { type: e.type };
+      o.x = clampNum(e.x, -2000, 4000, 0);
+      o.y = clampNum(e.y, -2000, 4000, 0);
+      if (e.type !== 'text') { o.width = clampNum(e.width, 2, 2000, 100); o.height = clampNum(e.height, 2, 2000, 60); }
+      if (typeof e.text === 'string' && e.text) o.text = e.text.slice(0, 240);
+      if (e.label && typeof e.label === 'object' && typeof e.label.text === 'string') o.label = { text: e.label.text.slice(0, 120) };
+      if (e.type === 'text') o.fontSize = clampNum(e.fontSize, 8, 96, 20);
+      if (hex.test(e.strokeColor || '')) o.strokeColor = e.strokeColor;
+      if (e.backgroundColor === 'transparent' || hex.test(e.backgroundColor || '')) o.backgroundColor = e.backgroundColor;
+      if ((e.type === 'arrow' || e.type === 'line')) {
+        if (!Array.isArray(e.points)) return;
+        o.points = e.points.slice(0, 60).map(function (p) { return [clampNum(p && p[0], -3000, 3000, 0), clampNum(p && p[1], -3000, 3000, 0)]; });
+        if (o.points.length < 2) return;
+      }
+      out.push(o);
+    });
+    return out;
+  }
+  function applyDiagram(plan) {
+    var list = Array.isArray(plan) ? plan : (plan && Array.isArray(plan.elements) ? plan.elements : null);
+    var skel = sanitizeSkeleton(list || []);
+    if (!skel.length) { aiStatus('The AI didn’t return anything drawable — try rephrasing.', false); return; }
+    try {
+      var newEls = (typeof E.convertToExcalidrawElements === 'function') ? E.convertToExcalidrawElements(skel) : skel;
+      var cur = excalidrawAPI.getSceneElements() || [];
+      excalidrawAPI.updateScene({ elements: cur.concat(newEls) });
+      try { excalidrawAPI.scrollToContent(newEls, { fitToContent: true }); } catch (_) {}
+      aiStatus('Diagram added ✓ — edit or move anything you like.', true);
+    } catch (e) { console.warn('[Whiteboard] diagram apply failed', e); aiStatus('Could not add the diagram.', false); }
+  }
+  function makeImageElement(fileId, x, y, w, h) {
+    var now = Date.now();
+    return {
+      type: 'image', id: 'wbimg-' + now + Math.random().toString(36).slice(2, 7), fileId: fileId,
+      x: x, y: y, width: w, height: h, angle: 0,
+      strokeColor: 'transparent', backgroundColor: 'transparent', fillStyle: 'solid',
+      strokeWidth: 1, strokeStyle: 'solid', roughness: 0, opacity: 100,
+      groupIds: [], frameId: null, roundness: null, seed: Math.floor(Math.random() * 2e9),
+      version: 1, versionNonce: Math.floor(Math.random() * 2e9), isDeleted: false,
+      boundElements: null, updated: now, link: null, locked: false, status: 'saved', scale: [1, 1]
+    };
+  }
+  function insertGeneratedImage(dataUrl) {
+    try {
+      if (!excalidrawAPI || typeof excalidrawAPI.addFiles !== 'function') { aiStatus('This build can’t place images — use Diagram instead.', false); return; }
+      var fileId = 'wb-img-' + Date.now() + Math.random().toString(36).slice(2, 7);
+      var mime = (/^data:([^;,]+)/.exec(dataUrl) || [])[1] || 'image/png';
+      excalidrawAPI.addFiles([{ id: fileId, dataURL: dataUrl, mimeType: mime, created: Date.now(), lastRetrieved: Date.now() }]);
+      var st = excalidrawAPI.getAppState() || {};
+      var x = (st.scrollX != null ? -st.scrollX : 0) + 140;
+      var y = (st.scrollY != null ? -st.scrollY : 0) + 120;
+      var el = makeImageElement(fileId, x, y, 360, 360);
+      var cur = excalidrawAPI.getSceneElements() || [];
+      excalidrawAPI.updateScene({ elements: cur.concat([el]) });
+      try { excalidrawAPI.scrollToContent([el], { fitToContent: true }); } catch (_) {}
+      aiStatus('Image added ✓', true);
+    } catch (e) { console.warn('[Whiteboard] image insert failed', e); aiStatus('Could not place the image.', false); }
+  }
+  function replaceSelectedImage(dataUrl) {
+    try {
+      var sel = getSelectedImage();
+      if (!sel) { insertGeneratedImage(dataUrl); return; }
+      var fileId = 'wb-img-' + Date.now() + Math.random().toString(36).slice(2, 7);
+      var mime = (/^data:([^;,]+)/.exec(dataUrl) || [])[1] || 'image/png';
+      excalidrawAPI.addFiles([{ id: fileId, dataURL: dataUrl, mimeType: mime, created: Date.now(), lastRetrieved: Date.now() }]);
+      var cur = excalidrawAPI.getSceneElements() || [];
+      var next = cur.map(function (e) { return (e.id === sel.element.id) ? Object.assign({}, e, { fileId: fileId, version: (e.version || 1) + 1, versionNonce: Math.floor(Math.random() * 2e9), updated: Date.now() }) : e; });
+      excalidrawAPI.updateScene({ elements: next });
+      aiStatus('Image updated ✓', true);
+    } catch (e) { console.warn('[Whiteboard] image replace failed', e); aiStatus('Could not update the image.', false); }
+  }
+
+  // Boot
+  mount();
+  document.getElementById('tplSel').addEventListener('change', function (ev) { loadTemplate(ev.target.value); });
+  document.getElementById('exportBtn').addEventListener('click', exportPng);
+  var saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) {
+    if (!window.opener) {
+      saveBtn.disabled = true; saveBtn.style.opacity = '0.5'; saveBtn.style.cursor = 'not-allowed';
+      saveBtn.title = 'Open the Whiteboard from AlloFlow to save into your resources.';
+    } else {
+      saveBtn.addEventListener('click', saveToAlloFlow);
+    }
+  }
+
+  // AI assist needs the AlloFlow app (it holds the key/quota); hide it if opened standalone.
+  var aibar = document.getElementById('aibar');
+  if (aibar && !window.opener) aibar.style.display = 'none';
+  var wireAi = function (id, mode) { var b = document.getElementById(id); if (b) b.addEventListener('click', function () { aiRequest(mode); }); };
+  wireAi('aiDiagramBtn', 'diagram');
+  wireAi('aiImageBtn', 'image');
+  wireAi('aiEditImgBtn', 'edit-image');
+  var aiPromptEl = document.getElementById('aiPrompt');
+  if (aiPromptEl) aiPromptEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); aiRequest('diagram'); } });
+
+  // Inbound messages from the AlloFlow opener. Today this only completes the
+  // handshake: the opener answers our hello with an ack, so we learn its origin
+  // and target later posts precisely. AI-assist responses (image gen / edit
+  // plans) will be handled here in a later pass — the channel, the source check,
+  // and the origin capture are in place now.
+  window.addEventListener('message', function (ev) {
+    try {
+      if (!window.opener || ev.source !== window.opener) return;
+      var d = ev.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === 'allocwb-ack') { openerOrigin = ev.origin; return; }
+      if (openerOrigin && ev.origin !== openerOrigin) return;   // once learned, pin to the opener's origin
+      if (d.type === 'allocwb-ai-image' && d.requestId && aiPending[d.requestId]) {
+        var m1 = aiPending[d.requestId].mode; delete aiPending[d.requestId]; setAiBusy(false);
+        if (!d.dataUrl || String(d.dataUrl).indexOf('data:image/') !== 0) { aiStatus('The AI didn’t return an image.', false); return; }
+        if (m1 === 'edit-image') replaceSelectedImage(d.dataUrl); else insertGeneratedImage(d.dataUrl);
+        return;
+      }
+      if (d.type === 'allocwb-ai-plan' && d.requestId && aiPending[d.requestId]) {
+        delete aiPending[d.requestId]; setAiBusy(false); applyDiagram(d.plan); return;
+      }
+      if (d.type === 'allocwb-ai-error' && d.requestId && aiPending[d.requestId]) {
+        delete aiPending[d.requestId]; setAiBusy(false); aiStatus(d.message || 'AI is unavailable right now.', false); return;
+      }
+    } catch (_) {}
+  });
+
+  var hello = function () { toOpener({ type: 'allocwb-hello' }); };
+  hello(); setTimeout(hello, 900);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'allocwb-closed' }); });
+})();
+</script>
+</body>
+</html>

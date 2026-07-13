@@ -1,3 +1,7 @@
+# Async poll resource analysis memo
+
+> **Snapshot note (2026-07-09):** This memo captures a code-reading and design recommendation from an earlier pass. Verify current Live Quiz behavior, routing-rule persistence, and Firestore/teacher-tab rules before treating any file:line citation, effort estimate, or Phase 1A/1B split below as live implementation guidance.
+
 ## Memo: AsyncPollResource decision — does Live Quiz cover it?
 
 ### 1. Reframe acknowledgment

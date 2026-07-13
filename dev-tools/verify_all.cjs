@@ -94,6 +94,11 @@ const checks = [
     description: 'Undeclared identifiers in hook dep arrays of *_module.js (data/onPlayAudio/isEscaped render-crash class)',
   },
   {
+    name: 'Group-level t() calls (i18n group → React-child crash)',
+    cmd: ['node', 'dev-tools/scan_group_t_calls.cjs', '--quiet'],
+    description: 'A t("group.path") call without {returnObjects:true} returns an i18n GROUP OBJECT; rendering it crashes the whole app ("Objects are not valid as a React child") — the pdf_audit.fidelity key-collision regression (2026-06-20).',
+  },
+  {
     name: 'FERPA — discrepancyReport persistence gate',
     cmd: ['node', 'dev-tools/check_no_discrepancy_persistence.cjs'],
     description: 'discrepancyReport must NEVER appear as a property key in any object literal in report_writer_module.js (psycheck verifier state — render-only)',
@@ -139,10 +144,20 @@ const checks = [
     description: 'Every lang/*.js parses as JSON (catches corruption before deploy)',
   },
   {
+    name: 'Ctrl+K command palette i18n drift',
+    cmd: ['node', 'dev-tools/check_cmd_i18n.cjs', '--quiet'],
+    description: 'cmd_keys_en.json matches the source AND every lang pack has all cmd.*/palette.* keys — catches a new command silently regressing the palette to English-only. Fix: extract_cmd_keys.cjs then merge_cmd_keys.cjs.',
+  },
+  {
     name: 'Translation quality (i18n CI guard)',
     cmd: ['node', 'dev-tools/i18n/check_translation_quality.cjs', '--quiet'],
     description: 'Contraction stubs / compound stubs / Matter-calque / ASCII-density in non-Latin packs. Informational — promote to blocking after a future Spanglish sweep drives ascii-density to ~0.',
     informational: true,
+  },
+  {
+    name: 'Safety-string Spanglish (alerts/confirms)',
+    cmd: ['node', 'dev-tools/i18n/check_safety_string_spanglish.cjs', '--quiet'],
+    description: 'BLOCKING. Catches HALF-translated alerts.*/confirms.* (incl. destructive-action confirms) that the passthrough metric misses — the 2026-06-08 Finding-1 regression class. Source-relative + script-aware + cognate-safe; at 0 after the fix, so it only fires on a new regression.',
   },
   {
     name: 'Deploy mirror sync',
@@ -183,6 +198,12 @@ const checks = [
     informational: true,
   },
   {
+    name: 'WCAG-SC coverage doc freshness',
+    cmd: ['node', 'dev-tools/gen_wcag_coverage.cjs', '--check'],
+    description: 'The reviewer-facing docs/wcag_sc_coverage.md is generated from the live SURGICAL_TOOL_REGISTRY wcag: tags; --check exits 1 when it drifts (e.g. after adding a fix_* tool). Regenerate with `node dev-tools/gen_wcag_coverage.cjs`. Informational — a stale public honesty artifact, not a build break.',
+    informational: true,
+  },
+  {
     name: 'Help-mode coverage (data-help-key ↔ help_strings)',
     cmd: ['node', '_audit_help_keys.cjs'],
     description: 'Every data-help-key anchor must have a help_strings.js entry — a missing one means help-mode clicks silently do nothing. Backfilled to 0 missing 2026-06-12; BLOCKING so the invariant holds (the audit went stale once and hid a 73-key deficit).',
@@ -196,6 +217,11 @@ const checks = [
     name: 'PDF audit pipeline contract',
     cmd: ['node', 'dev-tools/check_pdf_pipeline.cjs', '--quiet'],
     description: '29 critical doc_pipeline functions present in source + module',
+  },
+  {
+    name: 'Pipeline + Doc-Builder vitest gate',
+    cmd: ['node', 'dev-tools/check_pipeline_tests.cjs', '--quiet'],
+    description: 'Runs the remediation-pipeline + Document-Builder + scoring + security vitest suites (~137 files, ~28s) as a BLOCKING gate. Closes the "green-when-run yet ships" gap the 2026-06-21 reports flagged: the ~230 vitest files were excluded from verify_all, so a phase regression could deploy unnoticed (acute with concurrent multi-session edits on one tree). Allowlist by domain keyword — deliberately EXCLUDES the volatile STEM/SEL/lang/lab/game suites owned by other tracks (so their transient golden churn can never block a pipeline deploy). Skips cleanly if vitest is not installed.',
   },
   {
     name: 'LTI 1.3 surface',

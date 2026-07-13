@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-energy-and-minerals-card",
+  "title": "USGS Energy and Minerals",
+  "description": "A USGS source card about energy resources, minerals, mapping, and resource decisions.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Energy",
+    "Minerals",
+    "Geology",
+    "Resource use"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/mission-areas/energy-and-minerals",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/mission-areas/energy-and-minerals"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS energy and minerals resources connect geologic information with energy systems, critical minerals, land use, and national resource questions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students comparing tradeoffs among technology, energy, environment, economy, and policy."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked media may have separate credit or rights requirements. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

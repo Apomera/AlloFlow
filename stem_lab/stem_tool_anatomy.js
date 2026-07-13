@@ -38,6 +38,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (document.getElementById('allo-anatomy-refinement-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-anatomy-refinement-css';
+    st.textContent = [
+      '.anatomy-tool-shell{--anatomy-accent:#be185d;--anatomy-soft:#fce7f3;color:#0f172a;}',
+      '.anatomy-topbar{padding:4px 0;}',
+      '.anatomy-mission{position:relative;overflow:hidden;border-radius:8px;border:1px solid rgba(15,23,42,.12);background:linear-gradient(135deg,#fff 0%,#f8fafc 48%,#ecfeff 100%);box-shadow:0 16px 34px rgba(15,23,42,.08);}',
+      '.anatomy-mission:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--anatomy-accent),#0f766e,#f59e0b);}',
+      '.anatomy-mission-inner{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.9fr);gap:14px;padding:18px;}',
+      '.anatomy-kicker{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#64748b;}',
+      '.anatomy-mission-title{font-size:22px;line-height:1.08;font-weight:950;color:#0f172a;margin:3px 0 7px;}',
+      '.anatomy-mission-text{font-size:12px;line-height:1.55;color:#475569;max-width:760px;}',
+      '.anatomy-mission-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}',
+      '.anatomy-mission-actions button{border-radius:8px;}',
+      '.anatomy-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}',
+      '.anatomy-metric{border-radius:8px;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.82);padding:9px 10px;box-shadow:0 1px 0 rgba(255,255,255,.9) inset;}',
+      '.anatomy-metric strong{display:block;font-size:18px;line-height:1;font-weight:950;color:#0f172a;}',
+      '.anatomy-metric span{display:block;margin-top:4px;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;}',
+      '.anatomy-challenge-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}',
+      '.anatomy-challenge-chip{height:26px;min-width:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid rgba(245,158,11,.32);background:#fff7ed;font-size:14px;}',
+      '.anatomy-challenge-chip[data-done="false"]{opacity:.32;filter:grayscale(1);background:#f8fafc;border-color:#e2e8f0;}',
+      '.anatomy-tab-strip,.anatomy-system-rail,.anatomy-layer-bar,.anatomy-controls-bar{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:rgba(248,250,252,.86);padding:8px;}',
+      '.anatomy-tab-strip{position:sticky;top:0;z-index:3;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
+      '.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button{border-radius:8px;}',
+      '.anatomy-system-rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:7px;}',
+      '.anatomy-mode-card{border-radius:8px!important;box-shadow:0 8px 18px rgba(15,23,42,.05);}',
+      '.anatomy-progress-row{border-radius:8px;border:1px solid rgba(15,23,42,.09);background:#fff;padding:8px 10px;}',
+      '.anatomy-workspace{display:grid;grid-template-columns:minmax(310px,392px) minmax(0,1fr);gap:18px;align-items:start;}',
+      '.anatomy-body-shell{position:sticky;top:58px;border-radius:8px;border:1px solid rgba(15,23,42,.12);background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:12px;box-shadow:0 18px 34px rgba(15,23,42,.10);}',
+      '.anatomy-body-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}',
+      '.anatomy-body-header strong{font-size:12px;font-weight:950;color:#0f172a;}',
+      '.anatomy-body-header span{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;}',
+      '.anatomy-canvas{display:block;margin:0 auto;width:min(360px,100%)!important;height:auto!important;border-radius:8px!important;}',
+      '.anatomy-side-panel{min-width:0;}',
+      '.anatomy-structure-panel{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:#fff;padding:12px;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
+      '.anatomy-structure-list{max-height:520px;overflow-y:auto;padding-right:4px;}',
+      '.anatomy-structure-list button{border-radius:8px;}',
+      '.anatomy-badge-panel,.anatomy-stats-panel{border-radius:8px!important;}',
+      '@media (max-width:900px){.anatomy-mission-inner{grid-template-columns:1fr}.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{position:relative;top:auto}.anatomy-tab-strip{position:relative}}',
+      '@media (max-width:560px){.anatomy-mission-inner{padding:14px}.anatomy-mission-title{font-size:18px}.anatomy-metric-grid{grid-template-columns:1fr 1fr}.anatomy-system-rail{grid-template-columns:1fr 1fr}.anatomy-tab-strip{overflow-x:auto;flex-wrap:nowrap!important}.anatomy-tab-strip button{white-space:nowrap}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
@@ -170,7 +215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     { id: 'structureScholar', name: 'Structure Scholar', desc: 'View 50 different structures', icon: '\uD83D\uDCDA', xp: 25 },
     { id: 'tourComplete', name: 'Tour Guide', desc: 'Complete a guided tour', icon: '\uD83D\uDEB6', xp: 20 },
     { id: 'connectionExplorer', name: 'Systems Thinker', desc: 'Explore 5 system connections', icon: '\uD83D\uDD17', xp: 20 },
-    { id: 'clinicalExpert', name: 'Clinical Expert', desc: 'Solve 3 clinical cases', icon: '\uD83E\uDE7A', xp: 25 },
+    { id: 'clinicalExpert', name: 'Clinical Reviewer', desc: 'Review 3 clinical cases', icon: '\uD83E\uDE7A', xp: 25 },
     { id: 'mnemonicLearner', name: 'Memory Master', desc: 'View 5 mnemonics', icon: '\uD83E\uDDE0', xp: 15 },
     { id: 'pathwayTracer', name: 'Pathway Tracer', desc: 'Complete 2 pathways', icon: '\uD83D\uDEE4', xp: 20 },
     { id: 'spotterPro', name: 'Spotter Pro', desc: 'Identify 5 in spotter test', icon: '\uD83C\uDFAF', xp: 25 },
@@ -193,17 +238,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
   // ═══ Register tool ═══
   window.StemLab.registerTool('anatomy', {
     icon: '\uD83E\uDEC0',
-    label: 'anatomy',
+    label: "Human Anatomy Explorer",
     desc: 'Explore 10 body systems with layered anatomical visualization',
     color: 'slate',
     category: 'science',
     questHooks: [
-      { id: 'explore_3_systems', label: 'Explore 3 different body systems', icon: '\uD83E\uDEC0', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/3 systems'; } },
-      { id: 'explore_all_systems', label: 'Explore all body systems', icon: '\uD83C\uDFC6', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 8; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/8 systems'; } },
-      { id: 'complete_tour', label: 'Complete a guided anatomy tour', icon: '\uD83D\uDCDA', check: function(d) { return (d._tourComplete || false); }, progress: function(d) { return d._tourComplete ? 'Done!' : 'Not yet'; } },
+      { id: 'explore_3_systems', label: 'Explore 3 different body systems', icon: '\uD83E\uDEC0', check: function(d) { return Object.keys(d._systemsExplored || {}).length >= 3; }, progress: function(d) { return Object.keys(d._systemsExplored || {}).length + '/3 systems'; } },
+      { id: 'explore_all_systems', label: 'Explore all body systems', icon: '\uD83C\uDFC6', check: function(d) { return Object.keys(d._systemsExplored || {}).length >= 10; }, progress: function(d) { return Object.keys(d._systemsExplored || {}).length + '/10 systems'; } },
+      { id: 'complete_tour', label: 'Complete a guided anatomy tour', icon: '\uD83D\uDCDA', check: function(d) { return (d._tourCompleted|| false); }, progress: function(d) { return d._tourCompleted? 'Done!' : 'Not yet'; } },
       { id: 'toggle_layers', label: 'Use the layer toggle to reveal internal structures', icon: '\uD83D\uDD2C', check: function(d) { var l = d.visibleLayers || {}; return Object.keys(l).length >= 2; }, progress: function(d) { return Object.keys(d.visibleLayers || {}).length >= 2 ? 'Explored!' : 'Toggle layers'; } }
     ],
     render: function(ctx) {
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -265,14 +312,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Active tab ──
         var activeTab = d._activeTab || 'explore';
+        var anatomyTabOrder = ['explore', 'tour', 'connections', 'aiTutor', 'spotter', 'pathways', 'flashcards', 'homeoHunt'];
+        function activateAnatomyTab(tab) {
+          upd('_activeTab', tab);
+          if (tab === 'tour' && !tourActive) {
+            upd('_tourActive', true);
+            upd('_tourStepIdx', 0);
+          }
+        }
+        function handleAnatomyTabKey(event) {
+          if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) === -1) return;
+          event.preventDefault();
+          var current = Math.max(0, anatomyTabOrder.indexOf(activeTab));
+          var next = event.key === 'Home' ? 0 : event.key === 'End' ? anatomyTabOrder.length - 1 :
+            (current + (event.key === 'ArrowRight' ? 1 : -1) + anatomyTabOrder.length) % anatomyTabOrder.length;
+          activateAnatomyTab(anatomyTabOrder[next]);
+          var tabButtons = event.currentTarget.querySelectorAll('[role="tab"]');
+          if (tabButtons[next]) setTimeout(function() { tabButtons[next].focus(); }, 0);
+        }
 
         var ANAT_CHALLENGES = [
-          { id: 'explore_systems', name: 'System Explorer', desc: 'Explore 3 different body systems', icon: '🫁', rp: 15, check: function() { return Object.keys(d.systemsViewed || {}).length >= 3; } },
-          { id: 'spotter_3', name: 'Spotter Pro', desc: 'Identify 3 structures in the Spotter Test', icon: '🎯', rp: 20, check: function() { return (d._spotterScore || 0) >= 3; } },
-          { id: 'cases_solved', name: 'Clinical Intern', desc: 'Solve 2 clinical cases', icon: '🥼', rp: 25, check: function() { return (d._clinicalSolved || 0) >= 2; } },
-          { id: 'pathways_traced', name: 'Pathway Explorer', desc: 'Complete 2 physiological pathways', icon: '🛣️', rp: 20, check: function() { return Object.keys(d._pathwaysCompleted || {}).length >= 2; } },
-          { id: 'mnemonics_viewed', name: 'Memory Master', desc: 'Unlock 3 anatomical mnemonics', icon: '🧠', rp: 15, check: function() { return Object.keys(d._mnemonicsViewed || {}).length >= 3; } },
-          { id: 'compare_structures', name: 'Comparative Anatomist', desc: 'Compare 3 pairs of structures', icon: '⚖️', rp: 15, check: function() { return (d._comparisons || 0) >= 3; } }
+          { id: 'explore_systems', name: t('stem.anatomy.system_explorer', 'System Explorer'), desc: t('stem.anatomy.explore_3_different_body_systems', 'Explore 3 different body systems'), icon: '🫁', rp: 15, check: function() { return Object.keys(d._systemsExplored || {}).length >= 3; } },
+          { id: 'spotter_3', name: t('stem.anatomy.spotter_pro', 'Spotter Pro'), desc: t('stem.anatomy.identify_3_structures_in_the_spotter_t', 'Identify 3 structures in the Spotter Test'), icon: '🎯', rp: 20, check: function() { return (d._spotterScore || 0) >= 3; } },
+          { id: 'cases_solved', name: t('stem.anatomy.clinical_intern', 'Clinical Reviewer'), desc: t('stem.anatomy.solve_2_clinical_cases', 'Review 2 clinical cases'), icon: '🥼', rp: 25, check: function() { return (d._clinicalSolved || 0) >= 2; } },
+          { id: 'pathways_traced', name: t('stem.anatomy.pathway_explorer', 'Pathway Explorer'), desc: t('stem.anatomy.complete_2_physiological_pathways', 'Complete 2 physiological pathways'), icon: '🛣️', rp: 20, check: function() { return Object.keys(d._pathwaysCompleted || {}).length >= 2; } },
+          { id: 'mnemonics_viewed', name: t('stem.anatomy.memory_master', 'Memory Master'), desc: t('stem.anatomy.unlock_3_anatomical_mnemonics', 'Unlock 3 anatomical mnemonics'), icon: '🧠', rp: 15, check: function() { return Object.keys(d._mnemonicsViewed || {}).length >= 3; } },
+          { id: 'compare_structures', name: t('stem.anatomy.comparative_anatomist', 'Comparative Anatomist'), desc: t('stem.anatomy.compare_3_pairs_of_structures', 'Compare 3 pairs of structures'), icon: '⚖️', rp: 15, check: function() { return (d._comparisons || 0) >= 3; } }
         ];
 
         var ANAT_VOCAB = {
@@ -322,8 +387,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var name = anatCh ? anatCh.name : 'a challenge';
                 addToast({
                   type: 'success',
-                  title: 'Challenge Complete!',
-                  message: 'Unlocked: ' + name + ' (+20 RP)'
+                  title: t('stem.anatomy.challenge_complete', 'Challenge Complete!'),
+                  message: 'Unlocked: ' + name + ' (+' + (anatCh ? anatCh.rp : 0) + ' RP)'
                 });
               }
             }
@@ -340,214 +405,214 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var SYSTEMS = {
 
           skeletal: {
-            name: 'Skeletal', icon: '\uD83E\uDDB4', color: '#fef3c7', accent: '#b45309',
-            desc: '206 bones \u2014 support, protection, movement, mineral storage, hematopoiesis.',
+            name: t('stem.anatomy.skeletal', 'Skeletal'), icon: '\uD83E\uDDB4', color: '#fef3c7', accent: '#b45309',
+            desc: t('stem.anatomy.206_bones_support_protection_movement_', '206 bones \u2014 support, protection, movement, mineral storage, hematopoiesis.'),
             structures: [
-              { id: 'skull', name: 'Skull (Cranium)', x: 0.50, y: 0.06, v: 'b', fn: 'Protects the brain. 22 fused bones form the cranial vault (frontal, parietal\u00D72, temporal\u00D72, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).', clinical: 'Fractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and birth canal passage.', detail: 'Houses meninges, brain, and cranial nerve foramina. Sutures (coronal, sagittal, lambdoid) fuse by age 2.' },
-              { id: 'mandible', name: 'Mandible', x: 0.50, y: 0.10, v: 'a', fn: 'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical: 'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
-              { id: 'clavicle', name: 'Clavicle', x: 0.40, y: 0.155, v: 'a', fn: 'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical: 'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
-              { id: 'sternum', name: 'Sternum', x: 0.50, y: 0.22, v: 'a', fn: 'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical: 'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
-              { id: 'ribs', name: 'Ribs (1-12)', x: 0.58, y: 0.25, v: 'b', fn: '12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical: 'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
-              { id: 'scapula', name: 'Scapula', x: 0.38, y: 0.22, v: 'p', fn: 'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical: 'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
-              { id: 'humerus', name: 'Humerus', x: 0.26, y: 0.27, v: 'a', fn: 'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical: 'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.' },
-              { id: 'radius', name: 'Radius', x: 0.21, y: 0.36, v: 'a', fn: 'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical: 'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
-              { id: 'ulna', name: 'Ulna', x: 0.24, y: 0.36, v: 'a', fn: 'Medial forearm bone. Olecranon forms elbow point. Trochlear notch articulates with humerus for hinge motion.', clinical: 'Olecranon fractures from direct trauma. Monteggia fracture: proximal ulna + radial head dislocation.' },
-              { id: 'carpals', name: 'Carpals', x: 0.17, y: 0.44, v: 'a', fn: '8 small bones in 2 rows: scaphoid, lunate, triquetrum, pisiform (proximal); trapezium, trapezoid, capitate, hamate (distal).', clinical: 'Scaphoid fracture: anatomical snuffbox tenderness. Avascular necrosis risk due to retrograde blood supply.' },
-              { id: 'vertebral', name: 'Vertebral Column', x: 0.50, y: 0.30, v: 'p', fn: '33 vertebrae: 7 cervical, 12 thoracic, 5 lumbar, 5 sacral (fused), 4 coccygeal (fused). Protects spinal cord. Four curves provide spring-like shock absorption.', clinical: 'Herniated disc (L4\u2013L5, L5\u2013S1 most common). Scoliosis, kyphosis, lordosis. Spinal stenosis.' },
-              { id: 'pelvis', name: 'Pelvis', x: 0.50, y: 0.42, v: 'b', fn: 'Ilium, ischium, pubis fused at acetabulum. Transfers weight from spine to lower limbs. Male pelvis narrower; female pelvis wider for childbirth.', clinical: 'Pelvic fractures \u2192 life-threatening hemorrhage from internal iliac vessels. Acetabular fractures require surgical fixation.' },
-              { id: 'femur', name: 'Femur', x: 0.42, y: 0.57, v: 'a', fn: 'Longest, strongest bone. Head fits into acetabulum. Neck angled 125\u00B0. Supports 2\u20133\u00D7 body weight during walking.', clinical: 'Hip fractures in elderly have 20\u201330% one-year mortality. Femoral neck fractures may disrupt blood supply \u2192 avascular necrosis.' },
-              { id: 'patella', name: 'Patella', x: 0.43, y: 0.66, v: 'a', fn: 'Largest sesamoid bone. Embedded in quadriceps tendon. Increases mechanical advantage of quadriceps by 30%.', clinical: 'Patellar fracture from direct trauma or forceful quad contraction. Patellofemoral syndrome ("runner\'s knee").' },
-              { id: 'tibia', name: 'Tibia', x: 0.42, y: 0.76, v: 'a', fn: 'Main weight-bearing bone of the leg. Medial malleolus forms inner ankle. Tibial plateau articulates with femoral condyles.', clinical: 'Tibial plateau fractures from axial loading. Open fractures common (subcutaneous anterior surface). Compartment syndrome risk.' },
-              { id: 'fibula', name: 'Fibula', x: 0.46, y: 0.76, v: 'a', fn: 'Non-weight-bearing lateral leg bone. Lateral malleolus forms outer ankle. Attachment for interosseous membrane and lateral compartment muscles.', clinical: 'Lateral malleolus fractures in ankle sprains. Maisonneuve fracture: proximal fibula + medial ankle injury.' },
-              { id: 'tarsals', name: 'Tarsals', x: 0.42, y: 0.89, v: 'a', fn: '7 bones: talus, calcaneus, navicular, cuboid, 3 cuneiforms. Form longitudinal and transverse foot arches for shock absorption.', clinical: 'Calcaneal fractures from axial loading (falls from height). Talus fractures risk avascular necrosis.' },
-              { id: 'sacrum', name: 'Sacrum & Coccyx', x: 0.50, y: 0.44, v: 'p', fn: 'Sacrum: 5 fused vertebrae forming posterior pelvis. Sacral canal contains cauda equina. Coccyx: vestigial tail bone.', clinical: 'Sacral fractures in high-energy trauma. Coccydynia (tailbone pain) from falls or prolonged sitting.' },
-              { id: 'hyoid', name: 'Hyoid Bone', x: 0.50, y: 0.12, v: 'a', fn: 'U-shaped bone at C3 level. Only bone not articulating with another bone \u2014 suspended by muscles and ligaments. Anchors tongue and aids swallowing and speech. Greater and lesser horns (cornua).', clinical: 'Hyoid fracture strongly associated with strangulation (forensic significance). Important in swallowing disorders (dysphagia evaluation). Attachment for suprahyoid and infrahyoid muscles.' },
-              { id: 'atlas_axis', name: 'Atlas (C1) & Axis (C2)', x: 0.50, y: 0.08, v: 'p', fn: 'Atlas (C1): ring-shaped, no body or spinous process. Supports skull, allows nodding (yes). Axis (C2): has odontoid process (dens) that acts as pivot. Atlas rotates around dens for head rotation (no). Transverse ligament holds dens against atlas.', clinical: 'Jefferson fracture (C1 burst from axial loading). Hangman fracture (C2 pedicle bilateral fracture). Atlantoaxial subluxation in rheumatoid arthritis and Down syndrome. Odontoid fractures in elderly falls.' },
-              { id: 'metatarsals', name: 'Metatarsals & Phalanges (Foot)', x: 0.44, y: 0.94, v: 'a', fn: '5 metatarsals form forefoot, 14 phalanges (great toe has 2, others have 3). First metatarsal bears most weight during push-off. Metatarsal heads form "ball of foot." Sesamoid bones under 1st metatarsal head.', clinical: 'Jones fracture (5th metatarsal base): poor healing due to watershed blood supply. Stress fractures in runners (2nd/3rd metatarsal). Morton neuroma: interdigital nerve compression. Hallux valgus (bunion).' },
-              { id: 'metacarpals', name: 'Metacarpals & Phalanges (Hand)', x: 0.15, y: 0.48, v: 'a', fn: '5 metacarpals and 14 phalanges. Thumb (1st metacarpal) has saddle joint at CMC for opposition \u2014 unique to primates. Each finger has 3 phalanges (proximal, middle, distal) except thumb (2). Extensor mechanism on dorsum.', clinical: 'Boxer fracture (5th metacarpal neck). Bennett fracture (1st metacarpal base). Mallet finger (extensor tendon avulsion at DIP). Jersey finger (FDP avulsion). Dupuytren contracture: palmar fascia thickening.' },
-              { id: 'scaphoid_bone', name: 'Scaphoid Bone', x: 0.18, y: 0.45, v: 'a', fn: 'Largest carpal bone in proximal row. Crosses both carpal rows, making it vulnerable to fracture. Blood supply enters distally (retrograde) \u2014 fractures may disrupt blood flow to proximal pole. Palpable in anatomical snuffbox.', clinical: 'Most commonly fractured carpal bone (FOOSH mechanism). Anatomical snuffbox tenderness is key exam finding. Risk of avascular necrosis of proximal pole (retrograde blood supply). Often missed on initial X-ray \u2014 requires repeat imaging or MRI.' }
+              { id: 'skull', name: t('stem.anatomy.skull_cranium', 'Skull (Cranium)'), x: 0.50, y: 0.06, v: 'b', fn: 'Protects the brain. 22 bones form the cranial vault (frontal, parietal\u00D72, temporal\u00D72, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).', clinical: 'Fractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and molding during birth.', clinicalKid: 'Your skull is a strong helmet of bone that wraps around your brain and keeps it safe. It is made of many bones that grow together as you get bigger. Wearing a helmet when you bike or skate helps protect your skull, and a doctor can check it to make sure it is healthy.', detail: t('stem.anatomy.houses_meninges_brain_and_cranial_nerv', 'Houses meninges, brain, and cranial nerve foramina. Fontanelles close during infancy and early childhood; major cranial sutures normally remain into adulthood and fuse much later, if at all.') },
+              { id: 'mandible', name: t('stem.anatomy.mandible', 'Mandible'), x: 0.50, y: 0.10, v: 'a', fn: 'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical: 'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
+              { id: 'clavicle', name: t('stem.anatomy.clavicle', 'Clavicle'), x: 0.40, y: 0.155, v: 'a', fn: 'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical: 'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
+              { id: 'sternum', name: t('stem.anatomy.sternum', 'Sternum'), x: 0.50, y: 0.22, v: 'a', fn: 'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical: 'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
+              { id: 'ribs', name: t('stem.anatomy.ribs_1_12', 'Ribs (1-12)'), x: 0.58, y: 0.25, v: 'b', fn: '12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical: 'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.', clinicalKid: 'Your ribs are curved bones that make a strong cage around your chest to keep your heart and lungs safe. They also move a little to help you breathe in and out. Drinking milk, eating healthy food, and staying active help your bones grow strong.' },
+              { id: 'scapula', name: t('stem.anatomy.scapula', 'Scapula'), x: 0.38, y: 0.22, v: 'p', fn: 'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical: 'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
+              { id: 'humerus', name: t('stem.anatomy.humerus', 'Humerus'), x: 0.26, y: 0.27, v: 'a', fn: 'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical: 'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.', clinicalKid: 'Your humerus is the long bone in your upper arm that connects your shoulder to your elbow. It helps you reach, throw, and lift things every day. Drinking milk, eating healthy food, and staying active help your bones grow strong, and a doctor can check them with an X-ray.' },
+              { id: 'radius', name: t('stem.anatomy.radius', 'Radius'), x: 0.21, y: 0.36, v: 'a', fn: 'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical: 'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
+              { id: 'ulna', name: t('stem.anatomy.ulna', 'Ulna'), x: 0.24, y: 0.36, v: 'a', fn: 'Medial forearm bone. Olecranon forms elbow point. Trochlear notch articulates with humerus for hinge motion.', clinical: 'Olecranon fractures from direct trauma. Monteggia fracture: proximal ulna + radial head dislocation.' },
+              { id: 'carpals', name: t('stem.anatomy.carpals', 'Carpals'), x: 0.17, y: 0.44, v: 'a', fn: '8 small bones in 2 rows: scaphoid, lunate, triquetrum, pisiform (proximal); trapezium, trapezoid, capitate, hamate (distal).', clinical: 'Scaphoid fracture: anatomical snuffbox tenderness. Avascular necrosis risk due to retrograde blood supply.' },
+              { id: 'vertebral', name: t('stem.anatomy.vertebral_column', 'Vertebral Column'), x: 0.50, y: 0.30, v: 'p', fn: '33 vertebrae: 7 cervical, 12 thoracic, 5 lumbar, 5 sacral (fused), 4 coccygeal (fused). Protects spinal cord. Four curves provide spring-like shock absorption.', clinical: 'Herniated disc (L4\u2013L5, L5\u2013S1 most common). Scoliosis, kyphosis, lordosis. Spinal stenosis.', clinicalKid: 'Your spine is a stack of small bones that holds you up straight and lets you bend and twist. Its gentle curves work like a spring so it can soak up bumps when you run and jump, and it keeps the bundle of nerves inside it safe. Sitting up tall, staying active, and lifting heavy things with care help keep it strong.' },
+              { id: 'pelvis', name: t('stem.anatomy.pelvis', 'Pelvis'), x: 0.50, y: 0.42, v: 'b', fn: 'Ilium, ischium, pubis fused at acetabulum. Transfers weight from spine to lower limbs. Male pelvis narrower; female pelvis wider for childbirth.', clinical: 'Pelvic fractures \u2192 life-threatening hemorrhage from internal iliac vessels. Acetabular fractures require surgical fixation.', clinicalKid: 'Your pelvis is a strong bowl of bones at the bottom of your spine that holds your body up and connects to your legs. It helps you stand, walk, run, and sit down. Eating healthy foods and staying active help keep your bones strong.' },
+              { id: 'femur', name: t('stem.anatomy.femur', 'Femur'), x: 0.42, y: 0.57, v: 'a', fn: 'Longest, strongest bone. Head fits into acetabulum. Neck angled 125\u00B0. Supports 2\u20133\u00D7 body weight during walking.', clinical: 'Hip fractures in elderly have 20\u201330% one-year mortality. Femoral neck fractures may disrupt blood supply \u2192 avascular necrosis.', clinicalKid: 'Your femur is the longest and strongest bone in your body, and it sits in your thigh between your hip and your knee. It is so strong that it can hold up your whole body when you walk, run, and jump. Drinking milk, eating healthy food, and playing outside help keep your bones strong.' },
+              { id: 'patella', name: t('stem.anatomy.patella', 'Patella'), x: 0.43, y: 0.66, v: 'a', fn: 'Largest sesamoid bone. Embedded in quadriceps tendon. Increases mechanical advantage of quadriceps by 30%.', clinical: 'Patellar fracture from direct trauma or forceful quad contraction. Patellofemoral syndrome ("runner\'s knee").' },
+              { id: 'tibia', name: t('stem.anatomy.tibia', 'Tibia'), x: 0.42, y: 0.76, v: 'a', fn: 'Main weight-bearing bone of the leg. Medial malleolus forms inner ankle. Tibial plateau articulates with femoral condyles.', clinical: 'Tibial plateau fractures from axial loading. Open fractures common (subcutaneous anterior surface). Compartment syndrome risk.' },
+              { id: 'fibula', name: t('stem.anatomy.fibula', 'Fibula'), x: 0.46, y: 0.76, v: 'a', fn: 'Non-weight-bearing lateral leg bone. Lateral malleolus forms outer ankle. Attachment for interosseous membrane and lateral compartment muscles.', clinical: 'Lateral malleolus fractures in ankle sprains. Maisonneuve fracture: proximal fibula + medial ankle injury.' },
+              { id: 'tarsals', name: t('stem.anatomy.tarsals', 'Tarsals'), x: 0.42, y: 0.89, v: 'a', fn: '7 bones: talus, calcaneus, navicular, cuboid, 3 cuneiforms. Form longitudinal and transverse foot arches for shock absorption.', clinical: 'Calcaneal fractures from axial loading (falls from height). Talus fractures risk avascular necrosis.' },
+              { id: 'sacrum', name: t('stem.anatomy.sacrum_coccyx', 'Sacrum & Coccyx'), x: 0.50, y: 0.44, v: 'p', fn: 'Sacrum: 5 fused vertebrae forming posterior pelvis. Sacral canal contains cauda equina. Coccyx: vestigial tail bone.', clinical: 'Sacral fractures in high-energy trauma. Coccydynia (tailbone pain) from falls or prolonged sitting.' },
+              { id: 'hyoid', name: t('stem.anatomy.hyoid_bone', 'Hyoid Bone'), x: 0.50, y: 0.12, v: 'a', fn: 'U-shaped bone at C3 level. Only bone not articulating with another bone \u2014 suspended by muscles and ligaments. Anchors tongue and aids swallowing and speech. Greater and lesser horns (cornua).', clinical: 'Hyoid fracture strongly associated with strangulation (forensic significance). Important in swallowing disorders (dysphagia evaluation). Attachment for suprahyoid and infrahyoid muscles.' },
+              { id: 'atlas_axis', name: t('stem.anatomy.atlas_c1_axis_c2', 'Atlas (C1) & Axis (C2)'), x: 0.50, y: 0.08, v: 'p', fn: 'Atlas (C1): ring-shaped, no body or spinous process. Supports skull, allows nodding (yes). Axis (C2): has odontoid process (dens) that acts as pivot. Atlas rotates around dens for head rotation (no). Transverse ligament holds dens against atlas.', clinical: 'Jefferson fracture (C1 burst from axial loading). Hangman fracture (C2 pedicle bilateral fracture). Atlantoaxial subluxation in rheumatoid arthritis and Down syndrome. Odontoid fractures in elderly falls.' },
+              { id: 'metatarsals', name: t('stem.anatomy.metatarsals_phalanges_foot', 'Metatarsals & Phalanges (Foot)'), x: 0.44, y: 0.94, v: 'a', fn: '5 metatarsals form forefoot, 14 phalanges (great toe has 2, others have 3). First metatarsal bears most weight during push-off. Metatarsal heads form "ball of foot." Sesamoid bones under 1st metatarsal head.', clinical: 'Jones fracture (5th metatarsal base): poor healing due to watershed blood supply. Stress fractures in runners (2nd/3rd metatarsal). Morton neuroma: interdigital nerve compression. Hallux valgus (bunion).' },
+              { id: 'metacarpals', name: t('stem.anatomy.metacarpals_phalanges_hand', 'Metacarpals & Phalanges (Hand)'), x: 0.15, y: 0.48, v: 'a', fn: '5 metacarpals and 14 phalanges. Thumb (1st metacarpal) has saddle joint at CMC for opposition \u2014 unique to primates. Each finger has 3 phalanges (proximal, middle, distal) except thumb (2). Extensor mechanism on dorsum.', clinical: 'Boxer fracture (5th metacarpal neck). Bennett fracture (1st metacarpal base). Mallet finger (extensor tendon avulsion at DIP). Jersey finger (FDP avulsion). Dupuytren contracture: palmar fascia thickening.' },
+              { id: 'scaphoid_bone', name: t('stem.anatomy.scaphoid_bone', 'Scaphoid Bone'), x: 0.18, y: 0.45, v: 'a', fn: 'Largest carpal bone in proximal row. Crosses both carpal rows, making it vulnerable to fracture. Blood supply enters distally (retrograde) \u2014 fractures may disrupt blood flow to proximal pole. Palpable in anatomical snuffbox.', clinical: 'Most commonly fractured carpal bone (FOOSH mechanism). Anatomical snuffbox tenderness is key exam finding. Risk of avascular necrosis of proximal pole (retrograde blood supply). Often missed on initial X-ray \u2014 requires repeat imaging or MRI.' }
             ]
           },
 
           muscular: {
-            name: 'Muscular', icon: '\uD83D\uDCAA', color: '#fce7f3', accent: '#be185d',
-            desc: '600+ muscles \u2014 movement, posture, heat production, joint stabilization.',
+            name: t('stem.anatomy.muscular', 'Muscular'), icon: '\uD83D\uDCAA', color: '#fce7f3', accent: '#be185d',
+            desc: t('stem.anatomy.600_muscles_movement_posture_heat_prod', '600+ muscles \u2014 movement, posture, heat production, joint stabilization.'),
             structures: [
-              { id: 'deltoid', name: 'Deltoid', x: 0.30, y: 0.18, v: 'a', fn: 'Primary shoulder abductor (middle fibers). Anterior fibers flex/medially rotate; posterior fibers extend/laterally rotate the arm.', origin: 'Lateral third of clavicle, acromion, scapular spine', insertion: 'Deltoid tuberosity of humerus', clinical: 'Atrophy from axillary nerve injury (C5\u2013C6). IM injection site (avoid in children < 3 yrs).' },
-              { id: 'pectoralis', name: 'Pectoralis Major', x: 0.42, y: 0.22, v: 'a', fn: 'Powerful arm adductor, flexor, and medial rotator. Clavicular head flexes; sternocostal head adducts and extends from flexed position.', origin: 'Clavicle, sternum, ribs 1\u20136, external oblique aponeurosis', insertion: 'Lateral lip of bicipital groove (humerus)', clinical: 'Rupture during bench press \u2014 "dropped pec" sign. Poland syndrome: congenital absence.' },
-              { id: 'biceps', name: 'Biceps Brachii', x: 0.24, y: 0.29, v: 'a', fn: 'Powerful forearm supinator and elbow flexor. Long head stabilizes shoulder joint. Short head assists shoulder flexion.', origin: 'Short head: coracoid process; Long head: supraglenoid tubercle', insertion: 'Radial tuberosity and bicipital aponeurosis', clinical: 'Long head tendon rupture \u2192 "Popeye deformity." Biceps reflex tests C5\u2013C6 nerve roots.' },
-              { id: 'triceps', name: 'Triceps Brachii', x: 0.73, y: 0.29, v: 'p', fn: 'Only elbow extensor. Three heads: long (crosses shoulder), lateral, and medial. Essential for pushing movements.', origin: 'Long: infraglenoid tubercle; Lateral/medial: posterior humerus', insertion: 'Olecranon process of ulna', clinical: 'Weakness in radial nerve palsy (C7 root). Triceps reflex tests C7\u2013C8 nerve roots.' },
-              { id: 'rectus_ab', name: 'Rectus Abdominis', x: 0.50, y: 0.34, v: 'a', fn: 'Flexes trunk (sit-ups/crunches). Compresses abdominal contents. Assists forced expiration and stabilizes pelvis during walking.', origin: 'Pubic crest and symphysis', insertion: 'Xiphoid process, costal cartilages 5\u20137', clinical: 'Diastasis recti: midline separation (common in pregnancy). "Six-pack" \u2014 tendinous intersections create segmented appearance.' },
-              { id: 'obliques', name: 'External Obliques', x: 0.58, y: 0.34, v: 'a', fn: 'Trunk rotation (contralateral), lateral flexion, and abdominal compression. Largest and most superficial abdominal muscle.', origin: 'External surfaces of ribs 5\u201312', insertion: 'Linea alba, pubic tubercle, iliac crest', clinical: 'Strains from twisting sports. Inguinal ligament (lower border) is key landmark for hernia surgery.' },
-              { id: 'quads', name: 'Quadriceps Femoris', x: 0.42, y: 0.55, v: 'a', fn: 'Four muscles (rectus femoris, vastus lateralis/medialis/intermedius). Primary knee extensor. Rectus femoris also flexes hip.', origin: 'Rectus femoris: AIIS; Vasti: femoral shaft', insertion: 'Tibial tuberosity via patellar tendon', clinical: 'Quadriceps tendon/patellar tendon rupture. VMO weakness \u2192 patellofemoral tracking issues.' },
-              { id: 'hamstrings', name: 'Hamstrings', x: 0.58, y: 0.58, v: 'p', fn: 'Three muscles (biceps femoris, semitendinosus, semimembranosus). Flex knee and extend hip. Critical for deceleration in running.', origin: 'Ischial tuberosity (all three); biceps femoris short head: linea aspera', insertion: 'Biceps: fibular head; Semi-T: pes anserinus; Semi-M: posterior medial tibial condyle', clinical: '"Pulled hamstring" \u2014 most common muscle strain in athletes. Proximal avulsion in sprinters.' },
-              { id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.58, y: 0.74, v: 'p', fn: 'Superficial calf muscle. Powerful plantar flexor (push-off in gait) and weak knee flexor. Two heads span the knee joint.', origin: 'Medial and lateral femoral condyles', insertion: 'Calcaneus via Achilles tendon', clinical: 'Achilles tendon rupture (positive Thompson test). "Tennis leg" \u2014 medial head tear.' },
-              { id: 'trapezius', name: 'Trapezius', x: 0.50, y: 0.20, v: 'p', fn: 'Large diamond-shaped muscle. Upper fibers elevate scapula (shrug); middle fibers retract; lower fibers depress and rotate scapula upward.', origin: 'External occipital protuberance, nuchal ligament, C7\u2013T12 spinous processes', insertion: 'Lateral third of clavicle, acromion, scapular spine', clinical: 'Spinal accessory nerve (CN XI) palsy \u2192 inability to shrug shoulder. Shoulder droop.' },
-              { id: 'lats', name: 'Latissimus Dorsi', x: 0.62, y: 0.32, v: 'p', fn: 'Broadest back muscle. Powerful arm extensor, adductor, and medial rotator. Key muscle in swimming, climbing, and pull-ups.', origin: 'T6\u2013T12 spinous processes, thoracolumbar fascia, iliac crest, ribs 9\u201312', insertion: 'Floor of bicipital (intertubercular) groove', clinical: 'Used in reconstructive surgery (myocutaneous flaps). Thoracodorsal nerve (C6\u2013C8) innervation.' },
-              { id: 'glutes', name: 'Gluteus Maximus', x: 0.50, y: 0.44, v: 'p', fn: 'Largest muscle in the body. Powerful hip extensor and lateral rotator. Essential for standing from seated position, climbing stairs, running.', origin: 'Posterior ilium, sacrum, coccyx, sacrotuberous ligament', insertion: 'IT band and gluteal tuberosity of femur', clinical: 'Weakness \u2192 Trendelenburg gait (compensatory trunk lean). Inferior gluteal nerve (L5\u2013S2).' },
-              { id: 'sartorius', name: 'Sartorius', x: 0.38, y: 0.52, v: 'a', fn: 'Longest muscle in the body. Crosses hip and knee. Produces the "tailor\'s position" (cross-legged sitting): hip flexion, abduction, lateral rotation + knee flexion.', origin: 'Anterior superior iliac spine (ASIS)', insertion: 'Pes anserinus (medial proximal tibia)', clinical: 'Pes anserinus bursitis causes medial knee pain. Landmark for femoral triangle.' },
-              { id: 'tibialis', name: 'Tibialis Anterior', x: 0.40, y: 0.76, v: 'a', fn: 'Primary ankle dorsiflexor and foot inverter. Prevents foot slap during heel strike. Supports medial longitudinal arch.', origin: 'Lateral tibial condyle, upper 2/3 of lateral tibial surface', insertion: 'Medial cuneiform, base of 1st metatarsal', clinical: 'Foot drop from deep peroneal nerve injury. Shin splints (medial tibial stress syndrome).' },
-              { id: 'soleus', name: 'Soleus', x: 0.58, y: 0.78, v: 'p', fn: 'Deep calf muscle beneath gastrocnemius. Plantar flexion (postural muscle \u2014 prevents forward falling while standing). Does not cross knee.', origin: 'Soleal line and posterior proximal fibula', insertion: 'Calcaneus via Achilles tendon', clinical: 'Soleus muscle pump aids venous return. DVT risk when immobile (long flights). Soleus strain in runners.' },
-              { id: 'rotator_cuff', name: 'Rotator Cuff (SITS)', x: 0.34, y: 0.20, v: 'p', fn: 'Four muscles: Supraspinatus (initiates abduction, most commonly torn), Infraspinatus (lateral rotation), Teres minor (lateral rotation), Subscapularis (medial rotation). Stabilize glenohumeral joint and keep humeral head in glenoid fossa.', origin: 'Scapula (various fossae)', insertion: 'Greater and lesser tubercles of humerus', clinical: 'Rotator cuff tears: most common shoulder pathology (especially supraspinatus). Impingement syndrome: supraspinatus compressed under acromion during abduction. Positive empty can test, drop arm test.' },
-              { id: 'iliopsoas', name: 'Iliopsoas', x: 0.44, y: 0.44, v: 'a', fn: 'Compound muscle: iliacus + psoas major. Most powerful hip flexor. Psoas major originates from T12\u2013L5 vertebral bodies (only muscle connecting spine to lower limb). Critical for walking, running, and maintaining upright posture.', origin: 'Psoas: T12\u2013L5 vertebrae. Iliacus: iliac fossa', insertion: 'Lesser trochanter of femur', clinical: 'Psoas abscess from spinal TB or Crohn disease. Psoas sign: pain on hip extension (suggests appendicitis/abscess). Hip flexion contracture in elderly/wheelchair-bound. Thomas test for hip flexion contracture.' },
-              { id: 'intercostals', name: 'Intercostal Muscles', x: 0.56, y: 0.24, v: 'a', fn: 'Three layers between ribs. External intercostals: elevate ribs for inspiration. Internal intercostals: depress ribs for forced expiration. Innermost intercostals: similar to internal. Intercostal neurovascular bundle runs in costal groove (vein, artery, nerve \u2014 VAN, superior to inferior).', origin: 'Inferior border of rib above', insertion: 'Superior border of rib below', clinical: 'Intercostal nerve block for rib fracture pain. Chest tube insertion above rib to avoid neurovascular bundle. Intercostal neuralgia: chronic chest wall pain. Herpes zoster (shingles) follows intercostal dermatome.' },
-              { id: 'pelvic_floor', name: 'Pelvic Floor (Levator Ani)', x: 0.50, y: 0.46, v: 'p', fn: 'Muscular "hammock" supporting pelvic organs: pubococcygeus, puborectalis, iliococcygeus. Supports bladder, uterus/prostate, rectum. Puborectalis maintains fecal continence (anorectal angle). Contracts during Kegel exercises.', origin: 'Pubis, obturator fascia (arcus tendineus), ischial spine', insertion: 'Coccyx, anococcygeal raphe, perineal body', clinical: 'Pelvic floor weakness: urinary incontinence, pelvic organ prolapse (cystocele, rectocele, uterine prolapse). Common after vaginal delivery. Kegel exercises for strengthening. Pelvic floor dysfunction: chronic pelvic pain, dyspareunia.' },
-              { id: 'diaphragm_m', name: 'Diaphragm (Muscle)', x: 0.50, y: 0.27, v: 'b', fn: 'Primary muscle of respiration (responsible for 70% of quiet breathing). Dome-shaped musculotendinous partition between thorax and abdomen. Central tendon + peripheral muscle fibers from xiphoid, ribs 7\u201312, L1\u2013L3 vertebrae (crura). Right crus larger, encircles esophagus.', origin: 'Xiphoid process, costal cartilages 7\u201312, L1\u2013L3 crura', insertion: 'Central tendon', clinical: 'Hiccups: involuntary diaphragm spasm. Phrenic nerve (C3\u2013C5): "C3, 4, 5 keeps the diaphragm alive." Diaphragmatic hernia: abdominal contents in thorax. Congenital diaphragmatic hernia (Bochdalek): left-sided, neonatal respiratory distress.' }
+              { id: 'deltoid', name: t('stem.anatomy.deltoid', 'Deltoid'), x: 0.30, y: 0.18, v: 'a', fn: 'Primary shoulder abductor (middle fibers). Anterior fibers flex/medially rotate; posterior fibers extend/laterally rotate the arm.', origin: 'Lateral third of clavicle, acromion, scapular spine', insertion: 'Deltoid tuberosity of humerus', clinical: 'Atrophy from axillary nerve injury (C5\u2013C6). IM injection site (avoid in children < 3 yrs).', clinicalKid: 'Your deltoid is the rounded muscle that caps the top of your shoulder and helps you lift your arm up and out to the side. Playing, swimming, and reaching for things keep it strong. This is also a spot where doctors sometimes give you a shot.' },
+              { id: 'pectoralis', name: t('stem.anatomy.pectoralis_major', 'Pectoralis Major'), x: 0.42, y: 0.22, v: 'a', fn: 'Powerful arm adductor, flexor, and medial rotator. Clavicular head flexes; sternocostal head adducts and extends from flexed position.', origin: 'Clavicle, sternum, ribs 1\u20136, external oblique aponeurosis', insertion: 'Lateral lip of bicipital groove (humerus)', clinical: 'Rupture during bench press \u2014 "dropped pec" sign. Poland syndrome: congenital absence.' },
+              { id: 'biceps', name: t('stem.anatomy.biceps_brachii', 'Biceps Brachii'), x: 0.24, y: 0.29, v: 'a', fn: 'Powerful forearm supinator and elbow flexor. Long head stabilizes shoulder joint. Short head assists shoulder flexion.', origin: 'Short head: coracoid process; Long head: supraglenoid tubercle', insertion: 'Radial tuberosity and bicipital aponeurosis', clinical: 'Long head tendon rupture \u2192 "Popeye deformity." Biceps reflex tests C5\u2013C6 nerve roots.', clinicalKid: 'Your biceps is the muscle in the front of your upper arm that bends your elbow so you can lift and carry things, and it helps you turn your wrist too. Moving, climbing, and playing keep it strong. Eating good food and resting after hard play help it grow.' },
+              { id: 'triceps', name: t('stem.anatomy.triceps_brachii', 'Triceps Brachii'), x: 0.73, y: 0.29, v: 'p', fn: 'Only elbow extensor. Three heads: long (crosses shoulder), lateral, and medial. Essential for pushing movements.', origin: 'Long: infraglenoid tubercle; Lateral/medial: posterior humerus', insertion: 'Olecranon process of ulna', clinical: 'Weakness in radial nerve palsy (C7 root). Triceps reflex tests C7\u2013C8 nerve roots.' },
+              { id: 'rectus_ab', name: t('stem.anatomy.rectus_abdominis', 'Rectus Abdominis'), x: 0.50, y: 0.34, v: 'a', fn: 'Flexes trunk (sit-ups/crunches). Compresses abdominal contents. Assists forced expiration and stabilizes pelvis during walking.', origin: 'Pubic crest and symphysis', insertion: 'Xiphoid process, costal cartilages 5\u20137', clinical: 'Diastasis recti: midline separation (common in pregnancy). "Six-pack" \u2014 tendinous intersections create segmented appearance.' },
+              { id: 'obliques', name: t('stem.anatomy.external_obliques', 'External Obliques'), x: 0.58, y: 0.34, v: 'a', fn: 'Trunk rotation (contralateral), lateral flexion, and abdominal compression. Largest and most superficial abdominal muscle.', origin: 'External surfaces of ribs 5\u201312', insertion: 'Linea alba, pubic tubercle, iliac crest', clinical: 'Strains from twisting sports. Inguinal ligament (lower border) is key landmark for hernia surgery.' },
+              { id: 'quads', name: t('stem.anatomy.quadriceps_femoris', 'Quadriceps Femoris'), x: 0.42, y: 0.55, v: 'a', fn: 'Four muscles (rectus femoris, vastus lateralis/medialis/intermedius). Primary knee extensor. Rectus femoris also flexes hip.', origin: 'Rectus femoris: AIIS; Vasti: femoral shaft', insertion: 'Tibial tuberosity via patellar tendon', clinical: 'Quadriceps tendon/patellar tendon rupture. VMO weakness \u2192 patellofemoral tracking issues.', clinicalKid: 'Your quadriceps are four strong muscles on the front of your thigh that straighten your knee and help lift your leg. They power you when you run, jump, climb stairs, and stand up. Moving your body, stretching, and resting your legs keep them strong.' },
+              { id: 'hamstrings', name: t('stem.anatomy.hamstrings', 'Hamstrings'), x: 0.58, y: 0.58, v: 'p', fn: 'Three muscles (biceps femoris, semitendinosus, semimembranosus). Flex knee and extend hip. Critical for deceleration in running.', origin: 'Ischial tuberosity (all three); biceps femoris short head: linea aspera', insertion: 'Biceps: fibular head; Semi-T: pes anserinus; Semi-M: posterior medial tibial condyle', clinical: '"Pulled hamstring" \u2014 most common muscle strain in athletes. Proximal avulsion in sprinters.', clinicalKid: 'Your hamstrings are the strong muscles on the back of your legs that help you bend your knees and run, jump, and slow down. Warming up before you play and stretching gently keep them loose and healthy. Drinking water and resting after exercise help them feel good too.' },
+              { id: 'gastrocnemius', name: t('stem.anatomy.gastrocnemius', 'Gastrocnemius'), x: 0.58, y: 0.74, v: 'p', fn: 'Superficial calf muscle. Powerful plantar flexor (push-off in gait) and weak knee flexor. Two heads span the knee joint.', origin: 'Medial and lateral femoral condyles', insertion: 'Calcaneus via Achilles tendon', clinical: 'Achilles tendon rupture (positive Thompson test). "Tennis leg" \u2014 medial head tear.', clinicalKid: 'Your gastrocnemius is the big calf muscle on the back of your lower leg, and it helps you push off the ground when you walk, run, and jump. It also lets you stand up on your tiptoes. Moving around, stretching, and warming up before you play keep it strong and ready.' },
+              { id: 'trapezius', name: t('stem.anatomy.trapezius', 'Trapezius'), x: 0.50, y: 0.20, v: 'p', fn: 'Large diamond-shaped muscle. Upper fibers elevate scapula (shrug); middle fibers retract; lower fibers depress and rotate scapula upward.', origin: 'External occipital protuberance, nuchal ligament, C7\u2013T12 spinous processes', insertion: 'Lateral third of clavicle, acromion, scapular spine', clinical: 'Spinal accessory nerve (CN XI) palsy \u2192 inability to shrug shoulder. Shoulder droop.' },
+              { id: 'lats', name: t('stem.anatomy.latissimus_dorsi', 'Latissimus Dorsi'), x: 0.62, y: 0.32, v: 'p', fn: 'Broadest back muscle. Powerful arm extensor, adductor, and medial rotator. Key muscle in swimming, climbing, and pull-ups.', origin: 'T6\u2013T12 spinous processes, thoracolumbar fascia, iliac crest, ribs 9\u201312', insertion: 'Floor of bicipital (intertubercular) groove', clinical: 'Used in reconstructive surgery (myocutaneous flaps). Thoracodorsal nerve (C6\u2013C8) innervation.' },
+              { id: 'glutes', name: t('stem.anatomy.gluteus_maximus', 'Gluteus Maximus'), x: 0.50, y: 0.44, v: 'p', fn: 'Largest muscle in the body. Powerful hip extensor and lateral rotator. Essential for standing from seated position, climbing stairs, running.', origin: 'Posterior ilium, sacrum, coccyx, sacrotuberous ligament', insertion: 'IT band and gluteal tuberosity of femur', clinical: 'Weakness \u2192 Trendelenburg gait (compensatory trunk lean). Inferior gluteal nerve (L5\u2013S2).' },
+              { id: 'sartorius', name: t('stem.anatomy.sartorius', 'Sartorius'), x: 0.38, y: 0.52, v: 'a', fn: 'Longest muscle in the body. Crosses hip and knee. Produces the "tailor\'s position" (cross-legged sitting): hip flexion, abduction, lateral rotation + knee flexion.', origin: 'Anterior superior iliac spine (ASIS)', insertion: 'Pes anserinus (medial proximal tibia)', clinical: 'Pes anserinus bursitis causes medial knee pain. Landmark for femoral triangle.' },
+              { id: 'tibialis', name: t('stem.anatomy.tibialis_anterior', 'Tibialis Anterior'), x: 0.40, y: 0.76, v: 'a', fn: 'Primary ankle dorsiflexor and foot inverter. Prevents foot slap during heel strike. Supports medial longitudinal arch.', origin: 'Lateral tibial condyle, upper 2/3 of lateral tibial surface', insertion: 'Medial cuneiform, base of 1st metatarsal', clinical: 'Foot drop from deep peroneal nerve injury. Shin splints (medial tibial stress syndrome).' },
+              { id: 'soleus', name: t('stem.anatomy.soleus', 'Soleus'), x: 0.58, y: 0.78, v: 'p', fn: 'Deep calf muscle beneath gastrocnemius. Plantar flexion (postural muscle \u2014 prevents forward falling while standing). Does not cross knee.', origin: 'Soleal line and posterior proximal fibula', insertion: 'Calcaneus via Achilles tendon', clinical: 'Soleus muscle pump aids venous return. DVT risk when immobile (long flights). Soleus strain in runners.' },
+              { id: 'rotator_cuff', name: t('stem.anatomy.rotator_cuff_sits', 'Rotator Cuff (SITS)'), x: 0.34, y: 0.20, v: 'p', fn: 'Four muscles: Supraspinatus (initiates abduction, most commonly torn), Infraspinatus (lateral rotation), Teres minor (lateral rotation), Subscapularis (medial rotation). Stabilize glenohumeral joint and keep humeral head in glenoid fossa.', origin: 'Scapula (various fossae)', insertion: 'Greater and lesser tubercles of humerus', clinical: 'Rotator cuff tears: most common shoulder pathology (especially supraspinatus). Impingement syndrome: supraspinatus compressed under acromion during abduction. Positive empty can test, drop arm test.' },
+              { id: 'iliopsoas', name: t('stem.anatomy.iliopsoas', 'Iliopsoas'), x: 0.44, y: 0.44, v: 'a', fn: 'Compound muscle: iliacus + psoas major. Most powerful hip flexor. Psoas major originates from T12\u2013L5 vertebral bodies (only muscle connecting spine to lower limb). Critical for walking, running, and maintaining upright posture.', origin: 'Psoas: T12\u2013L5 vertebrae. Iliacus: iliac fossa', insertion: 'Lesser trochanter of femur', clinical: 'Psoas abscess from spinal TB or Crohn disease. Psoas sign: pain on hip extension (suggests appendicitis/abscess). Hip flexion contracture in elderly/wheelchair-bound. Thomas test for hip flexion contracture.' },
+              { id: 'intercostals', name: t('stem.anatomy.intercostal_muscles', 'Intercostal Muscles'), x: 0.56, y: 0.24, v: 'a', fn: 'Three layers between ribs. External intercostals: elevate ribs for inspiration. Internal intercostals: depress ribs for forced expiration. Innermost intercostals: similar to internal. Intercostal neurovascular bundle runs in costal groove (vein, artery, nerve \u2014 VAN, superior to inferior).', origin: 'Inferior border of rib above', insertion: 'Superior border of rib below', clinical: 'Intercostal nerve block for rib fracture pain. Chest tube insertion above rib to avoid neurovascular bundle. Intercostal neuralgia: chronic chest wall pain. Herpes zoster (shingles) follows intercostal dermatome.' },
+              { id: 'pelvic_floor', name: t('stem.anatomy.pelvic_floor_levator_ani', 'Pelvic Floor (Levator Ani)'), x: 0.50, y: 0.46, v: 'p', fn: 'Muscular "hammock" supporting pelvic organs: pubococcygeus, puborectalis, iliococcygeus. Supports bladder, uterus/prostate, rectum. Puborectalis maintains fecal continence (anorectal angle). Contracts during Kegel exercises.', origin: 'Pubis, obturator fascia (arcus tendineus), ischial spine', insertion: 'Coccyx, anococcygeal raphe, perineal body', clinical: 'Pelvic floor weakness: urinary incontinence, pelvic organ prolapse (cystocele, rectocele, uterine prolapse). Common after vaginal delivery. Kegel exercises for strengthening. Pelvic floor dysfunction: chronic pelvic pain, dyspareunia.' },
+              { id: 'diaphragm_m', name: t('stem.anatomy.diaphragm_muscle', 'Diaphragm (Muscle)'), x: 0.50, y: 0.27, v: 'b', fn: 'Primary muscle of respiration (responsible for 70% of quiet breathing). Dome-shaped musculotendinous partition between thorax and abdomen. Central tendon + peripheral muscle fibers from xiphoid, ribs 7\u201312, L1\u2013L3 vertebrae (crura). Right crus larger, encircles esophagus.', origin: 'Xiphoid process, costal cartilages 7\u201312, L1\u2013L3 crura', insertion: 'Central tendon', clinical: 'Hiccups: involuntary diaphragm spasm. Phrenic nerve (C3\u2013C5): "C3, 4, 5 keeps the diaphragm alive." Diaphragmatic hernia: abdominal contents in thorax. Congenital diaphragmatic hernia (Bochdalek): left-sided, neonatal respiratory distress.' }
             ]
           },
 
           circulatory: {
-            name: 'Circulatory', icon: '\u2764\uFE0F', color: '#fee2e2', accent: '#dc2626',
-            desc: 'Heart, 60,000 miles of vessels, 5L of blood \u2014 delivers O\u2082, nutrients, hormones; removes waste.',
+            name: t('stem.anatomy.circulatory', 'Circulatory'), icon: '\u2764\uFE0F', color: '#fee2e2', accent: '#dc2626',
+            desc: t('stem.anatomy.heart_60_000_miles_of_vessels_5l_of_bl', 'Heart, 60,000 miles of vessels, 5L of blood \u2014 delivers O\u2082, nutrients, hormones; removes waste.'),
             structures: [
-              { id: 'heart', name: 'Heart', x: 0.48, y: 0.24, v: 'a', fn: 'Muscular pump. 4 chambers: RA/RV (pulmonary circuit), LA/LV (systemic circuit). Beats ~100,000\u00D7/day, pumps ~5L/min at rest.', clinical: 'MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading cause of death worldwide.' },
-              { id: 'aorta', name: 'Aorta', x: 0.52, y: 0.22, v: 'a', fn: 'Largest artery. Ascending aorta \u2192 aortic arch (brachiocephalic, left common carotid, left subclavian) \u2192 descending thoracic \u2192 abdominal aorta.', clinical: 'Aortic aneurysm (abdominal > 5.5cm \u2192 surgical repair). Aortic dissection: tearing chest pain, emergency.' },
-              { id: 'sup_vena', name: 'Superior Vena Cava', x: 0.54, y: 0.20, v: 'a', fn: 'Returns deoxygenated blood from head, neck, upper limbs, and thorax to the right atrium. Formed by union of brachiocephalic veins.', clinical: 'SVC syndrome: obstruction (often by lung cancer/lymphoma) causes facial swelling, dyspnea, distended neck veins.' },
-              { id: 'inf_vena', name: 'Inferior Vena Cava', x: 0.52, y: 0.36, v: 'a', fn: 'Largest vein. Returns blood from lower body to right atrium. Formed at L5 by union of common iliac veins. Passes through diaphragm at T8.', clinical: 'IVC filter placement for recurrent PE. IVC compression during pregnancy (supine hypotension syndrome).' },
-              { id: 'pulm_art', name: 'Pulmonary Arteries', x: 0.46, y: 0.22, v: 'a', fn: 'Carry deoxygenated blood from RV to lungs. Only arteries that carry deoxygenated blood. Bifurcates at T5.', clinical: 'Pulmonary embolism (PE): clot from DVT lodges in pulmonary arteries. Saddle PE is life-threatening.' },
-              { id: 'carotid', name: 'Carotid Arteries', x: 0.44, y: 0.12, v: 'a', fn: 'Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain.', clinical: 'Carotid stenosis causes stroke/TIA. Carotid endarterectomy for >70% stenosis. Carotid body senses O\u2082/CO\u2082/pH.' },
-              { id: 'jugular', name: 'Jugular Veins', x: 0.56, y: 0.12, v: 'a', fn: 'Internal jugular drains brain and face (runs with carotid in carotid sheath). External jugular visible on neck surface.', clinical: 'JVD (jugular venous distension) \u2192 sign of right heart failure, cardiac tamponade, tension pneumothorax.' },
-              { id: 'coronary', name: 'Coronary Arteries', x: 0.46, y: 0.25, v: 'a', fn: 'LAD (left anterior descending) supplies anterior LV wall and septum ("widow maker"). LCx supplies lateral LV. RCA supplies RV and inferior LV.', clinical: 'LAD occlusion: anterior STEMI (most dangerous). RCA occlusion: inferior MI with possible heart block.' },
-              { id: 'femoral_a', name: 'Femoral Artery', x: 0.44, y: 0.48, v: 'a', fn: 'Main blood supply to lower limb. Palpable at mid-inguinal point (midway ASIS to pubic symphysis). Becomes popliteal artery behind knee.', clinical: 'Femoral artery catheterization for angiography. Femoral artery laceration \u2192 rapid exsanguination.' },
-              { id: 'brachial', name: 'Brachial Artery', x: 0.28, y: 0.30, v: 'a', fn: 'Continuation of axillary artery. Runs medially in arm. Blood pressure measured here (antecubital fossa). Bifurcates into radial and ulnar arteries.', clinical: 'BP cuff occludes brachial artery (Korotkoff sounds). Supracondylar fracture may damage brachial artery \u2192 Volkmann contracture.' },
-              { id: 'portal', name: 'Hepatic Portal Vein', x: 0.52, y: 0.32, v: 'a', fn: 'Carries nutrient-rich blood from GI tract and spleen to liver for processing. Formed by superior mesenteric and splenic veins. Portal circulation is unique.', clinical: 'Portal hypertension in cirrhosis \u2192 esophageal varices, caput medusae, hemorrhoids, splenomegaly.' },
-              { id: 'circle_willis', name: 'Circle of Willis', x: 0.50, y: 0.08, v: 'a', fn: 'Arterial anastomotic ring at base of brain. Formed by: anterior communicating artery connecting ACA\u2013ACA, posterior communicating arteries connecting ICA\u2013PCA, plus segments of ACA, ICA, and PCA. Provides collateral blood flow if one vessel is occluded. Complete circle in only ~25% of people.', clinical: 'Berry (saccular) aneurysms: most common at anterior communicating artery junction. Rupture \u2192 subarachnoid hemorrhage ("thunderclap headache"). Congenital variants may limit collateral flow \u2192 increased stroke risk.' },
-              { id: 'saphenous', name: 'Great Saphenous Vein', x: 0.40, y: 0.70, v: 'a', fn: 'Longest vein in body. Runs from dorsum of foot, anterior to medial malleolus, up medial leg and thigh, drains into femoral vein at saphenous opening (saphenofemoral junction). Superficial position makes it accessible for cannulation and grafting.', clinical: 'Varicose veins from incompetent valves (superficial venous insufficiency). Used as conduit for CABG (coronary artery bypass graft surgery). Saphenous nerve runs alongside \u2014 may be injured during vein stripping. DVT risk in varicosities.' },
-              { id: 'lymph_circ', name: 'Lymphatic Vessels', x: 0.36, y: 0.50, v: 'a', fn: 'One-way drainage system parallel to venous system. Begins as blind-ended lymph capillaries in tissues, drains through lymph nodes, collecting vessels, trunks, and ducts. Right lymphatic duct drains right upper body; thoracic duct drains everything else. Lymph propelled by skeletal muscle contraction and one-way valves.', clinical: 'Lymphedema: impaired drainage \u2192 chronic swelling (post-surgical, filariasis in tropics). Lymphangitis: red streaking from infected lymph vessel. Sentinel lymph node biopsy for cancer staging. Chylothorax from thoracic duct injury.' }
+              { id: 'heart', name: t('stem.anatomy.heart', 'Heart'), x: 0.48, y: 0.24, v: 'a', fn: 'Muscular pump. 4 chambers: RA/RV (pulmonary circuit), LA/LV (systemic circuit). Beats ~100,000\u00D7/day, pumps ~5L/min at rest.', clinical: 'MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading cause of death worldwide.', clinicalKid: 'Your heart is a strong muscle about the size of your fist that pumps blood all day and night. Running, playing, and eating fruits and vegetables keep it strong. A doctor can listen to it beat with a stethoscope.' },
+              { id: 'aorta', name: t('stem.anatomy.aorta', 'Aorta'), x: 0.52, y: 0.22, v: 'a', fn: 'Largest artery. Ascending aorta \u2192 aortic arch (brachiocephalic, left common carotid, left subclavian) \u2192 descending thoracic \u2192 abdominal aorta.', clinical: 'Aortic aneurysm (abdominal > 5.5cm \u2192 surgical repair). Aortic dissection: tearing chest pain, emergency.', clinicalKid: 'Your aorta is the biggest blood tube in your body, and it carries fresh blood away from your heart to the rest of you. It starts at the heart, makes a big curve at the top, and then heads down to send blood to your belly and legs. Running, playing, and eating fruits and vegetables help keep it strong and healthy.' },
+              { id: 'sup_vena', name: t('stem.anatomy.superior_vena_cava', 'Superior Vena Cava'), x: 0.54, y: 0.20, v: 'a', fn: 'Returns deoxygenated blood from head, neck, upper limbs, and thorax to the right atrium. Formed by union of brachiocephalic veins.', clinical: 'SVC syndrome: obstruction (often by lung cancer/lymphoma) causes facial swelling, dyspnea, distended neck veins.' },
+              { id: 'inf_vena', name: t('stem.anatomy.inferior_vena_cava', 'Inferior Vena Cava'), x: 0.52, y: 0.36, v: 'a', fn: 'Largest vein. Returns blood from lower body to right atrium. Formed at L5 by union of common iliac veins. Passes through diaphragm at T8.', clinical: 'IVC filter placement for recurrent PE. IVC compression during pregnancy (supine hypotension syndrome).' },
+              { id: 'pulm_art', name: t('stem.anatomy.pulmonary_arteries', 'Pulmonary Arteries'), x: 0.46, y: 0.22, v: 'a', fn: 'Carry deoxygenated blood from the right ventricle to the lungs. They are the adult circulation exception to the usual oxygen-rich artery pattern; fetal umbilical arteries also carry relatively deoxygenated blood. The pulmonary trunk divides into right and left pulmonary arteries.', clinical: 'Pulmonary embolism (PE): a clot, often from a DVT, lodges in the pulmonary arteries. A large saddle PE can be life-threatening.' },
+              { id: 'carotid', name: t('stem.anatomy.carotid_arteries', 'Carotid Arteries'), x: 0.44, y: 0.12, v: 'a', fn: 'Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain.', clinical: 'Carotid stenosis causes stroke/TIA. Carotid endarterectomy for >70% stenosis. Carotid body senses O\u2082/CO\u2082/pH.', clinicalKid: 'Your carotid arteries are two big tubes in your neck that carry fresh blood up to your brain and your face. You can feel them gently beating on the sides of your neck, and a doctor can check that beat too. Moving your body, drinking water, and eating fruits and vegetables help keep your blood flowing strong.' },
+              { id: 'jugular', name: t('stem.anatomy.jugular_veins', 'Jugular Veins'), x: 0.56, y: 0.12, v: 'a', fn: 'Internal jugular drains brain and face (runs with carotid in carotid sheath). External jugular visible on neck surface.', clinical: 'JVD (jugular venous distension) \u2192 sign of right heart failure, cardiac tamponade, tension pneumothorax.' },
+              { id: 'coronary', name: t('stem.anatomy.coronary_arteries', 'Coronary Arteries'), x: 0.46, y: 0.25, v: 'a', fn: 'LAD (left anterior descending) supplies anterior LV wall and septum ("widow maker"). LCx supplies lateral LV. RCA supplies RV and inferior LV.', clinical: 'LAD occlusion: anterior STEMI (most dangerous). RCA occlusion: inferior MI with possible heart block.' },
+              { id: 'femoral_a', name: t('stem.anatomy.femoral_artery', 'Femoral Artery'), x: 0.44, y: 0.48, v: 'a', fn: 'Main blood supply to lower limb. Palpable at mid-inguinal point (midway ASIS to pubic symphysis). Becomes popliteal artery behind knee.', clinical: 'Femoral artery catheterization for angiography. Femoral artery laceration \u2192 rapid exsanguination.' },
+              { id: 'brachial', name: t('stem.anatomy.brachial_artery', 'Brachial Artery'), x: 0.28, y: 0.30, v: 'a', fn: 'Continuation of axillary artery. Runs medially in arm. Blood pressure measured here (antecubital fossa). Bifurcates into radial and ulnar arteries.', clinical: 'BP cuff occludes brachial artery (Korotkoff sounds). Supracondylar fracture may damage brachial artery \u2192 Volkmann contracture.' },
+              { id: 'portal', name: t('stem.anatomy.hepatic_portal_vein', 'Hepatic Portal Vein'), x: 0.52, y: 0.32, v: 'a', fn: 'Carries nutrient-rich blood from the GI tract and spleen to the liver for processing. Usually formed by the superior mesenteric and splenic veins.', clinical: 'Portal hypertension can cause esophageal or gastric varices, abdominal-wall collaterals, rectal varices, ascites, and splenomegaly. Rectal varices are distinct from hemorrhoids.' },
+              { id: 'circle_willis', name: t('stem.anatomy.circle_of_willis', 'Circle of Willis'), x: 0.50, y: 0.08, v: 'a', fn: 'Arterial anastomotic ring at base of brain. Formed by: anterior communicating artery connecting ACA\u2013ACA, posterior communicating arteries connecting ICA\u2013PCA, plus segments of ACA, ICA, and PCA. Provides collateral blood flow if one vessel is occluded. Complete circle in only ~25% of people.', clinical: 'Berry (saccular) aneurysms: most common at anterior communicating artery junction. Rupture \u2192 subarachnoid hemorrhage ("thunderclap headache"). Congenital variants may limit collateral flow \u2192 increased stroke risk.' },
+              { id: 'saphenous', name: t('stem.anatomy.great_saphenous_vein', 'Great Saphenous Vein'), x: 0.40, y: 0.70, v: 'a', fn: 'Longest vein in body. Runs from dorsum of foot, anterior to medial malleolus, up medial leg and thigh, drains into femoral vein at saphenous opening (saphenofemoral junction). Superficial position makes it accessible for cannulation and grafting.', clinical: 'Varicose veins from incompetent valves (superficial venous insufficiency). Used as conduit for CABG (coronary artery bypass graft surgery). Saphenous nerve runs alongside \u2014 may be injured during vein stripping. DVT risk in varicosities.' },
+              { id: 'lymph_circ', name: t('stem.anatomy.lymphatic_vessels', 'Lymphatic Vessels'), x: 0.36, y: 0.50, v: 'a', fn: 'One-way drainage system parallel to venous system. Begins as blind-ended lymph capillaries in tissues, drains through lymph nodes, collecting vessels, trunks, and ducts. Right lymphatic duct drains right upper body; thoracic duct drains everything else. Lymph propelled by skeletal muscle contraction and one-way valves.', clinical: 'Lymphedema: impaired drainage \u2192 chronic swelling (post-surgical, filariasis in tropics). Lymphangitis: red streaking from infected lymph vessel. Sentinel lymph node biopsy for cancer staging. Chylothorax from thoracic duct injury.' }
             ]
           },
 
           nervous: {
-            name: 'Nervous', icon: '\u26A1', color: '#ede9fe', accent: '#7c3aed',
-            desc: 'CNS (brain + spinal cord) and PNS (31 spinal nerve pairs, 12 cranial nerve pairs, autonomic NS).',
+            name: t('stem.anatomy.nervous', 'Nervous'), icon: '\u26A1', color: '#ede9fe', accent: '#7c3aed',
+            desc: t('stem.anatomy.cns_brain_spinal_cord_and_pns_31_spina', 'CNS (brain + spinal cord) and PNS (31 spinal nerve pairs, 12 cranial nerve pairs, autonomic NS).'),
             structures: [
-              { id: 'brain', name: 'Brain', x: 0.50, y: 0.05, v: 'b', fn: '~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O\u2082. Protected by meninges (dura, arachnoid, pia mater) and cerebrospinal fluid (CSF). Four lobes per hemisphere: frontal, parietal, temporal, occipital.', clinical: 'Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy. EEG measures brain waves for diagnosis of seizures, sleep disorders, and brain death.',
+              { id: 'brain', name: t('stem.anatomy.brain', 'Brain'), x: 0.50, y: 0.05, v: 'b', fn: '~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O\u2082. Protected by meninges (dura, arachnoid, pia mater) and cerebrospinal fluid (CSF). Four lobes per hemisphere: frontal, parietal, temporal, occipital.', clinical: 'Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy. EEG measures brain waves for diagnosis of seizures, sleep disorders, and brain death.', clinicalKid: 'Your brain is the control center for your whole body, helping you think, move, learn, and feel. Sleep, healthy food, and learning new things help it grow strong, and wearing a helmet keeps it safe.',
                 brainWaves: [
                   { type: 'Delta (\u03b4)', freq: '0.5\u20134 Hz', amplitude: 'Highest', state: 'Deep dreamless sleep (N3)', color: '#6366f1', emoji: '\uD83D\uDE34', characteristics: 'Dominant in deep NREM sleep (stage N3). Associated with growth hormone release, tissue repair, and immune system strengthening. Excessive delta in waking = brain injury or encephalopathy.', clinical: 'Abnormal waking delta waves indicate brain lesions, metabolic encephalopathy, or diffuse cortical damage. Used to assess depth of anesthesia and coma.' },
                   { type: 'Theta (\u03b8)', freq: '4\u20138 Hz', amplitude: 'Medium\u2013High', state: 'Drowsiness, light sleep, meditation', color: '#8b5cf6', emoji: '\uD83E\uDDD8', characteristics: 'Prominent in light sleep (N1), deep meditation, and creative insight. Hippocampal theta rhythms are critical for memory encoding and spatial navigation.', clinical: 'Excessive theta in waking = ADHD, cognitive impairment, or drowsiness. Theta bursts during memory tasks reflect hippocampal-cortical dialogue for memory consolidation.' },
-                  { type: 'Alpha (\u03b1)', freq: '8\u201313 Hz', amplitude: 'Medium', state: 'Relaxed wakefulness, eyes closed', color: '#06b6d4', emoji: '\uD83C\uDF3F', characteristics: 'First brain wave discovered (Hans Berger, 1929). Dominant when relaxed with eyes closed. Blocked by eye opening or mental effort ("alpha blocking"). Generated primarily in the occipital cortex.', clinical: 'Reduced alpha = anxiety, insomnia. Asymmetric alpha = cortical lesion or stroke. Alpha training used in neurofeedback for anxiety, ADHD, and peak performance.' },
+                  { type: 'Alpha (\u03b1)', freq: '8\u201313 Hz', amplitude: 'Medium', state: 'Relaxed wakefulness, eyes closed', color: '#06b6d4', emoji: '\uD83C\uDF3F', characteristics: 'First brain wave discovered (Hans Berger, 1929). Dominant when relaxed with eyes closed. Blocked by eye opening or mental effort ("alpha blocking"). Generated primarily in the occipital cortex.', clinical: 'Reduced alpha = anxiety, insomnia. Asymmetric alpha = cortical lesion or stroke. Neurofeedback alpha training is studied for anxiety and ADHD, but blinded-trial evidence is mixed and contested, and "peak performance" uses are largely unproven.' },
                   { type: 'Beta (\u03b2)', freq: '13\u201330 Hz', amplitude: 'Low', state: 'Active thinking, focus, alertness', color: '#f59e0b', emoji: '\u26A1', characteristics: 'Dominant during active cognition, problem-solving, conversation, and decision-making. Sub-bands: low beta (13\u201315 Hz, relaxed focus), mid beta (15\u201320 Hz, active thinking), high beta (20\u201330 Hz, anxiety/excitement).', clinical: 'Excessive high beta = anxiety, stress, insomnia. Medications like benzodiazepines increase beta. Beta activity used in BCI (brain-computer interfaces) for motor imagery.' },
                   { type: 'Gamma (\u03b3)', freq: '30\u2013100+ Hz', amplitude: 'Lowest', state: 'Higher cognition, binding, consciousness', color: '#ef4444', emoji: '\uD83E\uDDE0', characteristics: 'Associated with sensory binding (combining sight, sound, touch into unified percepts), peak concentration, expanded consciousness, and compassion meditation. Highest frequency, lowest amplitude. Generated by fast-spiking interneurons.', clinical: 'Reduced gamma = schizophrenia, Alzheimer disease. Gamma entrainment via 40 Hz light/sound stimulation is being researched for Alzheimer treatment. Experienced meditators show elevated gamma.' }
                 ],
                 sleepStages: [
-                  { stage: 'N1 (NREM Stage 1)', pct: '2\u20135%', duration: '1\u20137 min', waves: 'Theta (4\u20138 Hz)', emoji: '\uD83D\uDE0C', desc: 'Lightest sleep \u2014 transition from wakefulness. Slow rolling eye movements, muscle tone decreasing. Hypnic jerks (myoclonic twitches) common. Easily aroused. Vertex sharp waves appear on EEG.', clinical: 'Excessive N1 = sleep fragmentation (sleep apnea, restless legs). Hypnic hallucinations may occur. Sleep onset latency measured here for narcolepsy diagnosis (MSLT test).' },
-                  { stage: 'N2 (NREM Stage 2)', pct: '45\u201355%', duration: '10\u201325 min', waves: 'Theta + Sleep spindles (12\u201314 Hz) + K-complexes', emoji: '\uD83D\uDCA4', desc: 'True sleep begins. Core body temperature drops, heart rate slows. Sleep spindles (thalamocortical bursts) protect sleep and consolidate motor memory. K-complexes are large waveforms responding to external stimuli.', clinical: 'Sleep spindles correlate with IQ and learning ability. Reduced spindles in schizophrenia and aging. K-complexes are the brain\'s "sentry" \u2014 evaluating stimuli without waking.' },
-                  { stage: 'N3 (NREM Stage 3)', pct: '15\u201325%', duration: '20\u201340 min', waves: 'Delta (0.5\u20132 Hz), >20% of epoch', emoji: '\uD83C\uDF19', desc: 'Deep/slow-wave sleep (SWS). Most restorative stage. Growth hormone secretion peaks. Glymphatic system clears brain waste (amyloid-\u03b2). Declarative memory consolidation occurs. Hardest to awaken from; sleep inertia if aroused.', clinical: 'Reduced N3 in aging, Alzheimer (amyloid accumulation). Sleepwalking, night terrors, and bedwetting occur during N3 arousal. Critical for immune function \u2014 sleep deprivation impairs T-cell function.' },
-                  { stage: 'REM (Rapid Eye Movement)', pct: '20\u201325%', duration: '10\u201360 min (increases across night)', waves: 'Beta/Gamma (desynchronized, "paradoxical" \u2014 looks like waking EEG)', emoji: '\uD83C\uDF1F', desc: 'Dreaming stage. Brain is highly active (similar to waking) but body is paralyzed (atonia via brainstem inhibition of motor neurons). Rapid conjugate eye movements. Emotional memory processing and creative problem-solving. Cycles lengthen through the night.', clinical: 'REM behavior disorder (RBD): loss of atonia \u2192 acting out dreams \u2014 strong predictor of Parkinson/Lewy body dementia. Narcolepsy: premature REM onset (SOREMPs). Nightmares occur in REM. SSRIs suppress REM sleep.' }
+                  { stage: 'N1 (NREM Stage 1)', pct: '2\u20135%', duration: '1\u20137 min', waves: 'Theta (4\u20138 Hz)', emoji: '\uD83D\uDE0C', desc: t('stem.anatomy.lightest_sleep_transition_from_wakeful', 'Lightest sleep \u2014 transition from wakefulness. Slow rolling eye movements, muscle tone decreasing. Hypnic jerks (myoclonic twitches) common. Easily aroused. Vertex sharp waves appear on EEG.'), clinical: 'Excessive N1 = sleep fragmentation (sleep apnea, restless legs). Hypnic hallucinations may occur. Sleep onset latency measured here for narcolepsy diagnosis (MSLT test).' },
+                  { stage: 'N2 (NREM Stage 2)', pct: '45\u201355%', duration: '10\u201325 min', waves: 'Theta + Sleep spindles (12\u201314 Hz) + K-complexes', emoji: '\uD83D\uDCA4', desc: t('stem.anatomy.true_sleep_begins_core_body_temperatur', 'True sleep begins. Core body temperature drops, heart rate slows. Sleep spindles (thalamocortical bursts) protect sleep and consolidate motor memory. K-complexes are large waveforms responding to external stimuli.'), clinical: 'Sleep spindles correlate with IQ and learning ability. Reduced spindles in schizophrenia and aging. K-complexes are the brain\'s "sentry" \u2014 evaluating stimuli without waking.' },
+                  { stage: 'N3 (NREM Stage 3)', pct: '15\u201325%', duration: '20\u201340 min', waves: 'Delta (0.5\u20132 Hz), >20% of epoch', emoji: '\uD83C\uDF19', desc: t('stem.anatomy.deep_slow_wave_sleep_sws_most_restorat', 'Deep/slow-wave sleep (SWS). Most restorative stage. Growth hormone secretion peaks. Glymphatic system clears brain waste (amyloid-\u03b2). Declarative memory consolidation occurs. Hardest to awaken from; sleep inertia if aroused.'), clinical: 'Reduced N3 in aging, Alzheimer (amyloid accumulation). Sleepwalking, night terrors, and bedwetting occur during N3 arousal. Critical for immune function \u2014 sleep deprivation impairs T-cell function.' },
+                  { stage: 'REM (Rapid Eye Movement)', pct: '20\u201325%', duration: '10\u201360 min (increases across night)', waves: 'Beta/Gamma (desynchronized, "paradoxical" \u2014 looks like waking EEG)', emoji: '\uD83C\uDF1F', desc: t('stem.anatomy.dreaming_stage_brain_is_highly_active_', 'Dreaming stage. Brain is highly active (similar to waking) but body is paralyzed (atonia via brainstem inhibition of motor neurons). Rapid conjugate eye movements. Emotional memory processing and creative problem-solving. Cycles lengthen through the night.'), clinical: 'REM behavior disorder (RBD): loss of atonia \u2192 acting out dreams \u2014 strong predictor of Parkinson/Lewy body dementia. Narcolepsy: premature REM onset (SOREMPs). Nightmares occur in REM. SSRIs suppress REM sleep.' }
                 ]
               },
-              { id: 'cerebral_cortex', name: 'Cerebral Cortex (4 Lobes)', x: 0.50, y: 0.04, v: 'a', fn: 'Thin (2\u20134mm) outer layer of gray matter with ~16 billion neurons. 6 layers of cortical columns. Divided into 4 lobes: Frontal (executive function, motor, Broca area), Parietal (somatosensory, spatial), Temporal (auditory, Wernicke area, memory), Occipital (vision). Comprises 80% of brain mass.', clinical: 'Frontal lobe damage: personality change (Phineas Gage case), impaired judgment. Parietal lesions: hemispatial neglect. Temporal lobe epilepsy: most common focal seizure type. Occipital stroke: cortical blindness.', detail: 'Brodmann areas map 52 cytoarchitectural regions. Primary motor cortex (area 4), primary somatosensory (areas 3,1,2), primary visual (area 17), primary auditory (areas 41,42). Prefrontal cortex is last to myelinate (age ~25).' },
-              { id: 'cerebellum', name: 'Cerebellum', x: 0.52, y: 0.07, v: 'p', fn: '10% of brain volume but contains ~50% of all neurons (~69 billion). "Little brain" at posterior fossa. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (limb coordination), cerebrocerebellum (motor planning, cognition). Compares intended vs actual movement for error correction.', clinical: 'Cerebellar lesions: ataxia (uncoordinated gait), intention tremor, dysarthria (scanning speech), nystagmus, past-pointing. Cerebellar stroke: acute vertigo and ataxia may be misdiagnosed as inner ear problems. Fetal alcohol syndrome damages cerebellum.', detail: 'Purkinje cells are among the largest neurons, each receiving ~200,000 synaptic inputs. Cerebellar cortex has 3 layers: molecular, Purkinje, granular. Emerging research shows roles in cognition, emotion, and language.' },
-              { id: 'brainstem', name: 'Brainstem (Midbrain, Pons, Medulla)', x: 0.50, y: 0.08, v: 'p', fn: 'Connects cerebrum to spinal cord. Three parts: Midbrain (visual/auditory reflexes, substantia nigra for dopamine), Pons (relay between cortex and cerebellum, respiratory rhythm), Medulla oblongata (cardiovascular center, respiratory center, vomiting, swallowing). Reticular formation spans all three \u2014 controls arousal and consciousness.', clinical: 'Brainstem death = legal death in many jurisdictions (irreversible loss of consciousness and vital reflexes). Locked-in syndrome (ventral pons lesion): conscious but unable to move except eyes. Central sleep apnea from medullary dysfunction.', detail: 'Contains nuclei for cranial nerves III\u2013XII. Reticular activating system (RAS) is the brain\'s "on switch" \u2014 damage causes coma. Decussation of pyramids in medulla: motor crossover explains contralateral motor control.' },
-              { id: 'hippocampus', name: 'Hippocampus', x: 0.48, y: 0.06, v: 'a', fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term memory to long-term memory (consolidation). Contains place cells for spatial navigation (Nobel Prize 2014, O\'Keefe). One of two brain regions with adult neurogenesis (new neuron formation). Theta rhythms during memory encoding.', clinical: 'Alzheimer disease begins here \u2014 hippocampal atrophy on MRI is an early diagnostic marker. Bilateral hippocampal damage (e.g., Patient H.M.) causes severe anterograde amnesia. Chronic stress and cortisol shrink the hippocampus. PTSD associated with reduced hippocampal volume.', detail: 'Memory replay during sleep: hippocampal neurons "replay" daytime experiences during N3 sleep, transferring memories to neocortex. Grid cells in entorhinal cortex provide spatial coordinates to hippocampal place cells.' },
-              { id: 'amygdala', name: 'Amygdala', x: 0.46, y: 0.06, v: 'a', fn: 'Almond-shaped nuclei in anterior temporal lobe. Key hub for processing fear, threat detection, and emotional memory. Receives fast "low road" input from thalamus for rapid danger response (before conscious awareness). Modulates memory storage based on emotional arousal (why emotional events are remembered better).', clinical: 'Hyperactive amygdala in anxiety disorders, PTSD, and phobias. Bilateral amygdala damage (Urbach-Wiethe disease): inability to recognize fear in faces, impaired fear conditioning. Amygdala involved in autism spectrum disorder (social threat processing).', detail: 'Fear conditioning pathway: auditory cortex \u2192 lateral amygdala \u2192 central amygdala \u2192 hypothalamus (stress response) + PAG (freezing). Amygdala-prefrontal interactions allow emotional regulation \u2014 basis of CBT therapy.' },
-              { id: 'thalamus', name: 'Thalamus', x: 0.50, y: 0.06, v: 'b', fn: 'Paired egg-shaped structures forming 80% of diencephalon. "Gateway to consciousness" \u2014 relays and filters ALL sensory information to cortex (except olfaction). Contains ~60 nuclei organized into functional groups. Generates sleep spindles during N2 sleep. Thalamocortical oscillations underlie consciousness itself.', clinical: 'Thalamic stroke: contralateral sensory loss + thalamic pain syndrome (Dejerine-Roussy: severe, burning pain). Fatal familial insomnia: prion disease destroying thalamus \u2192 complete inability to sleep \u2192 death. Deep brain stimulation of thalamus for essential tremor.', detail: 'Key nuclei: VPL/VPM (somatosensory relay), LGN (visual relay to V1), MGN (auditory relay to A1), pulvinar (attention), anterior nuclear group (memory, Papez circuit).' },
-              { id: 'hypothalamus', name: 'Hypothalamus', x: 0.50, y: 0.07, v: 'a', fn: 'Small (4g, ~1% of brain) but controls: body temperature, hunger/thirst, circadian rhythm (SCN = master clock), autonomic nervous system, pituitary gland (via hypothalamic-hypophyseal portal system). Suprachiasmatic nucleus (SCN) receives light input from retina and entrains 24-hr circadian cycle.', clinical: 'Hypothalamic dysfunction: diabetes insipidus (no ADH), obesity (ventromedial lesion = hyperphagia), anorexia (lateral lesion = aphagia). Circadian disruption linked to depression, metabolic syndrome, cancer. Jet lag = SCN resynchronizing.', detail: 'Thermostat analogy: anterior hypothalamus triggers cooling (vasodilation, sweating); posterior hypothalamus triggers warming (shivering, vasoconstriction). Fever = elevated set point by prostaglandins from infection.' },
-              { id: 'corpus_callosum', name: 'Corpus Callosum', x: 0.50, y: 0.05, v: 'b', fn: 'Largest white matter structure in brain. ~200 million axons connecting left and right hemispheres. Enables interhemispheric communication and integration. Develops throughout childhood; fully myelinated by age ~12. Four regions: rostrum, genu, body, splenium.', clinical: 'Split-brain patients (callosotomy for epilepsy): each hemisphere operates independently \u2014 left hand "doesn\'t know" what right hand is doing (Roger Sperry, Nobel 1981). Agenesis of corpus callosum: congenital absence, often incidental finding. Callosal lesions in MS.', detail: 'Split-brain experiments revealed hemispheric specialization: left hemisphere = language, logic; right hemisphere = spatial, holistic processing. Information presented to one visual field is processed by contralateral hemisphere.' },
-              { id: 'basal_ganglia', name: 'Basal Ganglia', x: 0.48, y: 0.05, v: 'a', fn: 'Deep gray matter nuclei: caudate, putamen (together = striatum), globus pallidus. With substantia nigra and subthalamic nucleus, form circuits for motor initiation/inhibition, habit formation, reward learning, and procedural memory. Direct pathway facilitates movement; indirect pathway inhibits movement.', clinical: 'Parkinson disease: dopamine depletion in substantia nigra \u2192 bradykinesia, rigidity, resting tremor, postural instability. Huntington disease: caudate/putamen degeneration \u2192 chorea (involuntary dance-like movements). OCD linked to caudate hyperactivity. Deep brain stimulation of subthalamic nucleus for Parkinson.', detail: 'Dopamine from substantia nigra modulates the direct (D1, excitatory) and indirect (D2, inhibitory) pathways. Loss of this modulation in Parkinson creates the characteristic difficulty initiating movement.' },
-              { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.30, v: 'p', fn: 'Extends from foramen magnum to L1\u2013L2 (conus medullaris). Conducts sensory/motor signals. 31 segments, each with dorsal (sensory) and ventral (motor) roots.', clinical: 'Spinal cord injury: above C4 \u2192 quadriplegia + ventilator. Complete transection \u2192 loss of motor/sensory below level.' },
-              { id: 'vagus', name: 'Vagus Nerve (CN X)', x: 0.44, y: 0.14, v: 'a', fn: 'Longest cranial nerve. Parasympathetic innervation to thoracic and abdominal viscera. Slows heart rate, increases GI motility, controls laryngeal muscles.', clinical: 'Vagal stimulation: carotid sinus massage, Valsalva maneuver for SVT. Vagus nerve stimulator for epilepsy/depression. Recurrent laryngeal nerve injury \u2192 hoarseness.' },
-              { id: 'sciatic', name: 'Sciatic Nerve', x: 0.55, y: 0.50, v: 'p', fn: 'Largest/longest nerve in body. L4\u2013S3 roots. Exits pelvis through greater sciatic foramen below piriformis. Divides into tibial and common peroneal nerves above knee.', clinical: 'Sciatica: radiculopathy from herniated disc (L4\u2013S1). Piriformis syndrome mimics sciatica. IM injection site avoidance.' },
-              { id: 'brachial_plexus', name: 'Brachial Plexus', x: 0.34, y: 0.16, v: 'a', fn: 'C5\u2013T1 nerve roots form trunks, divisions, cords, branches. Innervates entire upper limb. "Robert Taylor Drinks Cold Beer" (roots, trunks, divisions, cords, branches).', clinical: 'Erb-Duchenne palsy (C5\u2013C6): "waiter\'s tip" position. Klumpke palsy (C8\u2013T1): claw hand. Birth injuries, motorcycle accidents.' },
-              { id: 'median', name: 'Median Nerve', x: 0.22, y: 0.38, v: 'a', fn: 'C5\u2013T1 via lateral and medial cords. Motor: forearm pronators, wrist/finger flexors, thenar muscles. Sensory: palmar lateral 3.5 digits.', clinical: 'Carpal tunnel syndrome: median nerve compression under flexor retinaculum. Hand of benediction (can\'t flex index/middle fingers).' },
-              { id: 'ulnar_n', name: 'Ulnar Nerve', x: 0.78, y: 0.34, v: 'a', fn: 'C8\u2013T1 via medial cord. Motor: intrinsic hand muscles (interossei, hypothenar), FCU, medial FDP. Sensory: medial 1.5 digits.', clinical: '"Funny bone" \u2014 vulnerable at medial epicondyle. Cubital tunnel syndrome. Claw hand deformity. Froment sign.' },
-              { id: 'femoral_n', name: 'Femoral Nerve', x: 0.40, y: 0.48, v: 'a', fn: 'L2\u2013L4 via lumbar plexus. Motor: quadriceps (knee extension), iliacus, sartorius. Sensory: anterior thigh, medial leg (saphenous branch).', clinical: 'Femoral neuropathy: difficulty climbing stairs, absent knee jerk. L4 radiculopathy mimics. Femoral nerve block for hip surgery.' },
-              { id: 'sympathetic', name: 'Sympathetic Chain', x: 0.54, y: 0.30, v: 'p', fn: 'Paired paravertebral ganglia from C1 to coccyx. "Fight or flight": increases HR, dilates pupils, bronchodilation, vasoconstriction, inhibits GI.', clinical: 'Horner syndrome (sympathetic disruption): miosis, ptosis, anhidrosis. Sympathectomy for hyperhidrosis.' },
-              { id: 'cranial_n', name: 'Cranial Nerves (I-XII)', x: 0.50, y: 0.08, v: 'a', fn: '12 pairs: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, spinal accessory, hypoglossal.', clinical: 'CN III palsy: "down and out" eye, ptosis, dilated pupil. CN VII (Bell palsy): facial droop. CN XII: tongue deviates toward lesion.' }
+              { id: 'cerebral_cortex', name: t('stem.anatomy.cerebral_cortex_4_lobes', 'Cerebral Cortex (4 Lobes)'), x: 0.50, y: 0.04, v: 'a', fn: 'Thin (2\u20134mm) outer layer of gray matter with ~16 billion neurons. 6 layers of cortical columns. Divided into 4 lobes: Frontal (executive function, motor, Broca area), Parietal (somatosensory, spatial), Temporal (auditory, Wernicke area, memory), Occipital (vision). Comprises 80% of brain mass.', clinical: 'Frontal lobe damage: personality change (Phineas Gage case), impaired judgment. Parietal lesions: hemispatial neglect. Temporal lobe epilepsy: most common focal seizure type. Occipital stroke: cortical blindness.', clinicalKid: 'Your cerebral cortex is the wrinkly outer layer of your brain, and it is the part that helps you think, move, see, hear, and remember. It has four areas called lobes, and each one has its own job, like seeing in the back and planning in the front. Sleep, healthy food, learning new things, and wearing a helmet keep it strong and safe.', detail: t('stem.anatomy.brodmann_areas_map_52_cytoarchitectura', 'Brodmann areas map 52 cytoarchitectural regions. Primary motor cortex (area 4), primary somatosensory (areas 3,1,2), primary visual (area 17), primary auditory (areas 41,42). Prefrontal cortex is last to myelinate (age ~25).') },
+              { id: 'cerebellum', name: t('stem.anatomy.cerebellum', 'Cerebellum'), x: 0.52, y: 0.07, v: 'p', fn: '10% of brain volume but contains ~80% of all neurons (~69 billion). "Little brain" at posterior fossa. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (limb coordination), cerebrocerebellum (motor planning, cognition). Compares intended vs actual movement for error correction.', clinical: 'Cerebellar lesions: ataxia (uncoordinated gait), intention tremor, dysarthria (scanning speech), nystagmus, past-pointing. Cerebellar stroke: acute vertigo and ataxia may be misdiagnosed as inner ear problems. Fetal alcohol syndrome damages cerebellum.', clinicalKid: 'Your cerebellum is a small part at the back of your brain that helps you balance and move smoothly. It helps you walk, run, ride a bike, and catch a ball without falling over. Playing, practicing new moves, and getting good sleep help it work well.', detail: t('stem.anatomy.purkinje_cells_are_among_the_largest_n', 'Purkinje cells are among the largest neurons, each receiving ~200,000 synaptic inputs. Cerebellar cortex has 3 layers: molecular, Purkinje, granular. Emerging research shows roles in cognition, emotion, and language.') },
+              { id: 'brainstem', name: t('stem.anatomy.brainstem_midbrain_pons_medulla', 'Brainstem (Midbrain, Pons, Medulla)'), x: 0.50, y: 0.08, v: 'p', fn: 'Connects cerebrum to spinal cord. Three parts: Midbrain (visual/auditory reflexes, substantia nigra for dopamine), Pons (relay between cortex and cerebellum, respiratory rhythm), Medulla oblongata (cardiovascular center, respiratory center, vomiting, swallowing). Reticular formation spans all three \u2014 controls arousal and consciousness.', clinical: 'Brainstem death = legal death in many jurisdictions (irreversible loss of consciousness and vital reflexes). Locked-in syndrome (ventral pons lesion): conscious but unable to move except eyes. Central sleep apnea from medullary dysfunction.', clinicalKid: 'Your brainstem sits at the bottom of your brain, where it connects to your spinal cord. It quietly takes care of jobs you do not have to think about, like breathing, your heartbeat, and swallowing. Good sleep, healthy food, and wearing a helmet help keep it safe and working well.', detail: t('stem.anatomy.contains_nuclei_for_cranial_nerves_iii', 'Contains nuclei for cranial nerves III\u2013XII. Reticular activating system (RAS) is the brain\'s "on switch" \u2014 damage causes coma. Decussation of pyramids in medulla: motor crossover explains contralateral motor control.') },
+              { id: 'hippocampus', name: t('stem.anatomy.hippocampus', 'Hippocampus'), x: 0.48, y: 0.06, v: 'a', fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term memory to long-term memory (consolidation). Contains place cells for spatial navigation (Nobel Prize 2014, O\'Keefe). One of two brain regions with adult neurogenesis (new neuron formation). Theta rhythms during memory encoding.', clinical: 'Alzheimer disease begins here \u2014 hippocampal atrophy on MRI is an early diagnostic marker. Bilateral hippocampal damage (e.g., Patient H.M.) causes severe anterograde amnesia. Chronic stress and cortisol shrink the hippocampus. PTSD associated with reduced hippocampal volume.', detail: t('stem.anatomy.memory_replay_during_sleep_hippocampal', 'Memory replay during sleep: hippocampal neurons "replay" daytime experiences during N3 sleep, transferring memories to neocortex. Grid cells in entorhinal cortex provide spatial coordinates to hippocampal place cells.') },
+              { id: 'amygdala', name: t('stem.anatomy.amygdala', 'Amygdala'), x: 0.46, y: 0.06, v: 'a', fn: 'Almond-shaped nuclei in anterior temporal lobe. Key hub for processing fear, threat detection, and emotional memory. Receives fast "low road" input from thalamus for rapid danger response (before conscious awareness). Modulates memory storage based on emotional arousal (why emotional events are remembered better).', clinical: 'Hyperactive amygdala in anxiety disorders, PTSD, and phobias. Bilateral amygdala damage (Urbach-Wiethe disease): inability to recognize fear in faces, impaired fear conditioning. Amygdala involved in autism spectrum disorder (social threat processing).', detail: t('stem.anatomy.fear_conditioning_pathway_auditory_cor', 'Fear conditioning pathway: auditory cortex \u2192 lateral amygdala \u2192 central amygdala \u2192 hypothalamus (stress response) + PAG (freezing). Amygdala-prefrontal interactions allow emotional regulation \u2014 basis of CBT therapy.') },
+              { id: 'thalamus', name: t('stem.anatomy.thalamus', 'Thalamus'), x: 0.50, y: 0.06, v: 'b', fn: 'Paired egg-shaped structures forming 80% of diencephalon. "Gateway to consciousness" \u2014 relays and filters ALL sensory information to cortex (except olfaction). Contains ~60 nuclei organized into functional groups. Generates sleep spindles during N2 sleep. Thalamocortical oscillations underlie consciousness itself.', clinical: 'Thalamic stroke: contralateral sensory loss + thalamic pain syndrome (Dejerine-Roussy: severe, burning pain). Fatal familial insomnia: prion disease destroying thalamus \u2192 complete inability to sleep \u2192 death. Deep brain stimulation of thalamus for essential tremor.', detail: t('stem.anatomy.key_nuclei_vpl_vpm_somatosensory_relay', 'Key nuclei: VPL/VPM (somatosensory relay), LGN (visual relay to V1), MGN (auditory relay to A1), pulvinar (attention), anterior nuclear group (memory, Papez circuit).') },
+              { id: 'hypothalamus', name: t('stem.anatomy.hypothalamus', 'Hypothalamus'), x: 0.50, y: 0.07, v: 'a', fn: 'Small (4g, ~1% of brain) but controls: body temperature, hunger/thirst, circadian rhythm (SCN = master clock), autonomic nervous system, pituitary gland (via hypothalamic-hypophyseal portal system). Suprachiasmatic nucleus (SCN) receives light input from retina and entrains 24-hr circadian cycle.', clinical: 'Hypothalamic dysfunction: diabetes insipidus (no ADH), obesity (ventromedial lesion = hyperphagia), anorexia (lateral lesion = aphagia). Circadian disruption linked to depression, metabolic syndrome, cancer. Jet lag = SCN resynchronizing.', detail: t('stem.anatomy.thermostat_analogy_anterior_hypothalam', 'Thermostat analogy: anterior hypothalamus triggers cooling (vasodilation, sweating); posterior hypothalamus triggers warming (shivering, vasoconstriction). Fever = elevated set point by prostaglandins from infection.') },
+              { id: 'corpus_callosum', name: t('stem.anatomy.corpus_callosum', 'Corpus Callosum'), x: 0.50, y: 0.05, v: 'b', fn: 'Largest white matter structure in brain. ~200 million axons connecting left and right hemispheres. Enables interhemispheric communication and integration. Develops throughout childhood; fully myelinated by age ~12. Four regions: rostrum, genu, body, splenium.', clinical: 'Split-brain patients (callosotomy for epilepsy): each hemisphere operates independently \u2014 left hand "doesn\'t know" what right hand is doing (Roger Sperry, Nobel 1981). Agenesis of corpus callosum: congenital absence, often incidental finding. Callosal lesions in MS.', detail: t('stem.anatomy.split_brain_experiments_revealed_hemis', 'Split-brain experiments revealed hemispheric specialization: left hemisphere = language, logic; right hemisphere = spatial, holistic processing. Information presented to one visual field is processed by contralateral hemisphere.') },
+              { id: 'basal_ganglia', name: t('stem.anatomy.basal_ganglia', 'Basal Ganglia'), x: 0.48, y: 0.05, v: 'a', fn: 'Deep gray matter nuclei: caudate, putamen (together = striatum), globus pallidus. With substantia nigra and subthalamic nucleus, form circuits for motor initiation/inhibition, habit formation, reward learning, and procedural memory. Direct pathway facilitates movement; indirect pathway inhibits movement.', clinical: 'Parkinson disease: dopamine depletion in substantia nigra \u2192 bradykinesia, rigidity, resting tremor, postural instability. Huntington disease: caudate/putamen degeneration \u2192 chorea (involuntary dance-like movements). OCD linked to caudate hyperactivity. Deep brain stimulation of subthalamic nucleus for Parkinson.', detail: t('stem.anatomy.dopamine_from_substantia_nigra_modulat', 'Dopamine from substantia nigra modulates the direct (D1, excitatory) and indirect (D2, inhibitory) pathways. Loss of this modulation in Parkinson creates the characteristic difficulty initiating movement.') },
+              { id: 'spinal_cord', name: t('stem.anatomy.spinal_cord', 'Spinal Cord'), x: 0.50, y: 0.30, v: 'p', fn: 'Extends from foramen magnum to L1\u2013L2 (conus medullaris). Conducts sensory/motor signals. 31 segments, each with dorsal (sensory) and ventral (motor) roots.', clinical: 'Spinal cord injury: above C4 \u2192 quadriplegia + ventilator. Complete transection \u2192 loss of motor/sensory below level.', clinicalKid: 'Your spinal cord is a thick bundle of nerves that runs down your back inside your spine. It carries messages between your brain and the rest of your body so you can feel and move. Wearing a helmet and a seatbelt and sitting up tall help keep it safe and strong.' },
+              { id: 'vagus', name: t('stem.anatomy.vagus_nerve_cn_x', 'Vagus Nerve (CN X)'), x: 0.44, y: 0.14, v: 'a', fn: 'Longest cranial nerve. Parasympathetic innervation to thoracic and abdominal viscera. Slows heart rate, increases GI motility, controls laryngeal muscles.', clinical: 'Vagal stimulation: carotid sinus massage, Valsalva maneuver for SVT. Vagus nerve stimulator for epilepsy/depression. Recurrent laryngeal nerve injury \u2192 hoarseness.' },
+              { id: 'sciatic', name: t('stem.anatomy.sciatic_nerve', 'Sciatic Nerve'), x: 0.55, y: 0.50, v: 'p', fn: 'Largest/longest nerve in body. L4\u2013S3 roots. Exits pelvis through greater sciatic foramen below piriformis. Divides into tibial and common peroneal nerves above knee.', clinical: 'Sciatica: radiculopathy from herniated disc (L4\u2013S1). Piriformis syndrome mimics sciatica. IM injection site avoidance.', clinicalKid: 'Your sciatic nerve is the longest, biggest nerve in your whole body, running from your lower back all the way down each leg. It carries messages between your brain and your legs so you can feel things and move, walk, and run. Stretching, moving around, and sitting up tall help your back and legs feel good.' },
+              { id: 'brachial_plexus', name: t('stem.anatomy.brachial_plexus', 'Brachial Plexus'), x: 0.34, y: 0.16, v: 'a', fn: 'C5\u2013T1 nerve roots form trunks, divisions, cords, branches. Innervates entire upper limb. "Robert Taylor Drinks Cold Beer" (roots, trunks, divisions, cords, branches).', clinical: 'Erb-Duchenne palsy (C5\u2013C6): "waiter\'s tip" position. Klumpke palsy (C8\u2013T1): claw hand. Birth injuries, motorcycle accidents.' },
+              { id: 'median', name: t('stem.anatomy.median_nerve', 'Median Nerve'), x: 0.22, y: 0.38, v: 'a', fn: 'C5\u2013T1 via lateral and medial cords. Motor: forearm pronators, wrist/finger flexors, thenar muscles. Sensory: palmar lateral 3.5 digits.', clinical: 'Carpal tunnel syndrome: median nerve compression under flexor retinaculum. Hand of benediction (can\'t flex index/middle fingers).' },
+              { id: 'ulnar_n', name: t('stem.anatomy.ulnar_nerve', 'Ulnar Nerve'), x: 0.78, y: 0.34, v: 'a', fn: 'C8\u2013T1 via medial cord. Motor: intrinsic hand muscles (interossei, hypothenar), FCU, medial FDP. Sensory: medial 1.5 digits.', clinical: '"Funny bone" \u2014 vulnerable at medial epicondyle. Cubital tunnel syndrome. Claw hand deformity. Froment sign.' },
+              { id: 'femoral_n', name: t('stem.anatomy.femoral_nerve', 'Femoral Nerve'), x: 0.40, y: 0.48, v: 'a', fn: 'L2\u2013L4 via lumbar plexus. Motor: quadriceps (knee extension), iliacus, sartorius. Sensory: anterior thigh, medial leg (saphenous branch).', clinical: 'Femoral neuropathy: difficulty climbing stairs, absent knee jerk. L4 radiculopathy mimics. Femoral nerve block for hip surgery.' },
+              { id: 'sympathetic', name: t('stem.anatomy.sympathetic_chain', 'Sympathetic Chain'), x: 0.54, y: 0.30, v: 'p', fn: 'Paired paravertebral ganglia from C1 to coccyx. "Fight or flight": increases HR, dilates pupils, bronchodilation, vasoconstriction, inhibits GI.', clinical: 'Horner syndrome (sympathetic disruption): miosis, ptosis, anhidrosis. Sympathectomy for hyperhidrosis.' },
+              { id: 'cranial_n', name: t('stem.anatomy.cranial_nerves_i_xii', 'Cranial Nerves (I-XII)'), x: 0.50, y: 0.08, v: 'a', fn: '12 pairs: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, spinal accessory, hypoglossal.', clinical: 'CN III palsy: "down and out" eye, ptosis, dilated pupil. CN VII (Bell palsy): facial droop. CN XII: tongue deviates toward lesion.' }
             ]
           },
 
           lymphatic: {
-            name: 'Lymphatic', icon: '\uD83D\uDFE2', color: '#dcfce7', accent: '#16a34a',
-            desc: 'Returns interstitial fluid, absorbs dietary fat, immune surveillance \u2014 600\u2013700 lymph nodes, thymus, spleen.',
+            name: t('stem.anatomy.lymphatic', 'Lymphatic'), icon: '\uD83D\uDFE2', color: '#dcfce7', accent: '#16a34a',
+            desc: t('stem.anatomy.returns_interstitial_fluid_absorbs_die', 'Returns interstitial fluid, absorbs dietary fat, immune surveillance \u2014 600\u2013700 lymph nodes, thymus, spleen.'),
             structures: [
-              { id: 'thymus', name: 'Thymus', x: 0.50, y: 0.19, v: 'a', fn: 'Primary lymphoid organ in anterior mediastinum. T-cell maturation and positive/negative selection. Largest in childhood, involutes after puberty (replaced by fat).', clinical: 'Thymoma: associated with myasthenia gravis (anti-AChR antibodies). DiGeorge syndrome: thymic aplasia \u2192 T-cell deficiency.' },
-              { id: 'spleen', name: 'Spleen', x: 0.58, y: 0.30, v: 'a', fn: 'Largest lymphoid organ. Filters blood: removes old RBCs (red pulp), mounts immune responses to blood-borne antigens (white pulp). Stores 1/3 of platelets.', clinical: 'Splenomegaly in mono, malaria, leukemia. Splenic rupture from trauma \u2192 emergency splenectomy. Post-splenectomy: encapsulated bacteria risk.' },
-              { id: 'tonsils', name: 'Tonsils (Waldeyer Ring)', x: 0.50, y: 0.11, v: 'a', fn: 'Pharyngeal (adenoids), palatine, tubal, and lingual tonsils form a lymphoid ring at the oropharyngeal entrance. First line of defense against inhaled/ingested pathogens.', clinical: 'Tonsillitis, peritonsillar abscess ("quinsy"). Adenoid hypertrophy \u2192 mouth breathing, sleep apnea in children.' },
-              { id: 'cervical_ln', name: 'Cervical Lymph Nodes', x: 0.56, y: 0.13, v: 'a', fn: 'Drain head and neck including scalp, face, oral cavity, pharynx. Deep cervical chain runs along IJV. Virchow node (left supraclavicular) drains thoracic duct.', clinical: 'Enlarged: infection, lymphoma, metastatic cancer. Virchow node enlargement \u2192 suspect GI malignancy (Troisier sign).' },
-              { id: 'axillary_ln', name: 'Axillary Lymph Nodes', x: 0.32, y: 0.22, v: 'a', fn: '5 groups draining upper limb, breast, chest wall. Sentinel lymph node biopsy in breast cancer staging.', clinical: 'Breast cancer staging depends on axillary LN involvement. Axillary dissection may cause lymphedema of arm.' },
-              { id: 'inguinal_ln', name: 'Inguinal Lymph Nodes', x: 0.44, y: 0.44, v: 'a', fn: 'Superficial group drains lower limb, perineum, lower abdominal wall, external genitalia. Deep group drains along femoral vein.', clinical: 'Lymphadenopathy in STIs, lower limb infections, lymphoma. Buboes in lymphogranuloma venereum, plague.' },
-              { id: 'thoracic_duct', name: 'Thoracic Duct', x: 0.48, y: 0.26, v: 'p', fn: 'Main lymphatic channel (40 cm). Drains \u00BE of body (everything except right upper quadrant). Empties into left subclavian/internal jugular junction (left venous angle).', clinical: 'Chylothorax from thoracic duct injury (trauma, surgery). Milky pleural effusion with high triglycerides.' },
-              { id: 'bone_marrow', name: 'Bone Marrow', x: 0.42, y: 0.57, v: 'a', fn: 'Primary lymphoid organ. Red marrow produces all blood cells (hematopoiesis) including lymphocyte precursors. Adults: mainly in axial skeleton, proximal femur/humerus.', clinical: 'Leukemia (malignant WBC proliferation). Aplastic anemia. Bone marrow biopsy from posterior iliac crest. Bone marrow transplant.' }
+              { id: 'thymus', name: t('stem.anatomy.thymus', 'Thymus'), x: 0.50, y: 0.19, v: 'a', fn: 'Primary lymphoid organ in anterior mediastinum. T-cell maturation and positive/negative selection. Largest in childhood, involutes after puberty (replaced by fat).', clinical: 'Thymoma: associated with myasthenia gravis (anti-AChR antibodies). DiGeorge syndrome: thymic aplasia \u2192 T-cell deficiency.', clinicalKid: 'Your thymus is a small organ in the middle of your chest that helps train the germ fighting cells in your body so they know how to keep you well. It does its biggest job while you are a kid, so sleep, healthy food, and exercise help your whole defense team stay strong.' },
+              { id: 'spleen', name: t('stem.anatomy.spleen', 'Spleen'), x: 0.58, y: 0.30, v: 'a', fn: 'Largest lymphoid organ. Filters blood: removes old RBCs (red pulp), mounts immune responses to blood-borne antigens (white pulp). Stores 1/3 of platelets.', clinical: 'Splenomegaly in mono, malaria, leukemia. Splenic rupture from trauma \u2192 emergency splenectomy. Post-splenectomy: encapsulated bacteria risk.', clinicalKid: 'Your spleen is a soft organ on the left side of your belly that cleans your blood and takes out old, worn out blood cells. It also helps your body fight germs and keeps blood ready for when you need it. Healthy food, exercise, and washing your hands help your spleen do its job.' },
+              { id: 'tonsils', name: t('stem.anatomy.tonsils_waldeyer_ring', 'Tonsils (Waldeyer Ring)'), x: 0.50, y: 0.11, v: 'a', fn: 'Pharyngeal (adenoids), palatine, tubal, and lingual tonsils form a lymphoid ring at the oropharyngeal entrance. First line of defense against inhaled/ingested pathogens.', clinical: 'Tonsillitis, peritonsillar abscess ("quinsy"). Adenoid hypertrophy \u2192 mouth breathing, sleep apnea in children.' },
+              { id: 'cervical_ln', name: t('stem.anatomy.cervical_lymph_nodes', 'Cervical Lymph Nodes'), x: 0.56, y: 0.13, v: 'a', fn: 'Drain head and neck including scalp, face, oral cavity, pharynx. Deep cervical chain runs along IJV. Virchow node (left supraclavicular) drains thoracic duct.', clinical: 'Enlarged: infection, lymphoma, metastatic cancer. Virchow node enlargement \u2192 suspect GI malignancy (Troisier sign).' },
+              { id: 'axillary_ln', name: t('stem.anatomy.axillary_lymph_nodes', 'Axillary Lymph Nodes'), x: 0.32, y: 0.22, v: 'a', fn: '5 groups draining upper limb, breast, chest wall. Sentinel lymph node biopsy in breast cancer staging.', clinical: 'Breast cancer staging depends on axillary LN involvement. Axillary dissection may cause lymphedema of arm.' },
+              { id: 'inguinal_ln', name: t('stem.anatomy.inguinal_lymph_nodes', 'Inguinal Lymph Nodes'), x: 0.44, y: 0.44, v: 'a', fn: 'Superficial group drains lower limb, perineum, lower abdominal wall, external genitalia. Deep group drains along femoral vein.', clinical: 'Lymphadenopathy in STIs, lower limb infections, lymphoma. Buboes in lymphogranuloma venereum, plague.' },
+              { id: 'thoracic_duct', name: t('stem.anatomy.thoracic_duct', 'Thoracic Duct'), x: 0.48, y: 0.26, v: 'p', fn: 'Main lymphatic channel (40 cm). Drains \u00BE of body (everything except right upper quadrant). Empties into left subclavian/internal jugular junction (left venous angle).', clinical: 'Chylothorax from thoracic duct injury (trauma, surgery). Milky pleural effusion with high triglycerides.' },
+              { id: 'bone_marrow', name: t('stem.anatomy.bone_marrow', 'Bone Marrow'), x: 0.42, y: 0.57, v: 'a', fn: 'Primary lymphoid organ. Red marrow produces all blood cells (hematopoiesis) including lymphocyte precursors. Adults: mainly in axial skeleton, proximal femur/humerus.', clinical: 'Leukemia (malignant WBC proliferation). Aplastic anemia. Bone marrow biopsy from posterior iliac crest. Bone marrow transplant.' }
             ]
           },
 
           organs: {
-            name: 'Organ Systems', icon: '\uD83C\uDFE5', color: '#e0f2fe', accent: '#0284c7',
-            desc: 'Major visceral organs \u2014 respiration, digestion, filtration, endocrine regulation.',
+            name: t('stem.anatomy.organ_systems', 'Organ Systems'), icon: '\uD83C\uDFE5', color: '#e0f2fe', accent: '#0284c7',
+            desc: t('stem.anatomy.major_visceral_organs_respiration_dige', 'Major visceral organs \u2014 respiration, digestion, filtration, endocrine regulation.'),
             structures: [
-              { id: 'lungs', name: 'Lungs', x: 0.42, y: 0.24, v: 'a', fn: 'Right lung: 3 lobes (superior, middle, inferior). Left lung: 2 lobes + lingula (cardiac notch). ~300 million alveoli provide ~70 m\u00B2 surface area for gas exchange.', clinical: 'Pneumonia, COPD, asthma, lung cancer (#1 cancer killer). Pneumothorax. Right bronchus more vertical \u2192 foreign body aspiration.' },
-              { id: 'liver', name: 'Liver', x: 0.56, y: 0.30, v: 'a', fn: 'Largest internal organ (1.5 kg). 2 anatomical lobes (right larger). Functions: bile production, detoxification, protein synthesis (albumin, clotting factors), glycogen storage, drug metabolism.', clinical: 'Hepatitis (viral A/B/C), cirrhosis, hepatocellular carcinoma. Liver failure: jaundice, coagulopathy, encephalopathy. Transplantation.' },
-              { id: 'stomach', name: 'Stomach', x: 0.55, y: 0.33, v: 'a', fn: 'J-shaped muscular sac. Regions: cardia, fundus, body, antrum, pylorus. Produces HCl (pH 1\u20132), pepsin, intrinsic factor (B12 absorption). Capacity ~1L.', clinical: 'Peptic ulcer disease (H. pylori, NSAIDs). Gastric cancer. GERD. Gastrectomy may cause dumping syndrome, B12 deficiency.' },
-              { id: 'kidneys', name: 'Kidneys', x: 0.58, y: 0.36, v: 'p', fn: 'Bean-shaped, retroperitoneal at T12\u2013L3. Each has ~1 million nephrons. Filter 180L/day, produce 1\u20132L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).', clinical: 'CKD, nephrotic/nephritic syndrome, kidney stones, renal cell carcinoma. Right kidney lower due to liver. Dialysis when GFR <15.' },
-              { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.38, v: 'a', fn: '6m long: duodenum (25cm, C-shaped), jejunum (2.5m), ileum (3.5m). Primary site of nutrient absorption. Villi and microvilli increase surface area to ~200 m\u00B2.', clinical: 'Celiac disease (gluten sensitivity), Crohn disease (often terminal ileum), SBO (adhesions #1 cause), duodenal ulcers.' },
-              { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.40, v: 'a', fn: '1.5m: cecum, ascending, transverse, descending, sigmoid colon, rectum. Absorbs water and electrolytes. Houses gut microbiome (~100 trillion bacteria). Forms and stores feces.', clinical: 'Colorectal cancer (3rd most common cancer). Diverticulosis/diverticulitis. Ulcerative colitis. Appendicitis (McBurney point).' },
-              { id: 'pancreas', name: 'Pancreas', x: 0.52, y: 0.34, v: 'a', fn: 'Retroperitoneal organ. Exocrine (98%): digestive enzymes (lipase, amylase, trypsinogen) and bicarbonate. Endocrine (2%): islets of Langerhans \u2014 insulin (\u03B2), glucagon (\u03B1).', clinical: 'Acute pancreatitis (gallstones, alcohol). Pancreatic cancer (poor prognosis, 5-yr survival <10%). Type 1 diabetes (autoimmune \u03B2-cell destruction).' },
-              { id: 'gallbladder', name: 'Gallbladder', x: 0.55, y: 0.31, v: 'a', fn: 'Pear-shaped sac on inferior liver surface. Stores and concentrates bile (5\u201310\u00D7). Contracts in response to CCK after fatty meals to release bile into duodenum.', clinical: 'Cholelithiasis (gallstones, 10\u201315% of adults). Cholecystitis. Murphy sign. Cholecystectomy is one of most common surgeries.' },
-              { id: 'bladder', name: 'Urinary Bladder', x: 0.50, y: 0.44, v: 'a', fn: 'Distensible muscular sac. Stores 400\u2013600mL urine. Detrusor muscle contracts for micturition. Internal sphincter (involuntary), external sphincter (voluntary, pudendal nerve).', clinical: 'UTIs (more common in females due to short urethra). Bladder cancer (painless hematuria). Neurogenic bladder in spinal cord injury.' },
-              { id: 'diaphragm', name: 'Diaphragm', x: 0.50, y: 0.27, v: 'a', fn: 'Primary muscle of respiration. Dome-shaped, separates thorax from abdomen. Contracts and flattens during inspiration \u2192 negative intrathoracic pressure. Three openings: T8 (IVC), T10 (esophagus), T12 (aorta).', clinical: 'Hiatal hernia (stomach through esophageal hiatus). Diaphragmatic paralysis from phrenic nerve injury (C3\u2013C5). "C3, 4, 5 keeps the diaphragm alive."' },
-              { id: 'thyroid', name: 'Thyroid Gland', x: 0.50, y: 0.135, v: 'a', fn: 'Butterfly-shaped, anterior neck at C5\u2013T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.', clinical: 'Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos. Thyroid nodules/cancer.' },
-              { id: 'adrenals', name: 'Adrenal Glands', x: 0.56, y: 0.34, v: 'p', fn: 'Suprarenal glands. Cortex (3 zones): zona glomerulosa (aldosterone), zona fasciculata (cortisol), zona reticularis (androgens). Medulla: epinephrine/norepinephrine.', clinical: 'Addison disease (cortical insufficiency): hypotension, hyperpigmentation. Cushing syndrome (cortisol excess). Pheochromocytoma (medullary tumor \u2192 episodic HTN).' }
+              { id: 'lungs', name: t('stem.anatomy.lungs', 'Lungs'), x: 0.42, y: 0.24, v: 'a', fn: 'Right lung: 3 lobes (superior, middle, inferior). Left lung: 2 lobes + lingula (cardiac notch). ~300 million alveoli provide ~70 m\u00B2 surface area for gas exchange.', clinical: 'Pneumonia, COPD, asthma, lung cancer (#1 cancer killer). Pneumothorax. Right bronchus more vertical \u2192 foreign body aspiration.', clinicalKid: 'Your lungs fill up with air like two balloons when you breathe in, then push the air back out. Fresh air and exercise keep them healthy, and staying away from smoke keeps them clean.' },
+              { id: 'liver', name: t('stem.anatomy.liver', 'Liver'), x: 0.56, y: 0.30, v: 'a', fn: 'Largest internal organ (1.5 kg). 2 anatomical lobes (right larger). Functions: bile production, detoxification, protein synthesis (albumin, clotting factors), glycogen storage, drug metabolism.', clinical: 'Hepatitis (viral A/B/C), cirrhosis, hepatocellular carcinoma. Liver failure: jaundice, coagulopathy, encephalopathy. Transplantation.', clinicalKid: 'Your liver is the biggest organ inside your body, and it works like a cleaning crew that filters your blood and keeps it fresh. It also helps you break down food and stores energy for later. Drinking water and eating fruits and vegetables help your liver do its job.' },
+              { id: 'stomach', name: t('stem.anatomy.stomach', 'Stomach'), x: 0.55, y: 0.33, v: 'a', fn: 'J-shaped muscular sac. Regions: cardia, fundus, body, antrum, pylorus. Produces HCl (pH 1\u20132), pepsin, intrinsic factor (B12 absorption). Capacity ~1L.', clinical: 'Peptic ulcer disease (H. pylori, NSAIDs). Gastric cancer. GERD. Gastrectomy may cause dumping syndrome, B12 deficiency.', clinicalKid: 'Your stomach is a stretchy bag that mixes up the food you eat and starts breaking it down. Eating slowly, chewing well, and drinking water help it do its job.' },
+              { id: 'kidneys', name: t('stem.anatomy.kidneys', 'Kidneys'), x: 0.58, y: 0.36, v: 'p', fn: 'Bean-shaped, retroperitoneal at T12\u2013L3. Each has ~1 million nephrons. Filter 180L/day, produce 1\u20132L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).', clinical: 'CKD, nephrotic/nephritic syndrome, kidney stones, renal cell carcinoma. Right kidney lower due to liver. Dialysis when GFR <15.', clinicalKid: 'Your kidneys are two bean shaped helpers that clean your blood and turn the waste into pee so your body can get rid of it. Drinking water and eating fruits and vegetables help them do their job. A doctor can check them to make sure they are working well.' },
+              { id: 'sm_intestine', name: t('stem.anatomy.small_intestine', 'Small Intestine'), x: 0.50, y: 0.38, v: 'a', fn: '6m long: duodenum (25cm, C-shaped), jejunum (2.5m), ileum (3.5m). Primary site of nutrient absorption. Villi and microvilli increase surface area to ~200 m\u00B2.', clinical: 'Celiac disease (gluten sensitivity), Crohn disease (often terminal ileum), SBO (adhesions #1 cause), duodenal ulcers.' },
+              { id: 'lg_intestine', name: t('stem.anatomy.large_intestine', 'Large Intestine'), x: 0.50, y: 0.40, v: 'a', fn: '1.5m: cecum, ascending, transverse, descending, sigmoid colon, rectum. Absorbs water and electrolytes. Houses gut microbiome (~100 trillion bacteria). Forms and stores feces.', clinical: 'Colorectal cancer (3rd most common cancer). Diverticulosis/diverticulitis. Ulcerative colitis. Appendicitis (McBurney point).' },
+              { id: 'pancreas', name: t('stem.anatomy.pancreas', 'Pancreas'), x: 0.52, y: 0.34, v: 'a', fn: 'Retroperitoneal organ. Exocrine (98%): digestive enzymes (lipase, amylase, trypsinogen) and bicarbonate. Endocrine (2%): islets of Langerhans \u2014 insulin (\u03B2), glucagon (\u03B1).', clinical: 'Acute pancreatitis (gallstones, alcohol). Pancreatic cancer (poor prognosis, 5-yr survival <10%). Type 1 diabetes (autoimmune \u03B2-cell destruction).' },
+              { id: 'gallbladder', name: t('stem.anatomy.gallbladder', 'Gallbladder'), x: 0.55, y: 0.31, v: 'a', fn: 'Pear-shaped sac on inferior liver surface. Stores and concentrates bile (5\u201310\u00D7). Contracts in response to CCK after fatty meals to release bile into duodenum.', clinical: 'Cholelithiasis (gallstones, 10\u201315% of adults). Cholecystitis. Murphy sign. Cholecystectomy is one of most common surgeries.' },
+              { id: 'bladder', name: t('stem.anatomy.urinary_bladder', 'Urinary Bladder'), x: 0.50, y: 0.44, v: 'a', fn: 'Distensible muscular sac. Stores 400\u2013600mL urine. Detrusor muscle contracts for micturition. Internal sphincter (involuntary), external sphincter (voluntary, pudendal nerve).', clinical: 'UTIs (more common in females due to short urethra). Bladder cancer (painless hematuria). Neurogenic bladder in spinal cord injury.' },
+              { id: 'diaphragm', name: t('stem.anatomy.diaphragm', 'Diaphragm'), x: 0.50, y: 0.27, v: 'a', fn: 'Primary muscle of respiration. Dome-shaped, separates thorax from abdomen. Contracts and flattens during inspiration \u2192 negative intrathoracic pressure. Three openings: T8 (IVC), T10 (esophagus), T12 (aorta).', clinical: 'Hiatal hernia (stomach through esophageal hiatus). Diaphragmatic paralysis from phrenic nerve injury (C3\u2013C5). "C3, 4, 5 keeps the diaphragm alive."', clinicalKid: 'Your diaphragm is a big dome-shaped muscle under your lungs that helps you breathe. When it tightens and flattens, it pulls air into your lungs, and when it relaxes, the air goes back out. Taking slow deep breaths and getting plenty of exercise help this strong muscle do its job.' },
+              { id: 'thyroid', name: t('stem.anatomy.thyroid_gland', 'Thyroid Gland'), x: 0.50, y: 0.135, v: 'a', fn: 'Butterfly-shaped, anterior neck at C5\u2013T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.', clinical: 'Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos. Thyroid nodules/cancer.' },
+              { id: 'adrenals', name: t('stem.anatomy.adrenal_glands', 'Adrenal Glands'), x: 0.56, y: 0.34, v: 'p', fn: 'Suprarenal glands. Cortex (3 zones): zona glomerulosa (aldosterone), zona fasciculata (cortisol), zona reticularis (androgens). Medulla: epinephrine/norepinephrine.', clinical: 'Addison disease (cortical insufficiency): hypotension, hyperpigmentation. Cushing syndrome (cortisol excess). Pheochromocytoma (medullary tumor \u2192 episodic HTN).' }
             ]
           },
 
           integumentary: {
-            name: 'Integumentary', icon: '\uD83E\uDDF4', color: '#fef9c3', accent: '#a16207',
-            desc: 'Skin (largest organ, ~2m\u00B2), hair, nails, glands \u2014 barrier, thermoregulation, sensation, vitamin D synthesis.',
+            name: t('stem.anatomy.integumentary', 'Integumentary'), icon: '\uD83E\uDDF4', color: '#fef9c3', accent: '#a16207',
+            desc: t('stem.anatomy.skin_largest_organ_2m_hair_nails_gland', 'Skin (largest organ, ~2m\u00B2), hair, nails, glands \u2014 barrier, thermoregulation, sensation, vitamin D synthesis.'),
             structures: [
-              { id: 'epidermis', name: 'Epidermis', x: 0.50, y: 0.15, v: 'a', fn: 'Outermost skin layer. 5 strata (thick skin): basale, spinosum, granulosum, lucidum, corneum. Keratinocytes (90%), melanocytes (8%), Langerhans cells (immune), Merkel cells (touch). Avascular \u2014 nutrients diffuse from dermis. Turnover every 28\u201330 days.', clinical: 'Psoriasis: hyperproliferation (turnover 3\u20134 days). Melanoma from melanocyte mutation. Eczema (atopic dermatitis). Burns classified by depth of epidermal/dermal involvement.' },
-              { id: 'dermis', name: 'Dermis', x: 0.50, y: 0.20, v: 'a', fn: 'Connective tissue layer beneath epidermis. Papillary dermis (loose CT, dermal papillae for fingerprints) and reticular dermis (dense irregular CT, collagen/elastin for strength/elasticity). Contains blood vessels, nerves, hair follicles, glands.', clinical: 'Stretch marks (striae): torn collagen fibers. Cellulitis: bacterial infection of dermis. Dermal injection site for TB test (Mantoux). Keloid scarring from excess collagen.' },
-              { id: 'hypodermis', name: 'Hypodermis (Subcutaneous)', x: 0.50, y: 0.25, v: 'a', fn: 'Deep to dermis (not technically skin). Adipose tissue for insulation, energy storage, and mechanical cushioning. Contains large blood vessels and nerves. Subcutaneous injection site.', clinical: 'Lipomas (benign fat tumors). Subcutaneous emphysema (air under skin, crepitus). Insulin and heparin injected subcutaneously. Obesity increases this layer.' },
-              { id: 'hair_follicle', name: 'Hair Follicles', x: 0.50, y: 0.06, v: 'a', fn: '~5 million follicles (100,000 on scalp). Hair shaft: medulla, cortex, cuticle. Arrector pili muscle causes goosebumps. Hair growth cycle: anagen (growth, 2\u20136 yrs), catagen (regression), telogen (rest/shedding). Stem cells in bulge region.', clinical: 'Alopecia areata (autoimmune hair loss). Folliculitis (infected follicle). Male pattern baldness (androgenetic alopecia, DHT-mediated). Hirsutism from excess androgens.' },
-              { id: 'sweat_glands', name: 'Sweat Glands', x: 0.30, y: 0.30, v: 'a', fn: 'Eccrine glands (~3 million): watery sweat for thermoregulation, open directly to skin surface, densest on palms/soles. Apocrine glands: thicker secretion into hair follicles in axillae/groin, active after puberty, bacterial breakdown causes body odor.', clinical: 'Hyperhidrosis (excessive sweating). Anhidrosis in Horner syndrome. Heat stroke when sweating fails. Cystic fibrosis: elevated sweat chloride (diagnostic sweat test).' },
-              { id: 'sebaceous', name: 'Sebaceous Glands', x: 0.45, y: 0.10, v: 'a', fn: 'Holocrine glands associated with hair follicles (except palms/soles). Produce sebum (lipid mixture) that waterproofs skin and hair, prevents drying, has bactericidal properties. Activity increases at puberty (androgens).', clinical: 'Acne vulgaris: sebaceous gland hyperactivity + P. acnes bacteria + follicular plugging. Sebaceous cysts. Isotretinoin (Accutane) shrinks sebaceous glands for severe acne.' },
-              { id: 'nails', name: 'Nails', x: 0.16, y: 0.44, v: 'a', fn: 'Keratinized epidermal derivatives. Nail plate grows from nail matrix (under proximal fold) at ~3mm/month (fingernails) or ~1mm/month (toenails). Lunula: visible part of matrix. Nail bed highly vascular (pink color).', clinical: 'Clubbing: sign of chronic hypoxia (lung/heart disease). Koilonychia (spoon nails): iron deficiency. Onychomycosis (fungal infection). Splinter hemorrhages: endocarditis. Beau lines: illness/stress.' },
-              { id: 'melanocytes', name: 'Melanocytes & Pigmentation', x: 0.50, y: 0.35, v: 'a', fn: 'Neural crest-derived cells in stratum basale. Produce melanin (eumelanin=brown/black, pheomelanin=red/yellow) in melanosomes, transferred to surrounding keratinocytes via dendrites. UV radiation increases melanin production (tanning). Same number in all races; differences are in melanin amount/type.', clinical: 'Vitiligo: autoimmune melanocyte destruction (depigmented patches). Albinism: defective melanin synthesis. Melanoma: deadliest skin cancer, arises from melanocytes, ABCDE criteria for detection.' }
+              { id: 'epidermis', name: t('stem.anatomy.epidermis', 'Epidermis'), x: 0.50, y: 0.15, v: 'a', fn: 'Outermost skin layer. 5 strata (thick skin): basale, spinosum, granulosum, lucidum, corneum. Keratinocytes (90%), melanocytes (8%), Langerhans cells (immune), Merkel cells (touch). Avascular \u2014 nutrients diffuse from dermis. Turnover every 28\u201330 days.', clinical: 'Psoriasis: hyperproliferation (turnover 3\u20134 days). Melanoma from melanocyte mutation. Eczema (atopic dermatitis). Burns classified by depth of epidermal/dermal involvement.', clinicalKid: 'Your epidermis is the thin top layer of your skin that covers your whole body like a shield and keeps germs and water out. It makes brand new cells all the time and pushes the old ones off, so your skin is always fresh. Washing with soap and water and putting on sunscreen help keep it healthy and strong.' },
+              { id: 'dermis', name: t('stem.anatomy.dermis', 'Dermis'), x: 0.50, y: 0.20, v: 'a', fn: 'Connective tissue layer beneath epidermis. Papillary dermis (loose CT, dermal papillae for fingerprints) and reticular dermis (dense irregular CT, collagen/elastin for strength/elasticity). Contains blood vessels, nerves, hair follicles, glands.', clinical: 'Stretch marks (striae): torn collagen fibers. Cellulitis: bacterial infection of dermis. Dermal injection site for TB test (Mantoux). Keloid scarring from excess collagen.', clinicalKid: 'Your dermis is the strong, stretchy layer of skin just under the surface. It is packed with tiny blood vessels, nerves, and the roots that hold your hair, and it helps your skin bend and bounce back. Drinking water and eating fruits and vegetables help keep your skin healthy and strong.' },
+              { id: 'hypodermis', name: t('stem.anatomy.hypodermis_subcutaneous', 'Hypodermis (Subcutaneous)'), x: 0.50, y: 0.25, v: 'a', fn: 'Deep to dermis (not technically skin). Adipose tissue for insulation, energy storage, and mechanical cushioning. Contains large blood vessels and nerves. Subcutaneous injection site.', clinical: 'Lipomas (benign fat tumors). Subcutaneous emphysema (air under skin, crepitus). Insulin and heparin injected subcutaneously. Obesity increases this layer.' },
+              { id: 'hair_follicle', name: t('stem.anatomy.hair_follicles', 'Hair Follicles'), x: 0.50, y: 0.06, v: 'a', fn: '~5 million follicles (100,000 on scalp). Hair shaft: medulla, cortex, cuticle. Arrector pili muscle causes goosebumps. Hair growth cycle: anagen (growth, 2\u20136 yrs), catagen (regression), telogen (rest/shedding). Stem cells in bulge region.', clinical: 'Alopecia areata (autoimmune hair loss). Folliculitis (infected follicle). Male pattern baldness (androgenetic alopecia, DHT-mediated). Hirsutism from excess androgens.' },
+              { id: 'sweat_glands', name: t('stem.anatomy.sweat_glands', 'Sweat Glands'), x: 0.30, y: 0.30, v: 'a', fn: 'Eccrine glands (~3 million): watery sweat for thermoregulation, open directly to skin surface, densest on palms/soles. Apocrine glands: thicker secretion into hair follicles in axillae/groin, active after puberty, bacterial breakdown causes body odor.', clinical: 'Hyperhidrosis (excessive sweating). Anhidrosis in Horner syndrome. Heat stroke when sweating fails. Cystic fibrosis: elevated sweat chloride (diagnostic sweat test).' },
+              { id: 'sebaceous', name: t('stem.anatomy.sebaceous_glands', 'Sebaceous Glands'), x: 0.45, y: 0.10, v: 'a', fn: 'Holocrine glands associated with hair follicles (except palms/soles). Produce sebum (lipid mixture) that waterproofs skin and hair, prevents drying, has bactericidal properties. Activity increases at puberty (androgens).', clinical: 'Acne vulgaris: sebaceous gland hyperactivity + P. acnes bacteria + follicular plugging. Sebaceous cysts. Isotretinoin (Accutane) shrinks sebaceous glands for severe acne.' },
+              { id: 'nails', name: t('stem.anatomy.nails', 'Nails'), x: 0.16, y: 0.44, v: 'a', fn: 'Keratinized epidermal derivatives. Nail plate grows from nail matrix (under proximal fold) at ~3mm/month (fingernails) or ~1mm/month (toenails). Lunula: visible part of matrix. Nail bed highly vascular (pink color).', clinical: 'Clubbing: sign of chronic hypoxia (lung/heart disease). Koilonychia (spoon nails): iron deficiency. Onychomycosis (fungal infection). Splinter hemorrhages: endocarditis. Beau lines: illness/stress.' },
+              { id: 'melanocytes', name: t('stem.anatomy.melanocytes_pigmentation', 'Melanocytes & Pigmentation'), x: 0.50, y: 0.35, v: 'a', fn: 'Neural crest-derived cells in stratum basale. Produce melanin (eumelanin=brown/black, pheomelanin=red/yellow) in melanosomes, transferred to surrounding keratinocytes via dendrites. UV radiation increases melanin production (tanning). Same number in all races; differences are in melanin amount/type.', clinical: 'Vitiligo: autoimmune melanocyte destruction (depigmented patches). Albinism: defective melanin synthesis. Melanoma: deadliest skin cancer, arises from melanocytes, ABCDE criteria for detection.' }
             ]
           },
 
           respiratory: {
-            name: 'Respiratory', icon: '\uD83E\uDEC1', color: '#e0f2fe', accent: '#0369a1',
-            desc: 'Oxygen delivery and CO\u2082 removal \u2014 ~12\u201320 breaths/min, ~6L air/min, 300 million alveoli.',
+            name: t('stem.anatomy.respiratory', 'Respiratory'), icon: '\uD83E\uDEC1', color: '#e0f2fe', accent: '#0369a1',
+            desc: t('stem.anatomy.oxygen_delivery_and_co_removal_12_20_b', 'Oxygen delivery and CO\u2082 removal \u2014 ~12\u201320 breaths/min, ~6L air/min, 300 million alveoli.'),
             structures: [
-              { id: 'nasal_cavity', name: 'Nasal Cavity & Sinuses', x: 0.50, y: 0.06, v: 'a', fn: 'Warms, humidifies, and filters inspired air. Nasal conchae (turbinates) increase surface area. Rich vascular plexus (Kiesselbach plexus) on septum. Paranasal sinuses (frontal, maxillary, ethmoid, sphenoid) lighten skull, add resonance to voice.', clinical: 'Epistaxis (nosebleed): 90% anterior from Kiesselbach plexus. Sinusitis. Deviated septum. Nasal polyps in chronic rhinitis/asthma/CF. Anosmia from COVID-19.' },
-              { id: 'pharynx', name: 'Pharynx', x: 0.50, y: 0.10, v: 'a', fn: 'Muscular tube from skull base to C6. Three regions: nasopharynx (adenoids, Eustachian tube), oropharynx (palatine tonsils), laryngopharynx (diverges into esophagus and larynx). Shared airway and food passage.', clinical: 'Pharyngitis (sore throat): viral most common, Group A Strep requires antibiotics (prevent rheumatic fever). Obstructive sleep apnea from pharyngeal collapse. Pharyngeal cancer (HPV-related rising).' },
-              { id: 'larynx', name: 'Larynx (Voice Box)', x: 0.50, y: 0.13, v: 'a', fn: 'Cartilaginous framework at C3\u2013C6. Thyroid cartilage (Adam\'s apple), cricoid (complete ring), arytenoids (move vocal cords). True vocal cords (folds) vibrate for phonation. Epiglottis closes during swallowing to protect airway.', clinical: 'Laryngitis (hoarseness). Recurrent laryngeal nerve injury (thyroid surgery) \u2192 vocal cord paralysis. Croup in children (barking cough). Laryngeal cancer from smoking. Emergency cricothyrotomy through cricothyroid membrane.' },
-              { id: 'trachea', name: 'Trachea', x: 0.50, y: 0.17, v: 'a', fn: '10\u201312 cm tube from C6 to T4\u2013T5 (carina). 16\u201320 C-shaped cartilage rings (open posteriorly to allow esophageal expansion). Pseudostratified ciliated columnar epithelium with goblet cells \u2014 mucociliary escalator traps and clears particles.', clinical: 'Tracheostomy for prolonged ventilation. Tracheomalacia (softened cartilage, floppy airway). Foreign body aspiration: right main bronchus more vertical. Tracheal intubation for general anesthesia.' },
-              { id: 'bronchi', name: 'Bronchial Tree', x: 0.46, y: 0.22, v: 'a', fn: 'Trachea \u2192 R/L main bronchi \u2192 lobar bronchi (3R, 2L) \u2192 segmental \u2192 terminal bronchioles \u2192 respiratory bronchioles. Progressive loss of cartilage, increase in smooth muscle. ~23 generations of branching. Total cross-section increases enormously.', clinical: 'Asthma: bronchospasm + inflammation of bronchi/bronchioles. Bronchitis: inflammation of bronchial mucosa. Bronchiectasis: permanent dilation from chronic infection. Bronchoscopy for diagnosis/biopsy.' },
-              { id: 'alveoli', name: 'Alveoli', x: 0.54, y: 0.26, v: 'a', fn: '~300 million alveoli provide ~70m\u00B2 gas exchange surface. Type I pneumocytes (95% surface, gas exchange). Type II pneumocytes (surfactant production, reduces surface tension). Alveolar macrophages (dust cells) phagocytose particles. Blood-air barrier: 0.5\u03BCm thick.', clinical: 'Pneumonia: alveolar infection/inflammation. ARDS: diffuse alveolar damage, pulmonary edema. Emphysema: alveolar wall destruction (COPD). Neonatal RDS: surfactant deficiency in premature infants.' },
-              { id: 'pleura', name: 'Pleura', x: 0.58, y: 0.24, v: 'a', fn: 'Visceral pleura (covers lungs) and parietal pleura (lines chest wall) create pleural cavity containing ~5mL serous fluid. Surface tension keeps lungs expanded. Negative intrapleural pressure (\u22124 cmH\u2082O) prevents lung collapse.', clinical: 'Pneumothorax: air in pleural space \u2192 lung collapse. Tension pneumothorax: life-threatening, mediastinal shift. Pleural effusion: fluid collection (transudate vs exudate). Mesothelioma: asbestos-related pleural cancer.' },
-              { id: 'resp_muscles', name: 'Respiratory Muscles', x: 0.42, y: 0.28, v: 'a', fn: 'Inspiration: diaphragm (70% of quiet breathing, C3\u2013C5 phrenic nerve) + external intercostals. Forced inspiration adds: SCM, scalenes, pectoralis minor. Expiration: passive in quiet breathing (elastic recoil). Forced expiration: internal intercostals + abdominals.', clinical: 'Phrenic nerve palsy \u2192 hemidiaphragm paralysis. C3\u2013C5 spinal cord injury \u2192 respiratory failure. Myasthenia gravis: respiratory muscle weakness (myasthenic crisis). Flail chest impairs breathing mechanics.' }
+              { id: 'nasal_cavity', name: t('stem.anatomy.nasal_cavity_sinuses', 'Nasal Cavity & Sinuses'), x: 0.50, y: 0.06, v: 'a', fn: 'Warms, humidifies, and filters inspired air. Nasal conchae (turbinates) increase surface area. Rich vascular plexus (Kiesselbach plexus) on septum. Paranasal sinuses (frontal, maxillary, ethmoid, sphenoid) lighten skull, add resonance to voice.', clinical: 'Epistaxis (nosebleed): 90% anterior from Kiesselbach plexus. Sinusitis. Deviated septum. Nasal polyps in chronic rhinitis/asthma/CF. Anosmia from COVID-19.' },
+              { id: 'pharynx', name: t('stem.anatomy.pharynx', 'Pharynx'), x: 0.50, y: 0.10, v: 'a', fn: 'Muscular tube from skull base to C6. Three regions: nasopharynx (adenoids, Eustachian tube), oropharynx (palatine tonsils), laryngopharynx (diverges into esophagus and larynx). Shared airway and food passage.', clinical: 'Pharyngitis (sore throat): viral most common, Group A Strep requires antibiotics (prevent rheumatic fever). Obstructive sleep apnea from pharyngeal collapse. Pharyngeal cancer (HPV-related rising).' },
+              { id: 'larynx', name: t('stem.anatomy.larynx_voice_box', 'Larynx (Voice Box)'), x: 0.50, y: 0.13, v: 'a', fn: 'Cartilaginous framework at C3\u2013C6. Thyroid cartilage (Adam\'s apple), cricoid (complete ring), arytenoids (move vocal cords). True vocal cords (folds) vibrate for phonation. Epiglottis closes during swallowing to protect airway.', clinical: 'Laryngitis (hoarseness). Recurrent laryngeal nerve injury (thyroid surgery) \u2192 vocal cord paralysis. Croup in children (barking cough). Laryngeal cancer from smoking. Emergency cricothyrotomy through cricothyroid membrane.' },
+              { id: 'trachea', name: t('stem.anatomy.trachea', 'Trachea'), x: 0.50, y: 0.17, v: 'a', fn: '10\u201312 cm tube from C6 to T4\u2013T5 (carina). 16\u201320 C-shaped cartilage rings (open posteriorly to allow esophageal expansion). Pseudostratified ciliated columnar epithelium with goblet cells \u2014 mucociliary escalator traps and clears particles.', clinical: 'Tracheostomy for prolonged ventilation. Tracheomalacia (softened cartilage, floppy airway). Foreign body aspiration: right main bronchus more vertical. Tracheal intubation for general anesthesia.', clinicalKid: 'Your windpipe is a stretchy tube in your throat that carries air down to your lungs every time you breathe. Stiff rings hold it open so air can flow, and tiny hairs inside sweep out dust to keep it clean. Fresh air and staying away from smoke help it stay healthy.' },
+              { id: 'bronchi', name: t('stem.anatomy.bronchial_tree', 'Bronchial Tree'), x: 0.46, y: 0.22, v: 'a', fn: 'Trachea \u2192 R/L main bronchi \u2192 lobar bronchi (3R, 2L) \u2192 segmental \u2192 terminal bronchioles \u2192 respiratory bronchioles. Progressive loss of cartilage, increase in smooth muscle. ~23 generations of branching. Total cross-section increases enormously.', clinical: 'Asthma: bronchospasm + inflammation of bronchi/bronchioles. Bronchitis: inflammation of bronchial mucosa. Bronchiectasis: permanent dilation from chronic infection. Bronchoscopy for diagnosis/biopsy.' },
+              { id: 'alveoli', name: t('stem.anatomy.alveoli', 'Alveoli'), x: 0.54, y: 0.26, v: 'a', fn: '~300 million alveoli provide ~70m\u00B2 gas exchange surface. Type I pneumocytes (95% surface, gas exchange). Type II pneumocytes (surfactant production, reduces surface tension). Alveolar macrophages (dust cells) phagocytose particles. Blood-air barrier: 0.5\u03BCm thick.', clinical: 'Pneumonia: alveolar infection/inflammation. ARDS: diffuse alveolar damage, pulmonary edema. Emphysema: alveolar wall destruction (COPD). Neonatal RDS: surfactant deficiency in premature infants.', clinicalKid: 'Your alveoli are millions of tiny air pockets at the end of your lungs, and they look like little bunches of grapes. They let fresh oxygen move from the air you breathe into your blood so your whole body can use it. Breathing fresh air, exercising, and staying away from smoke help keep them clean and healthy.' },
+              { id: 'pleura', name: t('stem.anatomy.pleura', 'Pleura'), x: 0.58, y: 0.24, v: 'a', fn: 'Visceral pleura (covers lungs) and parietal pleura (lines chest wall) create pleural cavity containing ~5mL serous fluid. Surface tension keeps lungs expanded. Negative intrapleural pressure (\u22124 cmH\u2082O) prevents lung collapse.', clinical: 'Pneumothorax: air in pleural space \u2192 lung collapse. Tension pneumothorax: life-threatening, mediastinal shift. Pleural effusion: fluid collection (transudate vs exudate). Mesothelioma: asbestos-related pleural cancer.' },
+              { id: 'resp_muscles', name: t('stem.anatomy.respiratory_muscles', 'Respiratory Muscles'), x: 0.42, y: 0.28, v: 'a', fn: 'Inspiration: diaphragm (70% of quiet breathing, C3\u2013C5 phrenic nerve) + external intercostals. Forced inspiration adds: SCM, scalenes, pectoralis minor. Expiration: passive in quiet breathing (elastic recoil). Forced expiration: internal intercostals + abdominals.', clinical: 'Phrenic nerve palsy \u2192 hemidiaphragm paralysis. C3\u2013C5 spinal cord injury \u2192 respiratory failure. Myasthenia gravis: respiratory muscle weakness (myasthenic crisis). Flail chest impairs breathing mechanics.' }
             ]
           },
 
           endocrine: {
-            name: 'Endocrine', icon: '\u2697\uFE0F', color: '#fae8ff', accent: '#a21caf',
-            desc: 'Hormone-producing glands \u2014 regulate metabolism, growth, reproduction, stress, homeostasis via chemical messengers.',
+            name: t('stem.anatomy.endocrine', 'Endocrine'), icon: '\u2697\uFE0F', color: '#fae8ff', accent: '#a21caf',
+            desc: t('stem.anatomy.hormone_producing_glands_regulate_meta', 'Hormone-producing glands \u2014 regulate metabolism, growth, reproduction, stress, homeostasis via chemical messengers.'),
             structures: [
-              { id: 'pituitary', name: 'Pituitary Gland (Hypophysis)', x: 0.50, y: 0.07, v: 'a', fn: 'Pea-sized "master gland" in sella turcica. Anterior (adenohypophysis): GH, ACTH, TSH, FSH, LH, prolactin. Posterior (neurohypophysis): stores/releases oxytocin and ADH (made in hypothalamus). Regulated by hypothalamic releasing/inhibiting hormones.', clinical: 'Pituitary adenoma: visual field defect (bitemporal hemianopia from chiasm compression). Acromegaly (excess GH in adults). Hyperprolactinemia \u2192 galactorrhea, amenorrhea. Panhypopituitarism.' },
-              { id: 'pineal', name: 'Pineal Gland', x: 0.50, y: 0.05, v: 'p', fn: 'Small endocrine gland in epithalamus. Produces melatonin (from serotonin, regulated by light/dark cycle via SCN). Melatonin regulates circadian rhythm and has antioxidant properties. Calcifies with age (visible on X-ray as a midline marker).', clinical: 'Pineal tumors may cause obstructive hydrocephalus (compresses cerebral aqueduct). Parinaud syndrome: upgaze palsy. Jet lag and shift-work disorder related to melatonin disruption. Exogenous melatonin used as sleep aid.' },
-              { id: 'parathyroid', name: 'Parathyroid Glands', x: 0.52, y: 0.14, v: 'p', fn: '4 small glands on posterior thyroid surface. Produce PTH (parathyroid hormone): raises blood calcium by increasing bone resorption, renal Ca\u00B2\u207A reabsorption, and activating vitamin D. PTH and calcitonin are antagonists.', clinical: 'Hyperparathyroidism: "bones, stones, groans, and psychiatric moans" (osteoporosis, kidney stones, abdominal pain, depression). Hypoparathyroidism: hypocalcemia \u2192 tetany, Chvostek/Trousseau signs. Accidental removal during thyroidectomy.' },
-              { id: 'islets', name: 'Islets of Langerhans', x: 0.52, y: 0.34, v: 'a', fn: 'Endocrine clusters within pancreas (~1\u20132 million islets). \u03B2-cells (70%): insulin (lowers glucose). \u03B1-cells (20%): glucagon (raises glucose). \u03B4-cells: somatostatin (inhibits both). PP-cells: pancreatic polypeptide. Islets are highly vascularized.', clinical: 'Type 1 diabetes: autoimmune \u03B2-cell destruction (insulin-dependent). Type 2 diabetes: insulin resistance + \u03B2-cell dysfunction. Insulinoma: insulin-secreting tumor \u2192 hypoglycemia. Islet transplantation research.' },
-              { id: 'ovaries_endo', name: 'Ovaries (Endocrine)', x: 0.46, y: 0.44, v: 'a', fn: 'Produce estrogen (follicular cells) and progesterone (corpus luteum). Estrogen: secondary sex characteristics, bone density, endometrial proliferation. Progesterone: maintains pregnancy, endometrial secretion. Also produce inhibin and small amounts of testosterone.', clinical: 'PCOS: hyperandrogenism, anovulation, polycystic ovaries. Premature ovarian failure. Menopause: estrogen decline \u2192 hot flashes, osteoporosis, cardiovascular risk. HRT replaces declining hormones.' },
-              { id: 'testes_endo', name: 'Testes (Endocrine)', x: 0.50, y: 0.48, v: 'a', fn: 'Leydig cells (interstitial) produce testosterone under LH stimulation. Testosterone: male secondary sex characteristics, spermatogenesis (with FSH), muscle mass, bone density, libido. Also converted to DHT (5\u03B1-reductase) and estradiol (aromatase).', clinical: 'Hypogonadism: low testosterone \u2192 infertility, decreased libido, osteoporosis. Testosterone replacement therapy. Anabolic steroid abuse: testicular atrophy, cardiovascular risk. Klinefelter syndrome (47,XXY).' },
-              { id: 'hypothal_endo', name: 'Hypothalamic-Pituitary Axis', x: 0.50, y: 0.04, v: 'a', fn: 'Master regulatory cascade. Hypothalamus releases hormones into hypophyseal portal system \u2192 anterior pituitary. Key axes: HPA (stress/cortisol), HPT (thyroid/T3/T4), HPG (gonadal/sex hormones). Negative feedback loops maintain homeostasis.', clinical: 'HPA axis dysregulation in chronic stress, depression, PTSD. Central hypothyroidism (TSH deficiency). Kallmann syndrome: GnRH deficiency \u2192 hypogonadism + anosmia. Sheehan syndrome: pituitary necrosis postpartum.' },
-              { id: 'adrenal_endo', name: 'Adrenal Cortex Zones', x: 0.58, y: 0.34, v: 'a', fn: 'Three zones ("GFR = salt, sugar, sex"): Glomerulosa \u2192 aldosterone (mineralocorticoid, Na\u207A/K\u207A balance, RAAS). Fasciculata \u2192 cortisol (glucocorticoid, stress, anti-inflammatory). Reticularis \u2192 DHEA/androgens (weak androgens).', clinical: 'Conn syndrome: aldosterone-secreting adenoma \u2192 hypertension, hypokalemia. Cushing syndrome: cortisol excess (moon face, buffalo hump, striae). Congenital adrenal hyperplasia (21-hydroxylase deficiency): ambiguous genitalia.' }
+              { id: 'pituitary', name: t('stem.anatomy.pituitary_gland_hypophysis', 'Pituitary Gland (Hypophysis)'), x: 0.50, y: 0.07, v: 'a', fn: 'Pea-sized "master gland" in sella turcica. Anterior (adenohypophysis): GH, ACTH, TSH, FSH, LH, prolactin. Posterior (neurohypophysis): stores/releases oxytocin and ADH (made in hypothalamus). Regulated by hypothalamic releasing/inhibiting hormones.', clinical: 'Pituitary adenoma: visual field defect (bitemporal hemianopia from chiasm compression). Acromegaly (excess GH in adults). Hyperprolactinemia \u2192 galactorrhea, amenorrhea. Panhypopituitarism.', clinicalKid: 'Your pituitary gland is tiny, about the size of a pea, but it is called the master gland because it sends out helpers called hormones that tell your body how to grow and feel. Good sleep, healthy food, and lots of moving and playing help it do its job. A doctor can measure how tall you are growing to check that it is working well.' },
+              { id: 'pineal', name: t('stem.anatomy.pineal_gland', 'Pineal Gland'), x: 0.50, y: 0.05, v: 'p', fn: 'Small endocrine gland in epithalamus. Produces melatonin (from serotonin, regulated by light/dark cycle via SCN). Melatonin regulates circadian rhythm and has antioxidant properties. Calcifies with age (visible on X-ray as a midline marker).', clinical: 'Pineal tumors may cause obstructive hydrocephalus (compresses cerebral aqueduct). Parinaud syndrome: upgaze palsy. Jet lag and shift-work disorder related to melatonin disruption. Exogenous melatonin used as sleep aid.' },
+              { id: 'parathyroid', name: t('stem.anatomy.parathyroid_glands', 'Parathyroid Glands'), x: 0.52, y: 0.14, v: 'p', fn: '4 small glands on posterior thyroid surface. Produce PTH (parathyroid hormone): raises blood calcium by increasing bone resorption, renal Ca\u00B2\u207A reabsorption, and activating vitamin D. PTH and calcitonin are antagonists.', clinical: 'Hyperparathyroidism: "bones, stones, groans, and psychiatric moans" (osteoporosis, kidney stones, abdominal pain, depression). Hypoparathyroidism: hypocalcemia \u2192 tetany, Chvostek/Trousseau signs. Accidental removal during thyroidectomy.' },
+              { id: 'islets', name: t('stem.anatomy.islets_of_langerhans', 'Islets of Langerhans'), x: 0.52, y: 0.34, v: 'a', fn: 'Endocrine clusters within pancreas (~1\u20132 million islets). \u03B2-cells (70%): insulin (lowers glucose). \u03B1-cells (20%): glucagon (raises glucose). \u03B4-cells: somatostatin (inhibits both). PP-cells: pancreatic polypeptide. Islets are highly vascularized.', clinical: 'Type 1 diabetes: autoimmune \u03B2-cell destruction (insulin-dependent). Type 2 diabetes: insulin resistance + \u03B2-cell dysfunction. Insulinoma: insulin-secreting tumor \u2192 hypoglycemia. Islet transplantation research.' },
+              { id: 'ovaries_endo', name: t('stem.anatomy.ovaries_endocrine', 'Ovaries (Endocrine)'), x: 0.46, y: 0.44, v: 'a', fn: 'Produce estrogen (follicular cells) and progesterone (corpus luteum). Estrogen: secondary sex characteristics, bone density, endometrial proliferation. Progesterone: maintains pregnancy, endometrial secretion. Also produce inhibin and small amounts of testosterone.', clinical: 'PCOS: hyperandrogenism, anovulation, polycystic ovaries. Premature ovarian failure. Menopause: estrogen decline \u2192 hot flashes, osteoporosis, cardiovascular risk. HRT replaces declining hormones.' },
+              { id: 'testes_endo', name: t('stem.anatomy.testes_endocrine', 'Testes (Endocrine)'), x: 0.50, y: 0.48, v: 'a', fn: 'Leydig cells (interstitial) produce testosterone under LH stimulation. Testosterone: male secondary sex characteristics, spermatogenesis (with FSH), muscle mass, bone density, libido. Also converted to DHT (5\u03B1-reductase) and estradiol (aromatase).', clinical: 'Hypogonadism: low testosterone \u2192 infertility, decreased libido, osteoporosis. Testosterone replacement therapy. Anabolic steroid abuse: testicular atrophy, cardiovascular risk. Klinefelter syndrome (47,XXY).' },
+              { id: 'hypothal_endo', name: t('stem.anatomy.hypothalamic_pituitary_axis', 'Hypothalamic-Pituitary Axis'), x: 0.50, y: 0.04, v: 'a', fn: 'Master regulatory cascade. Hypothalamus releases hormones into hypophyseal portal system \u2192 anterior pituitary. Key axes: HPA (stress/cortisol), HPT (thyroid/T3/T4), HPG (gonadal/sex hormones). Negative feedback loops maintain homeostasis.', clinical: 'HPA axis dysregulation in chronic stress, depression, PTSD. Central hypothyroidism (TSH deficiency). Kallmann syndrome: GnRH deficiency \u2192 hypogonadism + anosmia. Sheehan syndrome: pituitary necrosis postpartum.' },
+              { id: 'adrenal_endo', name: t('stem.anatomy.adrenal_cortex_zones', 'Adrenal Cortex Zones'), x: 0.58, y: 0.34, v: 'a', fn: 'Three zones ("GFR = salt, sugar, sex"): Glomerulosa \u2192 aldosterone (mineralocorticoid, Na\u207A/K\u207A balance, RAAS). Fasciculata \u2192 cortisol (glucocorticoid, stress, anti-inflammatory). Reticularis \u2192 DHEA/androgens (weak androgens).', clinical: 'Conn syndrome: aldosterone-secreting adenoma \u2192 hypertension, hypokalemia. Cushing syndrome: cortisol excess (moon face, buffalo hump, striae). Congenital adrenal hyperplasia (21-hydroxylase deficiency): ambiguous genitalia.' }
             ]
           },
 
           reproductive: {
-            name: 'Reproductive', icon: '\uD83D\uDC76', color: '#fce7f3', accent: '#db2777',
-            desc: 'Male and female reproductive organs \u2014 gamete production, fertilization, fetal development, hormonal regulation.',
+            name: t('stem.anatomy.reproductive', 'Reproductive'), icon: '\uD83D\uDC76', color: '#fce7f3', accent: '#db2777',
+            desc: t('stem.anatomy.male_and_female_reproductive_organs_ga', 'Male and female reproductive organs \u2014 gamete production, fertilization, fetal development, hormonal regulation.'),
             structures: [
-              { id: 'testes_repro', name: 'Testes', x: 0.50, y: 0.52, v: 'a', fn: 'Paired oval organs in scrotum (2\u20133\u00B0C below body temperature for spermatogenesis). Each contains ~250 lobules with seminiferous tubules (sperm production, 64\u201372 day cycle). Sertoli cells provide nutritive/structural support. ~200 million sperm produced daily.', clinical: 'Cryptorchidism (undescended testis): infertility and cancer risk if uncorrected. Testicular torsion: surgical emergency (6hr window). Testicular cancer: most common solid tumor in men 15\u201335.' },
-              { id: 'epididymis', name: 'Epididymis', x: 0.52, y: 0.50, v: 'p', fn: 'Coiled tube (~6m uncoiled) on posterior testis. Three regions: head (receives sperm from efferent ductules), body, tail (stores mature sperm). Sperm undergo maturation during 12-day transit \u2014 gain motility and fertilizing capacity.', clinical: 'Epididymitis: infection (STI in young men, UTI organisms in older men) \u2192 scrotal pain/swelling. Positive Prehn sign (pain relief with elevation) distinguishes from torsion. Epididymal cyst (spermatocele).' },
-              { id: 'prostate', name: 'Prostate Gland', x: 0.50, y: 0.46, v: 'a', fn: 'Walnut-sized gland surrounding prostatic urethra below bladder. Produces ~30% of seminal fluid (citric acid, PSA, zinc, proteolytic enzymes). Five lobes; peripheral zone largest and most common site of cancer. Grows throughout life under DHT influence.', clinical: 'BPH (benign prostatic hyperplasia): urinary obstruction in elderly men. Prostate cancer: most common male cancer, detected by PSA and DRE. Prostatitis. TURP (transurethral resection) for BPH.' },
-              { id: 'uterus', name: 'Uterus', x: 0.50, y: 0.42, v: 'a', fn: 'Pear-shaped muscular organ. Regions: fundus, body, cervix. Three layers: endometrium (cyclically shed in menstruation), myometrium (smooth muscle, contractions during labor), perimetrium (serosa). Normally anteverted and anteflexed. Capacity expands 500\u00D7 in pregnancy.', clinical: 'Uterine fibroids (leiomyomas): most common pelvic tumor in women. Endometriosis: endometrial tissue outside uterus. Endometrial cancer (most common GYN malignancy). C-section incision through all layers.' },
-              { id: 'ovaries_repro', name: 'Ovaries', x: 0.42, y: 0.44, v: 'a', fn: 'Paired, almond-sized organs lateral to uterus. Contain ~1\u20132 million oocytes at birth (depleted to ~400,000 by puberty, ~400 ovulated in lifetime). Follicular development: primordial \u2192 primary \u2192 secondary \u2192 Graafian follicle \u2192 ovulation \u2192 corpus luteum.', clinical: 'Ovarian cysts (functional most common). Ovarian cancer: "silent killer" (often diagnosed late). PCOS. Ovarian torsion: surgical emergency. Ectopic pregnancy if fertilized egg implants in tube instead of uterus.' },
-              { id: 'fallopian', name: 'Fallopian Tubes (Oviducts)', x: 0.38, y: 0.41, v: 'a', fn: '~10cm tubes connecting ovaries to uterus. Regions: infundibulum (fimbriae catch ovulated oocyte), ampulla (usual site of fertilization), isthmus (narrow, connects to uterus). Ciliated epithelium and peristalsis transport ovum/embryo toward uterus over 3\u20134 days.', clinical: 'Ectopic pregnancy (95% in fallopian tube): life-threatening rupture risk. PID (pelvic inflammatory disease, often from Chlamydia/Gonorrhea): scarring \u2192 infertility. Tubal ligation for permanent contraception. Salpingectomy.' },
-              { id: 'mammary', name: 'Mammary Glands', x: 0.42, y: 0.24, v: 'a', fn: 'Modified apocrine sweat glands. 15\u201320 lobes of glandular tissue, each with lactiferous duct opening at nipple. Development: estrogen (ductal growth), progesterone (lobular growth), prolactin (milk production), oxytocin (milk ejection/let-down reflex).', clinical: 'Breast cancer: most common cancer in women. BRCA1/2 gene mutations increase risk. Fibrocystic changes (benign, cyclical tenderness). Mastitis: infection during lactation. Mammography screening from age 40\u201350.' },
-              { id: 'placenta', name: 'Placenta', x: 0.50, y: 0.38, v: 'a', fn: 'Temporary organ during pregnancy (develops from trophoblast). Maternal-fetal exchange: O\u2082, nutrients (maternal \u2192 fetal), CO\u2082, waste (fetal \u2192 maternal). Produces hCG, progesterone, estrogen, hPL. Barrier to most pathogens (not all: TORCH infections cross). Weighs ~500g at term.', clinical: 'Placenta previa: placenta covers cervical os \u2192 painless bleeding. Placental abruption: premature separation \u2192 painful bleeding, emergency. Pre-eclampsia: abnormal placentation \u2192 HTN, proteinuria. hCG is the basis of pregnancy tests.' }
+              { id: 'testes_repro', name: t('stem.anatomy.testes', 'Testes'), x: 0.50, y: 0.52, v: 'a', fn: 'Paired oval organs in scrotum (2\u20133\u00B0C below body temperature for spermatogenesis). Each contains ~250 lobules with seminiferous tubules (sperm production, 64\u201372 day cycle). Sertoli cells provide nutritive/structural support. ~200 million sperm produced daily.', clinical: 'Cryptorchidism (undescended testis): infertility and cancer risk if uncorrected. Testicular torsion: surgical emergency (6hr window). Testicular cancer: most common solid tumor in men 15\u201335.' },
+              { id: 'epididymis', name: t('stem.anatomy.epididymis', 'Epididymis'), x: 0.52, y: 0.50, v: 'p', fn: 'Coiled tube (~6m uncoiled) on posterior testis. Three regions: head (receives sperm from efferent ductules), body, tail (stores mature sperm). Sperm undergo maturation during 12-day transit \u2014 gain motility and fertilizing capacity.', clinical: 'Epididymitis: infection (STI in young men, UTI organisms in older men) \u2192 scrotal pain/swelling. Positive Prehn sign (pain relief with elevation) distinguishes from torsion. Epididymal cyst (spermatocele).' },
+              { id: 'prostate', name: t('stem.anatomy.prostate_gland', 'Prostate Gland'), x: 0.50, y: 0.46, v: 'a', fn: 'Walnut-sized gland surrounding prostatic urethra below bladder. Produces ~30% of seminal fluid (citric acid, PSA, zinc, proteolytic enzymes). Five lobes; peripheral zone largest and most common site of cancer. Grows throughout life under DHT influence.', clinical: 'BPH (benign prostatic hyperplasia): urinary obstruction in elderly men. Prostate cancer: most common male cancer, detected by PSA and DRE. Prostatitis. TURP (transurethral resection) for BPH.' },
+              { id: 'uterus', name: t('stem.anatomy.uterus', 'Uterus'), x: 0.50, y: 0.42, v: 'a', fn: 'Pear-shaped muscular organ. Regions: fundus, body, cervix. Three layers: endometrium (cyclically shed in menstruation), myometrium (smooth muscle, contractions during labor), perimetrium (serosa). Normally anteverted and anteflexed. Capacity expands 500\u00D7 in pregnancy.', clinical: 'Uterine fibroids (leiomyomas): most common pelvic tumor in women. Endometriosis: endometrial tissue outside uterus. Endometrial cancer (most common GYN malignancy). C-section incision through all layers.' },
+              { id: 'ovaries_repro', name: t('stem.anatomy.ovaries', 'Ovaries'), x: 0.42, y: 0.44, v: 'a', fn: 'Paired, almond-sized organs lateral to uterus. Contain ~1\u20132 million oocytes at birth (depleted to ~400,000 by puberty, ~400 ovulated in lifetime). Follicular development: primordial \u2192 primary \u2192 secondary \u2192 Graafian follicle \u2192 ovulation \u2192 corpus luteum.', clinical: 'Ovarian cysts (functional most common). Ovarian cancer: "silent killer" (often diagnosed late). PCOS. Ovarian torsion: surgical emergency. Ectopic pregnancy if fertilized egg implants in tube instead of uterus.' },
+              { id: 'fallopian', name: t('stem.anatomy.fallopian_tubes_oviducts', 'Fallopian Tubes (Oviducts)'), x: 0.38, y: 0.41, v: 'a', fn: '~10cm tubes connecting ovaries to uterus. Regions: infundibulum (fimbriae catch ovulated oocyte), ampulla (usual site of fertilization), isthmus (narrow, connects to uterus). Ciliated epithelium and peristalsis transport ovum/embryo toward uterus over 3\u20134 days.', clinical: 'Ectopic pregnancy (95% in fallopian tube): life-threatening rupture risk. PID (pelvic inflammatory disease, often from Chlamydia/Gonorrhea): scarring \u2192 infertility. Tubal ligation for permanent contraception. Salpingectomy.' },
+              { id: 'mammary', name: t('stem.anatomy.mammary_glands', 'Mammary Glands'), x: 0.42, y: 0.24, v: 'a', fn: 'Modified apocrine sweat glands. 15\u201320 lobes of glandular tissue, each with lactiferous duct opening at nipple. Development: estrogen (ductal growth), progesterone (lobular growth), prolactin (milk production), oxytocin (milk ejection/let-down reflex).', clinical: 'Breast cancer: most common cancer in women. BRCA1/2 gene mutations increase risk. Fibrocystic changes (benign, cyclical tenderness). Mastitis: infection during lactation. Mammography screening from age 40\u201350.' },
+              { id: 'placenta', name: t('stem.anatomy.placenta', 'Placenta'), x: 0.50, y: 0.38, v: 'a', fn: 'Temporary organ during pregnancy (develops from trophoblast). Maternal-fetal exchange: O\u2082, nutrients (maternal \u2192 fetal), CO\u2082, waste (fetal \u2192 maternal). Produces hCG, progesterone, estrogen, hPL. Barrier to most pathogens (not all: TORCH infections cross). Weighs ~500g at term.', clinical: 'Placenta previa: placenta covers cervical os \u2192 painless bleeding. Placental abruption: premature separation \u2192 painful bleeding, emergency. Pre-eclampsia: abnormal placentation \u2192 HTN, proteinuria. hCG is the basis of pregnancy tests.' }
             ]
           }
 
@@ -613,16 +678,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // CONNECTIONS DATA
         // ══════════════════════════════════════
         var CONNECTIONS = [
-          { id: 'conn_1', systems: ['circulatory', 'respiratory'], title: 'Gas Exchange', desc: 'The circulatory system delivers deoxygenated blood to the lungs, where the respiratory system loads it with oxygen and offloads carbon dioxide across the thin alveolar-capillary membrane.', example: 'Every breath you take replenishes the oxygen that your red blood cells carry to every organ in your body.', icon: '\uD83D\uDCA8' },
-          { id: 'conn_2', systems: ['nervous', 'muscular'], title: 'Neuromuscular Junction', desc: 'Motor neurons from the nervous system release acetylcholine at the neuromuscular junction, triggering muscle fiber contraction. Without neural signals, muscles cannot move.', example: 'When you decide to kick a soccer ball, your motor cortex sends signals down the spinal cord to fire the quadriceps muscles.', icon: '\u26A1' },
-          { id: 'conn_3', systems: ['skeletal', 'muscular'], title: 'Lever System for Movement', desc: 'Muscles attach to bones via tendons and pull across joints, creating lever systems. The skeleton provides rigid levers; muscles provide the pulling force.', example: 'Your biceps pulls on the radius bone to flex your elbow \u2014 a classic third-class lever that trades force for range of motion.', icon: '\uD83E\uDDB4' },
-          { id: 'conn_4', systems: ['endocrine', 'reproductive'], title: 'Hormonal Regulation of Reproduction', desc: 'The hypothalamus-pituitary axis releases FSH and LH that regulate the gonads. Estrogen, progesterone, and testosterone from reproductive organs feedback to the endocrine system.', example: 'During puberty, rising levels of LH and FSH trigger the ovaries and testes to mature and begin producing sex hormones.', icon: '\u2697\uFE0F' },
-          { id: 'conn_5', systems: ['circulatory', 'lymphatic'], title: 'Immune Defense and Fluid Balance', desc: 'The lymphatic system returns interstitial fluid to the bloodstream and deploys immune cells made in lymphoid organs. Both systems maintain fluid homeostasis and fight infection.', example: 'When you get a cut, lymph nodes near the wound swell as they activate immune cells, while the circulatory system sends white blood cells to the site.', icon: '\uD83D\uDFE2' },
-          { id: 'conn_6', systems: ['nervous', 'endocrine'], title: 'Hypothalamic-Pituitary Axis', desc: 'The hypothalamus bridges the nervous and endocrine systems \u2014 it integrates neural signals and translates them into hormonal commands that control the pituitary gland and all downstream hormone cascades.', example: 'When you are stressed, your hypothalamus signals the pituitary to release ACTH, which tells the adrenal glands to make cortisol.', icon: '\uD83E\uDDE0' },
-          { id: 'conn_7', systems: ['respiratory', 'muscular'], title: 'Breathing Mechanics', desc: 'The diaphragm and intercostal muscles physically expand and compress the thoracic cavity to move air. Lungs have no muscle themselves and rely entirely on surrounding muscles.', example: 'During a deep breath, your diaphragm contracts downward and your external intercostals lift your ribs outward, creating negative pressure that pulls air in.', icon: '\uD83E\uDEC1' },
-          { id: 'conn_8', systems: ['integumentary', 'nervous'], title: 'Sensory Receptors in Skin', desc: 'The skin contains millions of specialized nerve endings and encapsulated receptors that detect touch, pressure, temperature, and pain, feeding constant sensory data to the nervous system.', example: 'Meissner\'s corpuscles in your fingertips allow you to feel light touch with incredible precision, which is why you can read Braille.', icon: '\uD83E\uDDF4' },
-          { id: 'conn_9', systems: ['organs', 'circulatory'], title: 'Portal Circulation and Nutrient Processing', desc: 'Blood from the GI tract drains through the hepatic portal vein directly to the liver before entering general circulation, allowing the liver to process nutrients and detoxify substances first.', example: 'After you eat, glucose absorbed from the small intestine travels straight to the liver, which stores excess glucose as glycogen to prevent a blood sugar spike.', icon: '\uD83C\uDFE5' },
-          { id: 'conn_10', systems: ['skeletal', 'circulatory'], title: 'Bone Marrow Blood Cell Production', desc: 'Red bone marrow inside the skeleton is the birthplace of all blood cells. Red blood cells, white blood cells, and platelets are all produced here through hematopoiesis.', example: 'The marrow in your sternum and pelvis produces about 2 million red blood cells per second to replace the ones that wear out after 120 days.', icon: '\uD83E\uDDB4' }
+          { id: 'conn_1', systems: ['circulatory', 'respiratory'], title: t('stem.anatomy.gas_exchange', 'Gas Exchange'), desc: t('stem.anatomy.the_circulatory_system_delivers_deoxyg', 'The circulatory system delivers deoxygenated blood to the lungs, where the respiratory system loads it with oxygen and offloads carbon dioxide across the thin alveolar-capillary membrane.'), example: 'Every breath you take replenishes the oxygen that your red blood cells carry to every organ in your body.', icon: '\uD83D\uDCA8' },
+          { id: 'conn_2', systems: ['nervous', 'muscular'], title: t('stem.anatomy.neuromuscular_junction', 'Neuromuscular Junction'), desc: t('stem.anatomy.motor_neurons_from_the_nervous_system_', 'Motor neurons from the nervous system release acetylcholine at the neuromuscular junction, triggering muscle fiber contraction. Without neural signals, muscles cannot move.'), example: 'When you decide to kick a soccer ball, your motor cortex sends signals down the spinal cord to fire the quadriceps muscles.', icon: '\u26A1' },
+          { id: 'conn_3', systems: ['skeletal', 'muscular'], title: t('stem.anatomy.lever_system_for_movement', 'Lever System for Movement'), desc: t('stem.anatomy.muscles_attach_to_bones_via_tendons_an', 'Muscles attach to bones via tendons and pull across joints, creating lever systems. The skeleton provides rigid levers; muscles provide the pulling force.'), example: 'Your biceps pulls on the radius bone to flex your elbow \u2014 a classic third-class lever that trades force for range of motion.', icon: '\uD83E\uDDB4' },
+          { id: 'conn_4', systems: ['endocrine', 'reproductive'], title: t('stem.anatomy.hormonal_regulation_of_reproduction', 'Hormonal Regulation of Reproduction'), desc: t('stem.anatomy.the_hypothalamus_pituitary_axis_releas', 'The hypothalamus-pituitary axis releases FSH and LH that regulate the gonads. Estrogen, progesterone, and testosterone from reproductive organs feedback to the endocrine system.'), example: 'During puberty, rising levels of LH and FSH trigger the ovaries and testes to mature and begin producing sex hormones.', icon: '\u2697\uFE0F' },
+          { id: 'conn_5', systems: ['circulatory', 'lymphatic'], title: t('stem.anatomy.immune_defense_and_fluid_balance', 'Immune Defense and Fluid Balance'), desc: t('stem.anatomy.the_lymphatic_system_returns_interstit', 'The lymphatic system returns interstitial fluid to the bloodstream and deploys immune cells made in lymphoid organs. Both systems maintain fluid homeostasis and fight infection.'), example: 'When you get a cut, lymph nodes near the wound swell as they activate immune cells, while the circulatory system sends white blood cells to the site.', icon: '\uD83D\uDFE2' },
+          { id: 'conn_6', systems: ['nervous', 'endocrine'], title: t('stem.anatomy.hypothalamic_pituitary_axis_2', 'Hypothalamic-Pituitary Axis'), desc: t('stem.anatomy.the_hypothalamus_bridges_the_nervous_a', 'The hypothalamus bridges the nervous and endocrine systems \u2014 it integrates neural signals and translates them into hormonal commands that control the pituitary gland and all downstream hormone cascades.'), example: 'When you are stressed, your hypothalamus signals the pituitary to release ACTH, which tells the adrenal glands to make cortisol.', icon: '\uD83E\uDDE0' },
+          { id: 'conn_7', systems: ['respiratory', 'muscular'], title: t('stem.anatomy.breathing_mechanics', 'Breathing Mechanics'), desc: t('stem.anatomy.the_diaphragm_and_intercostal_muscles_', 'The diaphragm and intercostal muscles physically expand and compress the thoracic cavity to move air. Lungs have no muscle themselves and rely entirely on surrounding muscles.'), example: 'During a deep breath, your diaphragm contracts downward and your external intercostals lift your ribs outward, creating negative pressure that pulls air in.', icon: '\uD83E\uDEC1' },
+          { id: 'conn_8', systems: ['integumentary', 'nervous'], title: t('stem.anatomy.sensory_receptors_in_skin', 'Sensory Receptors in Skin'), desc: t('stem.anatomy.the_skin_contains_millions_of_speciali', 'The skin contains millions of specialized nerve endings and encapsulated receptors that detect touch, pressure, temperature, and pain, feeding constant sensory data to the nervous system.'), example: 'Meissner\'s corpuscles in your fingertips allow you to feel light touch with incredible precision, which is why you can read Braille.', icon: '\uD83E\uDDF4' },
+          { id: 'conn_9', systems: ['organs', 'circulatory'], title: t('stem.anatomy.portal_circulation_and_nutrient_proces', 'Portal Circulation and Nutrient Processing'), desc: t('stem.anatomy.blood_from_the_gi_tract_drains_through', 'Blood from the GI tract drains through the hepatic portal vein directly to the liver before entering general circulation, allowing the liver to process nutrients and detoxify substances first.'), example: 'After you eat, glucose absorbed from the small intestine travels straight to the liver, which stores excess glucose as glycogen to prevent a blood sugar spike.', icon: '\uD83C\uDFE5' },
+          { id: 'conn_10', systems: ['skeletal', 'circulatory'], title: t('stem.anatomy.bone_marrow_blood_cell_production', 'Bone Marrow Blood Cell Production'), desc: t('stem.anatomy.red_bone_marrow_inside_the_skeleton_is', 'Red bone marrow inside the skeleton is the birthplace of all blood cells. Red blood cells, white blood cells, and platelets are all produced here through hematopoiesis.'), example: 'The marrow in your sternum and pelvis produces about 2 million red blood cells per second to replace the ones that wear out after 120 days.', icon: '\uD83E\uDDB4' }
         ];
 
         // ══════════════════════════════════════
@@ -630,66 +695,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ══════════════════════════════════════
         var GUIDED_TOURS = {
           skeletal: [
-            { structureId: 'skull', title: 'The Skull', narration: 'Your skull is like a super-strong helmet made of 22 fused bones. It protects your brain, houses your eyes and ears, and gives your face its shape.' },
-            { structureId: 'vertebral', title: 'The Vertebral Column', narration: 'Your spine is a stack of 33 vertebrae that protects your spinal cord. It holds you upright and lets you bend and twist. The S-curve acts like a spring to absorb shocks.' },
-            { structureId: 'ribs', title: 'The Rib Cage', narration: 'Your 12 pairs of ribs form a protective cage around your heart and lungs. They flex slightly with each breath to let your lungs expand and contract.' },
-            { structureId: 'femur', title: 'The Femur', narration: 'The femur is your thigh bone and the longest, strongest bone in your body. It can bear loads of 2 to 3 times your body weight during walking.' },
-            { structureId: 'pelvis', title: 'The Pelvis', narration: 'The pelvis is a ring of bones that transfers your body weight from your spine down to your legs. It also protects your bladder and reproductive organs.' }
+            { structureId: 'skull', title: t('stem.anatomy.the_skull', 'The Skull'), narration: 'Your skull is like a super-strong helmet made of 22 fused bones. It protects your brain, houses your eyes and ears, and gives your face its shape.' },
+            { structureId: 'vertebral', title: t('stem.anatomy.the_vertebral_column', 'The Vertebral Column'), narration: 'Your spine is a stack of 33 vertebrae that protects your spinal cord. It holds you upright and lets you bend and twist. The S-curve acts like a spring to absorb shocks.' },
+            { structureId: 'ribs', title: t('stem.anatomy.the_rib_cage', 'The Rib Cage'), narration: 'Your 12 pairs of ribs form a protective cage around your heart and lungs. They flex slightly with each breath to let your lungs expand and contract.' },
+            { structureId: 'femur', title: t('stem.anatomy.the_femur', 'The Femur'), narration: 'The femur is your thigh bone and the longest, strongest bone in your body. It can bear loads of 2 to 3 times your body weight during walking.' },
+            { structureId: 'pelvis', title: t('stem.anatomy.the_pelvis', 'The Pelvis'), narration: 'The pelvis is a ring of bones that transfers your body weight from your spine down to your legs. It also protects your bladder and reproductive organs.' }
           ],
           muscular: [
-            { structureId: 'diaphragm_m', title: 'The Diaphragm', narration: 'The diaphragm is your main breathing muscle \u2014 a dome-shaped sheet separating your chest from your abdomen. When it contracts and flattens, it creates room for your lungs to expand.' },
-            { structureId: 'deltoid', title: 'The Deltoid', narration: 'The deltoid wraps around your shoulder. Its three sections let you raise your arm to the side, swing it forward, and pull it back. Every throw, wave, and reach uses this muscle.' },
-            { structureId: 'rectus_ab', title: 'Rectus Abdominis', narration: 'The rectus abdominis creates the six-pack appearance. It flexes your trunk forward and helps stabilize your pelvis when you walk and run.' },
-            { structureId: 'quads', title: 'The Quadriceps', narration: 'Your quadriceps are four powerful muscles on the front of your thigh. They straighten your knee and are critical for walking, climbing stairs, and running.' },
-            { structureId: 'gastrocnemius', title: 'The Gastrocnemius', narration: 'The gastrocnemius is the big calf muscle on the back of the lower leg. It points your foot down for push-off when walking, connecting to the heel via the Achilles tendon.' }
+            { structureId: 'diaphragm_m', title: t('stem.anatomy.the_diaphragm', 'The Diaphragm'), narration: 'The diaphragm is your main breathing muscle \u2014 a dome-shaped sheet separating your chest from your abdomen. When it contracts and flattens, it creates room for your lungs to expand.' },
+            { structureId: 'deltoid', title: t('stem.anatomy.the_deltoid', 'The Deltoid'), narration: 'The deltoid wraps around your shoulder. Its three sections let you raise your arm to the side, swing it forward, and pull it back. Every throw, wave, and reach uses this muscle.' },
+            { structureId: 'rectus_ab', title: t('stem.anatomy.rectus_abdominis_2', 'Rectus Abdominis'), narration: 'The rectus abdominis creates the six-pack appearance. It flexes your trunk forward and helps stabilize your pelvis when you walk and run.' },
+            { structureId: 'quads', title: t('stem.anatomy.the_quadriceps', 'The Quadriceps'), narration: 'Your quadriceps are four powerful muscles on the front of your thigh. They straighten your knee and are critical for walking, climbing stairs, and running.' },
+            { structureId: 'gastrocnemius', title: t('stem.anatomy.the_gastrocnemius', 'The Gastrocnemius'), narration: 'The gastrocnemius is the big calf muscle on the back of the lower leg. It points your foot down for push-off when walking, connecting to the heel via the Achilles tendon.' }
           ],
           circulatory: [
-            { structureId: 'heart', title: 'The Heart', narration: 'Your heart is a fist-sized pump that beats about 100,000 times every day. The right side sends blood to the lungs; the left pumps oxygen-rich blood to the whole body.' },
-            { structureId: 'aorta', title: 'The Aorta', narration: 'The aorta is the biggest artery in your body. It carries oxygen-rich blood from the left ventricle, arches over your heart, then descends to supply every organ.' },
-            { structureId: 'coronary', title: 'Coronary Arteries', narration: 'The coronary arteries are the heart\'s own blood supply. When one gets blocked by a clot, that part of the heart is starved of oxygen \u2014 that is a heart attack.' },
-            { structureId: 'carotid', title: 'The Carotid Arteries', narration: 'You have two carotid arteries, one on each side of your neck. They are the main highways carrying blood to your brain. You can feel them pulsing in your neck.' }
+            { structureId: 'heart', title: t('stem.anatomy.the_heart', 'The Heart'), narration: 'Your heart is a fist-sized pump that beats about 100,000 times every day. The right side sends blood to the lungs; the left pumps oxygen-rich blood to the whole body.' },
+            { structureId: 'aorta', title: t('stem.anatomy.the_aorta', 'The Aorta'), narration: 'The aorta is the biggest artery in your body. It carries oxygen-rich blood from the left ventricle, arches over your heart, then descends to supply every organ.' },
+            { structureId: 'coronary', title: t('stem.anatomy.coronary_arteries_2', 'Coronary Arteries'), narration: 'The coronary arteries are the heart\'s own blood supply. When one gets blocked by a clot, that part of the heart is starved of oxygen \u2014 that is a heart attack.' },
+            { structureId: 'carotid', title: t('stem.anatomy.the_carotid_arteries', 'The Carotid Arteries'), narration: 'You have two carotid arteries, one on each side of your neck. They are the main highways carrying blood to your brain. You can feel them pulsing in your neck.' }
           ],
           nervous: [
-            { structureId: 'brain', title: 'The Brain', narration: 'Your brain is command central for your entire body, with about 86 billion neurons. The outer cortex handles thinking and senses. The cerebellum coordinates balance and movement.' },
-            { structureId: 'cerebral_cortex', title: 'The Cerebral Cortex', narration: 'The cortex is the wrinkled outer layer of your brain. The front plans and controls movement. The back processes vision. The sides handle sound and memory.' },
-            { structureId: 'spinal_cord', title: 'The Spinal Cord', narration: 'The spinal cord is the main highway of your nervous system, running inside the vertebral column. Messages travel up and down it thousands of times every second.' },
-            { structureId: 'vagus', title: 'The Vagus Nerve', narration: 'The vagus nerve wanders from your brain stem all the way to your abdomen. It controls heart rate, digestion, and breathing as part of your rest-and-digest response.' }
+            { structureId: 'brain', title: t('stem.anatomy.the_brain', 'The Brain'), narration: 'Your brain is command central for your entire body, with about 86 billion neurons. The outer cortex handles thinking and senses. The cerebellum coordinates balance and movement.' },
+            { structureId: 'cerebral_cortex', title: t('stem.anatomy.the_cerebral_cortex', 'The Cerebral Cortex'), narration: 'The cortex is the wrinkled outer layer of your brain. The front plans and controls movement. The back processes vision. The sides handle sound and memory.' },
+            { structureId: 'spinal_cord', title: t('stem.anatomy.the_spinal_cord', 'The Spinal Cord'), narration: 'The spinal cord is the main highway of your nervous system, running inside the vertebral column. Messages travel up and down it thousands of times every second.' },
+            { structureId: 'vagus', title: t('stem.anatomy.the_vagus_nerve', 'The Vagus Nerve'), narration: 'The vagus nerve wanders from your brain stem all the way to your abdomen. It controls heart rate, digestion, and breathing as part of your rest-and-digest response.' }
           ],
           lymphatic: [
-            { structureId: 'thymus', title: 'The Thymus', narration: 'The thymus is where immature T-cells learn to tell the difference between your own cells and foreign invaders. It is most active during childhood and shrinks after puberty.' },
-            { structureId: 'spleen', title: 'The Spleen', narration: 'The spleen filters old and damaged red blood cells out of your blood and helps your immune system respond to blood-borne bacteria and viruses.' },
-            { structureId: 'cervical_ln', title: 'Cervical Lymph Nodes', narration: 'Lymph nodes along your neck filter lymph fluid and trap germs draining from your head and throat. They swell and become tender when you have a sore throat.' },
-            { structureId: 'bone_marrow', title: 'Bone Marrow', narration: 'Deep inside your larger bones is red bone marrow, a factory that produces all your blood cells \u2014 billions of red blood cells, white blood cells, and platelets every hour.' }
+            { structureId: 'thymus', title: t('stem.anatomy.the_thymus', 'The Thymus'), narration: 'The thymus is where immature T-cells learn to tell the difference between your own cells and foreign invaders. It is most active during childhood and shrinks after puberty.' },
+            { structureId: 'spleen', title: t('stem.anatomy.the_spleen', 'The Spleen'), narration: 'The spleen filters old and damaged red blood cells out of your blood and helps your immune system respond to blood-borne bacteria and viruses.' },
+            { structureId: 'cervical_ln', title: t('stem.anatomy.cervical_lymph_nodes_2', 'Cervical Lymph Nodes'), narration: 'Lymph nodes along your neck filter lymph fluid and trap germs draining from your head and throat. They swell and become tender when you have a sore throat.' },
+            { structureId: 'bone_marrow', title: t('stem.anatomy.bone_marrow_2', 'Bone Marrow'), narration: 'Deep inside your larger bones is red bone marrow, a factory that produces all your blood cells \u2014 billions of red blood cells, white blood cells, and platelets every hour.' }
           ],
           organs: [
-            { structureId: 'lungs', title: 'The Lungs', narration: 'Your two lungs fill most of your chest cavity. Inside are about 300 million tiny alveoli where oxygen enters your blood and carbon dioxide leaves.' },
-            { structureId: 'liver', title: 'The Liver', narration: 'The liver performs over 500 functions: making bile to digest fat, filtering toxins, storing sugar as glycogen, and producing essential proteins.' },
-            { structureId: 'stomach', title: 'The Stomach', narration: 'Your stomach is a muscular J-shaped bag that churns food with acid and digestive enzymes, breaking it into a paste that slowly enters the small intestine.' },
-            { structureId: 'kidneys', title: 'The Kidneys', narration: 'Your two kidneys each contain about a million tiny filters called nephrons. Together they filter all your blood about 40 times a day, removing waste and regulating fluid balance.' }
+            { structureId: 'lungs', title: t('stem.anatomy.the_lungs', 'The Lungs'), narration: 'Your two lungs fill most of your chest cavity. Inside are about 300 million tiny alveoli where oxygen enters your blood and carbon dioxide leaves.' },
+            { structureId: 'liver', title: t('stem.anatomy.the_liver', 'The Liver'), narration: 'The liver performs over 500 functions: making bile to digest fat, filtering toxins, storing sugar as glycogen, and producing essential proteins.' },
+            { structureId: 'stomach', title: t('stem.anatomy.the_stomach', 'The Stomach'), narration: 'Your stomach is a muscular J-shaped bag that churns food with acid and digestive enzymes, breaking it into a paste that slowly enters the small intestine.' },
+            { structureId: 'kidneys', title: t('stem.anatomy.the_kidneys', 'The Kidneys'), narration: 'Your two kidneys each contain about a million tiny filters called nephrons. Together they filter all your blood about 40 times a day, removing waste and regulating fluid balance.' }
           ],
           integumentary: [
-            { structureId: 'epidermis', title: 'The Epidermis', narration: 'The epidermis is the outermost layer of your skin \u2014 a waterproof barrier you can see and touch. It renews itself completely about every 28 days.' },
-            { structureId: 'dermis', title: 'The Dermis', narration: 'Just below the epidermis is the dermis, packed with collagen fibers, blood vessels, nerves, sweat glands, and hair follicles. It gives skin its strength and elasticity.' },
-            { structureId: 'hair_follicle', title: 'Hair Follicles', narration: 'Each hair grows from a follicle deep in your skin. A tiny muscle attached to the follicle causes hair to stand up when you are cold or scared, creating goosebumps.' },
-            { structureId: 'melanocytes', title: 'Melanocytes', narration: 'Melanocytes produce melanin, the pigment that gives skin and hair their color. UV light triggers them to make more melanin to protect your DNA \u2014 that is what a tan actually is.' }
+            { structureId: 'epidermis', title: t('stem.anatomy.the_epidermis', 'The Epidermis'), narration: 'The epidermis is the outermost layer of your skin \u2014 a waterproof barrier you can see and touch. It renews itself completely about every 28 days.' },
+            { structureId: 'dermis', title: t('stem.anatomy.the_dermis', 'The Dermis'), narration: 'Just below the epidermis is the dermis, packed with collagen fibers, blood vessels, nerves, sweat glands, and hair follicles. It gives skin its strength and elasticity.' },
+            { structureId: 'hair_follicle', title: t('stem.anatomy.hair_follicles_2', 'Hair Follicles'), narration: 'Each hair grows from a follicle deep in your skin. A tiny muscle attached to the follicle causes hair to stand up when you are cold or scared, creating goosebumps.' },
+            { structureId: 'melanocytes', title: t('stem.anatomy.melanocytes', 'Melanocytes'), narration: 'Melanocytes produce melanin, the pigment that gives skin and hair their color. UV light triggers them to make more melanin to protect your DNA \u2014 that is what a tan actually is.' }
           ],
           respiratory: [
-            { structureId: 'nasal_cavity', title: 'Nasal Cavity', narration: 'Your nose warms, humidifies, and filters the air before it reaches your lungs. Inside, turbinate bones create turbulence that maximizes contact with mucous membranes.' },
-            { structureId: 'larynx', title: 'The Larynx', narration: 'The larynx, or voice box, sits at the top of your trachea. Two vocal cords inside vibrate as air passes over them to create sound.' },
-            { structureId: 'bronchi', title: 'The Bronchial Tree', narration: 'The trachea splits into bronchi, which branch again and again like a tree into smaller tubes. By the time air reaches the alveoli, it has traveled through about 23 generations of branching.' },
-            { structureId: 'alveoli', title: 'The Alveoli', narration: 'The alveoli are 300 million tiny balloon-like sacs at the end of the bronchial tree. Oxygen crosses into the blood and carbon dioxide crosses out in less than a second.' }
+            { structureId: 'nasal_cavity', title: t('stem.anatomy.nasal_cavity', 'Nasal Cavity'), narration: 'Your nose warms, humidifies, and filters the air before it reaches your lungs. Inside, turbinate bones create turbulence that maximizes contact with mucous membranes.' },
+            { structureId: 'larynx', title: t('stem.anatomy.the_larynx', 'The Larynx'), narration: 'The larynx, or voice box, sits at the top of your trachea. Two vocal cords inside vibrate as air passes over them to create sound.' },
+            { structureId: 'bronchi', title: t('stem.anatomy.the_bronchial_tree', 'The Bronchial Tree'), narration: 'The trachea splits into bronchi, which branch again and again like a tree into smaller tubes. By the time air reaches the alveoli, it has traveled through about 23 generations of branching.' },
+            { structureId: 'alveoli', title: t('stem.anatomy.the_alveoli', 'The Alveoli'), narration: 'The alveoli are 300 million tiny balloon-like sacs at the end of the bronchial tree. Oxygen crosses into the blood and carbon dioxide crosses out in less than a second.' }
           ],
           endocrine: [
-            { structureId: 'pituitary', title: 'The Pituitary Gland', narration: 'The pituitary is a pea-sized gland at the base of your brain. It is called the master gland because it sends hormonal commands to your thyroid, adrenals, gonads, and other glands.' },
-            { structureId: 'thyroid', title: 'The Thyroid', narration: 'The thyroid gland wraps around the front of your trachea in a butterfly shape. It produces hormones that control your metabolic rate \u2014 how fast your cells burn energy.' },
-            { structureId: 'adrenal_endo', title: 'Adrenal Cortex', narration: 'Sitting on top of each kidney, the adrenal glands produce steroid hormones. The cortex makes cortisol for stress and aldosterone for salt balance. The medulla releases adrenaline in emergencies.' },
-            { structureId: 'islets', title: 'Islets of Langerhans', narration: 'Scattered in the pancreas, beta cells make insulin to lower blood sugar and alpha cells make glucagon to raise it. Together they keep your blood glucose in a narrow safe range.' }
+            { structureId: 'pituitary', title: t('stem.anatomy.the_pituitary_gland', 'The Pituitary Gland'), narration: 'The pituitary is a pea-sized gland at the base of your brain. It is called the master gland because it sends hormonal commands to your thyroid, adrenals, gonads, and other glands.' },
+            { structureId: 'thyroid', title: t('stem.anatomy.the_thyroid', 'The Thyroid'), narration: 'The thyroid gland wraps around the front of your trachea in a butterfly shape. It produces hormones that control your metabolic rate \u2014 how fast your cells burn energy.' },
+            { structureId: 'adrenal_endo', title: t('stem.anatomy.adrenal_cortex', 'Adrenal Cortex'), narration: 'Sitting on top of each kidney, the adrenal glands produce steroid hormones. The cortex makes cortisol for stress and aldosterone for salt balance. The medulla releases adrenaline in emergencies.' },
+            { structureId: 'islets', title: t('stem.anatomy.islets_of_langerhans_2', 'Islets of Langerhans'), narration: 'Scattered in the pancreas, beta cells make insulin to lower blood sugar and alpha cells make glucagon to raise it. Together they keep your blood glucose in a narrow safe range.' }
           ],
           reproductive: [
-            { structureId: 'testes_repro', title: 'The Testes', narration: 'The testes are located in the scrotum where the temperature is 2 to 3 degrees cooler than the body, essential for sperm production. Each day they produce about 200 million sperm.' },
-            { structureId: 'uterus', title: 'The Uterus', narration: 'The uterus is a muscular pear-shaped organ where a fertilized egg implants and grows into a baby. Its inner lining thickens each month and sheds during menstruation if no egg implants.' },
-            { structureId: 'ovaries_repro', title: 'The Ovaries', narration: 'The two ovaries contain all the eggs a female will ever have. Each month, one egg matures and is released at ovulation, ready to be fertilized in the fallopian tube.' },
-            { structureId: 'placenta', title: 'The Placenta', narration: 'The placenta develops during pregnancy, connecting mother and baby without their blood mixing. It transfers oxygen and nutrients to the baby while removing carbon dioxide and waste.' }
+            { structureId: 'testes_repro', title: t('stem.anatomy.the_testes', 'The Testes'), narration: 'The testes are located in the scrotum where the temperature is 2 to 3 degrees cooler than the body, essential for sperm production. Each day they produce about 200 million sperm.' },
+            { structureId: 'uterus', title: t('stem.anatomy.the_uterus', 'The Uterus'), narration: 'The uterus is a muscular pear-shaped organ where a fertilized egg implants and grows into a baby. Its inner lining thickens each month and sheds during menstruation if no egg implants.' },
+            { structureId: 'ovaries_repro', title: t('stem.anatomy.the_ovaries', 'The Ovaries'), narration: 'The two ovaries contain all the eggs a female will ever have. Each month, one egg matures and is released at ovulation, ready to be fertilized in the fallopian tube.' },
+            { structureId: 'placenta', title: t('stem.anatomy.the_placenta', 'The Placenta'), narration: 'The placenta develops during pregnancy, connecting mother and baby without their blood mixing. It transfers oxygen and nutrients to the baby while removing carbon dioxide and waste.' }
           ]
         };
 
@@ -697,14 +762,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // CLINICAL CASES DATA
         // ══════════════════════════════════════
         var CLINICAL_CASES = [
-          { id: 'case_1', title: 'The Runner\'s Knee', system: 'skeletal', presentation: 'A 16-year-old cross-country runner has dull aching pain around the front of the knee that worsens going down stairs and after long runs. No swelling or locking. Pain improves with rest.', question: 'Which structure is most likely affected?', answer: 'Patella / patellofemoral joint', explanation: 'Patellofemoral pain syndrome occurs when the patella does not track smoothly in its groove on the femur. Repeated stress from running causes cartilage irritation. Treatment includes quad strengthening, hip stabilization, and activity modification.', difficulty: 'intermediate' },
-          { id: 'case_2', title: 'The Shoulder That Won\'t Lift', system: 'muscular', presentation: 'A 45-year-old painter has gradual onset right shoulder pain for 3 months. He cannot lift his arm above 90 degrees without pain. He wakes up at night with shoulder pain and a grinding sensation.', question: 'Which structure is most likely torn?', answer: 'Supraspinatus tendon (rotator cuff)', explanation: 'The supraspinatus is the most commonly torn rotator cuff muscle. It runs under the acromion where it is susceptible to impingement and tears. Overhead work like painting increases this risk significantly.', difficulty: 'intermediate' },
-          { id: 'case_3', title: 'Racing Heart After Exercise', system: 'circulatory', presentation: 'A 14-year-old athlete notices her heart racing and skipping beats for a few seconds after sprinting. She feels fine otherwise, with no chest pain or fainting. Physical exam is normal.', question: 'Which structure controls the normal heart rhythm?', answer: 'Sinoatrial (SA) node', explanation: 'The SA node in the right atrium is the heart\'s natural pacemaker. During intense exercise, adrenaline can cause benign palpitations as the heart rate adjusts. Persistent arrhythmias should be evaluated to rule out structural heart disease.', difficulty: 'beginner' },
-          { id: 'case_4', title: 'The Numb Hand', system: 'nervous', presentation: 'A 35-year-old office worker has progressive tingling and numbness in her thumb, index, and middle fingers for 2 months, worse at night. She shakes her hand to relieve it. She types 8 hours a day.', question: 'Which nerve is being compressed?', answer: 'Median nerve (carpal tunnel syndrome)', explanation: 'Carpal tunnel syndrome is compression of the median nerve under the flexor retinaculum at the wrist. The median nerve supplies sensation to the thumb and first 3.5 fingers. Repetitive wrist use is a major risk factor.', difficulty: 'intermediate' },
-          { id: 'case_5', title: 'The Swollen Neck Node', system: 'lymphatic', presentation: 'A 17-year-old presents with a 3 cm painless, rubbery lymph node in the left neck for 6 weeks. He has had night sweats and lost 5 kg without trying. No fever or sore throat.', question: 'What diagnosis must be urgently ruled out?', answer: 'Lymphoma (Hodgkin lymphoma)', explanation: 'Painless lymphadenopathy with B-symptoms (night sweats, weight loss, fever) is the classic presentation of Hodgkin lymphoma in young adults. Biopsy showing Reed-Sternberg cells confirms the diagnosis.', difficulty: 'advanced' },
-          { id: 'case_6', title: 'The Diabetic Emergency', system: 'endocrine', presentation: 'A 16-year-old with known Type 1 diabetes is found confused at home, breathing deeply and rapidly. His breath smells fruity. Blood glucose is 480 mg/dL. He missed his insulin doses for 2 days.', question: 'Which cells failed, and what is the emergency condition?', answer: 'Beta cells of islets of Langerhans; Diabetic Ketoacidosis (DKA)', explanation: 'Without insulin from beta cells, glucose cannot enter cells. The body burns fat, producing ketones that acidify the blood. Kussmaul breathing compensates by exhaling CO2. Treatment: IV fluids, insulin drip, and electrolyte replacement.', difficulty: 'advanced' },
-          { id: 'case_7', title: 'The Broken Collarbone', system: 'skeletal', presentation: 'An 11-year-old falls off his bicycle and lands on his outstretched right hand. He has immediate pain and deformity at the middle third of his right clavicle. He holds his arm close to his side.', question: 'Why is the middle third of the clavicle the most common fracture site?', answer: 'The middle third is thinnest and has no muscular reinforcement', explanation: 'The clavicle is the most frequently fractured bone. Its middle third is thinnest and lacks muscular protection. Force from a fall on an outstretched hand concentrates at this weak point. Most heal with sling immobilization.', difficulty: 'beginner' },
-          { id: 'case_8', title: 'Breathless at High Altitude', system: 'respiratory', presentation: 'A healthy 15-year-old hikes to 12,000 feet and develops headache, shortness of breath at rest, and a dry cough. Her oxygen saturation is 84%. At sea level it was 99%.', question: 'Why does altitude cause these symptoms, and which structure is most stressed?', answer: 'The alveoli and respiratory muscles; reduced atmospheric oxygen causes hypoxia', explanation: 'At high altitude, atmospheric pressure drops, reducing the partial pressure of oxygen. Less oxygen crosses the alveolar membrane. The body compensates by breathing faster and deeper, increasing respiratory muscle work.', difficulty: 'intermediate' }
+          { id: 'case_1', title: t('stem.anatomy.the_runner_s_knee', 'The Runner\'s Knee'), system: 'skeletal', presentation: 'A 16-year-old cross-country runner has dull aching pain around the front of the knee that worsens going down stairs and after long runs. No swelling or locking. Pain improves with rest.', question: t('stem.anatomy.which_structure_is_most_likely_affecte', 'Which structure is most likely affected?'), answer: t('stem.anatomy.patella_patellofemoral_joint', 'Patella / patellofemoral joint'), explanation: t('stem.anatomy.patellofemoral_pain_syndrome_occurs_wh', 'Patellofemoral pain syndrome occurs when the patella does not track smoothly in its groove on the femur. Repeated stress from running causes cartilage irritation. Treatment includes quad strengthening, hip stabilization, and activity modification.'), difficulty: 'intermediate' },
+          { id: 'case_2', title: t('stem.anatomy.the_shoulder_that_won_t_lift', 'The Shoulder That Won\'t Lift'), system: 'muscular', presentation: 'A 45-year-old painter has gradual onset right shoulder pain for 3 months. He cannot lift his arm above 90 degrees without pain. He wakes up at night with shoulder pain and a grinding sensation.', question: t('stem.anatomy.which_structure_is_most_likely_torn', 'Which structure is most likely torn?'), answer: t('stem.anatomy.supraspinatus_tendon_rotator_cuff', 'Supraspinatus tendon (rotator cuff)'), explanation: t('stem.anatomy.the_supraspinatus_is_the_most_commonly', 'The supraspinatus is the most commonly torn rotator cuff muscle. It runs under the acromion where it is susceptible to impingement and tears. Overhead work like painting increases this risk significantly.'), difficulty: 'intermediate' },
+          { id: 'case_3', title: t('stem.anatomy.racing_heart_after_exercise', 'Racing Heart After Exercise'), system: 'circulatory', presentation: 'A 14-year-old athlete notices her heart racing and skipping beats for a few seconds after sprinting. She feels fine otherwise, with no chest pain or fainting. Physical exam is normal.', question: t('stem.anatomy.which_structure_controls_the_normal_he', 'Which structure controls the normal heart rhythm?'), answer: t('stem.anatomy.sinoatrial_sa_node', 'Sinoatrial (SA) node'), explanation: t('stem.anatomy.the_sa_node_in_the_right_atrium_is_the', 'The SA node in the right atrium is the heart\'s natural pacemaker. During intense exercise, adrenaline can cause benign palpitations as the heart rate adjusts. Persistent arrhythmias should be evaluated to rule out structural heart disease.'), difficulty: 'beginner' },
+          { id: 'case_4', title: t('stem.anatomy.the_numb_hand', 'The Numb Hand'), system: 'nervous', presentation: 'A 35-year-old office worker has progressive tingling and numbness in her thumb, index, and middle fingers for 2 months, worse at night. She shakes her hand to relieve it. She types 8 hours a day.', question: t('stem.anatomy.which_nerve_is_being_compressed', 'Which nerve is being compressed?'), answer: t('stem.anatomy.median_nerve_carpal_tunnel_syndrome', 'Median nerve (carpal tunnel syndrome)'), explanation: t('stem.anatomy.carpal_tunnel_syndrome_is_compression_', 'Carpal tunnel syndrome is compression of the median nerve under the flexor retinaculum at the wrist. The median nerve supplies sensation to the thumb and first 3.5 fingers. Repetitive wrist use is a major risk factor.'), difficulty: 'intermediate' },
+          { id: 'case_5', title: t('stem.anatomy.the_swollen_neck_node', 'The Swollen Neck Node'), system: 'lymphatic', presentation: 'A 17-year-old presents with a 3 cm painless, rubbery lymph node in the left neck for 6 weeks. He has had night sweats and lost 5 kg without trying. No fever or sore throat.', question: t('stem.anatomy.what_diagnosis_must_be_urgently_ruled_', 'What diagnosis must be urgently ruled out?'), answer: t('stem.anatomy.lymphoma_hodgkin_lymphoma', 'Lymphoma (Hodgkin lymphoma)'), explanation: t('stem.anatomy.painless_lymphadenopathy_with_b_sympto', 'Painless lymphadenopathy with B-symptoms (night sweats, weight loss, fever) is the classic presentation of Hodgkin lymphoma in young adults. Biopsy showing Reed-Sternberg cells confirms the diagnosis.'), difficulty: 'advanced' },
+          { id: 'case_6', title: t('stem.anatomy.the_diabetic_emergency', 'The Diabetic Emergency'), system: 'endocrine', presentation: 'A 16-year-old with known Type 1 diabetes is found confused at home, breathing deeply and rapidly. His breath smells fruity. Blood glucose is 480 mg/dL. He missed his insulin doses for 2 days.', question: t('stem.anatomy.which_cells_failed_and_what_is_the_eme', 'Which cells failed, and what is the emergency condition?'), answer: t('stem.anatomy.beta_cells_of_islets_of_langerhans_dia', 'Beta cells of the pancreatic islets; diabetic ketoacidosis (DKA)'), explanation: t('stem.anatomy.without_insulin_from_beta_cells_glucos', 'With too little insulin, many tissues cannot use glucose normally and the liver increases ketone production from fat. Ketones accumulate and acidify the blood; deep Kussmaul breathing helps lower carbon dioxide. DKA is a medical emergency treated with fluids, insulin, electrolyte monitoring, and correction of the trigger.'), difficulty: 'advanced' },
+          { id: 'case_7', title: t('stem.anatomy.the_broken_collarbone', 'The Broken Collarbone'), system: 'skeletal', presentation: 'An 11-year-old falls off his bicycle and lands on his outstretched right hand. He has immediate pain and deformity at the middle third of his right clavicle. He holds his arm close to his side.', question: t('stem.anatomy.why_is_the_middle_third_of_the_clavicl', 'Why is the middle third of the clavicle the most common fracture site?'), answer: t('stem.anatomy.the_middle_third_is_thinnest_and_has_n', 'The middle third is thinnest and has no muscular reinforcement'), explanation: t('stem.anatomy.the_clavicle_is_the_most_frequently_fr', 'The clavicle is the most frequently fractured bone. Its middle third is thinnest and lacks muscular protection. Force from a fall on an outstretched hand concentrates at this weak point. Most heal with sling immobilization.'), difficulty: 'beginner' },
+          { id: 'case_8', title: t('stem.anatomy.breathless_at_high_altitude', 'Breathless at High Altitude'), system: 'respiratory', presentation: 'A healthy 15-year-old hikes to 12,000 feet and develops headache, shortness of breath at rest, and a dry cough. Her oxygen saturation is 84%. At sea level it was 99%.', question: t('stem.anatomy.why_does_altitude_cause_these_symptoms', 'Why does altitude cause these symptoms, and which structure is most stressed?'), answer: t('stem.anatomy.the_alveoli_and_respiratory_muscles_re', 'The alveoli and respiratory muscles; reduced atmospheric oxygen causes hypoxia'), explanation: t('stem.anatomy.at_high_altitude_atmospheric_pressure_', 'At high altitude, atmospheric pressure drops, reducing the partial pressure of oxygen. Less oxygen crosses the alveolar membrane. The body compensates by breathing faster and deeper, increasing respiratory muscle work.'), difficulty: 'intermediate' }
         ];
 
         // ══════════════════════════════════════
@@ -712,41 +777,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ══════════════════════════════════════
         var MNEMONICS = {
           skeletal: [
-            { id: 'mn_carpals', title: 'Carpal Bones (Proximal to Distal)', phrase: 'Some Lovers Try Positions That They Can\'t Handle', meaning: 'Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate', structures: ['carpals'] },
-            { id: 'mn_cranial', title: 'Cranial Bones', phrase: 'Old People From Texas Eat Spiders', meaning: 'Occipital, Parietal, Frontal, Temporal, Ethmoid, Sphenoid', structures: ['skull'] },
-            { id: 'mn_vertebrae', title: 'Vertebral Count', phrase: 'Breakfast at 7, Lunch at 12, Dinner at 5', meaning: '7 cervical, 12 thoracic, 5 lumbar vertebrae', structures: ['vertebral'] }
+            { id: 'mn_carpals', title: t('stem.anatomy.carpal_bones_proximal_to_distal', 'Carpal Bones (Proximal to Distal)'), phrase: 'Some Lovers Try Positions That They Can\'t Handle', meaning: 'Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate', structures: ['carpals'] },
+            { id: 'mn_cranial', title: t('stem.anatomy.cranial_bones', 'Cranial Bones'), phrase: 'Old People From Texas Eat Spiders', meaning: 'Occipital, Parietal, Frontal, Temporal, Ethmoid, Sphenoid', structures: ['skull'] },
+            { id: 'mn_vertebrae', title: t('stem.anatomy.vertebral_count', 'Vertebral Count'), phrase: 'Breakfast at 7, Lunch at 12, Dinner at 5', meaning: '7 cervical, 12 thoracic, 5 lumbar vertebrae', structures: ['vertebral'] }
           ],
           muscular: [
-            { id: 'mn_rotator', title: 'Rotator Cuff Muscles', phrase: 'SITS', meaning: 'Supraspinatus, Infraspinatus, Teres minor, Subscapularis', structures: ['rotator_cuff'] },
-            { id: 'mn_erector', title: 'Erector Spinae (Lateral to Medial)', phrase: 'I Love Standing', meaning: 'Iliocostalis, Longissimus, Spinalis', structures: ['trapezius'] },
-            { id: 'mn_quad', title: 'Quadriceps Muscles', phrase: 'Real Vast Legs, Very Important Muscles', meaning: 'Rectus femoris, Vastus lateralis, Vastus intermedius, Vastus medialis', structures: ['quads'] }
+            { id: 'mn_rotator', title: t('stem.anatomy.rotator_cuff_muscles', 'Rotator Cuff Muscles'), phrase: 'SITS', meaning: 'Supraspinatus, Infraspinatus, Teres minor, Subscapularis', structures: ['rotator_cuff'] },
+            { id: 'mn_erector', title: t('stem.anatomy.erector_spinae_lateral_to_medial', 'Erector Spinae (Lateral to Medial)'), phrase: 'I Love Standing', meaning: 'Iliocostalis, Longissimus, Spinalis', structures: ['trapezius'] },
+            { id: 'mn_quad', title: t('stem.anatomy.quadriceps_muscles', 'Quadriceps Muscles'), phrase: 'Real Vast Legs, Very Important Muscles', meaning: 'Rectus femoris, Vastus lateralis, Vastus intermedius, Vastus medialis', structures: ['quads'] }
           ],
           circulatory: [
-            { id: 'mn_heartvalves', title: 'Heart Valve Order (Flow)', phrase: 'Try Pulling My Aorta', meaning: 'Tricuspid, Pulmonary, Mitral, Aortic (blood flow path)', structures: ['heart'] },
-            { id: 'mn_aorta', title: 'Aortic Arch Branches', phrase: 'BLC (Big Lefty Club)', meaning: 'Brachiocephalic, Left common carotid, Left subclavian', structures: ['aorta'] }
+            { id: 'mn_heartvalves', title: t('stem.anatomy.heart_valve_order_flow', 'Heart Valve Order (Flow)'), phrase: 'Try Pulling My Aorta', meaning: 'Tricuspid, Pulmonary, Mitral, Aortic (blood flow path)', structures: ['heart'] },
+            { id: 'mn_aorta', title: t('stem.anatomy.aortic_arch_branches', 'Aortic Arch Branches'), phrase: 'BLC (Big Lefty Club)', meaning: 'Brachiocephalic, Left common carotid, Left subclavian', structures: ['aorta'] }
           ],
           nervous: [
-            { id: 'mn_cranialn', title: '12 Cranial Nerves', phrase: 'Oh Oh Oh To Touch And Feel Very Green Vegetables AH!', meaning: 'Olfactory, Optic, Oculomotor, Trochlear, Trigeminal, Abducens, Facial, Vestibulocochlear, Glossopharyngeal, Vagus, Accessory, Hypoglossal', structures: ['cranial_n', 'vagus'] },
-            { id: 'mn_brachial', title: 'Brachial Plexus', phrase: 'Real Texans Drink Cold Beer', meaning: 'Roots, Trunks, Divisions, Cords, Branches', structures: ['brachial_plexus'] }
+            { id: 'mn_cranialn', title: t('stem.anatomy.12_cranial_nerves', '12 Cranial Nerves'), phrase: 'Oh Oh Oh To Touch And Feel Very Green Vegetables AH!', meaning: 'Olfactory, Optic, Oculomotor, Trochlear, Trigeminal, Abducens, Facial, Vestibulocochlear, Glossopharyngeal, Vagus, Accessory, Hypoglossal', structures: ['cranial_n', 'vagus'] },
+            { id: 'mn_brachial', title: t('stem.anatomy.brachial_plexus_2', 'Brachial Plexus'), phrase: 'Real Texans Drink Cold Beer', meaning: 'Roots, Trunks, Divisions, Cords, Branches', structures: ['brachial_plexus'] }
           ],
           lymphatic: [
-            { id: 'mn_immune', title: 'Immune Cell Types', phrase: 'Never Let Monkeys Eat Bananas', meaning: 'Neutrophils, Lymphocytes, Monocytes, Eosinophils, Basophils (in order of abundance)', structures: ['bone_marrow'] }
+            { id: 'mn_immune', title: t('stem.anatomy.immune_cell_types', 'Immune Cell Types'), phrase: 'Never Let Monkeys Eat Bananas', meaning: 'Neutrophils, Lymphocytes, Monocytes, Eosinophils, Basophils (in order of abundance)', structures: ['bone_marrow'] }
           ],
           organs: [
-            { id: 'mn_liver', title: 'Liver Segments', phrase: 'The liver has 8 Couinaud segments supplied by portal triads', meaning: 'Each segment has its own portal pedicle (portal vein, hepatic artery, bile duct) enabling surgical resection', structures: ['liver'] },
-            { id: 'mn_intestine', title: 'Layers of GI Wall', phrase: 'Mary\'s Silly Monkey Made Smelly Sounds', meaning: 'Mucosa, Submucosa, Muscularis (circular + longitudinal), Serosa', structures: ['sm_intestine', 'stomach'] }
+            { id: 'mn_liver', title: t('stem.anatomy.liver_segments', 'Liver Segments'), phrase: 'The liver has 8 Couinaud segments supplied by portal triads', meaning: 'Each segment has its own portal pedicle (portal vein, hepatic artery, bile duct) enabling surgical resection', structures: ['liver'] },
+            { id: 'mn_intestine', title: t('stem.anatomy.layers_of_gi_wall', 'Layers of GI Wall'), phrase: 'Mary\'s Silly Monkey Made Smelly Sounds', meaning: 'Mucosa, Submucosa, Muscularis (circular + longitudinal), Serosa', structures: ['sm_intestine', 'stomach'] }
           ],
           integumentary: [
-            { id: 'mn_skin', title: 'Epidermis Layers (Deep to Superficial)', phrase: 'Come, Let\'s Get Sun Burned', meaning: 'Corneum (stratum), Lucidum, Granulosum, Spinosum, Basale', structures: ['epidermis'] }
+            { id: 'mn_skin', title: t('stem.anatomy.epidermis_layers_superficial_to_deep', 'Epidermis Layers (Superficial to Deep)'), phrase: 'Come, Let\'s Get Sun Burned', meaning: 'Corneum (stratum), Lucidum, Granulosum, Spinosum, Basale', structures: ['epidermis'] }
           ],
           respiratory: [
-            { id: 'mn_resp', title: 'Structures Air Passes Through', phrase: 'Nice People Like Talking But All Are Late', meaning: 'Nose, Pharynx, Larynx, Trachea, Bronchi, Alveoli', structures: ['nasal_cavity', 'larynx', 'bronchi', 'alveoli'] }
+            { id: 'mn_resp', title: t('stem.anatomy.structures_air_passes_through', 'Structures Air Passes Through'), phrase: 'Nice People Like Talking But All Are Late', meaning: 'Nose, Pharynx, Larynx, Trachea, Bronchi, Alveoli', structures: ['nasal_cavity', 'larynx', 'bronchi', 'alveoli'] }
           ],
           endocrine: [
-            { id: 'mn_pituitary', title: 'Anterior Pituitary Hormones', phrase: 'FLAT PeG', meaning: 'FSH, LH, ACTH, TSH, Prolactin, GH (Growth Hormone)', structures: ['pituitary'] }
+            { id: 'mn_pituitary', title: t('stem.anatomy.anterior_pituitary_hormones', 'Anterior Pituitary Hormones'), phrase: 'FLAT PeG', meaning: 'FSH, LH, ACTH, TSH, Prolactin, GH (Growth Hormone)', structures: ['pituitary'] }
           ],
           reproductive: [
-            { id: 'mn_repro', title: 'Stages of Meiosis I', phrase: 'PMAT with crossing over', meaning: 'Prophase I (crossing over), Metaphase I, Anaphase I, Telophase I', structures: ['testes_repro', 'ovaries_repro'] }
+            { id: 'mn_repro', title: t('stem.anatomy.stages_of_meiosis_i', 'Stages of Meiosis I'), phrase: 'PMAT with crossing over', meaning: 'Prophase I (crossing over), Metaphase I, Anaphase I, Telophase I', structures: ['testes_repro', 'ovaries_repro'] }
           ]
         };
 
@@ -755,57 +820,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ══════════════════════════════════════
         var PATHWAYS = [
           {
-            id: 'path_blood', title: 'Path of Blood', icon: '\u2764\uFE0F', color: '#ef4444',
-            desc: 'Follow a red blood cell through the entire circulatory system.',
+            id: 'path_blood', title: t('stem.anatomy.path_of_blood', 'Path of Blood'), icon: '\u2764\uFE0F', color: '#ef4444',
+            desc: t('stem.anatomy.follow_a_red_blood_cell_through_the_en', 'Follow a red blood cell through the entire circulatory system.'),
             steps: [
-              { label: 'Right Atrium', detail: 'Deoxygenated blood from the body enters the right atrium via the superior and inferior vena cava.', structure: 'sup_vena' },
-              { label: 'Right Ventricle', detail: 'Blood passes through the tricuspid valve into the right ventricle, which pumps it toward the lungs.', structure: 'heart' },
-              { label: 'Pulmonary Arteries', detail: 'The right ventricle ejects blood through the pulmonary valve into the pulmonary arteries toward both lungs.', structure: 'pulm_art' },
-              { label: 'Lung Capillaries', detail: 'In the alveolar capillaries, CO2 is released and O2 is picked up through the thin alveolar membrane.', structure: 'alveoli' },
-              { label: 'Pulmonary Veins', detail: 'Freshly oxygenated blood returns to the heart via four pulmonary veins, entering the left atrium.', structure: 'lungs' },
-              { label: 'Left Ventricle', detail: 'Blood passes through the mitral valve into the muscular left ventricle, the strongest heart chamber.', structure: 'heart' },
-              { label: 'Aorta', detail: 'The left ventricle powerfully ejects blood through the aortic valve into the aorta, the body\'s main highway.', structure: 'aorta' },
-              { label: 'Body Tissues', detail: 'Arteries branch into arterioles and capillaries where O2 and nutrients are delivered and CO2/waste collected.', structure: 'femoral_a' },
-              { label: 'Venous Return', detail: 'Deoxygenated blood returns through venules and veins, assisted by muscle pumps and valves, back to the right atrium.', structure: 'inf_vena' }
+              { label: t('stem.anatomy.right_atrium', 'Right Atrium'), detail: t('stem.anatomy.deoxygenated_blood_from_the_body_enter', 'Deoxygenated blood from the body enters the right atrium via the superior and inferior vena cava.'), structure: 'sup_vena' },
+              { label: t('stem.anatomy.right_ventricle', 'Right Ventricle'), detail: t('stem.anatomy.blood_passes_through_the_tricuspid_val', 'Blood passes through the tricuspid valve into the right ventricle, which pumps it toward the lungs.'), structure: 'heart' },
+              { label: t('stem.anatomy.pulmonary_arteries_2', 'Pulmonary Arteries'), detail: t('stem.anatomy.the_right_ventricle_ejects_blood_throu', 'The right ventricle ejects blood through the pulmonary valve into the pulmonary arteries toward both lungs.'), structure: 'pulm_art' },
+              { label: t('stem.anatomy.lung_capillaries', 'Lung Capillaries'), detail: t('stem.anatomy.in_the_alveolar_capillaries_co2_is_rel', 'In the alveolar capillaries, CO2 is released and O2 is picked up through the thin alveolar membrane.'), structure: 'alveoli' },
+              { label: t('stem.anatomy.pulmonary_veins', 'Pulmonary Veins'), detail: t('stem.anatomy.freshly_oxygenated_blood_returns_to_th', 'Freshly oxygenated blood returns to the heart via the four pulmonary veins.'), structure: 'lungs' },
+              { label: t('stem.anatomy.left_atrium', 'Left Atrium'), detail: t('stem.anatomy.the_four_pulmonary_veins_empty_oxygena', 'The four pulmonary veins empty oxygenated blood into the left atrium, which fills and then pushes it through the mitral valve.'), structure: 'heart' },
+              { label: t('stem.anatomy.left_ventricle', 'Left Ventricle'), detail: t('stem.anatomy.blood_passes_through_the_mitral_valve_', 'Blood passes through the mitral valve into the muscular left ventricle, the strongest heart chamber.'), structure: 'heart' },
+              { label: t('stem.anatomy.aorta_2', 'Aorta'), detail: t('stem.anatomy.the_left_ventricle_powerfully_ejects_b', 'The left ventricle powerfully ejects blood through the aortic valve into the aorta, the body\'s main highway.'), structure: 'aorta' },
+              { label: t('stem.anatomy.body_tissues', 'Body Tissues'), detail: t('stem.anatomy.arteries_branch_into_arterioles_and_ca', 'Arteries branch into arterioles and capillaries where O2 and nutrients are delivered and CO2/waste collected.'), structure: 'femoral_a' },
+              { label: t('stem.anatomy.venous_return', 'Venous Return'), detail: t('stem.anatomy.deoxygenated_blood_returns_through_ven', 'Deoxygenated blood returns through venules and veins, assisted by muscle pumps and valves, back to the right atrium.'), structure: 'inf_vena' }
             ]
           },
           {
-            id: 'path_air', title: 'Path of Air', icon: '\uD83D\uDCA8', color: '#3b82f6',
-            desc: 'Trace the journey of a breath of air from nose to alveoli and back.',
+            id: 'path_air', title: t('stem.anatomy.path_of_air', 'Path of Air'), icon: '\uD83D\uDCA8', color: '#3b82f6',
+            desc: t('stem.anatomy.trace_the_journey_of_a_breath_of_air_f', 'Trace the journey of a breath of air from nose to alveoli and back.'),
             steps: [
-              { label: 'Nasal Cavity', detail: 'Air enters through the nostrils and is warmed, humidified, and filtered by mucous membranes and turbinates.', structure: 'nasal_cavity' },
-              { label: 'Pharynx', detail: 'Air passes through the nasopharynx and oropharynx, a shared passage with the digestive tract.', structure: 'pharynx' },
-              { label: 'Larynx', detail: 'Air crosses the vocal cords in the voice box. The epiglottis guards against food entering the airway.', structure: 'larynx' },
-              { label: 'Trachea', detail: 'The trachea (windpipe) is reinforced by C-shaped cartilage rings. Cilia move mucus upward to trap debris.', structure: 'trachea' },
-              { label: 'Bronchi', detail: 'The trachea splits into left and right main bronchi, each entering a lung. They branch into smaller bronchioles.', structure: 'bronchi' },
-              { label: 'Alveoli', detail: '300 million grape-like sacs where gas exchange occurs. O2 diffuses into blood; CO2 diffuses out. Surface area equals a tennis court.', structure: 'alveoli' },
-              { label: 'Exhalation', detail: 'The diaphragm relaxes and rises, reducing lung volume. CO2-rich air is pushed out through the same pathway in reverse.', structure: 'diaphragm_m' }
+              { label: t('stem.anatomy.nasal_cavity_2', 'Nasal Cavity'), detail: t('stem.anatomy.air_enters_through_the_nostrils_and_is', 'Air enters through the nostrils and is warmed, humidified, and filtered by mucous membranes and turbinates.'), structure: 'nasal_cavity' },
+              { label: t('stem.anatomy.pharynx_2', 'Pharynx'), detail: t('stem.anatomy.air_passes_through_the_nasopharynx_and', 'Air passes through the nasopharynx and oropharynx, a shared passage with the digestive tract.'), structure: 'pharynx' },
+              { label: t('stem.anatomy.larynx', 'Larynx'), detail: t('stem.anatomy.air_crosses_the_vocal_cords_in_the_voi', 'Air crosses the vocal cords in the voice box. The epiglottis guards against food entering the airway.'), structure: 'larynx' },
+              { label: t('stem.anatomy.trachea_2', 'Trachea'), detail: t('stem.anatomy.the_trachea_windpipe_is_reinforced_by_', 'The trachea (windpipe) is reinforced by C-shaped cartilage rings. Cilia move mucus upward to trap debris.'), structure: 'trachea' },
+              { label: t('stem.anatomy.bronchi', 'Bronchi'), detail: t('stem.anatomy.the_trachea_splits_into_left_and_right', 'The trachea splits into left and right main bronchi, each entering a lung. They branch into smaller bronchioles.'), structure: 'bronchi' },
+              { label: t('stem.anatomy.alveoli_2', 'Alveoli'), detail: t('stem.anatomy.300_million_grape_like_sacs_where_gas_', '300 million grape-like sacs where gas exchange occurs. O2 diffuses into blood; CO2 diffuses out. Surface area equals a tennis court.'), structure: 'alveoli' },
+              { label: t('stem.anatomy.exhalation', 'Exhalation'), detail: t('stem.anatomy.the_diaphragm_relaxes_and_rises_reduci', 'The diaphragm relaxes and rises, reducing lung volume. CO2-rich air is pushed out through the same pathway in reverse.'), structure: 'diaphragm_m' }
             ]
           },
           {
-            id: 'path_food', title: 'Path of Food', icon: '\uD83C\uDF54', color: '#16a34a',
-            desc: 'Follow a meal from mouth through the entire digestive system.',
+            id: 'path_food', title: t('stem.anatomy.path_of_food', 'Path of Food'), icon: '\uD83C\uDF54', color: '#16a34a',
+            desc: t('stem.anatomy.follow_a_meal_from_mouth_through_the_e', 'Follow a meal from mouth through the entire digestive system.'),
             steps: [
-              { label: 'Mouth', detail: 'Teeth mechanically break food down. Salivary amylase begins starch digestion. The tongue shapes food into a bolus.', structure: 'mandible' },
-              { label: 'Pharynx & Esophagus', detail: 'Swallowing pushes the bolus past the epiglottis. Peristaltic waves move it down the 25cm esophagus in about 8 seconds.', structure: 'pharynx' },
-              { label: 'Stomach', detail: 'Gastric acid (pH 1.5-3.5) and pepsin break down proteins. Churning produces chyme over 2-4 hours.', structure: 'stomach' },
-              { label: 'Duodenum', detail: 'The first 25cm of the small intestine receives bile from the liver/gallbladder and enzymes from the pancreas.', structure: 'sm_intestine' },
-              { label: 'Jejunum & Ileum', detail: 'Most nutrient absorption occurs here via villi and microvilli, increasing surface area 600-fold. 6-7 meters long.', structure: 'sm_intestine' },
-              { label: 'Large Intestine', detail: 'Water and electrolytes are reabsorbed. Gut bacteria ferment remaining fiber, producing vitamins K and B12.', structure: 'lg_intestine' },
-              { label: 'Rectum & Excretion', detail: 'Waste is compacted and stored in the rectum until defecation. The entire journey takes 24-72 hours.', structure: 'bladder' }
+              { label: t('stem.anatomy.mouth', 'Mouth'), detail: t('stem.anatomy.teeth_mechanically_break_food_down_sal', 'Teeth mechanically break food down. Salivary amylase begins starch digestion. The tongue shapes food into a bolus.'), structure: 'mandible' },
+              { label: t('stem.anatomy.pharynx_esophagus', 'Pharynx & Esophagus'), detail: t('stem.anatomy.swallowing_pushes_the_bolus_past_the_e', 'Swallowing pushes the bolus past the epiglottis. Peristaltic waves move it down the 25cm esophagus in about 8 seconds.'), structure: 'pharynx' },
+              { label: t('stem.anatomy.stomach_2', 'Stomach'), detail: t('stem.anatomy.gastric_acid_ph_1_5_3_5_and_pepsin_bre', 'Gastric acid (pH 1.5-3.5) and pepsin break down proteins. Churning produces chyme over 2-4 hours.'), structure: 'stomach' },
+              { label: t('stem.anatomy.duodenum', 'Duodenum'), detail: t('stem.anatomy.the_first_25cm_of_the_small_intestine_', 'The first 25cm of the small intestine receives bile from the liver/gallbladder and enzymes from the pancreas.'), structure: 'sm_intestine' },
+              { label: t('stem.anatomy.jejunum_ileum', 'Jejunum & Ileum'), detail: t('stem.anatomy.most_nutrient_absorption_occurs_here_v', 'Most nutrient absorption occurs here via villi and microvilli, increasing surface area 600-fold. 6-7 meters long.'), structure: 'sm_intestine' },
+              { label: t('stem.anatomy.large_intestine_2', 'Large Intestine'), detail: t('stem.anatomy.water_and_electrolytes_are_reabsorbed_', 'Water and electrolytes are reabsorbed. Gut bacteria ferment remaining fiber, producing vitamins K and B12.'), structure: 'lg_intestine' },
+              { label: t('stem.anatomy.rectum_excretion', 'Rectum & Excretion'), detail: t('stem.anatomy.waste_is_compacted_and_stored_in_the_r', 'Waste is compacted and stored in the rectum until defecation. The entire journey takes 24-72 hours.'), structure: 'bladder' }
             ]
           },
           {
-            id: 'path_nerve', title: 'Path of a Nerve Signal', icon: '\u26A1', color: '#eab308',
-            desc: 'Trace a reflex arc from stimulus to response.',
+            id: 'path_nerve', title: t('stem.anatomy.path_of_a_nerve_signal', 'Path of a Nerve Signal'), icon: '\u26A1', color: '#eab308',
+            desc: t('stem.anatomy.trace_a_reflex_arc_from_stimulus_to_re', 'Trace a reflex arc from stimulus to response.'),
             steps: [
-              { label: 'Receptor', detail: 'A sensory receptor in the skin detects a painful stimulus (like touching a hot surface) and generates an electrical signal.', structure: 'epidermis' },
-              { label: 'Sensory Neuron', detail: 'The signal travels along a sensory (afferent) neuron toward the spinal cord at up to 120 m/s via saltatory conduction.', structure: 'sciatic' },
-              { label: 'Spinal Cord', detail: 'In the dorsal horn, the sensory neuron synapses with an interneuron. For reflexes, the signal does not need to reach the brain.', structure: 'spinal_cord' },
-              { label: 'Interneuron', detail: 'The interneuron in the spinal gray matter integrates the signal and relays it to a motor neuron.', structure: 'spinal_cord' },
-              { label: 'Motor Neuron', detail: 'The motor (efferent) neuron carries the command signal from the ventral horn down to the target muscle.', structure: 'femoral_n' },
-              { label: 'Effector (Muscle)', detail: 'Acetylcholine released at the neuromuscular junction causes muscle contraction. You pull your hand away before feeling pain.', structure: 'biceps' },
-              { label: 'Brain Awareness', detail: 'Meanwhile, a copy of the signal ascends to the somatosensory cortex. You consciously feel pain about 0.5 seconds after the reflex.', structure: 'brain' }
+              { label: t('stem.anatomy.receptor', 'Receptor'), detail: t('stem.anatomy.a_sensory_receptor_in_the_skin_detects', 'A sensory receptor in the skin detects a painful stimulus (like touching a hot surface) and generates an electrical signal.'), structure: 'epidermis' },
+              { label: t('stem.anatomy.sensory_neuron', 'Sensory Neuron'), detail: t('stem.anatomy.the_signal_travels_along_a_sensory_aff', 'The signal travels along a sensory (afferent) neuron toward the spinal cord at up to 120 m/s via saltatory conduction.'), structure: 'sciatic' },
+              { label: t('stem.anatomy.spinal_cord_2', 'Spinal Cord'), detail: t('stem.anatomy.in_the_dorsal_horn_the_sensory_neuron_', 'In the dorsal horn, the sensory neuron synapses with an interneuron. For reflexes, the signal does not need to reach the brain.'), structure: 'spinal_cord' },
+              { label: t('stem.anatomy.interneuron', 'Interneuron'), detail: t('stem.anatomy.the_interneuron_in_the_spinal_gray_mat', 'The interneuron in the spinal gray matter integrates the signal and relays it to a motor neuron.'), structure: 'spinal_cord' },
+              { label: t('stem.anatomy.motor_neuron', 'Motor Neuron'), detail: t('stem.anatomy.the_motor_efferent_neuron_carries_the_', 'The motor (efferent) neuron carries the command signal from the ventral horn down to the target muscle.'), structure: 'femoral_n' },
+              { label: t('stem.anatomy.effector_muscle', 'Effector (Muscle)'), detail: t('stem.anatomy.acetylcholine_released_at_the_neuromus', 'Acetylcholine released at the neuromuscular junction causes muscle contraction. You pull your hand away before feeling pain.'), structure: 'biceps' },
+              { label: t('stem.anatomy.brain_awareness', 'Brain Awareness'), detail: t('stem.anatomy.meanwhile_a_copy_of_the_signal_ascends', 'Meanwhile, a copy of the signal ascends to the somatosensory cortex. You consciously feel pain about 0.5 seconds after the reflex.'), structure: 'brain' }
             ]
           }
         ];
@@ -882,13 +948,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Layer Transparency System ──
         var LAYER_DEFS = [
-          { id: 'skin', icon: '\uD83E\uDDB4', name: 'Skin', color: '#f5e6d3', accent: '#c4aa94' },
-          { id: 'skeletal', icon: '\uD83E\uDDB4', name: 'Skeletal', color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', systems: ['skeletal'] },
-          { id: 'muscular', icon: '\uD83D\uDCAA', name: 'Muscular', color: '#fecaca', accent: '#dc2626', systems: ['muscular'] },
-          { id: 'organs', icon: '\uD83E\uDEC1', name: 'Organs', color: '#d1fae5', accent: '#16a34a', systems: ['digestive', 'respiratory', 'endocrine', 'reproductive'] },
-          { id: 'circulatory', icon: '\u2764\uFE0F', name: 'Circulatory', color: '#fee2e2', accent: '#ef4444', systems: ['circulatory'] },
-          { id: 'nervous', icon: '\u26A1', name: 'Nervous', color: '#fef9c3', accent: '#eab308', systems: ['nervous'] },
-          { id: 'lymphatic', icon: '\uD83D\uDFE2', name: 'Lymphatic', color: '#d1fae5', accent: '#22c55e', systems: ['lymphatic', 'integumentary'] }
+          { id: 'skin', icon: '\uD83E\uDDB4', name: t('stem.anatomy.skin', 'Skin'), color: '#f5e6d3', accent: '#c4aa94' },
+          { id: 'skeletal', icon: '\uD83E\uDDB4', name: t('stem.anatomy.skeletal_2', 'Skeletal'), color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', systems: ['skeletal'] },
+          { id: 'muscular', icon: '\uD83D\uDCAA', name: t('stem.anatomy.muscular_2', 'Muscular'), color: '#fecaca', accent: '#dc2626', systems: ['muscular'] },
+          { id: 'organs', icon: '\uD83E\uDEC1', name: t('stem.anatomy.organs', 'Organs'), color: '#d1fae5', accent: '#16a34a', systems: ['digestive', 'respiratory', 'endocrine', 'reproductive'] },
+          { id: 'circulatory', icon: '\u2764\uFE0F', name: t('stem.anatomy.circulatory_2', 'Circulatory'), color: '#fee2e2', accent: '#ef4444', systems: ['circulatory'] },
+          { id: 'nervous', icon: '\u26A1', name: t('stem.anatomy.nervous_2', 'Nervous'), color: '#fef9c3', accent: '#eab308', systems: ['nervous'] },
+          { id: 'lymphatic', icon: '\uD83D\uDFE2', name: t('stem.anatomy.lymphatic_2', 'Lymphatic'), color: '#d1fae5', accent: '#22c55e', systems: ['lymphatic', 'integumentary'] }
         ];
 
         var layers = d.visibleLayers || { skin: true };
@@ -929,7 +995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Tour state ──
         var tourSteps = GUIDED_TOURS[sysKey] || [];
-        var tourStepIdx = d._tourStepIdx || 0;
+        var tourStepIdx = Math.min(d._tourStepIdx || 0, Math.max(0, tourSteps.length - 1));
         var tourActive = d._tourActive || false;
         var currentTourStep = tourActive && tourSteps.length > 0 ? tourSteps[tourStepIdx] : null;
 
@@ -938,8 +1004,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Clinical cases state ──
         var clinicalSolved = d._clinicalSolved || 0;
-        var activeCaseIdx = d._activeCaseIdx || 0;
+        var activeCaseId = d._activeCaseId || null;
         var activeCaseFeedback = d._activeCaseFeedback || null;
+        var clinicalSolvedIds = d._clinicalSolvedIds || {};
 
         // ── Spotter test state ──
         var spotterActive = d._spotterActive || false;
@@ -950,6 +1017,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var spotterStartTime = d._spotterStartTime || 0;
         var spotterOptions = d._spotterOpts || [];
         var spotterBestTime = d._spotterBestTime || 999;
+        // Spotter accessibility: a coarse positional region cue (viewer perspective) so SR / non-visual
+        // and keyboard users can identify the marked structure without seeing the canvas crosshair.
+        // Deliberately coarse (5 vertical x 3 horizontal zones) so it never names or uniquely reveals
+        // the answer; it narrows the figure region so the multiple-choice options become answerable.
+        function spotterRegionCue(st) {
+          if (!st) return '';
+          var vert = st.y < 0.16 ? 'near the top, around the head and neck'
+            : st.y < 0.30 ? 'in the upper body, around the shoulders and chest'
+            : st.y < 0.45 ? 'in the chest and upper belly area'
+            : st.y < 0.62 ? 'in the lower belly and hip area'
+            : 'in the lower body, around the legs';
+          var horiz = st.x < 0.42 ? 'on the left side of the figure'
+            : st.x > 0.58 ? 'on the right side of the figure'
+            : 'near the center of the figure';
+          return 'The marker is ' + horiz + ', ' + vert + '.';
+        }
+        var spotterTargetStruct = spotterTarget ? (allStructures.find(function(s) { return s.id === spotterTarget; }) || null) : null;
+        var spotterCueText = spotterRegionCue(spotterTargetStruct);
+        // Elapsed time frozen at answer time (do NOT recompute Date.now() at render — the panel
+        // re-renders on every mouse-move, which would inflate the "Correct! (x.xs)" reading).
+        var spotterElapsed = d._spotterElapsed || 0;
+        // Is the currently-marked structure actually visible under the active systems/layers?
+        var spotterTargetVisible = spotterTarget ? filtered.some(function(s) { return s.id === spotterTarget; }) : false;
+        // Pick a fresh Spotter round from the CURRENTLY VISIBLE structures. Returns false (with a
+        // toast) if fewer than 4 labeled structures are in view, so Start / Next can never silently
+        // no-op or leave the student stuck on an unanswerable question.
+        var pickSpotterRound = function(isStart) {
+          var pool = filtered.filter(function(s) { return s.fn; });
+          if (pool.length < 4) {
+            if (typeof addToast === 'function') addToast('🔎 The Spotter Test needs at least 4 labeled structures in view. Turn on more systems or layers.');
+            return false;
+          }
+          var target = pool[Math.floor(Math.random() * pool.length)];
+          var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+          var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
+          var payload = { _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now(), _spotterElapsed: 0 };
+          if (isStart) payload._spotterActive = true;
+          updMulti(payload);
+          if (typeof announceToSR === 'function') announceToSR((isStart ? 'Spotter test started. ' : 'Next structure. ') + spotterRegionCue(target) + ' Choose which structure is marked from the buttons below.');
+          return true;
+        };
+        // Centralized SR announcement for organ selection (the #allo-live-anatomy region was dead).
+        // Grade-aware: mirrors the panel (simplified desc for k2/g35, full fn otherwise).
+        function announceStructure(id) {
+          if (typeof announceToSR !== 'function' || !id) return;
+          var st = null;
+          for (var asi = 0; asi < allStructures.length; asi++) { if (allStructures[asi].id === id) { st = allStructures[asi]; break; } }
+          if (!st) return;
+          var simple = (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[st.id] && SIMPLE_DESC[st.id][gradeBand];
+          var desc = simple || st.fn || '';
+          announceToSR(st.name + (desc ? '. ' + desc : ''));
+        }
 
         // ── Compare mode state ──
         var compareStructureId = d._compareStructure || null;
@@ -969,19 +1088,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Skin tone diversity (cultural representation) ──
         var SKIN_TONES = [
-          { id: 'light', label: 'Light', base: '#f5e6d3', mid: '#f0ddd0', shadow: '#ebd5c6', deep: '#e8cfc0', outline: '#c4aa94', hairline: '#a08060' },
-          { id: 'medium', label: 'Medium', base: '#d4a574', mid: '#c9956a', shadow: '#c08a60', deep: '#b57f56', outline: '#8a6540', hairline: '#5a3a20' },
-          { id: 'olive', label: 'Olive', base: '#c4a882', mid: '#b89a76', shadow: '#ac8e6c', deep: '#a08264', outline: '#7a6244', hairline: '#4a3420' },
-          { id: 'brown', label: 'Brown', base: '#8d5e3c', mid: '#7d5234', shadow: '#6e482e', deep: '#5f3e28', outline: '#4a2e1c', hairline: '#2a1a10' },
-          { id: 'deep', label: 'Deep', base: '#4a3228', mid: '#3e2a22', shadow: '#34241e', deep: '#2c1e18', outline: '#1e1410', hairline: '#0e0a06' }
+          { id: 'light', label: t('stem.anatomy.light', 'Light'), base: '#f5e6d3', mid: '#f0ddd0', shadow: '#ebd5c6', deep: '#e8cfc0', outline: '#c4aa94', hairline: '#a08060' },
+          { id: 'medium', label: t('stem.anatomy.medium', 'Medium'), base: '#d4a574', mid: '#c9956a', shadow: '#c08a60', deep: '#b57f56', outline: '#8a6540', hairline: '#5a3a20' },
+          { id: 'olive', label: t('stem.anatomy.olive', 'Olive'), base: '#c4a882', mid: '#b89a76', shadow: '#ac8e6c', deep: '#a08264', outline: '#7a6244', hairline: '#4a3420' },
+          { id: 'brown', label: t('stem.anatomy.brown', 'Brown'), base: '#8d5e3c', mid: '#7d5234', shadow: '#6e482e', deep: '#5f3e28', outline: '#4a2e1c', hairline: '#2a1a10' },
+          { id: 'deep', label: t('stem.anatomy.deep', 'Deep'), base: '#4a3228', mid: '#3e2a22', shadow: '#34241e', deep: '#2c1e18', outline: '#1e1410', hairline: '#0e0a06' }
         ];
-        var skinToneId = d._skinTone || 'light';
+        var skinToneId = d._skinTone || 'olive';
         var skinTone = SKIN_TONES.find(function(t) { return t.id === skinToneId; }) || SKIN_TONES[0];
 
         // ── Flashcard state ──
         var flashcardIdx = d._flashcardIdx || 0;
         var flashcardFlipped = d._flashcardFlipped || false;
-        var flashcardPool = allStructures.filter(function(s) { return s.fn && passesComplexity(s); });
+        var flashcardPool = allStructures.filter(function(s) { return s.fn && passesComplexity(s); }); if (flashcardIdx >= flashcardPool.length) flashcardIdx = 0;
 
         // ── Confetti state ──
         var confettiParticles = d._confettiParticles || [];
@@ -995,6 +1114,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var quizTypeCount = 4;
         var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
         var quizType = d.quizMode ? ((d.quizIdx || 0) % quizTypeCount) : 0;
+        // True/False (type 1): the statement used to ALWAYS claim the current system → answer was always
+        // "True" and trivially gameable. Alternate True/False deterministically by quizIdx; when it should
+        // be False, claim a system that does NOT actually contain this structure (handles multi-system
+        // organs like the pancreas/lungs that legitimately belong to more than one bucket).
+        var tfTrue = true, tfClaimSys = sys;
+        if (quizType === 1 && quizQ) {
+          tfTrue = ((d.quizIdx || 0) % 2) === 0;
+          if (!tfTrue) {
+            var _tfWrong = Object.keys(SYSTEMS).filter(function(k) {
+              return k !== sysKey && !SYSTEMS[k].structures.some(function(s) { return s.id === quizQ.id; });
+            });
+            if (_tfWrong.length) tfClaimSys = SYSTEMS[_tfWrong[(d.quizIdx || 0) % _tfWrong.length]];
+            else tfTrue = true;
+          }
+        }
         var quizOptions = d._quizOpts || [];
         if (quizQ && d._quizOptsFor !== (sysKey + '|' + d.quizIdx + '|' + quizType)) {
           var wrong = quizPool.filter(function(s) { return s.id !== quizQ.id; });
@@ -1002,15 +1136,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (quizType === 0 || quizType === 3) {
             quizOptions = shuffled.concat([quizQ]).sort(function() { return Math.random() - 0.5; });
           } else if (quizType === 1) {
-            quizOptions = [{ id: 'true', name: 'True' }, { id: 'false', name: 'False' }];
+            quizOptions = [{ id: 'true', name: t('stem.anatomy.true', 'True') }, { id: 'false', name: t('stem.anatomy.false', 'False') }];
           } else if (quizType === 2) {
             var sysKeys = Object.keys(SYSTEMS);
-            var wrongSys = sysKeys.filter(function(k) { return k !== sysKey; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+            var validSys = sysKeys.filter(function(k) {
+              return SYSTEMS[k].structures.some(function(s) { return s.id === quizQ.id; });
+            });
+            var wrongSys = sysKeys.filter(function(k) { return validSys.indexOf(k) === -1; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
             quizOptions = wrongSys.concat([sysKey]).sort(function() { return Math.random() - 0.5; }).map(function(k) { return { id: k, name: SYSTEMS[k].name }; });
           }
           upd('_quizOpts', quizOptions);
           upd('_quizOptsFor', sysKey + '|' + d.quizIdx + '|' + quizType);
         }
+
+        var quizAnswerLabel = quizQ ? (quizType === 1 ? (tfTrue ? t('stem.anatomy.true', 'True') : t('stem.anatomy.false', 'False')) : (quizType === 2 ? sys.name : quizQ.name)) : '';
 
         // ── Hover state ──
         var hoverStructure = d._hoverStructure || null;
@@ -1118,16 +1257,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           upd('_structuresViewed', newSV);
         }
 
-        checkBadges();
-        checkAnatomyChallenges();
+        // Defer badge/challenge checks (which fire awardStemXP / addToast / playSound / spawnConfetti /
+        // announceToSR) out of the render phase to a post-commit macrotask, so these side effects never
+        // run synchronously during render. The checks are idempotent (guarded on !badges.X / already
+        // completed) so deferral is safe and converges; event handlers also re-run checkAnatomyChallenges
+        // via setTimeout. (The remaining guarded _systemsExplored/_viewsUsed/_structuresViewed tracking
+        // writes above are change-gated no-ops once set; a fuller move into handlers is a separate task.)
+        if (typeof setTimeout === 'function') setTimeout(function() { checkBadges(); checkAnatomyChallenges(); }, 0);
+        else { checkBadges(); checkAnatomyChallenges(); }
 
         // ══════════════════════════════════════
         // CANVAS — Animated anatomical figure
         // ══════════════════════════════════════
 
         var canvasRef = function(canvas) {
-          if (!canvas) return;
-          if (canvas._anatomyAnim) { cancelAnimationFrame(canvas._anatomyAnim); canvas._anatomyAnim = null; }
+          if (!canvas) {
+            try { if (window.__alloAnatomyCanvasCleanup) window.__alloAnatomyCanvasCleanup(); } catch (e) {}
+            return;
+          }
+          if (canvas._anatomyCleanup) canvas._anatomyCleanup();
+          else if (canvas._anatomyAnim) { cancelAnimationFrame(canvas._anatomyAnim); canvas._anatomyAnim = null; }
+          try { if (window.__alloAnatomyCanvasCleanup && window.__alloAnatomyCanvasCleanup !== canvas._anatomyCleanup) window.__alloAnatomyCanvasCleanup(); } catch (e) {}
           // ── HiDPI / Retina scaling: render at native pixel density for crisp anatomical lines ──
           var dpr = window.devicePixelRatio || 1;
           var CSS_W = 360, CSS_H = 520;
@@ -1135,14 +1285,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           canvas.height = CSS_H * dpr;
           canvas.style.width = CSS_W + 'px';
           canvas.style.height = CSS_H + 'px';
-          var cCtx = canvas.getContext('2d');
+          var cCtx = canvas.getContext('2d'); if (cCtx && !cCtx.roundRect) { cCtx.roundRect = function (rx, ry, rw, rh, rr) { if (typeof rr === 'number') rr = [rr, rr, rr, rr]; if (!rr || rr.length < 4) rr = [0, 0, 0, 0]; this.moveTo(rx + rr[0], ry); this.arcTo(rx + rw, ry, rx + rw, ry + rh, rr[1]); this.arcTo(rx + rw, ry + rh, rx, ry + rh, rr[2]); this.arcTo(rx, ry + rh, rx, ry, rr[3]); this.arcTo(rx, ry, rx + rw, ry, rr[0]); this.closePath(); return this; }; }
           cCtx.scale(dpr, dpr);
           // W and H stay at CSS dimensions — all drawing code uses these logical coordinates
           var W = CSS_W, H = CSS_H;
           canvas._dpr = dpr; // store for click/hover coordinate conversion
           var anatTick = 0;
+          var anatomyAlive = true;
+          var anatomyMotionReduced = false;
+          try { anatomyMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+          function isAnatomyHidden() {
+            return typeof document !== 'undefined' && !!document.hidden;
+          }
+
+          function cancelAnatomyFrame() {
+            if (canvas._anatomyAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvas._anatomyAnim);
+            canvas._anatomyAnim = null;
+          }
+
+          function scheduleAnatomyFrame() {
+            if (!anatomyAlive || anatomyMotionReduced || canvas._anatomyAnim || isAnatomyHidden()) return;
+            if (typeof requestAnimationFrame !== 'function') return;
+            canvas._anatomyAnim = requestAnimationFrame(drawAnatomyFrame);
+          }
+
+          function cleanupAnatomyCanvas() {
+            anatomyAlive = false;
+            cancelAnatomyFrame();
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onAnatomyVisibilityChange);
+            if (window.__alloAnatomyCanvasCleanup === canvas._anatomyCleanup) window.__alloAnatomyCanvasCleanup = null;
+            canvas._anatomyCleanup = null;
+          }
+
+          function onAnatomyVisibilityChange() {
+            if (!anatomyAlive) return;
+            if (!canvas.isConnected) { cleanupAnatomyCanvas(); return; }
+            if (isAnatomyHidden()) cancelAnatomyFrame();
+            else { cancelAnatomyFrame(); drawAnatomyFrame(); }
+          }
+
+          canvas._anatomyCleanup = cleanupAnatomyCanvas;
+          try { window.__alloAnatomyCanvasCleanup = canvas._anatomyCleanup; } catch (e) {}
+          if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onAnatomyVisibilityChange);
 
           function drawAnatomyFrame() {
+            if (!anatomyAlive) return;
+            canvas._anatomyAnim = null;
             // Stop the rAF chain once the canvas leaves the DOM (the user
             // switched to a different tool, or the SEL/STEM modal closed).
             // Without this check, the loop kept firing forever — drawing to
@@ -1152,10 +1341,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // loops running in parallel. canvas.isConnected returns false
             // once the element is removed from any document.
             if (!canvas.isConnected) {
-              canvas._anatomyAnim = null;
+              cleanupAnatomyCanvas();
               return;
             }
-            anatTick++;
+            if (isAnatomyHidden()) {
+              cancelAnatomyFrame();
+              return;
+            }
+            if (!anatomyMotionReduced) anatTick++;
             cCtx.clearRect(0, 0, W, H);
 
             // ── X-ray mode background (enhanced with film effects) ──
@@ -3764,7 +3957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
                 // Label callout box
                 cCtx.beginPath(); cCtx.roundRect(htx, hty, boxW, boxH, 4);
-                cCtx.fillStyle = 'rgba(15,23,42,0.85)'; cCtx.fill();
+                cCtx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.85))'; cCtx.fill();
                 cCtx.strokeStyle = sys.accent + '60'; cCtx.lineWidth = 0.8; cCtx.stroke();
 
                 // Structure name text
@@ -4078,7 +4271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             cCtx.fillText('AlloFlow Anatomy', W - 6, H - 3);
             cCtx.restore();
 
-            canvas._anatomyAnim = requestAnimationFrame(drawAnatomyFrame);
+            scheduleAnatomyFrame();
           }
 
           drawAnatomyFrame();
@@ -4096,19 +4289,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           });
           if (closest) {
             if (spotterActive && spotterFeedback === null) {
-              // Block clicking on the target body part directly to obtain the correct answer
-              if (closest.id === spotterTarget) {
-                if (addToast) addToast('🎯 Identify the structure using the multiple-choice buttons in the side panel!');
-                return;
-              }
-              // Clicking directly submits the answer in Spotter Mode (for other parts, marking them wrong)
-              var elapsed = (Date.now() - spotterStartTime) / 1000;
-              upd('_spotterFeedback', closest.id);
-              upd('_spotterTotal', spotterTotal + 1);
-              playSound('spotterWrong');
+              // Spotter answers are given via the multiple-choice buttons ONLY. Canvas clicks never
+              // submit — this blocks cheating (clicking the visible pin) and, just as importantly,
+              // stops an exploratory/accidental click from instantly losing the round.
+              if (addToast) addToast('🎯 Identify the marked structure using the buttons in the side panel.');
+              return;
             } else {
               // Standard explore mode click
-              upd('selectedStructure', closest.id);
+              upd('selectedStructure', closest.id); announceStructure(closest.id);
               playSound('structureClick');
             }
           }
@@ -4165,11 +4353,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               upd('_aiMessages', newMsgs.concat([{ role: 'ai', text: String(answer) }]));
               upd('_aiLoading', false);
             })['catch'](function() {
-              upd('_aiMessages', newMsgs.concat([{ role: 'ai', text: 'Sorry, I could not connect to the AI tutor right now.' }]));
+              upd('_aiMessages', newMsgs.concat([{ role: 'ai', text: t('stem.anatomy.sorry_i_could_not_connect_to_the_ai_tu', 'Sorry, I could not connect to the AI tutor right now.') }]));
               upd('_aiLoading', false);
             });
           } else {
-            upd('_aiMessages', newMsgs.concat([{ role: 'ai', text: 'AI tutor is not available in this environment.' }]));
+            upd('_aiMessages', newMsgs.concat([{ role: 'ai', text: t('stem.anatomy.ai_tutor_is_not_available_in_this_envi', 'AI tutor is not available in this environment.') }]));
             upd('_aiLoading', false);
           }
         };
@@ -4178,8 +4366,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var ttsBtn = function(text) {
           return h('button', {
             onClick: function() { speakText(text, callTTS); },
-            className: 'ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-600',
-            title: 'Read aloud', 'aria-label': 'Read aloud'
+            className: 'ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-600 active:scale-[0.97]',
+            title: t('stem.anatomy.read_aloud', 'Read aloud'), 'aria-label': t('stem.anatomy.read_aloud_2', 'Read aloud')
           }, '\uD83D\uDD0A');
         };
 
@@ -4187,6 +4375,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var exploredInSystem = 0;
         filtered.forEach(function(st) { if (structuresViewed[st.id]) exploredInSystem++; });
         var progressPct = filtered.length > 0 ? Math.round((exploredInSystem / filtered.length) * 100) : 0;
+        var systemsExploredCount = Object.keys(systemsExplored).length;
+        var structuresViewedCount = Object.keys(structuresViewed).length;
+        var badgesEarnedCount = Object.keys(badges).length;
+        var completedChallengeCount = (d.completedChallenges || []).length;
+        var activeLayerCount = LAYER_DEFS.filter(function(ld) { return layers[ld.id] || ld.id === autoLayerId; }).length;
+        var missionPrompt = sel
+          ? 'Now studying ' + sel.name + '. Compare its function, location, and clinical note against the model.'
+          : gradeIntro;
+        var showLegacyChallengeCard = false;
 
         // ── Keyboard navigation handler ──
         function handleKeyNav(e) {
@@ -4203,12 +4400,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
             e.preventDefault();
             var nextIdx = curIdx < navList.length - 1 ? curIdx + 1 : 0;
-            upd('selectedStructure', navList[nextIdx].id);
+            upd('selectedStructure', navList[nextIdx].id); announceStructure(navList[nextIdx].id);
             playSound('structureClick');
           } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
             e.preventDefault();
             var prevIdx = curIdx > 0 ? curIdx - 1 : navList.length - 1;
-            upd('selectedStructure', navList[prevIdx].id);
+            upd('selectedStructure', navList[prevIdx].id); announceStructure(navList[prevIdx].id);
             playSound('structureClick');
           } else if (e.key === 'Escape') {
             upd('selectedStructure', null);
@@ -4219,72 +4416,136 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // UI RENDER
         // ══════════════════════════════════════
 
-        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1', tabIndex: 0, onKeyDown: handleKeyNav },
+        return h('div', {
+          className: 'anatomy-tool-shell max-w-6xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1',
+          tabIndex: 0,
+          onKeyDown: handleKeyNav,
+          'data-anatomy-tool': 'true',
+          style: { '--anatomy-accent': sys.accent, '--anatomy-soft': sys.color }
+        },
 
           // Header
-          h('div', { className: 'flex items-center gap-3 mb-3' },
-            h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+          h('div', { className: 'anatomy-topbar flex items-center gap-3 mb-3' },
+            h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 active:scale-[0.97]', 'aria-label': t('stem.anatomy.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
             h('div', null,
-              h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDEC0 Human Anatomy Explorer'),
+              h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, t('stem.anatomy.human_anatomy_explorer', '\uD83E\uDEC0 Human Anatomy Explorer')),
               h('p', { className: 'text-xs text-slate-600' }, sys.desc)
             ),
-            h('button', { 'aria-label': 'Snapshot',
+            h('button', { 'aria-label': t('stem.anatomy.snapshot', 'Snapshot'),
               onClick: takeSnapshot,
-              className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all',
-              title: 'Save snapshot'
-            }, '\uD83D\uDCF8 Snapshot')
+              className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all active:scale-[0.97]',
+              title: t('stem.anatomy.save_snapshot', 'Save snapshot')
+            }, t('stem.anatomy.snapshot_2', '\uD83D\uDCF8 Snapshot'))
           ),
 
-          // Grade-band intro
-          h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800' }, gradeIntro),
+          // Mission dashboard
+          h('section', {
+            className: 'anatomy-mission mb-3',
+            'data-anatomy-mission': 'true',
+            style: { borderColor: sys.accent + '26' }
+          },
+            h('div', { className: 'anatomy-mission-inner' },
+              h('div', null,
+                h('div', { className: 'anatomy-kicker' }, t('stem.anatomy.body_systems_lab', 'Body systems lab')),
+                h('h2', { className: 'anatomy-mission-title' }, sys.icon + ' ' + sys.name + ' ' + t('stem.anatomy.system', 'system')),
+                h('p', { className: 'anatomy-mission-text' }, missionPrompt),
+                h('div', { className: 'anatomy-mission-actions' },
+                  h('button', {
+                    onClick: function() { upd('_activeTab', 'explore'); },
+                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (activeTab === 'explore' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 active:scale-[0.97]')
+                  }, t('stem.anatomy.explore', 'Explore')),
+                  h('button', {
+                    onClick: function() { upd('_activeTab', 'tour'); if (!tourActive) { upd('_tourActive', true); upd('_tourStepIdx', 0); } },
+                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 active:scale-[0.97]')
+                  }, t('stem.anatomy.guided_tour', 'Guided tour')),
+                  h('button', {
+                    onClick: function() { upd('_activeTab', 'spotter'); },
+                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50 active:scale-[0.97]')
+                  }, t('stem.anatomy.spotter', 'Spotter'))
+                )
+              ),
+              h('div', null,
+                h('div', { className: 'anatomy-metric-grid' },
+                  h('div', { className: 'anatomy-metric' },
+                    h('strong', null, String(structuresViewedCount)),
+                    h('span', null, t('stem.anatomy.structures_viewed', 'Structures viewed'))
+                  ),
+                  h('div', { className: 'anatomy-metric' },
+                    h('strong', null, systemsExploredCount + '/10'),
+                    h('span', null, t('stem.anatomy.systems_explored', 'Systems explored'))
+                  ),
+                  h('div', { className: 'anatomy-metric' },
+                    h('strong', null, String(activeLayerCount)),
+                    h('span', null, t('stem.anatomy.layers_on', 'Layers on'))
+                  ),
+                  h('div', { className: 'anatomy-metric' },
+                    h('strong', null, badgesEarnedCount + '/' + BADGE_DEFS.length),
+                    h('span', null, t('stem.anatomy.badges', 'Badges'))
+                  )
+                ),
+                h('div', { className: 'anatomy-challenge-strip', 'aria-label': t('stem.anatomy.challenge_progress', 'Challenge progress') },
+                  ANAT_CHALLENGES.map(function(ch) {
+                    var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                    return h('span', {
+                      key: ch.id,
+                      title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
+                      className: 'anatomy-challenge-chip',
+                      'data-done': done ? 'true' : 'false'
+                    }, ch.icon);
+                  }),
+                  h('span', { className: 'text-[11px] font-bold text-amber-700 self-center ml-1' }, (d.researchPoints || 0) + ' RP - ' + completedChallengeCount + '/' + ANAT_CHALLENGES.length)
+                )
+              )
+            )
+          ),
 
-          // Tab bar (7 tabs)
-          h('div', { className: 'flex gap-1 mb-3', role: 'tablist', },
-            h('button', { 'aria-label': 'Explore',
+          // Tab bar (8 tabs)
+          h('div', { className: 'anatomy-tab-strip flex flex-wrap gap-1 gap-y-1.5 mb-3', role: 'tablist', 'aria-label': t('stem.anatomy.learning_modes', 'Anatomy learning modes'), 'aria-orientation': 'horizontal', onKeyDown: handleAnatomyTabKey, 'data-anatomy-tab-strip': 'true' },
+            h('button', { 'aria-label': t('stem.anatomy.explore', 'Explore'),
               role: 'tab', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'explore'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-            }, '\uD83E\uDEC0 Explore'),
-            h('button', { 'aria-label': 'Tour',
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
+            }, t('stem.anatomy.explore_2', '\uD83E\uDEC0 Explore')),
+            h('button', { 'aria-label': t('stem.anatomy.tour', 'Tour'),
               role: 'tab', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'tour'); if (!tourActive) { upd('_tourActive', true); upd('_tourStepIdx', 0); } },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-600')
-            }, '\uD83E\uDDED Tour'),
-            h('button', { 'aria-label': 'Connect',
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-600 active:scale-[0.97]')
+            }, t('stem.anatomy.tour_2', '\uD83E\uDDED Tour')),
+            h('button', { 'aria-label': t('stem.anatomy.connect', 'Connect'),
               role: 'tab', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'connections'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-600')
-            }, '\uD83D\uDD17 Connect'),
-            h('button', { 'aria-label': 'AI Tutor',
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'transition-colors bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-600 active:scale-[0.97]')
+            }, t('stem.anatomy.connect_2', '\uD83D\uDD17 Connect')),
+            h('button', { 'aria-label': t('stem.anatomy.ai_tutor', 'AI Tutor'),
               role: 'tab', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'aiTutor'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600')
-            }, '\uD83E\uDD16 AI Tutor'),
-            h('button', { 'aria-label': 'Spotter',
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'transition-colors bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600 active:scale-[0.97]')
+            }, t('stem.anatomy.ai_tutor_2', '\uD83E\uDD16 AI Tutor')),
+            h('button', { 'aria-label': t('stem.anatomy.spotter', 'Spotter'),
               role: 'tab', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'spotter'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-600')
-            }, '\uD83C\uDFAF Spotter'),
-            h('button', { 'aria-label': 'Pathways',
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-600 active:scale-[0.97]')
+            }, t('stem.anatomy.spotter_2', '\uD83C\uDFAF Spotter')),
+            h('button', { 'aria-label': t('stem.anatomy.pathways', 'Pathways'),
               role: 'tab', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'pathways'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600')
-            }, '\uD83D\uDEE4 Pathways'),
-            h('button', { 'aria-label': 'Cards',
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'transition-colors bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 active:scale-[0.97]')
+            }, t('stem.anatomy.pathways_2', '\uD83D\uDEE4 Pathways')),
+            h('button', { 'aria-label': t('stem.anatomy.cards', 'Cards'),
               role: 'tab', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'flashcards'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-600')
-            }, '\uD83C\uDCCF Cards'),
-            h('button', { 'aria-label': 'Homeostasis discovery',
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white' : 'transition-colors bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-600 active:scale-[0.97]')
+            }, t('stem.anatomy.cards_2', '\uD83C\uDCCF Cards')),
+            h('button', { 'aria-label': t('stem.anatomy.homeostasis_discovery', 'Homeostasis discovery'),
               role: 'tab', 'aria-selected': activeTab === 'homeoHunt', tabIndex: activeTab === 'homeoHunt' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'homeoHunt'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600')
-            }, '\uD83C\uDFE0 Homeostasis'),
-            h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white' : 'transition-colors bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600 active:scale-[0.97]')
+            }, t('stem.anatomy.homeostasis', '\uD83C\uDFE0 Homeostasis')),
+            h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + badgesEarnedCount + '/' + BADGE_DEFS.length + ' badges')
           ),
 
           // Challenges Progress Card
-          h('div', {
+          showLegacyChallengeCard && h('div', {
             className: 'mb-3 rounded-xl p-4 border bg-gradient-to-r from-amber-50 to-orange-50 border-orange-200',
             style: { boxShadow: '0 2px 8px rgba(180,83,9,0.06)' }
           },
@@ -4318,16 +4579,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // ── Topic-accent hero band per tab ──
           (function() {
             var TAB_META = {
-              explore:     { accent: '#1e293b', soft: 'rgba(30,41,59,0.06)',  icon: '\uD83E\uDEC0', title: 'Explore the system',         hint: 'Click any organ to see its structure, function, and connections. Hover for plain-English labels; tap for the deep dive.' },
-              tour:        { accent: '#047857', soft: 'rgba(4,120,87,0.10)',  icon: '\uD83E\uDDED', title: 'Guided tour',                 hint: 'Step through each major part in pedagogical order. Best path for first-time learners \u2014 covers structure \u2192 function \u2192 integration in one pass.' },
-              connections: { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)', icon: '\uD83D\uDD17', title: 'Cross-system connections',    hint: 'No system works alone. The kidney filters blood (cardiovascular), responds to ADH (endocrine), and excretes urea (digestive byproduct). Find the links.' },
-              aiTutor:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDD16', title: 'AI tutor',                    hint: 'Ask a question about the active organ or system. The tutor knows what is on screen and tailors answers to your grade band.' },
-              spotter:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83C\uDFAF', title: 'Structure spotter',           hint: 'Click the named structure on the diagram. Builds the click-the-thing reflex that AP and medical exams rely on.' },
-              pathways:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\uD83D\uDEE4\uFE0F', title: 'Trace the pathway',          hint: 'Follow blood, air, food, or signals through the body in sequence. Pathways are how isolated facts become a system you can reason about.' },
-              flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: 'Spaced-repetition cards',     hint: 'Quick-recall cards with spaced repetition. Six-second review now beats five-minute re-read tomorrow \u2014 that is the testing effect.' }
+              explore:     { accent: '#1e293b', soft: 'rgba(30,41,59,0.06)',  icon: '\uD83E\uDEC0', title: t('stem.anatomy.explore_the_system', 'Explore the system'),         hint: t('stem.anatomy.click_any_organ_to_see_its_structure_f', 'Click any organ to see its structure, function, and connections. Hover for plain-English labels; tap for the deep dive.') },
+              tour:        { accent: '#047857', soft: 'rgba(4,120,87,0.10)',  icon: '\uD83E\uDDED', title: t('stem.anatomy.guided_tour', 'Guided tour'),                 hint: t('stem.anatomy.step_through_each_major_part_in_pedago', 'Step through each major part in pedagogical order. Best path for first-time learners \u2014 covers structure \u2192 function \u2192 integration in one pass.') },
+              connections: { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)', icon: '\uD83D\uDD17', title: t('stem.anatomy.cross_system_connections', 'Cross-system connections'),    hint: t('stem.anatomy.no_system_works_alone_the_kidney_filte', 'No system works alone. The kidney filters blood (cardiovascular), responds to ADH (endocrine), and excretes urea (digestive byproduct). Find the links.') },
+              aiTutor:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDD16', title: t('stem.anatomy.ai_tutor_3', 'AI tutor'),                    hint: t('stem.anatomy.ask_a_question_about_the_active_organ_', 'Ask a question about the active organ or system. The tutor knows what is on screen and tailors answers to your grade band.') },
+              spotter:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83C\uDFAF', title: t('stem.anatomy.structure_spotter', 'Structure spotter'),           hint: t('stem.anatomy.click_the_named_structure_on_the_diagr', 'Click the named structure on the diagram. Builds the click-the-thing reflex that AP and medical exams rely on.') },
+              pathways:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\uD83D\uDEE4\uFE0F', title: t('stem.anatomy.trace_the_pathway', 'Trace the pathway'),          hint: t('stem.anatomy.follow_blood_air_food_or_signals_throu', 'Follow blood, air, food, or signals through the body in sequence. Pathways are how isolated facts become a system you can reason about.') },
+              flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: t('stem.anatomy.spaced_repetition_cards', 'Spaced-repetition cards'),     hint: t('stem.anatomy.quick_recall_cards_with_spaced_repetit', 'Quick-recall cards with spaced repetition. Six-second review now beats five-minute re-read tomorrow \u2014 that is the testing effect.') },
+              homeoHunt:   { accent: '#4338ca', soft: 'rgba(67,56,202,0.10)', icon: '🏠', title: t('stem.anatomy.homeostasis_hunt', 'Homeostasis Hunt'),         hint: t('stem.anatomy.compare_homeostasis_reference_ranges', 'Adjust the sliders to compare three adult teaching reference ranges and examine the limits of a simplified homeostasis model.') }
             };
             var meta = TAB_META[activeTab] || TAB_META.explore;
             return h('div', {
+              className: 'anatomy-mode-card',
               style: {
                 margin: '0 0 12px',
                 padding: '12px 14px',
@@ -4347,15 +4610,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           })(),
 
           // ── System tabs (Always visible) ──
-          h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
+          h('div', { className: 'anatomy-system-rail mb-3', 'data-anatomy-system-rail': 'true' },
             Object.keys(SYSTEMS).map(function(key) {
               var s = SYSTEMS[key];
-              return h('button', { key: key,
+              return h('button', { key: key, 'aria-pressed': sysKey === key,
                 onClick: function() {
                   upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', '');
                   playSound('systemSelect');
                 },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-400'),
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ' + (sysKey === key ? 'text-white shadow-sm' : 'transition-colors bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-400 active:scale-[0.97]'),
                 style: sysKey === key ? { background: s.accent, boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.3), 0 2px 6px ' + s.accent + '30' } : {}
               }, s.icon + ' ' + s.name);
             })
@@ -4365,19 +4628,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           currentFact ? h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2' },
             h('span', { className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
             h('div', { className: 'flex-1' },
-              h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, 'Did you know?'),
+              h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.anatomy.did_you_know', 'Did you know?')),
               h('p', { className: 'text-xs text-amber-900 leading-relaxed' }, currentFact)
             ),
-            h('button', { 'aria-label': 'Next',
+            h('button', { 'aria-label': t('stem.anatomy.next', 'Next'),
               onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
-              className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all flex-shrink-0'
-            }, 'Next \u2192')
+              className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all flex-shrink-0 active:scale-[0.97]'
+            }, t('stem.anatomy.next_2', 'Next \u2192'))
           ) : null,
 
           // ── Mnemonics section (Always visible) ──
           MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'mb-3' },
             h('button', { onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
-              className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-600 hover:bg-purple-100 transition-all'
+              className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-600 hover:bg-purple-100 transition-all active:scale-[0.97]'
             },
               h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
               h('span', { className: 'text-[11px] text-purple-500' }, d._showMnemonics ? '\u25B2' : '\u25BC')
@@ -4394,7 +4657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   isRevealed ? h('div', null,
                     h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, mn.meaning),
                     ttsBtn(mn.phrase + '. ' + mn.meaning)
-                  ) : h('button', { 'aria-label': 'Reveal meaning',
+                  ) : h('button', { 'aria-label': t('stem.anatomy.reveal_meaning', 'Reveal meaning'),
                     onClick: function() {
                       var newMV = Object.assign({}, mnemonicsViewed);
                       newMV[mn.id] = true;
@@ -4403,14 +4666,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       setTimeout(checkAnatomyChallenges, 50);
                     },
                     className: 'text-[11px] font-bold text-purple-600 hover:text-purple-800 transition-all'
-                  }, 'Reveal meaning \u2192')
+                  }, t('stem.anatomy.reveal_meaning_2', 'Reveal meaning \u2192'))
                 );
               })
             ) : null
           ) : null,
 
           // ── Progress tracker (Always visible) ──
-          h('div', { className: 'mb-3 flex items-center gap-2' },
+          h('div', { className: 'anatomy-progress-row mb-3 flex items-center gap-2' },
             h('span', { className: 'text-[11px] font-bold text-slate-600' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
             h('div', { className: 'flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
               h('div', { className: 'h-full rounded-full transition-all', style: { width: progressPct + '%', background: sys.accent } })
@@ -4419,8 +4682,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // ── Layer toggle bar (Always visible) ──
-          h('div', { className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-400' },
-            h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
+          h('div', { className: 'anatomy-layer-bar flex items-center gap-1.5 mb-3 flex-wrap', 'data-anatomy-layer-bar': 'true' },
+            h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, t('stem.anatomy.layers', '\uD83E\uDDE0 Layers')),
             LAYER_DEFS.map(function(ld) {
               var isOn = layers[ld.id] || ld.id === autoLayerId;
               return h('button', { 'aria-label': (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
@@ -4433,32 +4696,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 },
                 title: (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
-                  (isOn ? 'text-white shadow-sm border-transparent' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100'),
+                  (isOn ? 'text-white shadow-sm border-transparent' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100 active:scale-[0.97]'),
                 style: isOn ? { background: ld.accent, borderColor: ld.accent } : {}
               }, ld.icon + ' ' + ld.name);
             }),
-            h('button', { 'aria-label': 'Reset',
+            h('button', { 'aria-label': t('stem.anatomy.reset', 'Reset'),
               onClick: function() { upd('visibleLayers', { skin: true }); },
-              title: 'Reset all layers to default (skin only)',
-              className: 'ml-auto px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200'
-            }, '\u21BA Reset')
+              title: t('stem.anatomy.reset_all_layers_to_default_skin_only', 'Reset all layers to default (skin only)'),
+              className: 'ml-auto px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200 active:scale-[0.97]'
+            }, t('stem.anatomy.reset_2', '\u21BA Reset'))
           ),
 
           // ── Controls (Always visible) ──
-          h('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
+          h('div', { className: 'anatomy-controls-bar flex items-center gap-2 mb-3 flex-wrap', 'data-anatomy-controls': 'true' },
             h('div', { className: 'flex rounded-lg border border-slate-400 overflow-hidden' },
               ['anterior', 'posterior'].map(function(v) {
                 return h('button', {
                   key: v,
                   onClick: function() { upd('view', v); upd('selectedStructure', null); playSound('viewSwitch'); },
                   'aria-pressed': view === v,
-                  className: 'px-3 py-1 text-xs font-bold transition-all border-2 ' + (view === v ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 hover:bg-slate-50 border-transparent')
+                  className: 'px-3 py-1 text-xs font-bold transition-all border-2 ' + (view === v ? 'bg-slate-800 text-white border-slate-800' : 'transition-colors bg-white text-slate-600 hover:bg-slate-50 border-transparent active:scale-[0.97]')
                 }, v.charAt(0).toUpperCase() + v.slice(1));
               })
             ),
             h('input', {
-              type: 'text', placeholder: '\uD83D\uDD0D Search structures...',
-              'aria-label': 'Search anatomical structures',
+              type: 'text', placeholder: t('stem.anatomy.search_structures', '\uD83D\uDD0D Search structures...'),
+              'aria-label': t('stem.anatomy.search_anatomical_structures', 'Search anatomical structures'),
               value: d.search || '',
               onChange: function(e) {
                 upd('search', e.target.value);
@@ -4468,76 +4731,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             }),
             h('button', { onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
               'aria-pressed': !!d.quizMode,
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100')
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'transition-colors bg-green-50 text-green-700 border border-green-600 hover:bg-green-100 active:scale-[0.97]')
             }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
             h('div', { className: 'flex rounded-lg border border-slate-400 overflow-hidden' },
-              [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function(lv) {
-                return h('button', { key: lv.v, title: lv.tip + ' level',
+              [{ v: 1, label: 'K\u20135', tip: t('stem.anatomy.elementary', 'Elementary') }, { v: 2, label: '6\u20138', tip: t('stem.anatomy.middle', 'Middle') }, { v: 3, label: '9\u201312+', tip: t('stem.anatomy.advanced', 'Advanced') }].map(function(lv) {
+                return h('button', { key: lv.v, title: lv.tip + ' level', 'aria-pressed': complexity === lv.v,
                   onClick: function() { upd('complexity', lv.v); upd('selectedStructure', null); },
-                  className: 'px-2 py-1 text-[11px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
+                  className: 'px-2 py-1 text-[11px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'transition-colors bg-white text-slate-600 hover:bg-slate-50 active:scale-[0.97]')
                 }, lv.label);
               })
             ),
             h('span', { className: 'text-[11px] text-slate-600 font-bold' }, filtered.length + ' structures'),
-            h('button', { 'aria-label': 'Regions',
+            h('button', { 'aria-label': t('stem.anatomy.regions', 'Regions'), 'aria-pressed': !!d._showRegionLabels,
               onClick: function() { upd('_showRegionLabels', !d._showRegionLabels); },
-              title: 'Toggle body region labels',
-              className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
-            }, '\uD83C\uDFF7 Regions'),
+              title: t('stem.anatomy.toggle_body_region_labels', 'Toggle body region labels'),
+              className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 active:scale-[0.97]')
+            }, t('stem.anatomy.regions_2', '\uD83C\uDFF7 Regions')),
             h('button', { 'aria-label': 'X-ray',
               'aria-pressed': !!xrayMode,
               onClick: function() { upd('_xrayMode', !xrayMode); },
-              title: 'Toggle X-ray radiograph mode',
-              className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50')
-            }, '\u2622 X-ray'),
+              title: t('stem.anatomy.toggle_x_ray_radiograph_mode', 'Toggle X-ray radiograph mode'),
+              className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 active:scale-[0.97]')
+            }, t('stem.anatomy.x_ray', '\u2622 X-ray')),
             // Skin tone selector (representation & inclusion)
-            h('div', { className: 'flex items-center gap-1 ml-1', title: 'Skin tone (representation)' },
+            h('div', { className: 'flex items-center gap-1 ml-1', title: t('stem.anatomy.skin_tone_representation', 'Skin tone (representation)') },
               h('span', { className: 'text-[11px] text-slate-200 font-bold' }, '\uD83C\uDFA8'),
               SKIN_TONES.map(function(tone) {
                 return h('button', {
                   key: tone.id,
                   'aria-label': tone.label + ' skin tone',
+                  'aria-pressed': skinToneId === tone.id,
                   onClick: function() { upd('_skinTone', tone.id); },
-                  className: 'w-5 h-5 rounded-full border-2 transition-all ' + (skinToneId === tone.id ? 'border-slate-700 ring-2 ring-offset-1 ring-slate-700 scale-110' : 'border-slate-400 hover:border-slate-600'),
+                  className: 'w-5 h-5 rounded-full border-2 transition-all ' + (skinToneId === tone.id ? 'border-slate-700 ring-2 ring-offset-1 ring-slate-700 scale-110' : 'transition-colors border-slate-400 hover:border-slate-600'),
                   style: { backgroundColor: tone.base }
                 });
               })
             ),
             // Male/Female toggle (reproductive system only)
             sysKey === 'reproductive' ? h('button', {
-              'aria-label': 'Toggle male/female anatomy',
+              'aria-label': t('stem.anatomy.toggle_male_female_anatomy', 'Toggle male/female anatomy'),
               onClick: function() { upd('_maleAnatomy', !d._maleAnatomy); },
-              className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ml-1 ' + (d._maleAnatomy ? 'bg-violet-600 text-white border-violet-600' : 'bg-pink-50 text-pink-600 border-pink-600 hover:bg-pink-100'),
-              title: 'Switch between male and female reproductive anatomy'
+              className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ml-1 ' + (d._maleAnatomy ? 'bg-violet-600 text-white border-violet-600' : 'transition-colors bg-pink-50 text-pink-600 border-pink-600 hover:bg-pink-100 active:scale-[0.97]'),
+              title: t('stem.anatomy.switch_between_male_and_female_reprodu', 'Switch between male and female reproductive anatomy')
             }, d._maleAnatomy ? '\u2642 Male' : '\u2640 Female') : null
           ),
 
           // ── Main Content Area: Canvas (Left) + Tab Panel (Right) ──
-          h('div', { className: 'flex gap-4', style: { alignItems: 'flex-start' } },
+          h('div', { className: 'anatomy-workspace', 'data-anatomy-workspace': 'true' },
             // Canvas (Always visible)
-            h('div', { className: 'flex-shrink-0' },
-              h('canvas', { 'aria-label': 'Anatomy visualization',
+            h('div', { className: 'anatomy-body-shell', 'data-anatomy-model-shell': 'true', style: { borderColor: sys.accent + '24' } },
+              h('div', { className: 'anatomy-body-header' },
+                h('div', null,
+                  h('strong', null, sys.icon + ' ' + sys.name),
+                  h('span', null, view.charAt(0).toUpperCase() + view.slice(1) + ' view')
+                ),
+                h('span', { style: { color: sys.accent } }, filtered.length + ' structures')
+              ),
+              h('canvas', { role: 'img', tabIndex: 0, 'aria-label': t('stem.anatomy.anatomy_visualization', 'Anatomy visualization'),
                 ref: canvasRef,
                 onClick: handleClick,
                 onMouseMove: handleMouseMove,
                 onMouseLeave: function() { upd('_hoverStructure', null); },
-                className: 'rounded-xl border-2 cursor-crosshair',
+                className: 'anatomy-canvas border-2 cursor-crosshair',
+                'data-anatomy-canvas': 'true',
                 style: {
                   borderColor: sys.accent + '50',
                   background: 'linear-gradient(135deg,#fdfaf3 0%,#f8f1e6 60%,#f4ebdb 100%)',
                   boxShadow: '0 4px 16px rgba(15,23,42,0.06), 0 0 18px ' + sys.accent + '14, inset 0 1px 0 rgba(255,255,255,0.7)'
                 }
-              })
+              }),
+              // Blood-flow color legend — the circulatory canvas color-codes vessels but never said what the colors mean
+              sysKey === 'circulatory' && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', style: { maxWidth: 360 } },
+                h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#ef4444' } }), t('stem.anatomy.oxygenated_arteries', 'Oxygenated (arteries)')),
+                h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#3b82f6' } }), t('stem.anatomy.deoxygenated_veins', 'Deoxygenated (veins)')),
+                h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#fbbf24' } }), t('stem.anatomy.coronary', 'Coronary')),
+                h('span', { className: 'w-full text-[9px] italic text-slate-500' }, t('stem.anatomy.exception_the_pulmonary_artery_carries', 'Exception: the pulmonary artery carries deoxygenated blood (blue), the pulmonary veins carry oxygenated blood (red).'))
+              )
             ),
 
             // Tab-specific Right Panel
-            h('div', { className: 'flex-1 min-w-0' },
+            h('div', { className: 'anatomy-side-panel', role: 'tabpanel', 'aria-label': activeTab + ' anatomy panel', 'data-anatomy-panel': activeTab },
               activeTab === 'explore' ? (
                 d.quizMode ? (
                   // Quiz panel (enhanced with 4 types)
                   quizQ ? h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-4 space-y-3' },
                     h('div', { className: 'flex items-center justify-between mb-2' },
-                      h('h4', { className: 'font-bold text-green-800 text-sm' }, '\uD83E\uDDEA Anatomy Quiz'),
+                      h('h4', { className: 'font-bold text-green-800 text-sm' }, t('stem.anatomy.anatomy_quiz', '\uD83E\uDDEA Anatomy Quiz')),
                       h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2B50 ' + (d.quizScore || 0) + '/' + Math.min((d.quizIdx || 0) + 1, quizPool.length))
                     ),
                     h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 mb-1' },
@@ -4547,22 +4826,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     ),
                     // Question text varies by type
                     quizType === 0 ? h('div', null,
-                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, 'Which structure has this function?'),
+                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.which_structure_has_this_function', 'Which structure has this function?')),
                       h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, quizQ.fn.substring(0, 120) + (quizQ.fn.length > 120 ? '...' : ''))
                     ) : quizType === 1 ? h('div', null,
-                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, 'True or False:'),
-                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, 'The ' + quizQ.name + ' belongs to the ' + sys.name + ' system.')
+                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.true_or_false', 'True or False:')),
+                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, 'The ' + quizQ.name + ' belongs to the ' + tfClaimSys.name + ' system.')
                     ) : quizType === 2 ? h('div', null,
-                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, 'Which body system contains this structure?'),
+                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.which_body_system_contains_this_struct', 'Which body system contains this structure?')),
                       h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed font-bold' }, quizQ.name)
                     ) : h('div', null,
-                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, 'Which structure is affected?'),
+                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.which_structure_is_affected', 'Which structure is affected?')),
                       h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, quizQ.clinical ? quizQ.clinical.substring(0, 120) + '...' : quizQ.fn.substring(0, 120) + '...')
                     ),
                     h('div', { className: 'grid grid-cols-1 gap-1.5' },
                       quizOptions.map(function(opt) {
                         var fb = d.quizFeedback;
-                        var correctId = quizType === 1 ? 'true' : (quizType === 2 ? sysKey : quizQ.id);
+                        var correctId = quizType === 1 ? (tfTrue ? 'true' : 'false') : (quizType === 2 ? sysKey : quizQ.id);
                         var isCorrect = opt.id === correctId;
                         var wasChosen = fb && fb.chosen === opt.id;
                         var showResult = fb !== null && fb !== undefined;
@@ -4584,20 +4863,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           className: 'w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
                             (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
                               showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                                'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')
+                                'transition-colors border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-[0.97]')
                         }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                       })
                     ),
                     d.quizFeedback && h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed space-y-1.5 ' + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                      h('p', { className: 'font-black ' + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizQ.name),
+                      h('p', { className: 'font-black ' + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizAnswerLabel),
                       h('p', { className: 'text-slate-700' }, h('span', { className: 'font-bold text-slate-600' }, 'Function: '), quizQ.fn.substring(0, 150)),
-                      quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { className: 'font-bold text-rose-500' }, '\u26A0 Clinical: '), quizQ.clinical.substring(0, 120))
+                      quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { className: 'font-bold text-rose-500' }, t('stem.anatomy.clinical', '\u26A0 Clinical: ')), quizQ.clinical.substring(0, 120))
                     ),
-                    d.quizFeedback && h('button', { 'aria-label': 'Next Question',
+                    d.quizFeedback && h('button', { 'aria-label': t('stem.anatomy.next_question', 'Next Question'),
                       onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                      className: 'w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700 transition-all'
-                    }, 'Next Question \u2192')
-                  ) : h('p', { className: 'text-sm text-slate-600 italic' }, 'No quiz questions available.')
+                      className: 'w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700 transition-all active:scale-[0.97]'
+                    }, t('stem.anatomy.next_question_2', 'Next Question \u2192'))
+                  ) : h('p', { className: 'text-sm text-slate-600 italic' }, t('stem.anatomy.no_quiz_questions_available', 'No quiz questions available.'))
                 ) : (
                   sel ? (
                     // Detail panel — warm-anatomy gradient + system-color
@@ -4614,7 +4893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('div', { className: 'flex items-start justify-between' },
                         h('div', { className: 'flex-1' },
                           h('h4', { className: 'text-base font-black', style: { color: sys.accent } }, sel.name),
-                          PRONUNCIATION[sel.id] ? h('p', { className: 'text-[11px] text-indigo-500 italic mt-0.5' }, '\uD83D\uDD0A ' + PRONUNCIATION[sel.id]) : null,
+                          PRONUNCIATION[sel.id] ? h('p', { className: 'text-[11px] text-indigo-600 italic mt-0.5' }, '\uD83D\uDD0A ' + PRONUNCIATION[sel.id]) : null,
                           (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
                         ),
                         h('div', { className: 'flex gap-1' },
@@ -4623,37 +4902,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                               else { upd('_compareStructure', sel.id); upd('_comparisons', comparisons + 1); playSound('compareView'); setTimeout(checkAnatomyChallenges, 50); }
                             },
                             title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target (B)',
-                            className: 'p-1 rounded text-[11px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'hover:bg-violet-50 text-violet-400')
+                            className: 'p-1 rounded text-[11px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'transition-colors hover:bg-violet-50 text-violet-400 active:scale-[0.97]')
                           }, '\u2696'),
-                          h('button', { 'aria-label': 'Function', onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
+                          h('button', { 'aria-label': t('stem.anatomy.function', 'Function'), onClick: function() { upd('selectedStructure', null); }, className: 'transition-colors p-1 hover:bg-slate-100 rounded active:scale-[0.97]' }, h(X, { size: 14, className: 'text-slate-600' }))
                         )
                       ),
                       h('div', { className: 'space-y-2.5' },
                         h('div', null,
-                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Function', ttsBtn(sel.fn)),
+                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.function_2', 'Function'), ttsBtn(sel.fn)),
                           h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.fn)
                         ),
                         sel.origin && h('div', { className: 'grid grid-cols-2 gap-2' },
                           h('div', null,
-                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Origin'),
+                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.origin', 'Origin')),
                             h('p', { className: 'text-xs text-slate-600' }, sel.origin)
                           ),
                           h('div', null,
-                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Insertion'),
+                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.insertion', 'Insertion')),
                             h('p', { className: 'text-xs text-slate-600' }, sel.insertion)
                           )
                         ),
-                        h('div', null,
-                          h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical Significance', ttsBtn(sel.clinical)),
-                          h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2' }, sel.clinical)
-                        ),
+                        // Clinical content is grade-gated: hidden for K-2; grades 3-5 see a softened
+                        // "Staying Healthy" note (sel.clinicalKid) when authored, else nothing; grades
+                        // 6-8 / 9-12 (and unknown/teacher band) see the full clinical text.
+                        (gradeBand === 'k2' ? null :
+                          gradeBand === 'g35' ? (sel.clinicalKid ? h('div', null,
+                            h('p', { className: 'text-[11px] font-bold text-emerald-600 uppercase mb-0.5' }, t('stem.anatomy.staying_healthy', '\uD83D\uDC9A Staying Healthy'), ttsBtn(sel.clinicalKid)),
+                            h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-emerald-50 rounded-lg p-2' }, sel.clinicalKid)
+                          ) : null) :
+                          h('div', null,
+                            h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, t('stem.anatomy.clinical_significance', '\u26A0 Clinical Significance'), ttsBtn(sel.clinical)),
+                            h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2' }, sel.clinical)
+                          )),
                         sel.detail && h('div', null,
-                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, 'Detail'),
+                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.detail', 'Detail')),
                           h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, sel.detail)
                         ),
                         // Brain Waves Section
                         sel.brainWaves && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
-                          h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase mb-2' }, '\u26A1 Brain Wave Types (EEG)'),
+                          h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase mb-2' }, t('stem.anatomy.brain_wave_types_eeg', '\u26A1 Brain Wave Types (EEG)')),
                           h('div', { className: 'space-y-2' },
                             sel.brainWaves.map(function(w) {
                               return h('div', { key: w.type, className: 'rounded-lg p-2.5 border', style: { borderColor: w.color + '40', background: w.color + '08' } },
@@ -4671,7 +4958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         ),
                         // Sleep Stages Section
                         sel.sleepStages && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
-                          h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase mb-2' }, '\uD83D\uDCA4 Sleep Architecture'),
+                          h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase mb-2' }, t('stem.anatomy.sleep_architecture', '\uD83D\uDCA4 Sleep Architecture')),
                           h('div', { className: 'space-y-2' },
                             sel.sleepStages.map(function(s) {
                               return h('div', { key: s.stage, className: 'rounded-lg p-2.5 border border-indigo-100 bg-indigo-50/30' },
@@ -4694,11 +4981,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       // ── Compare Panel ──
                       compareSel && compareSel.id !== sel.id ? h('div', { className: 'mt-3 pt-3 border-t-2 border-violet-200' },
                         h('div', { className: 'flex items-center justify-between mb-2' },
-                          h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, '\u2696 Comparing with:'),
-                          h('button', { 'aria-label': 'Clear',
+                          h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, t('stem.anatomy.comparing_with', '\u2696 Comparing with:')),
+                          h('button', { 'aria-label': t('stem.anatomy.clear', 'Clear'),
                             onClick: function() { upd('_compareStructure', null); },
-                            className: 'text-[11px] font-bold text-slate-600 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100'
-                          }, '\u2715 Clear')
+                            className: 'transition-colors text-[11px] font-bold text-slate-600 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100 active:scale-[0.97]'
+                          }, t('stem.anatomy.clear_2', '\u2715 Clear'))
                         ),
                         h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
                           h('h5', { className: 'text-sm font-black text-violet-800 mb-1' }, compareSel.name),
@@ -4706,7 +4993,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           compareSel.clinical ? h('p', { className: 'text-[11px] text-rose-600 italic leading-relaxed' }, '\u26A0 ' + compareSel.clinical.substring(0, 150) + (compareSel.clinical.length > 150 ? '...' : '')) : null
                         ),
                         h('table', { className: 'w-full mt-2 text-[11px]' },
-                          h('caption', { className: 'sr-only' }, 'anatomy data table'), h('thead', null,
+                          h('caption', { className: 'sr-only' }, t('stem.anatomy.anatomy_data_table', 'anatomy data table')), h('thead', null,
                             h('tr', { className: 'border-b border-violet-200' },
                               h('th', { scope: 'col', className: 'text-left py-1 text-violet-600 font-bold' }, ''),
                               h('th', { scope: 'col', className: 'text-left py-1 font-bold', style: { color: sys.accent } }, sel.name),
@@ -4715,22 +5002,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           ),
                           h('tbody', null,
                             h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'System'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, t('stem.anatomy.system', 'System')),
                               h('td', { className: 'py-1 text-slate-600' }, sys.name),
                               h('td', { className: 'py-1 text-slate-600' }, sys.name)
                             ),
                             h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'View'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, t('stem.anatomy.view', 'View')),
                               h('td', { className: 'py-1 text-slate-600' }, sel.v === 'b' ? 'Both' : sel.v === 'a' ? 'Anterior' : 'Posterior'),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.v === 'b' ? 'Both' : compareSel.v === 'a' ? 'Anterior' : 'Posterior')
                             ),
                             sel.origin && compareSel.origin ? h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'Origin'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, t('stem.anatomy.origin_2', 'Origin')),
                               h('td', { className: 'py-1 text-slate-600' }, sel.origin),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.origin)
                             ) : null,
                             sel.insertion && compareSel.insertion ? h('tr', null,
-                              h('td', { className: 'py-1 font-bold text-slate-600' }, 'Insertion'),
+                              h('td', { className: 'py-1 font-bold text-slate-600' }, t('stem.anatomy.insertion_2', 'Insertion')),
                               h('td', { className: 'py-1 text-slate-600' }, sel.insertion),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.insertion)
                             ) : null
@@ -4740,29 +5027,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     )
                   ) : (
                     // Structure list
-                    h('div', { className: 'space-y-1 max-h-[460px] overflow-y-auto pr-1' },
-                      filtered.length === 0 && h('p', { className: 'text-xs text-slate-600 italic py-4 text-center' }, 'No structures match your search.'),
-                      filtered.map(function(st) {
-                        return h('button', { key: st.id,
-                          onClick: function() { upd('selectedStructure', st.id); playSound('structureClick'); },
-                          className: 'w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm ' +
-                            (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-400'),
-                          style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
-                        },
-                          h('div', { className: 'font-bold text-slate-800' }, st.name),
-                          h('div', { className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
-                        );
-                      })
+                    h('div', { className: 'anatomy-structure-panel', 'data-anatomy-structure-list': 'true' },
+                      h('div', { className: 'flex items-start justify-between gap-3 mb-3' },
+                        h('div', null,
+                          h('h4', { className: 'text-sm font-black text-slate-900' }, t('stem.anatomy.structures_in_view', 'Structures in view')),
+                          h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, sys.name + ' - ' + view + ' - ' + filtered.length + ' matching')
+                        ),
+                        h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600' }, exploredInSystem + '/' + filtered.length)
+                      ),
+                      h('div', { className: 'anatomy-structure-list space-y-1' },
+                        filtered.length === 0 && h('p', { className: 'text-xs text-slate-600 italic py-4 text-center' }, t('stem.anatomy.no_structures_match_your_search', 'No structures match your search.')),
+                        filtered.map(function(st) {
+                          return h('button', { key: st.id, 'aria-pressed': d.selectedStructure === st.id,
+                            onClick: function() { upd('selectedStructure', st.id); announceStructure(st.id); playSound('structureClick'); },
+                            className: 'w-full text-left px-3 py-2 text-xs transition-all hover:shadow-sm ' +
+                              (d.selectedStructure === st.id ? 'font-bold border-2' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]'),
+                            style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
+                          },
+                            h('div', { className: 'font-bold text-slate-800' }, st.name),
+                            h('div', { className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
+                          );
+                        })
+                      )
                     )
                   )
                 )
               ) : activeTab === 'aiTutor' ? (
                 // AI Tutor Panel
                 h('div', { className: 'bg-white rounded-xl border-2 border-violet-200 p-4 space-y-3' },
-                  h('h4', { className: 'font-bold text-violet-800 text-sm mb-2' }, '\uD83E\uDD16 AI Anatomy Tutor'),
+                  h('h4', { className: 'font-bold text-violet-800 text-sm mb-2' }, t('stem.anatomy.ai_anatomy_tutor', '\uD83E\uDD16 AI Anatomy Tutor')),
                   h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Currently studying: ' + sys.icon + ' ' + sys.name + (sel ? ' > ' + sel.name : '')),
                   h('div', { className: 'space-y-2 max-h-[340px] overflow-y-auto mb-3' },
-                    aiMessages.length === 0 && h('p', { className: 'text-xs text-slate-600 italic text-center py-4' }, 'Ask a question about anatomy to get started!'),
+                    aiMessages.length === 0 && h('p', { className: 'text-xs text-slate-600 italic text-center py-4' }, t('stem.anatomy.ask_a_question_about_anatomy_to_get_st', 'Ask a question about anatomy to get started!')),
                     aiMessages.map(function(msg, idx) {
                       return h('div', { key: idx, className: 'rounded-lg px-3 py-2 text-xs leading-relaxed ' + (msg.role === 'user' ? 'bg-violet-50 text-violet-800 ml-8' : 'bg-slate-50 text-slate-700 mr-8') },
                         h('span', { className: 'font-bold' }, msg.role === 'user' ? 'You: ' : 'AI: '),
@@ -4778,17 +5074,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       sel ? 'Tell me about the ' + sel.name : 'What is the most important structure in this system?',
                       'What clinical conditions affect this system?'
                     ].map(function(q, qi) {
-                      return h('button', { 'aria-label': 'Ask question',
+                      return h('button', { 'aria-label': t('stem.anatomy.ask_question', 'Ask question'),
                         key: qi,
                         onClick: function() { sendAiQuestion(q); },
-                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600 transition-all'
+                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600 transition-all active:scale-[0.97]'
                       }, q);
                     })
                   ),
                   h('div', { className: 'flex gap-2' },
                     h('input', {
-                      type: 'text', placeholder: 'Ask a question...',
-                      'aria-label': 'Ask the anatomy AI tutor a question',
+                      type: 'text', placeholder: t('stem.anatomy.ask_a_question', 'Ask a question...'),
+                      'aria-label': t('stem.anatomy.ask_the_anatomy_ai_tutor_a_question', 'Ask the anatomy AI tutor a question'),
                       value: d._aiInput || '',
                       onChange: function(e) { upd('_aiInput', e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); } },
@@ -4797,7 +5093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('button', { 'aria-label': 'Ask',
                       onClick: function() { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); },
                       disabled: aiLoading,
-                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]'
                     }, aiLoading ? '…' : 'Ask')
                   )
                 )
@@ -4818,56 +5114,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       ttsBtn(currentTourStep.narration)
                     ) : null,
                     h('div', { className: 'flex gap-2 justify-between' },
-                      h('button', { 'aria-label': 'Previous',
+                      h('button', { 'aria-label': t('stem.anatomy.previous', 'Previous'),
                         onClick: function() {
                           var prev = tourStepIdx - 1;
-                          if (prev >= 0) { upd('_tourStepIdx', prev); upd('selectedStructure', tourSteps[prev].structureId); playSound('guidedStep'); }
+                          if (prev >= 0) { upd('_tourStepIdx', prev); upd('selectedStructure', tourSteps[prev].structureId); announceStructure(tourSteps[prev].structureId); playSound('guidedStep'); }
                         },
                         disabled: tourStepIdx === 0,
-                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (tourStepIdx === 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
-                      }, '\u2190 Previous'),
-                      tourStepIdx < tourSteps.length - 1 ? h('button', { 'aria-label': 'Next',
+                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (tourStepIdx === 0 ? 'bg-slate-100 text-slate-400' : 'transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 active:scale-[0.97]')
+                      }, t('stem.anatomy.previous_2', '\u2190 Previous')),
+                      tourStepIdx < tourSteps.length - 1 ? h('button', { 'aria-label': t('stem.anatomy.next_3', 'Next'),
                         onClick: function() {
                           var next = tourStepIdx + 1;
-                          upd('_tourStepIdx', next); upd('selectedStructure', tourSteps[next].structureId); playSound('guidedStep');
+                          upd('_tourStepIdx', next); upd('selectedStructure', tourSteps[next].structureId); announceStructure(tourSteps[next].structureId); playSound('guidedStep');
                         },
-                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all'
-                      }, 'Next \u2192') : h('button', { 'aria-label': 'Complete Tour!',
+                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all active:scale-[0.97]'
+                      }, t('stem.anatomy.next_4', 'Next \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_tour', 'Complete Tour!'),
                         onClick: function() { upd('_tourCompleted', true); upd('_tourActive', false); upd('_activeTab', 'explore'); playSound('badge'); },
-                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all'
-                      }, '\uD83C\uDFC6 Complete Tour!')
+                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all active:scale-[0.97]'
+                      }, t('stem.anatomy.complete_tour_2', '\uD83C\uDFC6 Complete Tour!'))
                     )
-                  ) : h('p', { className: 'text-xs text-slate-600 italic' }, 'No tour available for this system.')
+                  ) : h('p', { className: 'text-xs text-slate-600 italic' }, t('stem.anatomy.no_tour_available_for_this_system', 'No tour available for this system.'))
                 )
               ) : activeTab === 'spotter' ? (
                 // Spotter Panel
                 h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('h4', { className: 'font-bold text-amber-800 text-sm' }, '\uD83C\uDFAF Anatomy Spotter Test'),
+                    h('h4', { className: 'font-bold text-amber-800 text-sm' }, t('stem.anatomy.anatomy_spotter_test', '\uD83C\uDFAF Anatomy Spotter Test')),
                     h('div', { className: 'flex gap-2' },
                       h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2705 ' + spotterScore + '/' + spotterTotal),
                       spotterBestTime < 999 ? h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, '\u26A1 Best: ' + spotterBestTime.toFixed(1) + 's') : null
                     )
                   ),
-                  h('p', { className: 'text-xs text-slate-600 mb-3' }, 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.'),
+                  h('p', { className: 'text-xs text-slate-600 mb-3' }, t('stem.anatomy.a_pin_is_placed_on_the_anatomical_figu', 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.')),
                   !spotterActive ? h('div', { className: 'text-center py-4' },
-                    h('button', { 'aria-label': 'Start Spotter Test',
-                      onClick: function() {
-                        var pool = filtered.filter(function(s) { return s.fn; });
-                        if (pool.length < 4) return;
-                        var target = pool[Math.floor(Math.random() * pool.length)];
-                        var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-                        var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
-                        updMulti({ _spotterActive: true, _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
-                      },
-                      className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all shadow-sm'
-                    }, '\uD83C\uDFAF Start Spotter Test'),
+                    h('button', { 'aria-label': t('stem.anatomy.start_spotter_test', 'Start Spotter Test'),
+                      onClick: function() { pickSpotterRound(true); },
+                      className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all shadow-sm active:scale-[0.97]'
+                    }, t('stem.anatomy.start_spotter_test_2', '\uD83C\uDFAF Start Spotter Test')),
                     spotterTotal > 0 ? h('p', { className: 'text-[11px] text-slate-600 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
                   ) : h('div', { className: 'space-y-3' },
                     h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200 text-center' },
-                      h('p', { className: 'text-sm font-bold text-cyan-900 mb-1' }, 'What structure is marked on the figure?'),
-                      h('p', { className: 'text-[11px] text-cyan-700' }, 'Look for the pulsing cyan crosshair on the canvas')
+                      h('p', { className: 'text-sm font-bold text-cyan-900 mb-1' }, t('stem.anatomy.what_structure_is_marked_on_the_figure', 'What structure is marked on the figure?')),
+                      h('p', { className: 'text-[11px] text-cyan-700' }, (spotterCueText ? spotterCueText + ' ' : '') + 'Look for the pulsing cyan crosshair on the canvas.')
                     ),
+                    !spotterTargetVisible ? h('div', { className: 'bg-amber-50 border border-amber-300 rounded-lg p-2.5 text-[11px] text-amber-800' },
+                      h('p', { className: 'font-bold mb-0.5' }, '⚠ The marked structure is hidden by the current view or layer filters.'),
+                      h('p', {}, 'Turn its system or layer back on to see the crosshair. The buttons below still work, or ',
+                        h('button', { onClick: function() { pickSpotterRound(false); }, className: 'underline font-bold text-amber-900 active:scale-[0.97]' }, 'pick one in this view'),
+                        '.'
+                      )
+                    ) : null,
                     h('div', { className: 'grid grid-cols-2 gap-2' },
                       spotterOptions.map(function(opt) {
                         var isCorrect = opt.id === spotterTarget;
@@ -4878,6 +5174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           onClick: function() {
                             var elapsed = (Date.now() - spotterStartTime) / 1000;
                             upd('_spotterFeedback', opt.id);
+                            upd('_spotterElapsed', elapsed);
                             upd('_spotterTotal', spotterTotal + 1);
                             if (opt.id === spotterTarget) {
                               upd('_spotterScore', spotterScore + 1);
@@ -4891,7 +5188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           className: 'px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-2 text-left ' +
                             (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
                               showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                                'border-slate-200 hover:border-amber-600 text-slate-700 hover:bg-amber-50')
+                                'transition-colors border-slate-200 hover:border-amber-600 text-slate-700 hover:bg-amber-50 active:scale-[0.97]')
                         }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                       })
                     ),
@@ -4907,7 +5204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       return h('div', { className: 'space-y-2' },
                         h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (isRight ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200') },
                           h('p', { className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
-                            isRight ? '🎉 Correct! (' + ((Date.now() - spotterStartTime) / 1000).toFixed(1) + 's)' : '🤔 Not quite! The correct structure is: ' + targetStruct.name
+                            isRight ? '🎉 Correct! (' + spotterElapsed.toFixed(1) + 's)' : '🤔 Not quite! The correct structure is: ' + targetStruct.name
                           ),
                           h('p', { className: 'text-slate-600 mt-1' },
                             isRight
@@ -4932,28 +5229,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                                     setTimeout(checkAnatomyChallenges, 50);
                                   }
                                 },
-                                className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all'
-                              }, 'Study Term (+5 RP)')
+                                className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all active:scale-[0.97]'
+                              }, t('stem.anatomy.study_term_5_rp', 'Study Term (+5 RP)'))
                             ),
                             lookedUp && h('div', { className: 'text-xs text-slate-600 mt-1' }, ANAT_VOCAB[vocabTerm])
                           );
                         })(),
 
-                        h('button', { 'aria-label': 'Next Structure',
-                          onClick: function() {
-                            var pool = filtered.filter(function(s) { return s.fn; });
-                            if (pool.length < 4) return;
-                            var target = pool[Math.floor(Math.random() * pool.length)];
-                            var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-                            var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
-                            updMulti({ _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
-                          },
-                          className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all'
-                        }, 'Next Structure ➔'),
-                        h('button', { 'aria-label': 'End Test',
+                        h('button', { 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
+                          onClick: function() { pickSpotterRound(false); },
+                          className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all active:scale-[0.97]'
+                        }, t('stem.anatomy.next_structure_2', 'Next Structure ➔')),
+                        h('button', { 'aria-label': t('stem.anatomy.end_test', 'End Test'),
                           onClick: function() { updMulti({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null }); },
-                          className: 'w-full py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:bg-slate-100 transition-all'
-                        }, 'End Test')
+                          className: 'w-full py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:bg-slate-100 transition-all active:scale-[0.97]'
+                        }, t('stem.anatomy.end_test_2', 'End Test'))
                       );
                     })()
                   )
@@ -4962,16 +5252,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // Pathways Panel
                 h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('h4', { className: 'font-bold text-rose-800 text-sm' }, '\uD83D\uDEE4 Physiological Pathways'),
+                    h('h4', { className: 'font-bold text-rose-800 text-sm' }, t('stem.anatomy.physiological_pathways', '\uD83D\uDEE4 Physiological Pathways')),
                     h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
                   ),
-                  h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.'),
+                  h('p', { className: 'text-xs text-slate-600 mb-3' }, t('stem.anatomy.trace_step_by_step_how_blood_flows_air', 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.')),
                   !activePathwayId ? h('div', { className: 'grid grid-cols-2 gap-2' },
                     PATHWAYS.map(function(pw) {
                       var isDone = pathwaysCompleted[pw.id];
                       return h('button', { key: pw.id,
-                        onClick: function() { updMulti({ _activePathway: pw.id, _pathwayStep: 0 }); upd('selectedStructure', pw.steps[0].structure); playSound('pathwayStep'); },
-                        className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-600 bg-rose-50' : 'border-slate-200 hover:border-rose-200 hover:bg-rose-50/50')
+                        onClick: function() { updMulti({ _activePathway: pw.id, _pathwayStep: 0 }); upd('selectedStructure', pw.steps[0].structure); announceStructure(pw.steps[0].structure); playSound('pathwayStep'); },
+                        className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-600 bg-rose-50' : 'transition-colors border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 active:scale-[0.97]')
                       },
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('span', { className: 'text-lg' }, pw.icon),
@@ -4990,10 +5280,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('div', { className: 'flex items-center gap-2 mb-2' },
                         h('span', { className: 'text-lg' }, pw.icon),
                         h('span', { className: 'text-sm font-black', style: { color: pw.color } }, pw.title),
-                        h('button', { 'aria-label': 'Back',
+                        h('button', { 'aria-label': t('stem.anatomy.back', 'Back'),
                           onClick: function() { updMulti({ _activePathway: null, _pathwayStep: 0 }); },
-                          className: 'ml-auto text-[11px] font-bold text-slate-600 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
-                        }, '\u2190 Back')
+                          className: 'transition-colors ml-auto text-[11px] font-bold text-slate-600 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100 active:scale-[0.97]'
+                        }, t('stem.anatomy.back_2', '\u2190 Back'))
                       ),
                       h('div', { className: 'flex items-center justify-between mb-2' },
                         h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full', style: { background: pw.color + '18', color: pw.color } }, 'Step ' + (pathwayStepIdx + 1) + ' of ' + pw.steps.length),
@@ -5007,24 +5297,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         ttsBtn(step.detail)
                       ) : null,
                       h('div', { className: 'flex gap-2 justify-between' },
-                        h('button', { 'aria-label': 'Previous',
+                        h('button', { 'aria-label': t('stem.anatomy.previous_3', 'Previous'),
                           onClick: function() {
                             if (pathwayStepIdx > 0) {
                               var prev = pathwayStepIdx - 1;
-                              upd('_pathwayStep', prev); upd('selectedStructure', pw.steps[prev].structure); playSound('pathwayStep');
+                              upd('_pathwayStep', prev); upd('selectedStructure', pw.steps[prev].structure); announceStructure(pw.steps[prev].structure); playSound('pathwayStep');
                             }
                           },
                           disabled: pathwayStepIdx === 0,
-                          className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200')
-                        }, '\u2190 Previous'),
-                        pathwayStepIdx < pw.steps.length - 1 ? h('button', { 'aria-label': 'Next',
+                          className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-400' : 'transition-colors bg-rose-100 text-rose-700 hover:bg-rose-200 active:scale-[0.97]')
+                        }, t('stem.anatomy.previous_4', '\u2190 Previous')),
+                        pathwayStepIdx < pw.steps.length - 1 ? h('button', { 'aria-label': t('stem.anatomy.next_5', 'Next'),
                           onClick: function() {
                             var next = pathwayStepIdx + 1;
-                            upd('_pathwayStep', next); upd('selectedStructure', pw.steps[next].structure); playSound('pathwayStep');
+                            upd('_pathwayStep', next); upd('selectedStructure', pw.steps[next].structure); announceStructure(pw.steps[next].structure); playSound('pathwayStep');
                           },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-90 transition-all',
                           style: { background: pw.color }
-                        }, 'Next \u2192') : h('button', { 'aria-label': 'Complete Pathway!',
+                        }, t('stem.anatomy.next_6', 'Next \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_pathway', 'Complete Pathway!'),
                           onClick: function() {
                             var newPC = Object.assign({}, pathwaysCompleted);
                             newPC[pw.id] = true;
@@ -5033,8 +5323,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             if (addToast) addToast('\uD83D\uDEE4 Pathway complete: ' + pw.title + '!');
                             setTimeout(checkAnatomyChallenges, 50);
                           },
-                          className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all'
-                        }, '\uD83C\uDFC6 Complete Pathway!')
+                          className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all active:scale-[0.97]'
+                        }, t('stem.anatomy.complete_pathway_2', '\uD83C\uDFC6 Complete Pathway!'))
                       )
                     );
                   })()
@@ -5043,13 +5333,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // Connections Panel
                 h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('h4', { className: 'font-bold text-sky-800 text-sm' }, '\uD83D\uDD17 How Body Systems Connect'),
+                    h('h4', { className: 'font-bold text-sky-800 text-sm' }, t('stem.anatomy.how_body_systems_connect', '\uD83D\uDD17 How Body Systems Connect')),
                     h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
                   ),
                   h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
                     CONNECTIONS.map(function(conn) {
                       var isViewed = connectionsViewed[conn.id];
-                      return h('button', { 'aria-label': 'Play sound',
+                      return h('button', { 'aria-label': conn.title,
+                        'aria-expanded': d._expandedConn === conn.id,
                         key: conn.id,
                         onClick: function() {
                           playSound('connectionView');
@@ -5060,7 +5351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           }
                           upd('_expandedConn', d._expandedConn === conn.id ? null : conn.id);
                         },
-                        className: 'w-full text-left rounded-xl p-3 border-2 transition-all ' + (isViewed ? 'border-sky-600 bg-sky-50' : 'border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/50')
+                        className: 'w-full text-left rounded-xl p-3 border-2 transition-all ' + (isViewed ? 'border-sky-600 bg-sky-50' : 'transition-colors border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/50 active:scale-[0.97]')
                       },
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('span', { className: 'text-base' }, conn.icon),
@@ -5082,85 +5373,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // Flashcards Panel
                 h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('h4', { className: 'font-bold text-teal-800 text-sm' }, '\uD83C\uDCCF Anatomy Flashcards'),
+                    h('h4', { className: 'font-bold text-teal-800 text-sm' }, t('stem.anatomy.anatomy_flashcards', '\uD83C\uDCCF Anatomy Flashcards')),
                     h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
                   ),
                   h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
                   flashcardPool.length > 0 ? h('div', { className: 'space-y-3' },
-                    h('button', { 'aria-label': 'STRUCTURE NAME',
-                      onClick: function() { upd('_flashcardFlipped', !flashcardFlipped); },
+                    h('button', { 'aria-label': (flashcardPool[flashcardIdx] ? flashcardPool[flashcardIdx].name : 'Flashcard') + (flashcardFlipped ? ', function shown, tap to flip back' : ', tap to reveal its function'),
+                      'aria-pressed': flashcardFlipped,
+                      onClick: function() { var nowFlipped = !flashcardFlipped; upd('_flashcardFlipped', nowFlipped); if (nowFlipped && flashcardPool[flashcardIdx]) announceStructure(flashcardPool[flashcardIdx].id); },
                       className: 'w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left cursor-pointer hover:shadow-md ' +
                         (flashcardFlipped ? 'border-teal-400 bg-teal-50' : 'border-slate-300 bg-gradient-to-br from-white to-slate-50')
                     },
                       !flashcardFlipped ? h('div', null,
-                        h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-3' }, 'STRUCTURE NAME'),
-                        h('h3', { className: 'text-xl font-black text-slate-800 mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
+                        h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-3' }, t('stem.anatomy.structure_name', 'STRUCTURE NAME')),
+                        h('h3', { className: 'text-xl font-black text-slate-800 mb-2 tracking-tight' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
                         PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
-                        h('p', { className: 'text-[11px] text-slate-600 mt-4' }, 'Tap to reveal function \u2192')
+                        h('p', { className: 'text-[11px] text-slate-600 mt-4' }, t('stem.anatomy.tap_to_reveal_function', 'Tap to reveal function \u2192'))
                       ) : h('div', null,
                         h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
                         h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
                         flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
-                          h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical'),
+                          h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, t('stem.anatomy.clinical_2', '\u26A0 Clinical')),
                           h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
                         ) : null,
                         ttsBtn(flashcardPool[flashcardIdx % flashcardPool.length].fn)
                       )
                     ),
                     h('div', { className: 'flex gap-2 justify-between' },
-                      h('button', { 'aria-label': 'Previous',
-                        onClick: function() { var pi = flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1; upd('_flashcardIdx', pi); upd('_flashcardFlipped', false); upd('selectedStructure', flashcardPool[pi].id); },
-                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-100 text-teal-700 hover:bg-teal-200 transition-all'
-                      }, '\u2190 Previous'),
-                      h('button', { 'aria-label': 'Random',
+                      h('button', { 'aria-label': t('stem.anatomy.previous_5', 'Previous'),
+                        onClick: function() { var pi = flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1; upd('_flashcardIdx', pi); upd('_flashcardFlipped', false); upd('selectedStructure', flashcardPool[pi].id); announceStructure(flashcardPool[pi].id); },
+                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-100 text-teal-700 hover:bg-teal-200 transition-all active:scale-[0.97]'
+                      }, t('stem.anatomy.previous_6', '\u2190 Previous')),
+                      h('button', { 'aria-label': t('stem.anatomy.random', 'Random'),
                         onClick: function() {
                           var randIdx = Math.floor(Math.random() * flashcardPool.length);
                           upd('_flashcardIdx', randIdx); upd('_flashcardFlipped', false);
-                          upd('selectedStructure', flashcardPool[randIdx].id);
+                          upd('selectedStructure', flashcardPool[randIdx].id); announceStructure(flashcardPool[randIdx].id);
                         },
-                        className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all'
-                      }, '\uD83C\uDFB2 Random'),
-                      h('button', { 'aria-label': 'Next',
-                        onClick: function() { var ni = (flashcardIdx + 1) % flashcardPool.length; upd('_flashcardIdx', ni); upd('_flashcardFlipped', false); upd('selectedStructure', flashcardPool[ni].id); },
-                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-700 transition-all'
-                      }, 'Next \u2192')
+                        className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all active:scale-[0.97]'
+                      }, t('stem.anatomy.random_2', '\uD83C\uDFB2 Random')),
+                      h('button', { 'aria-label': t('stem.anatomy.next_7', 'Next'),
+                        onClick: function() { var ni = (flashcardIdx + 1) % flashcardPool.length; upd('_flashcardIdx', ni); upd('_flashcardFlipped', false); upd('selectedStructure', flashcardPool[ni].id); announceStructure(flashcardPool[ni].id); },
+                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-700 transition-all active:scale-[0.97]'
+                      }, t('stem.anatomy.next_8', 'Next \u2192'))
                     )
-                  ) : h('p', { className: 'text-xs text-slate-600 italic' }, 'No flashcards available for this complexity level.')
+                  ) : h('p', { className: 'text-xs text-slate-600 italic' }, t('stem.anatomy.no_flashcards_available_for_this_compl', 'No flashcards available for this complexity level.'))
                 )
               ) : activeTab === 'homeoHunt' ? (function() {
-                var iq = d.homeoHunt || { tempC: 37, pH: 7.4, glucose: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                var iq = d.homeoHunt || { tempC: 37, pH: 7.4, glucose: 90, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
                 function setIQ(patch) { upd('homeoHunt', Object.assign({}, iq, patch)); }
-                var tempStress = Math.abs(iq.tempC - 37) / 2;
-                var pHStress = Math.abs(iq.pH - 7.4) * 5;
-                var gluStress = Math.abs(iq.glucose - 90) / 30;
-                var totalStress = tempStress + pHStress + gluStress;
-                var state;
-                if (totalStress < 0.6) state = 'normal';
-                else if (totalStress < 1.5) state = 'mildStress';
-                else if (totalStress < 2.8) state = 'severeStress';
-                else state = 'critical';
+                var referenceChecks = [
+                  { key: 'temperature', inRange: iq.tempC >= 36.5 && iq.tempC <= 37.5 },
+                  { key: 'blood pH', inRange: iq.pH >= 7.35 && iq.pH <= 7.45 },
+                  { key: 'fasting glucose', inRange: iq.glucose >= 70 && iq.glucose <= 99 }
+                ];
+                var outOfRange = referenceChecks.filter(function(check) { return !check.inRange; });
+                var state = outOfRange.length === 0 ? 'normal' : outOfRange.length === 1 ? 'mildStress' : outOfRange.length === 2 ? 'severeStress' : 'critical';
                 var stateMeta = {
-                  normal:       { label: '🟢 Normal — homeostasis maintained', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'All vital signs within physiologic range.' },
-                  mildStress:   { label: '🟡 Mild stress — feedback engaged',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Compensatory mechanisms activated. Body restoring set points.' },
-                  severeStress: { label: '🟠 Severe stress — strain',           color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Multiple systems strained. Risk of decompensation.' },
-                  critical:     { label: '🔴 Critical — life-threatening',     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Acid-base + glucose + thermal disturbance overwhelms compensation.' }
+                  normal:       { label: t('stem.anatomy.within_teaching_references', 'All within teaching references'), color: '#047857', bg: '#ecfdf5', border: '#86efac', short: '0 outside', desc: 'Temperature, arterial blood pH, and fasting glucose are inside this model\'s adult reference ranges.' },
+                  mildStress:   { label: t('stem.anatomy.one_variable_outside_reference', '1 variable outside reference'),  color: '#b45309', bg: '#fffbeb', border: '#fcd34d', short: '1 outside', desc: (outOfRange[0] ? outOfRange[0].key : 'One variable') + ' is outside this model\'s reference range.' },
+                  severeStress: { label: t('stem.anatomy.two_variables_outside_reference', '2 variables outside reference'),       color: '#c2410c', bg: '#fff7ed', border: '#fdba74', short: '2 outside', desc: outOfRange.map(function(check) { return check.key; }).join(' and ') + ' are outside this model\'s reference ranges.' },
+                  critical:     { label: t('stem.anatomy.three_variables_outside_reference', '3 variables outside reference'),   color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', short: '3 outside', desc: 'All three variables are outside this model\'s reference ranges.' }
                 }[state];
                 function logObs() {
-                  setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, p: iq.pH, g: iq.glucose, st: state }]).slice(-8) });
+                  setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, p: iq.pH, g: iq.glucose, st: stateMeta.short }]).slice(-8) });
                 }
                 return h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-4 space-y-3' },
-                  h('h4', { className: 'font-bold text-indigo-800 text-sm' }, '🏠 Homeostasis discovery'),
+                  h('h4', { className: 'font-bold text-indigo-800 text-sm' }, t('stem.anatomy.homeostasis_discovery_2', '🏠 Homeostasis discovery')),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed' },
-                    'You are monitoring a patient. Adjust body temperature, blood pH, and glucose. The widget shows one of four discrete states (normal / mild / severe / critical). No score, no reveal — sweep and notice.'),
-                  h('div', { className: 'p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                    'Explore a conceptual adult reference-range dashboard. Adjust body temperature, arterial blood pH, and fasting plasma glucose, then notice which measurements move outside their teaching ranges.'),
+                  h('div', { className: 'p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
                     h('div', { className: 'text-sm font-black', style: { color: stateMeta.color } }, stateMeta.label),
                     h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
                   ),
-                  h('div', { className: 'grid grid-cols-3 gap-3' },
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                     [
-                      { key: 'tempC',   label: 'Body temp (°C)', val: iq.tempC,   min: 30, max: 43, step: 0.1 },
-                      { key: 'pH',      label: 'Blood pH',       val: iq.pH,      min: 6.8, max: 7.8, step: 0.05 },
-                      { key: 'glucose', label: 'Glucose (mg/dL)', val: iq.glucose, min: 30, max: 400, step: 5 }
+                      { key: 'tempC',   label: t('stem.anatomy.body_temp_c', 'Body temp (°C)'), val: iq.tempC,   min: 30, max: 43, step: 0.1 },
+                      { key: 'pH',      label: t('stem.anatomy.blood_ph', 'Blood pH'),       val: iq.pH,      min: 6.8, max: 7.8, step: 0.05 },
+                      { key: 'glucose', label: t('stem.anatomy.fasting_glucose_mg_dl', 'Fasting glucose (mg/dL)'), val: iq.glucose, min: 30, max: 400, step: 5 }
                     ].map(function(s) {
                       return h('div', { key: s.key },
                         h('label', { htmlFor: 'hh-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
@@ -5171,12 +5461,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     })
                   ),
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                    h('button', { onClick: function() { setIQ({ tempC: 37, pH: 7.4, glucose: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                    h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.anatomy.log', '📋 Log')),
+                    h('button', { onClick: function() { setIQ({ tempC: 37, pH: 7.4, glucose: 90, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.anatomy.reset_3', '↺ Reset')),
                     (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                   ),
                   (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
-                    h('thead', null, h('tr', { className: 'bg-slate-100' }, ['temp °C', 'pH', 'gluc', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                    h('thead', null, h('tr', { className: 'bg-slate-100' }, ['temp °C', 'pH', 'gluc', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
                       return h('tr', { key: 'lr' + idx },
                         h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
@@ -5185,21 +5475,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('td', { className: 'px-1 border border-slate-200' }, o.st));
                     }))
                   ),
-                  h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Which vital sign tolerates the least deviation?',
+                  h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.anatomy.homeostasis_reference_hypothesis', 'Hypothesis: Which reference range is narrowest, and why might the body regulate it tightly?'),
                     className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.anatomy.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                   iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                     h('ul', { className: 'list-disc pl-5 space-y-1' },
-                      h('li', null, 'Hold two vital signs steady. Move the third. Watch.'),
-                      h('li', null, 'Real human pH range is 7.35-7.45. Investigate why so tight.'),
-                      h('li', null, 'Find two settings producing critical state. What do they share?'))),
+                      h('li', null, t('stem.anatomy.hold_two_vital_signs_steady_move_the_t', 'Hold two vital signs steady. Move the third. Watch.')),
+                      h('li', null, t('stem.anatomy.arterial_blood_ph_reference_prompt', 'A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.')),
+                      h('li', null, t('stem.anatomy.compare_outside_reference_counts', 'Find settings with one, two, and three variables outside the reference ranges. What changes?')))),
                   h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                     h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                       h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                      'I understand — explain in own words'),
-                    iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why homeostasis is fragile to multi-variable deviation.',
+                      t('stem.anatomy.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                    iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.anatomy.explain_homeostasis_model_limit', 'Explain why a reference-range flag alone cannot diagnose a person.'),
                       className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                  h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state vital marker; no clinical score; no reveal — by design.')
+                  h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.anatomy.homeostasis_model_limit', 'Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.'))
                 );
               })() : null
             )
@@ -5208,39 +5498,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // ── Clinical Cases section (advanced only) ──
           complexity >= 3 ? h('div', { className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' solved)'),
+              h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' reviewed)'),
               h('button', { onClick: function() { upd('_showClinical', !d._showClinical); },
-                className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all'
+                className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all active:scale-[0.97]'
               }, d._showClinical ? 'Hide' : 'Show Cases')
             ),
             d._showClinical ? h('div', { className: 'space-y-2' },
-              CLINICAL_CASES.filter(function(c) { return !sysKey || c.system === sysKey || sysKey === 'skeletal'; }).slice(0, 3).map(function(cs, ci) {
-                var isActive = activeCaseIdx === ci;
+              CLINICAL_CASES.filter(function(c) { return !sysKey || c.system === sysKey; }).slice(0, 3).map(function(cs, ci) {
+                var solved = !!clinicalSolvedIds[cs.id];
+                var caseFb = solved ? 'reviewed' : (activeCaseId === cs.id ? activeCaseFeedback : null);
                 return h('div', { key: cs.id, className: 'bg-white rounded-lg p-3 border border-rose-200' },
                   h('p', { className: 'text-xs font-bold text-rose-800 mb-1' }, cs.title + ' (' + cs.difficulty + ')'),
                   h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-2' }, cs.presentation),
                   h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, cs.question),
-                  isActive && activeCaseFeedback ? h('div', { className: 'mt-2 rounded-lg p-2 ' + (activeCaseFeedback === 'correct' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                    h('p', { className: 'text-[11px] font-bold ' + (activeCaseFeedback === 'correct' ? 'text-green-800' : 'text-amber-800') }, activeCaseFeedback === 'correct' ? '\u2705 Correct!' : '\u274C Answer: ' + cs.answer),
+                  caseFb ? h('div', { className: 'mt-2 rounded-lg p-2 ' + (caseFb === 'reviewed' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                    h('p', { className: 'text-[11px] font-bold ' + (caseFb === 'reviewed' ? 'text-green-800' : 'text-amber-800') }, caseFb === 'reviewed' ? '\u2705 Reviewed: ' + cs.answer : 'Answer: ' + cs.answer),
                     h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mt-1' }, cs.explanation)
                   ) : h('div', { className: 'flex gap-1 flex-wrap' },
-                    h('button', { 'aria-label': 'I got it!',
+                    h('button', { 'aria-label': t('stem.anatomy.i_got_it', 'Review explanation'),
                       onClick: function() {
-                        upd('_activeCaseIdx', ci);
-                        upd('_activeCaseFeedback', 'correct');
-                        upd('_clinicalSolved', (d._clinicalSolved || 0) + 1);
+                        if (clinicalSolvedIds[cs.id]) return;
+                        updMulti({ _activeCaseId: cs.id, _activeCaseFeedback: 'reveal' });
+                        var newIds = Object.assign({}, clinicalSolvedIds); newIds[cs.id] = true;
+                        updMulti({ _clinicalSolvedIds: newIds, _clinicalSolved: Object.keys(newIds).length });
                         playSound('spotterCorrect');
                         setTimeout(checkAnatomyChallenges, 50);
                       },
-                      className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-600 hover:bg-green-100 transition-all'
-                    }, '\u2705 I got it!'),
-                    h('button', { 'aria-label': 'Reveal Answer',
+                      className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-600 hover:bg-green-100 transition-all active:scale-[0.97]'
+                    }, t('stem.anatomy.i_got_it_2', '\u2705 Review explanation')),
+                    h('button', { 'aria-label': t('stem.anatomy.reveal_answer', 'Reveal Answer'),
                       onClick: function() {
-                        upd('_activeCaseIdx', ci);
+                        upd('_activeCaseId', cs.id);
                         upd('_activeCaseFeedback', 'reveal');
                       },
-                      className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all'
-                    }, '\uD83D\uDC41 Reveal Answer')
+                      className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all active:scale-[0.97]'
+                    }, t('stem.anatomy.reveal_answer_2', '\uD83D\uDC41 Reveal Answer'))
                   )
                 );
               })
@@ -5248,7 +5540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // ── Badge section ──
-          h('div', { className: 'mt-4 bg-slate-50 rounded-xl border border-slate-400 p-3' },
+          h('div', { className: 'anatomy-badge-panel mt-4 bg-slate-50 rounded-xl border border-slate-400 p-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               BADGE_DEFS.map(function(bd) {
@@ -5257,45 +5549,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   key: bd.id,
                   title: bd.name + ': ' + bd.desc + ' (' + bd.xp + ' XP)',
                   className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                    (earned ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-slate-100 border-slate-200 text-slate-200')
+                    (earned ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-slate-100 border-slate-200 text-slate-600')
                 }, bd.icon + ' ' + bd.name);
               })
             )
           ),
 
           // ── Stats Dashboard ──
-          h('div', { className: 'mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3' },
-            h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Exploration Stats'),
-            h('div', { className: 'grid grid-cols-3 gap-2' },
+          h('div', { className: 'anatomy-stats-panel mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3' },
+            h('p', { className: 'text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2' }, t('stem.anatomy.exploration_stats', '\uD83D\uDCCA Exploration Stats')),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2' },
               // Structures Viewed
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
-                h('p', { className: 'text-lg font-black text-indigo-700' }, String(Object.keys(structuresViewed).length)),
-                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Structures')
+                h('p', { className: 'text-lg font-black text-indigo-700 tracking-tight' }, String(Object.keys(structuresViewed).length)),
+                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.structures', 'Structures'))
               ),
               // Systems Explored
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
-                h('p', { className: 'text-lg font-black text-emerald-600' }, String(Object.keys(systemsExplored).length) + '/10'),
-                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Systems')
+                h('p', { className: 'text-lg font-black text-emerald-600 tracking-tight' }, String(Object.keys(systemsExplored).length) + '/10'),
+                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.systems', 'Systems'))
               ),
               // Quiz Score
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
-                h('p', { className: 'text-lg font-black text-amber-600' }, String(totalCorrect)),
-                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Quiz Correct')
+                h('p', { className: 'text-lg font-black text-amber-600 tracking-tight' }, String(totalCorrect)),
+                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.quiz_correct', 'Quiz Correct'))
               ),
               // Spotter Score
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
-                h('p', { className: 'text-lg font-black text-rose-600' }, String(spotterScore)),
-                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Spotter IDs')
+                h('p', { className: 'text-lg font-black text-rose-600 tracking-tight' }, String(spotterScore)),
+                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.spotter_ids', 'Spotter IDs'))
               ),
               // Pathways Completed
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
-                h('p', { className: 'text-lg font-black text-teal-600' }, String(Object.keys(pathwaysCompleted).length)),
-                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Pathways')
+                h('p', { className: 'text-lg font-black text-teal-600 tracking-tight' }, String(Object.keys(pathwaysCompleted).length)),
+                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.pathways_3', 'Pathways'))
               ),
               // Comparisons
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
-                h('p', { className: 'text-lg font-black text-purple-600' }, String(comparisons)),
-                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, 'Comparisons')
+                h('p', { className: 'text-lg font-black text-purple-600 tracking-tight' }, String(comparisons)),
+                h('p', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.comparisons', 'Comparisons'))
               )
             ),
             // Secondary stats row
@@ -5328,7 +5620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // Progress bar
             h('div', { className: 'mt-2' },
               h('div', { className: 'flex justify-between mb-1' },
-                h('span', { className: 'text-[11px] text-slate-600 font-semibold' }, 'System Progress'),
+                h('span', { className: 'text-[11px] text-slate-600 font-semibold' }, t('stem.anatomy.system_progress', 'System Progress')),
                 h('span', { className: 'text-[11px] font-bold text-indigo-600' }, progressPct + '%')
               ),
               h('div', { className: 'w-full bg-slate-200 rounded-full h-1.5' },

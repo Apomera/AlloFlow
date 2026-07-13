@@ -12,8 +12,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [rosterAdj, setRosterAdj] = useState('');
   const [rosterAnimal, setRosterAnimal] = useState('');
   const [useCustomName, setUseCustomName] = useState(false);
-  const rosterAdjectives = t('codenames.adjectives') || [];
-  const rosterAnimals = t('codenames.animals') || [];
+  const rosterAdjectives = t('codenames.adjectives', { returnObjects: true }) || [];
+  const rosterAnimals = t('codenames.animals', { returnObjects: true }) || [];
   const randomizeRosterName = () => {
     if (rosterAdjectives.length > 0 && rosterAnimals.length > 0) {
       setRosterAdj(rosterAdjectives[Math.floor(Math.random() * rosterAdjectives.length)]);
@@ -27,8 +27,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, 'sentence-frames': false, brainstorm: false, faq: false, outline: false, adventure: false, 'concept-sort': false, image: false, timeline: false });
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
+  const submissionDialogRef = useRef(null);
+  const submissionDialogTriggerRef = useRef(null);
+  const [submissionDialog, setSubmissionDialog] = useState(null);
   useFocusTrap(panelRef, isOpen, onClose);
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!submissionDialog) return;
+    const dialog = submissionDialogRef.current;
+    const focusTarget = submissionDialog.kind === 'confirm'
+      ? dialog?.querySelector('[data-safe-default="true"]')
+      : dialog?.querySelector('button');
+    focusTarget?.focus();
+  }, [submissionDialog]);  if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
   const groupIds = Object.keys(groups);
@@ -41,8 +51,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (data.groups || data.students) {
-          setRosterKey({ className: data.className || '', groups: data.groups || {}, students: data.students || {} });
+        if (data && typeof data === 'object' && !Array.isArray(data) && (data.groups || data.students)) {
+          const asRecord = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+          setRosterKey({
+            className: typeof data.className === 'string' ? data.className : '',
+            groups: asRecord(data.groups),
+            students: asRecord(data.students),
+            displayNames: asRecord(data.displayNames),
+            progressHistory: asRecord(data.progressHistory),
+            sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : [],
+            ...(data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {})
+          });
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Roster imported, including class settings and submission setup.', 'success');
         }
       } catch(err) { console.error('Invalid roster JSON:', err); }
     };
@@ -71,20 +91,25 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   // the public JWK in rosterKey.submissionKey so HTML exports embed it.
   // Phase 1, May 11 2026. Teacher MUST keep the downloaded file safe;
   // without it, encrypted student submissions are unrecoverable.
+  const closeSubmissionDialog = () => {
+    setSubmissionDialog(null);
+    window.setTimeout(() => submissionDialogTriggerRef.current?.focus(), 0);
+  };
+  const requestOfflineSubmissionSetup = (event) => {
+    submissionDialogTriggerRef.current = event.currentTarget;
+    if (rosterKey?.submissionKey?.publicJwk) {
+      setSubmissionDialog({ kind: 'confirm' });
+      return;
+    }
+    handleSetupOfflineSubmissions();
+  };
   const handleSetupOfflineSubmissions = async () => {
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.generateClassKeypair !== 'function') {
       if (window.AlloFlowUX) window.AlloFlowUX.toast('Submission crypto module not loaded yet. Please refresh and try again.', 'error'); else alert('Submission crypto module not loaded yet. Please refresh and try again.');
       return;
     }
-    if (rosterKey?.submissionKey?.publicJwk) {
-      const confirmReplace = confirm(
-        'This class already has offline submissions set up.\n\n' +
-        'Generating a new key will INVALIDATE the old one — any student files saved with the old key will no longer be decryptable.\n\n' +
-        'Continue anyway?'
-      );
-      if (!confirmReplace) return;
-    }
+    setSubmissionDialog(null);
     try {
       const { publicJwk, privateJwk } = await SC.generateClassKeypair();
       const classId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('class-' + Date.now());
@@ -115,12 +140,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         students: prev?.students || {},
         submissionKey: { publicJwk: publicJwk, classId: classId, createdAt: createdAt }
       }));
-      // First-time warning
-      alert(
-        '🔐 Offline submissions are set up for this class.\n\n' +
-        'IMPORTANT: Save the downloaded "class-key" file in a safe place (your class Google Drive folder is recommended). Without it, you cannot open student submissions.\n\n' +
-        'AlloFlow does not keep a copy of this file. If you lose it, the encrypted submissions cannot be recovered.'
-      );
+      // Keep the recovery warning visible until the teacher acknowledges it.
+      setSubmissionDialog({ kind: 'complete' });
     } catch (err) {
       console.error('handleSetupOfflineSubmissions failed:', err);
       if (window.AlloFlowUX) window.AlloFlowUX.toast('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'), 'error'); else alert('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'));
@@ -161,6 +182,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleAddStudent = () => {
     const codename = rosterAdj && rosterAnimal ? `${rosterAdj} ${rosterAnimal}` : '';
     if (!codename) return;
+    const normalizedCodename = codename.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const duplicate = Object.keys(students).some(name => name.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedCodename);
+    if (duplicate) {
+      if (window.AlloFlowUX) window.AlloFlowUX.toast('That codename is already in this roster. Generate another one.', 'warn');
+      randomizeRosterName();
+      return;
+    }
     const displayName = useCustomName && newStudentName.trim() ? newStudentName.trim() : '';
     setRosterKey(prev => ({
       ...(prev || { groups: {} }),
@@ -175,7 +203,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleRemoveStudent = (name) => {
     setRosterKey(prev => {
       const ns = { ...prev.students }; delete ns[name];
-      return { ...prev, students: ns };
+      const nd = { ...(prev.displayNames || {}) }; delete nd[name];
+      const np = { ...(prev.progressHistory || {}) }; delete np[name];
+      const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
+        const participants = { ...(session.participants || {}) }; delete participants[name];
+        return { ...session, participants, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
+      });
+      return { ...prev, students: ns, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
   };
   const handleMoveStudent = (name, toGroup) => {
@@ -236,7 +270,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <Download size={14} /> {t('roster.export') || 'Export JSON'}
           </button>
           <button
-            onClick={handleSetupOfflineSubmissions}
+            onClick={requestOfflineSubmissionSetup}
             disabled={!rosterKey}
             title={rosterKey?.submissionKey?.publicJwk
               ? 'Offline submissions are active for this class. Click to regenerate (invalidates the existing key).'
@@ -268,7 +302,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
           </button>
           {activeSessionCode && (
-            <button onClick={onSyncToSession} disabled={!rosterKey || groupIds.length === 0} className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto">
+            <button onClick={onSyncToSession} disabled={!rosterKey || groupIds.length === 0} title="Update this live session's group choices and differentiation settings from the roster." className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto">
               <RefreshCw size={14} /> {t('roster.sync_session') || 'Sync to Live Session'}
             </button>
           )}
@@ -282,6 +316,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               aria-label={t('roster.class_name') || 'Class name'}
               className="flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
           </div>
+          <details className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700">
+            <summary className="cursor-pointer font-bold text-indigo-800">How does this roster connect to AlloFlow?</summary>
+            <ul className="mt-2 ml-4 list-disc space-y-1">
+              <li>Students join with codenames; optional real names stay in this teacher-side roster.</li>
+              <li>Groups provide reusable differentiation settings and can be synced to an active live session.</li>
+              <li>Matching codenames are assigned to their roster group automatically when students join.</li>
+              <li>The same codenames help identify imported student submissions.</li>
+              <li>This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data.</li>
+            </ul>
+          </details>
           {groupIds.map(gId => {
             const group = groups[gId];
             const gStudents = getStudentsInGroup(gId);
@@ -306,7 +350,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <div className="flex gap-1">
                         {COLORS.map(c => (
                           <button key={c} onClick={() => handleUpdateGroupMeta(gId, 'color', c)}
-                            className={`w-5 h-5 rounded-full border-2 transition-all ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                            className={`w-6 h-6 rounded-full border-2 transition-all ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
                             style={{ backgroundColor: c }}
                             aria-label={(t('roster.set_group_color') || 'Set group color') + ' ' + c}
                             aria-pressed={group.color === c} />
@@ -335,7 +379,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
-                            <button onClick={() => handleMoveStudent(name, '')} className="hover:text-red-500 transition-colors ml-0.5" aria-label={'Remove ' + name}>
+                            <button onClick={() => handleMoveStudent(name, '')} className="w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors ml-0.5 rounded-full" aria-label={'Remove ' + name}>
                               <X size={12} />
                             </button>
                           </span>
@@ -365,7 +409,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <div className="flex gap-1">
               {COLORS.slice(0, 4).map(c => (
                 <button key={c} onClick={() => setNewGroupColor(c)}
-                  className={`w-4 h-4 rounded-full border-2 ${newGroupColor === c ? 'border-slate-800' : 'border-transparent'}`}
+                  className={`w-6 h-6 rounded-full border-2 ${newGroupColor === c ? 'border-slate-800' : 'border-transparent'}`}
                   style={{ backgroundColor: c }}
                   aria-label={(t('roster.new_group_color') || 'New group color') + ' ' + c}
                   aria-pressed={newGroupColor === c} />
@@ -464,7 +508,29 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               </div>
             </div>
           )}
-          {rosterKey && (
+          {Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && (
+            <details className="rounded-xl border border-cyan-200 bg-cyan-50/60 p-3">
+              <summary className="cursor-pointer font-bold text-sm text-cyan-900">Saved session history ({rosterKey.sessionHistory.length})</summary>
+              <div className="mt-3 space-y-2">
+                {[...rosterKey.sessionHistory].reverse().slice(0, 10).map(session => (
+                  <details key={session.id} className="rounded-lg border border-cyan-100 bg-white p-2">
+                    <summary className="cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2">
+                      <span>{session.endedAt ? new Date(session.endedAt).toLocaleString() : 'Saved session'}</span>
+                      <span className="text-cyan-700">{Object.keys(session.participants || {}).length} present</span>
+                      <span className="text-slate-500">{session.mode === 'mailbox' ? 'Mailbox' : 'Firebase'}</span>
+                    </summary>
+                    <div className="mt-2 text-xs text-slate-600 space-y-1">
+                      {typeof session.durationMinutes === 'number' && <p>Duration: {session.durationMinutes} min</p>}
+                      {session.teacherNote && <p><span className="font-bold">Teacher note:</span> {session.teacherNote}</p>}
+                      {Object.entries(session.participants || {}).map(([codename, record]) => <p key={codename}><span className="font-bold">{codename}</span>: {record.responseCount || 0} live response{record.responseCount === 1 ? '' : 's'}{record.groupId ? ` · group ${record.groupId}` : ''}</p>)}
+                      {(session.unmatchedCodenames || []).length > 0 && <p className="text-rose-700"><span className="font-bold">Unmatched:</span> {session.unmatchedCodenames.join(', ')}</p>}
+                    </div>
+                  </details>
+                ))}
+                {rosterKey.sessionHistory.length > 10 && <p className="text-[11px] text-cyan-800">Showing the 10 most recent of {rosterKey.sessionHistory.length}. Export JSON for the complete retained history.</p>}
+              </div>
+            </details>
+          )}          {rosterKey && (
             <div className="flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium">
               <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
               <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>
@@ -473,6 +539,32 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             </div>
           )}
         </div>
+        {submissionDialog && (
+          <div className="absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4">
+            <div ref={submissionDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="offline-submission-dialog-title" aria-describedby="offline-submission-dialog-description"
+              onKeyDown={event => {
+                if (event.key === 'Escape') { event.preventDefault(); closeSubmissionDialog(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+              <h3 id="offline-submission-dialog-title" className="text-lg font-black text-slate-900">
+                {submissionDialog.kind === 'confirm' ? 'Replace the class submission key?' : 'Offline submissions are ready'}
+              </h3>
+              <div id="offline-submission-dialog-description" className="mt-3 space-y-3 text-sm text-slate-700">
+                {submissionDialog.kind === 'confirm' ? (<><p>This class already has offline submissions set up.</p><p>Generating a new key invalidates the old key. Student files saved with the old key will no longer be decryptable.</p></>) : (<><p>Save the downloaded class-key file in a safe place, such as your class Google Drive folder. You cannot open student submissions without it.</p><p>AlloFlow does not keep a copy. Lost keys and their encrypted submissions cannot be recovered.</p></>)}
+              </div>
+              <div className="mt-6 flex flex-wrap justify-end gap-3">
+                {submissionDialog.kind === 'confirm' ? (<><button type="button" data-safe-default="true" onClick={closeSubmissionDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">Keep existing key</button><button type="button" onClick={handleSetupOfflineSubmissions} className="min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Replace key</button></>) : (<button type="button" onClick={closeSubmissionDialog} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Done</button>)}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -579,7 +671,7 @@ const ConfettiEffect = ({ isActive }) => {
     duration: Math.random() * 2 + 2
   }));
   return (
-    <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden" aria-hidden="true">
       <style>{`
         @keyframes confetti-fall {
           0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
@@ -620,6 +712,24 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   const [showConfetti, setShowConfetti] = useState(false);
   const [teamEscapeToast, setTeamEscapeToast] = useState(null);
   const [lastEscapedTeams, setLastEscapedTeams] = useState([]);
+  const puzzleDialogRef = useRef(null);
+  const puzzleTriggerRef = useRef(null);
+  const escapeStateScreenRef = useRef(null);
+  const escapeMainRef = useRef(null);
+  const pauseDialogRef = useRef(null);
+  const wasPausedRef = useRef(false);
+  useEffect(() => {
+    if (!selectedPuzzle) return;
+    puzzleDialogRef.current?.querySelector('[data-initial-focus="true"]')?.focus();
+  }, [selectedPuzzle]);
+  const closePuzzleDialog = () => {
+    setSelectedPuzzle(null);
+    window.setTimeout(() => puzzleTriggerRef.current?.focus(), 0);
+  };
+  const openPuzzleDialog = (event, objectId) => {
+    puzzleTriggerRef.current = event.currentTarget;
+    setSelectedPuzzle(objectId);
+  };
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -644,6 +754,13 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     All: { bg: 'bg-purple-500', text: 'text-purple-500', border: 'border-purple-500', light: 'bg-purple-100' }
   };
   const myTeamColors = teamColors[userTeam] || teamColors.Blue;
+  useEffect(() => {
+    const completedState = escapeState.isGameOver || teamEscaped;
+    if (!userTeam || completedState) escapeStateScreenRef.current?.focus();
+    else if (isPaused) pauseDialogRef.current?.focus();
+    else if (wasPausedRef.current) escapeMainRef.current?.focus();
+    wasPausedRef.current = isPaused;
+  }, [userTeam, escapeState.isGameOver, teamEscaped, isPaused]);
   useEffect(() => {
     const escapedTeams = allTeams.filter(team =>
       escapeState.teamProgress?.[team]?.isEscaped && team !== userTeam
@@ -715,7 +832,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         if (allSolved) {
           setIsEscapeTimerRunning(false);
         }
-        setSelectedPuzzle(null);
+        closePuzzleDialog();
         setUserInput('');
         setSequenceOrder([]);
         setMatchingPairs([]);
@@ -744,9 +861,9 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   };
   if (!userTeam) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-live="polite" aria-busy="true" className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center focus:outline-none">
         <div className="text-center text-white">
-          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-700" />
+          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-700" aria-hidden="true" />
           <p className="text-xl font-bold">{t('escape_room.waiting_host')}</p>
         </div>
       </div>
@@ -754,11 +871,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   }
   if (escapeState.isGameOver) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="alert" aria-labelledby="escape-room-game-over-title" aria-describedby="escape-room-game-over-description" className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none">
         <div className="text-center text-white animate-in zoom-in duration-500">
           <div className="text-9xl mb-6 animate-pulse">💀</div>
-          <h2 className="text-5xl font-black mb-4 text-red-600">{t('escape_room.game_over')}</h2>
-          <p className="text-2xl text-slate-600 mb-6">{t('escape_room.life_lost')}</p>
+          <h2 id="escape-room-game-over-title" className="text-5xl font-black mb-4 text-red-600">{t('escape_room.game_over')}</h2>
+          <p id="escape-room-game-over-description" className="text-2xl text-slate-300 mb-6">{t('escape_room.life_lost')}</p>
           <div className="flex gap-4 justify-center text-lg">
             <span className="px-4 py-2 bg-slate-800 rounded-lg">
               {t('escape_room.puzzles_remaining')}: {puzzles.length - solvedPuzzlesSet.size}
@@ -776,14 +893,14 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       escapeState.teamProgress?.[team]?.isEscaped
     ).length === 1;
     return (
-      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-labelledby="escape-room-escaped-title" aria-describedby="escape-room-escaped-description" className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center focus:outline-none">
         <ConfettiEffect isActive={showConfetti} />
         <div className="text-center text-white animate-in zoom-in duration-500">
           <div className="text-9xl mb-6 animate-bounce">{isFirstToEscape ? '🏆' : '🎉'}</div>
-          <h2 className="text-5xl font-black mb-4">
+          <h2 id="escape-room-escaped-title" className="text-5xl font-black mb-4">
             {isCoopMode ? t('escape_room.class_escaped') : (isFirstToEscape ? t('escape_room.first_escape') : t('escape_room.escaped'))}
           </h2>
-          <p className="text-2xl text-green-200">
+          <p id="escape-room-escaped-description" className="text-2xl text-green-200">
             {isCoopMode ? t('escape_room.everyone_escaped') : t('escape_room.team_escaped', { team: userTeam })}
           </p>
           {!isCoopMode && (
@@ -797,12 +914,12 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   }
   const currentPuzzle = selectedPuzzle ? puzzles.find(p => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle) : null;
   return (
-    <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto">
+    <div ref={escapeMainRef} tabIndex={-1} role="region" aria-labelledby="escape-room-active-title" className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none">
       <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <DoorOpen className="text-purple-400" size={24} />
-            <span className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</span>
+            <h2 id="escape-room-active-title" className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</h2>
           </div>
           <div className="flex items-center gap-4">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`} data-help-key="escape_room_team">
@@ -869,7 +986,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             return (
               <button
                 key={obj.id}
-                onClick={() => !isSolved && puzzle && setSelectedPuzzle(obj.id)}
+                onClick={event => !isSolved && puzzle && openPuzzleDialog(event, obj.id)}
                 disabled={isSolved}
                 data-help-key="escape_room_object"
                 className={`
@@ -889,19 +1006,35 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       </div>
       {currentPuzzle && (
-        <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto">
+        <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4" role="presentation">
+          <div
+            ref={puzzleDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="escape-room-puzzle-question"
+            onKeyDown={event => {
+              if (event.key === 'Escape') { event.preventDefault(); closePuzzleDialog(); return; }
+              if (event.key !== 'Tab') return;
+              const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+              if (!focusable.length) { event.preventDefault(); return; }
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+              else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            }}
+            className="bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto"
+          >
             <div className="flex justify-between items-start mb-4">
               <div>
                 <span className="text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold">
                   {currentPuzzle.type || 'mcq'}
                 </span>
               </div>
-              <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" aria-label={t('common.close')}>
-                <X size={24} />
+              <button type="button" data-initial-focus="true" onClick={closePuzzleDialog} data-help-key="escape_room_close_btn" className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full" aria-label={t('common.close')}>
+                <X size={24} aria-hidden="true" />
               </button>
             </div>
-            <p className="text-xl text-white font-bold mb-4">{currentPuzzle.question}</p>
+            <h2 id="escape-room-puzzle-question" className="text-xl text-white font-bold mb-4">{currentPuzzle.question}</h2>
             {currentPuzzle.hint && (
               <div className="mb-4">
                 {escapeState.revealedHints?.[currentPuzzle.id] ? (
@@ -1209,16 +1342,16 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       )}
       {isPaused && (
-        <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+        <div ref={pauseDialogRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-labelledby="escape-room-paused-title" aria-describedby="escape-room-paused-description" className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm focus:outline-none">
           <div className="text-center text-white animate-pulse">
             <div className="text-8xl mb-6">⏸️</div>
-            <h2 className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
-            <p className="text-xl text-slate-400">{t('escape_room.waiting_resume')}</p>
+            <h2 id="escape-room-paused-title" className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
+            <p id="escape-room-paused-description" className="text-xl text-slate-300">{t('escape_room.waiting_resume')}</p>
           </div>
         </div>
       )}
       {teamEscapeToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
           <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || 'border-purple-500'} bg-slate-900`}>
             <span className="text-3xl">🚪</span>
             <div>
@@ -1235,8 +1368,21 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
 const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const endGameDialogRef = useRef(null);
+  const endGameTriggerRef = useRef(null);
   useEffect(() => {
-    if (!escapeState?.isActive || !activeSessionCode || !appId) return;
+    if (!showEndConfirm) return;
+    endGameDialogRef.current?.querySelector('[data-safe-default="true"]')?.focus();
+  }, [showEndConfirm]);
+  const closeEndGameDialog = () => {
+    setShowEndConfirm(false);
+    window.setTimeout(() => endGameTriggerRef.current?.focus(), 0);
+  };
+  const requestEndGame = (event) => {
+    endGameTriggerRef.current = event.currentTarget;
+    setShowEndConfirm(true);
+  };
+  useEffect(() => {    if (!escapeState?.isActive || !activeSessionCode || !appId) return;
     if (escapeState.isPaused) return;
     if (escapeState.timeRemaining <= 0) return;
     const timer = setInterval(async () => {
@@ -1337,7 +1483,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
             {isPaused ? '▶️ ' + t('escape_room.resume') : '⏸️ ' + t('escape_room.pause')}
           </button>
           <button
-            onClick={() => setShowEndConfirm(true)}
+            onClick={requestEndGame}
             className="px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors whitespace-nowrap"
           >
             {t('escape_room.end_game')}
@@ -1380,24 +1526,35 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
         </div>
       )}
       {showEndConfirm && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200">
-            <h4 className="text-lg font-bold text-red-600 mb-2 flex items-center gap-2">
-              <X className="text-red-500" size={20} />
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4" role="presentation">
+          <div
+            ref={endGameDialogRef}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="escape-room-end-game-title"
+            aria-describedby="escape-room-end-game-description"
+            onKeyDown={event => {
+              if (event.key === 'Escape') { event.preventDefault(); closeEndGameDialog(); return; }
+              if (event.key !== 'Tab') return;
+              const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+              if (!focusable.length) { event.preventDefault(); return; }
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+              else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            }}
+            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200"
+          >
+            <h4 id="escape-room-end-game-title" className="text-lg font-bold text-red-600 mb-2 flex items-center gap-2">
+              <X className="text-red-500" size={20} aria-hidden="true" />
               {t('escape_room.end_game')}
             </h4>
-            <p className="text-slate-600 mb-4">{t('escape_room.end_game_confirm')}</p>
+            <p id="escape-room-end-game-description" className="text-slate-600 mb-4">{t('escape_room.end_game_confirm')}</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowEndConfirm(false)}
-                className="flex-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors"
-              >
+              <button type="button" data-safe-default="true" onClick={closeEndGameDialog} className="flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 {t('cancel')}
               </button>
-              <button
-                onClick={handleEndGame}
-                className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors"
-              >
+              <button type="button" onClick={handleEndGame} className="flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                 {t('escape_room.end_game')}
               </button>
             </div>
@@ -1498,6 +1655,34 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
           id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 5),
           version: 1,
           when: { predicate: 'eq', value: firstOption },
+          then: { groupId: firstGroup }
+        });
+        next[currentQuestionIndex] = existing;
+        return next;
+      });
+    };
+    // Confidence-pattern rules (screening heuristics, not measurements).
+    // Quick-add seeds the current question + the next gradable question so
+    // the >=2-item integrity floor holds at authoring time; the router
+    // additionally requires >=2 items to MATCH before firing.
+    const _gradableIdxs = (generatedContent?.data?.questions || [])
+      .map((q, i) => ({ q, i }))
+      .filter(({ q }) => q && q.correctAnswer != null && Array.isArray(q.options))
+      .map(({ i }) => i);
+    const addConfidencePatternRule = (pattern) => {
+      const seed = [currentQuestionIndex].concat(_gradableIdxs.filter(i => i !== currentQuestionIndex).slice(0, 1));
+      if (seed.length < 2) {
+        if (typeof window !== 'undefined' && window.AlloFlowUX) window.AlloFlowUX.toast('Confidence rules need at least 2 gradable questions in this quiz.', 'info');
+        return;
+      }
+      const firstGroup = (groupEntriesForRouting[0] && groupEntriesForRouting[0][0]) || '';
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
+        existing.push({
+          id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 5),
+          version: 1,
+          when: { confidencePattern: pattern, acrossQuestions: seed },
           then: { groupId: firstGroup }
         });
         next[currentQuestionIndex] = existing;
@@ -2103,6 +2288,38 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      // doesn't ship with a chip picker for acrossQuestions in V1,
                                      // so pre-authored / AI-generated aggregation rules render as
                                      // a read-only summary with a delete affordance only.
+                                     if (rule.when && rule.when.confidencePattern) {
+                                       const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
+                                       const patternLabel = rule.when.confidencePattern === 'fragile' ? '🌱 Fragile knowledge (correct but guessed)'
+                                         : rule.when.confidencePattern === 'confident-wrong' ? '🧭 Confident misconception (wrong but sure)'
+                                         : '⭐ Calibrated mastery (correct and sure)';
+                                       return (
+                                         <div key={rule.id} className="bg-white border border-sky-200 rounded p-1.5 text-xs space-y-1">
+                                           <div className="flex flex-wrap items-center gap-1">
+                                             <span className="px-1 py-0.5 rounded bg-sky-100 text-sky-800 text-[10px] font-bold uppercase tracking-wide">Confidence</span>
+                                             <span className="text-slate-700">{patternLabel} across {across.map(i => `Q${i + 1}`).join(', ')}</span>
+                                             <span className="text-slate-600">→</span>
+                                             <select
+                                                 value={rule.then.groupId || ''}
+                                                 onChange={e => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } })}
+                                                 aria-label="Destination group"
+                                                 className="border border-slate-300 rounded px-1 py-0.5 text-[11px]"
+                                             >
+                                               <option value="">— pick group —</option>
+                                               {groupEntriesForRouting.map(([gid, g]) => <option key={gid} value={gid}>{g.name || gid}</option>)}
+                                             </select>
+                                             <button
+                                                 onClick={() => removeQuizRoutingRule(rule.id)}
+                                                 aria-label="Remove confidence rule"
+                                                 className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+                                             >✕</button>
+                                           </div>
+                                           <div className="text-[10px] text-slate-500 italic pl-1">
+                                             Screening heuristic, not a measurement: fires only when ≥2 of these items match the pattern (with a confidence report). Use it to start a conversation, not to label a learner.
+                                           </div>
+                                         </div>
+                                       );
+                                     }
                                      if (rule.when && rule.when.aggregate) {
                                        const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
                                        return (
@@ -2216,11 +2433,25 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      <strong className="font-bold">Likert routing:</strong> single-item Likert routing is refused — a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across ≥2 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.
                                    </div>
                                  ) : (
-                                   <button
-                                       onClick={addQuizRoutingRule}
-                                       disabled={groupEntriesForRouting.length === 0}
-                                       className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
-                                   >+ Add rule</button>
+                                   <div className="flex flex-wrap gap-1">
+                                     <button
+                                         onClick={addQuizRoutingRule}
+                                         disabled={groupEntriesForRouting.length === 0}
+                                         className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
+                                     >+ Add rule</button>
+                                     <button
+                                         onClick={() => addConfidencePatternRule('fragile')}
+                                         disabled={groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2}
+                                         title="Route students who are getting answers right while reporting 'I guessed' (≥2 items) — consolidation support, not a label"
+                                         className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${(groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2) ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-sky-500 text-sky-800 hover:bg-sky-100'}`}
+                                     >+ 🌱 Fragile-knowledge rule</button>
+                                     <button
+                                         onClick={() => addConfidencePatternRule('confident-wrong')}
+                                         disabled={groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2}
+                                         title="Route students who are answering wrong while reporting 'I knew it' (≥2 items) — misconception conference list"
+                                         className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${(groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2) ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-sky-500 text-sky-800 hover:bg-sky-100'}`}
+                                     >+ 🧭 Misconception rule</button>
+                                   </div>
                                  )}
                              </div>
                          )}
@@ -2273,8 +2504,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                 <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 relative">
                                      {phase === 'boss-defeated' && (
                                          <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500">
+                                             <ConfettiEffect isActive={true} />
                                              <div className="text-center p-8">
-                                                 <div className="text-7xl mb-4">🎉</div>
+                                                 <div className="text-7xl mb-4 animate-bounce">🎉</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.victory_msg')}</h2>
                                                  <p className="text-lg text-green-200">{bossStats?.name || "Boss"} has been defeated!</p>
                                              </div>
@@ -2303,15 +2535,15 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              </div>
                                          )}
                                          {phase === 'revealed' && bossStats.lastDamage > 0 && (
-                                             <div className="absolute top-0 right-[-20px] text-red-600 font-black text-4xl animate-[bounce_0.5s_infinite] z-20 stroke-white drop-shadow-md">
-                                                 -{bossStats.lastDamage}
+                                             <div className={`absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] ${bossStats.lastDamage >= (bossStats.maxHP || 1000) * 0.15 ? 'text-yellow-500 text-6xl' : 'text-red-600 text-4xl'}`}>
+                                                 {bossStats.lastDamage >= (bossStats.maxHP || 1000) * 0.15 ? '💥 ' : ''}-{bossStats.lastDamage}
                                              </div>
                                          )}
                                      </div>
                                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">{bossStats.name || t('quiz.boss.default_name')}</h3>
-                                     <div className="w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 border-slate-400 relative overflow-hidden shadow-inner mb-2">
+                                     <div className={`w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && (bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'border-red-500 animate-pulse' : 'border-slate-400'}`}>
                                          <div
-                                            className="h-full bg-gradient-to-r from-red-600 to-orange-500 transition-all duration-1000 ease-out"
+                                            className={`h-full transition-all duration-1000 ease-out ${(bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'bg-gradient-to-r from-red-700 to-red-500' : 'bg-gradient-to-r from-red-600 to-orange-500'}`}
                                             style={{ width: `${(bossStats.currentHP / bossStats.maxHP) * 100}%` }}
                                          ></div>
                                          <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md">
@@ -2665,6 +2897,9 @@ const _BUILTIN_METRIC_REGISTRY = [
         'cornell-notes':    { fields: ['summary', 'cuesFilled', 'notesFilled'], counts: {}, total: 0 },
         'lab-report':       { fields: ['hypothesis', 'analysis', 'conclusion', 'procedureFilled'], counts: {}, total: 0 },
         'reading-response': { fields: ['favoriteLine', 'thinkings', 'connection', 'question'], counts: {}, total: 0 },
+        'double-entry':     { fields: ['responsesFilled'], counts: {}, total: 0 },
+        'guided-notes':     { fields: ['blanksFilled', 'ownNotes'], counts: {}, total: 0 },
+        'q-and-a':          { fields: ['answersFilled'], counts: {}, total: 0 },
       };
       Object.keys(ntStats).forEach(tt => ntStats[tt].fields.forEach(f => ntStats[tt].counts[f] = 0));
       (dashboardData || []).forEach(s => {
@@ -2692,6 +2927,18 @@ const _BUILTIN_METRIC_REGISTRY = [
             if (!(d.thinkings || '').trim()) ntStats[tt].counts.thinkings++;
             if (!(d.connection && d.connection.text || '').trim()) ntStats[tt].counts.connection++;
             if (!(d.question || '').trim()) ntStats[tt].counts.question++;
+          } else if (tt === 'double-entry') {
+            const respCount = (Array.isArray(d.entries) ? d.entries : []).filter(en => en && (en.response || '').trim()).length;
+            if (respCount === 0) ntStats[tt].counts.responsesFilled++;
+          } else if (tt === 'guided-notes') {
+            const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+            const filledBlanks = blanks.filter(b => b && (b.studentAnswer || '').trim()).length;
+            if (blanks.length > 0 && filledBlanks < Math.ceil(blanks.length / 2)) ntStats[tt].counts.blanksFilled++;
+            if (!(d.notesExtra || '').trim()) ntStats[tt].counts.ownNotes++;
+          } else if (tt === 'q-and-a') {
+            const pairs = Array.isArray(d.pairs) ? d.pairs : [];
+            const hasUnanswered = pairs.some(p => p && (p.question || '').trim() && !(p.answer || '').trim());
+            if (hasUnanswered) ntStats[tt].counts.answersFilled++;
           }
         });
       });
@@ -2713,8 +2960,18 @@ const _BUILTIN_METRIC_REGISTRY = [
           connection: 'Connection (text-to-self / text / world — Keene & Zimmermann)',
           question: 'Open question (genuine inquiry — metacognitive engagement)',
         },
+        'double-entry': {
+          responsesFilled: 'Response column (the thinking — dialogue with the text, not just copied quotes)',
+        },
+        'guided-notes': {
+          blanksFilled: 'Blanks completion (under half filled — retrieval of the core key terms)',
+          ownNotes: 'Own-notes space (student-generated elaboration beyond the blanks)',
+        },
+        'q-and-a': {
+          answersFilled: 'Unanswered questions (questions written but left unanswered — retrieval practice incomplete)',
+        },
       };
-      const templateNames = { 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response' };
+      const templateNames = { 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response', 'double-entry': 'Double-Entry Journal', 'guided-notes': 'Guided Notes', 'q-and-a': 'Q&A Study Notes' };
       const results = [];
       Object.keys(ntStats).forEach(tt => {
         const stats = ntStats[tt];
@@ -2740,6 +2997,9 @@ const _BUILTIN_METRIC_REGISTRY = [
       let rrCount = 0, rrWithEvidence = 0;
       let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
       let studentsWithNotebook = 0, studentsWithFeedback = 0;
+      let deCount = 0, deWithResponse = 0;
+      let gnBlanksTotal = 0, gnBlanksFilled = 0;
+      let qaPairsWithQ = 0, qaPairsAnswered = 0;
       (dashboardData || []).forEach(s => {
         const hist = s.history || [];
         const notes = hist.filter(h => h && h.type === 'note-taking');
@@ -2764,6 +3024,19 @@ const _BUILTIN_METRIC_REGISTRY = [
             rrCount++; studentHasRR = true;
             if ((d.favoriteLine || '').trim()) rrWithEvidence++;
             if (d.connection && d.connection.type) connTypesSeen.add(d.connection.type);
+          } else if (tt === 'double-entry') {
+            deCount++;
+            if ((Array.isArray(d.entries) ? d.entries : []).some(en => en && wc(en.response) >= 15)) deWithResponse++;
+          } else if (tt === 'guided-notes') {
+            const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+            if (blanks.length > 0) {
+              gnBlanksTotal += blanks.length;
+              gnBlanksFilled += blanks.filter(b => b && (b.studentAnswer || '').trim()).length;
+            }
+          } else if (tt === 'q-and-a') {
+            (Array.isArray(d.pairs) ? d.pairs : []).forEach(p => {
+              if (p && (p.question || '').trim()) { qaPairsWithQ++; if ((p.answer || '').trim()) qaPairsAnswered++; }
+            });
           }
         });
         if (studentHasRR) { studentsWithRR++; if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++; }
@@ -2794,6 +3067,18 @@ const _BUILTIN_METRIC_REGISTRY = [
       if (studentsWithNotebook > 0) {
         const v = Math.round((studentsWithFeedback / studentsWithNotebook) * 100);
         signals.push({ key: 'selfAssessment', label: 'Self-assessment use', value: v, suffix: '%', denom: `${studentsWithFeedback}/${studentsWithNotebook} students`, hint: '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)', tone: _tone(v, 50, 25) });
+      }
+      if (deCount > 0) {
+        const v = Math.round((deWithResponse / deCount) * 100);
+        signals.push({ key: 'deResponseRate', label: 'Double-entry response rate', value: v, suffix: '%', denom: `${deWithResponse}/${deCount}`, hint: '% of double-entry journals with a substantive (≥15-word) response — dialogue with the text, not just copied quotes', tone: _tone(v, 60, 30) });
+      }
+      if (gnBlanksTotal > 0) {
+        const v = Math.round((gnBlanksFilled / gnBlanksTotal) * 100);
+        signals.push({ key: 'guidedCompletion', label: 'Guided-notes completion', value: v, suffix: '%', denom: `${gnBlanksFilled}/${gnBlanksTotal} blanks`, hint: '% of guided-note blanks completed across the class — engagement with the key terms', tone: _tone(v, 70, 40) });
+      }
+      if (qaPairsWithQ > 0) {
+        const v = Math.round((qaPairsAnswered / qaPairsWithQ) * 100);
+        signals.push({ key: 'qaAnswerRate', label: 'Q&A answer rate', value: v, suffix: '%', denom: `${qaPairsAnswered}/${qaPairsWithQ} pairs`, hint: '% of study questions that have an answer written — completed retrieval-practice sets', tone: _tone(v, 70, 40) });
       }
       return signals;
     },
@@ -3157,7 +3442,10 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
 
   // Deterministic notebook quality signals — computed from data alone (no AI).
   // Surfaced as a color-coded card grid for at-a-glance class diagnostics.
-  const qualitySignals = React.useMemo(() => _computeNotebookQualitySignals(dashboardData), [dashboardData]);
+  // Flat array of all note-taking quality signals (registry-driven). Each carries
+  // its own tone + denom, so we render them generically — new template signals
+  // surface automatically without per-key wiring.
+  const qualitySignals = React.useMemo(() => _computeAllQualitySignals(dashboardData), [dashboardData]);
 
   // Aggregate notebook activity across the whole roster.
   const agg = React.useMemo(() => {
@@ -3167,9 +3455,12 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
       cornell: 0,
       labReport: 0,
       readingResponse: 0,
+      doubleEntry: 0,
+      guidedNotes: 0,
+      qAndA: 0,
       anchorChart: 0,
       feedbackRequests: 0,
-      byStudent: [], // [{ name, total, cornell, labReport, readingResponse, anchorChart, feedbackRequests }]
+      byStudent: [], // [{ name, total, cornell, labReport, readingResponse, doubleEntry, guidedNotes, qAndA, anchorChart, feedbackRequests }]
     };
     (dashboardData || []).forEach(s => {
       const hist = s.history || [];
@@ -3177,20 +3468,28 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
       const anchors = hist.filter(h => h && h.type === 'anchor-chart');
       if (notes.length === 0 && anchors.length === 0) return;
       out.studentsWithNotebook++;
-      const sCornell = notes.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
-      const sLab = notes.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
-      const sReading = notes.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+      const countType = (tt) => notes.filter(e => (e.data && e.data.templateType) === tt).length;
+      const sCornell = countType('cornell-notes');
+      const sLab = countType('lab-report');
+      const sReading = countType('reading-response');
+      const sDouble = countType('double-entry');
+      const sGuided = countType('guided-notes');
+      const sQA = countType('q-and-a');
       const sFeedback = notes.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
       out.cornell += sCornell;
       out.labReport += sLab;
       out.readingResponse += sReading;
+      out.doubleEntry += sDouble;
+      out.guidedNotes += sGuided;
+      out.qAndA += sQA;
       out.anchorChart += anchors.length;
       out.feedbackRequests += sFeedback;
       out.totalEntries += notes.length + anchors.length;
       out.byStudent.push({
         name: s.studentNickname || 'Anonymous',
         total: notes.length + anchors.length,
-        cornell: sCornell, labReport: sLab, readingResponse: sReading, anchorChart: anchors.length,
+        cornell: sCornell, labReport: sLab, readingResponse: sReading,
+        doubleEntry: sDouble, guidedNotes: sGuided, qAndA: sQA, anchorChart: anchors.length,
         feedbackRequests: sFeedback,
       });
     });
@@ -3222,6 +3521,9 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, 
             'cornell-notes': () => `cues=${(d.cues || []).length}, notes=${(d.notes || []).length}, summary_len=${(d.summary || '').length}`,
             'lab-report': () => `hyp_len=${(d.hypothesis || '').length}, analysis_len=${(d.analysis || '').length}, conclusion_len=${(d.conclusion || '').length}`,
             'reading-response': () => `evidence_len=${(d.favoriteLine || '').length}, thinking_len=${(d.thinkings || '').length}, connection_type=${(d.connection && d.connection.type) || 'none'}`,
+            'double-entry': () => { const en = Array.isArray(d.entries) ? d.entries : []; return `entries=${en.length}, with_response=${en.filter(x => x && (x.response || '').trim()).length}`; },
+            'guided-notes': () => { const bl = Array.isArray(d.blanks) ? d.blanks : []; return `blanks=${bl.length}, filled=${bl.filter(b => b && (b.studentAnswer || '').trim()).length}, own_notes_len=${(d.notesExtra || '').length}`; },
+            'q-and-a': () => { const pr = Array.isArray(d.pairs) ? d.pairs : []; return `pairs=${pr.length}, answered=${pr.filter(p => p && (p.answer || '').trim()).length}`; },
           })[tt];
           sampleEntries.push(`${s.studentNickname || 'Anon'} (${tt}): ${headline ? headline() : 'no data'}`);
         });
@@ -3235,6 +3537,9 @@ CLASS COMPOSITION:
 - Total Cornell Notes entries: ${agg.cornell}
 - Total Lab Reports: ${agg.labReport}
 - Total Reading Responses: ${agg.readingResponse}
+- Total Double-Entry Journals: ${agg.doubleEntry}
+- Total Guided Notes: ${agg.guidedNotes}
+- Total Q&A Study Notes: ${agg.qAndA}
 - Total Anchor Charts: ${agg.anchorChart}
 - Total AI feedback requests across class: ${agg.feedbackRequests}
 
@@ -3287,7 +3592,7 @@ Return ONLY JSON:
           {insightsLoading ? '⏳' : '✨'} {t('dashboard.class_notebook.ai_button') || 'AI Class Insights'}
         </button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="bg-violet-50 rounded-xl p-3 text-center border border-violet-200">
           <div className="text-2xl font-black text-violet-700">{agg.studentsWithNotebook}</div>
           <div className="text-[10px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.class_notebook.students_with') || 'Students using'}</div>
@@ -3304,6 +3609,18 @@ Return ONLY JSON:
           <div className="text-2xl font-black text-fuchsia-700">{agg.readingResponse}</div>
           <div className="text-[10px] font-bold text-fuchsia-600 uppercase mt-1">📖 Reading</div>
         </div>}
+        {agg.doubleEntry > 0 && <div className="bg-rose-50 rounded-xl p-3 text-center border border-rose-200">
+          <div className="text-2xl font-black text-rose-700">{agg.doubleEntry}</div>
+          <div className="text-[10px] font-bold text-rose-600 uppercase mt-1">✍️ Double-Entry</div>
+        </div>}
+        {agg.guidedNotes > 0 && <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200">
+          <div className="text-2xl font-black text-emerald-700">{agg.guidedNotes}</div>
+          <div className="text-[10px] font-bold text-emerald-600 uppercase mt-1">📝 Guided</div>
+        </div>}
+        {agg.qAndA > 0 && <div className="bg-cyan-50 rounded-xl p-3 text-center border border-cyan-200">
+          <div className="text-2xl font-black text-cyan-700">{agg.qAndA}</div>
+          <div className="text-[10px] font-bold text-cyan-600 uppercase mt-1">❓ Q&amp;A</div>
+        </div>}
         {agg.anchorChart > 0 && <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-200">
           <div className="text-2xl font-black text-amber-700">{agg.anchorChart}</div>
           <div className="text-[10px] font-bold text-amber-600 uppercase mt-1">📋 Anchor Chart</div>
@@ -3315,76 +3632,27 @@ Return ONLY JSON:
           <span className="text-emerald-700"> across the class. A useful proxy for metacognitive engagement (students who request feedback are practicing self-assessment).</span>
         </div>
       )}
-      {/* Deterministic quality signals — no AI required, color-coded against research thresholds */}
-      {(qualitySignals.summaryFillRate.value !== null
-        || qualitySignals.avgCerWords.value !== null
-        || qualitySignals.rrEvidenceRate.value !== null
-        || qualitySignals.selfAssessment.value !== null) && (
+      {/* Deterministic quality signals — no AI required, color-coded against research
+          thresholds. Rendered generically from the registry-driven flat array so
+          every template's signals (incl. new ones) surface with correct denominators. */}
+      {Array.isArray(qualitySignals) && qualitySignals.length > 0 && (
         <div className="mb-4" data-help-key="dashboard_class_notebook_quality_signals">
           <div className="flex items-center justify-between mb-2">
             <h5 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('dashboard.class_notebook.quality_signals_label') || 'Quality Signals (research thresholds)'}</h5>
             <span className="text-[10px] text-slate-500 italic">{t('dashboard.class_notebook.quality_signals_legend') || 'green = healthy · amber = partial · red = needs attention'}</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {qualitySignals.summaryFillRate.value !== null && (
+            {qualitySignals.map((sig) => (
               <_NotebookQualityCard
-                tone={_signalTone('summaryFillRate', qualitySignals.summaryFillRate.value)}
-                label={t('dashboard.class_notebook.signal_summary_fill') || 'Cornell summary rate'}
-                value={qualitySignals.summaryFillRate.value}
-                suffix="%"
-                denom={`${qualitySignals.summaryFillRate.count}/${qualitySignals.summaryFillRate.total}`}
-                hint={t('dashboard.class_notebook.signal_summary_fill_hint') || '% of Cornell entries with ≥20-word summary (research threshold; Pauk/Kiewra)'}
+                key={sig.key}
+                tone={sig.tone || 'gray'}
+                label={t('dashboard.class_notebook.signal_' + sig.key) || sig.label}
+                value={sig.value}
+                suffix={sig.suffix || ''}
+                denom={sig.denom || ''}
+                hint={t('dashboard.class_notebook.signal_' + sig.key + '_hint') || sig.hint}
               />
-            )}
-            {qualitySignals.avgCues.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('avgCues', qualitySignals.avgCues.value)}
-                label={t('dashboard.class_notebook.signal_avg_cues') || 'Cornell cue density'}
-                value={qualitySignals.avgCues.value}
-                denom={`avg / ${qualitySignals.avgCues.n} entries`}
-                hint={t('dashboard.class_notebook.signal_avg_cues_hint') || 'Avg cues per Cornell entry. ≥5 is healthy retrieval-practice density'}
-              />
-            )}
-            {qualitySignals.avgCerWords.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('avgCerWords', qualitySignals.avgCerWords.value)}
-                label={t('dashboard.class_notebook.signal_cer_length') || 'Lab CER length'}
-                value={qualitySignals.avgCerWords.value}
-                suffix=" wd"
-                denom={`avg / ${qualitySignals.avgCerWords.n} reports`}
-                hint={t('dashboard.class_notebook.signal_cer_length_hint') || 'Avg word count of CER analysis. ≥30 words is where reasoning lives (McNeill & Krajcik)'}
-              />
-            )}
-            {qualitySignals.rrEvidenceRate.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('rrEvidenceRate', qualitySignals.rrEvidenceRate.value)}
-                label={t('dashboard.class_notebook.signal_rr_evidence') || 'Reading evidence rate'}
-                value={qualitySignals.rrEvidenceRate.value}
-                suffix="%"
-                denom={`${qualitySignals.rrEvidenceRate.count}/${qualitySignals.rrEvidenceRate.total}`}
-                hint={t('dashboard.class_notebook.signal_rr_evidence_hint') || '% of Reading Responses with a favorite line filled (close-reading anchor)'}
-              />
-            )}
-            {qualitySignals.connectionVariety.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('connectionVariety', qualitySignals.connectionVariety.value)}
-                label={t('dashboard.class_notebook.signal_conn_variety') || 'Connection variety'}
-                value={qualitySignals.connectionVariety.value}
-                suffix="%"
-                denom={`${qualitySignals.connectionVariety.count}/${qualitySignals.connectionVariety.total} students`}
-                hint={t('dashboard.class_notebook.signal_conn_variety_hint') || '% of students using ≥2 of 3 connection types (text-to-self/text/world)'}
-              />
-            )}
-            {qualitySignals.selfAssessment.value !== null && (
-              <_NotebookQualityCard
-                tone={_signalTone('selfAssessment', qualitySignals.selfAssessment.value)}
-                label={t('dashboard.class_notebook.signal_self_assess') || 'Self-assessment use'}
-                value={qualitySignals.selfAssessment.value}
-                suffix="%"
-                denom={`${qualitySignals.selfAssessment.count}/${qualitySignals.selfAssessment.total} students`}
-                hint={t('dashboard.class_notebook.signal_self_assess_hint') || '% of students who have requested AI feedback ≥1× (metacognitive engagement proxy)'}
-              />
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -4026,20 +4294,32 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   };
   const [studentFilter, setStudentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('students');
+  const dashboardTabIds = ['students', 'insights', 'behavior', 'stems'];
+  const dashboardTabRefs = useRef({});
+  const handleDashboardTabKeyDown = (event, tabId) => {
+      const currentIndex = dashboardTabIds.indexOf(tabId);
+      let nextIndex = currentIndex;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % dashboardTabIds.length;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (currentIndex - 1 + dashboardTabIds.length) % dashboardTabIds.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = dashboardTabIds.length - 1;
+      else return;
+      event.preventDefault();
+      const nextId = dashboardTabIds[nextIndex];
+      setActiveTab(nextId);
+      window.setTimeout(() => dashboardTabRefs.current[nextId]?.focus(), 0);
+  };
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  // WCAG 2.1.2 + 2.4.3: Escape closes the Clear Confirm modal + restores focus.
-  // Proper top-of-component useEffect — previously in module.js only, wedged inside
-  // an st.tools.map() callback (React Hook Rules violation). Fixed April 2026.
-  useEffect(function() {
-    function _alloEscHandler(e) {
-      if (e.key === 'Escape' && showClearConfirm) {
-        setShowClearConfirm(false);
-        if (typeof alloRestoreFocus === 'function') alloRestoreFocus();
-      }
-    }
-    document.addEventListener('keydown', _alloEscHandler);
-    return function() { document.removeEventListener('keydown', _alloEscHandler); };
+  const clearConfirmDialogRef = useRef(null);
+  const clearConfirmTriggerRef = useRef(null);
+  useEffect(() => {
+    if (!showClearConfirm) return;
+    clearConfirmDialogRef.current?.querySelector('[data-safe-default="true"]')?.focus();
   }, [showClearConfirm]);
+  const closeClearConfirm = () => {
+    setShowClearConfirm(false);
+    window.setTimeout(() => clearConfirmTriggerRef.current?.focus(), 0);
+  };
   const toggleGraded = (id) => {
       setGradedIds(prev => {
           const next = new Set(prev);
@@ -4311,13 +4591,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       return Math.round(totalPct / quizzes.length);
   };
   const studentAvg = selectedStudent ? getStudentAvgScore(selectedStudent) : 0;
-  const handleClearAll = () => {
+  const handleClearAll = (event) => {
+      clearConfirmTriggerRef.current = event?.currentTarget || document.activeElement;
       setShowClearConfirm(true);
   };
   const confirmClearAll = () => {
       setDashboardData([]);
       setGradedIds(new Set());
-      setShowClearConfirm(false);
+      closeClearConfirm();
       if (addToast) addToast(t('dashboard.toasts.dashboard_cleared'), "info");
   };
   const handleExportResearchPDF = async () => {
@@ -4677,7 +4958,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         t('dashboard.csv.header_level'),
         t('dashboard.csv.header_quiz_avg'),
         t('dashboard.csv.header_total_xp')
-    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Anchor Charts', 'Notebook Feedback Requests', ...registryHeaders];
+    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Double-Entry Journals', 'Guided Notes', 'Q&A Study Notes', 'Anchor Charts', 'Notebook Feedback Requests', ...registryHeaders];
     const rows = dashboardData.map(student => {
         const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
         const date = new Date(student.timestamp).toLocaleDateString();
@@ -4716,12 +4997,15 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         const cornellCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length;
         const labCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length;
         const readingCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length;
+        const doubleEntryCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'double-entry').length;
+        const guidedCount = noteEntries.filter(e => (e.data && e.data.templateType) === 'guided-notes').length;
+        const qAndACount = noteEntries.filter(e => (e.data && e.data.templateType) === 'q-and-a').length;
         const anchorCount = hist.filter(h => h && h.type === 'anchor-chart').length;
         const feedbackCount = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
         // Registry-driven per-tool counts (extends with each new registry entry,
         // including externally-registered tools)
         const registryCounts = getTeacherMetricRegistry().map(entry => entry.count(student));
-        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
+        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${doubleEntryCount}","${guidedCount}","${qAndACount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
     });
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -4790,26 +5074,26 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             </div>
           </div>
           {dashboardData.length > 0 && dashboardView === 'list' && (
-              <div className="flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap">
-                  <button
+              <div role="tablist" aria-label={t('dashboard.sections') || 'Dashboard sections'} className="flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap">
+                  <button ref={element => { dashboardTabRefs.current.students = element; }} type="button" role="tab" id="teacher-dashboard-tab-students" aria-selected={activeTab === 'students'} aria-controls="teacher-dashboard-panel-students" tabIndex={activeTab === 'students' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'students')}
                       onClick={() => setActiveTab('students')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_students')} ({dashboardData.length})
                   </button>
-                  <button
+                  <button ref={element => { dashboardTabRefs.current.insights = element; }} type="button" role="tab" id="teacher-dashboard-tab-insights" aria-selected={activeTab === 'insights'} aria-controls="teacher-dashboard-panel-insights" tabIndex={activeTab === 'insights' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'insights')}
                       onClick={() => setActiveTab('insights')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_insights')}
                   </button>
-                  <button
+                  <button ref={element => { dashboardTabRefs.current.behavior = element; }} type="button" role="tab" id="teacher-dashboard-tab-behavior" aria-selected={activeTab === 'behavior'} aria-controls="teacher-dashboard-panel-behavior" tabIndex={activeTab === 'behavior' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'behavior')}
                       onClick={() => setActiveTab('behavior')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔍 {t('behavior_lens.hub.title') || 'Behavior'}
                   </button>
-                  <button
+                  <button ref={element => { dashboardTabRefs.current.stems = element; }} type="button" role="tab" id="teacher-dashboard-tab-stems" aria-selected={activeTab === 'stems'} aria-controls="teacher-dashboard-panel-stems" tabIndex={activeTab === 'stems' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'stems')}
                       onClick={() => setActiveTab('stems')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
@@ -4974,6 +5258,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                      'cornell-notes': noteEntries.filter(e => (e.data && e.data.templateType) === 'cornell-notes').length,
                                      'lab-report': noteEntries.filter(e => (e.data && e.data.templateType) === 'lab-report').length,
                                      'reading-response': noteEntries.filter(e => (e.data && e.data.templateType) === 'reading-response').length,
+                                     'double-entry': noteEntries.filter(e => (e.data && e.data.templateType) === 'double-entry').length,
+                                     'guided-notes': noteEntries.filter(e => (e.data && e.data.templateType) === 'guided-notes').length,
+                                     'q-and-a': noteEntries.filter(e => (e.data && e.data.templateType) === 'q-and-a').length,
                                      'anchor-chart': anchorEntries.length,
                                  };
                                  const feedbackEvents = noteEntries.reduce((sum, e) => sum + ((e.data && e.data.feedbackCount) || 0), 0);
@@ -4985,6 +5272,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                              {byType['cornell-notes'] > 0 && <div className="flex justify-between"><span>📓 Cornell</span><span className="font-bold">{byType['cornell-notes']}</span></div>}
                                              {byType['lab-report'] > 0 && <div className="flex justify-between"><span>🧪 Lab Report</span><span className="font-bold">{byType['lab-report']}</span></div>}
                                              {byType['reading-response'] > 0 && <div className="flex justify-between"><span>📖 Reading</span><span className="font-bold">{byType['reading-response']}</span></div>}
+                                             {byType['double-entry'] > 0 && <div className="flex justify-between"><span>✍️ Double-Entry</span><span className="font-bold">{byType['double-entry']}</span></div>}
+                                             {byType['guided-notes'] > 0 && <div className="flex justify-between"><span>📝 Guided Notes</span><span className="font-bold">{byType['guided-notes']}</span></div>}
+                                             {byType['q-and-a'] > 0 && <div className="flex justify-between"><span>❓ Q&amp;A</span><span className="font-bold">{byType['q-and-a']}</span></div>}
                                              {byType['anchor-chart'] > 0 && <div className="flex justify-between"><span>📋 Anchor Chart</span><span className="font-bold">{byType['anchor-chart']}</span></div>}
                                              {feedbackEvents > 0 && <div className="flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200"><span>💬 AI feedback</span><span>{feedbackEvents}×</span></div>}
                                          </div>
@@ -5095,7 +5385,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                  ) : (
                     <>
                      {activeTab === 'students' && (
-                     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-left-4">
+                     <div role="tabpanel" id="teacher-dashboard-panel-students" aria-labelledby="teacher-dashboard-tab-students" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-left-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4">
                                  <div className="bg-blue-100 p-3 rounded-full text-blue-600"><Users size={24}/></div>
@@ -5117,7 +5407,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                     onChange={handleBatchUpload} data-help-key="dashboard_add_file_btn_input" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                  />
                              </div>
-                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => e.key === 'Enter' && handleClearAll()}>
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClearAll(e))}>
                                  <div className="bg-red-100 p-3 rounded-full text-red-600"><Trash2 size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-red-700">{t('dashboard.stats.clear_dashboard')}</div>
@@ -5255,7 +5545,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                      </div>
                      )}
                      {activeTab === 'insights' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
+                         <div role="tabpanel" id="teacher-dashboard-panel-insights" aria-labelledby="teacher-dashboard-tab-insights" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-400">
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-800">{t('dashboard.insights.class_performance')}</h3>
@@ -5480,7 +5770,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                         </div>
                      )}
                      {activeTab === 'behavior' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                              <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center">
                                  <div className="text-4xl sm:text-5xl mb-4">🔍</div>
                                  <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
@@ -5495,7 +5785,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                          </div>
                      )}
                      {activeTab === 'stems' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                              <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400">
                                  <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
                                      {t('teacher.stem_stations.section_title') || '🔬 STEM Station Activity'}
@@ -5583,25 +5873,35 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
          )}
       </div>
       {showClearConfirm && (
-          <div role="button" tabIndex={0} className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setShowClearConfirm(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="teacher-clear-confirm-title" onClick={(e) => e.stopPropagation()}>
+          <div role="presentation" className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onMouseDown={(event) => { if (event.target === event.currentTarget) closeClearConfirm(); }}>
+              <div
+                  ref={clearConfirmDialogRef}
+                  className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200"
+                  role="alertdialog"
+                  aria-modal="true"
+                  aria-labelledby="teacher-clear-confirm-title"
+                  aria-describedby="teacher-clear-confirm-description"
+                  onKeyDown={event => {
+                      if (event.key === 'Escape') { event.preventDefault(); closeClearConfirm(); return; }
+                      if (event.key !== 'Tab') return;
+                      const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                      if (!focusable.length) { event.preventDefault(); return; }
+                      const first = focusable[0];
+                      const last = focusable[focusable.length - 1];
+                      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                  }}
+              >
                   <div className="flex items-center gap-3 mb-4">
-                      <div className="bg-red-100 p-3 rounded-full"><Trash2 size={24} className="text-red-600"/></div>
+                      <div className="bg-red-100 p-3 rounded-full" aria-hidden="true"><Trash2 size={24} className="text-red-600"/></div>
                       <h3 id="teacher-clear-confirm-title" className="text-lg font-bold text-slate-800">{t('dashboard.clear_all')}</h3>
                   </div>
-                  <p className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>
+                  <p id="teacher-clear-confirm-description" className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>
                   <div className="flex gap-3">
-                      <button
-                          onClick={() => setShowClearConfirm(false)}
-                          className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-                      >
+                      <button type="button" data-safe-default="true" onClick={closeClearConfirm} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
                           {t('common.cancel')}
                       </button>
-                      <button
-                          onClick={confirmClearAll}
-                          className="flex-1 py-2.5 px-4 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors"
-                          autoFocus
-                      >
+                      <button type="button" onClick={confirmClearAll} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-red-700 hover:bg-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                           {t('common.confirm')}
                       </button>
                   </div>

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-climate-adaptation-science-centers-card",
+  "title": "USGS Climate Adaptation Science Centers",
+  "description": "A USGS source card about climate adaptation research and regional environmental decisions.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Climate change",
+    "Adaptation",
+    "Ecosystems",
+    "Decision making"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/climate-adaptation-science-centers"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS Climate Adaptation Science Centers connect research about climate impacts with decisions about wildlife, water, ecosystems, and communities."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for older-student nonfiction about applied science, regional case studies, evidence, uncertainty, and community decision-making."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain, but check item pages for partner contributions, photographs, and media credits before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 54
+  }
+}

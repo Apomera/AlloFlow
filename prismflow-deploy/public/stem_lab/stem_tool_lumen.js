@@ -1,9 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════════
-// stem_tool_lumen.js — Lumen (Phase 0: the reactive kernel)
+// stem_tool_lumen.js — Lumen (LIVE; honest evidence-COMMUNICATION instrument)
 // ═══════════════════════════════════════════════════════════════════════
 // A reactive RESEARCH CANVAS where the finding, the chart, and the sentence
 // that explains it are three faces of ONE live object. "The dashboard
-// monitors; Lumen argues." Full design: docs/lumen_design.md.
+// monitors; Lumen ARGUES." Full design: docs/lumen_design.md.
+//
+// IDENTITY (do not drift): Lumen turns ANY dataset — research, classroom,
+// lab, survey, your own — into an honest, provenance-bound, FERPA-safe
+// finding you can hand to a person. It is the COMPLEMENT of the Teacher
+// Dashboard (which monitors app student data), NEVER a second progress-
+// monitor. It is constitutionally NOT a goal/aimline/RTI/decision-rule
+// tool: predictY refuses extrapolation, and "a series is a CATEGORY, never
+// a person" is enforced (multi-subject is out of scope by design). Do NOT
+// add aimline / decision-rule / RTI-tier features — that lane is owned by
+// student_analytics_module.js + BehaviorLens and would breach Lumen's
+// de-identified-by-construction boundary. (This file is a full, live,
+// hub-launched tool — NOT a "Phase 0 kernel"; that header was stale.)
 //
 // PHASE 0 ships the pure, DOM-free kernel ONLY (design §11 — "no charts yet"):
 //   - certaintyGrammar.encode(level, palette)  — the single source of the
@@ -91,6 +103,16 @@
   GRAMMAR['SRC-U'] = { label: 'Sourced — AI-retrieved, UNVERIFIED — check the source', glyph: '▢', opacity: 1.00, dash: '1 4', texture: 'reference', caution: false, reference: true };
   DEFAULT_PALETTE.reference = '#0e7490'; // reserved teal — NOT student ink, NOT L3 amber
 
+  // Synthetic PRACTICE data (the "generate sample" feature): a FIFTH, ORTHOGONAL
+  // origin — also kept OUT of LEVELS so the AI dial / maxLevel math can never
+  // touch it. This is the honesty fix for procedurally-fabricated demo data:
+  // a synthetic mark burns a DISTINCT ◇ dotted violet glyph + the word
+  // "Synthetic (practice)", so it can never pose as the solid L0 'Observed'
+  // dot, survives a chart-crop screenshot, and (with the export gate) can
+  // never be handed to an IEP team as a defensible record.
+  GRAMMAR.SYN = { label: 'Synthetic (practice)', glyph: '◇', opacity: 1.00, dash: '2 2', texture: 'dotted', caution: true, synthetic: true };
+  DEFAULT_PALETTE.synthetic = '#6d28d9'; // reserved violet — NOT student ink, NOT L3 amber, NOT SRC teal, NOT a series hue
+
   // The WCAG opacity floor: 0.38-ish ink on white fails 1.4.11, so any mark
   // that must remain legible is clamped to >= 0.6 (design §6.4).
   var OPACITY_FLOOR = 0.6;
@@ -100,11 +122,21 @@
   // the LEGEND label + the SR table are the non-color channel (so it survives colour-blindness).
   var SERIES_PALETTE = ['#1d4ed8', '#be123c', '#7c3aed', '#15803d', '#db2777', '#4338ca'];
   function seriesColor(idx) { return SERIES_PALETTE[((idx % SERIES_PALETTE.length) + SERIES_PALETTE.length) % SERIES_PALETTE.length]; }
+  // Color-blind-safe categorical channel (WCAG 1.4.1): a series is ALSO distinguished
+  // by line DASH + point SHAPE (multi-line) and bar TEXTURE (grouped-bar), so hue is
+  // never the only cue. Indices cycle in lockstep with SERIES_PALETTE; series 0 is
+  // solid / circle / solid so a single-series chart looks unchanged.
+  var SERIES_DASH = ['none', '7 4', '1 5', '11 4 2 4', '5 4', '9 3 1 3'];
+  function seriesDash(idx) { var n = SERIES_DASH.length; return SERIES_DASH[((idx % n) + n) % n]; }
+  var SERIES_SHAPE = ['circle', 'square', 'triangle', 'diamond'];
+  function seriesShape(idx) { var n = SERIES_SHAPE.length; return SERIES_SHAPE[((idx % n) + n) % n]; }
+  var SERIES_TEXTURE = ['solid', 'diagonal', 'dots', 'crosshatch', 'vertical', 'horizontal'];
+  function seriesTexture(idx) { var n = SERIES_TEXTURE.length; return SERIES_TEXTURE[((idx % n) + n) % n]; }
   // Guard (mirrors referenceContrastOK): no series colour may equal the caution/reference/neutral ink,
   // and all series colours must be mutually distinct — so a series line can never read as the L3 signal.
   function seriesColorOK(palette) {
     var p = palette || DEFAULT_PALETTE;
-    var reserved = [p.caution, p.reference, p.neutral, p.line];
+    var reserved = [p.caution, p.reference, p.neutral, p.line, p.synthetic];
     var seen = {};
     for (var i = 0; i < SERIES_PALETTE.length; i++) {
       var c = SERIES_PALETTE[i];
@@ -128,11 +160,12 @@
       labelOpacity: 1.0,                               // the level WORD never fades
       strokeDasharray: g.dash,
       texture: g.texture,
-      // amber ONLY at L3; reference teal for SRC; otherwise neutral ink. Last, redundant channel.
-      ink: g.caution ? pal.caution : (g.reference ? pal.reference : pal.neutral),
+      // violet for synthetic; amber ONLY at L3; reference teal for SRC; otherwise neutral ink. Last, redundant channel.
+      ink: g.synthetic ? (pal.synthetic || pal.caution) : (g.caution ? pal.caution : (g.reference ? pal.reference : pal.neutral)),
       caution: g.caution
     };
     if (g.reference) bundle.isReference = true; // §16: a Sourced benchmark draws a line, not a dot
+    if (g.synthetic) bundle.isSynthetic = true; // synthetic practice mark — never a defensible observation
     return bundle;
   }
 
@@ -275,6 +308,11 @@
     meta = meta || {};
     return {
       variable: variable || 'value', unit: unit || 'units',
+      // The x-axis label (time/trial axis). Default 'Week' keeps every legacy
+      // sentence/table/CSV byte-identical; a custom label (e.g. 'Session',
+      // 'Date', 'Trial') flows through the entry field, SR tables, the family
+      // rate sentence ("per week" -> "per session"), and the CSV header.
+      xLabel: meta.xLabel || 'Week',
       observations: [], claims: [], _seq: 0,
       // §16: external benchmarks live HERE — never pushed into observations.
       sourceRefs: [], _srcSeq: 0,
@@ -297,9 +335,78 @@
     comp.observations.push(Object.assign(
       { id: id, x: obs.x, y: obs.y, phase: obs.phase == null ? null : obs.phase },
       (obs.y2 != null ? { y2: obs.y2 } : {}),
-      (obs.series != null ? { series: String(obs.series) } : {})
+      (obs.series != null ? { series: String(obs.series) } : {}),
+      // synthetic = procedurally fabricated PRACTICE data (or a curated example).
+      // Conditional-spread like y2/series: a real {id,x,y,phase} row stays
+      // byte-identical (no `synthetic: undefined` key), while fabricated rows
+      // carry an indelible origin stamp that drives the SYN burn + export block.
+      (obs.synthetic ? { synthetic: true } : {})
     ));
     return id;
+  }
+
+  // FAIL-SAFE demo flag: derived from the ROWS, not a free-standing UI bool, so
+  // a single fabricated row among real ones still taints the whole view (you
+  // cannot "clean" synthetic data by adding real points) and the flag can never
+  // be silently dropped by editing. Clears only when no synthetic row remains.
+  function compHasSynthetic(comp) {
+    return !!(comp && comp.observations && comp.observations.some(function (o) { return o && o.synthetic; }));
+  }
+
+  // ─── Synthetic PRACTICE-data generator (the "generate sample" feature) ───
+  // PURE + deterministic: seeded ONLY via the kernel's own cyrb53 + mulberry32
+  // (NO Date.now()/Math.random — same reproducibility contract as the bootstrap).
+  // MEASURE-AGNOSTIC: it makes a plausible numeric series (baseline + trend +
+  // bounded symmetric noise, clamped >= 0) and never reads what the measure /
+  // unit / x-label MEAN. Every row is stamped synthetic:true so it can never be
+  // mistaken for an observed record. Returns rows ONLY — it never mutates a
+  // compendium, pushes an L0 mark, or calls callGemini.
+  var PRACTICE_SCENARIOS = {
+    improving:  { baseline: 42, slope: 2.2,  noise: 2.5, phaseAt: 0.4,  levelShift: 0, postSlope: null },
+    flat:       { baseline: 50, slope: 0.0,  noise: 3.0, phaseAt: null, levelShift: 0, postSlope: null },
+    variable:   { baseline: 48, slope: 0.8,  noise: 9.0, phaseAt: null, levelShift: 0, postSlope: null },
+    declining:  { baseline: 60, slope: -1.6, noise: 3.0, phaseAt: null, levelShift: 0, postSlope: null },
+    responsive: { baseline: 40, slope: 0.3,  noise: 2.5, phaseAt: 0.4,  levelShift: 4, postSlope: 3.0 }
+  };
+  function generatePracticeData(opts) {
+    opts = opts || {};
+    var scenarioKey = PRACTICE_SCENARIOS[opts.scenario] ? opts.scenario : 'improving';
+    var sc = PRACTICE_SCENARIOS[scenarioKey];
+    var n = Math.max(3, Math.min(60, Math.round(opts.n == null ? 10 : opts.n))); // clamp, never throw — never below the n<3 refuse floor
+    var xStart = opts.xStart == null ? 1 : Number(opts.xStart);
+    var xStep = (opts.xStep == null || Number(opts.xStep) <= 0) ? 1 : Number(opts.xStep);
+    var baseline = opts.baseline == null ? sc.baseline : Number(opts.baseline);
+    var slope = opts.slope == null ? sc.slope : Number(opts.slope);
+    var noise = opts.noise == null ? sc.noise : Math.abs(Number(opts.noise));
+    var phaseAt = (opts.phaseAt === undefined) ? sc.phaseAt : opts.phaseAt;
+    var phaseLabels = (opts.phaseLabels && opts.phaseLabels.length === 2) ? opts.phaseLabels : ['baseline', 'tier2'];
+    var clampMin = (opts.clampMin === null) ? null : (opts.clampMin == null ? 0 : Number(opts.clampMin));
+    var clampMax = opts.clampMax == null ? null : Number(opts.clampMax);
+    var postSlope = (opts.postSlope == null) ? sc.postSlope : Number(opts.postSlope);
+    var levelShift = (opts.levelShift == null) ? sc.levelShift : Number(opts.levelShift);
+    // The seed is the re-roll handle: same seed => byte-identical rows; bump it for variety.
+    var seedKey = String(opts.seed == null ? (scenarioKey + '|' + n + '|' + (opts.xLabel || 'Week') + '|' + xStep) : opts.seed);
+    var rng = mulberry32(cyrb53(seedKey) >>> 0);
+    var k = (phaseAt == null) ? n : Math.max(1, Math.min(n - 1, Math.round(phaseAt * n))); // phase-change index (so a phase line is meaningful)
+    var rows = [];
+    for (var i = 0; i < n; i++) {
+      var xi = round1(xStart + i * xStep);
+      var trend, phase;
+      if (phaseAt == null || i < k) {
+        trend = baseline + slope * i;
+        phase = (phaseAt == null) ? null : phaseLabels[0];
+      } else {
+        var ps = (postSlope == null) ? slope : postSlope; // intervention segment: continue from the boundary, optional level-shift + new slope
+        trend = (baseline + slope * k) + levelShift + ps * (i - k);
+        phase = phaseLabels[1];
+      }
+      var e = (rng() * 2 - 1) * noise; // symmetric, BOUNDED noise (no Gaussian tail that could spike off-chart)
+      var y = trend + e;
+      if (clampMin != null) y = Math.max(clampMin, y);
+      if (clampMax != null) y = Math.min(clampMax, y);
+      rows.push({ x: xi, y: round1(y), phase: phase, synthetic: true });
+    }
+    return rows;
   }
 
   // Returns the ids of claims whose dependencies intersect the changed set.
@@ -361,6 +468,7 @@
       level: 'L1', // provenance: produced by Lumen's own deterministic math
       variable: comp.variable,
       unit: comp.unit,
+      xLabel: comp.xLabel || 'Week', // carried for the SR/table/sentence x-axis label (excluded from _hash + AI context)
       dependsOn: obs.map(function (o) { return o.id; }),
       shownOf: { shown: shown, total: total },
       n: n
@@ -476,6 +584,18 @@
     { x: 9, y: 60, phase: 'tier2' }, { x: 10, y: 66, phase: 'tier2' }
   ];
 
+  // A neutral, NON-CLINICAL example — Lumen is a GENERAL data-argument tool, so the
+  // first 'Try a sample' a new user meets is a plant's height over 10 weeks, before
+  // vs after a fertilizer change. The phase line here is a generic A/B annotation (a
+  // category on observations, squarely in charter) — NOT IEP progress monitoring.
+  var GROWTH_SAMPLE = [
+    { x: 1, y: 2.1, phase: 'before' }, { x: 2, y: 2.8, phase: 'before' },
+    { x: 3, y: 3.2, phase: 'before' }, { x: 4, y: 3.9, phase: 'before' },
+    { x: 5, y: 4.3, phase: 'before' }, { x: 6, y: 5.6, phase: 'after fertilizer' },
+    { x: 7, y: 6.8, phase: 'after fertilizer' }, { x: 8, y: 7.9, phase: 'after fertilizer' },
+    { x: 9, y: 9.1, phase: 'after fertilizer' }, { x: 10, y: 10.2, phase: 'after fertilizer' }
+  ];
+
   // A PAIRED sample (each probe carries a 2nd measure y2) for the scatter pathway:
   // WCPM (y) vs reading-comprehension % (y2). Two MEASURES of one student — not two students.
   var PAIRED_SAMPLE = [
@@ -536,7 +656,7 @@
     var bars = obs.map(function (o) {
       var cx = sx(o.x), top = sy(o.y);
       return {
-        x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0',
+        x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0',
         cx: round1(cx), bx: round1(cx - bw / 2), bw: round1(bw), by: round1(top), bh: round1(baseline - top)
       };
     });
@@ -583,7 +703,7 @@
     var padY = (maxY - minY) * 0.1 || 1, y0 = minY - padY, y1 = maxY + padY;
     function sx(x) { return box.padL + (maxX === minX ? 0 : (x - minX) / (maxX - minX)) * innerW; }
     function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
-    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
     var phaseLines = [];
     for (var i = 1; i < n; i++) { if (obs[i].phase !== obs[i - 1].phase) { var px = (obs[i].x + obs[i - 1].x) / 2; phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase }); } }
     var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
@@ -598,6 +718,7 @@
   function boxGeometry(observations, box, sourceRefs) {
     box = box || DEFAULT_BOX;
     var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
+    var syn = observations.some(function (o) { return o && o.synthetic; }); // aggregate over synthetic data is itself synthetic
     var groups = [], gmap = {};
     observations.forEach(function (o) { var key = o.phase == null ? '(all)' : o.phase; if (!gmap[key]) { gmap[key] = { phase: key, vals: [] }; groups.push(gmap[key]); } gmap[key].vals.push(o.y); });
     var allY = observations.map(function (o) { return o.y; });
@@ -608,7 +729,7 @@
     var ng = groups.length, slotW = innerW / ng;
     var boxes = groups.map(function (g, i) {
       var qn = quantiles(g.vals), center = box.padL + slotW * (i + 0.5), bw = Math.min(48, slotW * 0.5);
-      return { phase: g.phase, n: qn.n, level: 'L0', min: round2(qn.min), q1: round2(qn.q1), median: round2(qn.median), q3: round2(qn.q3), max: round2(qn.max), iqr: round2(qn.iqr), cx: round1(center), bw: round1(bw), syMin: round1(sy(qn.min)), syQ1: round1(sy(qn.q1)), syMed: round1(sy(qn.median)), syQ3: round1(sy(qn.q3)), syMax: round1(sy(qn.max)) };
+      return { phase: g.phase, n: qn.n, level: syn ? 'SYN' : 'L0', min: round2(qn.min), q1: round2(qn.q1), median: round2(qn.median), q3: round2(qn.q3), max: round2(qn.max), iqr: round2(qn.iqr), cx: round1(center), bw: round1(bw), syMin: round1(sy(qn.min)), syQ1: round1(sy(qn.q1)), syMed: round1(sy(qn.median)), syQ3: round1(sy(qn.q3)), syMax: round1(sy(qn.max)) };
     });
     var xTicks = boxes.map(function (b) { return { label: b.phase, sx: b.cx }; });
     var yTicks = []; for (var t = 0; t <= 4; t++) { var yv = y0 + (y1 - y0) * t / 4; yTicks.push({ y: round1(yv), sy: round1(sy(yv)) }); }
@@ -639,6 +760,7 @@
   function histogramGeometry(observations, box, sourceRefs) {
     box = box || DEFAULT_BOX;
     var ys = observations.map(function (o) { return o.y; });
+    var syn = observations.some(function (o) { return o && o.synthetic; }); // aggregate over synthetic data is itself synthetic
     var hb = histogramBins(ys);
     var innerW = box.w - box.padL - box.padR, innerH = box.h - box.padT - box.padB;
     var maxCount = Math.max.apply(null, hb.bins.map(function (b) { return b.count; }).concat([1]));
@@ -654,7 +776,7 @@
     var baseline = round1(box.padT + innerH);
     var bins = hb.bins.map(function (bn) {
       var x0 = vx(bn.lo), x1 = vx(bn.hi), top = cy(bn.count);
-      return { lo: round2(bn.lo), hi: round2(bn.hi), count: bn.count, level: 'L0', bx: round1(x0 + 1), bw: round1(Math.max(2, x1 - x0 - 2)), by: round1(top), bh: round1(baseline - top) };
+      return { lo: round2(bn.lo), hi: round2(bn.hi), count: bn.count, level: syn ? 'SYN' : 'L0', bx: round1(x0 + 1), bw: round1(Math.max(2, x1 - x0 - 2)), by: round1(top), bh: round1(baseline - top) };
     });
     var xTicks = []; for (var i = 0; i <= hb.k; i++) { var val = hb.min + i * hb.width; xTicks.push({ value: round1(val), sx: round1(vx(val)) }); }
     var yTicks = []; var steps = Math.min(4, maxCount); for (var t = 0; t <= steps; t++) { var c = Math.round(maxCount * t / (steps || 1)); yTicks.push({ count: c, sy: round1(cy(c)) }); }
@@ -683,7 +805,7 @@
     var xa = minX - padX, xb = maxX + padX, y0 = minY - padY, y1 = maxY + padY;
     function sx(v) { return box.padL + (xb === xa ? 0 : (v - xa) / (xb - xa)) * innerW; }
     function sy(v) { return box.padT + innerH - (y1 === y0 ? 0 : (v - y0) / (y1 - y0)) * innerH; }
-    var scatterPoints = pairs.map(function (o) { return { x: o.y, y: o.y2, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.y)), sy: round1(sy(o.y2)) }; });
+    var scatterPoints = pairs.map(function (o) { return { x: o.y, y: o.y2, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.y)), sy: round1(sy(o.y2)) }; });
     var fitPath = null;
     if (claim && claim.estimate && claim.estimate.slope != null) {
       var m = claim.estimate.slope, bI = claim.estimate.intercept;
@@ -715,7 +837,7 @@
     var seriesGeo = keys.map(function (k, idx) {
       var c = claimByKey[k];
       var pts = all.filter(function (o) { return o.series === k; }).slice().sort(function (a, b) { return a.x - b.x; });
-      var points = pts.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+      var points = pts.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
       var linePath = points.length >= 2 ? ('M ' + points.map(function (p) { return p.sx + ',' + p.sy; }).join(' L ')) : null;
       return { series: k, label: (c && c.seriesLabel) || k, colorIdx: idx, refused: !!(c && c.refused), n: pts.length, slope: (c && c.estimate) ? c.estimate.slope : null, points: points, linePath: linePath };
     });
@@ -792,7 +914,10 @@
     function sx(x) { return box.padL + (maxX === minX ? 0 : (x - minX) / (maxX - minX)) * innerW; }
     function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
     var points = obs.map(function (o) {
-      return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, sx: round1(sx(o.x)), sy: round1(sy(o.y)) };
+      // per-point provenance origin (mirrors the dot/scatter/slope/multi builders) so the
+      // trend view's MARKS burn their own level — observed ● / synthetic ◇ — never the L1
+      // trend-line glyph. The regression LINE + band stay L1 (they ARE the derived object).
+      return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) };
     });
     var trendPath = null, bandPath = null;
     if (claim && claim.estimate) {
@@ -884,7 +1009,7 @@
         sx2: fok ? round1(sx(gmax)) : null, sy2: fok ? round1(sy(fit.slope * gmax + fit.intercept)) : null
       };
     });
-    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
+    var dots = obs.map(function (o) { return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) }; });
     var phaseLines = [];
     for (var i = 1; i < n; i++) { if (obs[i].phase !== obs[i - 1].phase) { var px = (obs[i].x + obs[i - 1].x) / 2; phaseLines.push({ x: round1(px), sx: round1(sx(px)), fromPhase: obs[i - 1].phase, toPhase: obs[i].phase }); } }
     var xTicks = obs.map(function (o) { return { x: o.x, sx: round1(sx(o.x)) }; });
@@ -929,7 +1054,7 @@
     if (!claim || claim.refused) return name + ' ' + (claim ? claim.text : 'no data yet.');
     var parts = [name, claim.text];
     plotGeometry(observations, claim).phaseLines.forEach(function (p) {
-      parts.push('A human-set phase line at week ' + p.x + ' divides ' +
+      parts.push('A human-set phase line at ' + ((claim.xLabel || 'Week').toLowerCase()) + ' ' + p.x + ' divides ' +
         (p.fromPhase || 'the prior phase') + ' from ' + (p.toPhase || 'the next phase') + '.');
     });
     // §16: name each benchmark + its not-this-student status (empty => unchanged).
@@ -949,7 +1074,7 @@
     var withY = (observations || []).filter(function (o) { return o.y != null; }).slice().sort(function (a, b) { return a.x - b.x; });
     var columns = [claim.variable + ' (y)', (claim.variable2 || 'y2') + ' (y2)', 'Phase', 'Level'];
     var rows = withY.map(function (o) {
-      return { x: o.y, y: (o.y2 == null ? '—' : o.y2), phase: o.phase || '—', level: word };
+      return { x: o.y, y: (o.y2 == null ? '—' : o.y2), phase: o.phase || '—', level: o.synthetic ? levelWord('SYN') : levelWord('L0') }; // each paired ROW is observed (L0), not the L1 association
     });
     return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(withY, claim, [], 'scatter'), level: claim.level, kind: 'association' };
   }
@@ -961,8 +1086,8 @@
     var labelByKey = {}; (claims || []).forEach(function (c) { if (c && c.seriesKey != null) labelByKey[c.seriesKey] = c.seriesLabel || c.seriesKey; });
     var variable = (claims && claims[0] && claims[0].variable) || 'value';
     var obs = observations.slice().sort(function (a, b) { return (a.x - b.x) || String(a.series).localeCompare(String(b.series)); });
-    var columns = ['Week (x)', variable + ' (y)', 'Series', 'Phase', 'Level'];
-    var rows = obs.map(function (o) { return { x: o.x, y: o.y, series: (labelByKey[o.series] || o.series || '—'), phase: o.phase || '—', level: word }; });
+    var columns = [((claims && claims[0] && claims[0].xLabel) || 'Week') + ' (x)', variable + ' (y)', 'Series', 'Phase', 'Level'];
+    var rows = obs.map(function (o) { return { x: o.x, y: o.y, series: (labelByKey[o.series] || o.series || '—'), phase: o.phase || '—', level: o.synthetic ? levelWord('SYN') : word }; });
     return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(observations, claims, [], 'multiSeriesLine'), level: 'L1', kind: 'multiSeries' };
   }
 
@@ -971,13 +1096,13 @@
     if (claim && claim.kind === 'association') return associationTableModel(observations, claim); // scatter peer; legacy path below is untouched
     var obs = observations.slice().sort(function (a, b) { return a.x - b.x; });
     var word = levelWord(claim ? claim.level : 'L0');
-    var columns = ['Week (x)', (claim ? claim.variable : 'value') + ' (y)', 'Phase', 'Level'];
+    var columns = [((claim && claim.xLabel) || 'Week') + ' (x)', (claim ? claim.variable : 'value') + ' (y)', 'Phase', 'Level'];
     var rows = [];
     for (var i = 0; i < obs.length; i++) {
       if (i > 0 && obs[i].phase !== obs[i - 1].phase) {
         rows.push({ boundary: true, label: 'phase boundary: ' + (obs[i - 1].phase || 'prior') + ' → ' + (obs[i].phase || 'next') });
       }
-      rows.push({ x: obs[i].x, y: obs[i].y, phase: obs[i].phase || '—', level: word });
+      rows.push({ x: obs[i].x, y: obs[i].y, phase: obs[i].phase || '—', level: obs[i].synthetic ? levelWord('SYN') : levelWord('L0') }); // each ROW is an observed (L0) data point — NOT the L1 trend
     }
     // §16: benchmark rows appended AFTER the student rows, carrying the verify-state in WORDS.
     (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; }).forEach(function (r) {
@@ -1076,29 +1201,34 @@
   // Audience faces (design Pillar 3 / §15): the SAME claim, re-projected. The
   // FAMILY face must PRESERVE uncertainty (a bare growth arrow is the least
   // honest projection). No tier labels, no percentile, ever.
-  function faceFor(claim, audience) {
+  function faceFor(claim, audience, synthetic) {
     if (!claim) return '';
     if (claim.refused) {
       if (audience === 'family') return 'There are only ' + claim.n + ' check-ins so far — too few to call a direction yet.';
       return claim.text;
     }
+    // The SENTENCE is the most-laundered surface (design Risk #1: people paste the
+    // narrative, and a crop defeats the banner/watermark). So burn the synthetic
+    // caveat LEAD-FIRST into the face string itself. Default falsy => byte-identical.
+    var synPre = synthetic ? 'Practice example — not a real student. ' : '';
     var e = claim.estimate;
     if (audience === 'iep-team') {
-      return claim.text + ' (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)';
+      return synPre + claim.text + ' (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)';
     }
     if (audience === 'family') {
       var dir = e.slope > 0 ? 'went up' : (e.slope < 0 ? 'went down' : 'held steady');
-      return 'Over ' + e.n + ' check-ins, ' + claim.variable + ' ' + dir + ' — about ' + round1(Math.abs(e.slope)) +
-        ' ' + claim.unit + ' a week. With only ' + e.n + ' points the true rate could be roughly ' +
-        round1(e.interval[0]) + ' to ' + round1(e.interval[1]) + ' a week, so read this as a direction, not an exact number.';
+      var xlow = (claim.xLabel || 'Week').toLowerCase();
+      return synPre + 'Over ' + e.n + ' check-ins, ' + claim.variable + ' ' + dir + ' — about ' + round1(Math.abs(e.slope)) +
+        ' ' + claim.unit + ' a ' + xlow + '. With only ' + e.n + ' points the true rate could be roughly ' +
+        round1(e.interval[0]) + ' to ' + round1(e.interval[1]) + ' a ' + xlow + ', so read this as a direction, not an exact number.';
     }
-    return claim.text; // 'working' (default)
+    return synPre + claim.text; // 'working' (default)
   }
 
   // ══════════════════════════════════════════════════════════════════════
   // PHASE 1 — export (a view artifact) + the FERPA + L3 sign-off gates.
   // Every field is escHtml'd into the HTML sink (the symbol_studio printBook
-  // XSS lesson). assertDefensible() hard-blocks an IEP-team export that carries
+  // XSS lesson). assertDefensible() hard-blocks a formal export that carries
   // an unsigned AI reading (§7). PII CSV is OFF by default (FERPA).
   // ══════════════════════════════════════════════════════════════════════
 
@@ -1127,8 +1257,17 @@
     if (req.signoff && req.signoff === current) return { ok: true, blocked: false };
     return {
       ok: false, blocked: true, need: current,
-      reason: 'This view contains an AI reading (L3). Own it or remove it before an IEP-team export.'
+      reason: 'This view contains an AI reading (L3). Own it or remove it before a formal export.'
     };
+  }
+
+  // Synthetic practice data is categorically NOT a defensible record: block any
+  // iep-team export while the view contains synthetic rows. Unlike the L3 gate,
+  // NO signoff clears it — you cannot "own" fabricated data into an IEP brief.
+  // Working/family exports still proceed (always watermarked) for exploration.
+  function assertNotSynthetic(req) {
+    if (!req || req.audience !== 'iep-team' || !req.synthetic) return { ok: true, blocked: false };
+    return { ok: false, blocked: true, reason: 'This view contains synthetic practice data and cannot be exported as a defensible formal document.' };
   }
 
   function buildExportHtml(comp, claim, opts) {
@@ -1163,25 +1302,133 @@
       return '<li><strong>' + escHtml(benchmarkChipText(r)) + '</strong><br>' + escHtml(r.citation) +
         ' — <a href="' + escHtml(href) + '">source</a>' + (r.verified ? ' [verified]' : ' [UNVERIFIED — check the source]') + '</li>';
     }).join('') + '</ul><p><em>External benchmarks are general references, not this student\'s measured data or individualized goals.</em></p>') : '';
-    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml('Lumen — ' + comp.variable) + '</title></head><body>'
-      + '<h1>' + escHtml('Lumen — ' + comp.variable + ' (' + comp.unit + ')') + '</h1>'
-      + '<p><strong>' + escHtml(faceFor(claim, audience)) + '</strong></p>'
+    // Synthetic watermark in hard-to-strip positions (title + h1 + a body banner
+    // + footer); when opts.synthetic is falsy every piece is '' so a real export
+    // is byte-identical.
+    var synth = !!opts.synthetic;
+    var synTag = synth ? 'SYNTHETIC — NOT A REAL STUDENT · ' : '';
+    var synBanner = synth ? '<p style="background:#6d28d9;color:#fff;padding:8px;font-weight:bold;border-radius:6px">⚗ SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. For demonstration/training only; not a defensible record.</p>' : '';
+    // FERPA: the brief is the hand-to-a-parent artifact, and the dated small-n
+    // series is itself quasi-identifying. So the per-row table is the SAME
+    // opt-in as the CSV's identifiable rows — finding-only by default, full
+    // table only when includePII is explicitly set (mirrors buildExportCsv).
+    var includePII = !!opts.includePII;
+    var tableBlock = includePII
+      ? ('<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
+      : '<p><em>Per-student data points are omitted from this finding-only brief (FERPA). Re-export with “Include identifiable data” to embed the full per-point table.</em></p>';
+    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml(synTag + 'Lumen — ' + comp.variable) + '</title></head><body>'
+      + synBanner
+      + '<h1>' + escHtml(synTag + 'Lumen — ' + comp.variable + ' (' + comp.unit + ')') + '</h1>'
+      + '<p><strong>' + escHtml(faceFor(claim, audience, opts.synthetic)) + '</strong></p>'
       + subset
       + '<p>' + escHtml(chartSummaryText(comp.observations, claim, opts.sourceRefs)) + '</p>'
-      + '<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>'
+      + tableBlock
       + ai + methods + references
-      + '<hr><p><small>Lumen export · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + '. Levels: Observed / Derived (math) / AI-organized / AI reading.</small></p>'
+      + '<hr><p><small>' + escHtml(synth ? 'SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. ' : '') + 'Lumen export · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + (includePII ? ' · CONFIDENTIAL (identifiable)' : ' · finding-only (no identifiable rows)') + '. Levels: Observed / Derived (math) / AI-organized / AI reading.</small></p>'
       + '</body></html>';
-    return { html: html, filename: 'lumen-' + slug(comp.variable) + '-' + audience + '.html', maxLevel: maxLevel };
+    return { html: html, filename: 'lumen-' + (synth ? 'PRACTICE-' : '') + slug(comp.variable) + '-' + audience + (includePII ? '-CONFIDENTIAL' : '-summary') + '.html', maxLevel: maxLevel };
+  }
+
+  // The PRESENTATION export (design: the in-app Present mode IS what exports).
+  // Same honesty contract as buildExportHtml — synthetic watermark in title/h2/
+  // banner/footer, FERPA opt-in for the per-row table, max-epistemic-level footer
+  // — but full-page + presentation-styled, and it INLINES the live chart SVG
+  // (passed in from the rendered DOM via XMLSerializer), so the uncertainty band,
+  // provenance glyphs, and PRACTICE watermark are byte-faithful, never redrawn.
+  // The reveal animation lives ONLY in the in-app overlay; the exported file is
+  // static (the user chose a static presentation HTML), which keeps the artifact's
+  // honesty simple — nothing in the file moves, so nothing can dramatize.
+  function buildPresentationHtml(comp, claim, opts) {
+    opts = opts || {};
+    var audience = opts.audience || 'working';
+    var includedAI = !!opts.includeAI && audience !== 'family' && !!((opts.aiHyps && opts.aiHyps.length) || opts.aiText);
+    var maxLevel = includedAI ? ((opts.aiHyps && opts.aiHyps.length) ? 'L3' : 'L2') : 'L1';
+    var synth = !!opts.synthetic;
+    var includePII = !!opts.includePII;
+    var face = faceFor(claim, audience, opts.synthetic);
+    var summary = chartSummaryText(comp.observations, claim, opts.sourceRefs, opts.chartType);
+    // The chart is OUR serialized markup (no user HTML), but defense-in-depth we
+    // strip any <script>, on*-handler, or javascript: href before inlining.
+    var rawSvg = (typeof opts.chartSvg === 'string' && /<svg[\s>]/i.test(opts.chartSvg)) ? opts.chartSvg : '';
+    var safeSvg = rawSvg
+      .replace(/<script[\s\S]*?<\/script\s*>/gi, '')
+      .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/(href|xlink:href)\s*=\s*("javascript:[^"]*"|'javascript:[^']*')/gi, '');
+    var chartBlock = safeSvg
+      ? '<figure class="chart">' + safeSvg + '</figure>'
+      : '<p class="muted"><em>Chart not embedded. Open Present mode in the app and use “Export presentation” to capture the live chart.</em></p>';
+    var methods = '<h3>Methods</h3><p>' + escHtml(claim.estimate
+      ? 'Ordinary least-squares trend over ' + claim.n + ' observations; the interval is a 95% t-interval on the slope; the band is the plausible-slope range. Descriptive only — not a percentile, score, prediction, or diagnosis.'
+      : 'Too few observations to estimate a trend.') + '</p>';
+    var refs = (opts.sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; });
+    var references = refs.length ? ('<h3>External references</h3><ul>' + refs.map(function (r) {
+      var href = /^https?:\/\//i.test(r.locator) ? r.locator : '#';
+      return '<li><strong>' + escHtml(benchmarkChipText(r)) + '</strong><br>' + escHtml(r.citation) + ' — <a href="' + escHtml(href) + '">source</a>' + (r.verified ? ' [verified]' : ' [UNVERIFIED — check the source]') + '</li>';
+    }).join('') + '</ul><p class="muted"><em>External benchmarks are general references, not this student\'s measured data or individualized goals.</em></p>') : '';
+    var ai = '';
+    if (includedAI && opts.aiHyps && opts.aiHyps.length) {
+      ai = '<h3>AI reading (L3) — ' + escHtml(AI_CAVEAT) + '</h3><ul>' + opts.aiHyps.map(function (hp) {
+        return '<li><strong>' + escHtml(hp.band) + ':</strong> ' + escHtml(hp.text) + (hp.kind !== 'effect' ? ' (' + escHtml(hp.kind) + ')' : '') + '</li>';
+      }).join('') + '</ul><p class="muted"><em>' + escHtml(HYP_CAVEAT) + '. Regenerates each run.</em></p>';
+    } else if (includedAI && opts.aiText) {
+      ai = '<h3>AI-organized (L2) — ' + escHtml(AI_CAVEAT) + '</h3><p>' + escHtml(opts.aiText) + '</p>';
+    }
+    var tbl = dataTableModel(comp.observations, claim);
+    var rows = tbl.rows.map(function (r) {
+      if (r.boundary) return '<tr><td colspan="4"><em>' + escHtml(r.label) + '</em></td></tr>';
+      return '<tr><td>' + escHtml(r.x) + '</td><td>' + escHtml(r.y) + '</td><td>' + escHtml(r.phase) + '</td><td>' + escHtml(r.level) + '</td></tr>';
+    }).join('');
+    var tableBlock = includePII
+      ? ('<h3>Per-point data <span class="muted">(identifiable)</span></h3><table><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
+      : '<p class="muted"><em>Per-student data points are omitted from this finding-only presentation (FERPA). Re-export with “Include identifiable data” to embed the full table.</em></p>';
+    var subset = (claim.shownOf && claim.shownOf.shown < claim.shownOf.total)
+      ? '<p><strong>Showing ' + claim.shownOf.shown + ' of ' + claim.shownOf.total + ' observations.</strong></p>' : '';
+    var synTag = synth ? 'SYNTHETIC — NOT A REAL STUDENT · ' : '';
+    var synBanner = synth ? '<div class="syn">⚗ SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. For demonstration/training only; not a defensible record.</div>' : '';
+    var css = 'body{margin:0;font:16px/1.55 -apple-system,Segoe UI,Roboto,system-ui,sans-serif;color:#0f172a;background:#f8fafc}'
+      + '.wrap{max-width:880px;margin:0 auto;padding:40px 24px}'
+      + '.top{display:flex;align-items:center;gap:8px;margin-bottom:18px}'
+      + '.brand{font-weight:800;letter-spacing:-.01em;font-size:18px;background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent}'
+      + '.measure{margin-left:auto;font-size:13px;font-weight:600;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:999px;padding:2px 10px}'
+      + 'h2.measure-h{font-size:14px;color:#64748b;font-weight:600;margin:0 0 4px}'
+      + '.finding{font-size:1.6rem;line-height:1.25;font-weight:700;margin:0 0 8px}'
+      + '.prov{font-size:12px;color:#64748b;margin:0 0 18px}'
+      + '.chart{margin:0 0 16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px}'
+      + '.chart svg{width:100%;height:auto;display:block}.summary{color:#334155}'
+      + 'h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;margin:22px 0 6px}'
+      + 'table{border-collapse:collapse;font-size:13px}th,td{border:1px solid #cbd5e1;padding:3px 8px;text-align:left}'
+      + '.muted{color:#64748b}.syn{background:#6d28d9;color:#fff;padding:10px 14px;border-radius:8px;font-weight:700;margin-bottom:16px}'
+      + 'footer{margin-top:28px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b}'
+      + 'a{color:#0e7490}@media print{body{background:#fff}.wrap{padding:0}.chart{border:none;padding:0}}';
+    var html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'
+      + escHtml(synTag + 'Lumen — ' + comp.variable) + '</title><style>' + css + '</style></head><body><div class="wrap">'
+      + synBanner
+      + '<div class="top"><span aria-hidden="true" style="font-size:20px">💡</span><span class="brand">Lumen</span>'
+      + '<span class="measure">' + escHtml(comp.variable + (comp.unit ? ' · ' + comp.unit : '')) + '</span></div>'
+      + '<h2 class="measure-h">' + escHtml(synTag + comp.variable + (comp.unit ? ' (' + comp.unit + ')' : '')) + '</h2>'
+      + '<p class="finding">' + escHtml(face) + '</p>'
+      + '<p class="prov">Provenance: the finding is Derived (math, L1); each chart mark carries its own level (Observed ● / Synthetic ◇); the band is the plausible-slope range. Max epistemic level in this document: ' + escHtml(maxLevel) + '.</p>'
+      + subset
+      + chartBlock
+      + '<p class="summary">' + escHtml(summary) + '</p>'
+      + ai + methods + references + tableBlock
+      + '<footer>' + escHtml(synth ? 'SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. ' : '') + 'Lumen presentation · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + (includePII ? ' · CONFIDENTIAL (identifiable)' : ' · finding-only (no identifiable rows)') + '. Levels: Observed / Derived (math) / AI-organized / AI reading. The chart above is the live chart; the uncertainty band and provenance marks are not decorative.</footer>'
+      + '</div></body></html>';
+    return { html: html, filename: 'lumen-presentation-' + (synth ? 'PRACTICE-' : '') + slug(comp.variable) + '-' + audience + (includePII ? '-CONFIDENTIAL' : '-summary') + '.html', maxLevel: maxLevel };
   }
 
   function buildExportCsv(comp, claim, opts) {
     opts = opts || {};
-    var lines = ['# Lumen export — max epistemic level L1' + (opts.includePII ? ' — CONFIDENTIAL (identifiable)' : ' — aggregate only')];
+    var synth = !!opts.synthetic;
+    var lines = [];
+    if (synth) lines.push('# SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT (demonstration only)');
+    lines.push('# Lumen export — max epistemic level L1' + (opts.includePII ? ' — CONFIDENTIAL (identifiable)' : ' — aggregate only'));
     if (opts.includePII) {
-      lines.push('week,' + csvSafe(comp.variable) + ',phase,level');
+      lines.push(csvSafe((comp.xLabel || 'Week').toLowerCase()) + ',' + csvSafe(comp.variable) + ',phase,level');
       comp.observations.slice().sort(function (a, b) { return a.x - b.x; }).forEach(function (o) {
-        lines.push([o.x, o.y, csvSafe(o.phase || ''), 'Derived (math)'].join(','));
+        // the per-row origin token is the precise masquerade surface — a synthetic
+        // row reads 'Synthetic (practice)', never 'Derived (math)'.
+        lines.push([o.x, o.y, csvSafe(o.phase || ''), (o.synthetic ? 'Synthetic (practice)' : 'Observed')].join(',')); // raw per-row values are observed (L0); the aggregate metric block below stays 'Derived (math)'
       });
     } else {
       lines.push('metric,value');
@@ -1191,7 +1438,7 @@
         lines.push('slope,' + round2(e.slope));
         lines.push('interval_lo,' + round2(e.interval[0]));
         lines.push('interval_hi,' + round2(e.interval[1]));
-        lines.push('level,Derived (math)');
+        lines.push('level,' + (synth ? 'Synthetic (practice)' : 'Derived (math)'));
       } else {
         lines.push('n,' + (claim ? claim.n : 0));
         lines.push('note,too few points to estimate a trend');
@@ -1204,7 +1451,7 @@
         lines.push('reference,' + csvSafe(r.keyLabel) + ',' + r.value + ',' + csvSafe(r.unit) + ',' + csvSafe(r.citation) + ',' + (r.verified ? 'verified' : 'unverified'));
       });
     }
-    return { csv: lines.join('\n'), filename: 'lumen-' + slug(comp.variable) + (opts.includePII ? '-CONFIDENTIAL' : '-summary') + '.csv', maxLevel: 'L1' };
+    return { csv: lines.join('\n'), filename: 'lumen-' + (synth ? 'SYNTHETIC-' : '') + slug(comp.variable) + (opts.includePII ? '-CONFIDENTIAL' : '-summary') + '.csv', maxLevel: 'L1' };
   }
 
   // ══════════════════════════════════════════════════════════════════════
@@ -1345,15 +1592,560 @@
       return false;                                                                  // verified curated ref is clean
     });
     if (!offenders.length) return { ok: true, blocked: false };
-    return { ok: false, blocked: true, reason: 'This view has ' + offenders.length + ' external benchmark(s) unverified or with a stale sign-off. Verify the source(s) before an IEP-team export.', offenders: offenders.map(function (r) { return r.id; }) };
+    return { ok: false, blocked: true, reason: 'This view has ' + offenders.length + ' external benchmark(s) unverified or with a stale sign-off. Verify the source(s) before a formal export.', offenders: offenders.map(function (r) { return r.id; }) };
   }
+  // ══════════════════════════════════════════════════════════════════════
+  // §16 SOURCED — Phase 2A: human-assisted benchmark-document workspace.
+  //
+  // Phase 2A is the deliberately-tighter cut of the §16.4 AI-assist-then-
+  // verify path: it accepts a benchmark DOCUMENT (PDF / DOCX / TXT / CSV /
+  // XLSX), extracts text DETERMINISTICALLY (pdf.js / mammoth / the §17
+  // parsers — never an AI parse from bytes to numbers), and shows the
+  // extracted text side-by-side with a scaffold of empty spine cells the
+  // human fills + signs off per cell. Verified cells fold into the
+  // curated NORM_SPINE.cells JSON for paste-back into source.
+  //
+  // What Phase 2A is NOT: the full §16.4 AI-search assist (findNormViaAI,
+  // groundingChunks extraction, on-line UNVERIFIED stamp). That stays
+  // CUT to Phase 2B per §16.7. The seam is set right — proposals carry
+  // the same shape AI-search would emit — but no callGemini fires.
+  // ══════════════════════════════════════════════════════════════════════
+
+  var BENCH_DOC_TYPES = ['pdf', 'docx', 'txt', 'csv', 'xlsx'];
+  var BENCH_DOC_MAX_BYTES = 8 * 1024 * 1024; // 8 MB — H&T2017 PDF is ~2 MB; leaves headroom
+
+  function benchDocTypeFromName(name) {
+    if (!name || typeof name !== 'string') return null;
+    var lower = name.toLowerCase();
+    if (/\.pdf$/.test(lower)) return 'pdf';
+    if (/\.docx$/.test(lower)) return 'docx';
+    if (/\.tsv$/.test(lower)) return 'txt';
+    if (/\.csv$/.test(lower)) return 'csv';
+    if (/\.txt$/.test(lower)) return 'txt';
+    if (/\.xlsx$/.test(lower)) return 'xlsx';
+    return null;
+  }
+
+  // Normalize the post-extraction shape into a common record. The UI calls
+  // either lazyLoadPdfJs / lazyLoadMammoth (document path) or the §17
+  // parsers (table path); either output goes through this normalizer so
+  // downstream code (preview pane, scaffold filler) speaks ONE shape.
+  function normalizeBenchExtraction(input) {
+    if (!input) return { kind: 'empty', pages: [], notes: ['null-input'] };
+    if (typeof input.headers !== 'undefined' && typeof input.rows !== 'undefined') {
+      // §17 text-table shape (CSV/TSV/XLSX path)
+      var flat = [input.headers.join('  |  ')].concat(input.rows.map(function (r) { return r.join('  |  '); })).join('\n');
+      return { kind: 'text-table', pages: [{ pageNum: 1, text: flat }], notes: input.notes || [], delimiter: input.delimiter, sheetName: input.sheetName || null, table: input };
+    }
+    if (Array.isArray(input.pages)) {
+      return { kind: 'document-pages', pages: input.pages.map(function (p, i) {
+        return { pageNum: p.pageNum != null ? p.pageNum : (i + 1), text: typeof p.text === 'string' ? p.text : '' };
+      }), notes: input.notes || [] };
+    }
+    if (typeof input.text === 'string') {
+      return { kind: 'document-pages', pages: [{ pageNum: 1, text: input.text }], notes: input.notes || [] };
+    }
+    return { kind: 'unknown', pages: [], notes: ['unknown-input-shape'] };
+  }
+
+  // Generate the scaffold of empty cells a human needs to fill for a given
+  // spine slice. Pure: no AI, no library, no Date. The maintainer picks
+  // the slice (a single grade × season combination is a 1-cell sliver
+  // they can finish in 60 seconds; the full H&T G1-6 percentile set is
+  // 6×3×3 = 54 cells they can finish in a sitting).
+  function buildSpineCellScaffold(spineMeta, opts) {
+    if (!spineMeta || typeof spineMeta !== 'object') return [];
+    opts = opts || {};
+    var seasons = opts.seasons || ['fall', 'winter', 'spring'];
+    var percentiles = opts.percentiles || [50];
+    var grades = opts.grades;
+    if (!grades) {
+      var range = spineMeta.gradeRange || [1, 6];
+      grades = [];
+      for (var g = range[0]; g <= range[1]; g++) grades.push(g);
+    }
+    var cells = [];
+    for (var gi = 0; gi < grades.length; gi++) {
+      var grade = grades[gi];
+      for (var si = 0; si < seasons.length; si++) {
+        var season = seasons[si];
+        for (var pi = 0; pi < percentiles.length; pi++) {
+          var percentile = percentiles[pi];
+          cells.push({
+            id: 'cell_' + (spineMeta.measure || 'X') + '_g' + grade + '_' + season + '_p' + percentile,
+            measure: spineMeta.measure, unit: spineMeta.unit,
+            grade: grade, season: season, percentile: percentile,
+            value: null, // <-- the only field the human fills
+            sourceExcerpt: '', // optional: the human can paste the page snippet they verified against
+            source: spineMeta.source, year: spineMeta.year, edition: spineMeta.edition || null,
+            population: spineMeta.population || null, locator: spineMeta.locator, citation: spineMeta.citation,
+            verified: false, retrievedBy: 'human-assisted', reviewedOn: null, signoffHash: null
+          });
+        }
+      }
+    }
+    return cells;
+  }
+
+  // Schema check for a single proposed cell. Returns { ok, errors[] }.
+  // Run before signoff and again at bind time.
+  function validateProposedSpineCell(cell) {
+    var errors = [];
+    if (!cell || typeof cell !== 'object') return { ok: false, errors: ['not-an-object'] };
+    if (typeof cell.measure !== 'string' || !cell.measure) errors.push('measure-missing-or-not-string');
+    if (typeof cell.unit !== 'string' || !cell.unit) errors.push('unit-missing-or-not-string');
+    if (typeof cell.grade !== 'number' || cell.grade < 0 || cell.grade > 12) errors.push('grade-out-of-range');
+    if (typeof cell.season !== 'string' || !cell.season) errors.push('season-missing');
+    if (typeof cell.percentile !== 'number' || cell.percentile < 1 || cell.percentile > 99) errors.push('percentile-out-of-range');
+    if (typeof cell.value !== 'number' || !isFinite(cell.value) || cell.value <= 0) errors.push('value-not-positive-number');
+    if (typeof cell.locator !== 'string' || !/^https?:\/\//i.test(cell.locator)) errors.push('locator-not-http-url');
+    if (typeof cell.citation !== 'string' || !cell.citation) errors.push('citation-missing');
+    if (typeof cell.source !== 'string' || !cell.source) errors.push('source-missing');
+    return { ok: errors.length === 0, errors: errors };
+  }
+
+  // Per-cell sign-off. Returns the cell mutated with verified:true,
+  // reviewedOn set (caller supplies — we forbid Date in this layer), and
+  // signoffHash computed via the SAME hash function § sourcedSignoffHash
+  // uses (so a stale-edit re-blocks the same way a stale sourceRef does).
+  function signoffSpineCell(cell, reviewedOnIso) {
+    var v = validateProposedSpineCell(cell);
+    if (!v.ok) return { ok: false, errors: v.errors, cell: cell };
+    if (typeof reviewedOnIso !== 'string' || !reviewedOnIso) return { ok: false, errors: ['reviewedOn-required'], cell: cell };
+    cell.verified = true;
+    cell.reviewedOn = reviewedOnIso;
+    cell.signoffHash = sourcedSignoffHash(cell);
+    return { ok: true, errors: [], cell: cell };
+  }
+
+  // Bind a list of (presumably-signed) cells into a spine.cells structure
+  // shape: cells[grade][season] = { p25, p50, p75, ... }. Refuses to
+  // accept an unverified cell; refuses to overwrite an existing populated
+  // cell with a different value (the stable-spine invariant — the only
+  // safe overwrite is identical-value, e.g. re-import of the same source).
+  function bindVerifiedCellsToSpine(existingCells, newCells) {
+    var merged = JSON.parse(JSON.stringify(existingCells || {}));
+    var collisions = [];
+    var added = 0, skipped = 0;
+    if (!Array.isArray(newCells)) return { cells: merged, added: 0, skipped: 0, collisions: [{ reason: 'newCells-not-array' }] };
+    for (var i = 0; i < newCells.length; i++) {
+      var c = newCells[i];
+      if (!c) { collisions.push({ idx: i, reason: 'null-cell' }); continue; }
+      if (c.verified !== true) { collisions.push({ id: c.id, reason: 'not-verified' }); skipped++; continue; }
+      if (!c.signoffHash) { collisions.push({ id: c.id, reason: 'no-signoff-hash' }); skipped++; continue; }
+      var hashNow = sourcedSignoffHash(c);
+      if (hashNow !== c.signoffHash) { collisions.push({ id: c.id, reason: 'stale-signoff', expected: c.signoffHash, computed: hashNow }); skipped++; continue; }
+      var v = validateProposedSpineCell(c);
+      if (!v.ok) { collisions.push({ id: c.id, reason: 'schema', errors: v.errors }); skipped++; continue; }
+      if (!merged[c.grade]) merged[c.grade] = {};
+      if (!merged[c.grade][c.season]) merged[c.grade][c.season] = {};
+      var pKey = 'p' + c.percentile;
+      var existing = merged[c.grade][c.season][pKey];
+      if (existing !== undefined && existing !== c.value) {
+        collisions.push({ id: c.id, reason: 'value-collision', existing: existing, proposed: c.value, grade: c.grade, season: c.season, percentile: c.percentile });
+        skipped++; continue;
+      }
+      merged[c.grade][c.season][pKey] = c.value;
+      added++;
+    }
+    return { cells: merged, added: added, skipped: skipped, collisions: collisions };
+  }
+
+  // Pretty JSON for paste-back into NORM_SPINE.cells in source. Sorted
+  // grade-then-season-then-percentile so diffs stay small.
+  function spineCellsToJSON(cells, indent) {
+    if (!cells || typeof cells !== 'object') return '{}';
+    var sortedGrades = Object.keys(cells).sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
+    var SEASON_ORDER = { fall: 0, winter: 1, spring: 2 };
+    var out = {};
+    sortedGrades.forEach(function (g) {
+      var seasons = cells[g] || {};
+      var sortedSeasons = Object.keys(seasons).sort(function (a, b) {
+        var ao = SEASON_ORDER[a] != null ? SEASON_ORDER[a] : 99;
+        var bo = SEASON_ORDER[b] != null ? SEASON_ORDER[b] : 99;
+        return ao - bo || a.localeCompare(b);
+      });
+      out[g] = {};
+      sortedSeasons.forEach(function (s) {
+        var pcts = seasons[s] || {};
+        var sortedP = Object.keys(pcts).sort(function (a, b) { return parseFloat(a.slice(1)) - parseFloat(b.slice(1)); });
+        out[g][s] = {};
+        sortedP.forEach(function (pk) { out[g][s][pk] = pcts[pk]; });
+      });
+    });
+    return JSON.stringify(out, null, indent == null ? 2 : indent);
+  }
+
+  // Lazy loaders — same pattern as lazyLoadXLSX. Browser only.
+  var _pdfJsLoadPromise = null;
+  function lazyLoadPdfJs(cdnUrl, workerUrl) {
+    if (typeof window === 'undefined') return Promise.resolve(null);
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (_pdfJsLoadPromise) return _pdfJsLoadPromise;
+    var url = cdnUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
+    var wurl = workerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+    _pdfJsLoadPromise = new Promise(function (resolve, reject) {
+      try {
+        var s = document.createElement('script');
+        s.type = 'module';
+        s.crossOrigin = 'anonymous';
+        s.textContent = 'import * as pdfjs from "' + url + '"; window.pdfjsLib = pdfjs; window.pdfjsLib.GlobalWorkerOptions.workerSrc = "' + wurl + '"; window.dispatchEvent(new Event("pdfjs-loaded"));';
+        window.addEventListener('pdfjs-loaded', function once() { window.removeEventListener('pdfjs-loaded', once); resolve(window.pdfjsLib || null); });
+        document.head.appendChild(s);
+        // Hard timeout: the script-tag module load can hang silently behind a CSP block
+        setTimeout(function () { if (!window.pdfjsLib) { _pdfJsLoadPromise = null; reject(new Error('pdf.js did not load within 15 s — check network or CSP for ' + url)); } }, 15000);
+      } catch (e) { _pdfJsLoadPromise = null; reject(e); }
+    });
+    return _pdfJsLoadPromise;
+  }
+
+  var _mammothLoadPromise = null;
+  function lazyLoadMammoth(cdnUrl) {
+    if (typeof window === 'undefined') return Promise.resolve(null);
+    if (window.mammoth) return Promise.resolve(window.mammoth);
+    if (_mammothLoadPromise) return _mammothLoadPromise;
+    var url = cdnUrl || 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    _mammothLoadPromise = new Promise(function (resolve, reject) {
+      try {
+        var s = document.createElement('script');
+        s.src = url; s.async = true; s.crossOrigin = 'anonymous';
+        s.onload = function () { resolve(window.mammoth || null); };
+        s.onerror = function () { _mammothLoadPromise = null; reject(new Error('Could not load mammoth from ' + url)); };
+        document.head.appendChild(s);
+      } catch (e) { _mammothLoadPromise = null; reject(e); }
+    });
+    return _mammothLoadPromise;
+  }
+
+  // Browser-side extractors. Pure-ish (no Date, no Math.random) but they
+  // call into the loaded libraries. The libraries themselves are not
+  // Node-testable; the unit tests cover the pure layer (scaffold +
+  // validate + signoff + bind + normalize) with fixture text instead.
+  function extractPdfText(pdfjsLib, buffer) {
+    if (!pdfjsLib || typeof pdfjsLib.getDocument !== 'function') {
+      return Promise.resolve({ pages: [], notes: ['pdfjs-missing'], error: 'pdf.js not loaded' });
+    }
+    try {
+      return pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise.then(function (pdf) {
+        var pageNums = [];
+        for (var i = 1; i <= pdf.numPages; i++) pageNums.push(i);
+        return Promise.all(pageNums.map(function (n) {
+          return pdf.getPage(n).then(function (page) {
+            return page.getTextContent().then(function (tc) {
+              var text = (tc.items || []).map(function (it) { return it.str || ''; }).join(' ');
+              return { pageNum: n, text: text };
+            });
+          });
+        })).then(function (pages) { return { pages: pages, notes: [] }; });
+      }).catch(function (e) {
+        return { pages: [], notes: ['pdf-parse-error'], error: 'PDF parse failed: ' + (e && e.message ? e.message : 'unknown') };
+      });
+    } catch (e) {
+      return Promise.resolve({ pages: [], notes: ['pdf-parse-error'], error: 'PDF parse failed: ' + (e && e.message ? e.message : 'unknown') });
+    }
+  }
+
+  function extractDocxText(mammoth, buffer) {
+    if (!mammoth || typeof mammoth.extractRawText !== 'function') {
+      return Promise.resolve({ pages: [], notes: ['mammoth-missing'], error: 'mammoth not loaded' });
+    }
+    return mammoth.extractRawText({ arrayBuffer: buffer }).then(function (result) {
+      return { pages: [{ pageNum: 1, text: result && result.value ? result.value : '' }], notes: (result && result.messages ? result.messages.map(function (m) { return 'mammoth: ' + (m && m.message ? m.message : ''); }) : []) };
+    }).catch(function (e) {
+      return { pages: [], notes: ['docx-parse-error'], error: 'DOCX parse failed: ' + (e && e.message ? e.message : 'unknown') };
+    });
+  }
+
   // THE single export gate — ANDs the AI-reading gate (assertDefensible) and the Sourced gate.
   function assertExportClean(req) {
     req = req || {};
     var a = assertDefensible({ audience: req.audience, aiHyps: req.aiHyps, signoff: req.signoff });
     var s = assertSourcedDefensible(req);
-    if (a.blocked || s.blocked) return { ok: false, blocked: true, reason: [a.blocked ? a.reason : null, s.blocked ? s.reason : null].filter(Boolean).join(' ') };
+    var n = assertNotSynthetic(req);
+    if (a.blocked || s.blocked || n.blocked) return { ok: false, blocked: true, reason: [a.blocked ? a.reason : null, s.blocked ? s.reason : null, n.blocked ? n.reason : null].filter(Boolean).join(' ') };
     return { ok: true, blocked: false };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // INGEST (design §5 Pillar 1) — pure parsers + column mapper.
+  //
+  // Contract: every observation that survives mapping is L0 — "a verbatim
+  // echo of a value the user entered/pasted/imported" (§6.1). The parser
+  // refuses to invent values, refuses to coerce non-numerics, and labels
+  // every drop so the row-by-row provenance survives. No AI in the parse
+  // path; headers are stored on the preview only and are never sent to
+  // buildClaimContext (which is already PII-free by construction).
+  //
+  // File-format support: .csv/.tsv/.txt deterministic in pure JS;
+  // .xlsx via SheetJS-CDN-on-demand (UI loads it lazily) — the workbook
+  // helper here is a thin wrapper that delegates back to parseTextTable
+  // via sheet_to_csv, so the parse stays deterministic + unit-testable.
+  // ══════════════════════════════════════════════════════════════════════
+
+  var INGEST_MAX_BYTES = 2 * 1024 * 1024; // 2 MB cap on the raw text — bounds parser CPU / memory
+  var INGEST_MAX_ROWS = 10000;            // hard row cap (truncate, never throw)
+  var INGEST_DELIMS = [',', '\t', ';'];
+  var INGEST_FILE_TYPES = ['csv', 'tsv', 'txt', 'json', 'xlsx', 'ods', 'xls', 'xlsb'];
+
+  // Single-pass RFC-4180 parser. Handles quoted fields with embedded
+  // delimiters / newlines / escaped doubled quotes. Returns rows[][].
+  function _parseDelim(text, delim) {
+    var rows = [];
+    var row = [];
+    var cell = '';
+    var inQ = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charAt(i);
+      if (inQ) {
+        if (c === '"') {
+          if (text.charAt(i + 1) === '"') { cell += '"'; i++; continue; }
+          inQ = false; continue;
+        }
+        cell += c; continue;
+      }
+      if (c === '"' && cell === '') { inQ = true; continue; }
+      if (c === delim) { row.push(cell); cell = ''; continue; }
+      if (c === '\n') { row.push(cell); cell = ''; rows.push(row); row = []; continue; }
+      cell += c;
+    }
+    if (cell.length || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  // Parse CSV/TSV/semicolon-delimited text. Strips BOM, normalizes CRLF→LF,
+  // autodetects the delimiter from the most-common counts on the first line
+  // (override via opts.delimiter), and downgrades hasHeader if the first
+  // row is all numeric. Returns { headers, rows, delimiter, notes }; on
+  // overflow or fatal error sets `error`.
+  function parseTextTable(raw, opts) {
+    opts = opts || {};
+    if (raw == null) return { headers: [], rows: [], delimiter: ',', notes: ['empty'] };
+    if (raw.length > INGEST_MAX_BYTES) return { headers: [], rows: [], delimiter: ',', notes: ['too-large'], error: 'File exceeds ' + (INGEST_MAX_BYTES / 1024 / 1024) + ' MB limit (' + raw.length + ' bytes).' };
+    if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+    raw = raw.replace(/\r\n?/g, '\n');
+    var firstLine = '';
+    for (var li = 0; li < raw.length; li++) {
+      var ch = raw.charAt(li);
+      if (ch === '\n') break;
+      firstLine += ch;
+    }
+    if (!firstLine) return { headers: [], rows: [], delimiter: ',', notes: ['empty'] };
+    var delim = opts.delimiter;
+    if (!delim) {
+      var counts = [0, 0, 0];
+      for (var k = 0; k < firstLine.length; k++) {
+        var ch2 = firstLine.charAt(k);
+        if (ch2 === ',') counts[0]++;
+        else if (ch2 === '\t') counts[1]++;
+        else if (ch2 === ';') counts[2]++;
+      }
+      delim = counts[1] > counts[0] && counts[1] >= counts[2] ? '\t'
+            : counts[2] > counts[0] ? ';' : ',';
+    }
+    var parsed = _parseDelim(raw, delim);
+    if (parsed.length > INGEST_MAX_ROWS) parsed = parsed.slice(0, INGEST_MAX_ROWS);
+    // Trim wholly-empty trailing rows (Excel exports often end with one or two)
+    while (parsed.length && parsed[parsed.length - 1].every(function (c) { return c === ''; })) parsed.pop();
+    if (!parsed.length) return { headers: [], rows: [], delimiter: delim, notes: ['empty'] };
+    var hasHeader = opts.hasHeader !== false;
+    var firstRow = parsed[0];
+    if (hasHeader && firstRow.length && firstRow.every(function (c) { return c !== '' && !isNaN(parseFloat(c)); })) {
+      hasHeader = false;
+    }
+    var headers = hasHeader
+      ? firstRow.map(function (s) { return String(s).trim(); })
+      : firstRow.map(function (_, i) { return 'col' + (i + 1); });
+    var rows = hasHeader ? parsed.slice(1) : parsed;
+    var notes = [];
+    if (parsed.length === INGEST_MAX_ROWS) notes.push('truncated');
+    return { headers: headers, rows: rows, delimiter: delim, notes: notes };
+  }
+
+  // Map a parsed table → observation rows via an explicit column mapping.
+  // mapping = { xCol:int, yCol:int, phaseCol:int|null, y2Col:int|null, seriesCol:int|null }
+  // Numeric fields refuse non-numerics; refused rows are reported in `dropped`
+  // (with row index + reason) so the column-mapper can show a parse-receipt
+  // panel before the user confirms binding. No row is silently dropped.
+  function mapTextTableToObservations(table, mapping) {
+    mapping = mapping || {};
+    var rows = [], dropped = [];
+    if (mapping.xCol == null || mapping.yCol == null) {
+      return { rows: rows, dropped: dropped, error: 'Mapping requires xCol and yCol.' };
+    }
+    if (!table || !Array.isArray(table.rows)) {
+      return { rows: rows, dropped: dropped, error: 'Table has no rows.' };
+    }
+    // xCol === 'index' => x is the 1-based ROW ORDER (for sources with no numeric
+    // x column, e.g. a dated export — the row position IS the sequence).
+    var useIndexX = (mapping.xCol === 'index');
+    for (var i = 0; i < table.rows.length; i++) {
+      var r = table.rows[i];
+      var xRaw = useIndexX ? String(i + 1) : r[mapping.xCol], yRaw = r[mapping.yCol];
+      if (xRaw == null || yRaw == null || String(xRaw).trim() === '' || String(yRaw).trim() === '') {
+        dropped.push({ rowIdx: i, reason: 'missing-xy', preview: r.slice(0, 6) });
+        continue;
+      }
+      var x = useIndexX ? (i + 1) : parseFloat(xRaw), y = parseFloat(yRaw);
+      if (isNaN(x) || isNaN(y)) {
+        dropped.push({ rowIdx: i, reason: 'non-numeric-xy', preview: r.slice(0, 6) });
+        continue;
+      }
+      var row = { x: x, y: y, phase: null };
+      if (mapping.phaseCol != null && mapping.phaseCol >= 0) {
+        var p = r[mapping.phaseCol];
+        row.phase = (p != null && String(p).trim() !== '') ? String(p).trim() : null;
+      }
+      if (mapping.y2Col != null && mapping.y2Col >= 0) {
+        var y2 = parseFloat(r[mapping.y2Col]);
+        if (!isNaN(y2)) row.y2 = y2;
+      }
+      if (mapping.seriesCol != null && mapping.seriesCol >= 0) {
+        var s = r[mapping.seriesCol];
+        if (s != null && String(s).trim() !== '') row.series = String(s).trim();
+      }
+      rows.push(row);
+    }
+    return { rows: rows, dropped: dropped };
+  }
+
+  // Recognize a CSV exported by an AlloFlow surface so Lumen can auto-map it and
+  // honestly RE-PROJECT it — Lumen is the "communication end" of the data the
+  // Teacher Dashboard MONITORS. We ONLY recognize the de-identified SINGLE-student
+  // time series (the dashboard's Fluency export: Date / Passage / WCPM / Accuracy
+  // …). The multi-student, real-NAME RTI roster is deliberately REFUSED — that is
+  // the dashboard's job and would breach Lumen's never-a-person boundary.
+  // Returns { kind:'alloflow-fluency', mapping, variable, unit, xLabel },
+  // { kind:'refused-identifiable' }, or null (not an AlloFlow report).
+  function recognizeAlloFlowReport(headers) {
+    if (!Array.isArray(headers) || !headers.length) return null;
+    var lower = headers.map(function (h) { return String(h == null ? '' : h).trim().toLowerCase(); });
+    var idx = function (name) { return lower.indexOf(name); };
+    if (idx('student') !== -1 || idx('name') !== -1) return { kind: 'refused-identifiable' };
+    var wcpmI = idx('wcpm');
+    if (wcpmI !== -1 && (idx('date') !== -1 || idx('passage') !== -1)) {
+      var accI = idx('accuracy %'); if (accI === -1) accI = idx('accuracy');
+      return {
+        kind: 'alloflow-fluency', label: 'AlloFlow fluency export',
+        mapping: { xCol: 'index', yCol: wcpmI, y2Col: (accI !== -1 ? accI : null), phaseCol: null, seriesCol: null },
+        variable: 'Reading rate', unit: 'WCPM', xLabel: 'Assessment'
+      };
+    }
+    return null;
+  }
+
+  // XLSX parse — caller provides the SheetJS namespace (window.XLSX). The
+  // wrapper extracts a single sheet's CSV and delegates to parseTextTable,
+  // so the parse path stays deterministic + golden-master-pinnable. If
+  // SheetJS is missing or read fails, returns an empty parsed table with
+  // a structured `error`; never throws into the render path.
+  function parseWorkbookSheet(XLSX, buffer, sheetName) {
+    if (!XLSX || typeof XLSX.read !== 'function' || !XLSX.utils || typeof XLSX.utils.sheet_to_csv !== 'function') {
+      return { headers: [], rows: [], delimiter: ',', notes: ['xlsx-library-missing'], error: 'SheetJS not loaded — call lazyLoadXLSX() first or paste/upload CSV instead.' };
+    }
+    try {
+      var wb = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+      if (!wb || !wb.SheetNames || !wb.SheetNames.length) {
+        return { headers: [], rows: [], delimiter: ',', notes: ['no-sheets'], error: 'Workbook contains no sheets.' };
+      }
+      var name = sheetName || wb.SheetNames[0];
+      if (!wb.Sheets[name]) {
+        return { headers: [], rows: [], delimiter: ',', notes: ['no-sheet'], error: 'Sheet "' + name + '" not found. Available: ' + wb.SheetNames.join(', ') };
+      }
+      var csv = XLSX.utils.sheet_to_csv(wb.Sheets[name]);
+      var parsed = parseTextTable(csv);
+      parsed.sheetName = name;
+      parsed.sheetNames = wb.SheetNames.slice();
+      return parsed;
+    } catch (e) {
+      return { headers: [], rows: [], delimiter: ',', notes: ['parse-error'], error: 'XLSX parse failed: ' + (e && e.message ? e.message : 'unknown') };
+    }
+  }
+
+  // The single-call wire-up the UI uses. Accepts a File-like object
+  // (name, size, slice, arrayBuffer, text) and returns a Promise<parsed
+  // table>. Routes by filename extension; rejects unknown extensions.
+  // SheetJS is loaded lazily from a CDN ONLY when an .xlsx file is the
+  // first one chosen, and only inside a browser — Node tests never
+  // touch the network because they call the pure parsers directly.
+  var _xlsxLoadPromise = null;
+  function lazyLoadXLSX(cdnUrl) {
+    if (typeof window === 'undefined') return Promise.resolve(null);
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (_xlsxLoadPromise) return _xlsxLoadPromise;
+    var url = cdnUrl || 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+    _xlsxLoadPromise = new Promise(function (resolve, reject) {
+      try {
+        var s = document.createElement('script');
+        s.src = url;
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.onload = function () { resolve(window.XLSX || null); };
+        s.onerror = function () { _xlsxLoadPromise = null; reject(new Error('Could not load SheetJS from ' + url)); };
+        document.head.appendChild(s);
+      } catch (e) { _xlsxLoadPromise = null; reject(e); }
+    });
+    return _xlsxLoadPromise;
+  }
+
+  // JSON -> table. Accepts (a) an array of flat objects (the common export
+  // shape: keys become columns in first-seen order), (b) { data:[...] } /
+  // { rows:[...] } / { records:[...] } wrapping such an array, (c) an array of
+  // arrays (2D; a non-numeric first row is sniffed as a header), or (d) a
+  // single object (one row). Pure + L0: cells are stringified, NEVER coerced
+  // to numbers here — the downstream column mapper coerces and REFUSES
+  // non-numerics exactly as the text path does. Never throws; returns an error
+  // note instead so the preview pane can surface it.
+  function parseJsonTable(raw) {
+    var data;
+    try { data = JSON.parse(raw); }
+    catch (e) { return { headers: [], rows: [], delimiter: 'json', notes: [], error: 'Not valid JSON: ' + (e && e.message ? e.message : 'parse error') }; }
+    if (data && !Array.isArray(data) && typeof data === 'object') {
+      if (Array.isArray(data.data)) data = data.data;
+      else if (Array.isArray(data.rows)) data = data.rows;
+      else if (Array.isArray(data.records)) data = data.records;
+      else data = [data];
+    }
+    if (!Array.isArray(data)) return { headers: [], rows: [], delimiter: 'json', notes: [], error: 'JSON must be an array of rows (or an object wrapping one in data/rows/records).' };
+    if (data.length === 0) return { headers: [], rows: [], delimiter: 'json', notes: ['empty'] };
+    var cellStr = function (v) {
+      if (v == null) return '';
+      if (typeof v === 'object') return JSON.stringify(v); // nested -> stringify (won't read as a number downstream)
+      return String(v);
+    };
+    var notes = [], headers, rows;
+    if (Array.isArray(data[0])) {
+      var first = data[0];
+      var looksHeader = first.length > 0 && first.every(function (c) { return typeof c === 'string' && c !== '' && isNaN(parseFloat(c)); });
+      headers = looksHeader ? first.map(function (s) { return String(s).trim(); }) : first.map(function (_, i) { return 'col' + (i + 1); });
+      var body = looksHeader ? data.slice(1) : data;
+      rows = body.slice(0, INGEST_MAX_ROWS).map(function (r) { return (Array.isArray(r) ? r : [r]).map(cellStr); });
+      if (body.length > INGEST_MAX_ROWS) notes.push('truncated');
+    } else {
+      var keyOrder = [], seen = {};
+      data.forEach(function (o) { if (o && typeof o === 'object' && !Array.isArray(o)) Object.keys(o).forEach(function (k) { if (!seen[k]) { seen[k] = true; keyOrder.push(k); } }); });
+      if (keyOrder.length === 0) return { headers: [], rows: [], delimiter: 'json', notes: [], error: 'JSON rows have no fields to use as columns.' };
+      headers = keyOrder;
+      rows = data.slice(0, INGEST_MAX_ROWS).map(function (o) { return keyOrder.map(function (k) { return cellStr(o && typeof o === 'object' ? o[k] : undefined); }); });
+      if (data.length > INGEST_MAX_ROWS) notes.push('truncated');
+    }
+    return { headers: headers, rows: rows, delimiter: 'json', notes: notes };
+  }
+
+  // Workbook formats SheetJS reads natively (the same XLSX.read path).
+  function isWorkbookIngestType(t) { return t === 'xlsx' || t === 'ods' || t === 'xls' || t === 'xlsb'; }
+
+  function ingestFileTypeFromName(name) {
+    if (!name || typeof name !== 'string') return null;
+    var lower = name.toLowerCase();
+    if (/\.xlsx$/.test(lower)) return 'xlsx';
+    if (/\.xlsb$/.test(lower)) return 'xlsb';
+    if (/\.xls$/.test(lower)) return 'xls';
+    if (/\.ods$/.test(lower)) return 'ods';
+    if (/\.json$/.test(lower)) return 'json';
+    if (/\.tsv$/.test(lower)) return 'tsv';
+    if (/\.csv$/.test(lower)) return 'csv';
+    if (/\.txt$/.test(lower)) return 'txt';
+    return null;
   }
 
   var LumenCore = {
@@ -1368,14 +2160,16 @@
     linregress: linregress, slopeInterval: slopeInterval, bootstrapSlopeCI: bootstrapSlopeCI, bootstrapRCI: bootstrapRCI, predictY: predictY,
     // compendium / reactive graph
     makeCompendium: makeCompendium, addObservation: addObservation, markDirty: markDirty, seriesKeys: seriesKeys,
+    generatePracticeData: generatePracticeData, compHasSynthetic: compHasSynthetic, PRACTICE_SCENARIOS: PRACTICE_SCENARIOS,
     // claims / prose
     deriveTrendClaim: deriveTrendClaim, deriveAssociationClaim: deriveAssociationClaim, associationSentence: associationSentence,
     trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
-    REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, MULTI_SAMPLE: MULTI_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
+    REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, MULTI_SAMPLE: MULTI_SAMPLE, GROWTH_SAMPLE: GROWTH_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
     scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry, multiSeriesGeometry: multiSeriesGeometry, groupedBarGeometry: groupedBarGeometry,
     SERIES_PALETTE: SERIES_PALETTE, seriesColor: seriesColor, seriesColorOK: seriesColorOK,
+    SERIES_DASH: SERIES_DASH, seriesDash: seriesDash, SERIES_SHAPE: SERIES_SHAPE, seriesShape: seriesShape, SERIES_TEXTURE: SERIES_TEXTURE, seriesTexture: seriesTexture,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel, associationTableModel: associationTableModel, multiSeriesTableModel: multiSeriesTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
@@ -1383,12 +2177,22 @@
     lintL2: lintL2, rankBand: rankBand, validateHypotheses: validateHypotheses, faceFor: faceFor,
     // export + FERPA/sign-off gates (Phase 1)
     escHtml: escHtml, csvSafe: csvSafe, slug: slug, signoffHash: signoffHash, assertDefensible: assertDefensible,
-    buildExportHtml: buildExportHtml, buildExportCsv: buildExportCsv,
+    buildExportHtml: buildExportHtml, buildExportCsv: buildExportCsv, buildPresentationHtml: buildPresentationHtml,
     // Sourced provenance (Phase 1.x, §16) — engine + curated spine + gates
     NORM_SPINE: NORM_SPINE, DIBELS8_ORF: DIBELS8_ORF, selectNorm: selectNorm, validateNormSpine: validateNormSpine,
     makeSourceRef: makeSourceRef, addSourceRef: addSourceRef, sourcedRenderable: sourcedRenderable,
     benchmarkChipText: benchmarkChipText, sourcedFace: sourcedFace, referenceContrastOK: referenceContrastOK,
-    sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean
+    sourcedSignoffHash: sourcedSignoffHash, assertSourcedDefensible: assertSourcedDefensible, assertExportClean: assertExportClean, assertNotSynthetic: assertNotSynthetic,
+    // Ingest (§5 Pillar 1) — pure parsers + column mapper; L0-only by construction
+    INGEST_MAX_BYTES: INGEST_MAX_BYTES, INGEST_MAX_ROWS: INGEST_MAX_ROWS, INGEST_DELIMS: INGEST_DELIMS, INGEST_FILE_TYPES: INGEST_FILE_TYPES,
+    parseTextTable: parseTextTable, mapTextTableToObservations: mapTextTableToObservations, recognizeAlloFlowReport: recognizeAlloFlowReport,
+    parseWorkbookSheet: parseWorkbookSheet, lazyLoadXLSX: lazyLoadXLSX, parseJsonTable: parseJsonTable, isWorkbookIngestType: isWorkbookIngestType, ingestFileTypeFromName: ingestFileTypeFromName,
+    // §16 Phase 2A — human-assisted benchmark-document workspace (PDF/DOCX/TXT/CSV/XLSX → scaffold → per-cell signoff → spine JSON)
+    BENCH_DOC_TYPES: BENCH_DOC_TYPES, BENCH_DOC_MAX_BYTES: BENCH_DOC_MAX_BYTES, benchDocTypeFromName: benchDocTypeFromName,
+    normalizeBenchExtraction: normalizeBenchExtraction, buildSpineCellScaffold: buildSpineCellScaffold,
+    validateProposedSpineCell: validateProposedSpineCell, signoffSpineCell: signoffSpineCell,
+    bindVerifiedCellsToSpine: bindVerifiedCellsToSpine, spineCellsToJSON: spineCellsToJSON,
+    lazyLoadPdfJs: lazyLoadPdfJs, lazyLoadMammoth: lazyLoadMammoth, extractPdfText: extractPdfText, extractDocxText: extractDocxText
   };
 
   // Dual export: Node/vitest (CommonJS) AND browser/Canvas (window global).
@@ -1437,11 +2241,15 @@
     window.StemLab.registerTool('lumen', {
       icon: '💡', // 💡
       label: 'Lumen',
-      desc: 'A reactive research canvas: collect, analyze & present as one honest, provenance-bound object.',
+      desc: 'Turn any dataset into an honest, provenance-bound finding you can defend — chart and claim as one object.',
       color: 'amber',
       category: 'data',
-      ready: false, // Phase 0: kernel only; not yet a usable surface
+      // LIVE + fully usable. ready:false keeps it OUT of the STEM Lab tile grid ON PURPOSE — Lumen is
+      // plugin-only (_pluginOnlyTools.lumen), surfaced via the Educator Hub launcher card, not the grid.
+      // (This is NOT "Phase 0 / not yet usable" — that old comment was stale.)
+      ready: false,
       render: function (ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
         var React = ctx && ctx.React;
         var h = React && React.createElement;
         if (!h) return null;
@@ -1470,7 +2278,11 @@
             } catch (eP) { return null; }
           };
           // At the default L1 ceiling NO callGemini fires — the trend is pure math.
-          var comp = makeCompendium(d.variable || 'WCPM', d.unit || 'words/min', { measure: d.measure || 'ORF-WCPM', grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2, seriesLabels: d.seriesLabels });
+          var xLabel = (d.xLabel && String(d.xLabel).trim()) || 'Week';
+          // Neutral, domain-general defaults — Lumen is an honest data-argument tool for ANY data
+          // (research, classroom, lab, survey…), not a reading-fluency tracker. The reading-fluency
+          // frame is one example the user opts into via the Setup row, never the first impression.
+          var comp = makeCompendium(d.variable || 'Measure', d.unit || 'units', { measure: d.measure || null, grade: d.benchGrade, seasonWindow: d.benchSeason, variable2: d.variable2, unit2: d.unit2, seriesLabels: d.seriesLabels, xLabel: xLabel });
           obs.forEach(function (o) { addObservation(comp, o); });
           var claim = obs.length ? deriveTrendClaim(comp, {}) : null;
           // Scatter argues an ASSOCIATION claim (2nd variable y2 vs primary y), not the trend. activeClaim
@@ -1487,6 +2299,39 @@
           var groupedMulti = (chartType === 'groupedBar' && obs.length) ? (seriesKeys(obs).length > 1) : false;
           var gbLabels = groupedMulti ? seriesKeys(obs).map(function (k) { return { seriesKey: k, seriesLabel: (comp.seriesLabels && comp.seriesLabels[k]) || k, variable: comp.variable }; }) : null;
           var bundle = encode('L1');
+          // Color-blind-safe series vnode builders (need `h`): a marker SHAPE per series,
+          // an SVG <pattern> TEXTURE per series for grouped bars, and legend glyphs that
+          // show the SAME non-colour channel the chart uses (dash+shape / texture).
+          var seriesPatternId = function (idx) { var n = 6; return 'lumenSeriesPat' + (((idx % n) + n) % n); };
+          var buildSeriesPattern = function (id, idx) {
+            var col = seriesColor(idx), tex = seriesTexture(idx);
+            var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: 6, height: 6, fill: col, fillOpacity: 0.92 })];
+            if (tex === 'diagonal') kids.push(h('path', { key: 'd', d: 'M0,6 L6,0', stroke: '#ffffff', strokeWidth: 1.1, strokeOpacity: 0.85, fill: 'none' }));
+            else if (tex === 'crosshatch') { kids.push(h('path', { key: 'c1', d: 'M0,6 L6,0', stroke: '#ffffff', strokeWidth: 1, strokeOpacity: 0.8, fill: 'none' })); kids.push(h('path', { key: 'c2', d: 'M0,0 L6,6', stroke: '#ffffff', strokeWidth: 1, strokeOpacity: 0.8, fill: 'none' })); }
+            else if (tex === 'vertical') kids.push(h('line', { key: 'v', x1: 3, y1: 0, x2: 3, y2: 6, stroke: '#ffffff', strokeWidth: 1.2, strokeOpacity: 0.85 }));
+            else if (tex === 'horizontal') kids.push(h('line', { key: 'hz', x1: 0, y1: 3, x2: 6, y2: 3, stroke: '#ffffff', strokeWidth: 1.2, strokeOpacity: 0.85 }));
+            else if (tex === 'dots') kids.push(h('circle', { key: 'dt', cx: 3, cy: 3, r: 1.2, fill: '#ffffff', fillOpacity: 0.95 }));
+            // 'solid' (series 0) => colour only — its bar is unchanged from before
+            return h('pattern', { key: id, id: id, patternUnits: 'userSpaceOnUse', width: 6, height: 6 }, kids);
+          };
+          var seriesMarkerEl = function (shape, cx, cy, r, fill, key) {
+            var base = { key: key, fill: fill, fillOpacity: 0.95, stroke: '#ffffff', strokeWidth: 1 };
+            if (shape === 'square') return h('rect', Object.assign({}, base, { x: cx - r, y: cy - r, width: 2 * r, height: 2 * r }));
+            if (shape === 'triangle') return h('polygon', Object.assign({}, base, { points: cx + ',' + (cy - r * 1.2) + ' ' + (cx + r * 1.1) + ',' + (cy + r * 0.9) + ' ' + (cx - r * 1.1) + ',' + (cy + r * 0.9) }));
+            if (shape === 'diamond') return h('polygon', Object.assign({}, base, { points: cx + ',' + (cy - r * 1.3) + ' ' + (cx + r * 1.3) + ',' + cy + ' ' + cx + ',' + (cy + r * 1.3) + ' ' + (cx - r * 1.3) + ',' + cy }));
+            return h('circle', Object.assign({}, base, { cx: cx, cy: cy, r: r }));
+          };
+          var seriesLegendLine = function (idx) {
+            var col = seriesColor(idx), dash = seriesDash(idx);
+            return h('svg', { width: 24, height: 12, viewBox: '0 0 24 12', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('line', { x1: 1, y1: 6, x2: 23, y2: 6, stroke: col, strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: dash === 'none' ? undefined : dash }),
+              seriesMarkerEl(seriesShape(idx), 12, 6, 3, col, 'm'));
+          };
+          var seriesLegendSwatch = function (idx) {
+            return h('svg', { width: 13, height: 13, viewBox: '0 0 13 13', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('defs', { key: 'd' }, buildSeriesPattern('lumenLegPat' + idx, idx)),
+              h('rect', { x: 0, y: 0, width: 13, height: 13, rx: 2, fill: 'url(#lumenLegPat' + idx + ')' }));
+          };
           // The AI fires ONLY on demand, ONLY over the PII-free context, and its
           // output is gated by the tested guards before it is ever shown (§6.1/§6.3).
           var fireAI = function () {
@@ -1531,28 +2376,128 @@
           var exportHtml = function () {
             if (!claim || claim.refused) return;
             var includeAI = levelIndex(ceiling) >= 2;
-            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs });
+            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
-            var out = buildExportHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs });
+            // Same FERPA consent as the CSV: the brief embeds the per-row table ONLY on explicit opt-in.
+            if (d.includePII && typeof window !== 'undefined' && window.confirm &&
+              !window.confirm('This brief will embed the full identifiable per-student data table. Export it?')) return;
+            var out = buildExportHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp), includePII: !!d.includePII });
             download(out.filename, out.html, 'text/html');
             upd('exportMsg', 'Exported ' + out.filename + ' (max level ' + out.maxLevel + ').');
           };
           var exportCsv = function () {
             if (!claim) return;
-            var gate = assertExportClean({ audience: audience, aiHyps: levelIndex(ceiling) >= 2 ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs });
+            var gate = assertExportClean({ audience: audience, aiHyps: levelIndex(ceiling) >= 2 ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
             if (d.includePII && typeof window !== 'undefined' && window.confirm &&
               !window.confirm('This CSV contains identifiable student data. Export it?')) return;
-            var out = buildExportCsv(comp, claim, { includePII: !!d.includePII, sourceRefs: sourceRefs });
+            var out = buildExportCsv(comp, claim, { includePII: !!d.includePII, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp) });
             download(out.filename, out.csv, 'text/csv');
             upd('exportMsg', 'Exported ' + out.filename + '.');
           };
+          // The presentation export embeds the LIVE chart SVG (serialized from the
+          // rendered DOM — byte-faithful band/glyphs/watermark, no re-draw). Same
+          // export gate + FERPA opt-in as the brief. Falls back to an honest "open
+          // Present mode to capture the chart" note if no SVG node is reachable.
+          var exportPresentation = function () {
+            if (!claim || claim.refused) return;
+            var includeAI = levelIndex(ceiling) >= 2;
+            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
+            if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
+            if (d.includePII && typeof window !== 'undefined' && window.confirm &&
+              !window.confirm('This presentation will embed the full identifiable per-student data table. Export it?')) return;
+            var svgStr = '';
+            try {
+              var node = (typeof document !== 'undefined' && document.getElementById)
+                ? (document.getElementById('lumen-chart-present') || document.getElementById('lumen-chart-main')) : null;
+              if (node && typeof XMLSerializer !== 'undefined') svgStr = new XMLSerializer().serializeToString(node);
+            } catch (eS) { svgStr = ''; }
+            var out = buildPresentationHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp), includePII: !!d.includePII, chartSvg: svgStr, chartType: chartType });
+            download(out.filename, out.html, 'text/html');
+            upd('exportMsg', 'Exported ' + out.filename + ' (max level ' + out.maxLevel + ').');
+            announce('Exported presentation ' + out.filename + '.');
+          };
           var kids = [];
+          // Load a curated EXAMPLE dataset — stamped synthetic so it self-declares +
+          // is export-guarded exactly like generated data (an example is not real data).
+          // Optional meta sets the measure/unit/x-axis labels so the example is
+          // self-explanatory (e.g. the plant-growth sample labels itself in cm/Week).
+          var loadExample = function (rows, msg, meta) {
+            meta = meta || {};
+            if (meta.variable != null) upd('variable', meta.variable);
+            if (meta.unit != null) upd('unit', meta.unit);
+            if (meta.xLabel != null) upd('xLabel', meta.xLabel);
+            if (meta.variable2 != null) upd('variable2', meta.variable2);
+            if (meta.unit2 != null) upd('unit2', meta.unit2);
+            upd('observations', rows.map(function (r) { return Object.assign({}, r, { synthetic: true }); }));
+            announce(msg);
+          };
+          // Generate fresh synthetic PRACTICE data from the current scenario; pass
+          // bumpSeed=true to re-roll for variety (deterministic per seed). Rows are
+          // already synthetic-stamped by generatePracticeData.
+          var genPractice = function (bumpSeed) {
+            var seed = (d.genSeed || 0) + (bumpSeed ? 1 : 0);
+            if (bumpSeed) upd('genSeed', seed);
+            var sc = d.genScenario || 'improving';
+            upd('observations', generatePracticeData({ scenario: sc, n: d.genN, seed: seed, xLabel: d.xLabel }));
+            announce('Generated ' + sc + ' synthetic practice data — not a real student.');
+          };
+          // Stage a parsed table (from a file OR pasted text) into the column-
+          // mapper preview — the shared glance-then-confirm binding flow. The
+          // mapper panel below reads d.importPreview; NOTHING binds into
+          // observations until the user maps columns and confirms.
+          function stageParsedTable(parsed, fileName, fileType) {
+            var mapping = { xCol: 0, yCol: (parsed.headers.length > 1 ? 1 : 0), phaseCol: null, y2Col: null, seriesCol: null };
+            // "Bring in an AlloFlow report": auto-map a recognized de-identified
+            // dashboard export so Lumen re-projects it honestly (the COMMUNICATION
+            // end of the data the dashboard monitors); refuse the identifiable roster.
+            var recognized = null, recoNote = null, recoErr = null;
+            var rec = recognizeAlloFlowReport(parsed.headers || []);
+            if (rec && rec.kind === 'refused-identifiable') {
+              recoErr = 'This looks like an identifiable multi-student roster (it has a Student/Name column). Lumen never imports per-student records — that is the Teacher Dashboard’s job. To re-project ONE student honestly, import their de-identified series (e.g. the Fluency export, which carries no name).';
+            } else if (rec && rec.kind === 'alloflow-fluency') {
+              mapping = Object.assign({}, mapping, rec.mapping);
+              recognized = rec.label;
+              recoNote = 'Recognized an ' + rec.label + ' — auto-mapped ' + rec.variable + ' (' + rec.unit + ') over ' + rec.xLabel.toLowerCase() + ' order. Review and confirm to re-project it as an honest finding.';
+              if (rec.variable != null) upd('variable', rec.variable);
+              if (rec.unit != null) upd('unit', rec.unit);
+              if (rec.xLabel != null) upd('xLabel', rec.xLabel);
+            }
+            upd('importPreview', {
+              headers: parsed.headers, rows: parsed.rows, delimiter: parsed.delimiter,
+              notes: parsed.notes || [], sheetName: parsed.sheetName || null, sheetNames: parsed.sheetNames || null,
+              mapping: mapping, fileName: fileName, fileType: fileType,
+              recognized: recognized, recoNote: recoNote, error: recoErr || parsed.error || null
+            });
+            announce(recoErr ? 'Identifiable roster refused — import a single de-identified series instead.' : (recoNote || ('Loaded ' + fileName + ': ' + parsed.headers.length + ' columns, ' + parsed.rows.length + ' rows. Map the columns and confirm to bind.')));
+          }
+          // Parse a raw pasted block: sniff JSON ({ or [) vs delimited text,
+          // route through the SAME pure parsers as the file path, and stage it.
+          function stagePastedText(raw) {
+            var text = (raw == null ? '' : String(raw)).trim();
+            if (!text) { announce('Nothing to parse — paste some data first.'); return; }
+            if (text.length > INGEST_MAX_BYTES) { upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: 'pasted text', fileType: null, error: 'Pasted text exceeds the ' + (INGEST_MAX_BYTES / 1024 / 1024) + ' MB limit.' }); announce('Pasted text too large.'); return; }
+            var isJson = text[0] === '{' || text[0] === '[';
+            var parsed = isJson ? parseJsonTable(text) : parseTextTable(text);
+            stageParsedTable(parsed, 'pasted text', isJson ? 'json' : 'text');
+            upd('pasteText', ''); upd('showPaste', false);
+          }
 
-          kids.push(h('div', { key: 'hdr', className: 'flex items-center gap-2 flex-wrap' },
-            h('span', { className: 'font-bold text-amber-800' }, '💡 Lumen'),
-            h('span', { className: 'text-[11px] text-slate-500' }, comp.variable + ' (' + comp.unit + ')')
+          kids.push(h('div', { key: 'hdr', className: 'flex items-center gap-2 flex-wrap pb-2 mb-1', style: { borderBottom: '1px solid #f1f5f9' } },
+            h('span', { className: 'text-lg leading-none', 'aria-hidden': 'true' }, '💡'),
+            h('span', { className: 'font-extrabold text-base tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen', 'Lumen')),
+            h('span', { className: 'text-[11px] text-slate-400 italic' }, __alloT('stem.lumen.honest_data_made_to_share', 'honest data, made to share')),
+            h('span', { className: 'text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto', style: { background: '#fffbeb', border: '1px solid #fde68a' } }, comp.variable + (comp.unit ? ' · ' + comp.unit : ''))
           ));
+          // Persistent, non-dismissible synthetic-data banner — fires whenever ANY
+          // row is synthetic (generated OR a loaded example). Drives home that this
+          // is practice data; the per-mark SYN burn + export watermark carry the
+          // same message into a screenshot crop / exported file.
+          if (compHasSynthetic(comp)) {
+            kids.push(h('div', { key: 'synBanner', role: 'note', className: 'mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2', style: { background: '#6d28d9', color: '#ffffff' } },
+              h('span', null, __alloT('stem.lumen.synthetic_practice_data_not_a_real_stu', '⚗ Synthetic practice data — NOT a real student.')),
+              h('span', { className: 'font-normal text-[11px]', style: { opacity: 0.9 } }, __alloT('stem.lumen.for_exploring_lumen_marked_on_every_ch', 'For exploring Lumen; marked on every chart + export, and blocked from a defensible formal export.'))));
+          }
           // The AI-involvement dial (default L1 = zero callGemini) + the audience faces.
           var ceilBtn = function (lvl, label) {
             return h('button', {
@@ -1561,34 +2506,73 @@
               onClick: function () { upd('ceiling', lvl); upd('aiError', ''); announce('AI ceiling set to ' + label + '.'); }
             }, label);
           };
-          kids.push(h('div', { key: 'dial', className: 'mt-2 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'AI involvement ceiling' },
-            h('span', { className: 'text-xs text-slate-500 mr-1' }, 'AI ceiling:'),
+          kids.push(h('div', { key: 'dial', className: 'mt-2 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.ai_involvement_ceiling', 'AI involvement ceiling') },
+            h('span', { className: 'text-xs text-slate-500 mr-1' }, __alloT('stem.lumen.ai_ceiling', 'AI ceiling:')),
             ceilBtn('L1', 'L1 · Data only'), ceilBtn('L2', 'L2 · Assisted'), ceilBtn('L3', 'L3 · Interpretive')));
-          var faceBtn = function (a, label) {
+          var faceBtn = function (a, label, title) {
             return h('button', {
-              key: 'f' + a, 'aria-pressed': audience === a ? 'true' : 'false',
+              key: 'f' + a, 'aria-pressed': audience === a ? 'true' : 'false', title: title,
               className: (audience === a ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border',
               onClick: function () { upd('audience', a); }
             }, label);
           };
-          kids.push(h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Audience face' },
+          // Domain-general audience tiers (the FUNCTION is general; education is one application):
+          // Working = your own analysis · Formal = a defensible artifact for a decision (IEP team, review
+          // board, grant reviewer; sign-off + FERPA gates live here) · Plain = a lay audience that the
+          // projection can never over-confidently mislead. (Enum values kept for the gates: iep-team/family.)
+          kids.push(h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.audience', 'Audience') },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Audience:'),
-            faceBtn('working', 'Working'), faceBtn('iep-team', 'IEP team'), faceBtn('family', 'Family')));
+            faceBtn('working', 'Working', 'For your own analysis — the full technical wording.'),
+            faceBtn('iep-team', 'Formal', 'A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here.'),
+            faceBtn('family', 'Plain language', 'For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates.')));
           // Chart-type switcher — multiple visualization pathways for the same provenance-bound data.
           var ctBtn = function (tp, label) {
             return h('button', { key: 'ct' + tp, 'aria-pressed': chartType === tp ? 'true' : 'false', className: (chartType === tp ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border', onClick: function () { upd('chartType', tp); } }, label);
           };
-          kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Chart type' },
+          kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.chart_type', 'Chart type') },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
             ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope'), ctBtn('multiSeriesLine', 'Multi-line'), ctBtn('groupedBar', 'Grouped bar')));
 
-          if (!obs.length) {
-            kids.push(h('p', { key: 'empty', className: 'mt-2 text-sm text-slate-600' },
-              'No observations yet. Type a few points, or load a sample, to see an honestly-marked trend.'));
+          // Guided 3-step onboarding — the empty canvas explains what Lumen is
+          // FOR and the exact path to a result, instead of a wall of controls.
+          // Shows only on the empty first run (no data, no staged import, paste
+          // box closed); it vanishes the moment data or an import is present.
+          if (!obs.length && !d.importPreview && !d.showPaste) {
+            var obStep = function (n, bold, rest) {
+              return h('li', { key: 's' + n, className: 'flex items-start gap-2 text-xs text-slate-700' },
+                h('span', { 'aria-hidden': 'true', className: 'flex items-center justify-center font-bold text-white rounded-full', style: { width: '18px', height: '18px', fontSize: '11px', background: '#d97706', flexShrink: 0 } }, String(n)),
+                h('span', null, h('b', null, bold), rest));
+            };
+            kids.push(h('div', { key: 'onboard', className: 'mt-3 p-5 rounded-2xl border border-amber-200', style: { background: 'linear-gradient(135deg,#fffbeb 0%,#ffffff 72%)', boxShadow: '0 1px 4px rgba(180,83,9,0.08)' } },
+              h('div', { className: 'text-sm font-bold text-amber-900 flex items-center gap-2' }, h('span', { 'aria-hidden': 'true' }, '✨'), h('span', null, __alloT('stem.lumen.turn_any_dataset_into_an_honest_defens', 'Turn any dataset into an honest, defensible finding you can hand to a person.'))),
+              h('p', { className: 'mt-1 text-xs text-slate-600' }, __alloT('stem.lumen.lumen_charts_your_data_and_writes_a_pl', 'Lumen charts YOUR data and writes a plain-language finding from the numbers only — it never invents certainty or a score.')),
+              h('ol', { className: 'mt-3 space-y-2', style: { listStyle: 'none', paddingLeft: 0, margin: 0 } },
+                obStep(1, 'Name your measure', ' in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).'),
+                obStep(2, 'Add data', ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
+                obStep(3, 'Read the finding', ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.')),
+              h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
+                h('button', { key: 'obSample', className: 'px-3 py-1.5 text-sm font-semibold rounded-lg text-white hover:opacity-90', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 3px rgba(234,88,12,0.3)' }, onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); } }, __alloT('stem.lumen.try_a_sample', 'Try a sample')),
+                h('button', { key: 'obPaste', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, __alloT('stem.lumen.paste_data', '⎘ Paste data')),
+                h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100 cursor-pointer' }, __alloT('stem.lumen.import_file', '⇪ Import file'))),
+              h('p', { className: 'mt-3 text-[11px] text-slate-500' }, __alloT('stem.lumen.honest_by_design_fewer_than_3_points_y', 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.'))));
           }
 
+          // Measure setup — name your own x/y variables. comp is rebuilt from
+          // these every render, so the entry labels, chart, SR tables, family
+          // sentence, and CSV header all relabel live. Defaults (WCPM /
+          // words/min / Week) reproduce the legacy strings byte-for-byte.
+          kids.push(h('div', { key: 'setup', className: 'mt-3 flex items-end gap-2 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.measure_setup', 'Measure setup') },
+            h('span', { className: 'text-xs text-slate-500 mr-1 self-center' }, 'Setup:'),
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.measure_name', 'Measure name'),
+              h('input', { type: 'text', value: d.variable == null ? '' : d.variable, placeholder: 'WCPM', 'aria-label': __alloT('stem.lumen.measure_name_y_variable', 'Measure name (y variable)'), onChange: function (ev) { upd('variable', ev.target.value); }, className: 'w-32 px-2 py-1 border rounded' })),
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.unit', 'Unit'),
+              h('input', { type: 'text', value: d.unit == null ? '' : d.unit, placeholder: 'words/min', 'aria-label': __alloT('stem.lumen.unit_2', 'Unit'), onChange: function (ev) { upd('unit', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })),
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.x_axis_label', 'X-axis label'),
+              h('input', { type: 'text', value: d.xLabel == null ? '' : d.xLabel, placeholder: __alloT('stem.lumen.week', 'Week'), 'aria-label': __alloT('stem.lumen.x_axis_label_x_variable', 'X-axis label (x variable)'), onChange: function (ev) { upd('xLabel', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' }))
+          ));
+
           kids.push(h('div', { key: 'entry', className: 'mt-3 flex items-end gap-2 flex-wrap' },
-            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'Week (x)',
+            h('label', { className: 'text-xs text-slate-600 flex flex-col' }, xLabel + ' (x)',
               h('input', { type: 'number', value: d.draftX == null ? '' : d.draftX, onChange: function (ev) { upd('draftX', ev.target.value); }, className: 'w-20 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, comp.variable + ' (y)',
               h('input', { type: 'number', value: d.draftY == null ? '' : d.draftY, onChange: function (ev) { upd('draftY', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })),
@@ -1596,70 +2580,445 @@
             (chartType === 'scatter' ? h('label', { key: 'y2lab', className: 'text-xs text-slate-600 flex flex-col' }, (comp.variable2 || 'value₂') + ' (y2)',
               h('input', { type: 'number', value: d.draftY2 == null ? '' : d.draftY2, onChange: function (ev) { upd('draftY2', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })) : null),
             // The series (category) input appears ONLY in the multi-series view — a category/condition, NOT a person.
-            (chartType === 'multiSeriesLine' ? h('label', { key: 'seslab', className: 'text-xs text-slate-600 flex flex-col' }, 'Series (category)',
+            (chartType === 'multiSeriesLine' ? h('label', { key: 'seslab', className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.series_category', 'Series (category)'),
               h('input', { type: 'text', value: d.draftSeries == null ? '' : d.draftSeries, onChange: function (ev) { upd('draftSeries', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })) : null),
             h('button', {
               className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500',
               onClick: function () {
                 var x = parseFloat(d.draftX), y = parseFloat(d.draftY);
-                if (isNaN(x) || isNaN(y)) { announce('Enter a numeric week and value.'); return; }
+                if (isNaN(x) || isNaN(y)) { announce('Enter a numeric ' + xLabel.toLowerCase() + ' and value.'); return; }
                 var row = { x: x, y: y, phase: d.draftPhase || null };
                 var y2 = parseFloat(d.draftY2);
                 if (chartType === 'scatter' && !isNaN(y2)) row.y2 = y2; // paired 2nd measure, scatter only
                 if (chartType === 'multiSeriesLine' && d.draftSeries) row.series = d.draftSeries; // category tag, multi-series only
                 var next = obs.concat([row]);
                 upd('observations', next); upd('draftX', ''); upd('draftY', ''); upd('draftY2', '');
-                announce('Added week ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + (row.series ? (' [' + row.series + ']') : '') + '. ' + next.length + ' observations.');
+                announce('Added ' + xLabel.toLowerCase() + ' ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + (row.series ? (' [' + row.series + ']') : '') + '. ' + next.length + ' observations.');
               }
-            }, '+ Add'),
+            }, __alloT('stem.lumen.add', '+ Add')),
             h('button', {
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', REYNA_SAMPLE.slice()); announce('Loaded the Reyna ORF sample: 10 weekly probes across two phases.'); }
-            }, 'Use sample (Reyna ORF)'),
+              onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); }
+            }, __alloT('stem.lumen.use_sample_data', 'Use sample data')),
+            // Generate fresh synthetic practice data (the "generate sample" feature) — a scenario picker + Generate + Re-roll.
+            h('select', {
+              key: 'genScenario', value: d.genScenario || 'improving',
+              onChange: function (ev) { upd('genScenario', ev.target.value); },
+              'aria-label': __alloT('stem.lumen.practice_data_scenario', 'Practice-data scenario'),
+              className: 'px-2 py-1 text-sm border border-slate-300 rounded'
+            }, Object.keys(PRACTICE_SCENARIOS).map(function (s) { return h('option', { key: s, value: s }, s); })),
+            h('button', {
+              key: 'genBtn', className: 'px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50',
+              title: __alloT('stem.lumen.generate_synthetic_practice_data_to_ex', 'Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.'),
+              onClick: function () { genPractice(false); }
+            }, __alloT('stem.lumen.generate_practice_data', '⚗ Generate practice data')),
+            (obs.length && compHasSynthetic(comp) ? h('button', {
+              key: 'rerollBtn', className: 'px-3 py-1 text-sm rounded border border-violet-300 text-violet-700 hover:bg-violet-50',
+              title: __alloT('stem.lumen.re_roll_a_fresh_random_draw_of_the_sam', 'Re-roll: a fresh random draw of the same scenario.'),
+              onClick: function () { genPractice(true); }
+            }, __alloT('stem.lumen.re_roll', '↻ Re-roll')) : null),
             // A PAIRED sample (WCPM + comprehension) only in the scatter view, so the correlation has data to read.
             (chartType === 'scatter' ? h('button', { key: 'paired', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', PAIRED_SAMPLE.slice()); announce('Loaded the paired sample: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null),
+              onClick: function () { loadExample(PAIRED_SAMPLE.slice(), 'Loaded the paired example — synthetic practice data: 10 paired points (reading rate vs comprehension).', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week', variable2: 'Comprehension', unit2: '%' }); } }, __alloT('stem.lumen.use_paired_sample', 'Use paired sample')) : null),
             // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
             (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { upd('observations', MULTI_SAMPLE.slice()); announce('Loaded the multi-series sample: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null)
+              onClick: function () { loadExample(MULTI_SAMPLE.slice(), 'Loaded the multi-series example — synthetic practice data: two conditions compared across 8 weeks.', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week' }); } }, __alloT('stem.lumen.use_multi_series_sample', 'Use multi-series sample')) : null),
+            h('button', {
+              key: 'pasteBtn',
+              className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
+              title: __alloT('stem.lumen.paste_a_block_of_csv_tsv_json_text_dir', 'Paste a block of CSV / TSV / JSON text directly — no file needed.'),
+              onClick: function () { upd('showPaste', !d.showPaste); }
+            }, d.showPaste ? '⎘ Hide paste box' : '⎘ Paste data…'),
+            // ═══════════════════════════════════════════════════════════════
+            // INGEST (§5 Pillar 1) — file picker for CSV/TSV/TXT/XLSX.
+            //
+            // A hidden file input triggered by a labeled button. Files parse
+            // through the pure parseTextTable / parseWorkbookSheet path. The
+            // result is stashed at d.importPreview = { headers, rows, mapping,
+            // fileName, fileType, error } and the column-mapper panel renders
+            // BELOW (out of this flex row). Until the user confirms the
+            // mapping, NOTHING is bound into the observations array — this
+            // preserves the "INGEST is a binding" pillar: a glance + a
+            // confirm, never a silent paste.
+            // ═══════════════════════════════════════════════════════════════
+            h('label', {
+              key: 'imp', htmlFor: 'lumen-file-input',
+              className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer',
+              title: __alloT('stem.lumen.import_a_csv_tsv_json_or_single_sheet_', 'Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.')
+            }, __alloT('stem.lumen.import_file_2', '⇪ Import file…')),
+            h('input', {
+              key: 'impInput', id: 'lumen-file-input', type: 'file', accept: '.csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel',
+              style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 },
+              onChange: function (ev) {
+                var file = ev.target && ev.target.files && ev.target.files[0];
+                if (!file) return;
+                var fileType = ingestFileTypeFromName(file.name);
+                if (!fileType) {
+                  upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: null, error: 'Unsupported file type. Supported: ' + INGEST_FILE_TYPES.join(', ') });
+                  announce('File type not supported: ' + file.name);
+                  ev.target.value = ''; return;
+                }
+                if (file.size > INGEST_MAX_BYTES) {
+                  upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'File too large (' + (file.size / 1024 / 1024).toFixed(2) + ' MB > 2 MB limit). Split into smaller files.' });
+                  announce('File too large.');
+                  ev.target.value = ''; return;
+                }
+                if (isWorkbookIngestType(fileType)) {
+                  lazyLoadXLSX().then(function (XLSX) {
+                    file.arrayBuffer().then(function (buf) {
+                      stageParsedTable(parseWorkbookSheet(XLSX, buf), file.name, fileType);
+                    });
+                  }).catch(function (err) {
+                    upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'Could not load the spreadsheet parser library. Try saving the sheet as CSV instead. (' + (err && err.message ? err.message : 'unknown') + ')' });
+                    announce('Spreadsheet parser unavailable; try CSV.');
+                  });
+                } else if (fileType === 'json') {
+                  file.text().then(function (text) { stageParsedTable(parseJsonTable(text), file.name, fileType); });
+                } else {
+                  file.text().then(function (text) { stageParsedTable(parseTextTable(text), file.name, fileType); });
+                }
+                // Reset the input so picking the same file twice still fires onChange.
+                ev.target.value = '';
+              }
+            })
           ));
+
+          // Paste-text ingest — a textarea that routes pasted CSV/TSV/JSON
+          // through the SAME pure parsers + column-mapper as a file import.
+          // "Accepts input text as well as files" without weakening the
+          // glance-then-confirm binding (still nothing binds until Confirm).
+          if (d.showPaste) {
+            kids.push(h('div', { key: 'pastebox', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
+              h('div', { className: 'text-sm font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.paste_data_2', '⎘ Paste data')),
+              h('p', { className: 'text-[11px] text-slate-600 mb-2' }, __alloT('stem.lumen.paste_csv_tsv_or_json_straight_from_a_', 'Paste CSV, TSV, or JSON straight from a spreadsheet or export. The first row is treated as headers; you map x/y/phase and confirm before anything binds — same as a file import.')),
+              h('textarea', {
+                value: d.pasteText == null ? '' : d.pasteText,
+                onChange: function (ev) { upd('pasteText', ev.target.value); },
+                rows: 6,
+                placeholder: 'week,wcpm,phase\n1,42,baseline\n2,45,baseline\n6,53,tier2',
+                className: 'w-full px-2 py-1 border border-slate-300 rounded text-xs font-mono',
+                'aria-label': __alloT('stem.lumen.paste_data_as_csv_tsv_or_json', 'Paste data as CSV, TSV, or JSON')
+              }),
+              h('div', { className: 'mt-2 flex gap-2' },
+                h('button', { className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { stagePastedText(d.pasteText); } }, __alloT('stem.lumen.parse_pasted_data', 'Parse pasted data')),
+                h('button', { className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('pasteText', ''); upd('showPaste', false); announce('Paste cancelled.'); } }, __alloT('stem.lumen.cancel', 'Cancel'))))
+            );
+          }
+
+          // ═══════════════════════════════════════════════════════════════
+          // Column-mapper preview panel — renders when an import is staged.
+          // Shows the file name, file type, error (if any), first ≤5 rows,
+          // and dropdowns for x/y/phase/y2/series column roles. Confirm
+          // BINDS the mapped rows into observations (atomic via concat);
+          // Cancel discards the preview.
+          // ═══════════════════════════════════════════════════════════════
+          if (d.importPreview) {
+            var ip = d.importPreview;
+            var imp = ip.mapping || {};
+            var colOpts = (ip.headers || []).map(function (hd, i) { return h('option', { key: 'h' + i, value: String(i) }, (hd || ('col' + (i + 1))) + ' (col ' + (i + 1) + ')'); });
+            // x may also be ROW ORDER (for a dated export with no numeric x column).
+            var xColOpts = colOpts.concat([h('option', { key: 'idx', value: 'index' }, __alloT('stem.lumen.row_order_1_2_3', '(row order — 1, 2, 3…)'))]);
+            function setMap(k, v) {
+              var next = Object.assign({}, ip, { mapping: Object.assign({}, imp) });
+              next.mapping[k] = (v === '' || v == null) ? null : (v === 'index' ? 'index' : parseInt(v, 10));
+              upd('importPreview', next);
+            }
+            var previewRows = (ip.rows || []).slice(0, 5);
+            var dropDownClass = 'w-40 px-2 py-1 border border-slate-300 rounded text-xs';
+            kids.push(h('div', { key: 'mapper', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', { className: 'text-sm font-semibold text-slate-700' }, '⇪ Map columns from ' + (ip.fileName || 'imported file') + (ip.fileType ? (' · ' + ip.fileType + (ip.delimiter && ip.fileType !== 'xlsx' ? (' · delim ' + (ip.delimiter === '\t' ? 'TAB' : '"' + ip.delimiter + '"')) : '')) : '')),
+                h('div', { className: 'flex gap-2' },
+                  h('button', { className: 'px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('importPreview', null); announce('Import cancelled.'); } }, __alloT('stem.lumen.cancel_2', 'Cancel')),
+                  h('button', { className: 'px-3 py-1 text-xs font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () {
+                    var mapped = mapTextTableToObservations({ headers: ip.headers, rows: ip.rows }, imp);
+                    if (mapped.error) { announce('Import error: ' + mapped.error); return; }
+                    if (!mapped.rows.length) { announce('Import bound 0 rows (every row missing or non-numeric in the mapped columns).'); return; }
+                    var next = obs.concat(mapped.rows);
+                    upd('observations', next);
+                    upd('importPreview', null);
+                    announce('Bound ' + mapped.rows.length + ' observations from ' + (ip.fileName || 'file') + (mapped.dropped.length ? ('; ' + mapped.dropped.length + ' row(s) dropped (missing or non-numeric).') : '.') + ' Total now ' + next.length + '.');
+                  } }, __alloT('stem.lumen.confirm_bind', 'Confirm + bind')))),
+              ip.error ? h('p', { className: 'mt-2 text-xs text-rose-700' }, ip.error) : null,
+              ip.recoNote ? h('p', { className: 'mt-2 text-xs font-semibold text-emerald-700' }, '📊 ' + ip.recoNote) : null,
+              (ip.notes && ip.notes.indexOf('truncated') !== -1) ? h('p', { className: 'mt-1 text-xs text-amber-700' }, 'File was truncated at ' + INGEST_MAX_ROWS + ' rows.') : null,
+              h('div', { className: 'mt-2 grid grid-cols-2 md:grid-cols-5 gap-2' },
+                h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.x_column_required', 'x column (required)'),
+                  h('select', { className: dropDownClass, value: imp.xCol == null ? '' : String(imp.xCol), onChange: function (ev) { setMap('xCol', ev.target.value); } }, xColOpts)),
+                h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.y_column_required', 'y column (required)'),
+                  h('select', { className: dropDownClass, value: imp.yCol == null ? '' : String(imp.yCol), onChange: function (ev) { setMap('yCol', ev.target.value); } }, colOpts)),
+                h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.phase_column_optional', 'phase column (optional)'),
+                  h('select', { className: dropDownClass, value: imp.phaseCol == null ? '' : String(imp.phaseCol), onChange: function (ev) { setMap('phaseCol', ev.target.value); } },
+                    [h('option', { key: 'none', value: '' }, __alloT('stem.lumen.none', '— none —'))].concat(colOpts))),
+                (chartType === 'scatter' ? h('label', { key: 'y2map', className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.y2_column_scatter_only', 'y2 column (scatter only)'),
+                  h('select', { className: dropDownClass, value: imp.y2Col == null ? '' : String(imp.y2Col), onChange: function (ev) { setMap('y2Col', ev.target.value); } },
+                    [h('option', { key: 'none', value: '' }, __alloT('stem.lumen.none_2', '— none —'))].concat(colOpts))) : null),
+                (chartType === 'multiSeriesLine' ? h('label', { key: 'sermap', className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.series_column_multi_line_only', 'series column (multi-line only)'),
+                  h('select', { className: dropDownClass, value: imp.seriesCol == null ? '' : String(imp.seriesCol), onChange: function (ev) { setMap('seriesCol', ev.target.value); } },
+                    [h('option', { key: 'none', value: '' }, __alloT('stem.lumen.none_3', '— none —'))].concat(colOpts))) : null)),
+              h('div', { className: 'mt-3' },
+                h('div', { className: 'text-[11px] font-semibold text-slate-600 mb-1' }, 'First ' + previewRows.length + ' row(s) (of ' + (ip.rows || []).length + ') — headers NEVER reach the AI surface:'),
+                h('div', { className: 'overflow-x-auto' },
+                  h('table', { className: 'min-w-full text-[11px]' },
+                    h('thead', null, h('tr', null, (ip.headers || []).map(function (hd, i) { return h('th', { key: 'th' + i, className: 'px-2 py-1 text-left bg-slate-100 border border-slate-200 font-semibold text-slate-700' }, hd || ('col' + (i + 1))); }))),
+                    h('tbody', null, previewRows.map(function (r, ri) {
+                      return h('tr', { key: 'tr' + ri }, r.map(function (c, ci) { return h('td', { key: 'td' + ri + '-' + ci, className: 'px-2 py-1 border border-slate-200 text-slate-700' }, c == null ? '' : String(c)); }));
+                    }))))),
+              h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.lumen.imported_values_land_as_l0_verbatim_ec', 'Imported values land as L0 (verbatim echoes). Rows missing or non-numeric in the mapped x/y are reported on bind, never silently dropped. No AI call fires during ingest.'))));
+          }
+
+          // ═══════════════════════════════════════════════════════════════
+          // §16 Phase 2A — Benchmark workspace (SOURCED lane).
+          //
+          // A SEPARATE ingest lane from §17. Drops a benchmark document
+          // (PDF/DOCX/TXT/CSV/XLSX), extracts text DETERMINISTICALLY,
+          // renders a side-by-side extracted-text + scaffold-cells UI, and
+          // produces a paste-back JSON for NORM_SPINE.cells. AI-search is
+          // NOT involved (§16.4 Phase 2B stays deferred). Renders only on
+          // an explicit toggle so the everyday Lumen workflow stays calm.
+          //
+          // NOTE on placement: this lives BELOW the chart entry/mapper so
+          // a maintainer who opens it does not lose sight of the chart
+          // they're contextualizing. The button to open it sits in the
+          // entry row above; opening sets d.benchWorkspace.open = true.
+          // ═══════════════════════════════════════════════════════════════
+          (function () {
+            // Open button (always visible in the entry zone — added LAST in the row above)
+            kids.push(h('div', { key: 'benchOpener', className: 'mt-2' },
+              h('button', {
+                className: 'px-3 py-1 text-xs rounded border ' + (d.benchWorkspace && d.benchWorkspace.open ? 'border-cyan-700 bg-cyan-50 text-cyan-800' : 'border-slate-300 hover:bg-slate-50'),
+                onClick: function () {
+                  var open = !(d.benchWorkspace && d.benchWorkspace.open);
+                  var defaults = open ? Object.assign({
+                    open: true, fileName: null, fileType: null, error: null,
+                    extraction: null, // normalized { kind, pages: [{pageNum,text}] }
+                    spineMeta: {
+                      measure: NORM_SPINE.measure, unit: NORM_SPINE.unit,
+                      source: NORM_SPINE.source, year: NORM_SPINE.year, edition: NORM_SPINE.edition,
+                      population: NORM_SPINE.population, locator: NORM_SPINE.locator, citation: NORM_SPINE.citation,
+                      gradeRange: NORM_SPINE.gradeRange
+                    },
+                    grades: null, seasons: ['winter'], percentiles: [50],
+                    cells: [], // built from buildSpineCellScaffold on demand
+                    activePageIdx: 0,
+                    summary: null // populated by Bind verified cells → spine
+                  }, d.benchWorkspace || {}) : Object.assign({}, d.benchWorkspace || {}, { open: false });
+                  upd('benchWorkspace', defaults);
+                  announce(open ? 'Benchmark workspace opened. Import a PDF, DOCX, CSV, TSV, TXT, or single-sheet XLSX to populate the norm spine.' : 'Benchmark workspace closed.');
+                }
+              }, (d.benchWorkspace && d.benchWorkspace.open ? '▣ Close benchmark workspace' : '▣ Open benchmark workspace (§16 SOURCED)'))));
+
+            if (!d.benchWorkspace || !d.benchWorkspace.open) return;
+            var bw = d.benchWorkspace;
+            var sm = bw.spineMeta || {};
+
+            function setBench(patch) { upd('benchWorkspace', Object.assign({}, bw, patch)); }
+
+            // Build / refresh scaffold when grades/seasons/percentiles change. Each
+            // edit copies any already-typed value from the old scaffold so the user
+            // doesn't lose work mid-pick.
+            function rebuildScaffold(opts) {
+              var byKey = {};
+              (bw.cells || []).forEach(function (c) { byKey[c.id] = c; });
+              var next = buildSpineCellScaffold(sm, opts || { grades: bw.grades, seasons: bw.seasons, percentiles: bw.percentiles });
+              return next.map(function (c) {
+                var prev = byKey[c.id];
+                if (prev && prev.verified) return Object.assign({}, c, { value: prev.value, sourceExcerpt: prev.sourceExcerpt, verified: true, reviewedOn: prev.reviewedOn, signoffHash: prev.signoffHash });
+                if (prev) return Object.assign({}, c, { value: prev.value != null ? prev.value : null, sourceExcerpt: prev.sourceExcerpt || '' });
+                return c;
+              });
+            }
+
+            // Render the workspace
+            var pagesText = (bw.extraction && bw.extraction.pages) || [];
+            var activePage = pagesText[bw.activePageIdx || 0] || null;
+            var verifiedCount = (bw.cells || []).filter(function (c) { return c.verified === true; }).length;
+            var totalCount = (bw.cells || []).length;
+
+            kids.push(h('section', { key: 'benchWorkspace', 'aria-label': __alloT('stem.lumen.16_sourced_benchmark_workspace', '§16 SOURCED — benchmark workspace'), className: 'mt-3 p-3 rounded-lg border-2 border-cyan-700/40 bg-cyan-50/40' },
+              h('div', { className: 'flex items-start gap-3 flex-wrap' },
+                h('div', { className: 'flex-1 min-w-[200px]' },
+                  h('div', { className: 'text-sm font-semibold text-cyan-900' }, __alloT('stem.lumen.benchmark_workspace_16_sourced', '▣ Benchmark workspace — §16 SOURCED')),
+                  h('p', { className: 'text-[11px] text-slate-700 mt-1' },
+                    __alloT('stem.lumen.drop_a_benchmark_document_text_extract', 'Drop a benchmark document. Text extracts deterministically (no AI). You byte-check each cell against the source and sign it off; verified cells fold into the NORM_SPINE JSON for paste-back. '),
+                    h('strong', null, __alloT('stem.lumen.ai_search_is_intentionally_deferred_16', 'AI-search is intentionally deferred (§16.4 Phase 2B).')))),
+                h('label', {
+                  htmlFor: 'lumen-bench-file', className: 'px-3 py-1 text-xs rounded border border-cyan-700 bg-white text-cyan-800 hover:bg-cyan-50 cursor-pointer',
+                  title: 'PDF, DOCX, CSV, TSV, TXT, or single-sheet XLSX (max ' + (BENCH_DOC_MAX_BYTES / 1024 / 1024) + ' MB).'
+                }, __alloT('stem.lumen.import_benchmark_document', '⇪ Import benchmark document…')),
+                h('input', {
+                  id: 'lumen-bench-file', type: 'file', accept: '.pdf,.docx,.csv,.tsv,.txt,.xlsx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                  style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 },
+                  onChange: function (ev) {
+                    var file = ev.target && ev.target.files && ev.target.files[0];
+                    if (!file) return;
+                    var docType = benchDocTypeFromName(file.name);
+                    if (!docType) { setBench({ error: 'Unsupported file type. Supported: ' + BENCH_DOC_TYPES.join(', ') }); ev.target.value = ''; return; }
+                    if (file.size > BENCH_DOC_MAX_BYTES) { setBench({ error: 'File too large (' + (file.size / 1024 / 1024).toFixed(2) + ' MB > ' + (BENCH_DOC_MAX_BYTES / 1024 / 1024) + ' MB limit).' }); ev.target.value = ''; return; }
+                    function land(extraction) {
+                      var normalized = normalizeBenchExtraction(extraction);
+                      var nextCells = rebuildScaffold();
+                      setBench({ fileName: file.name, fileType: docType, error: extraction && extraction.error ? extraction.error : null, extraction: normalized, cells: nextCells, activePageIdx: 0 });
+                      announce('Loaded ' + file.name + ': ' + normalized.pages.length + ' page(s). Scaffold has ' + nextCells.length + ' empty cell(s) to verify.');
+                    }
+                    if (docType === 'pdf') {
+                      lazyLoadPdfJs().then(function (pdfjs) { return file.arrayBuffer().then(function (buf) { return extractPdfText(pdfjs, buf); }); }).then(land).catch(function (err) { setBench({ error: 'Could not load pdf.js: ' + (err && err.message ? err.message : 'unknown') + '. Try saving the PDF as plain text and importing that instead.' }); });
+                    } else if (docType === 'docx') {
+                      lazyLoadMammoth().then(function (mammoth) { return file.arrayBuffer().then(function (buf) { return extractDocxText(mammoth, buf); }); }).then(land).catch(function (err) { setBench({ error: 'Could not load mammoth.js: ' + (err && err.message ? err.message : 'unknown') + '. Try saving the Word doc as plain text.' }); });
+                    } else if (docType === 'xlsx') {
+                      lazyLoadXLSX().then(function (XLSX) { return file.arrayBuffer().then(function (buf) { return parseWorkbookSheet(XLSX, buf); }); }).then(land);
+                    } else {
+                      file.text().then(function (text) { land(parseTextTable(text)); });
+                    }
+                    ev.target.value = '';
+                  }
+                })),
+              bw.fileName ? h('div', { className: 'mt-2 text-[11px] text-slate-700' }, 'Loaded: ', h('strong', null, bw.fileName), bw.fileType ? (' · ' + bw.fileType) : '', pagesText.length ? (' · ' + pagesText.length + ' page(s)') : '') : null,
+              bw.error ? h('p', { className: 'mt-2 text-xs text-rose-700' }, bw.error) : null,
+              // Scaffold controls
+              h('div', { className: 'mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs' },
+                h('label', { className: 'flex flex-col text-slate-700' }, __alloT('stem.lumen.grades_e_g_1_6', 'Grades (e.g. 1-6)'),
+                  h('input', { type: 'text', value: bw.grades == null ? (sm.gradeRange ? (sm.gradeRange[0] + '-' + sm.gradeRange[1]) : '1-6') : bw.grades.join(','),
+                    className: 'w-full px-2 py-1 border border-slate-300 rounded',
+                    onChange: function (ev) {
+                      var t = String(ev.target.value || '').trim();
+                      var gs = [];
+                      if (/^\d+\s*[-–]\s*\d+$/.test(t)) { var p = t.split(/[-–]/).map(function (s) { return parseInt(s.trim(), 10); }); for (var g = p[0]; g <= p[1]; g++) gs.push(g); }
+                      else { gs = t.split(',').map(function (s) { return parseInt(s.trim(), 10); }).filter(function (n) { return !isNaN(n); }); }
+                      var nb = Object.assign({}, bw, { grades: gs.length ? gs : null });
+                      nb.cells = (function () { var prev = bw.cells; var byKey = {}; (prev || []).forEach(function (c) { byKey[c.id] = c; }); var fresh = buildSpineCellScaffold(sm, { grades: nb.grades, seasons: nb.seasons, percentiles: nb.percentiles }); return fresh.map(function (c) { var pv = byKey[c.id]; return pv ? Object.assign({}, c, pv) : c; }); })();
+                      upd('benchWorkspace', nb);
+                    } })),
+                h('label', { className: 'flex flex-col text-slate-700' }, __alloT('stem.lumen.seasons', 'Seasons'),
+                  h('select', { multiple: true, value: bw.seasons || ['winter'], size: 3,
+                    className: 'w-full px-2 py-1 border border-slate-300 rounded',
+                    onChange: function (ev) {
+                      var picked = Array.prototype.slice.call(ev.target.selectedOptions).map(function (o) { return o.value; });
+                      var nb = Object.assign({}, bw, { seasons: picked.length ? picked : ['winter'] });
+                      var byKey = {}; (bw.cells || []).forEach(function (c) { byKey[c.id] = c; });
+                      var fresh = buildSpineCellScaffold(sm, { grades: nb.grades, seasons: nb.seasons, percentiles: nb.percentiles });
+                      nb.cells = fresh.map(function (c) { var pv = byKey[c.id]; return pv ? Object.assign({}, c, pv) : c; });
+                      upd('benchWorkspace', nb);
+                    } },
+                    ['fall', 'winter', 'spring'].map(function (s) { return h('option', { key: s, value: s }, s); }))),
+                h('label', { className: 'flex flex-col text-slate-700' }, __alloT('stem.lumen.percentiles_e_g_25_50_75', 'Percentiles (e.g. 25,50,75)'),
+                  h('input', { type: 'text', value: (bw.percentiles || [50]).join(','),
+                    className: 'w-full px-2 py-1 border border-slate-300 rounded',
+                    onChange: function (ev) {
+                      var ps = String(ev.target.value || '').split(',').map(function (s) { return parseInt(s.trim(), 10); }).filter(function (n) { return !isNaN(n) && n >= 1 && n <= 99; });
+                      var nb = Object.assign({}, bw, { percentiles: ps.length ? ps : [50] });
+                      var byKey = {}; (bw.cells || []).forEach(function (c) { byKey[c.id] = c; });
+                      var fresh = buildSpineCellScaffold(sm, { grades: nb.grades, seasons: nb.seasons, percentiles: nb.percentiles });
+                      nb.cells = fresh.map(function (c) { var pv = byKey[c.id]; return pv ? Object.assign({}, c, pv) : c; });
+                      upd('benchWorkspace', nb);
+                    } })),
+                h('div', { className: 'flex flex-col justify-end text-slate-700' },
+                  h('button', {
+                    className: 'px-2 py-1 text-xs rounded border border-cyan-700 bg-white text-cyan-800 hover:bg-cyan-50',
+                    onClick: function () { setBench({ cells: rebuildScaffold() }); announce('Scaffold rebuilt: ' + (bw.cells || []).length + ' cells.'); }
+                  }, 'Rebuild scaffold (' + totalCount + ' cells, ' + verifiedCount + ' verified)'))),
+              // Two-column layout: extracted text | cells
+              h('div', { className: 'mt-3 grid grid-cols-1 lg:grid-cols-2 gap-3' },
+                // Left: extracted-text pane
+                h('div', { className: 'p-2 rounded border border-slate-300 bg-white' },
+                  h('div', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.extracted_text_deterministic_no_ai_par', 'Extracted text (deterministic; no AI parse) — read here, type values on the right')),
+                  pagesText.length > 1 ? h('div', { className: 'mb-1 flex flex-wrap gap-1' }, pagesText.map(function (p, i) {
+                    return h('button', { key: 'pg' + i, className: 'px-1.5 py-0.5 text-[10px] rounded border ' + (i === (bw.activePageIdx || 0) ? 'border-cyan-700 bg-cyan-50' : 'border-slate-300 hover:bg-slate-50'), onClick: function () { setBench({ activePageIdx: i }); } }, 'p' + (p.pageNum != null ? p.pageNum : (i + 1)));
+                  })) : null,
+                  h('pre', { className: 'text-[10.5px] leading-snug whitespace-pre-wrap break-words max-h-72 overflow-auto bg-slate-50 p-2 rounded border border-slate-200' }, activePage ? activePage.text : 'No document loaded yet.')),
+                // Right: scaffold cells
+                h('div', { className: 'p-2 rounded border border-slate-300 bg-white' },
+                  h('div', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.scaffold_cells_fill_the_value_paste_th', 'Scaffold cells — fill the value, paste the source excerpt, tick to verify')),
+                  (bw.cells || []).length === 0 ? h('p', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.lumen.pick_a_grade_range_season_percentile_a', 'Pick a grade range / season / percentile above, then Rebuild scaffold.')) :
+                  h('div', { className: 'space-y-2 max-h-96 overflow-auto pr-1' }, (bw.cells || []).map(function (c, idx) {
+                    var v = validateProposedSpineCell(c);
+                    var canVerify = v.ok && !c.verified;
+                    return h('div', { key: c.id, className: 'p-2 rounded border ' + (c.verified ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white') },
+                      h('div', { className: 'flex items-center justify-between text-[11px] font-semibold text-slate-700' },
+                        h('span', null, 'Grade ' + c.grade + ' · ' + c.season + ' · p' + c.percentile + ' · ' + c.measure),
+                        c.verified ? h('span', { className: 'text-emerald-700 text-[10px]' }, '✓ verified ' + c.reviewedOn) : null),
+                      h('div', { className: 'mt-1 grid grid-cols-2 gap-2' },
+                        h('label', { className: 'text-[10.5px] text-slate-600' }, 'Value (' + c.unit + ')',
+                          h('input', { type: 'number', step: 'any', value: c.value == null ? '' : c.value, disabled: c.verified,
+                            className: 'w-full px-1.5 py-0.5 border border-slate-300 rounded text-xs',
+                            onChange: function (ev) {
+                              var num = parseFloat(ev.target.value);
+                              var next = (bw.cells || []).slice();
+                              next[idx] = Object.assign({}, c, { value: isNaN(num) ? null : num });
+                              setBench({ cells: next });
+                            } })),
+                        h('label', { className: 'text-[10.5px] text-slate-600' }, __alloT('stem.lumen.source_excerpt_optional_traceability', 'Source excerpt (optional, traceability)'),
+                          h('input', { type: 'text', value: c.sourceExcerpt || '', disabled: c.verified, className: 'w-full px-1.5 py-0.5 border border-slate-300 rounded text-xs',
+                            onChange: function (ev) { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { sourceExcerpt: ev.target.value }); setBench({ cells: next }); } }))),
+                      h('div', { className: 'mt-1 flex items-center gap-2' },
+                        c.verified ? h('button', { className: 'px-2 py-0.5 text-[10.5px] rounded border border-slate-300 hover:bg-slate-50', onClick: function () { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { verified: false, reviewedOn: null, signoffHash: null }); setBench({ cells: next }); announce('Cell unverified — edits re-enabled.'); } }, __alloT('stem.lumen.unverify_edit', 'Unverify (edit)')) :
+                          h('button', { disabled: !canVerify, className: 'px-2 py-0.5 text-[10.5px] rounded border ' + (canVerify ? 'border-emerald-700 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border-slate-300 bg-slate-50 text-slate-400 cursor-not-allowed'),
+                            onClick: function () {
+                              // No Date in this layer — the caller provides reviewedOn as the YYYY-MM-DD of the host. The browser is allowed to use Date here (the render path is not a workflow script).
+                              var iso;
+                              try { iso = new Date().toISOString().slice(0, 10); } catch (e) { iso = '2026-06-05'; }
+                              var copy = Object.assign({}, c);
+                              var r = signoffSpineCell(copy, iso);
+                              if (!r.ok) { announce('Cannot verify: ' + r.errors.join(', ')); return; }
+                              var next = (bw.cells || []).slice();
+                              next[idx] = r.cell;
+                              setBench({ cells: next });
+                              announce('Cell verified: G' + c.grade + ' ' + c.season + ' p' + c.percentile + ' = ' + c.value + '.');
+                            } }, __alloT('stem.lumen.verify_this_cell', '✓ Verify this cell')),
+                        v.ok ? null : h('span', { className: 'text-[10px] text-amber-700' }, 'Needs: ' + v.errors.join(', '))));
+                  })))),
+              // Spine JSON output
+              (function () {
+                if (verifiedCount === 0) return h('p', { key: 'noOut', className: 'mt-3 text-[10px] italic text-slate-500' }, __alloT('stem.lumen.verify_at_least_one_cell_to_see_the_pa', 'Verify at least one cell to see the paste-back JSON.'));
+                var verified = (bw.cells || []).filter(function (c) { return c.verified === true; });
+                var bound = bindVerifiedCellsToSpine({}, verified);
+                var jsonOut = spineCellsToJSON(bound.cells, 2);
+                return h('div', { key: 'spineOut', className: 'mt-3 p-2 rounded border border-cyan-300 bg-white' },
+                  h('div', { className: 'text-[11px] font-semibold text-slate-700' }, __alloT('stem.lumen.spine_cells_json_paste_into_stem_tool_', 'Spine cells JSON (paste into stem_tool_lumen.js → NORM_SPINE.cells)')),
+                  bound.collisions.length ? h('p', { className: 'mt-1 text-[10px] text-amber-700' }, bound.collisions.length + ' cell(s) excluded: ' + bound.collisions.map(function (c) { return (c.id || c.idx) + ' (' + c.reason + ')'; }).join('; ')) : null,
+                  h('pre', { className: 'mt-1 text-[10.5px] leading-snug whitespace-pre-wrap break-words max-h-48 overflow-auto bg-slate-50 p-2 rounded border border-slate-200', id: 'lumen-spine-json' }, jsonOut),
+                  h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.lumen.after_pasting_setting_reviewedon_in_so', 'After pasting + setting reviewedOn in source, the spine\'s `validateNormSpine` returns "ready" and assertExportClean lets curated benchmark refs draw at a formal export. The signoff hash spans every truth-bearing field, so a stale (edited-after) cell re-blocks.')));
+              })()));
+          })();
 
           // Multi-series: ONE provenance-bound sentence PER series (refused ones included — anti-cherry-pick).
           // The colour dot beside each is the legend (maps the line colour to its series label).
           if (chartType === 'multiSeriesLine' && multiClaims) {
-            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
                 h('span', null, bundle.label + ' · ' + multiClaims.length + ' series (same measure)')),
               h('ul', { className: 'mt-1 text-sm' }, multiClaims.map(function (c, i) {
-                return h('li', { key: 'msc' + i, className: 'flex items-start gap-2' },
-                  h('span', { 'aria-hidden': 'true', style: { color: seriesColor(i), fontSize: '14px', lineHeight: '1' } }, '●'),
+                return h('li', { key: 'msc' + i, className: 'flex items-start gap-2 mb-0.5' },
+                  h('span', { 'aria-hidden': 'true', style: { marginTop: '3px', flexShrink: 0, display: 'inline-flex' } }, seriesLegendLine(i)),
                   h('span', null, c.text));
               }))));
           } else if (groupedMulti) {
             // Grouped bar: a colour legend (swatch + label per series) + a descriptive note. The per-cell
             // means + n are in the SR summary; every raw point is in the data table (bars never hide spread).
-            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
                 h('span', null, bundle.label + ' · ' + comp.variable + ' mean per phase × series')),
-              h('div', { className: 'mt-1 flex items-center gap-3 flex-wrap text-xs text-slate-700' }, seriesKeys(obs).map(function (k, i) {
-                return h('span', { key: 'leg' + i, className: 'flex items-center gap-1' },
-                  h('span', { 'aria-hidden': 'true', style: { color: seriesColor(i), fontSize: '14px', lineHeight: '1' } }, '■'),
+              h('div', { className: 'mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-700' }, seriesKeys(obs).map(function (k, i) {
+                return h('span', { key: 'leg' + i, className: 'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 border', style: { borderColor: seriesColor(i), background: seriesColor(i) + '14' } },
+                  seriesLegendSwatch(i),
                   h('span', null, (comp.seriesLabels && comp.seriesLabels[k]) || k));
               })),
-              h('p', { className: 'mt-1 text-[11px] text-slate-500' }, 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.')));
+              h('p', { className: 'mt-1 text-[11px] text-slate-500' }, __alloT('stem.lumen.bars_are_per_cell_means_descriptive_sm', 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.'))));
           } else if (activeClaim) {
-            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
-              h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
-                h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
+              h('div', { className: 'inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', lineHeight: '1' } }, bundle.glyph),
                 h('span', null, bundle.label)),
               // Scatter shows the association sentence verbatim (it already carries r + interval + n + the
               // not-causation caveat); the trend/other views keep the audience-faced trend wording.
-              h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience))));
+              h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience, compHasSynthetic(comp))),
+              (compHasSynthetic(comp) ? h('p', { key: 'synCard', className: 'mt-1 text-[11px] font-semibold', style: { color: '#6d28d9' } }, __alloT('stem.lumen.synthetic_practice_data_this_finding_i', '◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.')) : null)));
           }
 
           var geo;
+          var mkChartSvgRef = null; // set inside the if(geo) chart block; used by the present-mode overlay at the root return
           if (chartType === 'multiSeriesLine') {
             // Renders even if SOME series refuse — multiSeriesGeometry shows each series' observed points,
             // and a refused series declares itself in the claim list + SR table.
@@ -1670,7 +3029,7 @@
           if (geo) {
             var b = geo.box, sk = [];
             geo.yTicks.forEach(function (t, i) {
-              sk.push(h('line', { key: 'yg' + i, x1: b.padL, y1: t.sy, x2: b.w - b.padR, y2: t.sy, stroke: '#e2e8f0', strokeWidth: 1 }));
+              sk.push(h('line', { key: 'yg' + i, x1: b.padL, y1: t.sy, x2: b.w - b.padR, y2: t.sy, stroke: '#eef2f7', strokeWidth: 1 }));
               sk.push(h('text', { key: 'yl' + i, x: b.padL - 4, y: t.sy + 3, textAnchor: 'end', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.y != null ? t.y : t.count)));
             });
             geo.xTicks.forEach(function (t, i) {
@@ -1681,12 +3040,13 @@
               sk.push(h('line', { key: 'ph' + i, x1: p.sx, y1: b.padT, x2: p.sx, y2: b.h - b.padB, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 3' }));
               sk.push(h('text', { key: 'phl' + i, x: p.sx + 3, y: b.padT + 9, style: { fontSize: '8px' }, fill: '#0f172a' }, 'phase'));
             });
-            if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2, strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
+            if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2.25, strokeLinecap: 'round', strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
             if (geo.points) geo.points.forEach(function (p, i) {
+              var pb = encode(p.level || 'L0'); // observed ● / synthetic ◇ — the MARK's own provenance, not the L1 trend line
               sk.push(h('g', { key: 'pt' + i },
-                h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: bundle.ink, fillOpacity: bundle.markOpacity }),
+                h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: pb.ink, fillOpacity: pb.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }),
                 // the per-mark BURN: each mark carries its own level glyph at full opacity
-                h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: bundle.ink, fillOpacity: 1, 'aria-hidden': 'true' }, bundle.glyph)
+                h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: pb.ink, fillOpacity: 1, 'aria-hidden': 'true' }, pb.glyph)
               ));
             });
             // Bar pathway: each bar is an L0 OBSERVED mark (neutral ink) carrying its level glyph above it.
@@ -1701,7 +3061,7 @@
             if (geo.dots) {
               var l0d = encode('L0');
               geo.dots.forEach(function (p, i) {
-                sk.push(h('circle', { key: 'dot' + i, cx: p.sx, cy: p.sy, r: 4, fill: l0d.ink, fillOpacity: l0d.markOpacity }));
+                sk.push(h('circle', { key: 'dot' + i, cx: p.sx, cy: p.sy, r: 4, fill: l0d.ink, fillOpacity: l0d.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }));
               });
             }
             // Box pathway: a five-number box+whisker per phase (L0 observed spread — q3 on top, q1 on bottom).
@@ -1731,7 +3091,7 @@
               var l0s = encode('L0'), l1s = encode('L1');
               if (geo.fitPath) sk.push(h('path', { key: 'fit', d: geo.fitPath, fill: 'none', stroke: l1s.ink, strokeWidth: 1.5, strokeOpacity: 0.7, strokeDasharray: '4 3' }));
               geo.scatterPoints.forEach(function (p, i) {
-                sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.5, fill: l0s.ink, fillOpacity: l0s.markOpacity }));
+                sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.5, fill: l0s.ink, fillOpacity: l0s.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }));
               });
             }
             // Slope pathway: per-phase fitted trend segments (L1 derived); a refused phase (n<2) draws none.
@@ -1748,11 +3108,16 @@
             // cell (n<3) is faded + dashed + labelled n (provisional, not a confident bar); empty cells
             // draw nothing. The claim-card swatches are the legend.
             if (geo.groups) {
+              // one TEXTURE pattern per series so bars differ by texture + colour, not colour
+              // alone (WCAG 1.4.1); the solid colour stays the bar's stroke (edge keeps the hue).
+              var nGbSeries = (geo.keys ? geo.keys.length : 0), gbDefs = [];
+              for (var gpi = 0; gpi < nGbSeries; gpi++) gbDefs.push(buildSeriesPattern(seriesPatternId(gpi), gpi));
+              if (gbDefs.length) sk.push(h('defs', { key: 'gbdefs' }, gbDefs));
               geo.groups.forEach(function (grp, gi) {
                 grp.bars.forEach(function (bar, bi) {
                   if (bar.empty) return; // no fabricated bar for a missing cell
                   var gcol = seriesColor(bar.colorIdx);
-                  sk.push(h('rect', { key: 'gb' + gi + '_' + bi, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: gcol, fillOpacity: bar.small ? 0.4 : 0.88, stroke: gcol, strokeWidth: bar.small ? 1 : 0, strokeDasharray: bar.small ? '2 2' : undefined }));
+                  sk.push(h('rect', { key: 'gb' + gi + '_' + bi, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: 'url(#' + seriesPatternId(bar.colorIdx) + ')', fillOpacity: bar.small ? 0.5 : 1, stroke: gcol, strokeWidth: bar.small ? 1 : 0.5, strokeDasharray: bar.small ? '2 2' : undefined }));
                   if (bar.small) sk.push(h('text', { key: 'gbf' + gi + '_' + bi, x: bar.bx + bar.bw / 2, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '7px' }, fill: gcol, 'aria-hidden': 'true' }, 'n=' + bar.n));
                 });
               });
@@ -1762,10 +3127,10 @@
             // the per-series slope is reported in words in the claim list.
             if (geo.seriesGeo) {
               geo.seriesGeo.forEach(function (s, si) {
-                var col = seriesColor(s.colorIdx);
-                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeOpacity: 0.9 }));
+                var col = seriesColor(s.colorIdx), dash = seriesDash(s.colorIdx), shape = seriesShape(s.colorIdx);
+                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeOpacity: 0.9, strokeDasharray: dash === 'none' ? undefined : dash }));
                 s.points.forEach(function (p, pi) {
-                  sk.push(h('circle', { key: 'msc' + si + '_' + pi, cx: p.sx, cy: p.sy, r: 3, fill: col, fillOpacity: 0.95 }));
+                  sk.push(seriesMarkerEl(shape, p.sx, p.sy, 3, col, 'msc' + si + '_' + pi)); // shape per series, not colour alone
                 });
               });
             }
@@ -1780,10 +3145,19 @@
                 sk.push(h('text', { key: 'rlg' + i, x: b.padL + 2, y: rl.sy - 3, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
               }
             });
-            kids.push(h('svg', {
-              key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
-              role: 'img', 'aria-label': chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
-            }, sk));
+            // The chart is built once as a reusable maker so the in-app Present
+            // overlay can re-render the IDENTICAL responsive svg (viewBox scales it
+            // to any width) — no geometry duplication, every honesty mark shared.
+            var mkChartSvg = function (idStr, keyStr) {
+              return h('svg', {
+                key: keyStr, id: idStr, viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
+                role: 'img', 'aria-label': (compHasSynthetic(comp) ? 'Synthetic practice data — not a real student. ' : '') + chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
+              }, (compHasSynthetic(comp)
+                ? sk.concat([h('text', { key: 'synWm', x: b.w / 2, y: b.h / 2, textAnchor: 'middle', 'aria-hidden': 'true', transform: 'rotate(-18 ' + (b.w / 2) + ' ' + (b.h / 2) + ')', style: { fill: '#6d28d9', opacity: 0.16, fontSize: Math.round(b.h / 7), fontWeight: 'bold', pointerEvents: 'none' } }, __alloT('stem.lumen.practice_data', 'PRACTICE DATA'))])
+                : sk));
+            };
+            mkChartSvgRef = mkChartSvg; // hoist the maker for the present-mode overlay (root scope)
+            kids.push(mkChartSvg('lumen-chart-main', 'svg'));
           }
 
           // Grouped bar (>1 series) shows the RAW data peer (every point, with its series) so the mean
@@ -1792,14 +3166,14 @@
           var showTableSection = (chartType === 'multiSeriesLine') ? !!multiClaims : (groupedMulti ? true : (activeClaim && !activeClaim.refused));
           if (showTableSection) {
             var tbl = dataTableModel(obs, tableClaim, sourceRefs);
-            kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', onClick: function () { upd('showTable', !d.showTable); } },
+            kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', 'aria-expanded': d.showTable ? 'true' : 'false', onClick: function () { announce(d.showTable ? 'Data table hidden.' : 'Data table shown.'); upd('showTable', !d.showTable); } },
               d.showTable ? 'Hide data table' : 'Show data table (the chart as a table)'));
             if (d.showTable) {
               kids.push(h('table', { key: 'tbl', className: 'mt-2 text-xs border-collapse' },
                 h('thead', null, h('tr', null, tbl.columns.map(function (c, i) { return h('th', { key: 'th' + i, className: 'border px-2 py-0.5 text-left bg-slate-50' }, c); }))),
                 h('tbody', null, tbl.rows.map(function (r, i) {
-                  if (r.boundary) return h('tr', { key: 'tr' + i }, h('td', { colSpan: 4, className: 'border px-2 py-0.5 italic text-slate-500' }, r.label));
-                  if (r.reference) return h('tr', { key: 'tr' + i }, h('td', { colSpan: 4, className: 'border px-2 py-0.5', style: { color: '#0e7490' } }, r.label));
+                  if (r.boundary) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tbl.columns.length, className: 'border px-2 py-0.5 italic text-slate-500' }, r.label));
+                  if (r.reference) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tbl.columns.length, className: 'border px-2 py-0.5', style: { color: '#0e7490' } }, r.label));
                   return h('tr', { key: 'tr' + i },
                     h('td', { className: 'border px-2 py-0.5' }, String(r.x)),
                     h('td', { className: 'border px-2 py-0.5' }, String(r.y)),
@@ -1838,11 +3212,11 @@
                   h('p', { className: 'mt-1 text-[10px] text-slate-500' }, HYP_CAVEAT + '. Regenerates each run. Export needs your sign-off.'),
                   (audience === 'iep-team') ? h('div', { key: 'so', className: 'mt-1 text-xs' },
                     (d.signoff === signoffHash(d.aiHyps))
-                      ? h('span', { className: 'text-emerald-700' }, '✓ Signed off — kept as an AI reading, not a measured finding.')
+                      ? h('span', { className: 'text-emerald-700' }, __alloT('stem.lumen.signed_off_kept_as_an_ai_reading_not_a', '✓ Signed off — kept as an AI reading, not a measured finding.'))
                       : h('span', null,
-                        h('span', { className: 'text-amber-700 mr-2' }, '⚠ Sign off before an IEP-team export:'),
-                        h('button', { className: 'underline mr-2', onClick: function () { upd('signoff', signoffHash(d.aiHyps)); announce('Signed off: AI reading owned.'); } }, 'Own it'),
-                        h('button', { className: 'underline', onClick: function () { upd('aiHyps', null); upd('signoff', null); announce('Demoted: AI reading removed.'); } }, 'Demote (remove)'))
+                        h('span', { className: 'text-amber-700 mr-2' }, __alloT('stem.lumen.sign_off_before_a_formal_export', '⚠ Sign off before a formal export:')),
+                        h('button', { className: 'underline mr-2', onClick: function () { upd('signoff', signoffHash(d.aiHyps)); announce('Signed off: AI reading owned.'); } }, __alloT('stem.lumen.own_it', 'Own it')),
+                        h('button', { className: 'underline', onClick: function () { upd('aiHyps', null); upd('signoff', null); announce('Demoted: AI reading removed.'); } }, __alloT('stem.lumen.demote_remove', 'Demote (remove)')))
                   ) : null));
               }
               if (levelIndex(ceiling) < 3 && d.aiText) {
@@ -1860,22 +3234,22 @@
           // A benchmark overlay on a scatter is ambiguous (two student measures, not a normed scale), so
           // the chips + picker are hidden in the scatter view — deferred, not faked.
           if (sourceRefs.length && chartType !== 'scatter') {
-            kids.push(h('div', { key: 'refchips', className: 'mt-2 flex flex-col gap-1' },
+            kids.push(h('div', { key: 'refchips', className: 'mt-2 flex flex-wrap gap-1.5' },
               sourceRefs.filter(function (r) { return sourcedRenderable(r).ok; }).map(function (r, i) {
                 var href = /^https?:\/\//i.test(r.locator) ? r.locator : '#';
-                return h('div', { key: 'rc' + i, className: 'text-xs', style: { color: '#0e7490' } },
-                  h('span', { 'aria-hidden': 'true' }, '▣ '),
-                  h('span', null, benchmarkChipText(r) + ' '),
-                  h('a', { href: href, target: '_blank', rel: 'noopener noreferrer', className: 'underline' }, 'source'));
+                return h('div', { key: 'rc' + i, className: 'inline-flex items-center gap-1 text-xs rounded-full px-2.5 py-1 border', style: { color: '#0e7490', background: '#f0fdfa', borderColor: '#99f6e4' } },
+                  h('span', { 'aria-hidden': 'true' }, '▣'),
+                  h('span', null, benchmarkChipText(r)),
+                  h('a', { href: href, target: '_blank', rel: 'noopener noreferrer', className: 'underline font-semibold' }, 'source'));
               })));
           }
           // The add-from-curated-norms picker (the spine ships EMPTY → selectNorm refuses until a human populates+verifies it).
           if (claim && !claim.refused && chartType !== 'scatter') {
             kids.push(h('div', { key: 'addbench', className: 'mt-2 flex items-end gap-2 flex-wrap' },
-              h('span', { className: 'text-xs text-slate-500' }, 'Add ORF benchmark:'),
-              h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'Grade',
+              h('span', { className: 'text-xs text-slate-500' }, __alloT('stem.lumen.add_orf_benchmark', 'Add ORF benchmark:')),
+              h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.grade', 'Grade'),
                 h('input', { type: 'number', value: d.benchGrade == null ? '' : d.benchGrade, onChange: function (ev) { upd('benchGrade', ev.target.value === '' ? null : parseInt(ev.target.value, 10)); }, className: 'w-16 px-2 py-1 border rounded' })),
-              h('label', { className: 'text-xs text-slate-600 flex flex-col' }, 'Season',
+              h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.season', 'Season'),
                 h('select', { value: d.benchSeason || 'winter', onChange: function (ev) { upd('benchSeason', ev.target.value); }, className: 'px-2 py-1 border rounded' },
                   h('option', { value: 'fall' }, 'fall'), h('option', { value: 'winter' }, 'winter'), h('option', { value: 'spring' }, 'spring'))),
               h('button', {
@@ -1890,7 +3264,11 @@
                     grade: grade, season: season, percentile: 50, value: sel.value,
                     source: spine.source, year: spine.year, population: spine.population, table: spine.edition,
                     locator: spine.locator, citation: spine.citation,
-                    verified: spine.reviewedOn != null, retrievedBy: 'curated', reviewedOn: spine.reviewedOn
+                    // verified ONLY when the WHOLE spine validates as 'ready' (cells present + reviewedOn
+                    // set + every value a positive number with p25<=p50) — not a bare reviewedOn. A stray
+                    // reviewedOn or a sibling p25>p50 typo can't stamp [verified]. (Within-bounds accuracy
+                    // is still the human byte-transcription's job — the release blocker.)
+                    verified: validateNormSpine(spine).status === 'ready', retrievedBy: 'curated', reviewedOn: spine.reviewedOn
                   }, comp);
                   nref.id = 's' + (sourceRefs.length + 1);
                   upd('sourceRefs', sourceRefs.concat([nref])); upd('benchMsg', '');
@@ -1905,17 +3283,27 @@
           // Multi-series + grouped-bar are also hidden: the export brief is a single trend (it would pool the series).
           if (claim && !claim.refused && chartType !== 'scatter' && chartType !== 'multiSeriesLine' && chartType !== 'groupedBar') {
             kids.push(h('div', { key: 'exp', className: 'mt-3 flex items-center gap-2 flex-wrap' },
-              h('span', { className: 'text-xs text-slate-500' }, 'Export this view:'),
-              h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, 'Brief (HTML)'),
-              h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportCsv }, 'Data (CSV)'),
+              h('span', { className: 'text-xs text-slate-500' }, __alloT('stem.lumen.present_export_this_view', 'Present / export this view:')),
+              // Present mode = a clean, full-screen, project-ready layer (the calm
+              // analysis view stays the default front door); it is also what the
+              // presentation export captures. Amber to read as the share action.
+              h('button', { id: 'lumen-present-trigger', className: 'px-2.5 py-1 text-xs font-semibold rounded-full text-white', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' }, onClick: function () { upd('presentMode', true); announce('Present mode opened.'); } }, __alloT('stem.lumen.present', '▶ Present')),
+              h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, __alloT('stem.lumen.brief_html', 'Brief (HTML)')),
+              h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportCsv }, __alloT('stem.lumen.data_csv', 'Data (CSV)')),
               h('label', { className: 'text-xs text-slate-600 flex items-center gap-1' },
                 h('input', { type: 'checkbox', checked: !!d.includePII, onChange: function (ev) { upd('includePII', ev.target.checked); } }),
-                'Include identifiable data (FERPA)')));
+                __alloT('stem.lumen.include_identifiable_data_ferpa', 'Include identifiable data (FERPA)'))));
             if (d.exportMsg) kids.push(h('div', { key: 'expmsg', className: 'mt-1 text-xs italic text-slate-500' }, d.exportMsg));
           }
 
-          // ══ EVIDENCE INQUIRY widget (H7b'') ══
-          kids.push((function() {
+          // ══ EVIDENCE INQUIRY widget (H7b'') — a what-if SANDBOX (hypothetical
+          // sliders, NOT your data). Gated to appear only once real data exists,
+          // behind a default-closed disclosure, so the empty canvas + first run
+          // stay calm (positioning de-drift: it must not look like a different app).
+          if (obs.length >= 3) {
+            kids.push(h('button', { key: 'iqToggle', className: 'mt-3 text-xs underline text-slate-600', 'aria-expanded': d.showInquiry ? 'true' : 'false', onClick: function () { announce(d.showInquiry ? 'Evidence-inquiry sandbox hidden.' : 'Evidence-inquiry sandbox shown.'); upd('showInquiry', !d.showInquiry); } }, '🔬 ' + (d.showInquiry ? 'Hide the' : 'Learn:') + ' “should I trust a trend?” sandbox'));
+          }
+          if (obs.length >= 3 && d.showInquiry) kids.push((function() {
             var iq = d.evidenceIQ || { trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
             function setIQ(patch) { upd('evidenceIQ', Object.assign({}, iq, patch)); }
             function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
@@ -1924,32 +3312,32 @@
             var driftRisk = aiAmplification - slopeConfidence;
             var state = slopeConfidence < 0.4 ? 'insufficient' : slopeConfidence < 0.8 ? 'suggestive' : driftRisk > 0 ? 'overinterpreted' : slopeConfidence > 1.5 ? 'robust' : 'supported';
             var sm = ({
-              insufficient: { label: 'Insufficient evidence', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Slope-to-noise ratio too low. Anything you claim will be defensible only as a hypothesis to test next.' },
-              suggestive: { label: 'Suggestive', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.' },
-              supported: { label: 'Supported', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Clear trend with adequate sample. Reasonable basis for action with continued monitoring.' },
-              robust: { label: 'Robust', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Strong slope and large sample. Could probably re-derive same conclusion from another subset.' },
-              overinterpreted: { label: 'Over-interpreted', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'AI dial cranked too high relative to evidence. The narrative confidence outruns the data — exactly what Lumen\'s ladder is designed to prevent.' }
+              insufficient: { label: __alloT('stem.lumen.insufficient_evidence', 'Insufficient evidence'), color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: __alloT('stem.lumen.slope_to_noise_ratio_too_low_anything_', 'Slope-to-noise ratio too low. Anything you claim will be defensible only as a hypothesis to test next.') },
+              suggestive: { label: __alloT('stem.lumen.suggestive', 'Suggestive'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.lumen.pattern_hints_at_change_but_could_be_n', 'Pattern hints at change but could be noise. Useful for generating hypotheses, weak for action.') },
+              supported: { label: __alloT('stem.lumen.supported', 'Supported'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.lumen.clear_trend_with_adequate_sample_reaso', 'Clear trend with adequate sample. Reasonable basis for action with continued monitoring.') },
+              robust: { label: __alloT('stem.lumen.robust', 'Robust'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.lumen.strong_slope_and_large_sample_could_pr', 'Strong slope and large sample. Could probably re-derive same conclusion from another subset.') },
+              overinterpreted: { label: 'Over-interpreted', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.lumen.ai_dial_cranked_too_high_relative_to_e', 'AI dial cranked too high relative to evidence. The narrative confidence outruns the data — exactly what Lumen\'s ladder is designed to prevent.') }
             })[state];
             return h('div', { key: 'evIQ', className: 'mt-3 p-3 rounded-lg', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-              h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, '🔬 Evidence Inquiry — Should I Trust This Trend?'),
-              h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, 'Set trend strength, sample size, baseline, and AI ladder level. Predict where the evidence sits between insufficient and over-interpreted. No score, no reveal.'),
+              h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, __alloT('stem.lumen.evidence_inquiry_a_what_if_sandbox_not', '🔬 Evidence Inquiry — a what-if sandbox (not your data)')),
+              h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, __alloT('stem.lumen.a_learning_sandbox_drag_these_hypothet', 'A learning sandbox: drag these HYPOTHETICAL dials — trend strength, sample size, baseline, and a what-if AI level — to feel where evidence sits between insufficient and over-interpreted. It does not read your data and does not change your live AI ceiling. No score, no reveal.')),
               h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · slope/noise ' + slopeConfidence.toFixed(2)),
               h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
               h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
                 h('label', { className: 'text-[10px]' },
-                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Trend strength'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trendStrength.toFixed(2))),
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.trend_strength', 'Trend strength')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trendStrength.toFixed(2))),
                   h('input', { type: 'range', min: 0, max: 2, step: 0.05, value: iq.trendStrength, onChange: function(e) { setKey('trendStrength', parseFloat(e.target.value)); }, className: 'w-full' })
                 ),
                 h('label', { className: 'text-[10px]' },
-                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Observations'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sampleSize)),
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.observations', 'Observations')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sampleSize)),
                   h('input', { type: 'range', min: 2, max: 40, step: 1, value: iq.sampleSize, onChange: function(e) { setKey('sampleSize', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 ),
                 h('label', { className: 'text-[10px]' },
-                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'Baseline value'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.baseline)),
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.baseline_value', 'Baseline value')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.baseline)),
                   h('input', { type: 'range', min: 0, max: 200, step: 1, value: iq.baseline, onChange: function(e) { setKey('baseline', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 ),
                 h('label', { className: 'text-[10px]' },
-                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, 'AI ladder (L0-L3)'), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, 'L' + iq.aiLevel)),
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.what_if_ai_level_not_your_live_dial', 'What-if AI level (not your live dial)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, 'L' + iq.aiLevel)),
                   h('input', { type: 'range', min: 0, max: 3, step: 1, value: iq.aiLevel, onChange: function(e) { setKey('aiLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 )
               ),
@@ -1957,35 +3345,101 @@
                 h('button', { onClick: function() {
                   var t = new Date().toISOString().slice(11, 19);
                   setIQ({ log: iq.log.concat([{ t: t, ts: iq.trendStrength.toFixed(2), n: iq.sampleSize, bl: iq.baseline, ai: 'L' + iq.aiLevel, sc: slopeConfidence.toFixed(2), state: sm.label }]) });
-                }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this evidence call'),
-                h('button', { onClick: function() { setIQ({ trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.lumen.log_this_evidence_call', '📋 Log this evidence call')),
+                h('button', { onClick: function() { setIQ({ trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.lumen.reset', 'Reset'))
               ),
               iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                 iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · trend ' + e.ts + ' n' + e.n + ' bl' + e.bl + ' ' + e.ai + ' → s/n ' + e.sc); })
               ),
-              h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, 'Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)'),
-              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty...', className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+              h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, __alloT('stem.lumen.your_hypothesis_when_does_dialing_ai_u', 'Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)')),
+              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.lumen.e_g_past_l2_you_need_to_surface_the_sl', 'e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.lumen.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
               iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
-                h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, 'Open questions (no answer key)'),
+                h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, __alloT('stem.lumen.open_questions_no_answer_key', 'Open questions (no answer key)')),
                 h('ul', { className: 'pl-4 m-0' },
-                  h('li', null, 'Why does Lumen DEFAULT to L1 (math only) and force you to opt up?'),
-                  h('li', null, 'A flat baseline with n=40 vs noisy slope with n=8 — which would you act on?'),
-                  h('li', null, 'How would you communicate "suggestive" vs "supported" to a parent at an IEP meeting?'),
-                  h('li', null, 'When is regression to the mean the real explanation for an apparent trend?')
+                  h('li', null, __alloT('stem.lumen.why_does_lumen_default_to_l1_math_only', 'Why does Lumen DEFAULT to L1 (math only) and force you to opt up?')),
+                  h('li', null, __alloT('stem.lumen.a_flat_baseline_with_n_40_vs_noisy_slo', 'A flat baseline with n=40 vs noisy slope with n=8 — which would you act on?')),
+                  h('li', null, __alloT('stem.lumen.how_would_you_communicate_suggestive_v', 'How would you communicate "suggestive" vs "supported" to a parent at an IEP meeting?')),
+                  h('li', null, __alloT('stem.lumen.when_is_regression_to_the_mean_the_rea', 'When is regression to the mean the real explanation for an apparent trend?'))
                 )
               ),
               h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
                 h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                h('span', null, 'I can explain why this evidence configuration yields this evidentiary state.')
+                h('span', null, __alloT('stem.lumen.i_can_explain_why_this_evidence_config', 'I can explain why this evidence configuration yields this evidentiary state.'))
               ),
-              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, 'Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; formal claims should use seasonal benchmarks, growth norms, and progress-monitoring decision rules (Deno, Fuchs).')
+              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.lumen.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, __alloT('stem.lumen.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.'))
             );
           })());
 
-          kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-400' },
-            'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.'));
+          kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-700' },
+            __alloT('stem.lumen.phase_1_l1_default_fires_zero_ai_dial_', 'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.')));
+
+          // ── PRESENT MODE (additive overlay) ──────────────────────────────
+          // An extra, opt-in layer — never the default. When d.presentMode is
+          // falsy (the default) NOTHING is appended, so the calm analysis view and
+          // every golden snapshot stay byte-identical. The overlay re-renders the
+          // IDENTICAL chart (mkChartSvgRef) large, with one honest reveal — the
+          // whole chart fades+rises in together (band, line and points at once,
+          // never the confident line first), and respects prefers-reduced-motion.
+          // It is also what the presentation export captures.
+          if (d.presentMode) {
+            var presentMax = (levelIndex(ceiling) >= 3 && Array.isArray(d.aiHyps) && d.aiHyps.length) ? 'L3'
+              : (levelIndex(ceiling) >= 2 && d.aiText ? 'L2' : 'L1');
+            var presentBtn = function (label, onClick, primary, opts) {
+              opts = opts || {};
+              return h('button', {
+                id: opts.id, autoFocus: opts.autoFocus || undefined, onClick: onClick,
+                className: 'px-3 py-1.5 text-sm rounded-lg ' + (primary ? 'text-white font-semibold' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'),
+                style: primary ? { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' } : null
+              }, label);
+            };
+            var focusId = function (id) { try { var el = document.getElementById(id); if (el && el.focus) el.focus(); } catch (eF2) { } };
+            // Close + RETURN focus to the ▶ Present trigger (hook-less: defer one tick
+            // so the re-render that unmounts the overlay has happened first).
+            var closePresent = function () {
+              upd('presentMode', false); announce('Present mode closed.');
+              try { setTimeout(function () { focusId('lumen-present-trigger'); }, 0); } catch (eR) { }
+            };
+            var goFullscreen = function () {
+              try { var el = document.getElementById('lumen-present-overlay'); if (window.__alloStemFS) window.__alloStemFS(el); } catch (eF) { }
+            };
+            // A focusable sentinel — onFocus bounces to the opposite end so Tab/Shift+Tab
+            // WRAP inside the overlay (a focus trap without useEffect/useRef, which this
+            // ctx-render model doesn't expose). Visually hidden, aria-hidden.
+            var trapSentinel = function (key, toId) {
+              return h('div', { key: key, tabIndex: 0, 'aria-hidden': 'true', onFocus: function () { focusId(toId); }, style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', opacity: 0 } });
+            };
+            kids.push(h('div', {
+              key: 'present', id: 'lumen-present-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.lumen.lumen_present_mode', 'Lumen present mode'),
+              onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); } }, // Esc closes; stopPropagation so the host STEM Lab modal does not also close
+              style: { position: 'fixed', inset: 0, zIndex: 50, background: 'linear-gradient(180deg,#ffffff 0%,#fffdf7 100%)', overflow: 'auto', padding: '28px 24px' }
+            },
+              h('style', { key: 'pkf' }, __alloT('stem.lumen.keyframes_lumenreveal_from_opacity_0_t', '@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}')),
+              trapSentinel('psA', 'lumen-present-last'), // Shift+Tab from the first control wraps to the last
+              h('div', { key: 'pbar', className: 'flex items-center gap-2 flex-wrap', style: { maxWidth: '960px', margin: '0 auto 18px' } },
+                h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '💡'),
+                h('span', { className: 'font-extrabold text-lg tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen_2', 'Lumen')),
+                h('span', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.lumen.present_mode', 'present mode')),
+                h('div', { className: 'ml-auto flex items-center gap-2 flex-wrap' },
+                  presentBtn('⤓ Export presentation (HTML)', exportPresentation, true, { id: 'lumen-present-first', autoFocus: true }),
+                  presentBtn('⤢ Fullscreen', goFullscreen, false),
+                  presentBtn('✕ Exit', closePresent, false, { id: 'lumen-present-last' }))),
+              h('div', { key: 'pslide', className: 'lumen-reveal', style: { maxWidth: '960px', margin: '0 auto' } },
+                (compHasSynthetic(comp) ? h('div', { key: 'psyn', className: 'mb-3 px-3 py-2 rounded-lg text-sm font-bold text-white', style: { background: '#6d28d9' } }, __alloT('stem.lumen.synthetic_practice_data_not_a_real_stu_2', '⚗ Synthetic practice data — not a real student. For demonstration only; not a defensible record.')) : null),
+                h('div', { key: 'pmeasure', className: 'text-sm font-semibold text-slate-500 mb-1' }, comp.variable + (comp.unit ? ' · ' + comp.unit : '')),
+                h('p', { key: 'pface', className: 'font-bold text-slate-900', style: { fontSize: '1.7rem', lineHeight: 1.25 } }, faceFor(claim, audience, compHasSynthetic(comp))),
+                h('div', { key: 'pprov', className: 'inline-flex items-center gap-1 text-xs font-bold rounded-full px-2 py-0.5 mt-2', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
+                  h('span', { 'aria-hidden': 'true' }, bundle.glyph), h('span', null, bundle.label)),
+                (mkChartSvgRef
+                  ? h('div', { key: 'pchart', className: 'mt-3', style: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' } }, mkChartSvgRef('lumen-chart-present', 'presvg'))
+                  : h('p', { key: 'pnochart', className: 'mt-3 text-sm text-slate-500' }, __alloT('stem.lumen.add_at_least_3_observations_to_show_a_', 'Add at least 3 observations to show a chart.'))),
+                h('p', { key: 'psummary', className: 'mt-3 text-sm text-slate-600' }, chartSummaryText(obs, activeClaim, sourceRefs, chartType)),
+                h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-400' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.')
+              ),
+              trapSentinel('psZ', 'lumen-present-first') // Tab from the last control wraps to the first
+            ));
+          }
 
           return h('div', { className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' }, kids);
         } catch (e) {

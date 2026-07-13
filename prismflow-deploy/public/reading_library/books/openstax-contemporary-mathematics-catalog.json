@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-contemporary-mathematics-catalog",
+  "title": "OpenStax Contemporary Mathematics",
+  "description": "A source card for the OpenStax Contemporary Mathematics textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics",
+    "Quantitative reasoning",
+    "Data literacy",
+    "Textbooks"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/contemporary-mathematics"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Contemporary Mathematics focuses on quantitative reasoning for real-world decisions, including logic, finance, probability, statistics, modeling, and civic applications."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students who need practical math reading connected to everyday claims, data, risk, and decision-making."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters, figures, or ancillary materials."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

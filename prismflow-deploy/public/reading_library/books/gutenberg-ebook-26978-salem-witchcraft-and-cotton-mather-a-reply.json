@@ -1,0 +1,54 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-26978-salem-witchcraft-and-cotton-mather-a-reply",
+  "title": "Salem Witchcraft and Cotton Mather: A Reply",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Mather, Cotton, 1663-1728",
+    "Salem (Mass.) -- History -- Colonial period, ca. 1600-1775",
+    "Witchcraft -- Massachusetts -- Salem -- History -- 17th century"
+  ],
+  "authors": [
+    "Upham, Charles Wentworth"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/26978"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/26978/pg26978.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Salem Witchcraft and Cotton Mather: A Reply\" by Upham, Charles Wentworth. Metadata tags include: Mather, Cotton, 1663-1728; Salem (Mass.) -- History -- Colonial period, ca. 1600-1775; Witchcraft -- Massachusetts -- Salem -- History -- 17th century."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 86
+  }
+}

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AlloFlow · independent PDF/UA validator (veraPDF in-browser)</title>
+<!--
+  Self-contained companion-window component: runs veraPDF (Java) client-side via
+  CheerpJ to give an INDEPENDENT ISO 14289-1 (PDF/UA-1) verdict on a PDF — no
+  server, no data egress. Boots + warms up on load (pays the ~14s JIT/class-load
+  ONCE), then validates picked/posted PDFs in ~sub-second (small docs).
+
+  Two ways to drive it:
+   • standalone: open it, pick a PDF.
+   • integrated: AlloFlow opens it as a companion window (like PDF Compare),
+     waits for {type:'verapdf-ready'}, then postMessage({type:'verapdf-validate',
+     bytes:<ArrayBuffer/Uint8Array>}) and receives {type:'verapdf-result', result}.
+
+  PRODUCTION: host this page + the veraPDF jar on AlloFlow's CDN and set JAR_URL.
+  This file is ALSO the Canvas-gate test: open it from Gemini Canvas to confirm
+  CheerpJ boots in a Canvas-launched window (the one unconfirmed deployment risk).
+
+  Honest label: independent validation against ISO 14289-1 — NOT a legal
+  accessibility certificate (human review still needed for alt-text quality,
+  reading-order sense, etc.). Big docs can take minutes (size-gate in the host).
+-->
+<style>
+  body { font-family: system-ui, Segoe UI, Roboto, sans-serif; max-width: 760px; margin: 20px auto; padding: 0 16px; color: #0f172a; }
+  h2 { font-size: 18px; } #status { font-weight: 700; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; }
+  input[type=file] { margin: 12px 0; } ul { margin: 6px 0 0; padding-left: 20px; }
+  li { margin: 3px 0; font-size: 13px; } .pass { color: #15803d; } .fail { color: #b91c1c; }
+  .muted { color: #64748b; font-size: 12px; } #report { margin-top: 12px; }
+</style>
+</head>
+<body>
+<h2>Independent PDF/UA-1 validator <span class="muted">(veraPDF, in-browser)</span></h2>
+<p id="status">Booting…</p>
+<input type="file" id="pick" accept="application/pdf,.pdf" disabled />
+<div id="report"></div>
+<div id="ro" style="margin-top:10px"></div>
+<p class="muted">Runs entirely in your browser — nothing is uploaded. Independent check against ISO 14289-1; not a legal compliance certificate.</p>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+<script>
+  // CheerpJ maps the web server root to /app/, so this is the jar's path UNDER
+  // /app (i.e. its URL path from the origin root). Jar at web-root → /app/verapdf-cli.jar;
+  // jar at /assets/foo.jar → /app/assets/foo.jar. NOT a relative './' web URL.
+  const JAR_URL = '/app/verapdf/verapdf-cli.jar';
+  const PDFBOX_JAR_URL = '/app/verapdf/pdfbox-app.jar'; // co-loaded for PDFBox structural repairs (Plan A)
+  const NOTO_FONT_URL = 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf';
+  let _notoTtf = null; // cached substitute-font bytes for the embedding recipe
+
+  const $ = (id) => document.getElementById(id);
+  const setStatus = (m) => { $('status').textContent = m; };
+  // Pipeline-driven (AlloFlow opened this as a popup/iframe and will postMessage bytes) vs standalone
+  // (a person opened the URL to check any PDF). When driven, the "Choose File" picker is irrelevant and
+  // confusing, so we hide it and explain the window is part of AlloFlow's automatic accessibility check.
+  const _driven = !!window.opener || (window.parent && window.parent !== window);
+  let foundry, ua1, FileInputStream, ready = false, _lib = null;
+
+  // tiny throwaway PDF for warm-up (correct byte offsets via UTF-8 length)
+  function warmPdf() {
+    const enc = new TextEncoder();
+    const objs = { 1: '<< /Type /Catalog /Pages 2 0 R >>', 2: '<< /Type /Pages /Kids [3 0 R] /Count 1 >>', 3: '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>' };
+    let pdf = '%PDF-1.7\n'; const off = {};
+    for (let i = 1; i <= 3; i++) { off[i] = enc.encode(pdf).length; pdf += i + ' 0 obj\n' + objs[i] + '\nendobj\n'; }
+    const x = enc.encode(pdf).length;
+    pdf += 'xref\n0 4\n0000000000 65535 f \n';
+    for (let i = 1; i <= 3; i++) pdf += String(off[i]).padStart(10, '0') + ' 00000 n \n';
+    pdf += 'trailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n' + x + '\n%%EOF';
+    return enc.encode(pdf);
+  }
+
+  async function validatePath(path) {
+    const fis = await new FileInputStream(path);
+    const parser = await foundry.createParser(fis, ua1);
+    const validator = await foundry.createValidator(ua1, false); // logPassed=false → only failures listed
+    const result = await validator.validate(parser);
+    const compliant = await result.isCompliant();
+    const failures = [];
+    try {
+      const assertions = await result.getTestAssertions();
+      const it = await assertions.iterator();
+      while (await it.hasNext()) {
+        const a = await it.next();
+        const rid = await a.getRuleId();
+        failures.push({ clause: '' + (await rid.getClause()), testNumber: +(await rid.getTestNumber()), message: '' + (await a.getMessage()) });
+      }
+    } catch (e) { /* detailed list is best-effort over the bridge */ }
+    try { await parser.close(); } catch (e) {}
+    // group repeated check failures by rule (clause+test) so the UI shows distinct rules + occurrence counts
+    const byRule = new Map();
+    for (const f of failures) {
+      const k = f.clause + '|' + f.testNumber;
+      if (byRule.has(k)) byRule.get(k).count++;
+      else byRule.set(k, { clause: f.clause, testNumber: f.testNumber, message: f.message, count: 1 });
+    }
+    return { compliant: !!compliant, failedChecks: failures.length, failedRules: [...byRule.values()] };
+  }
+
+  async function validateBytes(bytes) {
+    cheerpOSAddStringFile('/str/input.pdf', bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+    return await validatePath('/str/input.pdf');
+  }
+
+  // ── Closed-loop remediation: validate → targeted pdf-lib repair → re-validate → loop until green ──
+  // Repairs run with pdf-lib (loaded in this window) — the same catalog-level recipes AlloFlow could
+  // run inline. Extensible: add a branch per veraPDF rule. Returns the repaired bytes + a per-iteration
+  // log so the caller can ship the green file. (PDFBox-via-CheerpJ can be added for heavier repairs.)
+  async function _applyRepairs(bytes, failedRules) {
+    const PL = window.PDFLib; if (!PL) return { bytes: bytes, applied: [] };
+    const { PDFDocument, PDFName, PDFBool, PDFString } = PL;
+    let doc;
+    try { doc = await PDFDocument.load(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)); }
+    catch (e) { return { bytes: bytes, applied: [] }; }
+    const cat = doc.catalog;
+    const ensure = (key) => { let dd = cat.lookup(PDFName.of(key)); if (!dd || !dd.set) { dd = doc.context.obj({}); cat.set(PDFName.of(key), dd); } return dd; };
+    const applied = [];
+    for (const f of failedRules) {
+      const id = '§' + f.clause + 't' + f.testNumber;
+      try {
+        if (f.clause === '7.1' && f.testNumber === 10) { ensure('ViewerPreferences').set(PDFName.of('DisplayDocTitle'), PDFBool.True); applied.push(id + ':DisplayDocTitle'); }
+        else if (f.clause === '6.2' && f.testNumber === 1) { ensure('MarkInfo').set(PDFName.of('Marked'), PDFBool.True); applied.push(id + ':MarkInfo'); }
+        else if ((f.clause === '7.2' || f.clause === '3.1') && !cat.lookup(PDFName.of('Lang'))) { cat.set(PDFName.of('Lang'), PDFString.of('en')); applied.push(id + ':Lang'); }
+        else if (f.clause === '7.1' && f.testNumber === 8 && !cat.lookup(PDFName.of('Metadata'))) {
+          // Metadata: add an UNCOMPRESSED XMP stream with the PDF/UA-1 declaration (pdfuaid:part=1)
+          // + dc:title (mirrors the doc title), the form veraPDF requires for §7.1 t8 + the UA claim.
+          let _t = 'Document'; try { _t = doc.getTitle() || 'Document'; } catch (_) {}
+          _t = String(_t).replace(/[<>&]/g, ' ');
+          const xmp = '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            + '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+            + '<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">'
+            + '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">' + _t + '</rdf:li></rdf:Alt></dc:title>'
+            + '<pdfuaid:part>1</pdfuaid:part></rdf:Description></rdf:RDF></x:xmpmeta>\n<?xpacket end="w"?>';
+          const ms = doc.context.stream(xmp, { Type: PDFName.of('Metadata'), Subtype: PDFName.of('XML') });
+          cat.set(PDFName.of('Metadata'), doc.context.register(ms));
+          applied.push(id + ':Metadata/XMP+UA-claim');
+        }
+        else if (f.clause === '7.1' && f.testNumber === 7) { // document title (/Info /Title)
+          try { if (!doc.getTitle()) { doc.setTitle('Document'); applied.push(id + ':Title'); } } catch (_) {}
+        }
+      } catch (e) {}
+    }
+    const out = await doc.save();
+    return { bytes: out, applied: [...new Set(applied)] };
+  }
+
+  // ── PDFBox structural fallback (Plan A: PDFBox co-loaded at boot) ──
+  // Fixes the STRUCTURAL rules pdf-lib can't: 7.1t3 (content neither Artifact nor tagged),
+  // 7.1t11 (no StructTreeRoot). Writes bytes to the CheerpJ FS, repairs with PDFBox's low-level
+  // API, reads bytes back via Java Base64. INTEGRITY: gated to FULLY-UNTAGGED docs (no
+  // StructTreeRoot) so it never corrupts real tagging; the 7.1t3 /Artifact entry discloses for review.
+  async function _applyStructuralRepairs(bytes, failedRules, opts) {
+    if (!_lib) return { bytes: bytes, applied: [] };
+    const has = (c, t) => failedRules.some((f) => f.clause === c && f.testNumber === t);
+    const needScaffold = has('7.1', 11); // StructTreeRoot missing → safe to add a skeleton (MarkInfo alone is pdf-lib's job, never triggers this)
+    // Artifact-wrap is OPT-IN ONLY (opts.allowArtifact). Marking content /Artifact makes it decorative —
+    // for a fully-untagged TEXT doc that would HIDE the real text while still passing veraPDF (an empty
+    // document). The loop can't tell decorative residue from real content, so it NEVER auto-runs this.
+    const needArtifact = has('7.1', 3) && needScaffold && !!(opts && opts.allowArtifact);
+    const needFont = has('7.21.4.1', 1); // non-embedded font — safe on tagged docs too (doesn't touch structure)
+    if (!needArtifact && !needScaffold && !needFont) return { bytes: bytes, applied: [] };
+    const L = _lib, pb = L.org.apache.pdfbox;
+    const COSName = await pb.cos.COSName, COSArray = await pb.cos.COSArray, COSBoolean = await pb.cos.COSBoolean, COSDictionary = await pb.cos.COSDictionary;
+    const Loader = await pb.Loader, File = await L.java.io.File;
+    cheerpOSAddStringFile('/str/struct_in.pdf', bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+    const doc = await Loader.loadPDF(await new File('/str/struct_in.pdf'));
+    const applied = [];
+    try {
+      if (needArtifact) { // R-A: wrap each page's content as /Artifact
+        const PDPageContentStream = await pb.pdmodel.PDPageContentStream;
+        const AppendMode = await pb.pdmodel['PDPageContentStream$AppendMode']; // nested enum → $ binary name
+        const PREPEND = await AppendMode.PREPEND, APPEND = await AppendMode.APPEND;
+        const ARTIFACT = await COSName.getPDFName('Artifact');
+        const n = await doc.getNumberOfPages();
+        for (let i = 0; i < n; i++) {
+          const page = await doc.getPage(i);
+          const a = await new PDPageContentStream(doc, page, PREPEND, false, false); await a.beginMarkedContent(ARTIFACT); await a.close();
+          const b = await new PDPageContentStream(doc, page, APPEND, false, false); await b.endMarkedContent(); await b.close();
+        }
+        applied.push('§7.1t3:content→/Artifact (REVIEW: treated residual content as decorative)');
+      }
+      if (needScaffold) { // R-B: StructTreeRoot + /Document elem + empty ParentTree + MarkInfo
+        const cat = await doc.getDocumentCatalog();
+        const PDStructureTreeRoot = await pb.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
+        const PDStructureElement = await pb.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+        const str = await new PDStructureTreeRoot();
+        const docEl = await new PDStructureElement('Document', null);
+        await str.appendKid(docEl); await docEl.setParent(str);
+        const pt = await new COSDictionary(); await pt.setItem(await COSName.getPDFName('Nums'), await new COSArray());
+        await (await str.getCOSObject()).setItem(await COSName.getPDFName('ParentTree'), pt);
+        await cat.setStructureTreeRoot(str);
+        const mk = await new COSDictionary(); await mk.setItem(await COSName.getPDFName('Marked'), await COSBoolean.getBoolean(true));
+        await (await cat.getCOSObject()).setItem(await COSName.getPDFName('MarkInfo'), mk);
+        applied.push('§7.1t11:StructTreeRoot+/Document+ParentTree+MarkInfo');
+      }
+      if (needFont) { // R-FONT: embed a WinAnsi TrueType substitute for non-embedded standard-14 fonts
+        try {
+          if (!_notoTtf) _notoTtf = new Uint8Array(await (await fetch(NOTO_FONT_URL)).arrayBuffer());
+          cheerpOSAddStringFile('/str/sub.ttf', _notoTtf);
+          const PDTrueTypeFont = await pb.pdmodel.font.PDTrueTypeFont;
+          const WinAnsiEncoding = await pb.pdmodel.font.encoding.WinAnsiEncoding;
+          const subFont = await PDTrueTypeFont.load(doc, await new File('/str/sub.ttf'), await WinAnsiEncoding.INSTANCE);
+          let replaced = 0;
+          const np = await doc.getNumberOfPages();
+          for (let i = 0; i < np; i++) {
+            const res = await (await doc.getPage(i)).getResources();
+            const names = []; // collect first, then replace (avoid concurrent modification)
+            const it = await (await res.getFontNames()).iterator();
+            while (await it.hasNext()) {
+              const nm = await it.next(); const f = await res.getFont(nm);
+              if (!f || (await f.isEmbedded()) || !(await f.isStandard14())) continue;
+              // skip SYMBOLIC standard-14 (Symbol/ZapfDingbats) — a WinAnsi substitute would render WRONG glyphs (a dingbat becomes a letter)
+              if (/symbol|zapf|dingbat/i.test(String((await f.getName()) || ''))) continue;
+              names.push(nm);
+            }
+            for (const nm of names) { await res.put(nm, subFont); replaced++; }
+          }
+          if (replaced) applied.push('§7.21.4.1:embedded ' + replaced + ' font(s) via NotoSans (REVIEW: substituted font — metrics approximate)');
+        } catch (e) { /* font fetch/embed is best-effort; leave the rule for honest disclosure */ }
+      }
+      await doc.save('/files/struct_out.pdf');
+      await doc.close();
+      const Files = await L.java.nio.file.Files, Base64 = await L.java.util.Base64;
+      const rb = await Files.readAllBytes(await (await new File('/files/struct_out.pdf')).toPath());
+      const b64 = await (await Base64.getEncoder()).encodeToString(rb);
+      return { bytes: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)), applied: applied };
+    } catch (e) { try { await doc.close(); } catch (_) {} throw e; }
+  }
+
+  async function remediate(bytes, maxIters, opts) {
+    maxIters = maxIters || 5;
+    let cur = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    const log = []; let verdict = null;
+    for (let i = 1; i <= maxIters; i++) {
+      verdict = await validateBytes(cur);
+      const step = { iter: i, failedRules: verdict.failedRules.length, rules: verdict.failedRules.map((f) => '§' + f.clause + 't' + f.testNumber) };
+      log.push(step);
+      if (verdict.compliant) break;
+      const rep = await _applyRepairs(cur, verdict.failedRules);
+      step.applied = rep.applied.slice();
+      cur = rep.bytes;
+      // structural fallback (PDFBox, co-loaded) for rules pdf-lib can't fix: 7.1t3 content-marking, 7.1t11 StructTreeRoot
+      const structRules = verdict.failedRules.filter((f) => (f.clause === '7.1' && (f.testNumber === 3 || f.testNumber === 11)) || (f.clause === '7.21.4.1' && f.testNumber === 1)); // rules pdf-lib can't fix: content/struct-tree + font embedding (MarkInfo 6.2t1 is pdf-lib's)
+      if (structRules.length && _lib) {
+        try { const sr = await _applyStructuralRepairs(cur, verdict.failedRules, opts); if (sr.applied.length) { cur = sr.bytes; step.applied = step.applied.concat(sr.applied); } }
+        catch (e) { step.structError = String(e && (e.message || e)); }
+      }
+      if (!step.applied.length) break; // nothing more is fixable — stop (ship best-effort)
+    }
+    let b = ''; for (let i = 0; i < cur.length; i += 8192) b += String.fromCharCode.apply(null, cur.subarray(i, i + 8192));
+    return { compliant: !!(verdict && verdict.compliant), verdict: verdict, log: log, repairedB64: btoa(b) };
+  }
+  window.__remediate = remediate; // for headless tests
+
+  function render(r) {
+    $('report').innerHTML =
+      (r.compliant ? '<b class="pass">✅ PASSES PDF/UA-1</b>' : '<b class="fail">❌ FAILS PDF/UA-1</b>') +
+      ' — ' + r.failedRules.length + ' distinct rule(s), ' + r.failedChecks + ' check(s) failed' +
+      (r.failedRules.length ? '<ul>' + r.failedRules.map((f) => '<li>ISO 14289-1 §' + f.clause + ' (test ' + f.testNumber + '): ' + f.message + (f.count > 1 ? ' <span class="muted">×' + f.count + '</span>' : '') + '</li>').join('') + '</ul>' : '');
+  }
+
+  // ── Reading-order preview (2026-06-22) ── veraPDF/PDFBox validate the STRUCTURE; this previews the
+  // EXPERIENCE: walk the tagged PDF's structure tree IN ORDER and replay the text each element carries
+  // (/ActualText, else /Alt) — i.e. the exact sequence a conformant screen reader announces — and read it
+  // aloud with the browser's built-in speechSynthesis (no NVDA, no dependency). A multi-column or complex
+  // layout tagged in the wrong order reads out of sequence here, which makes the silent defect visible+audible.
+  let _lastBytes = null, _roItems = null, _roSpeaking = false;
+  const _roEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const _roName = (v) => { try { return v && v.encodedName ? String(v.encodedName).replace(/^\//, '') : (v ? String(v.toString()).replace(/^\//, '') : ''); } catch (e) { return ''; } };
+  function _roText(d) {
+    try {
+      const N = window.PDFLib.PDFName;
+      const v = d.lookup(N.of('ActualText')) || d.lookup(N.of('Alt'));
+      if (!v) return '';
+      if (typeof v.decodeText === 'function') return v.decodeText();
+      if (typeof v.asString === 'function') return v.asString();
+      return String(v);
+    } catch (e) { return ''; }
+  }
+  async function _extractReadingOrder(bytes) {
+    const PL = window.PDFLib; if (!PL || !bytes) return null;
+    const { PDFDocument, PDFName, PDFDict, PDFArray } = PL;
+    let doc; try { doc = await PDFDocument.load(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)); } catch (e) { return null; }
+    const str = doc.catalog.lookup(PDFName.of('StructTreeRoot'));
+    if (!str || !str.lookup) return { tagged: false, items: [] };
+    const items = [];
+    const childElems = (node) => {
+      const K = node.lookup(PDFName.of('K'));
+      const kids = [];
+      if (K instanceof PDFArray) { for (let i = 0; i < K.size(); i++) kids.push(K.lookup(i)); }
+      else if (K) kids.push(K);
+      return kids.filter((k) => k instanceof PDFDict && k.lookup(PDFName.of('S'))); // child StructElems only (skip MCR/MCID leaves)
+    };
+    const walk = (node, depth) => {
+      if (!node || !node.lookup || depth > 60) return;
+      const ch = childElems(node);
+      if (ch.length) { for (const c of ch) walk(c, depth + 1); return; } // grouping element → recurse
+      const role = _roName(node.lookup(PDFName.of('S')));
+      if (role) items.push({ role: role, text: (_roText(node) || '').replace(/\s+/g, ' ').trim() }); // content leaf → emit
+    };
+    const rootK = str.lookup(PDFName.of('K'));
+    const roots = [];
+    if (rootK instanceof PDFArray) { for (let i = 0; i < rootK.size(); i++) roots.push(rootK.lookup(i)); }
+    else if (rootK) roots.push(rootK);
+    for (const r of roots) walk(r, 0);
+    return { tagged: true, items: items };
+  }
+  function _roHighlight(i) {
+    const ul = document.getElementById('ro-list'); if (!ul) return;
+    Array.prototype.forEach.call(ul.children, (li, n) => { li.style.background = (n === i) ? '#fef9c3' : ''; });
+    const cur = ul.children[i]; if (cur && cur.scrollIntoView) { try { cur.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
+  }
+  function _roStop() { try { speechSynthesis.cancel(); } catch (e) {} _roSpeaking = false; _roHighlight(-1); }
+  function _roSpeakFrom(i) {
+    if (!_roItems || i >= _roItems.length) { _roSpeaking = false; _roHighlight(-1); return; }
+    _roHighlight(i);
+    const it = _roItems[i];
+    const u = new SpeechSynthesisUtterance((it.role ? it.role + '. ' : '') + (it.text || 'no actual-text — content is in the page stream'));
+    u.rate = 1.05;
+    u.onend = () => { if (_roSpeaking) _roSpeakFrom(i + 1); };
+    try { speechSynthesis.speak(u); } catch (e) { _roSpeaking = false; }
+  }
+  function _roPlay() { if (!_roItems || !_roItems.length) return; _roStop(); _roSpeaking = true; _roSpeakFrom(0); }
+  function _roPause() { try { if (speechSynthesis.speaking && !speechSynthesis.paused) speechSynthesis.pause(); else speechSynthesis.resume(); } catch (e) {} }
+  async function _showReadingOrder() {
+    const host = document.getElementById('ro'); if (!host) return;
+    host.innerHTML = '<span class="muted">Reading the tag tree…</span>';
+    const ro = await _extractReadingOrder(_lastBytes);
+    if (!ro) { host.innerHTML = '<span class="muted">Could not parse this PDF for a reading-order preview.</span>'; return; }
+    if (!ro.tagged) { host.innerHTML = '<span class="muted">No structure tree — this PDF is untagged, so it has no programmatic reading order to preview.</span>'; return; }
+    if (!ro.items.length) { host.innerHTML = '<span class="muted">The structure tree has no content leaves to read.</span>'; return; }
+    _roItems = ro.items;
+    const list = ro.items.map((it, n) => '<li data-i="' + n + '"><b>' + _roEsc(it.role) + '</b>' + (it.text ? ': ' + _roEsc(it.text.slice(0, 200)) : ' <span class="muted">(no /ActualText)</span>') + '</li>').join('');
+    host.innerHTML =
+      '<h3 style="font-size:14px;margin:14px 0 4px">🔊 Reading-order preview <span class="muted">(' + ro.items.length + ' elements — the order a screen reader announces)</span></h3>' +
+      '<p class="muted" style="margin:0 0 6px">Replays the tagged structure in order. If a multi-column or complex page reads out of sequence here, the tag reading order is wrong — independent of whether veraPDF passes.</p>' +
+      '<div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap"><button id="ro-play">▶ Read aloud</button><button id="ro-pause">⏸ Pause / Resume</button><button id="ro-stop">⏹ Stop</button></div>' +
+      '<ol id="ro-list" style="max-height:320px;overflow:auto;font-size:13px;line-height:1.5;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px 8px 30px;margin:0">' + list + '</ol>';
+    document.getElementById('ro-play').onclick = _roPlay;
+    document.getElementById('ro-pause').onclick = _roPause;
+    document.getElementById('ro-stop').onclick = _roStop;
+  }
+  function _roOfferPreview() {
+    const host = document.getElementById('ro'); if (!host) return;
+    _roStop();
+    host.innerHTML = '<button id="ro-go">🔊 Preview reading order (what a screen reader announces)</button>';
+    const go = document.getElementById('ro-go'); if (go) go.onclick = _showReadingOrder;
+  }
+
+  function announceReady() {
+    try { if (window.opener) window.opener.postMessage({ type: 'verapdf-ready' }, '*'); } catch (e) {}
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'verapdf-ready' }, '*'); } catch (e) {}
+  }
+
+  async function boot() {
+    try {
+      setStatus('Starting Java runtime…');
+      await cheerpjInit();
+      // Co-load PDFBox for structural repairs ONLY if its jar is actually reachable — otherwise boot
+      // veraPDF-only so a missing/un-hosted jar can never break basic validation (CheerpJ allows one
+      // library thread, so the classpath is decided ONCE here). _lib gates the structural fallback.
+      let classpath = JAR_URL, pdfboxOk = false;
+      try { const r = await fetch(PDFBOX_JAR_URL.replace(/^\/app/, ''), { method: 'HEAD' }); if (r && r.ok) { classpath += ':' + PDFBOX_JAR_URL; pdfboxOk = true; } } catch (e) {}
+      setStatus(pdfboxOk ? 'Loading veraPDF + PDFBox…' : 'Loading veraPDF…');
+      const lib = await cheerpjRunLibrary(classpath);
+      if (pdfboxOk) _lib = lib; // enable the PDFBox structural fallback only when its jar loaded
+      const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
+      await Provider.initialise();
+      const Foundries = await lib.org.verapdf.pdfa.Foundries;
+      foundry = await Foundries.defaultInstance();
+      const PDFAFlavour = await lib.org.verapdf.pdfa.flavours.PDFAFlavour;
+      ua1 = await PDFAFlavour.fromString('ua1');
+      FileInputStream = await lib.java.io.FileInputStream;
+      setStatus('Warming up validator…');
+      cheerpOSAddStringFile('/str/warm.pdf', warmPdf());
+      await validatePath('/str/warm.pdf');
+      ready = true;
+      if (_driven) {
+        // Part of AlloFlow's pipeline: no manual file step — AlloFlow sends the remediated PDF's bytes.
+        setStatus('✅ Connected to AlloFlow — this window is part of the automatic accessibility check. It validates your remediated PDF and sends the result back to AlloFlow. You can leave it open.');
+        $('pick').style.display = 'none';
+      } else {
+        setStatus('✅ Validator ready. Pick a PDF (or it accepts bytes via postMessage).');
+        $('pick').disabled = false;
+      }
+      announceReady();
+    } catch (e) {
+      setStatus('❌ Boot failed: ' + (e && (e.message || e)));
+    }
+  }
+
+  $('pick').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    setStatus('Validating ' + f.name + '…');
+    const t = performance.now();
+    const _b = new Uint8Array(await f.arrayBuffer());
+    const r = await validateBytes(_b);
+    render(r);
+    _lastBytes = _b; _roOfferPreview();
+    setStatus('Done in ' + Math.round(performance.now() - t) + 'ms.');
+    window.__lastResult = r; // for headless tests
+  });
+
+  window.addEventListener('message', async (ev) => {
+    const d = ev.data || {};
+    if (d.type === 'verapdf-validate' && d.bytes && ready) {
+      setStatus('⏳ Validating the PDF AlloFlow sent…');
+      try {
+        const r = await validateBytes(d.bytes);
+        render(r); // show the verdict in this window too (useful when it's the visible popup fallback)
+        _lastBytes = d.bytes; _roOfferPreview();
+        setStatus(r.compliant ? '✅ PDF/UA-1: conformant — result sent back to AlloFlow.' : '❌ PDF/UA-1: ' + r.failedRules.length + ' rule(s) — result sent back to AlloFlow.');
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', result: r }, '*');
+      } catch (e) {
+        setStatus('❌ Validation error — reported back to AlloFlow.');
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, '*');
+      }
+    }
+    // Closed-loop remediation: validate → repair → re-validate → loop, return the green (or best-effort) PDF.
+    if (d.type === 'verapdf-remediate' && d.bytes && ready) {
+      try {
+        const r = await remediate(d.bytes, d.maxIters, { allowArtifact: !!d.allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', result: r }, '*');
+      } catch (e) {
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, '*');
+      }
+    }
+  });
+
+  boot();
+</script>
+</body>
+</html>

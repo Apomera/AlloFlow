@@ -1,0 +1,430 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`science-sim + studio render goldens > renders + pins a digest for a11yAuditor [ssr] 1`] = `
+{
+  "buttons": 20,
+  "canvases": 0,
+  "inputs": 1,
+  "lengthBucket": 35,
+  "paths": 0,
+  "selects": 0,
+  "sha": "7c9fbd625a31af58",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for anatomy [ssr] 1`] = `
+{
+  "buttons": 66,
+  "canvases": 1,
+  "inputs": 1,
+  "lengthBucket": 165,
+  "paths": 0,
+  "selects": 0,
+  "sha": "f63df9d3966987d5",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for archStudio [ssr] 1`] = `
+{
+  "buttons": 83,
+  "canvases": 0,
+  "inputs": 2,
+  "lengthBucket": 128,
+  "paths": 0,
+  "selects": 0,
+  "sha": "a7a197acea5e11b4",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for artStudio [ssr] 1`] = `
+{
+  "buttons": 24,
+  "canvases": 1,
+  "inputs": 3,
+  "lengthBucket": 40,
+  "paths": 0,
+  "selects": 0,
+  "sha": "36dfab07e66d0b6d",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for astronomy [mount] 1`] = `
+{
+  "buttons": 18,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 68,
+  "paths": 0,
+  "selects": 0,
+  "sha": "88bf46852aaacadb",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for bakingScience [ssr] 1`] = `
+{
+  "buttons": 16,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 55,
+  "paths": 0,
+  "selects": 0,
+  "sha": "00fe29c54672b741",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for bridgeLab [mount] 1`] = `
+{
+  "buttons": 24,
+  "canvases": 0,
+  "inputs": 7,
+  "lengthBucket": 219,
+  "paths": 6,
+  "selects": 0,
+  "sha": "f0e2c43259475ce7",
+  "svgs": 2,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for cell [ssr] 1`] = `
+{
+  "buttons": 39,
+  "canvases": 1,
+  "inputs": 3,
+  "lengthBucket": 108,
+  "paths": 0,
+  "selects": 0,
+  "sha": "479803b3691ba218",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for chemBalance [ssr] 1`] = `
+{
+  "buttons": 12,
+  "canvases": 1,
+  "inputs": 1,
+  "lengthBucket": 43,
+  "paths": 0,
+  "selects": 0,
+  "sha": "5ca5b37b4ec3747d",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for cyberDefense [ssr] 1`] = `
+{
+  "buttons": 20,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 53,
+  "paths": 0,
+  "selects": 0,
+  "sha": "e8499663e095e00f",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for echoTrainer [ssr] 1`] = `
+{
+  "buttons": 28,
+  "canvases": 1,
+  "inputs": 4,
+  "lengthBucket": 145,
+  "paths": 6,
+  "selects": 0,
+  "sha": "39c5155b3c62dc94",
+  "svgs": 2,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for echolocation [ssr] 1`] = `
+{
+  "buttons": 10,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 47,
+  "paths": 0,
+  "selects": 0,
+  "sha": "c5fdcd7f70bddaeb",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for epidemicSim [ssr] 1`] = `
+{
+  "buttons": 21,
+  "canvases": 1,
+  "inputs": 4,
+  "lengthBucket": 445,
+  "paths": 6,
+  "selects": 0,
+  "sha": "0018d8c1eb3c2159",
+  "svgs": 1,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for fireEcology [ssr] 1`] = `
+{
+  "buttons": 29,
+  "canvases": 0,
+  "inputs": 1,
+  "lengthBucket": 128,
+  "paths": 0,
+  "selects": 0,
+  "sha": "c6e4b92db6cfffc8",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for flightSim [ssr] 1`] = `
+{
+  "buttons": 48,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 207,
+  "paths": 2,
+  "selects": 2,
+  "sha": "feb4832640220aea",
+  "svgs": 1,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for galaxy [ssr] 1`] = `
+{
+  "buttons": 52,
+  "canvases": 1,
+  "inputs": 3,
+  "lengthBucket": 185,
+  "paths": 4,
+  "selects": 0,
+  "sha": "bf8c5aed2c58e6e4",
+  "svgs": 4,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for gameStudio [ssr] 1`] = `
+{
+  "buttons": 34,
+  "canvases": 0,
+  "inputs": 1,
+  "lengthBucket": 233,
+  "paths": 0,
+  "selects": 2,
+  "sha": "84b36f01119211ea",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for kitchenLab [ssr] 1`] = `
+{
+  "buttons": 8,
+  "canvases": 0,
+  "inputs": 1,
+  "lengthBucket": 192,
+  "paths": 0,
+  "selects": 0,
+  "sha": "9c6b94537dfe82fe",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for microbiology [mount] 1`] = `
+{
+  "buttons": 14,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 226,
+  "paths": 0,
+  "selects": 0,
+  "sha": "52c78f2d70893c2e",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for molecule [ssr] 1`] = `
+{
+  "buttons": 104,
+  "canvases": 0,
+  "inputs": 1,
+  "lengthBucket": 175,
+  "paths": 0,
+  "selects": 0,
+  "sha": "5032d59a03b7b133",
+  "svgs": 1,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for moonMission [ssr] 1`] = `
+{
+  "buttons": 8,
+  "canvases": 0,
+  "inputs": 4,
+  "lengthBucket": 66,
+  "paths": 0,
+  "selects": 0,
+  "sha": "de30ad30fb06da27",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for physics [mount] 1`] = `
+{
+  "buttons": 36,
+  "canvases": 1,
+  "inputs": 9,
+  "lengthBucket": 101,
+  "paths": 0,
+  "selects": 0,
+  "sha": "648777016d4dd8ee",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for punnett [ssr] 1`] = `
+{
+  "buttons": 26,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 107,
+  "paths": 0,
+  "selects": 2,
+  "sha": "2837e6a83bd1f83b",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for rockCycle [ssr] 1`] = `
+{
+  "buttons": 13,
+  "canvases": 1,
+  "inputs": 0,
+  "lengthBucket": 39,
+  "paths": 0,
+  "selects": 1,
+  "sha": "9e9f2a87e6fee64f",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for rocks [ssr] 1`] = `
+{
+  "buttons": 9,
+  "canvases": 1,
+  "inputs": 0,
+  "lengthBucket": 31,
+  "paths": 0,
+  "selects": 0,
+  "sha": "367730d3b2722623",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for semiconductor [mount] 1`] = `
+{
+  "buttons": 67,
+  "canvases": 1,
+  "inputs": 2,
+  "lengthBucket": 93,
+  "paths": 0,
+  "selects": 0,
+  "sha": "b68b1ceb3061dc3a",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for spaceExplorer [ssr] 1`] = `
+{
+  "buttons": 9,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 58,
+  "paths": 0,
+  "selects": 0,
+  "sha": "5115931e1feda853",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for swimLab [ssr] 1`] = `
+{
+  "buttons": 13,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 69,
+  "paths": 0,
+  "selects": 0,
+  "sha": "eb420d0b7c303d28",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for throwlab [ssr] 1`] = `
+{
+  "buttons": 53,
+  "canvases": 1,
+  "inputs": 7,
+  "lengthBucket": 237,
+  "paths": 0,
+  "selects": 0,
+  "sha": "cf877f9a0e9efb82",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for titrationLab [ssr] 1`] = `
+{
+  "buttons": 9,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 59,
+  "paths": 0,
+  "selects": 0,
+  "sha": "0406e1a84a738883",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for waterCycle [ssr] 1`] = `
+{
+  "buttons": 30,
+  "canvases": 1,
+  "inputs": 6,
+  "lengthBucket": 107,
+  "paths": 0,
+  "selects": 0,
+  "sha": "4c0807b634c74e02",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for wave [mount] 1`] = `
+{
+  "buttons": 36,
+  "canvases": 1,
+  "inputs": 8,
+  "lengthBucket": 105,
+  "paths": 0,
+  "selects": 0,
+  "sha": "67950ca28dc6cde5",
+  "svgs": 0,
+}
+`;
+
+exports[`science-sim + studio render goldens > renders + pins a digest for weldLab [ssr] 1`] = `
+{
+  "buttons": 26,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 170,
+  "paths": 0,
+  "selects": 0,
+  "sha": "3a710ed08214f06e",
+  "svgs": 0,
+}
+`;

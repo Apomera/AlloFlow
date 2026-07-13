@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-westward-expansion-primary-source-set-card",
+  "title": "Library of Congress: Westward Expansion Sources",
+  "description": "A LOC source card for westward expansion primary sources and maps.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Westward expansion",
+    "Maps",
+    "Primary sources",
+    "U.S. history"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/?q=westward+expansion"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Library of Congress westward expansion sources include maps, photographs, documents, and accounts connected to migration, land, conflict, and federal policy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source to compare maps with narratives, discuss whose perspectives are present or missing, and analyze change over time."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress rights statements differ by item. Check each map, image, and document before copying or adapting it."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

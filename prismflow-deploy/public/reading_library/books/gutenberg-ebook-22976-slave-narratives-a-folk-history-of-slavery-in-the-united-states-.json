@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22976-slave-narratives-a-folk-history-of-slavery-in-the-united-states-",
+  "title": "Slave Narratives: A Folk History of Slavery in the United States from Interviews with Former Slaves, Volume XI, North Carolina Narratives, Part 1",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "African Americans -- North Carolina -- Biography",
+    "Enslaved persons -- North Carolina -- Biography",
+    "Enslaved persons -- North Carolina -- Social conditions",
+    "North Carolina -- History -- 1775-1865 -- Biography",
+    "Slave narratives -- North Carolina",
+    "Slavery -- North Carolina"
+  ],
+  "authors": [
+    "United States. Work Projects Administration"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22976"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/22976/pg22976.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Slave Narratives: A Folk History of Slavery in the United States from Interviews with Former Slaves, Volume XI, North Carolina Narratives, Part 1\" by United States. Work Projects Administration. Metadata tags include: African Americans -- North Carolina -- Biography; Enslaved persons -- North Carolina -- Biography; Enslaved persons -- North Carolina -- Social conditions; North Carolina -- History -- 1775-1865 -- Biography."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 112
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "canvas_url": "https://gemini.google.com/share/c8baf80a46cc",
-  "released": "2026-05-29T00:00:00Z",
-  "notes": "Initial release for King Middle pilot. Stable bookmark URL: apomera.github.io/AlloFlow/launch.html"
+  "released": "2026-06-24T00:00:00Z",
+  "notes": "Pipeline reliability + accuracy: heavy/scanned-document AI pacing for smoother large-file remediation, the audit no longer stops early, reading-order-safe restyle + heading transforms, more honest conformance reporting, and the auto-remediation completion target raised to 95. Also adds a STEM coordinate-grid tool, expanded translations (numberline + coordgrid across 50+ languages), and Geology Explorer deep-earth + first-person upgrades. Stable bookmark URL: apomera.github.io/AlloFlow/launch.html"
 }

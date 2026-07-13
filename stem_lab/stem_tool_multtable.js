@@ -248,13 +248,22 @@ window.StemLab = window.StemLab || {
     { id: 'mathlete',      icon: '\uD83C\uDFC6', label: 'Mathlete',    desc: '50 correct in one session' },
     { id: 'trickyMaster',  icon: '\uD83E\uDDE9', label: 'Tricky Master', desc: '10 correct on Tricky 15 facts' },
     { id: 'patternFinder', icon: '\uD83D\uDD0D', label: 'Pattern Finder', desc: 'Explore 5+ patterns in the Patterns tab' },
-    { id: 'visualLearner', icon: '\uD83D\uDFE9', label: 'Visual Learner', desc: 'Explore 10 facts in the Visual tab' }
+    { id: 'visualLearner', icon: '\uD83D\uDFE9', label: 'Visual Explorer', desc: 'Explore 10 facts in the Visual tab' }
   ];
 
   window.StemLab.registerTool('multtable', {
     icon: '\uD83D\uDD22', label: 'Multiplication Table',
     desc: 'Interactive 12\u00D712 grid with quiz modes, speed runs, streaks, badges & AI tutor.',
     color: 'pink', category: 'math',
+    // State is split across _multExt (practice totals, badges) and _multTimer
+    // (speed-run session) — the hub's quest checker merges these keys so the
+    // hooks below can see both.
+    questDataKeys: ['_multExt', '_multTimer'],
+    questHooks: [
+      { id: 'answer_10', label: 'Answer 10 facts correctly', icon: '🔢', check: function(d) { return (d.totalCorrect || 0) >= 10; }, progress: function(d) { return (d.totalCorrect || 0) + '/10 correct'; } },
+      { id: 'squares_5', label: 'Answer 5 square facts (n × n)', icon: '🟪', check: function(d) { return Object.keys(d.squaresAnswered || {}).length >= 5; }, progress: function(d) { return Object.keys(d.squaresAnswered || {}).length + '/5 squares'; } },
+      { id: 'speedrun_10', label: 'Score 10 in a speed run', icon: '⏱️', check: function(d) { return (d.score || 0) >= 10; }, progress: function(d) { return (d.score || 0) + '/10 in best run'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -284,7 +293,10 @@ window.StemLab = window.StemLab || {
       var setLabToolData = ctx.setLabToolData;
       var exploreScore = ctx.exploreScore || { correct: 0, total: 0 };
       var setExploreScore = ctx.setExploreScore;
-      var exploreDifficulty = ctx.exploreDifficulty || 'hard';
+      // Grade-aware fallback: K-2 starts on easy facts, 3-5 medium, older grades hard.
+      // A hub-provided exploreDifficulty (the user's explicit choice) always wins.
+      var _mtGl = (ctx.gradeLevel || '').toLowerCase();
+      var exploreDifficulty = ctx.exploreDifficulty || (/k|1st|2nd|pre/.test(_mtGl) ? 'easy' : /3rd|4th|5th/.test(_mtGl) ? 'medium' : 'hard');
       var setExploreDifficulty = ctx.setExploreDifficulty;
 
       var maxNum = 12;
@@ -602,11 +614,11 @@ window.StemLab = window.StemLab || {
 
       // ── Difficulty button row ──
       var diffModes = [
-        { id: 'easy',     label: 'Easy',     range: '2-5' },
-        { id: 'medium',   label: 'Medium',   range: '2-9' },
-        { id: 'hard',     label: 'Hard',     range: '2-12' },
-        { id: 'adaptive', label: 'Adaptive', range: 'Auto' },
-        { id: 'tricky',   label: 'Tricky 15', range: 'Hard facts' }
+        { id: 'easy',     label: t('stem.multtable.easy', 'Easy'),     range: '2-5' },
+        { id: 'medium',   label: t('stem.multtable.medium', 'Medium'),   range: '2-9' },
+        { id: 'hard',     label: t('stem.multtable.hard', 'Hard'),     range: '2-12' },
+        { id: 'adaptive', label: t('stem.multtable.adaptive', 'Adaptive'), range: 'Auto' },
+        { id: 'tricky',   label: t('stem.multtable.tricky_15', 'Tricky 15'), range: 'Hard facts' }
       ];
 
       // ── Build missed-problems deduped list ──
@@ -691,19 +703,19 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', {},
-                h('label', { className: 'block text-xs font-bold text-amber-800 mb-1' }, 'Rows (a)'),
+                h('label', { className: 'block text-xs font-bold text-amber-800 mb-1' }, t('stem.multtable.rows_a', 'Rows (a)')),
                 h('input', { type: 'range', min: '1', max: '12', value: a,
                   onChange: function(e) { extUpd({ visualA: parseInt(e.target.value, 10) }); },
-                  'aria-label': 'Factor a (rows)',
+                  'aria-label': t('stem.multtable.factor_a_rows', 'Factor a (rows)'),
                   className: 'w-full accent-amber-600'
                 }),
                 h('div', { className: 'text-center text-xl font-bold text-amber-800' }, a)
               ),
               h('div', {},
-                h('label', { className: 'block text-xs font-bold text-amber-800 mb-1' }, 'Columns (b)'),
+                h('label', { className: 'block text-xs font-bold text-amber-800 mb-1' }, t('stem.multtable.columns_b', 'Columns (b)')),
                 h('input', { type: 'range', min: '1', max: '12', value: b,
                   onChange: function(e) { extUpd({ visualB: parseInt(e.target.value, 10) }); },
-                  'aria-label': 'Factor b (columns)',
+                  'aria-label': t('stem.multtable.factor_b_columns', 'Factor b (columns)'),
                   className: 'w-full accent-amber-600'
                 }),
                 h('div', { className: 'text-center text-xl font-bold text-amber-800' }, b)
@@ -714,13 +726,13 @@ window.StemLab = window.StemLab || {
                 h('input', { type: 'checkbox', checked: visualSkipOn,
                   onChange: function() { playSound('default'); extUpd({ visualSkipOn: !visualSkipOn }); }
                 }),
-                'Skip-count overlay (column of running totals)'
+                t('stem.multtable.skip_count_overlay_column_of_running_t', 'Skip-count overlay (column of running totals)')
               ),
               h('button', {
                 onClick: function() { extUpd({ visualA: visualB, visualB: visualA }); announceToSR('Swapped to ' + visualB + ' by ' + visualA); },
-                'aria-label': 'Swap factors (commutativity)',
+                'aria-label': t('stem.multtable.swap_factors_commutativity', 'Swap factors (commutativity)'),
                 className: 'ml-auto px-2 py-1 rounded bg-violet-100 text-violet-700 border border-violet-300 font-bold hover:bg-violet-200'
-              }, '⇄ Swap (commutativity)')
+              }, t('stem.multtable.swap_commutativity', '⇄ Swap (commutativity)'))
             )
           ),
 
@@ -741,18 +753,18 @@ window.StemLab = window.StemLab || {
           // Repeated-addition row + commutativity twin
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
-              h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' }, '➕ Repeated addition'),
+              h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' }, t('stem.multtable.repeated_addition', '➕ Repeated addition')),
               h('p', { className: 'text-sm font-mono font-bold text-amber-900' },
                 Array.from({ length: a }, function() { return b; }).join(' + ') + ' = ' + product
               )
             ),
             h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
-              h('p', { className: 'text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1' }, '⇄ Commutativity twin'),
+              h('p', { className: 'text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1' }, t('stem.multtable.commutativity_twin', '⇄ Commutativity twin')),
               h('p', { className: 'text-sm font-mono font-bold text-violet-900' },
                 a + ' × ' + b + ' = ' + b + ' × ' + a + ' = ' + product
               ),
               h('p', { className: 'text-[10px] text-violet-700 italic mt-0.5' },
-                'Same dots, just turned sideways. Learn one fact, know two.'
+                t('stem.multtable.same_dots_just_turned_sideways_learn_o', 'Same dots, just turned sideways. Learn one fact, know two.')
               )
             )
           ),
@@ -764,13 +776,13 @@ window.StemLab = window.StemLab || {
             ),
             h('p', { className: 'text-sm text-fuchsia-900 leading-relaxed' }, trickHere.trick),
             h('p', { className: 'text-[10px] text-fuchsia-700 italic mt-1' },
-              'This is one of the Tricky 15 facts — the small set that needs real recall. Switch to Practice → "Tricky 15" mode to drill it.'
+              t('stem.multtable.this_is_one_of_the_tricky_15_facts_the', 'This is one of the Tricky 15 facts — the small set that needs real recall. Switch to Practice → "Tricky 15" mode to drill it.')
             )
           ),
 
           // Fact family (multiplication ↔ division bridge)
           h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
-            h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, '👨‍👩‍👧 Fact family — multiplication ↔ division'),
+            h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, t('stem.multtable.fact_family_multiplication_division', '👨‍👩‍👧 Fact family — multiplication ↔ division')),
             h('p', { className: 'text-xs font-mono font-bold text-emerald-900' },
               a + ' × ' + b + ' = ' + product +
               (a === b ? '' : ',  ' + b + ' × ' + a + ' = ' + product) +
@@ -778,13 +790,13 @@ window.StemLab = window.StemLab || {
               (a === b ? '' : ',  ' + product + ' ÷ ' + b + ' = ' + a)
             ),
             h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' },
-              'Same numbers, four faces. Knowing one fact gives you the others.'
+              t('stem.multtable.same_numbers_four_faces_knowing_one_fa', 'Same numbers, four faces. Knowing one fact gives you the others.')
             )
           ),
 
           // Quick presets focusing on hard facts (the "tricky middle" of the table)
           h('div', { className: 'flex flex-wrap items-center gap-1.5' },
-            h('span', { className: 'text-[11px] font-bold text-amber-700 self-center mr-1' }, 'Tricky facts to visualize:'),
+            h('span', { className: 'text-[11px] font-bold text-amber-700 self-center mr-1' }, t('stem.multtable.tricky_facts_to_visualize', 'Tricky facts to visualize:')),
             [[6,7],[6,8],[6,9],[7,7],[7,8],[7,9],[8,8],[8,9],[9,9],[11,12],[12,12]].map(function(pair) {
               return h('button', { key: 'vp-' + pair[0] + '-' + pair[1],
                 onClick: function() { extUpd({ visualA: pair[0], visualB: pair[1] }); },
@@ -800,37 +812,37 @@ window.StemLab = window.StemLab || {
       // Builds number-sense ("WHY 9s digits add to 9") not just rote recall.
       var PATTERNS = [
         {
-          id: 'fives', label: '5s end in 0 or 5', icon: '5️⃣', accent: '#0891b2',
+          id: 'fives', label: t('stem.multtable.5s_end_in_0_or_5', '5s end in 0 or 5'), icon: '5️⃣', accent: '#0891b2',
           cellMatches: function(r, c) { return (r + 1) === 5 || (c + 1) === 5; },
           explain: 'Every multiple of 5 ends in either 0 or 5. Look: 5×1=5, 5×2=10, 5×3=15, 5×4=20… alternating. This is the easiest column to memorize first.'
         },
         {
-          id: 'nines', label: '9s digits sum to 9', icon: '9️⃣', accent: '#dc2626',
+          id: 'nines', label: t('stem.multtable.9s_digits_sum_to_9', '9s digits sum to 9'), icon: '9️⃣', accent: '#dc2626',
           cellMatches: function(r, c) { return (r + 1) === 9 || (c + 1) === 9; },
           explain: 'For 9 × 1-10: the two digits of the answer always add to 9. 9×3=27 (2+7=9). 9×7=63 (6+3=9). Also: the tens digit is one less than what you multiplied by (9×7 → tens is 6, one less than 7).'
         },
         {
-          id: 'squares', label: 'Perfect squares', icon: '⬛', accent: '#7c3aed',
+          id: 'squares', label: t('stem.multtable.perfect_squares', 'Perfect squares'), icon: '⬛', accent: '#7c3aed',
           cellMatches: function(r, c) { return r === c; },
           explain: 'The diagonal: n × n. 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144. Memorize these and you cut a quarter of the table in half — every fact off the diagonal has a twin (commutativity).'
         },
         {
-          id: 'doubles', label: 'Doubles (×2)', icon: '🔁', accent: '#16a34a',
+          id: 'doubles', label: t('stem.multtable.doubles_2', 'Doubles (×2)'), icon: '🔁', accent: '#16a34a',
           cellMatches: function(r, c) { return (r + 1) === 2 || (c + 1) === 2; },
           explain: '×2 is just doubling — adding the number to itself. 7×2 = 7+7 = 14. If you know your doubles, you also know ×4 (double again) and ×8 (double once more).'
         },
         {
-          id: 'tens', label: '×10 adds a zero', icon: '🔟', accent: '#0f766e',
+          id: 'tens', label: t('stem.multtable.10_adds_a_zero', '×10 adds a zero'), icon: '🔟', accent: '#0f766e',
           cellMatches: function(r, c) { return (r + 1) === 10 || (c + 1) === 10; },
           explain: '×10 is the easiest: just put a 0 at the end. 7×10 = 70. This works because our number system is base 10. ×100 puts two zeros, ×1000 puts three, etc.'
         },
         {
-          id: 'elevens', label: '11s repeat the digit (×1-9)', icon: '1️⃣1️⃣', accent: '#9333ea',
+          id: 'elevens', label: t('stem.multtable.11s_repeat_the_digit_1_9', '11s repeat the digit (×1-9)'), icon: '1️⃣1️⃣', accent: '#9333ea',
           cellMatches: function(r, c) { return (r + 1) === 11 || (c + 1) === 11; },
           explain: 'For 11 × 1 through 11 × 9: the answer is just that digit doubled. 11×3=33, 11×7=77. (11×10 breaks the pattern: 110. 11×11=121, 11×12=132.)'
         },
         {
-          id: 'distributive', label: '7s = 5s + 2s (distributive)', icon: '✂️', accent: '#d97706',
+          id: 'distributive', label: t('stem.multtable.7s_5s_2s_distributive', '7s = 5s + 2s (distributive)'), icon: '✂️', accent: '#d97706',
           cellMatches: function(r, c) { return (r + 1) === 7 || (c + 1) === 7; },
           explain: 'Forgot 7×8? Split: 7×8 = (5+2)×8 = 5×8 + 2×8 = 40 + 16 = 56. Any "hard" fact can be split into two "easy" facts using the distributive property.'
         }
@@ -880,7 +892,7 @@ window.StemLab = window.StemLab || {
           // Pattern chip selector
           h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
             h('p', { className: 'text-[11px] font-bold text-indigo-800 mb-2' },
-              '🔍 Pick a pattern to highlight. The table is full of structure — once you see it, half the facts become predictable.'
+              t('stem.multtable.pick_a_pattern_to_highlight_the_table_', '🔍 Pick a pattern to highlight. The table is full of structure — once you see it, half the facts become predictable.')
             ),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               PATTERNS.map(function(p) {
@@ -917,7 +929,7 @@ window.StemLab = window.StemLab || {
 
           // The table with highlighting
           h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-3 overflow-x-auto' },
-            h('table', { className: 'border-collapse w-full text-center', 'aria-label': 'Multiplication table with pattern highlighting' },
+            h('table', { className: 'border-collapse w-full text-center', 'aria-label': t('stem.multtable.multiplication_table_with_pattern_high', 'Multiplication table with pattern highlighting') },
               h('caption', { className: 'sr-only' }, selectedPattern ? 'Showing pattern: ' + selectedPattern.label : 'Multiplication table'),
               h('thead', null, h('tr', null, headerRow)),
               h('tbody', null, bodyRows)
@@ -931,21 +943,21 @@ window.StemLab = window.StemLab || {
           ),
 
           !selectedPattern && h('p', { className: 'text-xs text-indigo-700 italic text-center' },
-            '👆 Click any pattern above to light up the cells and read the rule. Multiple patterns may overlap (e.g., 5×5 is both a "5s multiple" and a "perfect square").'
+            t('stem.multtable.click_any_pattern_above_to_light_up_th', '👆 Click any pattern above to light up the cells and read the rule. Multiple patterns may overlap (e.g., 5×5 is both a "5s multiple" and a "perfect square").')
           ),
 
           // Pedagogy note
           h('details', { className: 'bg-white rounded-xl border border-indigo-200 p-3' },
-            h('summary', { className: 'text-xs font-bold text-indigo-700 cursor-pointer' }, '💡 Why patterns beat brute memorization'),
+            h('summary', { className: 'text-xs font-bold text-indigo-700 cursor-pointer' }, t('stem.multtable.why_patterns_beat_brute_memorization', '💡 Why patterns beat brute memorization')),
             h('div', { className: 'mt-2 space-y-2 text-xs text-slate-700' },
-              h('p', {}, h('b', {}, 'You only need to memorize about a third of the table. '),
-                'Anything in the 1s, 2s, 5s, 10s, 11s columns has an easy rule. The squares are a small set (12 facts). What remains is the "tricky middle" — about 15 facts — that needs real recall: 6×7, 6×8, 6×9, 7×8, 7×9, 8×9 and their twins.'
+              h('p', {}, h('b', {}, t('stem.multtable.you_only_need_to_memorize_about_a_thir', 'You only need to memorize about a third of the table. ')),
+                t('stem.multtable.anything_in_the_1s_2s_5s_10s_11s_colum', 'Anything in the 1s, 2s, 5s, 10s, 11s columns has an easy rule. The squares are a small set (12 facts). What remains is the "tricky middle" — about 15 facts — that needs real recall: 6×7, 6×8, 6×9, 7×8, 7×9, 8×9 and their twins.')
               ),
-              h('p', {}, h('b', {}, 'Distributive shortcut for the tricky middle. '),
-                'Forget 7×8? 7×8 = 5×8 + 2×8 = 40 + 16 = 56. Build the hard fact from two easy ones. After enough repetitions, the answer becomes automatic.'
+              h('p', {}, h('b', {}, t('stem.multtable.distributive_shortcut_for_the_tricky_m', 'Distributive shortcut for the tricky middle. ')),
+                t('stem.multtable.forget_7_8_7_8_5_8_2_8_40_16_56_build_', 'Forget 7×8? 7×8 = 5×8 + 2×8 = 40 + 16 = 56. Build the hard fact from two easy ones. After enough repetitions, the answer becomes automatic.')
               ),
-              h('p', {}, h('b', {}, 'For dyscalculia specifically: '),
-                'Visualizing each fact as an area-model rectangle (Visual tab) or a pattern (this tab) gives you a path to the answer that does not require automatic recall. Recall builds eventually, but not from drilling alone.'
+              h('p', {}, h('b', {}, t('stem.multtable.for_dyscalculia_specifically', 'For dyscalculia specifically: ')),
+                t('stem.multtable.visualizing_each_fact_as_an_area_model', 'Visualizing each fact as an area-model rectangle (Visual tab) or a pattern (this tab) gives you a path to the answer that does not require automatic recall. Recall builds eventually, but not from drilling alone.')
               )
             )
           )
@@ -956,25 +968,66 @@ window.StemLab = window.StemLab || {
       // ═══ RENDER ═══
       // ═══════════════════════════════
 
-      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+      var multTabLabel = { practice: 'Practice', visual: 'Visual model', patterns: 'Patterns' }[mtTab] || 'Practice';
+      var multNext = mtTab === 'visual'
+        ? 'Build the fact as rows and columns, then rotate it to show commutativity.'
+        : mtTab === 'patterns'
+          ? 'Highlight one pattern and use its rule to predict an unfamiliar product.'
+          : (_ext.totalCorrect || 0) === 0
+            ? 'Choose a fact family, predict the answer, then verify it with a visual strategy.'
+            : 'Use an easy fact to derive one harder neighboring fact.';
+
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-3 mb-2' },
-          h('button', {
-            onClick: function() {
-              setStemLabTool(null);
-              if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); }
-            },
-            className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors',
-            'aria-label': 'Back to tools'
-          }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-pink-800' }, '\uD83D\uDD22 Multiplication Table'),
-          h('div', { role: 'tablist', 'aria-expanded': String(multTableHidden), className: 'flex items-center gap-2 ml-2' },
-            h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': 'Toggle hidden mode (H)',
+        h('section', { 'data-multtable-command': 'true', className: 'overflow-hidden rounded-2xl border border-pink-300/40 bg-gradient-to-br from-slate-950 via-pink-950 to-violet-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); } }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-pink-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-pink-100 ring-1 ring-pink-200/30' }, 'Fact strategy studio')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.multtable.multiplication_table', '\uD83D\uDD22 Multiplication Table')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-pink-100' }, 'Use arrays, patterns, and fact families to reason toward fluent multiplication and division.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-pink-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, multNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'Focus', value: multTabLabel },
+                  { label: 'Correct', value: String(_ext.totalCorrect || 0) },
+                  { label: 'Streak', value: String(_mt.streak || 0) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Multiplication reasoning pathway' },
+              [
+                { n: '1', title: 'Observe', detail: 'See the fact as an array or pattern.' },
+                { n: '2', title: 'Predict', detail: 'Use a known relationship.' },
+                { n: '3', title: 'Explain', detail: 'Connect the strategy to an equation.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pink-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-pink-200' }, step.detail))
+                );
+              })
+            )
+          )
+        ),
+        h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-pink-100 bg-white/80 p-2', 'aria-expanded': String(multTableHidden) },
+            h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': t('stem.multtable.toggle_hidden_mode_h', 'Toggle hidden mode (H)'),
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
-              title: 'Toggle hidden mode (H)'
+              title: t('stem.multtable.toggle_hidden_mode_h_2', 'Toggle hidden mode (H)')
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
             h('div', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
@@ -982,16 +1035,16 @@ window.StemLab = window.StemLab || {
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + _mt.streak + ' streak!'),
             // Badge count
-            earnedCount > 0 && h('button', { 'aria-label': 'View badges (B)',
+            earnedCount > 0 && h('button', { 'aria-label': t('stem.multtable.view_badges_b', 'View badges (B)'),
               onClick: function() { extUpd({ showBadges: !_ext.showBadges }); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
-              title: 'View badges (B)'
+              title: t('stem.multtable.view_badges_b_2', 'View badges (B)')
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             // AI tutor button
             h('button', { onClick: askAI,
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
-              title: 'AI Tutor (?)'
-            }, '\uD83E\uDDE0 AI'),
+              title: t('stem.multtable.ai_tutor', 'AI Tutor (?)')
+            }, t('stem.multtable.ai', '\uD83E\uDDE0 AI')),
             // Mute toggle (v3)
             h('button', {
               onClick: function() {
@@ -1016,25 +1069,24 @@ window.StemLab = window.StemLab || {
                 extUpd({ patternId: null, mtTab: 'practice', visualA: 7, visualB: 8 });
                 announceToSR('Multiplication table reset');
               },
-              'aria-label': 'Reset',
-              title: 'Reset all',
+              'aria-label': t('stem.multtable.reset', 'Reset'),
+              title: t('stem.multtable.reset_all', 'Reset all'),
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
-            }, '\u21BA Reset')
-          )
+            }, t('stem.multtable.reset_2', '\u21BA Reset'))
         ),
 
         // Tab bar (v3)
-        h('div', { className: 'flex gap-1 bg-pink-50 rounded-xl p-1 border border-pink-200', role: 'tablist', 'aria-label': 'Multiplication Table sections' },
+        h('div', { className: 'flex gap-1 overflow-x-auto bg-pink-50 rounded-xl p-1 border border-pink-200', role: 'tablist', 'aria-label': t('stem.multtable.multiplication_table_sections', 'Multiplication Table sections') },
           [
-            { id: 'practice', icon: '\uD83C\uDFAF', label: 'Practice' },
-            { id: 'visual',   icon: '\uD83D\uDFE9', label: 'Visual' },
-            { id: 'patterns', icon: '\uD83D\uDD0D', label: 'Patterns' }
+            { id: 'practice', icon: '\uD83C\uDFAF', label: t('stem.multtable.practice', 'Practice') },
+            { id: 'visual',   icon: '\uD83D\uDFE9', label: t('stem.multtable.visual', 'Visual') },
+            { id: 'patterns', icon: '\uD83D\uDD0D', label: t('stem.multtable.patterns', 'Patterns') }
           ].map(function(tb) {
             var active = mtTab === tb.id;
             return h('button', { key: 'mtt-' + tb.id,
               onClick: function() { playSound('default'); extUpd({ mtTab: tb.id }); },
               role: 'tab', 'aria-selected': active,
-              className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
+              className: 'min-h-[2.5rem] min-w-max flex-1 whitespace-nowrap py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
                 (active ? 'bg-white text-pink-800 shadow-sm' : 'text-pink-600 hover:text-pink-800')
             }, tb.icon + ' ' + tb.label);
           })
@@ -1076,7 +1128,7 @@ window.StemLab = window.StemLab || {
         // ── AI Tutor panel ──
         _ext.showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
+            h('p', { className: 'text-sm font-bold text-purple-800' }, t('stem.multtable.ai_math_tutor', '\uD83E\uDDE0 AI Math Tutor')),
             h('button', { onClick: function() { extUpd({ showAI: false }); },
               className: 'text-xs text-slate-600 hover:text-slate-800'
             }, '\u2715')
@@ -1087,19 +1139,19 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
-          !_ext.aiLoading && h('button', { 'aria-label': 'Ask Again',
+          !_ext.aiLoading && h('button', { 'aria-label': t('stem.multtable.ask_again', 'Ask Again'),
             onClick: askAI,
             className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
-          }, '\uD83D\uDD04 Ask Again')
+          }, t('stem.multtable.ask_again_2', '\uD83D\uDD04 Ask Again'))
         ),
 
         // ── Quiz-mode toggle (Mult / Div / Mixed) ──
         h('div', { className: 'flex items-center gap-2 flex-wrap' },
           h('span', { className: 'text-[11px] font-bold text-slate-700' }, 'Direction:'),
           [
-            { id: 'mult',  label: 'Multiplication', color: 'bg-pink-700' },
-            { id: 'div',   label: 'Division',       color: 'bg-cyan-700' },
-            { id: 'mixed', label: 'Mixed',          color: 'bg-violet-700' }
+            { id: 'mult',  label: t('stem.multtable.multiplication', 'Multiplication'), color: 'bg-pink-700' },
+            { id: 'div',   label: t('stem.multtable.division', 'Division'),       color: 'bg-cyan-700' },
+            { id: 'mixed', label: t('stem.multtable.mixed', 'Mixed'),          color: 'bg-violet-700' }
           ].map(function(qm) {
             var active = quizMode === qm.id;
             return h('button', { key: 'qm-' + qm.id,
@@ -1146,7 +1198,7 @@ window.StemLab = window.StemLab || {
               }})
             )
           ),
-          h('button', { 'aria-label': 'Stop',
+          h('button', { 'aria-label': t('stem.multtable.stop', 'Stop'),
             onClick: function() {
               _mtUpd({ active: false });
               if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
@@ -1154,7 +1206,7 @@ window.StemLab = window.StemLab || {
               addToast('\u23F1\uFE0F Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info');
             },
             className: 'px-3 py-1.5 bg-red-700 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
-          }, 'Stop')
+          }, t('stem.multtable.stop_2', 'Stop'))
         ),
 
         // ── Speed Run results (when just ended) ──
@@ -1218,11 +1270,12 @@ window.StemLab = window.StemLab || {
                   );
                 })
               ),
-              h('button', { 'aria-label': 'Practice These',
+              h('button', { 'aria-label': t('stem.multtable.practice_these', 'Practice These'),
                 onClick: function() {
                   var missed = getUniqueMissed(_mt.missed);
                   var pick = missed[Math.floor(Math.random() * missed.length)];
-                  setMultTableChallenge({ a: pick.a, b: pick.b });
+                  var pMode = quizMode === 'div' ? 'div' : (quizMode === 'mixed' ? (Math.random() < 0.5 ? 'mult' : 'div') : 'mult');
+                  setMultTableChallenge({ a: pick.a, b: pick.b, mode: pMode, divisor: pMode === 'div' ? (Math.random() < 0.5 ? pick.a : pick.b) : null });
                   setMultTableAnswer('');
                   setMultTableFeedback(null);
                   setHighlightCell(null);
@@ -1230,13 +1283,13 @@ window.StemLab = window.StemLab || {
                   _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: _mt.missed });
                 },
                 className: 'mt-2 px-4 py-1.5 bg-red-700 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
-              }, '\uD83C\uDFAF Practice these')
+              }, t('stem.multtable.practice_these_2', '\uD83C\uDFAF Practice these'))
             ),
             h('div', { className: 'px-4 pb-4' },
-              h('button', { 'aria-label': 'Try Again',
+              h('button', { 'aria-label': t('stem.multtable.try_again', 'Try Again'),
                 onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
                 className: 'px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
-              }, '\uD83D\uDD04 Try again')
+              }, t('stem.multtable.try_again_2', '\uD83D\uDD04 Try again'))
             )
           );
         })(),
@@ -1259,7 +1312,7 @@ window.StemLab = window.StemLab || {
                 }
               },
               className: 'ml-auto text-[10px] font-bold text-rose-600 hover:text-rose-800 underline'
-            }, 'Clear mastery data')
+            }, t('stem.multtable.clear_mastery_data', 'Clear mastery data'))
           );
           if (!showHeatmap) return masteryRow;
           // Build the 12×12 mastery heatmap
@@ -1303,10 +1356,10 @@ window.StemLab = window.StemLab || {
           return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3' },
             masteryRow,
             h('p', { className: 'text-[10px] text-emerald-700 italic mb-2' },
-              'Each cell = a multiplication fact. Color = your mastery so far. Click any cell to drill that exact fact.'
+              t('stem.multtable.each_cell_a_multiplication_fact_color_', 'Each cell = a multiplication fact. Color = your mastery so far. Click any cell to drill that exact fact.')
             ),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'border-collapse mx-auto text-center', 'aria-label': 'Mastery heatmap' },
+              h('table', { className: 'border-collapse mx-auto text-center', 'aria-label': t('stem.multtable.mastery_heatmap', 'Mastery heatmap') },
                 h('thead', null, h('tr', null, headerCells)),
                 h('tbody', null, rows)
               )
@@ -1327,7 +1380,7 @@ window.StemLab = window.StemLab || {
         // ── 12×12 Grid ──
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto' },
           h('table', { className: 'border-collapse w-full text-center' },
-            h('caption', { className: 'sr-only' }, '12 by 12 multiplication table'), h('thead', null,
+            h('caption', { className: 'sr-only' }, t('stem.multtable.12_by_12_multiplication_table', '12 by 12 multiplication table')), h('thead', null,
               h('tr', null,
                 h('th', { scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-pink-400' }, '\u00D7'),
                 Array.from({ length: maxNum }).map(function(_, c) {
@@ -1358,7 +1411,8 @@ window.StemLab = window.StemLab || {
                       onMouseEnter: function() { setMultTableHover({ r: r + 1, c: c + 1 }); },
                       onMouseLeave: function() { setMultTableHover(null); },
                       onClick: function() {
-                        setMultTableChallenge({ a: r + 1, b: c + 1 });
+                        var gMode = quizMode === 'div' ? 'div' : (quizMode === 'mixed' ? (Math.random() < 0.5 ? 'mult' : 'div') : 'mult');
+                        setMultTableChallenge({ a: r + 1, b: c + 1, mode: gMode, divisor: gMode === 'div' ? (Math.random() < 0.5 ? r + 1 : c + 1) : null });
                         setMultTableAnswer('');
                         setMultTableFeedback(null);
                         setHighlightCell(null);
@@ -1387,12 +1441,12 @@ window.StemLab = window.StemLab || {
 
         // ── Action buttons ──
         h('div', { className: 'flex gap-2 flex-wrap' },
-          h('button', { 'aria-label': 'Quick Quiz',
+          h('button', { 'aria-label': t('stem.multtable.quick_quiz', 'Quick Quiz'),
             onClick: function() { nextProblem(); },
             className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md',
-            title: 'Quick Quiz (Q)'
-          }, '\uD83C\uDFAF Quick Quiz'),
-          h('button', { 'aria-label': 'Speed Run (2min)',
+            title: t('stem.multtable.quick_quiz_q', 'Quick Quiz (Q)')
+          }, t('stem.multtable.quick_quiz_2', '\uD83C\uDFAF Quick Quiz')),
+          h('button', { 'aria-label': t('stem.multtable.speed_run_2min', 'Speed Run (2min)'),
             onClick: function() {
               nextProblem();
               _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
@@ -1402,9 +1456,9 @@ window.StemLab = window.StemLab || {
               addToast('\u23F1\uFE0F Speed Run started! 2 minutes on the clock!', 'success');
             },
             className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md',
-            title: 'Speed Run (S)'
-          }, '\u23F1\uFE0F Speed Run (2min)'),
-          h('button', { 'aria-label': 'Reset',
+            title: t('stem.multtable.speed_run_s', 'Speed Run (S)')
+          }, t('stem.multtable.speed_run_2min_2', '\u23F1\uFE0F Speed Run (2min)')),
+          h('button', { 'aria-label': t('stem.multtable.reset_3', 'Reset'),
             onClick: function() {
               setMultTableChallenge(null);
               setMultTableAnswer('');
@@ -1416,7 +1470,7 @@ window.StemLab = window.StemLab || {
               if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); }
             },
             className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'
-          }, '\u21BA Reset')
+          }, t('stem.multtable.reset_4', '\u21BA Reset'))
         ),
 
         // ── Challenge area ──
@@ -1440,15 +1494,15 @@ window.StemLab = window.StemLab || {
               disabled: inputDisabled,
               id: 'multtable-input'
             }),
-            h('button', { 'aria-label': 'Check',
+            h('button', { 'aria-label': t('stem.multtable.check', 'Check'),
               onClick: checkMult,
               disabled: !multTableAnswer || inputDisabled,
               className: 'px-4 py-2 bg-pink-700 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40'
-            }, '\u2714 Check'),
+            }, t('stem.multtable.check_2', '\u2714 Check')),
             // AI hint button during challenge
             h('button', { onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
-              title: 'Get a hint from AI'
+              title: t('stem.multtable.get_a_hint_from_ai', 'Get a hint from AI')
             }, '\uD83E\uDDE0')
           ),
           // Feedback
@@ -1460,7 +1514,7 @@ window.StemLab = window.StemLab || {
           multTableFeedback && multTableFeedback.correct && multTableFeedback.factFamily && h('div', {
             className: 'mt-2 mx-auto bg-pink-50 rounded-lg px-3 py-2 border border-pink-200 max-w-md text-center'
           },
-            h('p', { className: 'text-[10px] font-bold text-pink-700 uppercase tracking-wider mb-1' }, '👨‍👩‍👧 Fact family — same numbers, four faces'),
+            h('p', { className: 'text-[10px] font-bold text-pink-700 uppercase tracking-wider mb-1' }, t('stem.multtable.fact_family_same_numbers_four_faces', '👨‍👩‍👧 Fact family — same numbers, four faces')),
             h('p', { className: 'text-[11px] font-mono text-pink-900' }, multTableFeedback.factFamily)
           ),
 
@@ -1475,33 +1529,33 @@ window.StemLab = window.StemLab || {
           ),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
-            h('p', { className: 'text-[11px] text-slate-600 animate-pulse' }, 'Next question coming...'),
-            h('button', { 'aria-label': 'Skip Next',
+            h('p', { className: 'text-[11px] text-slate-600 animate-pulse' }, t('stem.multtable.next_question_coming', 'Next question coming...')),
+            h('button', { 'aria-label': t('stem.multtable.skip_next', 'Skip Next'),
               onClick: function() {
                 if (labToolData._multAdvanceTimer) clearTimeout(labToolData._multAdvanceTimer);
                 nextProblem();
                 setTimeout(function() { var _inp = document.getElementById('multtable-input'); if (_inp) _inp.focus(); }, 50);
               },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 border border-pink-600 transition-all'
-            }, 'Skip \u2192 Next')
+            }, t('stem.multtable.skip_next_2', 'Skip \u2192 Next'))
           )
         ),
 
         // ── Keyboard shortcuts legend ──
         h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
-          h('span', null, 'Q Quiz'),
-          h('span', null, 'S Speed'),
-          h('span', null, 'H Hidden'),
-          h('span', null, 'B Badges'),
-          h('span', null, '? AI Tutor')
+          h('span', null, t('stem.multtable.q_quiz', 'Q Quiz')),
+          h('span', null, t('stem.multtable.s_speed', 'S Speed')),
+          h('span', null, t('stem.multtable.h_hidden', 'H Hidden')),
+          h('span', null, t('stem.multtable.b_badges', 'B Badges')),
+          h('span', null, t('stem.multtable.ai_tutor_2', '? AI Tutor'))
         ),
 
         // ── Legend ──
         h('div', { className: 'text-[11px] text-slate-600 text-center' },
-          h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), ' Perfect squares',
-          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), ' Hover cross',
-          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-700 rounded mr-1' }), ' Selected',
-          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-amber-400 border border-amber-500 rounded mr-1' }), ' Correct answer'
+          h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), t('stem.multtable.perfect_squares_2', ' Perfect squares'),
+          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), t('stem.multtable.hover_cross', ' Hover cross'),
+          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-700 rounded mr-1' }), t('stem.multtable.selected', ' Selected'),
+          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-amber-400 border border-amber-500 rounded mr-1' }), t('stem.multtable.correct_answer', ' Correct answer')
         ),
         // === H7b'' inquiry widget: fact mastery ===
         (function() {
@@ -1514,13 +1568,13 @@ window.StemLab = window.StemLab || {
           else if (perf < iq.threshold) state = 'building';
           else state = 'mastered';
           var sm = {
-            struggling: { label: '🔴 Struggling (<60%)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+            struggling: { label: t('stem.multtable.struggling_60', '🔴 Struggling (<60%)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
             building:   { label: '🟡 Building (60-' + (iq.threshold-1) + '%)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
             mastered:   { label: '🟢 Mastered (≥' + iq.threshold + '%)', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
           }[state];
           return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-indigo-300 space-y-2' },
-            h('h3', { className: 'text-sm font-black text-indigo-700' }, '🎯 Fact mastery discovery'),
-            h('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for mastery threshold and selected factor. Discrete 3-state outcome. No score, no reveal.'),
+            h('h3', { className: 'text-sm font-black text-indigo-700' }, t('stem.multtable.fact_mastery_discovery', '🎯 Fact mastery discovery')),
+            h('p', { className: 'text-[11px] text-slate-700' }, t('stem.multtable.sliders_for_mastery_threshold_and_sele', 'Sliders for mastery threshold and selected factor. Discrete 3-state outcome. No score, no reveal.')),
             h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
               h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
               h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'Factor ' + iq.factor + ' simulated accuracy = ' + perf + '%')
@@ -1536,22 +1590,22 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.threshold, f: iq.factor, p: perf, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-              h('button', { onClick: function() { setIQ({ threshold: 80, factor: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.threshold, f: iq.factor, p: perf, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, t('stem.multtable.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ threshold: 80, factor: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.multtable.reset_5', '↺ Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does threshold change feedback for struggling learners?',
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.multtable.hypothesis_how_does_threshold_change_f', 'Hypothesis: How does threshold change feedback for struggling learners?'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.multtable.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
               h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                h('li', null, 'What if mastery = 100%? What gets praised?'),
-                h('li', null, 'How does color-coding affect motivation?'))),
+                h('li', null, t('stem.multtable.what_if_mastery_100_what_gets_praised', 'What if mastery = 100%? What gets praised?')),
+                h('li', null, t('stem.multtable.how_does_color_coding_affect_motivatio', 'How does color-coding affect motivation?')))),
             h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-              'I understand — explain in own words'),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain mastery learning thresholds.',
+              t('stem.multtable.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.multtable.explain_mastery_learning_thresholds', 'Explain mastery learning thresholds.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.')
+            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.multtable.design_note_discrete_3_state_mastery_m', 'Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.'))
           );
         })()
         )  // end of Practice tab wrapper

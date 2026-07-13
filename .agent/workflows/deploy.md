@@ -6,9 +6,21 @@ description: Sync AlloFlowANTI.txt to App.jsx, build, and deploy to Firebase
 
 ## Steps
 
-> **⚠️ IMPORTANT — Hash-based CDN deployment:**
-> The app loads `stem_lab_module.js`, `word_sounds_module.js`, and `behavior_lens_module.js` via jsDelivr CDN using **pinned commit hashes** (e.g. `@c1a9644`).
-> The `build.js` script **automatically** handles hash detection and URL replacement.
+> **✅ CANONICAL DEPLOY: `./deploy.sh "message"`** automates every step below in
+> one shot AND runs a pre-flight render-crash gate (Step 0.6:
+> `check_render_refs`/`keyless_map`/`stem_render`/`sel_render`/`module_render`/
+> `aria_handler` — same as `npm run verify:gate`) plus post-deploy verification
+> against Firebase + the Cloudflare CDN. The manual steps below are the fallback;
+> run `npm run verify:gate` first if you deploy by hand.
+
+> **⚠️ IMPORTANT — CDN deployment (Cloudflare Pages, hashless):**
+> The app loads its modules (`stem_lab/stem_lab_module.js`, `word_sounds_module.js`,
+> `behavior_lens_module.js`, and ~250 others) from **Cloudflare Pages**
+> (`https://alloflow-cdn.pages.dev/<file>`) — **no commit hash in the URL**.
+> `build.js` rewrites `pluginCdnBase` to this base and stamps a `?v=<short-hash>`
+> cache-buster automatically. (jsDelivr was dropped in 2026 after it began
+> returning GitHub 429s.) Commit order still matters — see below — because the
+> `?v=` hash and Cloudflare's rebuild key off the pushed commit.
 
 > **⚠️ SERVICE WORKER — Do NOT change navigation strategy:**
 > The SW uses **stale-while-revalidate** for navigation requests. This is critical for networks
@@ -102,7 +114,8 @@ Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 > - Read `AlloFlowANTI.txt`
 > - Run `git rev-parse --short HEAD` to get the latest hash
 > - **Check for uncommitted module files** (blocks with an error if found)
-> - Replace both `loadModule` CDN URLs and `pluginCdnBase` with the new hash
+> - Rewrite `loadModule` CDN URLs and `pluginCdnBase` to the hashless Cloudflare
+>   base (`alloflow-cdn.pages.dev/<file>`) + stamp a `?v=<short-hash>` cache-buster
 > - Write to `prismflow-deploy/src/App.jsx` and `prismflow-deploy/src/AlloFlowANTI.txt`
 > - **Write updated hashes back to root `AlloFlowANTI.txt`** (keeps source of truth in sync)
 > - Stamp `build/sw.js` with a unique timestamp (if build/ exists)
@@ -135,12 +148,15 @@ Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
 > This commit only updates the hash references in `AlloFlowANTI.txt`. It keeps the source file in sync with what was deployed. This is safe to defer if doing rapid iterations.
 
-> **⚠️ CDN STALENESS WARNING:** If modules are NOT pushed to GitHub, jsDelivr will serve stale files.
-> This caused a real incident on 2026-03-09 where BehaviorLens was outdated on the CDN.
-> **Always push before running build.js** — matching hashes = CDN will serve fresh content.
+> **⚠️ CDN STALENESS WARNING:** If modules are NOT pushed to GitHub before
+> `build.js`, the `?v=<short-hash>` cache-buster won't match the deployed code and
+> Cloudflare may serve stale files. This caused a real incident on 2026-03-09
+> where BehaviorLens was outdated on the CDN. **Always commit + push before
+> running build.js.**
 
-> **Note:** No CDN cache purge is needed with hash-based URLs. Each new commit hash is a unique, never-cached URL.
-> The fallback mechanism in `loadModule` will try `raw.githubusercontent.com` if the jsDelivr CDN fails.
+> **Note:** Cloudflare Pages rebuilds from `main` on push (async, ~1-2 min); the
+> `?v=<short-hash>` query param busts browser/SW caches. The fallback mechanism
+> in `loadModule` will try `raw.githubusercontent.com` if the CDN fails.
 
 ## Dev Mode
 

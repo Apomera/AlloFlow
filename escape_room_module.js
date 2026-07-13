@@ -519,7 +519,11 @@ inputText.substring(0, 6000) + '\n' +
       if (activeSessionCode && sessionData && sessionData.escapeRoomState && sessionData.escapeRoomState.isActive && user && user.uid) {
         var userTeam = sessionData.escapeRoomState.teams && sessionData.escapeRoomState.teams[user.uid];
         if (userTeam && doc && db && updateDoc) {
-          var sessionRef = doc(db, 'artifacts', activeSessionAppId, 'sessions', activeSessionCode);
+          // Path fix 2026-07-02: this ref was missing the 'public','data'
+          // segments, so team-progress sync silently wrote to a nonexistent
+          // doc (updateDoc failed into the catch below) — teams never saw
+          // each other's solves.
+          var sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
           var currentSolved = (sessionData.escapeRoomState.teamProgress && sessionData.escapeRoomState.teamProgress[userTeam] && sessionData.escapeRoomState.teamProgress[userTeam].solvedPuzzles) || [];
           var totalPuzzles = (sessionData.escapeRoomState.puzzles && sessionData.escapeRoomState.puzzles.length) || 5;
           var combined = currentSolved.concat([puzzleId]);

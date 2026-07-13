@@ -73,3 +73,61 @@ describe('fetchWithExponentialBackoff — fast-fail status handling', () => {
     expect(s.calls()).toBe(1);
   });
 });
+
+// Per-request timeout (2026-06-16): a request the server accepts but never answers (no response,
+// no error) used to hang the await forever — the retry cap only fires on a FAILED request, not a
+// non-settling one. That silently wedged whole remediation sections ("stuck Fixing…", no toast).
+// Each attempt is now bounded by an AbortController; a dead request rejects → retries → throws.
+// A request that respects its signal (rejects with AbortError when aborted) models a real fetch.
+function signalAwareFetch(onCall) {
+  return (url, opts) => {
+    if (typeof onCall === 'function') onCall();
+    return new Promise((_, reject) => {
+      const sig = opts && opts.signal;
+      const fail = () => { const e = new Error('The operation was aborted'); e.name = 'AbortError'; reject(e); };
+      if (sig) {
+        if (sig.aborted) { fail(); return; }
+        sig.addEventListener('abort', fail);
+      }
+      // otherwise never settles (a hung connection)
+    });
+  };
+}
+
+describe('fetchWithExponentialBackoff — per-request timeout (anti-hang)', () => {
+  it('a request that never settles TIMES OUT and throws instead of hanging forever', async () => {
+    const fetchWithExponentialBackoff = build(signalAwareFetch(), () => {});
+    let err;
+    // maxRetries=1 → no real backoff sleep; perRequestTimeoutMs=40 keeps it fast
+    try { await fetchWithExponentialBackoff('https://api/x', {}, 1, 40); } catch (e) { err = e; }
+    expect(err).toBeTruthy();
+    expect(String(err.message)).toMatch(/timed out/i);
+  });
+
+  it('a caller abort (Stop) propagates immediately as AbortError and is NOT retried', async () => {
+    let calls = 0;
+    const fetchWithExponentialBackoff = build(signalAwareFetch(() => { calls++; }), () => {});
+    const ac = new AbortController();
+    ac.abort(); // the user pressed Stop before the request settled
+    let err;
+    try { await fetchWithExponentialBackoff('https://api/x', { signal: ac.signal }, 5, 5000); } catch (e) { err = e; }
+    expect(err).toBeTruthy();
+    expect(err.name).toBe('AbortError');
+    expect(calls).toBe(1); // critical: a cancelled request is not re-issued 5× through backoff
+  });
+
+  it('a fast 200 still returns immediately with the timeout wired (no false timeout)', async () => {
+    let calls = 0;
+    const ok = { ok: true, status: 200 };
+    const fetchWithExponentialBackoff = build(async () => { calls++; return ok; }, () => {});
+    const resp = await fetchWithExponentialBackoff('https://api/x', {}, 5, 60000);
+    expect(resp).toBe(ok);
+    expect(calls).toBe(1);
+  });
+
+  it('anti-drift: the timeout param + AbortController plumbing are present in source', () => {
+    expect(SRC).toContain('perRequestTimeoutMs = 120000');
+    expect(SRC).toContain('new AbortController()');
+    expect(SRC).toContain('Request aborted by caller'); // caller-abort propagates, no retry
+  });
+});

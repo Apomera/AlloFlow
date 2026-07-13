@@ -60,12 +60,67 @@ window.StemLab = window.StemLab || {
   function sfxMolClick() { molTone(600, 0.03, "sine", 0.04); }
   function sfxMolSuccess() { molTone(523, 0.08, "sine", 0.07); setTimeout(function() { molTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { molTone(784, 0.1, "sine", 0.08); }, 140); }
 
+  // ── Hydrogen-like atomic orbitals (Z=1, a₀=1) — the REAL quantum picture ─────────
+  // PURE + testable. An orbital is NOT an orbit: ψ is a wavefunction and |ψ|² is the
+  // probability DENSITY of finding the electron (Born rule) — a cloud, not a path.
+  // R_nl(r) are the standard hydrogen radial functions; the angular factor gives the
+  // shape (s sphere, p dumbbell, d cloverleaf). The SIGN of ψ is the phase (the two
+  // colours in the cloud); where ψ=0 is a NODE — a place the electron is never found.
+  var ORBITALS = {
+    '1s': { n: 1, l: 0, sub: 's', label: '1s', shape: 'sphere',               box: 6 },
+    '2s': { n: 2, l: 0, sub: 's', label: '2s', shape: 'sphere + inner shell', box: 16 },
+    '2p': { n: 2, l: 1, sub: 'p', label: '2p', shape: 'dumbbell',             box: 15 },
+    '3s': { n: 3, l: 0, sub: 's', label: '3s', shape: 'sphere + 2 shells',    box: 30 },
+    '3p': { n: 3, l: 1, sub: 'p', label: '3p', shape: 'dumbbell + shell',     box: 30 },
+    '3d': { n: 3, l: 2, sub: 'd', label: '3d', shape: 'cloverleaf (4 lobes)',  box: 28 }
+  };
+  var ORBITAL_ORDER = ['1s', '2s', '2p', '3s', '3p', '3d'];
+  function orbRadial(key, r) {                       // R_nl(r), Z=1, a₀=1 (Bohr radii)
+    switch (key) {
+      case '1s': return 2 * Math.exp(-r);
+      case '2s': return (1 / (2 * Math.SQRT2)) * (2 - r) * Math.exp(-r / 2);
+      case '2p': return (1 / (2 * Math.sqrt(6))) * r * Math.exp(-r / 2);
+      case '3s': return (2 / (81 * Math.sqrt(3))) * (27 - 18 * r + 2 * r * r) * Math.exp(-r / 3);
+      case '3p': return (4 / (81 * Math.sqrt(6))) * (6 * r - r * r) * Math.exp(-r / 3);
+      case '3d': return (4 / (81 * Math.sqrt(30))) * r * r * Math.exp(-r / 3);
+      default: return 0;
+    }
+  }
+  function orbAngular(key, x, y, z, r) {              // representative real orientation: p_z, d_xy
+    var o = ORBITALS[key]; if (!o) return 1;
+    if (o.l === 0) return 1;                          // s — isotropic (spherical)
+    if (r === 0) return 0;                            // p/d vanish at the nucleus
+    if (o.l === 1) return z / r;                      // p_z  (cosθ) — dumbbell along z
+    return (x * y) / (r * r);                          // d_xy — the classic cloverleaf (4 lobes; nodal planes x=0 & y=0)
+  }
+  function orbPsi(key, x, y, z) {                     // signed wavefunction ψ (sign = phase)
+    var r = Math.sqrt(x * x + y * y + z * z);
+    return orbRadial(key, r) * orbAngular(key, x, y, z, r);
+  }
+  function orbDensity(key, x, y, z) { var p = orbPsi(key, x, y, z); return p * p; }   // |ψ|² (Born rule)
+  function orbRadialDistribution(key, r) { var R = orbRadial(key, r); return r * r * R * R; }   // P(r)=r²R² — "where is the electron?"
+  function orbNodes(key) {                            // node counts: total = n−1, angular = ℓ, radial = n−ℓ−1
+    var o = ORBITALS[key]; if (!o) return null;
+    return { radial: o.n - o.l - 1, angular: o.l, total: o.n - 1 };
+  }
+  function orbPeakRadius(key) {                       // most-probable radius (argmax of P(r)); 1s → 1 a₀ (the Bohr radius!)
+    var best = -1, bestR = 0, box = (ORBITALS[key] || { box: 30 }).box;
+    for (var r = 0.002; r <= box * 1.6; r += 0.01) { var p = orbRadialDistribution(key, r); if (p > best) { best = p; bestR = r; } }
+    return bestR;
+  }
+  try {
+    window.__alloMoleculePure = {
+      ORBITALS: ORBITALS, ORBITAL_ORDER: ORBITAL_ORDER, orbRadial: orbRadial, orbAngular: orbAngular,
+      orbPsi: orbPsi, orbDensity: orbDensity, orbRadialDistribution: orbRadialDistribution, orbNodes: orbNodes, orbPeakRadius: orbPeakRadius
+    };
+  } catch (e) {}
+
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
   window.StemLab.registerTool('molecule', {
-    icon: '\uD83E\uDDEA',
-    label: 'molecule',
-    desc: '',
+    icon: "⚛️",
+    label: "Molecule Lab",
+    desc: "Explore chemistry with a 3D molecule viewer, compound creator, bond builder, 118-element periodic table, reaction simulator, and orbital clouds.",
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -89,6 +144,7 @@ window.StemLab = window.StemLab || {
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -133,6 +189,18 @@ window.StemLab = window.StemLab || {
           const threeControlsRef = useRef(null);
           const threeResourcesRef = useRef(null);
           const animationFrameIdRef = useRef(null);
+          const vrRef = useRef(null);
+          // WebXR: the "Enter VR" button shows ONLY while a headset is present, and
+          // reacts to connect/unplug live (devicechange) — no clutter without one.
+          const _xrSup = useState(false); const xrSupported = _xrSup[0]; const setXrSupported = _xrSup[1];
+          React.useEffect(function() {
+            var alive = true;
+            var check = function() { try { if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(function(ok){ if (alive) setXrSupported(!!ok); }).catch(function(){}); } catch(e){} };
+            check();
+            var dc = function() { check(); };
+            try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
+            return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
+          }, []);
           // INCOMPLETE FEATURE (stubbed to prevent a render crash): commit 49aa0e5f
           // added drawVisualShelf(...) calls for the reactions-mode "Visual Molecule
           // Shelf" but never a definition. Stubbed to null so the tool renders; the
@@ -208,16 +276,16 @@ window.StemLab = window.StemLab || {
           // ═══ Keyboard Shortcuts ═══
           // Note: these execute on every render but are lightweight
           const SHORTCUTS = { '1': 'viewer', '2': 'creator', '3': 'build', '4': 'table', '5': 'reactions' };
-          if (typeof window !== 'undefined' && !window._molKbBound) {
-            window._molKbBound = true;
-            document.addEventListener('keydown', function(e) {
+          // Bound via useEffect (was a render-body global listener guarded by window._molKbBound that was
+          // NEVER removed — so Alt+1..5 kept mutating molecule state even after navigating to another tool).
+          useEffect(function() {
+            function onKey(e) {
               if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-              if (e.altKey && SHORTCUTS[e.key]) {
-                e.preventDefault();
-                upd('moleculeMode', SHORTCUTS[e.key]);
-              }
-            });
-          }
+              if (e.altKey && SHORTCUTS[e.key]) { e.preventDefault(); upd('moleculeMode', SHORTCUTS[e.key]); }
+            }
+            document.addEventListener('keydown', onKey);
+            return function() { document.removeEventListener('keydown', onKey); };
+          }, []);
           const aiQuestion = d.aiQuestion || '';
           const aiAnswer = d.aiAnswer || '';
           const aiLoading = d.aiLoading || false;
@@ -283,6 +351,26 @@ window.StemLab = window.StemLab || {
             };
           }, []);
 
+          // Lazy-load the shared AlloVR layer from this tool's CDN base (only when a
+          // headset is present, so non-VR users never download it).
+          const ensureAlloVR = function(cb) {
+            if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+            var base = 'https://alloflow-cdn.pages.dev/', q = '';
+            try {
+              var scr = document.querySelectorAll('script[src]');
+              for (var i = 0; i < scr.length; i++) {
+                var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+                if (m) { base = m[1]; q = m[2] || ''; break; }
+              }
+            } catch (e) {}
+            try {
+              var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+              s.onload = function(){ cb(window.AlloModules && window.AlloModules.AlloVR); };
+              s.onerror = function(){ cb(null); };
+              document.head.appendChild(s);
+            } catch (e) { cb(null); }
+          };
+
           const initThree = function(canvas) {
             if (!window.THREE || !window.THREE.OrbitControls) return;
             try {
@@ -290,9 +378,15 @@ window.StemLab = window.StemLab || {
               var W = canvas.clientWidth || 400;
               var H = canvas.clientHeight || 300;
 
-              var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+              var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
               renderer.setSize(W, H, false);
               renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+              if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+              if (THREE.ACESFilmicToneMapping) {
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.12;
+              }
+              if (renderer.setClearColor) renderer.setClearColor(0x020617, 0);
               threeRendererRef.current = renderer;
 
               var scene = new THREE.Scene();
@@ -327,8 +421,11 @@ window.StemLab = window.StemLab || {
               camera.position.set(0, 0, 15);
               threeCameraRef.current = camera;
 
-              var ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // deeper sphere shading (CPK hues untouched — intensity only)
+              var ambientLight = new THREE.AmbientLight(0xffffff, 0.48); // deeper sphere shading (CPK hues untouched — intensity only)
               scene.add(ambientLight);
+
+              var hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x0f172a, 0.45);
+              scene.add(hemiLight);
 
               var dirLight = new THREE.DirectionalLight(0xffffff, 1.05);
               dirLight.position.set(5, 10, 7);
@@ -337,6 +434,10 @@ window.StemLab = window.StemLab || {
               var fillLight = new THREE.DirectionalLight(0x90b0ff, 0.45);
               fillLight.position.set(-5, -5, -2);
               scene.add(fillLight);
+
+              var rimLight = new THREE.DirectionalLight(0x67e8f9, 0.55);
+              rimLight.position.set(-4, 3, 9);
+              scene.add(rimLight);
 
               var controls = new THREE.OrbitControls(camera, renderer.domElement);
               controls.enableDamping = true;
@@ -347,13 +448,41 @@ window.StemLab = window.StemLab || {
 
               threeResourcesRef.current = {
                 ambientLight: ambientLight,
+                hemiLight: hemiLight,
                 dirLight: dirLight,
                 fillLight: fillLight,
+                rimLight: rimLight,
                 atomGroup: new THREE.Group()
               };
               scene.add(threeResourcesRef.current.atomGroup);
 
               startLoop();
+
+              // ── WebXR (optional): stand next to the molecule at life size, walk
+              //    around it, and grip-grab it to rotate/scale. Loads AlloVR only
+              //    when a headset is present; presenting-only, so 2D is untouched. ──
+              try {
+                if (navigator.xr && navigator.xr.isSessionSupported) {
+                  navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
+                    if (!ok) return;
+                    ensureAlloVR(function(V) {
+                      if (!V || !threeRendererRef.current || !threeSceneRef.current) return;
+                      try { if (vrRef.current && vrRef.current.destroy) vrRef.current.destroy(); } catch(e){}
+                      try {
+                        vrRef.current = V.enable({
+                          THREE: THREE, renderer: threeRendererRef.current, scene: threeSceneRef.current, camera: threeCameraRef.current,
+                          seat: { position: [0, 0, 10], scale: 1 },
+                          bounds: { minX: -15, maxX: 15, minZ: -15, maxZ: 15 },
+                          grab: function() { return threeResourcesRef.current && threeResourcesRef.current.atomGroup; },
+                          render: function() { var r = threeRendererRef.current, s = threeSceneRef.current, c = threeCameraRef.current; if (!r || !s || !c) return; var ac = r._alloComposer; if (ac) { try { ac.render(); return; } catch(e) { r._alloComposer = null; } } r.render(s, c); },
+                          pauseLoop: function() { if (animationFrameIdRef.current) { cancelAnimationFrame(animationFrameIdRef.current); animationFrameIdRef.current = null; } },
+                          resumeLoop: function() { startLoop(); }
+                        });
+                      } catch(e){}
+                    });
+                  }).catch(function(){});
+                }
+              } catch(e){}
             } catch(e) {
               console.error("Error in initThree", e);
             }
@@ -467,34 +596,40 @@ window.StemLab = window.StemLab || {
               return 0x94a3b8;
             };
 
+            var teachingModel = getMoleculeTeachingModel(d.formula);
+            var modelCoordinates = teachingModel && teachingModel.coordinates;
             var positions = atoms.map(function(a, idx) {
-              var pz = 0;
-              if (a.el === 'H') {
-                pz = Math.sin(idx * 2.0) * 1.2;
-              } else if (a.el === 'O' && atoms.length > 3) {
-                pz = Math.cos(idx * 2.0) * 0.6;
+              if (modelCoordinates && modelCoordinates.length === atoms.length && modelCoordinates[idx]) {
+                return new THREE.Vector3(modelCoordinates[idx][0], modelCoordinates[idx][1], modelCoordinates[idx][2]);
               }
-              return new THREE.Vector3((a.x - avgX) * scale, -(a.y - avgY) * scale, pz);
+              // User-arranged and complex presets remain planar; depth should never be
+              // invented from element type because that implies unsupported geometry.
+              return new THREE.Vector3((a.x - avgX) * scale, -(a.y - avgY) * scale, Number(a.z) || 0);
             });
 
             var createTextSprite = function(text) {
               var canvas = document.createElement('canvas');
-              canvas.width = 64;
-              canvas.height = 64;
+              canvas.width = 96;
+              canvas.height = 96;
               var ctx = canvas.getContext('2d');
-              ctx.clearRect(0, 0, 64, 64);
+              ctx.clearRect(0, 0, 96, 96);
               ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 36px sans-serif';
+              ctx.font = 'bold 40px system-ui, sans-serif';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.shadowColor = 'rgba(0,0,0,0.8)';
-              ctx.shadowBlur = 4;
-              ctx.fillText(text, 32, 32);
+              ctx.lineWidth = 7;
+              ctx.lineJoin = 'round';
+              ctx.strokeStyle = 'rgba(2,6,23,0.86)';
+              ctx.shadowColor = 'rgba(15,23,42,0.55)';
+              ctx.shadowBlur = 8;
+              ctx.strokeText(text, 48, 50);
+              ctx.fillText(text, 48, 50);
               
               var texture = new THREE.CanvasTexture(canvas);
-              var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+              var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false, depthTest: false });
               var sprite = new THREE.Sprite(spriteMat);
-              sprite.scale.set(0.9, 0.9, 1);
+              sprite.renderOrder = 10;
+              sprite.scale.set(0.82, 0.82, 1);
               return sprite;
             };
 
@@ -505,8 +640,11 @@ window.StemLab = window.StemLab || {
               var color = getColor(a);
 
               var sphereGeo = new THREE.SphereGeometry(r, 32, 32);
+              var atomColor = new THREE.Color(color);
               var atomMat = new THREE.MeshStandardMaterial({
-                color: color,
+                color: atomColor,
+                emissive: atomColor,
+                emissiveIntensity: 0.06,
                 roughness: 0.15,
                 metalness: 0.1
               });
@@ -578,6 +716,7 @@ window.StemLab = window.StemLab || {
 
           const disposeThree = function() {
             try {
+              try { if (vrRef.current && vrRef.current.destroy) vrRef.current.destroy(); vrRef.current = null; } catch(e){}
               if (animationFrameIdRef.current) {
                 cancelAnimationFrame(animationFrameIdRef.current);
                 animationFrameIdRef.current = null;
@@ -854,24 +993,28 @@ window.StemLab = window.StemLab || {
             [0, 0, 0, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71],
 
             [0, 0, 0, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103]
+          ];
 
-          ,
-
-            { name: 'Aspirin', formula: 'C₉H₈O₄', recipe: { C: 9, H: 8, O: 4 }, desc: 'Pain reliever & anti-inflammatory', emoji: '💊' },
-            { name: 'Caffeine', formula: 'C₈H₁₀N₄O₂', recipe: { C: 8, H: 10, N: 4, O: 2 }, desc: 'The world\'s most popular stimulant', emoji: '☕' },
-            { name: 'Citric Acid', formula: 'C₆H₈O₇', recipe: { C: 6, H: 8, O: 7 }, desc: 'Found in citrus fruits', emoji: '🍋' },
-            { name: 'Urea', formula: 'CH₄N₂O', recipe: { C: 1, H: 4, N: 2, O: 1 }, desc: 'First organic compound synthesized', emoji: '🧪' },
-            { name: 'Calcium Chloride', formula: 'CaCl₂', recipe: { Ca: 1, Cl: 2 }, desc: 'Road de-icer & cheese making', emoji: '❄️' },
-            { name: 'Sodium Sulfate', formula: 'Na₂SO₄', recipe: { Na: 2, S: 1, O: 4 }, desc: 'Detergent additive', emoji: '🧴' },
-            { name: 'Magnesium Hydroxide', formula: 'Mg(OH)₂', recipe: { Mg: 1, O: 2, H: 2 }, desc: 'Milk of magnesia (antacid)', emoji: '🥛' },
-            { name: 'Aluminum Oxide', formula: 'Al₂O₃', recipe: { Al: 2, O: 3 }, desc: 'Corundum - ruby & sapphire', emoji: '💎' },
-            { name: 'Silver Nitrate', formula: 'AgNO₃', recipe: { Ag: 1, N: 1, O: 3 }, desc: 'Photography & wound treatment', emoji: '📷' },
-            { name: 'Potassium Permanganate', formula: 'KMnO₄', recipe: { K: 1, Mn: 1, O: 4 }, desc: 'Purple water purifier', emoji: '🟣' },
-            { name: 'Zinc Oxide', formula: 'ZnO', recipe: { Zn: 1, O: 1 }, desc: 'Sunscreen & diaper cream', emoji: '☀️' },
-            { name: 'Copper Oxide', formula: 'CuO', recipe: { Cu: 1, O: 1 }, desc: 'Black pigment in ceramics', emoji: '🎨' },
-            { name: 'Iron Sulfate', formula: 'FeSO₄', recipe: { Fe: 1, S: 1, O: 4 }, desc: 'Iron supplement for anemia', emoji: '💊' },
-            { name: 'Ammonium Chloride', formula: 'NH₄Cl', recipe: { N: 1, H: 4, Cl: 1 }, desc: 'Solder flux & cough drops', emoji: '🧪' },
-            { name: 'Calcium Hydroxide', formula: 'Ca(OH)₂', recipe: { Ca: 1, O: 2, H: 2 }, desc: 'Slaked lime for mortar', emoji: '🪨' }];
+          // NOTE: the 15 compounds below were mistakenly pasted INTO PT_LAYOUT (after a
+          // stray comma), so Table mode's `PT_LAYOUT.flatMap(row => ... row.map(...))`
+          // hit plain objects → "row.map is not a function" → Table mode white-screened.
+          // They are real compounds, so keep them in their own array and fold into COMPOUNDS.
+          const PT_EXTRA_COMPOUNDS = [
+            { name: __alloT('stem.molecule.aspirin', 'Aspirin'), formula: 'C₉H₈O₄', recipe: { C: 9, H: 8, O: 4 }, desc: __alloT('stem.molecule.pain_reliever_anti_inflammatory', 'Pain reliever & anti-inflammatory'), emoji: '💊' },
+            { name: __alloT('stem.molecule.caffeine', 'Caffeine'), formula: 'C₈H₁₀N₄O₂', recipe: { C: 8, H: 10, N: 4, O: 2 }, desc: __alloT('stem.molecule.the_world_s_most_popular_stimulant', 'The world\'s most popular stimulant'), emoji: '☕' },
+            { name: __alloT('stem.molecule.citric_acid', 'Citric Acid'), formula: 'C₆H₈O₇', recipe: { C: 6, H: 8, O: 7 }, desc: __alloT('stem.molecule.found_in_citrus_fruits', 'Found in citrus fruits'), emoji: '🍋' },
+            { name: __alloT('stem.molecule.urea', 'Urea'), formula: 'CH₄N₂O', recipe: { C: 1, H: 4, N: 2, O: 1 }, desc: __alloT('stem.molecule.first_organic_compound_synthesized', 'First organic compound synthesized'), emoji: '🧪' },
+            { name: __alloT('stem.molecule.calcium_chloride', 'Calcium Chloride'), formula: 'CaCl₂', recipe: { Ca: 1, Cl: 2 }, desc: __alloT('stem.molecule.road_de_icer_cheese_making', 'Road de-icer & cheese making'), emoji: '❄️' },
+            { name: __alloT('stem.molecule.sodium_sulfate', 'Sodium Sulfate'), formula: 'Na₂SO₄', recipe: { Na: 2, S: 1, O: 4 }, desc: __alloT('stem.molecule.detergent_additive', 'Detergent additive'), emoji: '🧴' },
+            { name: __alloT('stem.molecule.magnesium_hydroxide', 'Magnesium Hydroxide'), formula: 'Mg(OH)₂', recipe: { Mg: 1, O: 2, H: 2 }, desc: __alloT('stem.molecule.milk_of_magnesia_antacid', 'Milk of magnesia (antacid)'), emoji: '🥛' },
+            { name: __alloT('stem.molecule.aluminum_oxide', 'Aluminum Oxide'), formula: 'Al₂O₃', recipe: { Al: 2, O: 3 }, desc: __alloT('stem.molecule.corundum_ruby_sapphire', 'Corundum - ruby & sapphire'), emoji: '💎' },
+            { name: __alloT('stem.molecule.silver_nitrate', 'Silver Nitrate'), formula: 'AgNO₃', recipe: { Ag: 1, N: 1, O: 3 }, desc: __alloT('stem.molecule.photography_wound_treatment', 'Photography & wound treatment'), emoji: '📷' },
+            { name: __alloT('stem.molecule.potassium_permanganate', 'Potassium Permanganate'), formula: 'KMnO₄', recipe: { K: 1, Mn: 1, O: 4 }, desc: __alloT('stem.molecule.purple_water_purifier', 'Purple water purifier'), emoji: '🟣' },
+            { name: __alloT('stem.molecule.zinc_oxide', 'Zinc Oxide'), formula: 'ZnO', recipe: { Zn: 1, O: 1 }, desc: __alloT('stem.molecule.sunscreen_diaper_cream', 'Sunscreen & diaper cream'), emoji: '☀️' },
+            { name: __alloT('stem.molecule.copper_oxide', 'Copper Oxide'), formula: 'CuO', recipe: { Cu: 1, O: 1 }, desc: __alloT('stem.molecule.black_pigment_in_ceramics', 'Black pigment in ceramics'), emoji: '🎨' },
+            { name: __alloT('stem.molecule.iron_sulfate', 'Iron Sulfate'), formula: 'FeSO₄', recipe: { Fe: 1, S: 1, O: 4 }, desc: __alloT('stem.molecule.iron_supplement_for_anemia', 'Iron supplement for anemia'), emoji: '💊' },
+            { name: __alloT('stem.molecule.ammonium_chloride', 'Ammonium Chloride'), formula: 'NH₄Cl', recipe: { N: 1, H: 4, Cl: 1 }, desc: __alloT('stem.molecule.solder_flux_cough_drops', 'Solder flux & cough drops'), emoji: '🧪' },
+            { name: __alloT('stem.molecule.calcium_hydroxide', 'Calcium Hydroxide'), formula: 'Ca(OH)₂', recipe: { Ca: 1, O: 2, H: 2 }, desc: __alloT('stem.molecule.slaked_lime_for_mortar', 'Slaked lime for mortar'), emoji: '🪨' }];
 
           // â”€â”€ Compound Recipes â”€â”€
 
@@ -917,59 +1060,59 @@ window.StemLab = window.StemLab || {
 
             { name: t('stem.periodic.silicon_dioxide'), formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: t('stem.periodic.sand_glass'), emoji: '\uD83C\uDFD6\uFE0F' },
 
-          ];
+          ].concat(PT_EXTRA_COMPOUNDS);
 
           const selectedEls = d.selectedElements || {};
 
           // ═══ Chemical Reactions Database (10 reactions) ═══
           const REACTIONS = [
-            { id: 'water_synth', name: 'Water Synthesis', emoji: '💧', type: 'Synthesis', difficulty: 1,
-              desc: 'Hydrogen combines with oxygen to form water.',
+            { id: 'water_synth', name: __alloT('stem.molecule.water_synthesis', 'Water Synthesis'), emoji: '💧', type: 'Synthesis', difficulty: 1,
+              desc: __alloT('stem.molecule.hydrogen_combines_with_oxygen_to_form_', 'Hydrogen combines with oxygen to form water.'),
               left: [{ formula: 'H₂', atoms: { H: 2 } }, { formula: 'O₂', atoms: { O: 2 } }],
               right: [{ formula: 'H₂O', atoms: { H: 2, O: 1 } }],
               answer: [2, 1, 2] },
-            { id: 'haber', name: 'Haber Process', emoji: '🌾', type: 'Synthesis', difficulty: 2,
-              desc: 'Nitrogen and hydrogen form ammonia - feeds half the world!',
+            { id: 'haber', name: __alloT('stem.molecule.haber_process', 'Haber Process'), emoji: '🌾', type: 'Synthesis', difficulty: 2,
+              desc: __alloT('stem.molecule.nitrogen_and_hydrogen_form_ammonia_fee', 'Nitrogen and hydrogen form ammonia - feeds half the world!'),
               left: [{ formula: 'N₂', atoms: { N: 2 } }, { formula: 'H₂', atoms: { H: 2 } }],
               right: [{ formula: 'NH₃', atoms: { N: 1, H: 3 } }],
               answer: [1, 3, 2] },
-            { id: 'methane_combust', name: 'Methane Combustion', emoji: '🔥', type: 'Combustion', difficulty: 1,
-              desc: 'Natural gas burns to produce CO₂ and water.',
+            { id: 'methane_combust', name: __alloT('stem.molecule.methane_combustion', 'Methane Combustion'), emoji: '🔥', type: 'Combustion', difficulty: 1,
+              desc: __alloT('stem.molecule.natural_gas_burns_to_produce_co_and_wa', 'Natural gas burns to produce CO₂ and water.'),
               left: [{ formula: 'CH₄', atoms: { C: 1, H: 4 } }, { formula: 'O₂', atoms: { O: 2 } }],
               right: [{ formula: 'CO₂', atoms: { C: 1, O: 2 } }, { formula: 'H₂O', atoms: { H: 2, O: 1 } }],
               answer: [1, 2, 1, 2] },
-            { id: 'iron_rust', name: 'Rusting of Iron', emoji: '🟥', type: 'Synthesis', difficulty: 3,
-              desc: 'Iron reacts with oxygen to form iron oxide (rust).',
+            { id: 'iron_rust', name: __alloT('stem.molecule.rusting_of_iron', 'Rusting of Iron'), emoji: '🟥', type: 'Synthesis', difficulty: 3,
+              desc: __alloT('stem.molecule.iron_reacts_with_oxygen_to_form_iron_o', 'Iron reacts with oxygen to form iron oxide (rust).'),
               left: [{ formula: 'Fe', atoms: { Fe: 1 } }, { formula: 'O₂', atoms: { O: 2 } }],
               right: [{ formula: 'Fe₂O₃', atoms: { Fe: 2, O: 3 } }],
               answer: [4, 3, 2] },
-            { id: 'salt_formation', name: 'Salt Formation', emoji: '🧂', type: 'Synthesis', difficulty: 1,
-              desc: 'Sodium metal reacts with chlorine gas to make table salt.',
+            { id: 'salt_formation', name: __alloT('stem.molecule.salt_formation', 'Salt Formation'), emoji: '🧂', type: 'Synthesis', difficulty: 1,
+              desc: __alloT('stem.molecule.sodium_metal_reacts_with_chlorine_gas_', 'Sodium metal reacts with chlorine gas to make table salt.'),
               left: [{ formula: 'Na', atoms: { Na: 1 } }, { formula: 'Cl₂', atoms: { Cl: 2 } }],
               right: [{ formula: 'NaCl', atoms: { Na: 1, Cl: 1 } }],
               answer: [2, 1, 2] },
-            { id: 'propane_combust', name: 'Propane Combustion', emoji: '🔥', type: 'Combustion', difficulty: 3,
-              desc: 'Propane burns - the BBQ grill reaction!',
+            { id: 'propane_combust', name: __alloT('stem.molecule.propane_combustion', 'Propane Combustion'), emoji: '🔥', type: 'Combustion', difficulty: 3,
+              desc: __alloT('stem.molecule.propane_burns_the_bbq_grill_reaction', 'Propane burns - the BBQ grill reaction!'),
               left: [{ formula: 'C₃H₈', atoms: { C: 3, H: 8 } }, { formula: 'O₂', atoms: { O: 2 } }],
               right: [{ formula: 'CO₂', atoms: { C: 1, O: 2 } }, { formula: 'H₂O', atoms: { H: 2, O: 1 } }],
               answer: [1, 5, 3, 4] },
-            { id: 'zinc_acid', name: 'Zinc in Acid', emoji: '⚗️', type: 'Single Replacement', difficulty: 2,
-              desc: 'Zinc dissolves in hydrochloric acid, releasing hydrogen gas.',
+            { id: 'zinc_acid', name: __alloT('stem.molecule.zinc_in_acid', 'Zinc in Acid'), emoji: '⚗️', type: 'Single Replacement', difficulty: 2,
+              desc: __alloT('stem.molecule.zinc_dissolves_in_hydrochloric_acid_re', 'Zinc dissolves in hydrochloric acid, releasing hydrogen gas.'),
               left: [{ formula: 'Zn', atoms: { Zn: 1 } }, { formula: 'HCl', atoms: { H: 1, Cl: 1 } }],
               right: [{ formula: 'ZnCl₂', atoms: { Zn: 1, Cl: 2 } }, { formula: 'H₂', atoms: { H: 2 } }],
               answer: [1, 2, 1, 1] },
-            { id: 'neutralization', name: 'Neutralization', emoji: '⚖️', type: 'Double Replacement', difficulty: 1,
-              desc: 'NaOH neutralizes HCl to form salt and water.',
+            { id: 'neutralization', name: __alloT('stem.molecule.neutralization', 'Neutralization'), emoji: '⚖️', type: 'Double Replacement', difficulty: 1,
+              desc: __alloT('stem.molecule.naoh_neutralizes_hcl_to_form_salt_and_', 'NaOH neutralizes HCl to form salt and water.'),
               left: [{ formula: 'NaOH', atoms: { Na: 1, O: 1, H: 1 } }, { formula: 'HCl', atoms: { H: 1, Cl: 1 } }],
               right: [{ formula: 'NaCl', atoms: { Na: 1, Cl: 1 } }, { formula: 'H₂O', atoms: { H: 2, O: 1 } }],
               answer: [1, 1, 1, 1] },
-            { id: 'aluminum_oxide', name: 'Aluminum Oxidation', emoji: '✨', type: 'Synthesis', difficulty: 3,
-              desc: 'Aluminum reacts with oxygen to form aluminum oxide.',
+            { id: 'aluminum_oxide', name: __alloT('stem.molecule.aluminum_oxidation', 'Aluminum Oxidation'), emoji: '✨', type: 'Synthesis', difficulty: 3,
+              desc: __alloT('stem.molecule.aluminum_reacts_with_oxygen_to_form_al', 'Aluminum reacts with oxygen to form aluminum oxide.'),
               left: [{ formula: 'Al', atoms: { Al: 1 } }, { formula: 'O₂', atoms: { O: 2 } }],
               right: [{ formula: 'Al₂O₃', atoms: { Al: 2, O: 3 } }],
               answer: [4, 3, 2] },
-            { id: 'photosynthesis', name: 'Photosynthesis', emoji: '🌿', type: 'Synthesis', difficulty: 3,
-              desc: 'Plants convert CO₂ and water into glucose and oxygen.',
+            { id: 'photosynthesis', name: __alloT('stem.molecule.photosynthesis', 'Photosynthesis'), emoji: '🌿', type: 'Synthesis', difficulty: 3,
+              desc: __alloT('stem.molecule.plants_convert_co_and_water_into_gluco', 'Plants convert CO₂ and water into glucose and oxygen.'),
               left: [{ formula: 'CO₂', atoms: { C: 1, O: 2 } }, { formula: 'H₂O', atoms: { H: 2, O: 1 } }],
               right: [{ formula: 'C₆H₁₂O₆', atoms: { C: 6, H: 12, O: 6 } }, { formula: 'O₂', atoms: { O: 2 } }],
               answer: [6, 6, 1, 6] }
@@ -977,15 +1120,15 @@ window.StemLab = window.StemLab || {
 
           // ═══ Lab Challenges ═══
           const MOLECULE_CHALLENGES = [
-            { id: 'first_discovery', emoji: '🧪', name: 'First Discovery', desc: 'Discover any compound', reward: 10,
+            { id: 'first_discovery', emoji: '🧪', name: __alloT('stem.molecule.first_discovery', 'First Discovery'), desc: __alloT('stem.molecule.discover_any_compound', 'Discover any compound'), reward: 10,
               check: function() { return (d.discoveredCompounds || []).length >= 1; } },
-            { id: 'chemist_10', emoji: '🧑‍🔬', name: 'Lab Chemist', desc: 'Discover 10 compounds', reward: 25,
+            { id: 'chemist_10', emoji: '🧑‍🔬', name: __alloT('stem.molecule.lab_chemist', 'Lab Chemist'), desc: __alloT('stem.molecule.discover_10_compounds', 'Discover 10 compounds'), reward: 25,
               check: function() { return (d.discoveredCompounds || []).length >= 10; } },
-            { id: 'master_chemist', emoji: '🏆', name: 'Master Chemist', desc: 'Discover all compounds', reward: 50,
+            { id: 'master_chemist', emoji: '🏆', name: __alloT('stem.molecule.master_chemist', 'Master Chemist'), desc: __alloT('stem.molecule.discover_all_compounds', 'Discover all compounds'), reward: 50,
               check: function() { return (d.discoveredCompounds || []).length >= COMPOUNDS.length; } },
-            { id: 'quiz_streak', emoji: '🔥', name: 'Quiz Streak', desc: '5 correct in a row', reward: 20,
+            { id: 'quiz_streak', emoji: '🔥', name: __alloT('stem.molecule.quiz_streak', 'Quiz Streak'), desc: __alloT('stem.molecule.5_correct_in_a_row', '5 correct in a row'), reward: 20,
               check: function() { return (d.elStreak || 0) >= 5; } },
-            { id: 'balance_3', emoji: '⚖️', name: 'Equation Balancer', desc: 'Balance 3 reactions', reward: 30,
+            { id: 'balance_3', emoji: '⚖️', name: __alloT('stem.molecule.equation_balancer', 'Equation Balancer'), desc: __alloT('stem.molecule.balance_3_reactions', 'Balance 3 reactions'), reward: 30,
               check: function() { return reactionsBalanced >= 3; } }
           ];
 
@@ -1187,86 +1330,182 @@ window.StemLab = window.StemLab || {
 
           const viewerPresets = [
 
-            { name: 'H₂O (Water)', atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H₂O' },
+            { name: __alloT('stem.molecule.h_o_water', 'H₂O (Water)'), atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H₂O' },
 
-            { name: 'CO₂ (Carbon Dioxide)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO₂' },
+            { name: __alloT('stem.molecule.co_carbon_dioxide', 'CO₂ (Carbon Dioxide)'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO₂' },
 
-            { name: 'CH₄ (Methane)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH₄' },
+            { name: __alloT('stem.molecule.ch_methane', 'CH₄ (Methane)'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH₄' },
 
-            { name: 'NaCl (Table Salt)', atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
+            { name: __alloT('stem.molecule.nacl_table_salt', 'NaCl (Table Salt)'), atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
 
-            { name: 'NH₃ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 200, y: 210, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 260, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
+            { name: __alloT('stem.molecule.nh_ammonia', 'NH₃ (Ammonia)'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 200, y: 210, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 260, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
 
-            { name: 'O₂ (Oxygen Gas)', atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O₂' },
+            { name: __alloT('stem.molecule.o_oxygen_gas', 'O₂ (Oxygen Gas)'), atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O₂' },
 
-            { name: 'N₂ (Nitrogen Gas)', atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'N₂' },
+            { name: __alloT('stem.molecule.n_nitrogen_gas', 'N₂ (Nitrogen Gas)'), atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'N₂' },
 
-            { name: 'H₂O₂ (Hydrogen Peroxide)', atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'H₂O₂' },
+            { name: __alloT('stem.molecule.h_o_hydrogen_peroxide', 'H₂O₂ (Hydrogen Peroxide)'), atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'H₂O₂' },
 
-            { name: 'HCl (Hydrochloric Acid)', atoms: [{ el: 'H', x: 160, y: 150, color: '#60a5fa' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'HCl' },
+            { name: __alloT('stem.molecule.hcl_hydrochloric_acid', 'HCl (Hydrochloric Acid)'), atoms: [{ el: 'H', x: 160, y: 150, color: '#60a5fa' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'HCl' },
 
-            { name: 'H₂SO₄ (Sulfuric Acid)', atoms: [{ el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 130, y: 100, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]], formula: 'H₂SO₄' },
+            { name: __alloT('stem.molecule.h_so_sulfuric_acid', 'H₂SO₄ (Sulfuric Acid)'), atoms: [{ el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 130, y: 100, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]], formula: 'H₂SO₄' },
 
-            { name: 'C₂H₅OH (Ethanol)', atoms: [{ el: 'C', x: 150, y: 140, color: '#1e293b' }, { el: 'C', x: 230, y: 140, color: '#1e293b' }, { el: 'O', x: 300, y: 140, color: '#ef4444' }, { el: 'H', x: 320, y: 200, color: '#60a5fa' }, { el: 'H', x: 110, y: 90, color: '#60a5fa' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 90, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6]], formula: 'C₂H₅OH' },
+            { name: __alloT('stem.molecule.c_h_oh_ethanol', 'C₂H₅OH (Ethanol)'), atoms: [{ el: 'C', x: 150, y: 140, color: '#1e293b' }, { el: 'C', x: 230, y: 140, color: '#1e293b' }, { el: 'O', x: 300, y: 140, color: '#ef4444' }, { el: 'H', x: 320, y: 200, color: '#60a5fa' }, { el: 'H', x: 110, y: 90, color: '#60a5fa' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 90, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6]], formula: 'C₂H₅OH' },
 
-            { name: 'CaCO₃ (Calcium Carbonate)', atoms: [{ el: 'Ca', x: 100, y: 150, color: '#fbbf24' }, { el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 200, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }], bonds: [[0,4],[1,2],[1,3],[1,4]], formula: 'CaCO₃' },
+            { name: __alloT('stem.molecule.caco_calcium_carbonate', 'CaCO₃ (Calcium Carbonate)'), atoms: [{ el: 'Ca', x: 100, y: 150, color: '#fbbf24' }, { el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 200, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }], bonds: [[0,4],[1,2],[1,3],[1,4]], formula: 'CaCO₃' },
 
-            { name: 'C₆H₁₂O₆ (Glucose)', atoms: [{ el: 'C', x: 120, y: 110, color: '#1e293b' }, { el: 'C', x: 180, y: 110, color: '#1e293b' }, { el: 'C', x: 240, y: 110, color: '#1e293b' }, { el: 'O', x: 120, y: 180, color: '#ef4444' }, { el: 'O', x: 180, y: 180, color: '#ef4444' }, { el: 'O', x: 240, y: 180, color: '#ef4444' }, { el: 'H', x: 300, y: 110, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[1,4],[2,5],[2,6]], formula: 'C₆H₁₂O₆' },
+            { name: __alloT('stem.molecule.c_h_o_glucose', 'C₆H₁₂O₆ (Glucose)'), atoms: [{ el: 'C', x: 120, y: 110, color: '#1e293b' }, { el: 'C', x: 180, y: 110, color: '#1e293b' }, { el: 'C', x: 240, y: 110, color: '#1e293b' }, { el: 'O', x: 120, y: 180, color: '#ef4444' }, { el: 'O', x: 180, y: 180, color: '#ef4444' }, { el: 'O', x: 240, y: 180, color: '#ef4444' }, { el: 'H', x: 300, y: 110, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[1,4],[2,5],[2,6]], formula: 'C₆H₁₂O₆' },
 
-            { name: 'NaOH (Sodium Hydroxide)', atoms: [{ el: 'Na', x: 130, y: 150, color: '#a855f7' }, { el: 'O', x: 210, y: 150, color: '#ef4444' }, { el: 'H', x: 280, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2]], formula: 'NaOH' },
+            { name: __alloT('stem.molecule.naoh_sodium_hydroxide', 'NaOH (Sodium Hydroxide)'), atoms: [{ el: 'Na', x: 130, y: 150, color: '#a855f7' }, { el: 'O', x: 210, y: 150, color: '#ef4444' }, { el: 'H', x: 280, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2]], formula: 'NaOH' },
 
-            { name: 'Fe₂O₃ (Iron Oxide)', atoms: [{ el: 'Fe', x: 140, y: 120, color: '#fb923c' }, { el: 'Fe', x: 260, y: 120, color: '#fb923c' }, { el: 'O', x: 120, y: 200, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'O', x: 280, y: 200, color: '#ef4444' }], bonds: [[0,2],[0,3],[1,3],[1,4]], formula: 'Fe₂O₃' },
+            { name: __alloT('stem.molecule.fe_o_iron_oxide', 'Fe₂O₃ (Iron Oxide)'), atoms: [{ el: 'Fe', x: 140, y: 120, color: '#fb923c' }, { el: 'Fe', x: 260, y: 120, color: '#fb923c' }, { el: 'O', x: 120, y: 200, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'O', x: 280, y: 200, color: '#ef4444' }], bonds: [[0,2],[0,3],[1,3],[1,4]], formula: 'Fe₂O₃' },
 
-            { name: 'O₃ (Ozone)', atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'O₃' },
+            { name: __alloT('stem.molecule.o_ozone', 'O₃ (Ozone)'), atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'O₃' },
 
-            { name: 'CO (Carbon Monoxide)', atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'CO' },
+            { name: __alloT('stem.molecule.co_carbon_monoxide', 'CO (Carbon Monoxide)'), atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'CO' },
 
-            { name: 'NO₂ (Nitrogen Dioxide)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NO₂' },
+            { name: __alloT('stem.molecule.no_nitrogen_dioxide', 'NO₂ (Nitrogen Dioxide)'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NO₂' },
 
-            { name: 'SO₂ (Sulfur Dioxide)', atoms: [{ el: 'S', x: 200, y: 120, color: '#facc15' }, { el: 'O', x: 130, y: 180, color: '#ef4444' }, { el: 'O', x: 270, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SO₂' },
+            { name: __alloT('stem.molecule.so_sulfur_dioxide', 'SO₂ (Sulfur Dioxide)'), atoms: [{ el: 'S', x: 200, y: 120, color: '#facc15' }, { el: 'O', x: 130, y: 180, color: '#ef4444' }, { el: 'O', x: 270, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SO₂' },
 
-            { name: 'N₂O (Nitrous Oxide)', atoms: [{ el: 'N', x: 140, y: 150, color: '#3b82f6' }, { el: 'N', x: 200, y: 150, color: '#3b82f6' }, { el: 'O', x: 260, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'N₂O' },
+            { name: __alloT('stem.molecule.n_o_nitrous_oxide', 'N₂O (Nitrous Oxide)'), atoms: [{ el: 'N', x: 140, y: 150, color: '#3b82f6' }, { el: 'N', x: 200, y: 150, color: '#3b82f6' }, { el: 'O', x: 260, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'N₂O' },
 
-            { name: 'CH₃OH (Methanol)', atoms: [{ el: 'C', x: 160, y: 140, color: '#1e293b' }, { el: 'O', x: 240, y: 140, color: '#ef4444' }, { el: 'H', x: 300, y: 140, color: '#60a5fa' }, { el: 'H', x: 120, y: 90, color: '#60a5fa' }, { el: 'H', x: 120, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 80, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]], formula: 'CH₃OH' },
+            { name: __alloT('stem.molecule.ch_oh_methanol', 'CH₃OH (Methanol)'), atoms: [{ el: 'C', x: 160, y: 140, color: '#1e293b' }, { el: 'O', x: 240, y: 140, color: '#ef4444' }, { el: 'H', x: 300, y: 140, color: '#60a5fa' }, { el: 'H', x: 120, y: 90, color: '#60a5fa' }, { el: 'H', x: 120, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 80, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]], formula: 'CH₃OH' },
 
-            { name: 'HNO₃ (Nitric Acid)', atoms: [{ el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'H', x: 260, y: 200, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[3,4]], formula: 'HNO₃' },
+            { name: __alloT('stem.molecule.hno_nitric_acid', 'HNO₃ (Nitric Acid)'), atoms: [{ el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'H', x: 260, y: 200, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[3,4]], formula: 'HNO₃' },
 
-            { name: 'H₃PO₄ (Phosphoric Acid)', atoms: [{ el: 'P', x: 200, y: 140, color: '#f97316' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 90, color: '#ef4444' }, { el: 'O', x: 270, y: 195, color: '#ef4444' }, { el: 'O', x: 130, y: 195, color: '#ef4444' }, { el: 'H', x: 310, y: 60, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[2,5],[3,6],[4,7]], formula: 'H₃PO₄' },
+            { name: __alloT('stem.molecule.h_po_phosphoric_acid', 'H₃PO₄ (Phosphoric Acid)'), atoms: [{ el: 'P', x: 200, y: 140, color: '#f97316' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 90, color: '#ef4444' }, { el: 'O', x: 270, y: 195, color: '#ef4444' }, { el: 'O', x: 130, y: 195, color: '#ef4444' }, { el: 'H', x: 310, y: 60, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[2,5],[3,6],[4,7]], formula: 'H₃PO₄' },
 
-            { name: 'C₃H₈ (Propane)', atoms: [{ el: 'C', x: 130, y: 140, color: '#1e293b' }, { el: 'C', x: 200, y: 140, color: '#1e293b' }, { el: 'C', x: 270, y: 140, color: '#1e293b' }, { el: 'H', x: 100, y: 90, color: '#60a5fa' }, { el: 'H', x: 100, y: 190, color: '#60a5fa' }, { el: 'H', x: 130, y: 210, color: '#60a5fa' }, { el: 'H', x: 200, y: 90, color: '#60a5fa' }, { el: 'H', x: 200, y: 190, color: '#60a5fa' }, { el: 'H', x: 300, y: 90, color: '#60a5fa' }, { el: 'H', x: 300, y: 190, color: '#60a5fa' }, { el: 'H', x: 270, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]], formula: 'C₃H₈' },
+            { name: __alloT('stem.molecule.c_h_propane', 'C₃H₈ (Propane)'), atoms: [{ el: 'C', x: 130, y: 140, color: '#1e293b' }, { el: 'C', x: 200, y: 140, color: '#1e293b' }, { el: 'C', x: 270, y: 140, color: '#1e293b' }, { el: 'H', x: 100, y: 90, color: '#60a5fa' }, { el: 'H', x: 100, y: 190, color: '#60a5fa' }, { el: 'H', x: 130, y: 210, color: '#60a5fa' }, { el: 'H', x: 200, y: 90, color: '#60a5fa' }, { el: 'H', x: 200, y: 190, color: '#60a5fa' }, { el: 'H', x: 300, y: 90, color: '#60a5fa' }, { el: 'H', x: 300, y: 190, color: '#60a5fa' }, { el: 'H', x: 270, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]], formula: 'C₃H₈' },
 
-            { name: 'C₄H₁₀ (Butane)', atoms: [{ el: 'C', x: 100, y: 140, color: '#1e293b' }, { el: 'C', x: 170, y: 140, color: '#1e293b' }, { el: 'C', x: 240, y: 140, color: '#1e293b' }, { el: 'C', x: 310, y: 140, color: '#1e293b' }, { el: 'H', x: 70, y: 100, color: '#60a5fa' }, { el: 'H', x: 70, y: 180, color: '#60a5fa' }, { el: 'H', x: 100, y: 210, color: '#60a5fa' }, { el: 'H', x: 170, y: 100, color: '#60a5fa' }, { el: 'H', x: 170, y: 195, color: '#60a5fa' }, { el: 'H', x: 240, y: 100, color: '#60a5fa' }, { el: 'H', x: 240, y: 195, color: '#60a5fa' }, { el: 'H', x: 340, y: 100, color: '#60a5fa' }, { el: 'H', x: 340, y: 180, color: '#60a5fa' }, { el: 'H', x: 310, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11],[3,12],[3,13]], formula: 'C₄H₁₀' },
+            { name: __alloT('stem.molecule.c_h_butane', 'C₄H₁₀ (Butane)'), atoms: [{ el: 'C', x: 100, y: 140, color: '#1e293b' }, { el: 'C', x: 170, y: 140, color: '#1e293b' }, { el: 'C', x: 240, y: 140, color: '#1e293b' }, { el: 'C', x: 310, y: 140, color: '#1e293b' }, { el: 'H', x: 70, y: 100, color: '#60a5fa' }, { el: 'H', x: 70, y: 180, color: '#60a5fa' }, { el: 'H', x: 100, y: 210, color: '#60a5fa' }, { el: 'H', x: 170, y: 100, color: '#60a5fa' }, { el: 'H', x: 170, y: 195, color: '#60a5fa' }, { el: 'H', x: 240, y: 100, color: '#60a5fa' }, { el: 'H', x: 240, y: 195, color: '#60a5fa' }, { el: 'H', x: 340, y: 100, color: '#60a5fa' }, { el: 'H', x: 340, y: 180, color: '#60a5fa' }, { el: 'H', x: 310, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11],[3,12],[3,13]], formula: 'C₄H₁₀' },
 
-            { name: 'SiO₂ (Silicon Dioxide)', atoms: [{ el: 'Si', x: 200, y: 150, color: '#34d399' }, { el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SiO₂' },
+            { name: __alloT('stem.molecule.sio_silicon_dioxide', 'SiO₂ (Silicon Dioxide)'), atoms: [{ el: 'Si', x: 200, y: 150, color: '#34d399' }, { el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SiO₂' },
 
-            { name: 'KCl (Potassium Chloride)', atoms: [{ el: 'K', x: 160, y: 150, color: '#f87171' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0,1]], formula: 'KCl' },
+            { name: __alloT('stem.molecule.kcl_potassium_chloride', 'KCl (Potassium Chloride)'), atoms: [{ el: 'K', x: 160, y: 150, color: '#f87171' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0,1]], formula: 'KCl' },
 
-            { name: 'MgO (Magnesium Oxide)', atoms: [{ el: 'Mg', x: 160, y: 150, color: '#fbbf24' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'MgO' },
+            { name: __alloT('stem.molecule.mgo_magnesium_oxide', 'MgO (Magnesium Oxide)'), atoms: [{ el: 'Mg', x: 160, y: 150, color: '#fbbf24' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'MgO' },
 
-            { name: 'NaHCO₃ (Baking Soda)', atoms: [{ el: 'Na', x: 80, y: 150, color: '#a855f7' }, { el: 'O', x: 150, y: 150, color: '#ef4444' }, { el: 'C', x: 220, y: 150, color: '#1e293b' }, { el: 'O', x: 220, y: 80, color: '#ef4444' }, { el: 'O', x: 290, y: 150, color: '#ef4444' }, { el: 'H', x: 340, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[2,4],[4,5]], formula: 'NaHCO₃' },
+            { name: __alloT('stem.molecule.nahco_baking_soda', 'NaHCO₃ (Baking Soda)'), atoms: [{ el: 'Na', x: 80, y: 150, color: '#a855f7' }, { el: 'O', x: 150, y: 150, color: '#ef4444' }, { el: 'C', x: 220, y: 150, color: '#1e293b' }, { el: 'O', x: 220, y: 80, color: '#ef4444' }, { el: 'O', x: 290, y: 150, color: '#ef4444' }, { el: 'H', x: 340, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[2,4],[4,5]], formula: 'NaHCO₃' },
 
-            { name: 'CH₃COOH (Acetic Acid)', atoms: [{ el: 'C', x: 140, y: 140, color: '#1e293b' }, { el: 'C', x: 220, y: 140, color: '#1e293b' }, { el: 'O', x: 220, y: 70, color: '#ef4444' }, { el: 'O', x: 290, y: 160, color: '#ef4444' }, { el: 'H', x: 340, y: 160, color: '#60a5fa' }, { el: 'H', x: 100, y: 95, color: '#60a5fa' }, { el: 'H', x: 100, y: 185, color: '#60a5fa' }, { el: 'H', x: 140, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[1,3],[3,4],[0,5],[0,6],[0,7]], formula: 'CH₃COOH' },
+            { name: __alloT('stem.molecule.ch_cooh_acetic_acid', 'CH₃COOH (Acetic Acid)'), atoms: [{ el: 'C', x: 140, y: 140, color: '#1e293b' }, { el: 'C', x: 220, y: 140, color: '#1e293b' }, { el: 'O', x: 220, y: 70, color: '#ef4444' }, { el: 'O', x: 290, y: 160, color: '#ef4444' }, { el: 'H', x: 340, y: 160, color: '#60a5fa' }, { el: 'H', x: 100, y: 95, color: '#60a5fa' }, { el: 'H', x: 100, y: 185, color: '#60a5fa' }, { el: 'H', x: 140, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[1,3],[3,4],[0,5],[0,6],[0,7]], formula: 'CH₃COOH' },
 
-            { name: 'KNO₃ (Potassium Nitrate)', atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNO₃' },
+            { name: __alloT('stem.molecule.kno_potassium_nitrate', 'KNO₃ (Potassium Nitrate)'), atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNO₃' },
 
-            { name: 'CuSO₄ (Copper Sulfate)', atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSO₄' },
+            { name: __alloT('stem.molecule.cuso_copper_sulfate', 'CuSO₄ (Copper Sulfate)'), atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSO₄' },
 
           ];
+          const moleculeTeachingModels = {
+            H2O: {
+              shape: 'Bent', angle: '104.5°', domains: '4 electron domains; 2 lone pairs on O',
+              polarity: 'Polar', dipoles: 'O-H bond dipoles reinforce instead of cancelling.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0.8, 0], [-2.2, -0.9, 0], [2.2, -0.9, 0]]
+            },
+            CO2: {
+              shape: 'Linear', angle: '180°', domains: '2 electron domains; 0 lone pairs on C',
+              polarity: 'Nonpolar molecule', dipoles: 'Two polar C=O bond dipoles are equal and opposite, so they cancel.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0, 0], [-3.2, 0, 0], [3.2, 0, 0]]
+            },
+            CH4: {
+              shape: 'Tetrahedral', angle: '109.5°', domains: '4 electron domains; 0 lone pairs on C',
+              polarity: 'Nonpolar molecule', dipoles: 'The four C-H bond dipoles cancel through tetrahedral symmetry.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0, 0], [1.8, 1.8, 1.8], [-1.8, -1.8, 1.8], [-1.8, 1.8, -1.8], [1.8, -1.8, -1.8]]
+            },
+            NH3: {
+              shape: 'Trigonal pyramidal', angle: 'about 107°', domains: '4 electron domains; 1 lone pair on N',
+              polarity: 'Polar', dipoles: 'The N-H bond dipoles do not cancel; their net direction is toward N.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0.8, 0], [2.2, -1.1, 0], [-1.1, -1.1, 1.9], [-1.1, -1.1, -1.9]]
+            },
+            O2: {
+              shape: 'Linear diatomic', angle: 'Not applicable', domains: 'Two identical O atoms',
+              polarity: 'Nonpolar', dipoles: 'Identical atoms share electrons equally, so there is no permanent bond dipole.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[-1.8, 0, 0], [1.8, 0, 0]]
+            },
+            N2: {
+              shape: 'Linear diatomic', angle: 'Not applicable', domains: 'Two identical N atoms',
+              polarity: 'Nonpolar', dipoles: 'Identical atoms share electrons equally, so there is no permanent bond dipole.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[-1.8, 0, 0], [1.8, 0, 0]]
+            },
+            HCl: {
+              shape: 'Linear diatomic', angle: 'Not applicable', domains: 'One H-Cl bond',
+              polarity: 'Polar', dipoles: 'Electron density is drawn toward Cl, producing a permanent bond dipole.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[-1.8, 0, 0], [1.8, 0, 0]]
+            },
+            O3: {
+              shape: 'Bent', angle: 'about 117°', domains: '3 electron domains; 1 lone pair on central O',
+              polarity: 'Polar', dipoles: 'Its bent shape prevents the O-O bond contributions from cancelling.',
+              modelNote: 'Resonance makes the two O-O bonds equivalent overall',
+              coordinates: [[-2.3, -0.7, 0], [0, 0.8, 0], [2.3, -0.7, 0]]
+            },
+            NO2: {
+              shape: 'Bent', angle: 'about 134°', domains: 'Odd-electron molecule; VSEPR is approximate',
+              polarity: 'Polar', dipoles: 'Its bent geometry leaves a net molecular dipole.',
+              modelNote: 'Gas-phase radical; one electron is unpaired',
+              coordinates: [[0, 0.8, 0], [-2.5, -0.8, 0], [2.5, -0.8, 0]]
+            },
+            SO2: {
+              shape: 'Bent', angle: 'about 119°', domains: '3 electron domains; 1 lone pair on S',
+              polarity: 'Polar', dipoles: 'Its bent geometry prevents the S-O bond dipoles from cancelling.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0.8, 0], [-2.4, -0.7, 0], [2.4, -0.7, 0]]
+            },
+            NaCl: {
+              shape: 'Ion pair shown', angle: 'Not applicable', domains: 'Na+ and Cl- ions',
+              polarity: 'Ionic compound', dipoles: 'Bulk table salt is a repeating 3D ionic lattice, not separate NaCl molecules.',
+              modelNote: 'Formula-unit representation',
+              coordinates: [[-2, 0, 0], [2, 0, 0]]
+            },
+            KCl: {
+              shape: 'Ion pair shown', angle: 'Not applicable', domains: 'K+ and Cl- ions',
+              polarity: 'Ionic compound', dipoles: 'Bulk potassium chloride is a repeating 3D ionic lattice, not separate KCl molecules.',
+              modelNote: 'Formula-unit representation',
+              coordinates: [[-2, 0, 0], [2, 0, 0]]
+            },
+            MgO: {
+              shape: 'Ion pair shown', angle: 'Not applicable', domains: 'Mg2+ and O2- ions',
+              polarity: 'Ionic compound', dipoles: 'Bulk magnesium oxide is a repeating 3D ionic lattice, not separate MgO molecules.',
+              modelNote: 'Formula-unit representation',
+              coordinates: [[-2, 0, 0], [2, 0, 0]]
+            }
+          };
+
+          const normalizeMoleculeFormula = function(formula) {
+            var subscripts = { '₀':'0', '₁':'1', '₂':'2', '₃':'3', '₄':'4', '₅':'5', '₆':'6', '₇':'7', '₈':'8', '₉':'9' };
+            return String(formula || '').replace(/[₀-₉]/g, function(char) { return subscripts[char]; });
+          };
+
+          const getMoleculeTeachingModel = function(formula) {
+            return moleculeTeachingModels[normalizeMoleculeFormula(formula)] || null;
+          };
+
+          if (typeof window !== 'undefined') {
+            window.__alloMoleculeGeometryPure = {
+              normalizeFormula: normalizeMoleculeFormula,
+              getTeachingModel: getMoleculeTeachingModel
+            };
+          }
 
 
 
             
 
-return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : "") },
+return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : "") },
             React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" } }, d._srMsg || ""),
 
             // Header
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.molecule.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Molecule Lab"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, __alloT('stem.molecule.molecule_lab', "\uD83D\uDD2C Molecule Lab")),
 
               discovered.length > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " discovered"),
 
@@ -1274,13 +1513,56 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
+            React.createElement("section", { "data-molecule-command": "true", "aria-label": "Molecule Lab command deck", className: "mb-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-3 shadow-sm" },
+              React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,1.7fr)]" },
+                React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white/80 p-3" },
+                  React.createElement("div", { className: "text-[11px] font-black uppercase text-cyan-700", style: { letterSpacing: 0 } }, "Molecular workbench"),
+                  React.createElement("div", { className: "mt-1 text-xl font-black leading-tight text-slate-900" }, "Pick the chemistry lens first."),
+                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "The lab is easier when students choose a mode by task: inspect, combine, build, research, or balance."),
+                  React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
+                    [
+                      ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#059669'],
+                      ['Research points', totalRP, '#d97706'],
+                      ['Formula', d.formula || '-', '#2563eb']
+                    ].map(function(stat) {
+                      return React.createElement("div", { key: stat[0], className: "rounded-lg border border-slate-200 bg-white p-2" },
+                        React.createElement("div", { className: "text-[10px] font-bold uppercase text-slate-500", style: { letterSpacing: 0 } }, stat[0]),
+                        React.createElement("div", { className: "mt-1 text-sm font-black", style: { color: stat[2], wordBreak: 'break-word' } }, stat[1])
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" },
+                  [
+                    { id: 'viewer', title: 'View', body: '3D model and formula readout.', tone: '#0f766e' },
+                    { id: 'realStructures', title: 'Real Structures', body: 'Open Mol* protein and DNA viewer.', tone: '#0891b2', action: function() { if (typeof setLabToolData === 'function') setLabToolData(function(prev) { var cur = Object.assign({}, (prev && prev._moleculeShelf) || {}); cur.returnTool = 'molecule'; var next = Object.assign({}, prev); next._moleculeShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('moleculeShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.'); } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info'); } },
+                    { id: 'creator', title: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea' },
+                    { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#d97706' },
+                    { id: 'table', title: 'Research', body: 'Use the periodic table as reference.', tone: '#2563eb' },
+                    { id: 'reactions', title: 'React', body: 'Balance equations and products.', tone: '#dc2626' }
+                  ].map(function(route) {
+                    var active = mode === route.id;
+                    var launchesShelf = typeof route.action === 'function';
+                    return React.createElement("button", { key: route.id,
+                      onClick: function() { if (launchesShelf) { route.action(); return; } upd('moleculeMode', route.id); },
+                      className: "min-h-[104px] rounded-xl border bg-white p-3 text-left transition-all hover:shadow-md active:scale-[0.98]",
+                      style: { borderColor: active ? route.tone : '#cbd5e1', boxShadow: active ? '0 0 0 2px ' + route.tone + '33' : 'none' } },
+                      React.createElement("div", { className: "text-sm font-black", style: { color: route.tone } }, route.title),
+                      React.createElement("div", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, route.body),
+                      React.createElement("div", { className: "mt-2 text-[11px] font-black", style: { color: route.tone } }, launchesShelf ? "Launch" : (active ? "Open now" : "Open"))
+                    );
+                  })
+                )
+              )
+            ),
+
             // Mode tabs
 
-            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
+            React.createElement("div", { className: "flex flex-wrap gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
 
               [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['build', '\uD83E\uDDF1 Build'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table'], ['reactions', '⚗️ Reactions']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Switch to " + label + " mode", key: m, onClick: () => { upd('moleculeMode', m); if (typeof canvasNarrate === 'function') { canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + label + ' mode.', repeat: label + ' mode.', terse: label + '.' }, { debounce: 500 }); } }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700') }, label)
+                React.createElement("button", { "aria-label": "Switch to " + label + " mode", key: m, onClick: () => { upd('moleculeMode', m); if (typeof canvasNarrate === 'function') { canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + label + ' mode.', repeat: label + ' mode.', terse: label + '.' }, { debounce: 500 }); } }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'transition-colors text-slate-600 hover:bg-white/70 hover:text-slate-800 active:scale-[0.97]') }, label)
 
               )
 
@@ -1289,11 +1571,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: 'Viewer - ball-and-stick + space-filling',         hint: 'Each atom\u2019s color follows CPK (carbon black, oxygen red, nitrogen blue, hydrogen white). Bond lengths are not arbitrary - covalent radii from quantum chemistry tables, ~70-150 picometers.' },
-                creator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697',         title: 'Compound Creator - valence + bonding rules',     hint: 'Octet rule: most atoms want 8 valence electrons. C bonds 4 ways, N 3, O 2, H 1. Lewis dot structures (1916) still drive 90% of intro chemistry intuition.' },
-                build:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDF1', title: 'Build - drag atoms, draw bonds',                  hint: 'Single, double, triple bonds = 1, 2, 3 shared electron pairs. Triple bonds are shorter and stronger (N\u2261N at 110pm vs N-N at 145pm). Geometry follows VSEPR: pairs repel.' },
-                table:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDC2', title: 'Periodic Table - Mendeleev\u2019s 1869 grid',     hint: 'Periods (rows) = electron shells; groups (columns) = valence electrons. Mendeleev predicted gallium and germanium\u2019s properties before discovery - the table predicted reality.' },
-                reactions: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2697',         title: 'Reactions - reactants \u2192 products + ΔH',      hint: 'Conservation of mass (Lavoisier 1789): atoms in = atoms out. Balance the equation, predict the product, classify (synthesis / decomposition / single-replace / double-replace / combustion).' }
+                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: __alloT('stem.molecule.viewer_ball_and_stick_space_filling', 'Viewer - ball-and-stick + space-filling'),         hint: __alloT('stem.molecule.each_atom_s_color_follows_cpk_carbon_b', 'Each atom\u2019s color follows CPK (carbon black, oxygen red, nitrogen blue, hydrogen white). Bond lengths are not arbitrary - covalent radii from quantum chemistry tables, ~70-150 picometers.') },
+                creator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697',         title: __alloT('stem.molecule.compound_creator_valence_bonding_rules', 'Compound Creator - valence + bonding rules'),     hint: __alloT('stem.molecule.octet_rule_most_atoms_want_8_valence_e', 'Octet rule: most atoms want 8 valence electrons. C bonds 4 ways, N 3, O 2, H 1. Lewis dot structures (1916) still drive 90% of intro chemistry intuition.') },
+                build:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDF1', title: __alloT('stem.molecule.build_drag_atoms_draw_bonds', 'Build - drag atoms, draw bonds'),                  hint: __alloT('stem.molecule.single_double_triple_bonds_1_2_3_share', 'Single, double, triple bonds = 1, 2, 3 shared electron pairs. Triple bonds are shorter and stronger (N\u2261N at 110pm vs N-N at 145pm). Geometry follows VSEPR: pairs repel.') },
+                table:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDC2', title: __alloT('stem.molecule.periodic_table_mendeleev_s_1869_grid', 'Periodic Table - Mendeleev\u2019s 1869 grid'),     hint: __alloT('stem.molecule.periods_rows_electron_shells_groups_co', 'Periods (rows) = electron shells; groups (columns) = valence electrons. Mendeleev predicted gallium and germanium\u2019s properties before discovery - the table predicted reality.') },
+                reactions: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2697',         title: __alloT('stem.molecule.reactions_reactants_products_h', 'Reactions - reactants \u2192 products + ΔH'),      hint: __alloT('stem.molecule.conservation_of_mass_lavoisier_1789_at', 'Conservation of mass (Lavoisier 1789): atoms in = atoms out. Balance the equation, predict the product, classify (synthesis / decomposition / single-replace / double-replace / combustion).') }
               };
               var meta = MODE_META[mode] || MODE_META.viewer;
               return React.createElement('div', {
@@ -1319,26 +1601,44 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             mode === 'viewer' && React.createElement("div", null,
 
-              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200') }, p.name))),
+              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-slate-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]') }, p.name))),
 
               threeLoaded
-                ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border border-stone-200", style: { height: "300px" } },
+                ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border", style: { height: "320px", background: "radial-gradient(circle at 50% 42%, rgba(30,64,175,0.34), rgba(15,23,42,0.72) 38%, #020617 78%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
-                      className: "w-full h-full bg-gradient-to-b from-slate-900 to-slate-950",
-                      style: { display: 'block', outline: 'none' }
+                      className: "w-full h-full",
+                      style: { display: 'block', outline: 'none', background: 'transparent' }
                     }),
+                    React.createElement("div", {
+                      "aria-hidden": "true",
+                      style: { position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.5) 100%), linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px)", backgroundSize: "100% 100%, 28px 28px, 28px 28px", mixBlendMode: "screen", opacity: 0.68 }
+                    }),
+                    React.createElement("div", {
+                      style: { position: "absolute", top: 12, left: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", padding: "6px 9px", borderRadius: 10, background: "rgba(2,6,23,0.68)", color: "#dbeafe", border: "1px solid rgba(147,197,253,0.22)", boxShadow: "0 10px 24px rgba(2,6,23,0.35)", backdropFilter: "blur(10px)", fontSize: 11, fontWeight: 800, letterSpacing: 0 }
+                    },
+                      React.createElement("span", { style: { color: "#67e8f9" } }, "3D molecular model"),
+                      React.createElement("span", { style: { color: "#94a3b8", fontWeight: 700 } }, d.formula || "No formula")
+                    ),
                     React.createElement("button", {
                       onClick: function() {
                         if (threeControlsRef.current) {
                           threeControlsRef.current.reset();
                         }
                       },
-                      className: "absolute bottom-3 right-3 px-2 py-1 bg-white/80 hover:bg-white text-stone-700 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors",
-                      'aria-label': 'Reset View'
-                    }, '🔄 Reset Camera')
+                      className: "absolute bottom-3 right-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
+                      style: { background: "rgba(248,250,252,0.9)", color: "#0f172a", borderColor: "rgba(203,213,225,0.8)" },
+                      'aria-label': __alloT('stem.molecule.reset_view', 'Reset View')
+                    }, __alloT('stem.molecule.reset_camera', '🔄 Reset Camera')),
+                    xrSupported && React.createElement("button", {
+                      onClick: function() { if (vrRef.current && vrRef.current.enterVR) vrRef.current.enterVR(); },
+                      className: "absolute bottom-3 left-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
+                      style: { background: "#4f46e5", color: "#fff", borderColor: "rgba(79,70,229,0.8)" },
+                      'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                      title: __alloT('vr.enter_title', 'Enter VR (needs a headset)')
+                    }, '🥽 ' + __alloT('vr.enter', 'VR'))
                   )
-                : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
+                : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (d.atoms || []).length + " atom" + ((d.atoms || []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
                     (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
                     (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
                       // A11y: role + tabIndex + aria-label + onKeyDown so keyboard /
@@ -1370,15 +1670,47 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   ),
 
               React.createElement("div", { className: "mt-2 text-center" },
-
                 React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "Formula: "),
+                React.createElement("span", { className: "text-lg font-bold text-slate-800 tracking-tight" }, d.formula || '-'),
+                d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
+                  calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
+                )
+              ),
 
-                React.createElement("span", { className: "text-lg font-bold text-slate-800" }, d.formula || '-'),
-
-              d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
-                calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
-              )
-              )
+              (() => {
+                const teaching = getMoleculeTeachingModel(d.formula);
+                return teaching && React.createElement("section", {
+                  className: "mt-3 border border-cyan-200 bg-cyan-50/70 p-3 text-left",
+                  style: { borderRadius: 8 },
+                  "aria-labelledby": "molecule-shape-polarity-title"
+                },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                    React.createElement("h4", { id: "molecule-shape-polarity-title", className: "text-sm font-black text-slate-800" }, "Shape & Polarity Lens"),
+                    React.createElement("span", { className: "px-2 py-1 text-[11px] font-bold bg-white border border-cyan-200 text-cyan-800", style: { borderRadius: 6 } }, teaching.modelNote)
+                  ),
+                  React.createElement("dl", { className: "mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2" },
+                    React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
+                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Molecular shape"),
+                      React.createElement("dd", { className: "mt-1 text-sm font-black text-slate-800" }, teaching.shape),
+                      React.createElement("dd", { className: "text-xs text-slate-600" }, "Bond angle: " + teaching.angle)
+                    ),
+                    React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
+                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Electron geometry evidence"),
+                      React.createElement("dd", { className: "mt-1 text-xs font-semibold text-slate-700" }, teaching.domains)
+                    ),
+                    React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
+                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Whole-particle polarity"),
+                      React.createElement("dd", { className: "mt-1 text-sm font-black text-slate-800" }, teaching.polarity)
+                    )
+                  ),
+                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-700" },
+                    React.createElement("strong", null, "Why: "), teaching.dipoles
+                  ),
+                  React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-slate-600" },
+                    "Ball-and-stick models show connectivity and approximate geometry. Atom sizes and bond lengths are not on one common scale, and electron density is continuous."
+                  )
+                );
+              })()
 
             ),
 
@@ -1386,7 +1718,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             mode === 'creator' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Select elements to craft compounds - discover real-world chemistry by combining atoms!"),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, __alloT('stem.molecule.select_elements_to_craft_compounds_dis', "Select elements to craft compounds - discover real-world chemistry by combining atoms!")),
 
               // Element selector grid (common elements)
 
@@ -1396,7 +1728,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   const el = getEl(sym);
 
-                  return React.createElement("button", { "aria-label": "Add Element", key: sym, onClick: () => addElement(sym), className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95 " + (catColors[el?.cat] || 'bg-slate-100 text-slate-600 border-slate-200'), title: el?.name || sym },
+                  return React.createElement("button", { "aria-label": __alloT('stem.molecule.add_element', "Add Element"), key: sym, onClick: () => addElement(sym), className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95 " + (catColors[el?.cat] || 'bg-slate-100 text-slate-600 border-slate-200'), title: el?.name || sym },
 
                     React.createElement("span", { className: "text-sm font-black" }, sym),
 
@@ -1414,7 +1746,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 Object.keys(selectedEls).length === 0
 
-                  ? React.createElement("p", { className: "text-slate-600 text-sm italic" }, "Tap elements above to add them...")
+                  ? React.createElement("p", { className: "text-slate-600 text-sm italic" }, __alloT('stem.molecule.tap_elements_above_to_add_them', "Tap elements above to add them..."))
 
                   : Object.entries(selectedEls).map(([sym, count]) => {
 
@@ -1424,9 +1756,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#94a3b8' } }, sym),
 
-                      React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
+                      React.createElement("span", { className: "text-lg font-black text-slate-700 tracking-tight" }, "\u00D7" + count),
 
-                      React.createElement("button", { "aria-label": "Remove Element", onClick: () => removeElement(sym), className: "ml-1 w-8 h-8 rounded-full bg-red-100 text-red-500 text-sm font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
+                      React.createElement("button", { "aria-label": __alloT('stem.molecule.remove_element', "Remove Element"), onClick: () => removeElement(sym), className: "transition-colors ml-1 w-8 h-8 rounded-full bg-red-100 text-red-500 text-sm font-bold hover:bg-red-200 flex items-center justify-center active:scale-[0.97]" }, "\u2212")
 
                     );
 
@@ -1438,9 +1770,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               React.createElement("div", { className: "flex gap-2 mb-4" },
 
-                React.createElement("button", { onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, "\u2697\uFE0F Combine!"),
+                React.createElement("button", { onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.molecule.combine', "\u2697\uFE0F Combine!")),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: clearElements, className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors" }, "\uD83D\uDD04 Clear")
+                React.createElement("button", { "aria-label": __alloT('stem.molecule.clear', "Clear"), onClick: clearElements, className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.97]" }, __alloT('stem.molecule.clear_2', "\uD83D\uDD04 Clear"))
 
               ),
 
@@ -1452,7 +1784,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("p", { className: "text-3xl mb-1" }, d.craftResult.compound.emoji),
 
-                  React.createElement("p", { className: "text-lg font-black text-emerald-700" }, (d.craftResult.isNew ? '\uD83C\uDF89 NEW! ' : '\u2705 ') + d.craftResult.compound.name),
+                  React.createElement("p", { className: "text-lg font-black text-emerald-700 tracking-tight" }, (d.craftResult.isNew ? '\uD83C\uDF89 NEW! ' : '\u2705 ') + d.craftResult.compound.name),
 
                   React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.craftResult.compound.formula),
 
@@ -1462,7 +1794,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 : React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-xl p-3 text-center" },
 
-                  React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\uD83E\uDD14 No known compound matches this combination. Try different elements!"))
+                  React.createElement("p", { className: "text-sm font-bold text-amber-700" }, __alloT('stem.molecule.no_known_compound_matches_this_combina', "\uD83E\uDD14 No known compound matches this combination. Try different elements!")))
 
               ),
 
@@ -1474,7 +1806,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-200') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
+                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
 
                 )
 
@@ -1486,7 +1818,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             mode === 'build' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Drag atoms onto the canvas and draw bonds to build molecules! Click two atoms to connect them."),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, __alloT('stem.molecule.drag_atoms_onto_the_canvas_and_draw_bo', "Drag atoms onto the canvas and draw bonds to build molecules! Click two atoms to connect them.")),
 
               // Atom palette
 
@@ -1494,29 +1826,29 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 [
 
-                  { sym: 'H', color: '#60a5fa', label: 'Hydrogen' },
+                  { sym: 'H', color: '#60a5fa', label: __alloT('stem.molecule.hydrogen', 'Hydrogen') },
 
-                  { sym: 'C', color: '#1e293b', label: 'Carbon' },
+                  { sym: 'C', color: '#1e293b', label: __alloT('stem.molecule.carbon', 'Carbon') },
 
-                  { sym: 'N', color: '#3b82f6', label: 'Nitrogen' },
+                  { sym: 'N', color: '#3b82f6', label: __alloT('stem.molecule.nitrogen', 'Nitrogen') },
 
-                  { sym: 'O', color: '#ef4444', label: 'Oxygen' },
+                  { sym: 'O', color: '#ef4444', label: __alloT('stem.molecule.oxygen', 'Oxygen') },
 
-                  { sym: 'S', color: '#facc15', label: 'Sulfur' },
+                  { sym: 'S', color: '#facc15', label: __alloT('stem.molecule.sulfur', 'Sulfur') },
 
-                  { sym: 'P', color: '#f97316', label: 'Phosphorus' },
+                  { sym: 'P', color: '#f97316', label: __alloT('stem.molecule.phosphorus', 'Phosphorus') },
 
-                  { sym: 'Cl', color: '#22c55e', label: 'Chlorine' },
+                  { sym: 'Cl', color: '#22c55e', label: __alloT('stem.molecule.chlorine', 'Chlorine') },
 
-                  { sym: 'Na', color: '#a855f7', label: 'Sodium' },
+                  { sym: 'Na', color: '#a855f7', label: __alloT('stem.molecule.sodium', 'Sodium') },
 
-                  { sym: 'Ca', color: '#fbbf24', label: 'Calcium' },
+                  { sym: 'Ca', color: '#fbbf24', label: __alloT('stem.molecule.calcium', 'Calcium') },
 
-                  { sym: 'Fe', color: '#fb923c', label: 'Iron' },
+                  { sym: 'Fe', color: '#fb923c', label: __alloT('stem.molecule.iron', 'Iron') },
 
-                  { sym: 'K', color: '#f87171', label: 'Potassium' },
+                  { sym: 'K', color: '#f87171', label: __alloT('stem.molecule.potassium', 'Potassium') },
 
-                  { sym: 'Si', color: '#34d399', label: 'Silicon' },
+                  { sym: 'Si', color: '#34d399', label: __alloT('stem.molecule.silicon', 'Silicon') },
 
                 ].map(a => React.createElement("button", { "aria-label": "Add " + a.label + " atom to canvas",
 
@@ -1851,7 +2183,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 // "Drawing bond from..." indicator line
 
-                d.buildBondFrom !== null && d.buildBondFrom !== undefined && (d.buildAtoms || [])[d.buildBondFrom] && React.createElement("text", { x: W / 2, y: H - 10, textAnchor: "middle", fill: "#3b82f6", style: { fontSize: '10px', fontWeight: 'bold' } }, "\u{1F517} Click another atom to connect...")
+                d.buildBondFrom !== null && d.buildBondFrom !== undefined && (d.buildAtoms || [])[d.buildBondFrom] && React.createElement("text", { x: W / 2, y: H - 10, textAnchor: "middle", fill: "#3b82f6", style: { fontSize: '10px', fontWeight: 'bold' } }, __alloT('stem.molecule.click_another_atom_to_connect', "\u{1F517} Click another atom to connect..."))
 
               ),
 
@@ -1881,7 +2213,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-600' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-600' : 'transition-colors bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 active:scale-[0.97]')
 
                 }, "\u{1F517} " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'Cancel Bond' : 'Draw Bond')),
 
@@ -1907,13 +2239,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 // Clear all
 
-                React.createElement("button", { "aria-label": "Clear All",
+                React.createElement("button", { "aria-label": __alloT('stem.molecule.clear_all', "Clear All"),
 
                   onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-600 hover:bg-red-100 transition-all ml-auto"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-600 hover:bg-red-100 transition-all ml-auto active:scale-[0.97]"
 
-                }, "\uD83D\uDDD1\uFE0F Clear All")
+                }, __alloT('stem.molecule.clear_all_2', "\uD83D\uDDD1\uFE0F Clear All"))
 
               ),
 
@@ -1941,7 +2273,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "Formula: "),
 
-                    React.createElement("span", { className: "text-lg font-black text-slate-800 font-mono" }, formulaStr)
+                    React.createElement("span", { className: "text-lg font-black text-slate-800 font-mono tracking-tight" }, formulaStr)
 
                   ),
 
@@ -1966,7 +2298,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               (d.buildAtoms || []).length > 0 && React.createElement("div", { className: "mt-3 flex gap-2" },
 
-                React.createElement("button", { "aria-label": "Check built molecule",
+                React.createElement("button", { "aria-label": __alloT('stem.molecule.check_built_molecule', "Check built molecule"),
 
                   onClick: () => {
 
@@ -2011,9 +2343,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all"
 
-                }, "\u{1F50D} Check Molecule"),
+                }, __alloT('stem.molecule.check_molecule', "\u{1F50D} Check Molecule")),
 
-                React.createElement("button", { "aria-label": "Random Challenge",
+                React.createElement("button", { "aria-label": __alloT('stem.molecule.random_challenge', "Random Challenge"),
 
                   onClick: () => {
 
@@ -2031,7 +2363,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   className: "px-4 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-xl hover:from-amber-500 hover:to-orange-600 shadow-md transition-all"
 
-                }, "\u{1F3AF} Random Challenge")
+                }, __alloT('stem.molecule.random_challenge_2', "\u{1F3AF} Random Challenge"))
 
               ),
 
@@ -2061,19 +2393,19 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("p", { className: "text-3xl mb-1" }, d.buildCheckResult.compound.emoji),
 
-                    React.createElement("p", { className: "text-lg font-black text-emerald-700" }, "\u{1F389} " + d.buildCheckResult.compound.name),
+                    React.createElement("p", { className: "text-lg font-black text-emerald-700 tracking-tight" }, "\u{1F389} " + d.buildCheckResult.compound.name),
 
                     React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.buildCheckResult.compound.formula + " - " + d.buildCheckResult.compound.desc),
 
-                    React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, "+15 XP \u{1F31F}")
+                    React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, __alloT('stem.molecule.15_xp', "+15 XP \u{1F31F}"))
 
                   )
 
                 : React.createElement("div", { className: "mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-center" },
 
-                    React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\u{1F914} No known compound matches. Keep experimenting!"),
+                    React.createElement("p", { className: "text-sm font-bold text-amber-700" }, __alloT('stem.molecule.no_known_compound_matches_keep_experim', "\u{1F914} No known compound matches. Keep experimenting!")),
 
-                    React.createElement("p", { className: "text-[11px] text-amber-500 mt-1" }, "Tip: Click bonds to cycle between single, double, and triple bonds")
+                    React.createElement("p", { className: "text-[11px] text-amber-500 mt-1" }, __alloT('stem.molecule.tip_click_bonds_to_cycle_between_singl', "Tip: Click bonds to cycle between single, double, and triple bonds"))
 
                   )
 
@@ -2083,21 +2415,21 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               (d.buildAtoms || []).length === 0 && React.createElement("div", { className: "mt-4 bg-indigo-50 rounded-xl p-4 border border-indigo-200" },
 
-                React.createElement("p", { className: "text-sm font-bold text-indigo-700 mb-2" }, "\u{1F4A1} How to Build"),
+                React.createElement("p", { className: "text-sm font-bold text-indigo-700 mb-2" }, __alloT('stem.molecule.how_to_build', "\u{1F4A1} How to Build")),
 
                 React.createElement("div", { className: "grid grid-cols-1 gap-1.5 text-xs text-indigo-600" },
 
-                  React.createElement("p", null, "\u2460 Click element buttons above to add atoms to the canvas"),
+                  React.createElement("p", null, __alloT('stem.molecule.click_element_buttons_above_to_add_ato', "\u2460 Click element buttons above to add atoms to the canvas")),
 
-                  React.createElement("p", null, "\u2461 Drag atoms to arrange them"),
+                  React.createElement("p", null, __alloT('stem.molecule.drag_atoms_to_arrange_them', "\u2461 Drag atoms to arrange them")),
 
-                  React.createElement("p", null, "\u2462 Click an atom in the bond selector, then click another atom to draw a bond"),
+                  React.createElement("p", null, __alloT('stem.molecule.click_an_atom_in_the_bond_selector_the', "\u2462 Click an atom in the bond selector, then click another atom to draw a bond")),
 
-                  React.createElement("p", null, "\u2463 Click a bond to cycle: single \u2192 double \u2192 triple"),
+                  React.createElement("p", null, __alloT('stem.molecule.click_a_bond_to_cycle_single_double_tr', "\u2463 Click a bond to cycle: single \u2192 double \u2192 triple")),
 
-                  React.createElement("p", null, "\u2464 Click \u{1F50D} Check to identify your molecule!"),
+                  React.createElement("p", null, __alloT('stem.molecule.click_check_to_identify_your_molecule', "\u2464 Click \u{1F50D} Check to identify your molecule!")),
 
-                  React.createElement("p", null, "\u{1F3AF} Try 'Random Challenge' for a guided build quest")
+                  React.createElement("p", null, __alloT('stem.molecule.try_random_challenge_for_a_guided_buil', "\u{1F3AF} Try 'Random Challenge' for a guided build quest"))
 
                 )
 
@@ -2109,7 +2441,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             mode === 'table' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Tap any element to learn about it. The full 118-element periodic table."),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, __alloT('stem.molecule.tap_any_element_to_learn_about_it_the_', "Tap any element to learn about it. The full 118-element periodic table.")),
 
               d.selectedElement && (() => {
 
@@ -2125,26 +2457,26 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("span", { className: "text-[11px] opacity-80" }, d.selectedElement.n),
 
-                      React.createElement("span", { className: "text-xl font-black" }, d.selectedElement.s)
+                      React.createElement("span", { className: "text-xl font-black tracking-tight" }, d.selectedElement.s)
 
                     ),
 
                     React.createElement("div", { className: "flex-1 min-w-0" },
 
-                      React.createElement("p", { className: "text-lg font-bold text-slate-800" }, d.selectedElement.name),
+                      React.createElement("p", { className: "text-lg font-bold text-slate-800 tracking-tight" }, d.selectedElement.name),
 
                       React.createElement("p", { className: "text-xs text-slate-600" }, "Atomic #" + d.selectedElement.n + " \u2022 " + (d.selectedElement.cat || 'element').replace(/^\w/, c => c.toUpperCase())),
 
                       detail && React.createElement("p", { className: "text-xs text-slate-600 mt-1 italic" }, detail.desc),
 
-                      detail && React.createElement("button", { "aria-label": "Speak Text",
+                      detail && React.createElement("button", { "aria-label": __alloT('stem.molecule.speak_text', "Speak Text"),
                         onClick: () => speakText(d.selectedElement.name + '. ' + detail.desc),
-                        className: "ml-1 px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600 hover:bg-slate-200 inline-flex items-center"
+                        className: "transition-colors ml-1 px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600 hover:bg-slate-200 inline-flex items-center active:scale-[0.97]"
                       }, "🔊"),
 
                     ),
 
-                    React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-600 hover:text-slate-600 flex-shrink-0", "aria-label": "Close" }, "\u2715")
+                    React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-600 hover:text-slate-900 rounded-md transition-colors flex-shrink-0", "aria-label": __alloT('stem.molecule.close', "Close") }, "\u2715")
 
                   ),
 
@@ -2154,7 +2486,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDD27 Common Uses"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, __alloT('stem.molecule.common_uses', "\uD83D\uDD27 Common Uses")),
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
@@ -2166,7 +2498,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83E\uDDEA Key Compounds"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, __alloT('stem.molecule.key_compounds', "\uD83E\uDDEA Key Compounds")),
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
@@ -2184,7 +2516,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors active:scale-[0.97]" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
 
                       )
 
@@ -2194,7 +2526,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200/50" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u269B\uFE0F Bohr Model"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, __alloT('stem.molecule.bohr_model', "\u269B\uFE0F Bohr Model")),
 
                       React.createElement("span", { className: "ml-2 text-[11px] text-slate-600 font-normal" },
                         "Config: " + getElectronConfig(d.selectedElement.n) +
@@ -2212,7 +2544,17 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                           ref: function(canvas) {
 
-                            if (!canvas) return;
+                            if (!canvas) {
+                              if (typeof window !== 'undefined' && window._moleculeBohrCleanup) window._moleculeBohrCleanup();
+                              return;
+                            }
+
+                            if (canvas._bohrInit) {
+                              if (canvas._bohrSchedule) canvas._bohrSchedule();
+                              return;
+                            }
+
+                            if (typeof window !== 'undefined' && window._moleculeBohrCleanup) window._moleculeBohrCleanup();
 
                             var el = d.selectedElement;
 
@@ -2251,6 +2593,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                               window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
                             }
                             var ctx = canvas.getContext('2d');
+                            if (!ctx) return;
                             if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
                             var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
@@ -2269,6 +2612,49 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                             var angle = 0;
 
                             var animId = null;
+                            var bohrAlive = true;
+                            var bohrMotionReduced = false;
+                            var observer = null;
+                            try { bohrMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+                            function isBohrHidden() {
+                              return typeof document !== 'undefined' && !!document.hidden;
+                            }
+
+                            function cancelBohrFrame() {
+                              if (animId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(animId);
+                              animId = null;
+                            }
+
+                            function scheduleBohrFrame() {
+                              if (!bohrAlive || animId || bohrMotionReduced || isBohrHidden()) return;
+                              if (typeof requestAnimationFrame !== 'function') return;
+                              animId = requestAnimationFrame(draw);
+                            }
+
+                            function cleanupBohrCanvas() {
+                              bohrAlive = false;
+                              cancelBohrFrame();
+                              if (observer) { observer.disconnect(); observer = null; }
+                              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onBohrVisibilityChange);
+                              canvas._bohrInit = false;
+                              canvas._bohrCleanup = null;
+                              canvas._bohrSchedule = null;
+                              if (typeof window !== 'undefined' && window._moleculeBohrCleanup === cleanupBohrCanvas) window._moleculeBohrCleanup = null;
+                            }
+
+                            function onBohrVisibilityChange() {
+                              if (!bohrAlive) return;
+                              if (!canvas.isConnected) { cleanupBohrCanvas(); return; }
+                              if (isBohrHidden()) cancelBohrFrame();
+                              else { cancelBohrFrame(); draw(); }
+                            }
+
+                            canvas._bohrInit = true;
+                            canvas._bohrCleanup = cleanupBohrCanvas;
+                            canvas._bohrSchedule = scheduleBohrFrame;
+                            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onBohrVisibilityChange);
+                            if (typeof window !== 'undefined') window._moleculeBohrCleanup = cleanupBohrCanvas;
 
                             // State interpolation for expanding/contracting shells smoothly
                             var targetRadii = [];
@@ -2304,6 +2690,10 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                             canvas._prevN = atomicNum;
 
                             function draw() {
+                              if (!bohrAlive) return;
+                              animId = null;
+                              if (!canvas.isConnected) { cleanupBohrCanvas(); return; }
+                              if (isBohrHidden()) { cancelBohrFrame(); return; }
 
                               ctx.clearRect(0, 0, W, H);
 
@@ -2498,19 +2888,15 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                               ctx.fillText(el.s + ' (' + atomicNum + ')', cx, 14);
 
-                              angle += 0.015;
+                              if (!bohrMotionReduced) angle += 0.015;
 
-                              animId = requestAnimationFrame(draw);
+                              scheduleBohrFrame();
 
                             }
 
                             draw();
 
-                            // Cleanup on unmount
-
-                            canvas._bohrCleanup = function() { if (animId) cancelAnimationFrame(animId); };
-
-                            var observer = new MutationObserver(function(mutations) {
+                            observer = new MutationObserver(function(mutations) {
 
                               mutations.forEach(function(m) {
 
@@ -2518,9 +2904,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                                   if (node === canvas || (node.contains && node.contains(canvas))) {
 
-                                    if (canvas._bohrCleanup) canvas._bohrCleanup();
-
-                                    observer.disconnect();
+                                    cleanupBohrCanvas();
 
                                   }
 
@@ -2570,7 +2954,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                           })()),
 
-                          React.createElement("p", { className: "text-[11px] text-slate-600 italic mt-1" }, "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin.")
+                          React.createElement("p", { className: "text-[11px] text-slate-600 italic mt-1" }, __alloT('stem.molecule.bohr_model_caption_honest', "\u26A1 The Bohr model draws electrons on tidy \u201Cshells\u201D that fill inside-out \u2014 a useful first picture, but electrons don\u2019t actually circle like planets. See the \u2630 Orbital clouds tab for where they really are (probability clouds, not orbits)."))
 
                         )
 
@@ -2591,6 +2975,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(0, 1fr))', gap: '1px', minWidth: '600px' } },
 
                   PT_LAYOUT.flatMap((row, ri) => {
+
+                    if (!Array.isArray(row)) return [];
 
                     if (row.length === 0) return [React.createElement("div", { key: 'gap-' + ri, style: { gridColumn: 'span 18', height: '4px' } })];
 
@@ -2666,7 +3052,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("button", { "aria-label": "Start element quiz or get next question", onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? 'ðŸ”„ Next Question' : 'ðŸ”¬ Element Quiz'),
+                    React.createElement("button", { "aria-label": __alloT('stem.molecule.start_element_quiz_or_get_next_questio', "Start element quiz or get next question"), onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? 'ðŸ”„ Next Question' : 'ðŸ”¬ Element Quiz'),
 
                     elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + elScore + ' | ðŸ”¥ ' + elStreak)
 
@@ -2693,7 +3079,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                             if (correct) addToast(t('stem.periodic.correct'), 'success'); else addToast(t('stem.periodic.answer') + elQuiz.answer, 'error');
 
-                          }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 transition-all"
+                          }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 transition-all active:scale-[0.97]"
 
                         }, opt);
 
@@ -2716,7 +3102,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             // ═══ Reactions Mode ═══
             mode === 'reactions' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, "Balance chemical equations by adjusting coefficients. Make atoms equal on both sides!"),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, __alloT('stem.molecule.balance_chemical_equations_by_adjustin', "Balance chemical equations by adjusting coefficients. Make atoms equal on both sides!")),
 
               // Reaction selector
               React.createElement("div", { className: "flex gap-1 mb-4 flex-wrap" },
@@ -2724,7 +3110,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   key: r.id,
                   onClick: () => initReaction(idx),
                   className: "px-2 py-1 rounded-lg text-xs font-bold transition-all " +
-                    (currentReactionIdx === idx && reactionCoeffs ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    (currentReactionIdx === idx && reactionCoeffs ? 'bg-indigo-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
                 }, r.emoji + " " + (idx + 1)))
               ),
 
@@ -2753,7 +3139,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     React.createElement("div", { className: "flex items-center justify-center gap-2 flex-wrap" },
                       // Left side (reactants)
                       r.left.map((term, i) => React.createElement("div", { key: 'l' + i, className: "flex items-center gap-1" },
-                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-600 mx-1" }, "+"),
+                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-600 mx-1 tracking-tight" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
                           React.createElement("div", {
                             "aria-label": "Coefficient for " + term.formula + ". Current value is " + coeffs[i] + ". Use Arrow Keys to adjust.",
@@ -2772,13 +3158,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                             React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(i, -1),
                               tabIndex: -1,
-                              className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
+                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "−"),
-                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono" }, coeffs[i]),
+                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" }, coeffs[i]),
                             React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(i, 1),
                               tabIndex: -1,
-                              className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
+                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "+")
                           ),
                           React.createElement("span", { className: "text-sm font-bold text-slate-700 mt-0.5 bg-slate-50 px-2 py-0.5 rounded border" }, term.formula)
@@ -2786,11 +3172,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       )),
 
                       // Arrow
-                      React.createElement("span", { className: "text-2xl font-bold text-slate-600 mx-2" }, "→"),
+                      React.createElement("span", { className: "text-2xl font-bold text-slate-600 mx-2 tracking-tight" }, "→"),
 
                       // Right side (products)
                       r.right.map((term, i) => React.createElement("div", { key: 'r' + i, className: "flex items-center gap-1" },
-                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-600 mx-1" }, "+"),
+                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-600 mx-1 tracking-tight" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
                           React.createElement("div", {
                             "aria-label": "Coefficient for " + term.formula + ". Current value is " + coeffs[r.left.length + i] + ". Use Arrow Keys to adjust.",
@@ -2809,13 +3195,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                             React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, -1),
                               tabIndex: -1,
-                              className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
+                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "−"),
-                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono" }, coeffs[r.left.length + i]),
+                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" }, coeffs[r.left.length + i]),
                             React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, 1),
                               tabIndex: -1,
-                              className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
+                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "+")
                           ),
                           React.createElement("span", { className: "text-sm font-bold text-slate-700 mt-0.5 bg-slate-50 px-2 py-0.5 rounded border" }, term.formula)
@@ -2826,18 +3212,18 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     // Visual Molecule Shelf
                     React.createElement("div", { className: "flex gap-3 justify-center items-center mt-4 border-t border-slate-800 pt-3 flex-wrap" },
                       drawVisualShelf(r.left, true),
-                      React.createElement("span", { className: "text-lg font-bold text-slate-600 mt-4" }, "→"),
+                      React.createElement("span", { className: "text-lg font-bold text-slate-600 mt-4 tracking-tight" }, "→"),
                       drawVisualShelf(r.right, false)
                     )
                   ),
 
                   // Atom count table
                   React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border mb-3" },
-                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "Atom Count"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, __alloT('stem.molecule.atom_count', "Atom Count")),
                     React.createElement("div", { className: "grid grid-cols-3 gap-1 text-xs" },
-                      React.createElement("span", { className: "font-bold text-slate-600 text-center" }, "Element"),
-                      React.createElement("span", { className: "font-bold text-slate-600 text-center" }, "Left"),
-                      React.createElement("span", { className: "font-bold text-slate-600 text-center" }, "Right"),
+                      React.createElement("span", { className: "font-bold text-slate-600 text-center" }, __alloT('stem.molecule.element', "Element")),
+                      React.createElement("span", { className: "font-bold text-slate-600 text-center" }, __alloT('stem.molecule.left', "Left")),
+                      React.createElement("span", { className: "font-bold text-slate-600 text-center" }, __alloT('stem.molecule.right', "Right")),
                       balance.map(b => [
                         React.createElement("span", { key: b.element + 'n', className: "text-center font-bold text-slate-700" }, b.element),
                         React.createElement("span", { key: b.element + 'l', className: "text-center font-bold " + (b.balanced ? 'text-emerald-600' : 'text-red-500') }, b.left),
@@ -2848,24 +3234,24 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   // Submit button
                   React.createElement("div", { className: "flex gap-2" },
-                    React.createElement("button", { "aria-label": "Check Balance",
+                    React.createElement("button", { "aria-label": __alloT('stem.molecule.check_balance', "Check Balance"),
                       onClick: submitReaction,
                       disabled: reactionResult === 'correct',
                       className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all disabled:opacity-40"
-                    }, "⚖️ Check Balance"),
-                    React.createElement("button", { "aria-label": "Next",
+                    }, __alloT('stem.molecule.check_balance_2', "⚖️ Check Balance")),
+                    React.createElement("button", { "aria-label": __alloT('stem.molecule.next', "Next"),
                       onClick: () => { const next = (currentReactionIdx + 1) % REACTIONS.length; initReaction(next); },
-                      className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
-                    }, "➡️ Next")
+                      className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.97]"
+                    }, __alloT('stem.molecule.next_2', "➡️ Next"))
                   ),
 
                   // Result feedback
                   reactionResult === 'correct' && React.createElement("div", { className: "mt-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3 text-center" },
-                    React.createElement("p", { className: "text-lg font-black text-emerald-700" }, "🎉 Balanced!"),
+                    React.createElement("p", { className: "text-lg font-black text-emerald-700 tracking-tight" }, __alloT('stem.molecule.balanced', "🎉 Balanced!")),
                     React.createElement("p", { className: "text-xs text-emerald-600 mt-1" }, "+" + (r.difficulty * 10) + " RP earned")
                   ),
                   reactionResult === 'incorrect' && React.createElement("div", { className: "mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-center" },
-                    React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "💡 Hint: check which atoms have different counts on each side.")
+                    React.createElement("p", { className: "text-sm font-bold text-amber-700" }, __alloT('stem.molecule.hint_check_which_atoms_have_different_', "💡 Hint: check which atoms have different counts on each side."))
                   ),
 
                   // Progress
@@ -2880,7 +3266,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             // ═══ Challenges Panel ═══
             React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
               React.createElement("details", { open: completedChallenges.length > 0 && completedChallenges.length < MOLECULE_CHALLENGES.length },
-                React.createElement("summary", { className: "text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
+                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
                   "🏆 Challenges (" + completedChallenges.length + "/" + MOLECULE_CHALLENGES.length + ")"
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" },
@@ -2893,9 +3279,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg" }, done ? '✅' : ch.emoji),
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("p", { className: "text-xs font-bold " + (done ? 'text-emerald-700 line-through' : 'text-slate-700') }, ch.name),
-                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-200') }, ch.desc)
+                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-600') }, ch.desc)
                       ),
-                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-200') }, "+" + ch.reward + " RP")
+                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
                     );
                   })
                 )
@@ -2906,24 +3292,24 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             // ═══ AI Chemistry Tutor ═══
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
               React.createElement("details", null,
-                React.createElement("summary", { className: "text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
-                  "🧑‍🔬 Ask the Chemistry Tutor"
+                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
+                  __alloT('stem.molecule.ask_the_chemistry_tutor', "🧑‍🔬 Ask the Chemistry Tutor")
                 ),
                 React.createElement("div", { className: "mt-2" },
                   React.createElement("div", { className: "flex gap-2 mb-2" },
                     React.createElement("input", {
                       type: "text",
                       value: aiQuestion,
-                      "aria-label": "Ask the chemistry tutor about elements, compounds, or reactions",
+                      "aria-label": __alloT('stem.molecule.ask_the_chemistry_tutor_about_elements', "Ask the chemistry tutor about elements, compounds, or reactions"),
                       onChange: (e) => upd('aiQuestion', e.target.value),
                       onKeyDown: (e) => { if (e.key === 'Enter') askChemTutor(aiQuestion); },
-                      placeholder: "Ask about any element, compound, or reaction...",
+                      placeholder: __alloT('stem.molecule.ask_about_any_element_compound_or_reac', "Ask about any element, compound, or reaction..."),
                       className: "flex-1 px-3 py-2 rounded-lg border border-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     }),
-                    React.createElement("button", { "aria-label": "Ask Chem Tutor",
+                    React.createElement("button", { "aria-label": __alloT('stem.molecule.ask_chem_tutor', "Ask Chem Tutor"),
                       onClick: () => askChemTutor(aiQuestion),
                       disabled: aiLoading || !aiQuestion,
-                      className: "px-3 py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 disabled:opacity-40 transition-all"
+                      className: "px-3 py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 disabled:opacity-40 transition-all active:scale-[0.97]"
                     }, aiLoading ? "⏳" : "🔬 Ask")
                   ),
                   React.createElement("div", { className: "flex gap-1 mb-2 flex-wrap" },
@@ -2931,7 +3317,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("button", { "aria-label": "Ask: " + q,
                         key: q,
                         onClick: () => { upd('aiQuestion', q); askChemTutor(q); },
-                        className: "px-2 py-1 rounded text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                        className: "px-2 py-1 rounded text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors active:scale-[0.97]"
                       }, q)
                     )
                   ),
@@ -2940,10 +3326,10 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg flex-shrink-0" }, "🧑‍🔬"),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("p", { className: "text-xs text-indigo-700 leading-relaxed" }, aiAnswer),
-                        React.createElement("button", { "aria-label": "Read Aloud",
+                        React.createElement("button", { "aria-label": __alloT('stem.molecule.read_aloud', "Read Aloud"),
                           onClick: () => speakText(aiAnswer),
-                          className: "mt-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
-                        }, "🔊 Read Aloud")
+                          className: "transition-colors mt-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-600 hover:bg-indigo-200 active:scale-[0.97]"
+                        }, __alloT('stem.molecule.read_aloud_2', "🔊 Read Aloud"))
                       )
                     )
                   )
@@ -2956,13 +3342,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               onClick: (e) => { if (e.target === e.currentTarget) dismissTutorial(); }
             },
               React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 relative" },
-                React.createElement("button", { "aria-label": "Dismiss Tutorial",
+                React.createElement("button", { "aria-label": __alloT('stem.molecule.dismiss_tutorial', "Dismiss Tutorial"),
                   onClick: dismissTutorial,
-                  className: "absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 text-sm font-bold"
+                  className: "transition-colors absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 text-sm font-bold active:scale-[0.97]"
                 }, "✕"),
 
                 React.createElement("p", { className: "text-2xl mb-1" }, ["🔬", "⚗️", "🧱", "🗂️", "🔥"][tutorialStep]),
-                React.createElement("p", { className: "text-lg font-bold text-slate-800 mb-2" },
+                React.createElement("p", { className: "text-lg font-bold text-slate-800 mb-2 tracking-tight" },
                   ['Welcome to Molecule Lab!', 'Compound Creator', 'Build Mode', 'Periodic Table', 'Reaction Simulator'][tutorialStep]
                 ),
                 React.createElement("p", { className: "text-sm text-slate-600 mb-4 leading-relaxed" },
@@ -2982,19 +3368,19 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     }))
                   ),
                   React.createElement("div", { className: "flex gap-2" },
-                    tutorialStep > 0 && React.createElement("button", { "aria-label": "Back",
+                    tutorialStep > 0 && React.createElement("button", { "aria-label": __alloT('stem.molecule.back', "Back"),
                       onClick: () => upd('tutorialStep', tutorialStep - 1),
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }, "← Back"),
+                      className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]"
+                    }, __alloT('stem.molecule.back_2', "← Back")),
                     tutorialStep < 4
-                      ? React.createElement("button", { "aria-label": "Next",
+                      ? React.createElement("button", { "aria-label": __alloT('stem.molecule.next_3', "Next"),
                           onClick: advanceTutorial,
-                          className: "px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-600"
-                        }, "Next →")
-                      : React.createElement("button", { "aria-label": "Start Exploring!",
+                          className: "transition-colors px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-600 active:scale-[0.97]"
+                        }, __alloT('stem.molecule.next_4', "Next →"))
+                      : React.createElement("button", { "aria-label": __alloT('stem.molecule.start_exploring', "Start Exploring!"),
                           onClick: dismissTutorial,
-                          className: "px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600"
-                        }, "✅ Start Exploring!")
+                          className: "transition-colors px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 active:scale-[0.97]"
+                        }, __alloT('stem.molecule.start_exploring_2', "✅ Start Exploring!"))
                   )
                 )
               )
@@ -3022,92 +3408,92 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       // ── Reference data (large constants drive the views) ──
       var VSEPR_GEOMETRIES = [
-        { id: 'linear', name: 'Linear', steric: 2, lone: 0, angle: '180°', examples: ['CO₂', 'BeCl₂', 'HCN'], color: '#0ea5e9', desc: 'Two bonded pairs, no lone pairs on central atom.' },
-        { id: 'bent2', name: 'Bent (2 lone pairs)', steric: 4, lone: 2, angle: '~104.5°', examples: ['H₂O', 'OF₂', 'OCl₂'], color: '#06b6d4', desc: 'Tetrahedral electron geometry but two lone pairs push bonds closer.' },
-        { id: 'trigonal', name: 'Trigonal planar', steric: 3, lone: 0, angle: '120°', examples: ['BF₃', 'SO₃', 'NO₃⁻'], color: '#22c55e', desc: 'Three bonded pairs in a plane.' },
-        { id: 'bent3', name: 'Bent (1 lone pair)', steric: 3, lone: 1, angle: '~117°', examples: ['SO₂', 'O₃', 'NO₂⁻'], color: '#84cc16', desc: 'Trigonal planar electron geometry with one lone pair.' },
-        { id: 'tetrahedral', name: 'Tetrahedral', steric: 4, lone: 0, angle: '109.5°', examples: ['CH₄', 'CCl₄', 'NH₄⁺'], color: '#eab308', desc: 'Four bonded pairs in tetrahedral arrangement.' },
-        { id: 'pyramidal', name: 'Trigonal pyramidal', steric: 4, lone: 1, angle: '~107°', examples: ['NH₃', 'PH₃', 'PCl₃'], color: '#f97316', desc: 'Tetrahedral electron geometry, one lone pair pushes shape pyramidal.' },
-        { id: 'tbp', name: 'Trigonal bipyramidal', steric: 5, lone: 0, angle: '90° + 120°', examples: ['PCl₅', 'PF₅', 'AsF₅'], color: '#ef4444', desc: 'Five bonded pairs; three equatorial at 120°, two axial at 90°.' },
-        { id: 'seesaw', name: 'Seesaw', steric: 5, lone: 1, angle: 'distorted', examples: ['SF₄', 'XeO₂F₂'], color: '#dc2626', desc: 'Trigonal bipyramidal with one equatorial lone pair.' },
-        { id: 'tshape', name: 'T-shaped', steric: 5, lone: 2, angle: '~87.5°', examples: ['ClF₃', 'BrF₃'], color: '#a855f7', desc: 'Two equatorial lone pairs leave a T-shape.' },
-        { id: 'linear5', name: 'Linear (3 lone)', steric: 5, lone: 3, angle: '180°', examples: ['XeF₂', 'I₃⁻'], color: '#7e22ce', desc: 'Three equatorial lone pairs leave linear axial bonds.' },
-        { id: 'octahedral', name: 'Octahedral', steric: 6, lone: 0, angle: '90°', examples: ['SF₆', 'PF₆⁻'], color: '#0f172a', desc: 'Six bonded pairs in octahedral arrangement.' },
-        { id: 'sqpyramid', name: 'Square pyramidal', steric: 6, lone: 1, angle: '~90°', examples: ['BrF₅', 'IF₅'], color: '#475569', desc: 'Octahedral with one axial lone pair.' },
-        { id: 'sqplane', name: 'Square planar', steric: 6, lone: 2, angle: '90°', examples: ['XeF₄', 'PtCl₄²⁻'], color: '#64748b', desc: 'Two opposite lone pairs leave a square plane.' }
+        { id: 'linear', name: __alloT('stem.molecule.linear', 'Linear'), steric: 2, lone: 0, angle: '180°', examples: ['CO₂', 'BeCl₂', 'HCN'], color: '#0ea5e9', desc: __alloT('stem.molecule.two_bonded_pairs_no_lone_pairs_on_cent', 'Two bonded pairs, no lone pairs on central atom.') },
+        { id: 'bent2', name: __alloT('stem.molecule.bent_2_lone_pairs', 'Bent (2 lone pairs)'), steric: 4, lone: 2, angle: '~104.5°', examples: ['H₂O', 'OF₂', 'OCl₂'], color: '#06b6d4', desc: __alloT('stem.molecule.tetrahedral_electron_geometry_but_two_', 'Tetrahedral electron geometry but two lone pairs push bonds closer.') },
+        { id: 'trigonal', name: __alloT('stem.molecule.trigonal_planar', 'Trigonal planar'), steric: 3, lone: 0, angle: '120°', examples: ['BF₃', 'SO₃', 'NO₃⁻'], color: '#22c55e', desc: __alloT('stem.molecule.three_bonded_pairs_in_a_plane', 'Three bonded pairs in a plane.') },
+        { id: 'bent3', name: __alloT('stem.molecule.bent_1_lone_pair', 'Bent (1 lone pair)'), steric: 3, lone: 1, angle: '~117°', examples: ['SO₂', 'O₃', 'NO₂⁻'], color: '#84cc16', desc: __alloT('stem.molecule.trigonal_planar_electron_geometry_with', 'Trigonal planar electron geometry with one lone pair.') },
+        { id: 'tetrahedral', name: __alloT('stem.molecule.tetrahedral', 'Tetrahedral'), steric: 4, lone: 0, angle: '109.5°', examples: ['CH₄', 'CCl₄', 'NH₄⁺'], color: '#eab308', desc: __alloT('stem.molecule.four_bonded_pairs_in_tetrahedral_arran', 'Four bonded pairs in tetrahedral arrangement.') },
+        { id: 'pyramidal', name: __alloT('stem.molecule.trigonal_pyramidal', 'Trigonal pyramidal'), steric: 4, lone: 1, angle: '~107°', examples: ['NH₃', 'PH₃', 'PCl₃'], color: '#f97316', desc: __alloT('stem.molecule.tetrahedral_electron_geometry_one_lone', 'Tetrahedral electron geometry, one lone pair pushes shape pyramidal.') },
+        { id: 'tbp', name: __alloT('stem.molecule.trigonal_bipyramidal', 'Trigonal bipyramidal'), steric: 5, lone: 0, angle: '90° + 120°', examples: ['PCl₅', 'PF₅', 'AsF₅'], color: '#ef4444', desc: __alloT('stem.molecule.five_bonded_pairs_three_equatorial_at_', 'Five bonded pairs; three equatorial at 120°, two axial at 90°.') },
+        { id: 'seesaw', name: __alloT('stem.molecule.seesaw', 'Seesaw'), steric: 5, lone: 1, angle: 'distorted', examples: ['SF₄', 'XeO₂F₂'], color: '#dc2626', desc: __alloT('stem.molecule.trigonal_bipyramidal_with_one_equatori', 'Trigonal bipyramidal with one equatorial lone pair.') },
+        { id: 'tshape', name: 'T-shaped', steric: 5, lone: 2, angle: '~87.5°', examples: ['ClF₃', 'BrF₃'], color: '#a855f7', desc: __alloT('stem.molecule.two_equatorial_lone_pairs_leave_a_t_sh', 'Two equatorial lone pairs leave a T-shape.') },
+        { id: 'linear5', name: __alloT('stem.molecule.linear_3_lone', 'Linear (3 lone)'), steric: 5, lone: 3, angle: '180°', examples: ['XeF₂', 'I₃⁻'], color: '#7e22ce', desc: __alloT('stem.molecule.three_equatorial_lone_pairs_leave_line', 'Three equatorial lone pairs leave linear axial bonds.') },
+        { id: 'octahedral', name: __alloT('stem.molecule.octahedral', 'Octahedral'), steric: 6, lone: 0, angle: '90°', examples: ['SF₆', 'PF₆⁻'], color: '#0f172a', desc: __alloT('stem.molecule.six_bonded_pairs_in_octahedral_arrange', 'Six bonded pairs in octahedral arrangement.') },
+        { id: 'sqpyramid', name: __alloT('stem.molecule.square_pyramidal', 'Square pyramidal'), steric: 6, lone: 1, angle: '~90°', examples: ['BrF₅', 'IF₅'], color: '#475569', desc: __alloT('stem.molecule.octahedral_with_one_axial_lone_pair', 'Octahedral with one axial lone pair.') },
+        { id: 'sqplane', name: __alloT('stem.molecule.square_planar', 'Square planar'), steric: 6, lone: 2, angle: '90°', examples: ['XeF₄', 'PtCl₄²⁻'], color: '#64748b', desc: __alloT('stem.molecule.two_opposite_lone_pairs_leave_a_square', 'Two opposite lone pairs leave a square plane.') }
       ];
 
       var BOND_TYPES = [
-        { name: 'Covalent (nonpolar)', diff: '0 – 0.4', icon: '⚛︎', examples: ['H₂', 'O₂', 'CH₄'], desc: 'Electrons shared roughly equally between atoms with similar electronegativity.' },
-        { name: 'Covalent (polar)', diff: '0.4 – 1.7', icon: '⇌', examples: ['H₂O', 'HCl', 'NH₃'], desc: 'Electrons shared unevenly — one atom pulls more strongly; creates partial charges (δ+ / δ−).' },
-        { name: 'Ionic', diff: '> 1.7', icon: '⊕⊖', examples: ['NaCl', 'KBr', 'MgO'], desc: 'Electron transferred from metal (low EN) to nonmetal (high EN); lattice held by electrostatic attraction.' },
-        { name: 'Metallic', diff: 'N/A', icon: '⚜︎', examples: ['Cu', 'Fe', 'Au'], desc: 'Delocalized "sea of electrons" shared across cations; conducts heat/electricity, malleable.' },
-        { name: 'Hydrogen bond', diff: 'intermolecular', icon: '⤬', examples: ['H₂O···H₂O', 'DNA base pairs'], desc: 'Strong dipole-dipole between H bonded to N/O/F and another lone pair. Not a true bond — but ~5-30 kJ/mol.' },
-        { name: 'Coordinate covalent', diff: 'special', icon: '➡︎', examples: ['NH₄⁺', '[Cu(H₂O)₆]²⁺'], desc: 'Both shared electrons come from one atom. Common in transition-metal complexes.' },
-        { name: 'Triple bond', diff: '3 pairs', icon: '☰', examples: ['N₂', 'C₂H₂', 'CO'], desc: 'Three shared electron pairs (1 σ + 2 π). Very strong (~945 kJ/mol for N≡N).' },
-        { name: 'Double bond', diff: '2 pairs', icon: '═', examples: ['O₂', 'C=O', 'C=C'], desc: 'Two shared electron pairs (1 σ + 1 π). Restricts rotation around the bond axis.' }
+        { name: __alloT('stem.molecule.covalent_nonpolar', 'Covalent (nonpolar)'), diff: '0 – 0.4', icon: '⚛︎', examples: ['H₂', 'O₂', 'CH₄'], desc: __alloT('stem.molecule.electrons_shared_roughly_equally_betwe', 'Electrons shared roughly equally between atoms with similar electronegativity.') },
+        { name: __alloT('stem.molecule.covalent_polar', 'Covalent (polar)'), diff: '0.4 – 1.7', icon: '⇌', examples: ['H₂O', 'HCl', 'NH₃'], desc: __alloT('stem.molecule.electrons_shared_unevenly_one_atom_pul', 'Electrons shared unevenly — one atom pulls more strongly; creates partial charges (δ+ / δ−).') },
+        { name: __alloT('stem.molecule.ionic', 'Ionic'), diff: '> 1.7', icon: '⊕⊖', examples: ['NaCl', 'KBr', 'MgO'], desc: __alloT('stem.molecule.electron_transferred_from_metal_low_en', 'Electron transferred from metal (low EN) to nonmetal (high EN); lattice held by electrostatic attraction.') },
+        { name: __alloT('stem.molecule.metallic', 'Metallic'), diff: 'N/A', icon: '⚜︎', examples: ['Cu', 'Fe', 'Au'], desc: __alloT('stem.molecule.delocalized_sea_of_electrons_shared_ac', 'Delocalized "sea of electrons" shared across cations; conducts heat/electricity, malleable.') },
+        { name: __alloT('stem.molecule.hydrogen_bond', 'Hydrogen bond'), diff: 'intermolecular', icon: '⤬', examples: ['H₂O···H₂O', 'DNA base pairs'], desc: __alloT('stem.molecule.strong_dipole_dipole_between_h_bonded_', 'Strong dipole-dipole between H bonded to N/O/F and another lone pair. Not a true bond — but ~5-30 kJ/mol.') },
+        { name: __alloT('stem.molecule.coordinate_covalent', 'Coordinate covalent'), diff: 'special', icon: '➡︎', examples: ['NH₄⁺', '[Cu(H₂O)₆]²⁺'], desc: __alloT('stem.molecule.both_shared_electrons_come_from_one_at', 'Both shared electrons come from one atom. Common in transition-metal complexes.') },
+        { name: __alloT('stem.molecule.triple_bond', 'Triple bond'), diff: '3 pairs', icon: '☰', examples: ['N₂', 'C₂H₂', 'CO'], desc: __alloT('stem.molecule.three_shared_electron_pairs_1_2_very_s', 'Three shared electron pairs (1 σ + 2 π). Very strong (~945 kJ/mol for N≡N).') },
+        { name: __alloT('stem.molecule.double_bond', 'Double bond'), diff: '2 pairs', icon: '═', examples: ['O₂', 'C=O', 'C=C'], desc: __alloT('stem.molecule.two_shared_electron_pairs_1_1_restrict', 'Two shared electron pairs (1 σ + 1 π). Restricts rotation around the bond axis.') }
       ];
 
       var IMF_TYPES = [
-        { name: 'London dispersion', strength: '0.05 – 40 kJ/mol', symbol: '∼', present: 'All molecules', desc: 'Temporary dipoles from electron motion. Stronger for larger molecules / more polarizable atoms.', examples: ['Noble gases', 'Alkanes', 'I₂ vs F₂'] },
-        { name: 'Dipole-dipole', strength: '5 – 25 kJ/mol', symbol: '↔', present: 'Polar molecules', desc: 'Permanent dipoles align δ+ to δ−. Stronger than dispersion at comparable size.', examples: ['HCl', 'CH₂Cl₂', 'acetone'] },
-        { name: 'Hydrogen bond', strength: '5 – 50 kJ/mol', symbol: '⤬', present: 'H bonded to N/O/F + nearby lone pair', desc: 'Strongest dipole-dipole. Explains anomalous boiling points (H₂O vs H₂S).', examples: ['H₂O', 'NH₃', 'HF', 'DNA, proteins'] },
-        { name: 'Ion-dipole', strength: '40 – 600 kJ/mol', symbol: '⊕↔', present: 'Ions dissolved in polar solvent', desc: 'Charge-dipole attraction. Drives ionic dissolution.', examples: ['Na⁺ in water', 'K⁺ in DMSO'] },
-        { name: 'Ion-induced dipole', strength: '3 – 15 kJ/mol', symbol: '⊕→', present: 'Ion + nonpolar molecule', desc: 'Ion polarizes nearby nonpolar molecule.', examples: ['I⁻ + I₂ → I₃⁻'] },
-        { name: 'π-π stacking', strength: '0 – 50 kJ/mol', symbol: '⇄', present: 'Aromatic rings', desc: 'Stacking attraction between aromatic π-clouds.', examples: ['benzene dimer', 'DNA base stacking'] }
+        { name: __alloT('stem.molecule.london_dispersion', 'London dispersion'), strength: '0.05 – 40 kJ/mol', symbol: '∼', present: 'All molecules', desc: __alloT('stem.molecule.temporary_dipoles_from_electron_motion', 'Temporary dipoles from electron motion. Stronger for larger molecules / more polarizable atoms.'), examples: ['Noble gases', 'Alkanes', 'I₂ vs F₂'] },
+        { name: 'Dipole-dipole', strength: '5 – 25 kJ/mol', symbol: '↔', present: 'Polar molecules', desc: __alloT('stem.molecule.permanent_dipoles_align_to_stronger_th', 'Permanent dipoles align δ+ to δ−. Stronger than dispersion at comparable size.'), examples: ['HCl', 'CH₂Cl₂', 'acetone'] },
+        { name: __alloT('stem.molecule.hydrogen_bond_2', 'Hydrogen bond'), strength: '5 – 50 kJ/mol', symbol: '⤬', present: 'H bonded to N/O/F + nearby lone pair', desc: __alloT('stem.molecule.strongest_dipole_dipole_explains_anoma', 'Strongest dipole-dipole. Explains anomalous boiling points (H₂O vs H₂S).'), examples: ['H₂O', 'NH₃', 'HF', 'DNA, proteins'] },
+        { name: 'Ion-dipole', strength: '40 – 600 kJ/mol', symbol: '⊕↔', present: 'Ions dissolved in polar solvent', desc: __alloT('stem.molecule.charge_dipole_attraction_drives_ionic_', 'Charge-dipole attraction. Drives ionic dissolution.'), examples: ['Na⁺ in water', 'K⁺ in DMSO'] },
+        { name: __alloT('stem.molecule.ion_induced_dipole', 'Ion-induced dipole'), strength: '3 – 15 kJ/mol', symbol: '⊕→', present: 'Ion + nonpolar molecule', desc: __alloT('stem.molecule.ion_polarizes_nearby_nonpolar_molecule', 'Ion polarizes nearby nonpolar molecule.'), examples: ['I⁻ + I₂ → I₃⁻'] },
+        { name: __alloT('stem.molecule.stacking', 'π-π stacking'), strength: '0 – 50 kJ/mol', symbol: '⇄', present: 'Aromatic rings', desc: __alloT('stem.molecule.stacking_attraction_between_aromatic_c', 'Stacking attraction between aromatic π-clouds.'), examples: ['benzene dimer', 'DNA base stacking'] }
       ];
 
       var COMMON_REACTIONS = [
-        { type: 'Combustion', icon: '🔥', general: 'CₓHᵧ + O₂ → CO₂ + H₂O', example: 'CH₄ + 2 O₂ → CO₂ + 2 H₂O', enthalpy: '−890 kJ/mol (methane)', desc: 'Hydrocarbon burns in oxygen producing CO₂ + water. Exothermic.' },
-        { type: 'Synthesis (combination)', icon: '➕', general: 'A + B → AB', example: '2 H₂ + O₂ → 2 H₂O', enthalpy: 'Usually exothermic', desc: 'Two or more reactants combine into one product.' },
-        { type: 'Decomposition', icon: '➗', general: 'AB → A + B', example: '2 H₂O₂ → 2 H₂O + O₂', enthalpy: 'Often endothermic', desc: 'One reactant splits into multiple products.' },
-        { type: 'Single replacement', icon: '⇄', general: 'A + BC → AC + B', example: 'Zn + CuSO₄ → ZnSO₄ + Cu', enthalpy: 'Varies', desc: 'More reactive element displaces a less reactive one from a compound.' },
-        { type: 'Double replacement', icon: '↔', general: 'AB + CD → AD + CB', example: 'AgNO₃ + NaCl → AgCl + NaNO₃', enthalpy: 'Varies', desc: 'Cations and anions swap partners. Often produces precipitate, gas, or water.' },
-        { type: 'Acid-base (neutralization)', icon: '⚖', general: 'HA + BOH → BA + H₂O', example: 'HCl + NaOH → NaCl + H₂O', enthalpy: '~ −56 kJ/mol', desc: 'Acid + base produces salt + water. Heat of neutralization is nearly constant for strong A+B.' },
-        { type: 'Precipitation', icon: '💎', general: 'soluble + soluble → insoluble + soluble', example: 'AgNO₃(aq) + KCl(aq) → AgCl(s) + KNO₃(aq)', enthalpy: 'Driven by ΔS', desc: 'Two soluble ionic compounds form one insoluble product.' },
-        { type: 'Redox (oxidation-reduction)', icon: '🔄', general: 'electrons transferred', example: 'Cu + 2 AgNO₃ → Cu(NO₃)₂ + 2 Ag', enthalpy: 'Varies', desc: 'One species loses electrons (oxidized), another gains (reduced). Many "everyday" reactions are redox.' },
-        { type: 'Esterification', icon: '🌸', general: 'R-COOH + R\'-OH → R-COO-R\' + H₂O', example: 'CH₃COOH + C₂H₅OH ⇌ CH₃COOC₂H₅ + H₂O', enthalpy: '~ −20 kJ/mol', desc: 'Carboxylic acid + alcohol → ester + water. Reversible; H₂SO₄ catalyst commonly used.' },
-        { type: 'Saponification', icon: '🧼', general: 'fat + base → soap + glycerol', example: '(C₁₇H₃₅COO)₃C₃H₅ + 3 NaOH → 3 C₁₇H₃₅COONa + C₃H₅(OH)₃', enthalpy: 'Exothermic', desc: 'Triglyceride hydrolyzed by strong base to make soap.' },
-        { type: 'Polymerization', icon: '🧬', general: 'n monomer → polymer', example: 'n CH₂=CH₂ → (-CH₂-CH₂-)ₙ', enthalpy: 'Exothermic', desc: 'Many small monomers join into long polymer chains. Addition or condensation type.' },
-        { type: 'Hydrolysis', icon: '💧', general: 'AB + H₂O → AH + BOH', example: 'sucrose + H₂O → glucose + fructose (catalyzed)', enthalpy: 'Varies', desc: 'Water splits a bond. Common for esters, polymers, ATP.' }
+        { type: 'Combustion', icon: '🔥', general: 'CₓHᵧ + O₂ → CO₂ + H₂O', example: 'CH₄ + 2 O₂ → CO₂ + 2 H₂O', enthalpy: '−890 kJ/mol (methane)', desc: __alloT('stem.molecule.hydrocarbon_burns_in_oxygen_producing_', 'Hydrocarbon burns in oxygen producing CO₂ + water. Exothermic.') },
+        { type: 'Synthesis (combination)', icon: '➕', general: 'A + B → AB', example: '2 H₂ + O₂ → 2 H₂O', enthalpy: 'Usually exothermic', desc: __alloT('stem.molecule.two_or_more_reactants_combine_into_one', 'Two or more reactants combine into one product.') },
+        { type: 'Decomposition', icon: '➗', general: 'AB → A + B', example: '2 H₂O₂ → 2 H₂O + O₂', enthalpy: 'Often endothermic', desc: __alloT('stem.molecule.one_reactant_splits_into_multiple_prod', 'One reactant splits into multiple products.') },
+        { type: 'Single replacement', icon: '⇄', general: 'A + BC → AC + B', example: 'Zn + CuSO₄ → ZnSO₄ + Cu', enthalpy: 'Varies', desc: __alloT('stem.molecule.more_reactive_element_displaces_a_less', 'More reactive element displaces a less reactive one from a compound.') },
+        { type: 'Double replacement', icon: '↔', general: 'AB + CD → AD + CB', example: 'AgNO₃ + NaCl → AgCl + NaNO₃', enthalpy: 'Varies', desc: __alloT('stem.molecule.cations_and_anions_swap_partners_often', 'Cations and anions swap partners. Often produces precipitate, gas, or water.') },
+        { type: 'Acid-base (neutralization)', icon: '⚖', general: 'HA + BOH → BA + H₂O', example: 'HCl + NaOH → NaCl + H₂O', enthalpy: '~ −56 kJ/mol', desc: __alloT('stem.molecule.acid_base_produces_salt_water_heat_of_', 'Acid + base produces salt + water. Heat of neutralization is nearly constant for strong A+B.') },
+        { type: 'Precipitation', icon: '💎', general: 'soluble + soluble → insoluble + soluble', example: 'AgNO₃(aq) + KCl(aq) → AgCl(s) + KNO₃(aq)', enthalpy: 'Driven by ΔS', desc: __alloT('stem.molecule.two_soluble_ionic_compounds_form_one_i', 'Two soluble ionic compounds form one insoluble product.') },
+        { type: 'Redox (oxidation-reduction)', icon: '🔄', general: 'electrons transferred', example: 'Cu + 2 AgNO₃ → Cu(NO₃)₂ + 2 Ag', enthalpy: 'Varies', desc: __alloT('stem.molecule.one_species_loses_electrons_oxidized_a', 'One species loses electrons (oxidized), another gains (reduced). Many "everyday" reactions are redox.') },
+        { type: 'Esterification', icon: '🌸', general: 'R-COOH + R\'-OH → R-COO-R\' + H₂O', example: 'CH₃COOH + C₂H₅OH ⇌ CH₃COOC₂H₅ + H₂O', enthalpy: '~ −20 kJ/mol', desc: __alloT('stem.molecule.carboxylic_acid_alcohol_ester_water_re', 'Carboxylic acid + alcohol → ester + water. Reversible; H₂SO₄ catalyst commonly used.') },
+        { type: 'Saponification', icon: '🧼', general: 'fat + base → soap + glycerol', example: '(C₁₇H₃₅COO)₃C₃H₅ + 3 NaOH → 3 C₁₇H₃₅COONa + C₃H₅(OH)₃', enthalpy: 'Exothermic', desc: __alloT('stem.molecule.triglyceride_hydrolyzed_by_strong_base', 'Triglyceride hydrolyzed by strong base to make soap.') },
+        { type: 'Polymerization', icon: '🧬', general: 'n monomer → polymer', example: 'n CH₂=CH₂ → (-CH₂-CH₂-)ₙ', enthalpy: 'Exothermic', desc: __alloT('stem.molecule.many_small_monomers_join_into_long_pol', 'Many small monomers join into long polymer chains. Addition or condensation type.') },
+        { type: 'Hydrolysis', icon: '💧', general: 'AB + H₂O → AH + BOH', example: 'sucrose + H₂O → glucose + fructose (catalyzed)', enthalpy: 'Varies', desc: __alloT('stem.molecule.water_splits_a_bond_common_for_esters_', 'Water splits a bond. Common for esters, polymers, ATP.') }
       ];
 
       var MOLECULE_LIBRARY = [
-        { f: 'H₂O', name: 'Water', uses: 'Universal solvent. ~70% of body mass. Hydrogen bonding gives unique properties.', shape: 'bent', m: 18.02 },
-        { f: 'CO₂', name: 'Carbon dioxide', uses: 'Photosynthesis input. Greenhouse gas. Carbonates dissolved in oceans.', shape: 'linear', m: 44.01 },
-        { f: 'O₂', name: 'Oxygen', uses: '21% of atmosphere. Essential for aerobic respiration. Strong oxidizer.', shape: 'linear', m: 32.00 },
-        { f: 'N₂', name: 'Nitrogen', uses: '78% of atmosphere. Triple bond makes it very stable. Fixed by bacteria + Haber process.', shape: 'linear', m: 28.02 },
-        { f: 'CH₄', name: 'Methane', uses: 'Natural gas. Major greenhouse gas (25× CO₂ over 100 yr). Microbial methanogenesis.', shape: 'tetrahedral', m: 16.04 },
-        { f: 'NH₃', name: 'Ammonia', uses: 'Fertilizer feedstock (Haber process). Cleaning agent. Refrigerant.', shape: 'pyramidal', m: 17.03 },
-        { f: 'HCl', name: 'Hydrochloric acid', uses: 'Stomach acid (pH ~1.5). Industrial pickling. Strong monoprotic acid.', shape: 'linear', m: 36.46 },
-        { f: 'NaCl', name: 'Sodium chloride', uses: 'Table salt. Essential electrolyte. Ionic lattice.', shape: 'ionic', m: 58.44 },
-        { f: 'CaCO₃', name: 'Calcium carbonate', uses: 'Limestone, chalk, eggshells. Antacid. Building material.', shape: 'ionic', m: 100.09 },
-        { f: 'H₂SO₄', name: 'Sulfuric acid', uses: '#1 industrial chemical by mass. Fertilizers, batteries, refining.', shape: 'tetrahedral', m: 98.08 },
-        { f: 'HNO₃', name: 'Nitric acid', uses: 'Fertilizers, explosives, oxidation. Strong monoprotic acid.', shape: 'trigonal', m: 63.01 },
-        { f: 'CH₃OH', name: 'Methanol', uses: 'Solvent. Fuel. Toxic to humans (causes blindness).', shape: 'tetrahedral', m: 32.04 },
-        { f: 'C₂H₅OH', name: 'Ethanol', uses: 'Beverages, fuel additive, antiseptic. Hydrogen bonding raises BP.', shape: 'tetrahedral', m: 46.07 },
-        { f: 'C₆H₁₂O₆', name: 'Glucose', uses: 'Primary energy source for cells. Photosynthesis product.', shape: 'cyclic', m: 180.16 },
-        { f: 'C₁₂H₂₂O₁₁', name: 'Sucrose', uses: 'Table sugar. Disaccharide (glucose + fructose).', shape: 'disaccharide', m: 342.30 },
-        { f: 'C₈H₁₀N₄O₂', name: 'Caffeine', uses: 'Adenosine receptor antagonist. Most-used psychoactive drug. Plant defense.', shape: 'planar', m: 194.19 },
-        { f: 'C₉H₈O₄', name: 'Aspirin', uses: 'NSAID. Inhibits COX enzymes. Daily cardioprotection in low doses.', shape: 'planar', m: 180.16 },
-        { f: 'C₇H₆O₃', name: 'Salicylic acid', uses: 'Topical acne treatment. Precursor to aspirin. Plant signaling.', shape: 'planar', m: 138.12 },
-        { f: 'CHCl₃', name: 'Chloroform', uses: 'Solvent. Former anesthetic (now obsolete; toxic).', shape: 'tetrahedral', m: 119.38 },
-        { f: 'CCl₄', name: 'Carbon tetrachloride', uses: 'Former cleaning solvent. Ozone-depleter; phased out.', shape: 'tetrahedral', m: 153.82 }
+        { f: 'H₂O', name: __alloT('stem.molecule.water', 'Water'), uses: 'Universal solvent. ~70% of body mass. Hydrogen bonding gives unique properties.', shape: 'bent', m: 18.02 },
+        { f: 'CO₂', name: __alloT('stem.molecule.carbon_dioxide', 'Carbon dioxide'), uses: 'Photosynthesis input. Greenhouse gas. Carbonates dissolved in oceans.', shape: 'linear', m: 44.01 },
+        { f: 'O₂', name: __alloT('stem.molecule.oxygen_2', 'Oxygen'), uses: '21% of atmosphere. Essential for aerobic respiration. Strong oxidizer.', shape: 'linear', m: 32.00 },
+        { f: 'N₂', name: __alloT('stem.molecule.nitrogen_2', 'Nitrogen'), uses: '78% of atmosphere. Triple bond makes it very stable. Fixed by bacteria + Haber process.', shape: 'linear', m: 28.02 },
+        { f: 'CH₄', name: __alloT('stem.molecule.methane', 'Methane'), uses: 'Natural gas. Major greenhouse gas (25× CO₂ over 100 yr). Microbial methanogenesis.', shape: 'tetrahedral', m: 16.04 },
+        { f: 'NH₃', name: __alloT('stem.molecule.ammonia', 'Ammonia'), uses: 'Fertilizer feedstock (Haber process). Cleaning agent. Refrigerant.', shape: 'pyramidal', m: 17.03 },
+        { f: 'HCl', name: __alloT('stem.molecule.hydrochloric_acid', 'Hydrochloric acid'), uses: 'Stomach acid (pH ~1.5). Industrial pickling. Strong monoprotic acid.', shape: 'linear', m: 36.46 },
+        { f: 'NaCl', name: __alloT('stem.molecule.sodium_chloride', 'Sodium chloride'), uses: 'Table salt. Essential electrolyte. Ionic lattice.', shape: 'ionic', m: 58.44 },
+        { f: 'CaCO₃', name: __alloT('stem.molecule.calcium_carbonate', 'Calcium carbonate'), uses: 'Limestone, chalk, eggshells. Antacid. Building material.', shape: 'ionic', m: 100.09 },
+        { f: 'H₂SO₄', name: __alloT('stem.molecule.sulfuric_acid', 'Sulfuric acid'), uses: '#1 industrial chemical by mass. Fertilizers, batteries, refining.', shape: 'tetrahedral', m: 98.08 },
+        { f: 'HNO₃', name: __alloT('stem.molecule.nitric_acid', 'Nitric acid'), uses: 'Fertilizers, explosives, oxidation. Strong monoprotic acid.', shape: 'trigonal', m: 63.01 },
+        { f: 'CH₃OH', name: __alloT('stem.molecule.methanol', 'Methanol'), uses: 'Solvent. Fuel. Toxic to humans (causes blindness).', shape: 'tetrahedral', m: 32.04 },
+        { f: 'C₂H₅OH', name: __alloT('stem.molecule.ethanol', 'Ethanol'), uses: 'Beverages, fuel additive, antiseptic. Hydrogen bonding raises BP.', shape: 'tetrahedral', m: 46.07 },
+        { f: 'C₆H₁₂O₆', name: __alloT('stem.molecule.glucose', 'Glucose'), uses: 'Primary energy source for cells. Photosynthesis product.', shape: 'cyclic', m: 180.16 },
+        { f: 'C₁₂H₂₂O₁₁', name: __alloT('stem.molecule.sucrose', 'Sucrose'), uses: 'Table sugar. Disaccharide (glucose + fructose).', shape: 'disaccharide', m: 342.30 },
+        { f: 'C₈H₁₀N₄O₂', name: __alloT('stem.molecule.caffeine_2', 'Caffeine'), uses: 'Adenosine receptor antagonist. Most-used psychoactive drug. Plant defense.', shape: 'planar', m: 194.19 },
+        { f: 'C₉H₈O₄', name: __alloT('stem.molecule.aspirin_2', 'Aspirin'), uses: 'NSAID. Inhibits COX enzymes. Daily cardioprotection in low doses.', shape: 'planar', m: 180.16 },
+        { f: 'C₇H₆O₃', name: __alloT('stem.molecule.salicylic_acid', 'Salicylic acid'), uses: 'Topical acne treatment. Precursor to aspirin. Plant signaling.', shape: 'planar', m: 138.12 },
+        { f: 'CHCl₃', name: __alloT('stem.molecule.chloroform', 'Chloroform'), uses: 'Solvent. Former anesthetic (now obsolete; toxic).', shape: 'tetrahedral', m: 119.38 },
+        { f: 'CCl₄', name: __alloT('stem.molecule.carbon_tetrachloride', 'Carbon tetrachloride'), uses: 'Former cleaning solvent. Ozone-depleter; phased out.', shape: 'tetrahedral', m: 153.82 }
       ];
 
       var ACID_BASE_REF = [
-        { name: 'Hydrochloric acid', formula: 'HCl', ka: '~10⁷', strength: 'Very strong', notes: 'Stomach acid; pH ~1' },
-        { name: 'Sulfuric acid', formula: 'H₂SO₄', ka: '~10³ (first H)', strength: 'Very strong', notes: 'Diprotic; battery acid' },
-        { name: 'Nitric acid', formula: 'HNO₃', ka: '~20', strength: 'Strong', notes: 'Oxidizing acid' },
-        { name: 'Hydrofluoric acid', formula: 'HF', ka: '6.6 × 10⁻⁴', strength: 'Weak (but dangerous)', notes: 'Etches glass; causes deep tissue burns' },
-        { name: 'Acetic acid', formula: 'CH₃COOH', ka: '1.8 × 10⁻⁵', strength: 'Weak', notes: 'Vinegar; pKa 4.76' },
-        { name: 'Carbonic acid', formula: 'H₂CO₃', ka: '4.3 × 10⁻⁷', strength: 'Weak', notes: 'Soda water; CO₂ + H₂O' },
-        { name: 'Ammonia', formula: 'NH₃', kb: '1.8 × 10⁻⁵', strength: 'Weak base', notes: 'Cleaning; conjugate of NH₄⁺' },
-        { name: 'Sodium hydroxide', formula: 'NaOH', kb: '~10²⁰', strength: 'Very strong base', notes: 'Lye; pH ~14 at 1M' },
-        { name: 'Potassium hydroxide', formula: 'KOH', kb: '~10²⁰', strength: 'Very strong base', notes: 'Caustic potash' },
-        { name: 'Calcium hydroxide', formula: 'Ca(OH)₂', kb: 'limited solubility', strength: 'Strong base', notes: 'Slaked lime' },
-        { name: 'Water (self)', formula: 'H₂O', kw: '1.0 × 10⁻¹⁴', strength: 'Amphoteric', notes: 'Kw at 25°C; both donates + accepts H⁺' },
-        { name: 'Citric acid', formula: 'H₃C₆H₅O₇', ka1: '7.4 × 10⁻⁴', strength: 'Weak (triprotic)', notes: 'Citrus fruits; cleaning' }
+        { name: __alloT('stem.molecule.hydrochloric_acid_2', 'Hydrochloric acid'), formula: 'HCl', ka: '~10⁷', strength: 'Very strong', notes: 'Stomach acid; pH ~1' },
+        { name: __alloT('stem.molecule.sulfuric_acid_2', 'Sulfuric acid'), formula: 'H₂SO₄', ka: '~10³ (first H)', strength: 'Very strong', notes: 'Diprotic; battery acid' },
+        { name: __alloT('stem.molecule.nitric_acid_2', 'Nitric acid'), formula: 'HNO₃', ka: '~20', strength: 'Strong', notes: 'Oxidizing acid' },
+        { name: __alloT('stem.molecule.hydrofluoric_acid', 'Hydrofluoric acid'), formula: 'HF', ka: '6.6 × 10⁻⁴', strength: 'Weak (but dangerous)', notes: 'Etches glass; causes deep tissue burns' },
+        { name: __alloT('stem.molecule.acetic_acid', 'Acetic acid'), formula: 'CH₃COOH', ka: '1.8 × 10⁻⁵', strength: 'Weak', notes: 'Vinegar; pKa 4.76' },
+        { name: __alloT('stem.molecule.carbonic_acid', 'Carbonic acid'), formula: 'H₂CO₃', ka: '4.3 × 10⁻⁷', strength: 'Weak', notes: 'Soda water; CO₂ + H₂O' },
+        { name: __alloT('stem.molecule.ammonia_2', 'Ammonia'), formula: 'NH₃', kb: '1.8 × 10⁻⁵', strength: 'Weak base', notes: 'Cleaning; conjugate of NH₄⁺' },
+        { name: __alloT('stem.molecule.sodium_hydroxide', 'Sodium hydroxide'), formula: 'NaOH', kb: '~10²⁰', strength: 'Very strong base', notes: 'Lye; pH ~14 at 1M' },
+        { name: __alloT('stem.molecule.potassium_hydroxide', 'Potassium hydroxide'), formula: 'KOH', kb: '~10²⁰', strength: 'Very strong base', notes: 'Caustic potash' },
+        { name: __alloT('stem.molecule.calcium_hydroxide_2', 'Calcium hydroxide'), formula: 'Ca(OH)₂', kb: 'limited solubility', strength: 'Strong base', notes: 'Slaked lime' },
+        { name: __alloT('stem.molecule.water_self', 'Water (self)'), formula: 'H₂O', kw: '1.0 × 10⁻¹⁴', strength: 'Amphoteric', notes: 'Kw at 25°C; both donates + accepts H⁺' },
+        { name: __alloT('stem.molecule.citric_acid_2', 'Citric acid'), formula: 'H₃C₆H₅O₇', ka1: '7.4 × 10⁻⁴', strength: 'Weak (triprotic)', notes: 'Citrus fruits; cleaning' }
       ];
 
       var QUANTUM_REF = [
@@ -3121,13 +3507,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       function expHeader() {
         return React.createElement('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200' },
           React.createElement('div', null,
-            React.createElement('h3', { className: 'text-base font-black text-indigo-900' }, '🧪 Chemistry Reference Library'),
-            React.createElement('div', { className: 'text-[11px] text-indigo-700 mt-0.5' }, 'Interactive references — pick a topic below to explore.')
+            React.createElement('h3', { className: 'text-base font-black text-indigo-900' }, __alloT('stem.molecule.chemistry_reference_library', '🧪 Chemistry Reference Library')),
+            React.createElement('div', { className: 'text-[11px] text-indigo-700 mt-0.5' }, __alloT('stem.molecule.interactive_references_pick_a_topic_be', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && React.createElement('button', {
             onClick: function() { setExp({ expSection: null }); },
-            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100'
-          }, '✕ Close section')
+            className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 active:scale-[0.97]'
+          }, __alloT('stem.molecule.close_section', '✕ Close section'))
         );
       }
 
@@ -3138,71 +3524,72 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         // · States & Energy · Organic & Polymers · Reference & Tables ·
         // Applications · Lab & Safety.
         var TAB_GROUPS = [
-          { id: 'structure', label: 'Structure & Bonding', color: 'indigo', tabs: [
-            { id: 'vsepr', label: 'VSEPR shapes', icon: '🔺' },
-            { id: 'mol_geo', label: 'Bond geometry', icon: '∡' },
-            { id: 'bonds', label: 'Bond types', icon: '⚛︎' },
-            { id: 'imf', label: 'Intermol. forces', icon: '↔' },
-            { id: 'quantum', label: 'Quantum numbers', icon: '𝑛' },
-            { id: 'periodic', label: 'Periodic trends', icon: '📊' },
-            { id: 'isomers', label: 'Isomers', icon: '⇄' }
+          { id: 'structure', label: __alloT('stem.molecule.structure_bonding', 'Structure & Bonding'), color: 'indigo', tabs: [
+            { id: 'vsepr', label: __alloT('stem.molecule.vsepr_shapes', 'VSEPR shapes'), icon: '🔺' },
+            { id: 'mol_geo', label: __alloT('stem.molecule.bond_geometry', 'Bond geometry'), icon: '∡' },
+            { id: 'bonds', label: __alloT('stem.molecule.bond_types', 'Bond types'), icon: '⚛︎' },
+            { id: 'imf', label: __alloT('stem.molecule.intermol_forces', 'Intermol. forces'), icon: '↔' },
+            { id: 'quantum', label: __alloT('stem.molecule.quantum_numbers', 'Quantum numbers'), icon: '𝑛' },
+            { id: 'orbitals', label: __alloT('stem.molecule.orbital_clouds', 'Orbital clouds'), icon: '☁️' },
+            { id: 'periodic', label: __alloT('stem.molecule.periodic_trends', 'Periodic trends'), icon: '📊' },
+            { id: 'isomers', label: __alloT('stem.molecule.isomers', 'Isomers'), icon: '⇄' }
           ] },
-          { id: 'reactions', label: 'Reactions & Equilibrium', color: 'rose', tabs: [
-            { id: 'reactions', label: 'Reaction types', icon: '🔄' },
+          { id: 'reactions', label: __alloT('stem.molecule.reactions_equilibrium', 'Reactions & Equilibrium'), color: 'rose', tabs: [
+            { id: 'reactions', label: __alloT('stem.molecule.reaction_types', 'Reaction types'), icon: '🔄' },
             { id: 'acidbase', label: 'Acid/base', icon: '⚖' },
-            { id: 'pH_scale', label: 'pH scale', icon: 'H⁺' },
-            { id: 'equilibrium', label: 'Equilibrium', icon: '⇌' },
-            { id: 'kinetics', label: 'Kinetics', icon: '⏱' },
-            { id: 'redox', label: 'Redox', icon: '🔋' },
-            { id: 'electrochem', label: 'Electrochemistry', icon: '⚡' },
-            { id: 'stoich', label: 'Stoichiometry', icon: '⚖' },
-            { id: 'molarity', label: 'Molarity calc', icon: '🧮' }
+            { id: 'pH_scale', label: __alloT('stem.molecule.ph_scale', 'pH scale'), icon: 'H⁺' },
+            { id: 'equilibrium', label: __alloT('stem.molecule.equilibrium', 'Equilibrium'), icon: '⇌' },
+            { id: 'kinetics', label: __alloT('stem.molecule.kinetics', 'Kinetics'), icon: '⏱' },
+            { id: 'redox', label: __alloT('stem.molecule.redox', 'Redox'), icon: '🔋' },
+            { id: 'electrochem', label: __alloT('stem.molecule.electrochemistry', 'Electrochemistry'), icon: '⚡' },
+            { id: 'stoich', label: __alloT('stem.molecule.stoichiometry', 'Stoichiometry'), icon: '⚖' },
+            { id: 'molarity', label: __alloT('stem.molecule.molarity_calc', 'Molarity calc'), icon: '🧮' }
           ] },
-          { id: 'states', label: 'States & Energy', color: 'sky', tabs: [
-            { id: 'phase', label: 'Phase diagram', icon: '🧊' },
-            { id: 'gaslaws', label: 'Gas laws', icon: '💨' },
-            { id: 'colligative', label: 'Colligative', icon: '🧂' },
-            { id: 'solubility', label: 'Solubility', icon: '◐' },
-            { id: 'meltboil', label: 'Melt + boil pts', icon: '🌡' },
-            { id: 'thermo', label: 'Thermodynamics', icon: '🔥' },
-            { id: 'nuclear', label: 'Nuclear chem', icon: '☢' }
+          { id: 'states', label: __alloT('stem.molecule.states_energy', 'States & Energy'), color: 'sky', tabs: [
+            { id: 'phase', label: __alloT('stem.molecule.phase_diagram', 'Phase diagram'), icon: '🧊' },
+            { id: 'gaslaws', label: __alloT('stem.molecule.gas_laws', 'Gas laws'), icon: '💨' },
+            { id: 'colligative', label: __alloT('stem.molecule.colligative', 'Colligative'), icon: '🧂' },
+            { id: 'solubility', label: __alloT('stem.molecule.solubility', 'Solubility'), icon: '◐' },
+            { id: 'meltboil', label: __alloT('stem.molecule.melt_boil_pts', 'Melt + boil pts'), icon: '🌡' },
+            { id: 'thermo', label: __alloT('stem.molecule.thermodynamics', 'Thermodynamics'), icon: '🔥' },
+            { id: 'nuclear', label: __alloT('stem.molecule.nuclear_chem', 'Nuclear chem'), icon: '☢' }
           ] },
-          { id: 'organic', label: 'Organic & Polymers', color: 'emerald', tabs: [
-            { id: 'organic', label: 'Organic groups', icon: '🧪' },
-            { id: 'polymers', label: 'Polymers', icon: '🧬' },
-            { id: 'biochem', label: 'Biochemistry', icon: '🧬' }
+          { id: 'organic', label: __alloT('stem.molecule.organic_polymers', 'Organic & Polymers'), color: 'emerald', tabs: [
+            { id: 'organic', label: __alloT('stem.molecule.organic_groups', 'Organic groups'), icon: '🧪' },
+            { id: 'polymers', label: __alloT('stem.molecule.polymers', 'Polymers'), icon: '🧬' },
+            { id: 'biochem', label: __alloT('stem.molecule.biochemistry', 'Biochemistry'), icon: '🧬' }
           ] },
-          { id: 'reference', label: 'Reference & Tables', color: 'slate', tabs: [
-            { id: 'library', label: 'Molecule library', icon: '📚' },
-            { id: 'compounds', label: 'Common compounds', icon: '⌬' },
-            { id: 'allelements', label: 'All elements', icon: '🅻' },
-            { id: 'noble', label: 'Noble gases', icon: 'He' },
-            { id: 'inorganic', label: 'Inorganic chem', icon: '⚛' },
-            { id: 'minerals', label: 'Minerals', icon: '💎' },
-            { id: 'crystal', label: 'Crystal structures', icon: '💎' },
-            { id: 'glossary', label: 'Glossary', icon: '📖' },
-            { id: 'famous', label: 'History', icon: '🕰' }
+          { id: 'reference', label: __alloT('stem.molecule.reference_tables', 'Reference & Tables'), color: 'slate', tabs: [
+            { id: 'library', label: __alloT('stem.molecule.molecule_library', 'Molecule library'), icon: '📚' },
+            { id: 'compounds', label: __alloT('stem.molecule.common_compounds', 'Common compounds'), icon: '⌬' },
+            { id: 'allelements', label: __alloT('stem.molecule.all_elements', 'All elements'), icon: '🅻' },
+            { id: 'noble', label: __alloT('stem.molecule.noble_gases', 'Noble gases'), icon: 'He' },
+            { id: 'inorganic', label: __alloT('stem.molecule.inorganic_chem', 'Inorganic chem'), icon: '⚛' },
+            { id: 'minerals', label: __alloT('stem.molecule.minerals', 'Minerals'), icon: '💎' },
+            { id: 'crystal', label: __alloT('stem.molecule.crystal_structures', 'Crystal structures'), icon: '💎' },
+            { id: 'glossary', label: __alloT('stem.molecule.glossary', 'Glossary'), icon: '📖' },
+            { id: 'famous', label: __alloT('stem.molecule.history', 'History'), icon: '🕰' }
           ] },
-          { id: 'applications', label: 'Applications', color: 'amber', tabs: [
-            { id: 'medchem', label: 'Drug discovery', icon: '💊' },
-            { id: 'pharma', label: 'Common drugs', icon: '💊' },
-            { id: 'food', label: 'Food chemistry', icon: '🍳' },
-            { id: 'foods', label: 'Food + nutrition', icon: '🥦' },
-            { id: 'flavor_chem', label: 'Flavor + scent', icon: '👃' },
-            { id: 'colors_chem', label: 'Color chemistry', icon: '🎨' },
-            { id: 'materials', label: 'Materials', icon: '🪨' },
-            { id: 'household', label: 'Household chem', icon: '🧴' },
-            { id: 'industrial', label: 'Industrial scale', icon: '🏗' },
-            { id: 'environment', label: 'Atmospheric', icon: '🌫' },
-            { id: 'enviro2', label: 'Pollution', icon: '🏭' },
-            { id: 'green', label: 'Green chemistry', icon: '🌱' }
+          { id: 'applications', label: __alloT('stem.molecule.applications', 'Applications'), color: 'amber', tabs: [
+            { id: 'medchem', label: __alloT('stem.molecule.drug_discovery', 'Drug discovery'), icon: '💊' },
+            { id: 'pharma', label: __alloT('stem.molecule.common_drugs', 'Common drugs'), icon: '💊' },
+            { id: 'food', label: __alloT('stem.molecule.food_chemistry', 'Food chemistry'), icon: '🍳' },
+            { id: 'foods', label: __alloT('stem.molecule.food_nutrition', 'Food + nutrition'), icon: '🥦' },
+            { id: 'flavor_chem', label: __alloT('stem.molecule.flavor_scent', 'Flavor + scent'), icon: '👃' },
+            { id: 'colors_chem', label: __alloT('stem.molecule.color_chemistry', 'Color chemistry'), icon: '🎨' },
+            { id: 'materials', label: __alloT('stem.molecule.materials', 'Materials'), icon: '🪨' },
+            { id: 'household', label: __alloT('stem.molecule.household_chem', 'Household chem'), icon: '🧴' },
+            { id: 'industrial', label: __alloT('stem.molecule.industrial_scale', 'Industrial scale'), icon: '🏗' },
+            { id: 'environment', label: __alloT('stem.molecule.atmospheric', 'Atmospheric'), icon: '🌫' },
+            { id: 'enviro2', label: __alloT('stem.molecule.pollution', 'Pollution'), icon: '🏭' },
+            { id: 'green', label: __alloT('stem.molecule.green_chemistry', 'Green chemistry'), icon: '🌱' }
           ] },
-          { id: 'lab', label: 'Lab & Safety', color: 'cyan', tabs: [
-            { id: 'lab', label: 'Lab techniques', icon: '🔬' },
-            { id: 'spectro', label: 'Spectroscopy', icon: '📡' },
-            { id: 'safety', label: 'Lab safety', icon: '🦺' }
-, { id: 'bondMystery', label: 'Bond detective', icon: '🔬' }
-, { id: 'solventMystery', label: 'Mystery solvent', icon: '🧪' }
+          { id: 'lab', label: __alloT('stem.molecule.lab_safety', 'Lab & Safety'), color: 'cyan', tabs: [
+            { id: 'lab', label: __alloT('stem.molecule.lab_techniques', 'Lab techniques'), icon: '🔬' },
+            { id: 'spectro', label: __alloT('stem.molecule.spectroscopy', 'Spectroscopy'), icon: '📡' },
+            { id: 'safety', label: __alloT('stem.molecule.lab_safety_2', 'Lab safety'), icon: '🦺' }
+, { id: 'bondMystery', label: __alloT('stem.molecule.bond_detective', 'Bond detective'), icon: '🔬' }
+, { id: 'solventMystery', label: __alloT('stem.molecule.mystery_solvent', 'Mystery solvent'), icon: '🧪' }
           ] }
         ];
         function renderBtn(s, accent) {
@@ -3210,13 +3597,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           return React.createElement('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         return React.createElement('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
           TAB_GROUPS.map(function(g) {
             return React.createElement('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              React.createElement('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              React.createElement('span', { 'aria-hidden': 'true', className: 'text-[10px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
             );
           })
@@ -3234,11 +3621,16 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           var cx = size/2, cy = size/2;
           var bondCount = geo.steric - geo.lone;
           var angles = [];
+          // Angles are clockwise-from-up screen degrees; trailing entries beyond the bond count become
+          // the lone pairs. The old map drew bent2 (water) at ~60° not 104.5°, had a no-op bent3 ternary
+          // (both branches identical → drawn as full trigonal), and sized arrays so lone pairs never showed.
           if (geo.id === 'linear' || geo.id === 'linear5') angles = [0, 180];
-          else if (geo.id === 'trigonal' || geo.id === 'bent3') angles = (geo.id === 'bent3' ? [90, 210, 330] : [90, 210, 330]);
-          else if (geo.id === 'bent2') angles = [120, 60];
-          else if (geo.id === 'tetrahedral' || geo.id === 'pyramidal') angles = [90, 210, 330, 30];
-          else if (geo.id === 'tbp' || geo.id === 'seesaw' || geo.id === 'tshape') angles = [90, 30, 150, 180, 0];
+          else if (geo.id === 'trigonal') angles = [0, 120, 240];
+          else if (geo.id === 'bent3') angles = [121.5, 238.5, 0]; // 2 bonds ~117° apart, lone pair on top
+          else if (geo.id === 'bent2') angles = [127.75, 232.25, 55, 305]; // 2 bonds ~104.5° apart, 2 lone pairs on top
+          else if (geo.id === 'tetrahedral') angles = [45, 135, 225, 315];
+          else if (geo.id === 'pyramidal') angles = [120, 180, 240, 0]; // 3-bond tripod + lone pair on top
+          else if (geo.id === 'tbp' || geo.id === 'seesaw' || geo.id === 'tshape') angles = [0, 180, 90, 210, 330]; // axial up/down + equatorial (lone pairs go equatorial)
           else if (geo.id === 'octahedral' || geo.id === 'sqpyramid' || geo.id === 'sqplane') angles = [0, 60, 120, 180, 240, 300];
           var bondsToShow = bondCount;
           return React.createElement('svg', { width: size, height: size, viewBox: '0 0 ' + size + ' ' + size, role: 'img', 'aria-label': geo.name + ' geometry' },
@@ -3267,8 +3659,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         }
 
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔺 VSEPR — molecular geometry'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Valence Shell Electron Pair Repulsion theory predicts molecular shape from steric number (bonded + lone pairs around central atom). Lone pairs repel more strongly than bonded pairs, so they push bonds closer.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.vsepr_molecular_geometry', '🔺 VSEPR — molecular geometry')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.valence_shell_electron_pair_repulsion_', 'Valence Shell Electron Pair Repulsion theory predicts molecular shape from steric number (bonded + lone pairs around central atom). Lone pairs repel more strongly than bonded pairs, so they push bonds closer.')),
           React.createElement('div', { className: 'grid gap-3 grid-cols-1 md:grid-cols-3 mb-3' },
             React.createElement('div', { className: 'flex flex-col gap-1 md:col-span-1' },
               VSEPR_GEOMETRIES.map(function(g) {
@@ -3276,7 +3668,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 return React.createElement('button', {
                   key: g.id,
                   onClick: function() { setExp({ vseprPicked: g.id }); },
-                  className: 'text-left px-2.5 py-1.5 rounded-md text-[11px] font-bold border ' + (sel ? 'bg-indigo-100 border-indigo-400 text-indigo-900' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'),
+                  className: 'text-left px-2.5 py-1.5 rounded-md text-[11px] font-bold border ' + (sel ? 'bg-indigo-100 border-indigo-400 text-indigo-900' : 'transition-colors bg-white border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.97]'),
                   style: { borderLeftWidth: 4, borderLeftColor: g.color }
                 }, g.name);
               })
@@ -3296,8 +3688,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderBondsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛︎ Bond types — electronegativity difference'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Bond character ranges from purely covalent (equal sharing) to ionic (full electron transfer). The boundary is fuzzy — most real bonds have partial ionic character.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.bond_types_electronegativity_differenc', '⚛︎ Bond types — electronegativity difference')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.bond_character_ranges_from_purely_cova', 'Bond character ranges from purely covalent (equal sharing) to ionic (full electron transfer). The boundary is fuzzy — most real bonds have partial ionic character.')),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             BOND_TYPES.map(function(b, i) {
               return React.createElement('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3316,8 +3708,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderImfSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↔ Intermolecular forces (IMF)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Forces BETWEEN molecules determine melting/boiling points, viscosity, solubility, and surface tension. Stronger IMF = higher BP.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.intermolecular_forces_imf', '↔ Intermolecular forces (IMF)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.forces_between_molecules_determine_mel', 'Forces BETWEEN molecules determine melting/boiling points, viscosity, solubility, and surface tension. Stronger IMF = higher BP.')),
           React.createElement('div', { className: 'space-y-2' },
             IMF_TYPES.map(function(f, i) {
               return React.createElement('div', { key: 'i'+i, className: 'p-3 rounded-lg bg-gradient-to-r from-slate-50 to-white border border-slate-200' },
@@ -3326,22 +3718,22 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, f.name),
                   React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800' }, f.strength)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'Present in: ', f.present),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, __alloT('stem.molecule.present_in', 'Present in: '), f.present),
                 React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, f.desc),
                 React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', f.examples.join(', '))
               );
             })
           ),
           React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
-            React.createElement('strong', null, '💡 Tip: '), 'For polar molecules, ALL applicable IMFs add up. Water has dispersion + dipole + H-bonding — that\'s why its BP is so high (100°C) compared to similar-mass H₂S (−60°C).'
+            React.createElement('strong', null, __alloT('stem.molecule.tip', '💡 Tip: ')), __alloT('stem.molecule.for_polar_molecules_all_applicable_imf', 'For polar molecules, ALL applicable IMFs add up. Water has dispersion + dipole + H-bonding — that\'s why its BP is so high (100°C) compared to similar-mass H₂S (−60°C).')
           )
         );
       }
 
       function renderReactionsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔄 Reaction types'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Reactions fall into recognizable patterns. Knowing the type helps predict products + balance equations.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.reaction_types_2', '🔄 Reaction types')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.reactions_fall_into_recognizable_patte', 'Reactions fall into recognizable patterns. Knowing the type helps predict products + balance equations.')),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             COMMON_REACTIONS.map(function(r, i) {
               return React.createElement('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3368,12 +3760,12 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                  m.uses.toLowerCase().indexOf(search) >= 0;
         });
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📚 Common molecule library'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_molecule_library', '📚 Common molecule library')),
           React.createElement('input', {
             type: 'text',
             value: d2.libSearch || '',
             onChange: function(e) { setExp({ libSearch: e.target.value }); },
-            placeholder: 'Search formula / name / use...',
+            placeholder: __alloT('stem.molecule.search_formula_name_use', 'Search formula / name / use...'),
             className: 'w-full px-3 py-1.5 rounded-md border border-slate-300 text-[12px] mb-3'
           }),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3' },
@@ -3389,23 +3781,23 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               );
             })
           ),
-          filtered.length === 0 && React.createElement('div', { className: 'text-center text-[11px] text-slate-500 py-4' }, 'No molecules match "', search, '"')
+          filtered.length === 0 && React.createElement('div', { className: 'text-center text-[11px] text-slate-500 py-4' }, __alloT('stem.molecule.no_molecules_match', 'No molecules match "'), search, '"')
         );
       }
 
       function renderAcidBaseSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚖ Acid / base reference'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Strength = how completely an acid/base dissociates in water. Strong = ~100% (Ka >> 1). Weak = partial (Ka < 1). pH = −log[H⁺].'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.acid_base_reference', '⚖ Acid / base reference')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.strength_how_completely_an_acid_base_d', 'Strength = how completely an acid/base dissociates in water. Strong = ~100% (Ka >> 1). Weak = partial (Ka < 1). pH = −log[H⁺].')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Name'),
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Formula'),
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.name', 'Name')),
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.formula', 'Formula')),
                   React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Ka/Kb'),
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Strength'),
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Notes')
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.strength', 'Strength')),
+                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.notes', 'Notes'))
                 )
               ),
               React.createElement('tbody', null,
@@ -3422,15 +3814,15 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             )
           ),
           React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
-            React.createElement('strong', null, '💡 pH scale: '), 'pH 0-6 acidic · pH 7 neutral · pH 8-14 basic. Each unit = 10× change in [H⁺]. Stomach acid pH 1.5, blood pH 7.4, bleach pH 12.'
+            React.createElement('strong', null, __alloT('stem.molecule.ph_scale_2', '💡 pH scale: ')), __alloT('stem.molecule.ph_0_6_acidic_ph_7_neutral_ph_8_14_bas', 'pH 0-6 acidic · pH 7 neutral · pH 8-14 basic. Each unit = 10× change in [H⁺]. Stomach acid pH 1.5, blood pH 7.4, bleach pH 12.')
           )
         );
       }
 
       function renderQuantumSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛︎ Quantum numbers — orbital identity'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Each electron in an atom is described by 4 quantum numbers (n, ℓ, mₗ, mₛ). The Pauli exclusion principle: no two electrons in an atom share all 4.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.quantum_numbers_orbital_identity', '⚛︎ Quantum numbers — orbital identity')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.each_electron_in_an_atom_is_described_', 'Each electron in an atom is described by 4 quantum numbers (n, ℓ, mₗ, mₛ). The Pauli exclusion principle: no two electrons in an atom share all 4.')),
           React.createElement('div', { className: 'grid gap-2' },
             QUANTUM_REF.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3453,6 +3845,102 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               );
             })
           )
+        );
+      }
+
+      function renderOrbitalsSection() {
+        var h = React.createElement;
+        var key = (d2 && d2.orbChoice && ORBITALS[d2.orbChoice]) ? d2.orbChoice : '2p';
+        var o = ORBITALS[key];
+        var nodes = orbNodes(key);
+        var peak = orbPeakRadius(key);
+        var subColor = o.sub === 's' ? '#0891b2' : (o.sub === 'p' ? '#7c3aed' : '#d97706');
+        // radial-distribution plot P(r)=r²R² (the accessible, rigorous "where is the electron" view)
+        var PW = 300, PH = 96, rmax = o.box, N = 140, pmax = 0, vals = [];
+        for (var i = 0; i <= N; i++) { var rr = rmax * i / N; var v = orbRadialDistribution(key, rr); vals.push(v); if (v > pmax) pmax = v; }
+        if (pmax <= 0) pmax = 1;
+        var poly = vals.map(function (v, i) { return (4 + (PW - 8) * i / N).toFixed(1) + ',' + (PH - 6 - (PH - 12) * v / pmax).toFixed(1); }).join(' ');
+        // radial nodes = sign changes of R(r) in (0, rmax)
+        var radialNodes = [];
+        var prev = orbRadial(key, 0.01);
+        for (var j = 1; j <= 400; j++) { var r2 = rmax * j / 400; var cur = orbRadial(key, r2); if (prev !== 0 && cur !== 0 && (prev < 0) !== (cur < 0)) radialNodes.push(r2); prev = cur; }
+        var BUSTS = [
+          { t: 'Orbit → orbital', d: 'Electrons do NOT trace circles. An orbital is a probability CLOUD — a map of where the electron is likely to be, not a path it follows. The Bohr “orbits” are a useful first cartoon, not reality.' },
+          { t: 'You can’t watch it go around', d: 'Heisenberg uncertainty: pin down an electron’s position and its momentum becomes undefined. There is no trajectory to film — only odds of finding it here vs. there.' },
+          { t: 'Shells = energy levels, not rings', d: 'n is an energy level. The plot shows the electron smeared over a RANGE of distances with a most-probable radius (' + peak.toFixed(1) + ' a₀) — not parked on one fixed circle.' },
+          { t: 'Nodes are forbidden zones', d: 'Where ψ = 0 (the colour boundary in the cloud) the electron is NEVER found — ' + nodes.radial + ' radial + ' + nodes.angular + ' angular node' + (nodes.total === 1 ? '' : 's') + ' here. Bizarre for a particle on a path; natural for a wave.' }
+        ];
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.orbital_clouds_title', '☁️ Orbital clouds — where electrons really are')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.orbital_clouds_intro', 'An atom is not a tiny solar system. Electrons don’t orbit the nucleus on tracks — they exist as a fuzzy cloud of probability (|ψ|²). The two colours are the wavefunction’s + and − phases; where they meet, the electron is never found (a node).')),
+          // orbital picker
+          h('div', { className: 'flex flex-wrap gap-1.5 mb-3', role: 'group', 'aria-label': 'Choose an orbital' },
+            ORBITAL_ORDER.map(function (k) {
+              var on = k === key, oo = ORBITALS[k];
+              return h('button', { key: k, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function () { try { setExp({ orbChoice: k }); } catch (e) {} try { var lr = document.getElementById('allo-live-molecule'); if (lr) lr.textContent = oo.label + ' orbital: ' + oo.shape + ', ' + (oo.n - oo.l - 1) + ' radial and ' + oo.l + ' angular nodes.'; } catch (e) {} },
+                className: 'px-2.5 py-1 rounded-md text-xs font-bold border transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'), style: on ? { background: subColor, borderColor: subColor } : {} }, oo.label);
+            })),
+          h('div', { className: 'text-[10.5px] text-slate-500 leading-snug mb-2 p-2 rounded-lg bg-slate-50 border border-slate-200' }, __alloT('stem.molecule.orbital_caveat', 'These are exact one-electron (hydrogen-like, Z = 1) orbitals. Real multi-electron atoms keep the same shapes but with shifted sizes and energies. Each subshell is a set (3 p’s, 5 d’s — including the differently-shaped d_z²); we show one representative orientation of each.')),
+          h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'minmax(0,260px) minmax(0,1fr)' } },
+            // the cloud (canvas) + nucleus
+            h('div', null,
+              h('canvas', { width: 260, height: 260, key: 'orb-' + key, className: 'rounded-xl border border-slate-700 w-full', style: { background: '#0b1220', display: 'block' },
+                role: 'img', 'aria-label': 'Probability cloud of the ' + o.label + ' orbital — shape: ' + o.shape + '. ' + nodes.radial + ' radial nodes, ' + nodes.angular + ' angular nodes. The bar chart beside it gives the same data non-visually.',
+                ref: function (canvas) {
+                  if (!canvas) return;
+                  var cx = canvas.getContext && canvas.getContext('2d'); if (!cx) return;
+                  var W = canvas.width, Hh = canvas.height, box = o.box;
+                  var maxD = 0, gi; for (gi = 0; gi < 1600; gi++) { var gx = (Math.random() * 2 - 1) * box, gy = (Math.random() * 2 - 1) * box, gz = (Math.random() * 2 - 1) * box; var dd = orbDensity(key, gx, gy, gz); if (dd > maxD) maxD = dd; }
+                  if (maxD <= 0) maxD = 1;
+                  var pts = [], att = 0; while (pts.length < 2600 && att < 120000) { att++; var ax = (Math.random() * 2 - 1) * box, ay = (Math.random() * 2 - 1) * box, az = (Math.random() * 2 - 1) * box; var ps = orbPsi(key, ax, ay, az); if (ps * ps > Math.random() * maxD) pts.push({ x: ax, y: ay, z: az, s: ps >= 0 ? 1 : -1 }); }
+                  var scale = (Math.min(W, Hh) * 0.5) / box * 0.92;
+                  var POS = subColor === '#0891b2' ? '#22d3ee' : (subColor === '#7c3aed' ? '#a78bfa' : '#fbbf24'), NEG = '#fb7185';
+                  var reduced = false; try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                  var ang = 0.6;
+                  function frame() {
+                    if (!canvas.isConnected) return;
+                    if (!reduced) ang += 0.006;
+                    cx.fillStyle = '#0b1220'; cx.fillRect(0, 0, W, Hh);
+                    var ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(0.42), st = Math.sin(0.42), i2;
+                    for (i2 = 0; i2 < pts.length; i2++) {
+                      var p = pts[i2];
+                      var rx = p.x * ca - p.z * sa, rz = p.x * sa + p.z * ca;
+                      var ry = p.y * ct - rz * st, depth = p.y * st + rz * ct;
+                      var tt = (depth / box + 1) / 2;
+                      cx.globalAlpha = 0.16 + 0.5 * (1 - tt);
+                      cx.fillStyle = p.s > 0 ? POS : NEG;
+                      cx.beginPath(); cx.arc(W / 2 + rx * scale, Hh / 2 - ry * scale, 1.0 + 1.5 * (1 - tt), 0, 6.2832); cx.fill();
+                    }
+                    cx.globalAlpha = 1; cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(W / 2, Hh / 2, 2.4, 0, 6.2832); cx.fill();
+                    if (!reduced) requestAnimationFrame(frame);
+                  }
+                  frame();
+                }
+              }),
+              h('div', { className: 'flex items-center justify-center gap-3 mt-1 text-[10px] text-slate-600' },
+                h('span', null, h('span', { 'aria-hidden': 'true', style: { color: subColor } }, '● '), __alloT('stem.molecule.phase_plus', 'ψ > 0 (one phase)')),
+                h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#fb7185' } }, '● '), __alloT('stem.molecule.phase_minus', 'ψ < 0 (other phase)')),
+                h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#fbbf24' } }, '● '), __alloT('stem.molecule.nucleus', 'nucleus')))),
+            // info + radial distribution
+            h('div', null,
+              h('div', { className: 'grid grid-cols-2 gap-1.5 text-[11px] mb-2' },
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.shape', 'Shape')), h('div', { className: 'font-bold text-slate-800' }, o.shape)),
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.most_likely_radius', 'Most-likely radius')), h('div', { className: 'font-bold text-slate-800' }, '≈ ' + peak.toFixed(1) + ' a₀')),
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.radial_nodes', 'Radial nodes')), h('div', { className: 'font-bold text-slate-800' }, String(nodes.radial))),
+                h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.angular_nodes', 'Angular nodes')), h('div', { className: 'font-bold text-slate-800' }, String(nodes.angular)))),
+              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.radial_distribution', 'Radial distribution P(r) = r²R²')),
+              h('svg', { viewBox: '0 0 ' + PW + ' ' + PH, width: '100%', height: PH, role: 'img', 'aria-label': 'Radial probability for the ' + o.label + ' orbital: most likely near ' + peak.toFixed(1) + ' Bohr radii, with ' + nodes.radial + ' radial node' + (nodes.radial === 1 ? '' : 's') + '.', className: 'rounded-lg bg-slate-50 border border-slate-200' },
+                radialNodes.map(function (rn, ri) { var xx = 4 + (PW - 8) * (rn / rmax); return h('line', { key: 'rn' + ri, x1: xx, y1: 4, x2: xx, y2: PH - 6, stroke: '#ef4444', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }); }),
+                h('line', { x1: 4 + (PW - 8) * (peak / rmax), y1: 4, x2: 4 + (PW - 8) * (peak / rmax), y2: PH - 6, stroke: '#10b981', strokeWidth: 1.5, opacity: 0.8 }),
+                h('polyline', { points: poly, fill: 'none', stroke: subColor, strokeWidth: 2 })),
+              h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, h('span', { style: { color: '#10b981' } }, '— ' + __alloT('stem.molecule.peak', 'most likely')), '   ', (radialNodes.length ? h('span', { style: { color: '#ef4444' } }, '┊ ' + __alloT('stem.molecule.node', 'node (P = 0)')) : null)))),
+          // misconception busts
+          h('div', { className: 'grid sm:grid-cols-2 gap-2 mt-3' },
+            BUSTS.map(function (b, bi) {
+              return h('div', { key: 'b' + bi, className: 'p-2.5 rounded-lg border border-amber-200 bg-amber-50' },
+                h('div', { className: 'text-[11.5px] font-black text-amber-900 mb-0.5' }, '⚠ ' + b.t),
+                h('div', { className: 'text-[11px] text-amber-900/90 leading-snug' }, b.d));
+            }))
         );
       }
 
@@ -3487,42 +3975,42 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var KINETICS_FACTORS = [
-        { factor: 'Concentration', effect: 'Rate ∝ [reactants]^orders', detail: 'More molecules = more collisions / time. Determined experimentally, not from coefficients.' },
-        { factor: 'Temperature', effect: 'Rate roughly doubles per 10°C', detail: 'Higher T → more molecules with energy ≥ Ea (Maxwell-Boltzmann tail).' },
-        { factor: 'Surface area', effect: 'More SA = faster', detail: 'Grinding solid reactant exposes more atoms to collision. Powder vs chunk.' },
-        { factor: 'Catalyst', effect: 'Lowers Ea, faster', detail: 'Provides alternate pathway. Not consumed. Enzymes are catalysts (often >10⁶× faster).' },
-        { factor: 'Pressure (gas)', effect: 'Higher P = faster (gas)', detail: 'Same as concentration: more molecules per unit volume.' },
-        { factor: 'Solvent / medium', effect: 'Polarity matches → faster', detail: '"Like dissolves like." Solvent can stabilize transition state.' },
-        { factor: 'Light (photochemistry)', effect: 'Adds energy', detail: 'Some rxns need photons (photosynthesis, photographic film, UV-driven).' }
+        { factor: 'Concentration', effect: 'Rate ∝ [reactants]^orders', detail: __alloT('stem.molecule.more_molecules_more_collisions_time_de', 'More molecules = more collisions / time. Determined experimentally, not from coefficients.') },
+        { factor: 'Temperature', effect: 'Rate roughly doubles per 10°C', detail: __alloT('stem.molecule.higher_t_more_molecules_with_energy_ea', 'Higher T → more molecules with energy ≥ Ea (Maxwell-Boltzmann tail).') },
+        { factor: 'Surface area', effect: 'More SA = faster', detail: __alloT('stem.molecule.grinding_solid_reactant_exposes_more_a', 'Grinding solid reactant exposes more atoms to collision. Powder vs chunk.') },
+        { factor: 'Catalyst', effect: 'Lowers Ea, faster', detail: __alloT('stem.molecule.provides_alternate_pathway_not_consume', 'Provides alternate pathway. Not consumed. Enzymes are catalysts (often >10⁶× faster).') },
+        { factor: 'Pressure (gas)', effect: 'Higher P = faster (gas)', detail: __alloT('stem.molecule.same_as_concentration_more_molecules_p', 'Same as concentration: more molecules per unit volume.') },
+        { factor: 'Solvent / medium', effect: 'Polarity matches → faster', detail: __alloT('stem.molecule.like_dissolves_like_solvent_can_stabil', '"Like dissolves like." Solvent can stabilize transition state.') },
+        { factor: 'Light (photochemistry)', effect: 'Adds energy', detail: __alloT('stem.molecule.some_rxns_need_photons_photosynthesis_', 'Some rxns need photons (photosynthesis, photographic film, UV-driven).') }
       ];
 
       var THERMO_KEY = [
-        { sym: 'ΔH', name: 'Enthalpy change', sign: 'Negative = exothermic (heat released to surroundings); positive = endothermic (heat absorbed)', units: 'kJ/mol' },
-        { sym: 'ΔS', name: 'Entropy change', sign: 'Positive = more disorder; negative = more order. Gas > liquid > solid.', units: 'J/(mol·K)' },
-        { sym: 'ΔG', name: 'Gibbs free energy', sign: 'Negative = spontaneous; positive = non-spontaneous; zero = at equilibrium.', units: 'kJ/mol' },
-        { sym: 'T', name: 'Temperature', sign: 'Absolute (Kelvin). Multiplies entropy term — high T amplifies ΔS importance.', units: 'K' },
-        { sym: 'Ea', name: 'Activation energy', sign: 'Always positive. Barrier between reactants and products. Lower = faster.', units: 'kJ/mol' },
-        { sym: 'K', name: 'Equilibrium constant', sign: 'K >> 1: products favored. K << 1: reactants favored. K = exp(−ΔG°/RT).', units: 'unitless' }
+        { sym: 'ΔH', name: __alloT('stem.molecule.enthalpy_change', 'Enthalpy change'), sign: 'Negative = exothermic (heat released to surroundings); positive = endothermic (heat absorbed)', units: 'kJ/mol' },
+        { sym: 'ΔS', name: __alloT('stem.molecule.entropy_change', 'Entropy change'), sign: 'Positive = more disorder; negative = more order. Gas > liquid > solid.', units: 'J/(mol·K)' },
+        { sym: 'ΔG', name: __alloT('stem.molecule.gibbs_free_energy', 'Gibbs free energy'), sign: 'Negative = spontaneous; positive = non-spontaneous; zero = at equilibrium.', units: 'kJ/mol' },
+        { sym: 'T', name: __alloT('stem.molecule.temperature', 'Temperature'), sign: 'Absolute (Kelvin). Multiplies entropy term — high T amplifies ΔS importance.', units: 'K' },
+        { sym: 'Ea', name: __alloT('stem.molecule.activation_energy', 'Activation energy'), sign: 'Always positive. Barrier between reactants and products. Lower = faster.', units: 'kJ/mol' },
+        { sym: 'K', name: __alloT('stem.molecule.equilibrium_constant', 'Equilibrium constant'), sign: 'K >> 1: products favored. K << 1: reactants favored. K = exp(−ΔG°/RT).', units: 'unitless' }
       ];
 
       var POLYMER_TYPES = [
-        { name: 'Polyethylene (PE)', monomer: 'CH₂=CH₂', type: 'Addition', uses: 'Plastic bags, bottles, packaging. ~150M tons/year.', notes: 'LDPE (low density, branched) vs HDPE (high density, linear).' },
-        { name: 'Polypropylene (PP)', monomer: 'CH₂=CHCH₃', type: 'Addition', uses: 'Yogurt cups, carpet fibers, car parts. Higher melting (160°C) than PE.', notes: 'Isotactic / atactic / syndiotactic configurations.' },
+        { name: __alloT('stem.molecule.polyethylene_pe', 'Polyethylene (PE)'), monomer: 'CH₂=CH₂', type: 'Addition', uses: 'Plastic bags, bottles, packaging. ~150M tons/year.', notes: 'LDPE (low density, branched) vs HDPE (high density, linear).' },
+        { name: __alloT('stem.molecule.polypropylene_pp', 'Polypropylene (PP)'), monomer: 'CH₂=CHCH₃', type: 'Addition', uses: 'Yogurt cups, carpet fibers, car parts. Higher melting (160°C) than PE.', notes: 'Isotactic / atactic / syndiotactic configurations.' },
         { name: 'PVC', monomer: 'CH₂=CHCl', type: 'Addition', uses: 'Pipes, vinyl flooring, insulation. Often plasticized.', notes: 'Burning releases HCl + dioxins — recycling concern.' },
-        { name: 'Polystyrene (PS)', monomer: 'CH₂=CHC₆H₅', type: 'Addition', uses: 'Disposable cups, packaging foam (Styrofoam).', notes: 'Hard + brittle. Slow biodegradation.' },
+        { name: __alloT('stem.molecule.polystyrene_ps', 'Polystyrene (PS)'), monomer: 'CH₂=CHC₆H₅', type: 'Addition', uses: 'Disposable cups, packaging foam (Styrofoam).', notes: 'Hard + brittle. Slow biodegradation.' },
         { name: 'PET', monomer: 'terephthalic acid + ethylene glycol', type: 'Condensation', uses: 'Beverage bottles, polyester fiber, food packaging.', notes: 'Recyclable (#1); most widely recycled plastic.' },
         { name: 'Nylon-6,6', monomer: 'adipic acid + hexamethylenediamine', type: 'Condensation', uses: 'Stockings, ropes, fishing line, parachutes.', notes: 'Wallace Carothers, DuPont, 1935.' },
-        { name: 'Kevlar', monomer: 'p-phenylenediamine + terephthaloyl chloride', type: 'Condensation', uses: 'Body armor, bicycle tires, aerospace.', notes: 'Aromatic polyamide; ring stacking gives extreme strength.' },
-        { name: 'Polylactic acid (PLA)', monomer: 'lactic acid', type: 'Condensation', uses: '3D printing filament, biodegradable packaging.', notes: 'Made from corn starch / sugarcane. Compostable in industrial facilities.' },
-        { name: 'Silicone', monomer: 'siloxane (Si-O backbone)', type: 'Condensation', uses: 'Medical implants, cookware, sealants, lubricants.', notes: 'Inorganic backbone — heat + UV resistant.' },
-        { name: 'Rubber (natural)', monomer: 'isoprene', type: 'Addition', uses: 'Tires, gloves, elastic bands.', notes: 'Vulcanization with sulfur cross-links chains → harder, more elastic.' }
+        { name: __alloT('stem.molecule.kevlar', 'Kevlar'), monomer: 'p-phenylenediamine + terephthaloyl chloride', type: 'Condensation', uses: 'Body armor, bicycle tires, aerospace.', notes: 'Aromatic polyamide; ring stacking gives extreme strength.' },
+        { name: __alloT('stem.molecule.polylactic_acid_pla', 'Polylactic acid (PLA)'), monomer: 'lactic acid', type: 'Condensation', uses: '3D printing filament, biodegradable packaging.', notes: 'Made from corn starch / sugarcane. Compostable in industrial facilities.' },
+        { name: __alloT('stem.molecule.silicone', 'Silicone'), monomer: 'siloxane (Si-O backbone)', type: 'Condensation', uses: 'Medical implants, cookware, sealants, lubricants.', notes: 'Inorganic backbone — heat + UV resistant.' },
+        { name: __alloT('stem.molecule.rubber_natural', 'Rubber (natural)'), monomer: 'isoprene', type: 'Addition', uses: 'Tires, gloves, elastic bands.', notes: 'Vulcanization with sulfur cross-links chains → harder, more elastic.' }
       ];
 
       var BIOPOLYMER_TYPES = [
-        { name: 'Proteins', monomer: '20 amino acids', bond: 'Peptide bond (CO-NH)', role: 'Structure (collagen), catalysis (enzymes), transport (hemoglobin), signaling (hormones), immunity (antibodies).' },
-        { name: 'DNA / RNA', monomer: 'nucleotides (base + sugar + phosphate)', bond: 'Phosphodiester', role: 'Genetic information storage + transfer. Double helix (DNA) / single strand (RNA).' },
-        { name: 'Polysaccharides', monomer: 'monosaccharides (glucose, fructose)', bond: 'Glycosidic', role: 'Energy storage (starch, glycogen), structure (cellulose, chitin).' },
-        { name: 'Lipids (fats)', monomer: 'glycerol + fatty acids (not strictly polymer)', bond: 'Ester', role: 'Energy storage, membranes (phospholipid bilayer), signaling, insulation.' }
+        { name: __alloT('stem.molecule.proteins', 'Proteins'), monomer: '20 amino acids', bond: 'Peptide bond (CO-NH)', role: 'Structure (collagen), catalysis (enzymes), transport (hemoglobin), signaling (hormones), immunity (antibodies).' },
+        { name: __alloT('stem.molecule.dna_rna', 'DNA / RNA'), monomer: 'nucleotides (base + sugar + phosphate)', bond: 'Phosphodiester', role: 'Genetic information storage + transfer. Double helix (DNA) / single strand (RNA).' },
+        { name: __alloT('stem.molecule.polysaccharides', 'Polysaccharides'), monomer: 'monosaccharides (glucose, fructose)', bond: 'Glycosidic', role: 'Energy storage (starch, glycogen), structure (cellulose, chitin).' },
+        { name: __alloT('stem.molecule.lipids_fats', 'Lipids (fats)'), monomer: 'glycerol + fatty acids (not strictly polymer)', bond: 'Ester', role: 'Energy storage, membranes (phospholipid bilayer), signaling, insulation.' }
       ];
 
       var LAB_SAFETY = [
@@ -3564,17 +4052,17 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderPeriodicSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📊 Periodic trends'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Patterns in element properties that follow position on the periodic table. Driven by effective nuclear charge (Zeff) — the net pull on outermost electrons after inner electrons shield them.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.periodic_trends_2', '📊 Periodic trends')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.patterns_in_element_properties_that_fo', 'Patterns in element properties that follow position on the periodic table. Driven by effective nuclear charge (Zeff) — the net pull on outermost electrons after inner electrons shield them.')),
           React.createElement('div', { className: 'space-y-2 mb-3' },
             PERIODIC_TRENDS.map(function(t, i) {
               return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'text-sm font-black text-slate-800 mb-1' }, t.trend),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-1' },
                   React.createElement('div', { className: 'text-[11px] px-2 py-1 rounded bg-blue-50 border border-blue-200 text-blue-900' },
-                    React.createElement('strong', null, 'Across period: '), t.across),
+                    React.createElement('strong', null, __alloT('stem.molecule.across_period', 'Across period: ')), t.across),
                   React.createElement('div', { className: 'text-[11px] px-2 py-1 rounded bg-purple-50 border border-purple-200 text-purple-900' },
-                    React.createElement('strong', null, 'Down group: '), t.down)
+                    React.createElement('strong', null, __alloT('stem.molecule.down_group', 'Down group: ')), t.down)
                 ),
                 React.createElement('div', { className: 'text-[12px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Why: '), t.why),
                 React.createElement('div', { className: 'text-[11px] text-slate-600 italic' }, 'Example: ', t.example)
@@ -3582,7 +4070,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             })
           ),
           React.createElement('div', { className: 'p-2 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
-            React.createElement('strong', null, '💡 Diagonal relationship: '), 'Li-Mg, Be-Al, B-Si — pairs across a diagonal share similar properties because the increases in size + charge offset.'
+            React.createElement('strong', null, __alloT('stem.molecule.diagonal_relationship', '💡 Diagonal relationship: ')), __alloT('stem.molecule.li_mg_be_al_b_si_pairs_across_a_diagon', 'Li-Mg, Be-Al, B-Si — pairs across a diagonal share similar properties because the increases in size + charge offset.')
           )
         );
       }
@@ -3593,46 +4081,46 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         var mw = d2.molMW || '';
         var grams = (parseFloat(c) || 0) * (parseFloat(v) || 0) * (parseFloat(mw) || 0);
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧮 Molarity + dilution calculator'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Molarity (M) = moles of solute per liter of solution. To prepare a target molarity: weigh out (M × V × MW) grams of solute, dissolve in less than the final volume, then dilute to the mark.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.molarity_dilution_calculator', '🧮 Molarity + dilution calculator')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molarity_m_moles_of_solute_per_liter_o', 'Molarity (M) = moles of solute per liter of solution. To prepare a target molarity: weigh out (M × V × MW) grams of solute, dissolve in less than the final volume, then dilute to the mark.')),
           React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
             React.createElement('div', null,
-              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Molarity (M, mol/L)'),
+              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molarity_m_mol_l', 'Molarity (M, mol/L)')),
               React.createElement('input', { type: 'number', step: 0.01, value: c, onChange: function(e) { setExp({ molM: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '0.1' })
             ),
             React.createElement('div', null,
-              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Volume (L)'),
+              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.volume_l', 'Volume (L)')),
               React.createElement('input', { type: 'number', step: 0.01, value: v, onChange: function(e) { setExp({ molV: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '1.0' })
             ),
             React.createElement('div', null,
-              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Molecular weight (g/mol)'),
-              React.createElement('input', { type: 'number', step: 0.01, value: mw, onChange: function(e) { setExp({ molMW: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '58.44 (NaCl)' })
+              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molecular_weight_g_mol', 'Molecular weight (g/mol)')),
+              React.createElement('input', { type: 'number', step: 0.01, value: mw, onChange: function(e) { setExp({ molMW: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: __alloT('stem.molecule.58_44_nacl', '58.44 (NaCl)') })
             )
           ),
           React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border-2 border-indigo-300 text-center mb-3' },
-            React.createElement('div', { className: 'text-[10px] font-bold text-indigo-700 uppercase tracking-wide' }, 'Grams of solute needed'),
-            React.createElement('div', { className: 'text-2xl font-black text-indigo-900 mt-1 font-mono' }, grams.toFixed(4) + ' g')
+            React.createElement('div', { className: 'text-[10px] font-bold text-indigo-700 uppercase tracking-wide' }, __alloT('stem.molecule.grams_of_solute_needed', 'Grams of solute needed')),
+            React.createElement('div', { className: 'text-2xl font-black text-indigo-900 mt-1 font-mono tracking-tight' }, grams.toFixed(4) + ' g')
           ),
           React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed space-y-1' },
-            React.createElement('div', null, React.createElement('strong', null, 'Dilution: '), 'M₁V₁ = M₂V₂. Solve for whichever is unknown.'),
-            React.createElement('div', null, React.createElement('strong', null, 'Serial dilution: '), 'For very low concentrations, dilute 1:10 (or 1:100) repeatedly. Each step is precise; cumulative error stays small.'),
-            React.createElement('div', null, React.createElement('strong', null, 'Watch out: '), 'Add ~half the water FIRST, then add solute + stir until dissolved, THEN top up to the mark. Adding solute to full-volume water often gives wrong final volume due to volume changes during dissolution.')
+            React.createElement('div', null, React.createElement('strong', null, 'Dilution: '), __alloT('stem.molecule.m_v_m_v_solve_for_whichever_is_unknown', 'M₁V₁ = M₂V₂. Solve for whichever is unknown.')),
+            React.createElement('div', null, React.createElement('strong', null, __alloT('stem.molecule.serial_dilution', 'Serial dilution: ')), __alloT('stem.molecule.for_very_low_concentrations_dilute_1_1', 'For very low concentrations, dilute 1:10 (or 1:100) repeatedly. Each step is precise; cumulative error stays small.')),
+            React.createElement('div', null, React.createElement('strong', null, __alloT('stem.molecule.watch_out', 'Watch out: ')), __alloT('stem.molecule.add_half_the_water_first_then_add_solu', 'Add ~half the water FIRST, then add solute + stir until dissolved, THEN top up to the mark. Adding solute to full-volume water often gives wrong final volume due to volume changes during dissolution.'))
           )
         );
       }
 
       function renderStoichSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚖ Stoichiometry — recipe math'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Balanced equation → mole ratio. Like a cooking recipe, but for atoms. Coefficients tell you the ratio of reactant moles to product moles.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.stoichiometry_recipe_math', '⚖ Stoichiometry — recipe math')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.balanced_equation_mole_ratio_like_a_co', 'Balanced equation → mole ratio. Like a cooking recipe, but for atoms. Coefficients tell you the ratio of reactant moles to product moles.')),
           React.createElement('div', { className: 'space-y-2' },
             [
-              { step: '1. Balance the equation', detail: 'Atoms in = atoms out, on each side. Balance metals first, then non-O/H atoms, then O and H last. Charge balanced for ionic equations.' },
-              { step: '2. Identify mole ratios', detail: 'From coefficients: 2 H₂ + 1 O₂ → 2 H₂O means 2 mol H₂ : 1 mol O₂ : 2 mol H₂O.' },
-              { step: '3. Convert grams ↔ moles', detail: 'mol = g / molar mass. Always work in moles when comparing across the equation.' },
-              { step: '4. Find limiting reactant', detail: 'For each reactant: (moles available) / (coefficient). Smallest result = limiting reactant.' },
-              { step: '5. Calculate theoretical yield', detail: 'Use limiting reactant\'s moles × (product coefficient / limiting coefficient) × product MW.' },
-              { step: '6. Calculate % yield', detail: 'Actual / Theoretical × 100. Real reactions rarely hit 100% — losses to side reactions, incomplete rxn, transfer losses.' }
+              { step: '1. Balance the equation', detail: __alloT('stem.molecule.atoms_in_atoms_out_on_each_side_balanc', 'Atoms in = atoms out, on each side. Balance metals first, then non-O/H atoms, then O and H last. Charge balanced for ionic equations.') },
+              { step: '2. Identify mole ratios', detail: __alloT('stem.molecule.from_coefficients_2_h_1_o_2_h_o_means_', 'From coefficients: 2 H₂ + 1 O₂ → 2 H₂O means 2 mol H₂ : 1 mol O₂ : 2 mol H₂O.') },
+              { step: '3. Convert grams ↔ moles', detail: __alloT('stem.molecule.mol_g_molar_mass_always_work_in_moles_', 'mol = g / molar mass. Always work in moles when comparing across the equation.') },
+              { step: '4. Find limiting reactant', detail: __alloT('stem.molecule.for_each_reactant_moles_available_coef', 'For each reactant: (moles available) / (coefficient). Smallest result = limiting reactant.') },
+              { step: '5. Calculate theoretical yield', detail: __alloT('stem.molecule.use_limiting_reactant_s_moles_product_', 'Use limiting reactant\'s moles × (product coefficient / limiting coefficient) × product MW.') },
+              { step: '6. Calculate % yield', detail: __alloT('stem.molecule.actual_theoretical_100_real_reactions_', 'Actual / Theoretical × 100. Real reactions rarely hit 100% — losses to side reactions, incomplete rxn, transfer losses.') }
             ].map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'flex gap-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'text-sm font-black text-indigo-700 min-w-[18px]' }, (i + 1)),
@@ -3644,13 +4132,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             })
           ),
           React.createElement('div', { className: 'mt-3 p-3 rounded-md bg-emerald-50 border border-emerald-200' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '🔢 Worked example'),
+            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.worked_example', '🔢 Worked example')),
             React.createElement('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed' },
-              'N₂ + 3 H₂ → 2 NH₃', React.createElement('br'),
-              '28 g N₂ + 6 g H₂ → ? g NH₃', React.createElement('br'),
-              '1.00 mol N₂ + 3.00 mol H₂', React.createElement('br'),
-              'Ratio: N₂/1 = 1.00; H₂/3 = 1.00 → tie, neither limits', React.createElement('br'),
-              '→ 2.00 mol NH₃ × 17.03 g/mol = 34.06 g (theoretical)'
+              __alloT('stem.molecule.n_3_h_2_nh', 'N₂ + 3 H₂ → 2 NH₃'), React.createElement('br'),
+              __alloT('stem.molecule.28_g_n_6_g_h_g_nh', '28 g N₂ + 6 g H₂ → ? g NH₃'), React.createElement('br'),
+              __alloT('stem.molecule.1_00_mol_n_3_00_mol_h', '1.00 mol N₂ + 3.00 mol H₂'), React.createElement('br'),
+              __alloT('stem.molecule.ratio_n_1_1_00_h_3_1_00_tie_neither_li', 'Ratio: N₂/1 = 1.00; H₂/3 = 1.00 → tie, neither limits'), React.createElement('br'),
+              __alloT('stem.molecule.2_00_mol_nh_17_03_g_mol_34_06_g_theore', '→ 2.00 mol NH₃ × 17.03 g/mol = 34.06 g (theoretical)')
             )
           )
         );
@@ -3658,8 +4146,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderPhaseSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧊 Phases of matter + phase diagrams'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A phase diagram plots phase boundaries on a P (pressure) vs T (temperature) graph. Lines = phase transitions. Triple point: all three phases coexist. Critical point: liquid + gas become indistinguishable (supercritical fluid).'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.phases_of_matter_phase_diagrams', '🧊 Phases of matter + phase diagrams')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.a_phase_diagram_plots_phase_boundaries', 'A phase diagram plots phase boundaries on a P (pressure) vs T (temperature) graph. Lines = phase transitions. Triple point: all three phases coexist. Critical point: liquid + gas become indistinguishable (supercritical fluid).')),
           React.createElement('div', { className: 'overflow-x-auto mb-3' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -3685,10 +4173,10 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           ),
           React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
             React.createElement('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
-              React.createElement('strong', null, '💧 Water is unusual: '), 'Ice is LESS dense than liquid water (ice floats). Most substances: solid denser than liquid. Hydrogen bonding gives ice its open crystal structure.'
+              React.createElement('strong', null, __alloT('stem.molecule.water_is_unusual', '💧 Water is unusual: ')), __alloT('stem.molecule.ice_is_less_dense_than_liquid_water_ic', 'Ice is LESS dense than liquid water (ice floats). Most substances: solid denser than liquid. Hydrogen bonding gives ice its open crystal structure.')
             ),
             React.createElement('div', { className: 'p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
-              React.createElement('strong', null, '🌬 Sublimation: '), 'Solid → gas without going through liquid (CO₂ dry ice; iodine at room temp). Reverse: deposition.'
+              React.createElement('strong', null, __alloT('stem.molecule.sublimation', '🌬 Sublimation: ')), __alloT('stem.molecule.solid_gas_without_going_through_liquid', 'Solid → gas without going through liquid (CO₂ dry ice; iodine at room temp). Reverse: deposition.')
             )
           )
         );
@@ -3696,11 +4184,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderEquilibriumSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇌ Chemical equilibrium + Le Chatelier'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Reversible reactions reach dynamic equilibrium when forward rate = reverse rate. Concentrations stop changing (but reactions keep going both ways). Keq = product of [products]^coefficients / product of [reactants]^coefficients.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.chemical_equilibrium_le_chatelier', '⇌ Chemical equilibrium + Le Chatelier')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.reversible_reactions_reach_dynamic_equ', 'Reversible reactions reach dynamic equilibrium when forward rate = reverse rate. Concentrations stop changing (but reactions keep going both ways). Keq = product of [products]^coefficients / product of [reactants]^coefficients.')),
           React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-300 mb-3' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-indigo-800 mb-1' }, 'Le Chatelier\'s principle'),
-            React.createElement('div', { className: 'text-[12px] text-indigo-900 leading-relaxed' }, 'If a stress is applied to a system at equilibrium, the system shifts to relieve that stress. Predict the direction of shift to make sense of how rxns respond to changes.')
+            React.createElement('div', { className: 'text-[11px] font-bold text-indigo-800 mb-1' }, __alloT('stem.molecule.le_chatelier_s_principle', 'Le Chatelier\'s principle')),
+            React.createElement('div', { className: 'text-[12px] text-indigo-900 leading-relaxed' }, __alloT('stem.molecule.if_a_stress_is_applied_to_a_system_at_', 'If a stress is applied to a system at equilibrium, the system shifts to relieve that stress. Predict the direction of shift to make sense of how rxns respond to changes.'))
           ),
           React.createElement('div', { className: 'space-y-1.5' },
             EQUILIBRIUM_FACTORS.map(function(f, i) {
@@ -3716,8 +4204,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderKineticsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏱ Reaction kinetics — what controls speed'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Kinetics = how fast. Thermodynamics = whether possible. A reaction can be very favorable (large negative ΔG) but slow (high Ea). Catalysts and conditions tune kinetics.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.reaction_kinetics_what_controls_speed', '⏱ Reaction kinetics — what controls speed')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.kinetics_how_fast_thermodynamics_wheth', 'Kinetics = how fast. Thermodynamics = whether possible. A reaction can be very favorable (large negative ΔG) but slow (high Ea). Catalysts and conditions tune kinetics.')),
           React.createElement('div', { className: 'space-y-2 mb-3' },
             KINETICS_FACTORS.map(function(k, i) {
               return React.createElement('div', { key: 'k'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3730,10 +4218,10 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             })
           ),
           React.createElement('div', { className: 'p-3 rounded-md bg-emerald-50 border border-emerald-200' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '📐 Arrhenius equation'),
-            React.createElement('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed mb-1' }, 'k = A · exp(−Ea / RT)'),
+            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.arrhenius_equation', '📐 Arrhenius equation')),
+            React.createElement('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed mb-1' }, __alloT('stem.molecule.k_a_exp_ea_rt', 'k = A · exp(−Ea / RT)')),
             React.createElement('div', { className: 'text-[11px] text-emerald-800 leading-relaxed' },
-              'k = rate constant · A = collision frequency factor · Ea = activation energy · R = 8.314 J/(mol·K) · T = absolute temperature (K). Plot ln(k) vs 1/T; slope = −Ea/R.'
+              __alloT('stem.molecule.k_rate_constant_a_collision_frequency_', 'k = rate constant · A = collision frequency factor · Ea = activation energy · R = 8.314 J/(mol·K) · T = absolute temperature (K). Plot ln(k) vs 1/T; slope = −Ea/R.')
             )
           )
         );
@@ -3741,11 +4229,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderThermoSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔥 Thermodynamics — what\'s spontaneous'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Spontaneity = whether a reaction proceeds on its own (regardless of speed). Gibbs free energy ΔG tells us: negative = spontaneous; positive = not; zero = at equilibrium.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.thermodynamics_what_s_spontaneous', '🔥 Thermodynamics — what\'s spontaneous')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.spontaneity_whether_a_reaction_proceed', 'Spontaneity = whether a reaction proceeds on its own (regardless of speed). Gibbs free energy ΔG tells us: negative = spontaneous; positive = not; zero = at equilibrium.')),
           React.createElement('div', { className: 'p-3 rounded-lg bg-orange-50 border-2 border-orange-300 mb-3 text-center' },
-            React.createElement('div', { className: 'text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1' }, 'Master equation'),
-            React.createElement('div', { className: 'text-2xl font-black text-orange-900 font-mono' }, 'ΔG = ΔH − TΔS')
+            React.createElement('div', { className: 'text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.master_equation', 'Master equation')),
+            React.createElement('div', { className: 'text-2xl font-black text-orange-900 font-mono tracking-tight' }, __alloT('stem.molecule.g_h_t_s', 'ΔG = ΔH − TΔS'))
           ),
           React.createElement('div', { className: 'space-y-2 mb-3' },
             THERMO_KEY.map(function(t, i) {
@@ -3761,10 +4249,10 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           ),
           React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
             React.createElement('div', { className: 'p-2.5 rounded-md bg-red-50 border border-red-200 text-[11px] text-red-900' },
-              React.createElement('strong', null, '🔥 Exothermic (ΔH < 0): '), 'Combustion, neutralization, condensation. Heat released to surroundings.'
+              React.createElement('strong', null, __alloT('stem.molecule.exothermic_h_0', '🔥 Exothermic (ΔH < 0): ')), __alloT('stem.molecule.combustion_neutralization_condensation', 'Combustion, neutralization, condensation. Heat released to surroundings.')
             ),
             React.createElement('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
-              React.createElement('strong', null, '🧊 Endothermic (ΔH > 0): '), 'Photosynthesis, melting, evaporation, cold packs. Heat absorbed from surroundings.'
+              React.createElement('strong', null, __alloT('stem.molecule.endothermic_h_0', '🧊 Endothermic (ΔH > 0): ')), __alloT('stem.molecule.photosynthesis_melting_evaporation_col', 'Photosynthesis, melting, evaporation, cold packs. Heat absorbed from surroundings.')
             )
           )
         );
@@ -3772,9 +4260,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderPolymersSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧬 Polymers + biopolymers'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Long chains of repeating units (monomers). Addition polymers form by C=C double bonds opening up. Condensation polymers form by losing water (or other small molecule) at each link.'),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-2 mb-1' }, 'Synthetic polymers'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.polymers_biopolymers', '🧬 Polymers + biopolymers')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.long_chains_of_repeating_units_monomer', 'Long chains of repeating units (monomers). Addition polymers form by C=C double bonds opening up. Condensation polymers form by losing water (or other small molecule) at each link.')),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-2 mb-1' }, __alloT('stem.molecule.synthetic_polymers', 'Synthetic polymers')),
           React.createElement('div', { className: 'space-y-1.5 mb-3' },
             POLYMER_TYPES.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-2 rounded-md bg-slate-50 border border-slate-200' },
@@ -3788,7 +4276,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               );
             })
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-3 mb-1' }, 'Biopolymers (biological macromolecules)'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-3 mb-1' }, __alloT('stem.molecule.biopolymers_biological_macromolecules', 'Biopolymers (biological macromolecules)')),
           React.createElement('div', { className: 'space-y-1.5' },
             BIOPOLYMER_TYPES.map(function(p, i) {
               return React.createElement('div', { key: 'b'+i, className: 'p-2 rounded-md bg-emerald-50 border border-emerald-200' },
@@ -3806,8 +4294,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderSafetySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦺 Lab safety basics'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Most lab accidents are preventable. The biggest factors: PPE, attention, and not mixing things that shouldn\'t mix. Always read the SDS (Safety Data Sheet) for each chemical before using it.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.lab_safety_basics', '🦺 Lab safety basics')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.most_lab_accidents_are_preventable_the', 'Most lab accidents are preventable. The biggest factors: PPE, attention, and not mixing things that shouldn\'t mix. Always read the SDS (Safety Data Sheet) for each chemical before using it.')),
           React.createElement('div', { className: 'space-y-2' },
             LAB_SAFETY.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-amber-50 border border-amber-300' },
@@ -3855,11 +4343,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var BOND_OPTIONS = [
-        { id: 'ionic', label: 'Ionic' },
-        { id: 'covalent_hbonded', label: 'Covalent (polar / H-bonded)' },
-        { id: 'covalent_nonpolar', label: 'Covalent (nonpolar molecular)' },
-        { id: 'metallic', label: 'Metallic' },
-        { id: 'network_covalent', label: 'Network covalent' }
+        { id: 'ionic', label: __alloT('stem.molecule.ionic_2', 'Ionic') },
+        { id: 'covalent_hbonded', label: __alloT('stem.molecule.covalent_polar_h_bonded', 'Covalent (polar / H-bonded)') },
+        { id: 'covalent_nonpolar', label: __alloT('stem.molecule.covalent_nonpolar_molecular', 'Covalent (nonpolar molecular)') },
+        { id: 'metallic', label: __alloT('stem.molecule.metallic_2', 'Metallic') },
+        { id: 'network_covalent', label: __alloT('stem.molecule.network_covalent', 'Network covalent') }
       ];
 
       var EVIDENCE_LABELS = {
@@ -3880,9 +4368,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           });
         }
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔬 Bond detective'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.bond_detective_2', '🔬 Bond detective')),
           React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'Three unknown compounds. Study the data, pick the most likely bond type, AND check which pieces of evidence convinced you. The "Reveal" button only enables once you\'ve committed to both — no peeking, no hedging.'),
+            __alloT('stem.molecule.three_unknown_compounds_study_the_data', 'Three unknown compounds. Study the data, pick the most likely bond type, AND check which pieces of evidence convinced you. The "Reveal" button only enables once you\'ve committed to both — no peeking, no hedging.')),
           BOND_CASES.map(function(c, idx) {
             var st = state.cases[c.id] || { pick: null, evidence: {}, revealed: false };
             var evidenceCount = Object.keys(st.evidence || {}).filter(function(k) { return st.evidence[k]; }).length;
@@ -3904,7 +4392,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 )
               ),
               // Bond-type picker
-              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Your hypothesis (bond type):'),
+              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.your_hypothesis_bond_type', 'Your hypothesis (bond type):')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                 BOND_OPTIONS.map(function(opt) {
                   var picked = st.pick === opt.id;
@@ -3912,7 +4400,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   var correct = opt.id === c.correct;
                   var bg = revealed
                     ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
-                    : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50');
+                    : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 active:scale-[0.97]');
                   return React.createElement('button', {
                     key: opt.id,
                     disabled: revealed,
@@ -3927,14 +4415,14 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 })
               ),
               // Evidence picker
-              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Which evidence convinced you? (at least 1)'),
+              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.which_evidence_convinced_you_at_least_', 'Which evidence convinced you? (at least 1)')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                 c.evidenceKeys.map(function(ek) {
                   var checked = !!(st.evidence || {})[ek];
                   return React.createElement('label', {
                     key: ek,
                     className: 'inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] border cursor-pointer transition-colors ' +
-                      (checked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50')
+                      (checked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-300 hover:bg-amber-50 active:scale-[0.97]')
                   },
                     React.createElement('input', {
                       type: 'checkbox',
@@ -3964,7 +4452,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     var bonus = st.pick === c.correct ? 1 : 0;
                     setBM({ cases: newCases, score: (state.score || 0) + bonus });
                   },
-                  className: 'px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-400 focus:outline-none'
+                  className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-400 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Revealed' : 'Reveal answer'),
                 !canReveal && !st.revealed && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' },
                   st.pick == null ? 'Pick a bond type first' : 'Tick at least one evidence checkbox'
@@ -3981,7 +4469,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2' },
             React.createElement('span', null, '🎯'),
             React.createElement('strong', null, 'Score: ' + (state.score || 0) + ' / ' + BOND_CASES.length),
-            React.createElement('span', { className: 'text-slate-500 ml-2 italic' }, 'The reveal is locked behind your commitment — it\'s the prediction, not the answer, that builds intuition.')
+            React.createElement('span', { className: 'text-slate-500 ml-2 italic' }, __alloT('stem.molecule.the_reveal_is_locked_behind_your_commi', 'The reveal is locked behind your commitment — it\'s the prediction, not the answer, that builds intuition.'))
           )
         );
       }
@@ -3992,30 +4480,30 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       var SOLVENT_CASES = [
         {
           id: 'nacl', solute: 'Table salt (NaCl)', soluteKind: 'ionic-polar',
-          desc: 'White crystalline solid. Held together by strong + / − ion attractions.',
+          desc: __alloT('stem.molecule.white_crystalline_solid_held_together_', 'White crystalline solid. Held together by strong + / − ion attractions.'),
           correct: 'water',
-          explanation: 'Water’s permanent dipoles surround Na+ and Cl- ions (ion–dipole forces strong enough to break the ionic lattice).',
+          explanation: __alloT('stem.molecule.water_s_permanent_dipoles_surround_na_', 'Water’s permanent dipoles surround Na+ and Cl- ions (ion–dipole forces strong enough to break the ionic lattice).'),
           rationale: ['ion-dipole', 'like-dissolves-like', 'has-h-bonds']
         },
         {
           id: 'i2', solute: 'Iodine crystals (I₂)', soluteKind: 'nonpolar-molecular',
-          desc: 'Purple-black solid. Each I₂ molecule held loosely by London dispersion only.',
+          desc: __alloT('stem.molecule.purple_black_solid_each_i_molecule_hel', 'Purple-black solid. Each I₂ molecule held loosely by London dispersion only.'),
           correct: 'hexane',
-          explanation: 'I₂ is nonpolar; only London dispersion attractions stabilize it in solution. Hexane is also nonpolar — like-dissolves-like via dispersion.',
+          explanation: __alloT('stem.molecule.i_is_nonpolar_only_london_dispersion_a', 'I₂ is nonpolar; only London dispersion attractions stabilize it in solution. Hexane is also nonpolar — like-dissolves-like via dispersion.'),
           rationale: ['like-dissolves-like', 'nonpolar-match', 'no-h-bonds-needed']
         },
         {
           id: 'suc', solute: 'Sucrose (table sugar)', soluteKind: 'polar-covalent',
-          desc: 'Many –OH groups on a covalent ring. Polar, but not ionic.',
+          desc: __alloT('stem.molecule.many_oh_groups_on_a_covalent_ring_pola', 'Many –OH groups on a covalent ring. Polar, but not ionic.'),
           correct: 'water',
-          explanation: 'Sucrose dissolves because its –OH groups form hydrogen bonds with water. Not ionic, so the mechanism is H-bonding, not ion–dipole.',
+          explanation: __alloT('stem.molecule.sucrose_dissolves_because_its_oh_group', 'Sucrose dissolves because its –OH groups form hydrogen bonds with water. Not ionic, so the mechanism is H-bonding, not ion–dipole.'),
           rationale: ['has-h-bonds', 'like-dissolves-like', 'forms-hydrogen-bonds']
         }
       ];
       var SOLVENT_OPTS = [
-        { id: 'water', label: 'Water (H₂O)', polarity: 'polar', symbol: 'H–O–H', dipole: 1.85, note: 'strongly polar; H-bond donor + acceptor' },
-        { id: 'hexane', label: 'Hexane (C₆H₁₄)', polarity: 'nonpolar', symbol: 'CH₃(CH₂)₄CH₃', dipole: 0.08, note: 'nonpolar; London dispersion only' },
-        { id: 'ethanol', label: 'Ethanol (C₂H₅OH)', polarity: 'intermediate', symbol: 'CH₃CH₂OH', dipole: 1.69, note: 'amphiphilic — polar OH end, nonpolar tail' }
+        { id: 'water', label: __alloT('stem.molecule.water_h_o', 'Water (H₂O)'), polarity: 'polar', symbol: 'H–O–H', dipole: 1.85, note: __alloT('stem.molecule.strongly_polar_h_bond_donor_acceptor', 'strongly polar; H-bond donor + acceptor') },
+        { id: 'hexane', label: __alloT('stem.molecule.hexane_c_h', 'Hexane (C₆H₁₄)'), polarity: 'nonpolar', symbol: 'CH₃(CH₂)₄CH₃', dipole: 0.08, note: __alloT('stem.molecule.nonpolar_london_dispersion_only', 'nonpolar; London dispersion only') },
+        { id: 'ethanol', label: __alloT('stem.molecule.ethanol_c_h_oh', 'Ethanol (C₂H₅OH)'), polarity: 'intermediate', symbol: 'CH₃CH₂OH', dipole: 1.69, note: __alloT('stem.molecule.amphiphilic_polar_oh_end_nonpolar_tail', 'amphiphilic — polar OH end, nonpolar tail') }
       ];
       var RATIONALE_CHIPS = {
         'ion-dipole': 'Ion–dipole attraction can pull ions out of the lattice',
@@ -4047,7 +4535,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         function solventDiagramSvg(optId) {
           var opt = SOLVENT_OPTS.find(function(o) { return o.id === optId; });
           if (!opt) {
-            return React.createElement('div', { className: 'h-20 flex items-center justify-center text-[10px] text-slate-400 italic border border-dashed border-slate-300 rounded' }, '(pick a solvent to see its polarity diagram)');
+            return React.createElement('div', { className: 'h-20 flex items-center justify-center text-[10px] text-slate-400 italic border border-dashed border-slate-300 rounded' }, __alloT('stem.molecule.pick_a_solvent_to_see_its_polarity_dia', '(pick a solvent to see its polarity diagram)'));
           }
           var isPolar = opt.polarity === 'polar';
           var isInt = opt.polarity === 'intermediate';
@@ -4086,7 +4574,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           var color = score >= 70 ? 'bg-emerald-500' : (score >= 35 ? 'bg-amber-400' : 'bg-rose-400');
           return React.createElement('div', { className: 'mt-1' },
             React.createElement('div', { className: 'flex items-baseline gap-2 text-[10px] text-slate-600' },
-              React.createElement('span', null, 'Predicted IMF match strength:'),
+              React.createElement('span', null, __alloT('stem.molecule.predicted_imf_match_strength', 'Predicted IMF match strength:')),
               React.createElement('span', { className: 'font-mono font-bold text-slate-800' }, score + '%')
             ),
             React.createElement('div', { className: 'h-2 bg-slate-200 rounded overflow-hidden', role: 'progressbar', 'aria-valuenow': score, 'aria-valuemin': 0, 'aria-valuemax': 100 },
@@ -4107,9 +4595,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           return React.createElement('div', { className: 'text-[10px] italic text-slate-700 mt-1' }, label + ' ' + verdict);
         }
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🧪 Mystery solvent'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.mystery_solvent_2', '🧪 Mystery solvent')),
           React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'Three unknown solutes. For each: (1) pick the best solvent, (2) rank the chemistry reasoning that justifies your pick, (3) live diagrams update with each click, and (4) wrong answers walk you through the polarity logic step by step — no answer dump.'),
+            __alloT('stem.molecule.three_unknown_solutes_for_each_1_pick_', 'Three unknown solutes. For each: (1) pick the best solvent, (2) rank the chemistry reasoning that justifies your pick, (3) live diagrams update with each click, and (4) wrong answers walk you through the polarity logic step by step — no answer dump.')),
           SOLVENT_CASES.map(function(kase, idx) {
             var st = state.cases[kase.id] || { pick: null, ranking: [], revealed: false, socraticStep: 0 };
             var hasRanked = (st.ranking || []).length >= 2;
@@ -4134,7 +4622,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               ),
               React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2' }, kase.desc),
               // (1) Solvent picker
-              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, '1. Pick a solvent:'),
+              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.1_pick_a_solvent', '1. Pick a solvent:')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                 SOLVENT_OPTS.map(function(opt) {
                   var picked = st.pick === opt.id;
@@ -4142,7 +4630,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   var correct = opt.id === kase.correct;
                   var bg = revealed
                     ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
-                    : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50');
+                    : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 active:scale-[0.97]');
                   return React.createElement('button', {
                     key: opt.id,
                     disabled: revealed,
@@ -4158,7 +4646,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               livePrediction(st.pick, kase),
               // (2) Reasoning ranker
               React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mt-3 mb-1' },
-                '2. Rank the reasoning (click in priority order, top → bottom; need ≥2):'),
+                __alloT('stem.molecule.2_rank_the_reasoning_click_in_priority', '2. Rank the reasoning (click in priority order, top → bottom; need ≥2):')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-1' },
                 chipPool.map(function(chip) {
                   var pos = (st.ranking || []).indexOf(chip);
@@ -4168,7 +4656,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     disabled: st.revealed,
                     onClick: function() { toggleRank(chip); },
                     className: 'px-2 py-1 rounded text-[10px] font-semibold border transition-colors ' +
-                      (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50')
+                      (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-300 hover:bg-amber-50 active:scale-[0.97]')
                   }, (picked ? '#' + (pos + 1) + ' ' : '') + RATIONALE_CHIPS[chip]);
                 })
               ),
@@ -4177,7 +4665,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 React.createElement('button', {
                   disabled: !canReveal,
                   onClick: function() { updateCase(kase.id, { revealed: true }); var bonus = (st.pick === kase.correct ? 1 : 0) + (rankCorrect ? 1 : 0); setSM({ score: (state.score || 0) + bonus }); },
-                  className: 'px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-400 focus:outline-none'
+                  className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-400 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Checked' : 'Check answer'),
                 !canReveal && !st.revealed && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' },
                   st.pick == null ? 'Pick a solvent first' : 'Rank at least 2 reasoning chips'),
@@ -4186,28 +4674,28 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               ),
               // MULTI-STEP SOCRATIC: only when revealed AND wrong solvent picked
               (st.revealed && !isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-rose-50 border-l-4 border-l-rose-400 text-[11px] text-slate-700 space-y-1' },
-                React.createElement('div', { className: 'font-bold text-rose-800' }, 'Let’s walk through it step by step (no answer dump):'),
+                React.createElement('div', { className: 'font-bold text-rose-800' }, __alloT('stem.molecule.let_s_walk_through_it_step_by_step_no_', 'Let’s walk through it step by step (no answer dump):')),
                 React.createElement('div', null,
                   React.createElement('strong', null, 'Q1. '), 'Is ' + kase.solute + ' polar or nonpolar?'),
                 st.socraticStep >= 1 && React.createElement('div', { className: 'pl-3 text-indigo-800' },
                   '→ ' + (kase.soluteKind === 'nonpolar-molecular' ? 'Nonpolar' : (kase.soluteKind === 'ionic-polar' ? 'Ionic (very polar)' : 'Polar (covalent, with H-bonding groups)'))),
                 st.socraticStep >= 1 && React.createElement('div', null,
-                  React.createElement('strong', null, 'Q2. '), 'Is the solvent you picked polar or nonpolar?'),
+                  React.createElement('strong', null, 'Q2. '), __alloT('stem.molecule.is_the_solvent_you_picked_polar_or_non', 'Is the solvent you picked polar or nonpolar?')),
                 st.socraticStep >= 2 && React.createElement('div', { className: 'pl-3 text-indigo-800' },
                   '→ ' + (SOLVENT_OPTS.find(function(o) { return o.id === st.pick; }) || {}).polarity),
                 st.socraticStep >= 2 && React.createElement('div', null,
-                  React.createElement('strong', null, 'Q3. '), '"Like dissolves like." Do polarities match?'),
+                  React.createElement('strong', null, 'Q3. '), __alloT('stem.molecule.like_dissolves_like_do_polarities_matc', '"Like dissolves like." Do polarities match?')),
                 st.socraticStep >= 3 && React.createElement('div', { className: 'pl-3 text-indigo-800 font-semibold' },
                   '→ No. The correct solvent is ' + (SOLVENT_OPTS.find(function(o) { return o.id === kase.correct; }) || {}).label + ' because: ' + kase.explanation),
                 React.createElement('button', {
                   onClick: function() { updateCase(kase.id, { socraticStep: Math.min((st.socraticStep || 0) + 1, 3) }); },
                   disabled: (st.socraticStep || 0) >= 3,
-                  className: 'mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40'
+                  className: 'transition-colors mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 active:scale-[0.97]'
                 }, (st.socraticStep || 0) >= 3 ? 'Walkthrough complete' : 'Show next step →')
               ),
               // CORRECT-PATH explanation
               (st.revealed && isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-emerald-50 border-l-4 border-l-emerald-400 text-[11px] text-slate-700' },
-                React.createElement('strong', { className: 'text-emerald-800' }, 'Why this works: '), kase.explanation,
+                React.createElement('strong', { className: 'text-emerald-800' }, __alloT('stem.molecule.why_this_works', 'Why this works: ')), kase.explanation,
                 !rankCorrect && React.createElement('div', { className: 'mt-1 text-amber-700' },
                   '☕ Expert reasoning order: ' + expertOrder.map(function(c) { return RATIONALE_CHIPS[c]; }).join(' → '))
               )
@@ -4217,15 +4705,15 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
             React.createElement('span', null, '🎯'),
             React.createElement('strong', null, 'Score: ' + (state.score || 0) + ' / ' + (SOLVENT_CASES.length * 2)),
             React.createElement('span', { className: 'text-slate-500 italic' },
-              '(+1 for correct solvent, +1 if reasoning order matches expert). Live diagrams + Socratic walkthrough are the point — not the score.')
+              __alloT('stem.molecule.1_for_correct_solvent_1_if_reasoning_o', '(+1 for correct solvent, +1 if reasoning order matches expert). Live diagrams + Socratic walkthrough are the point — not the score.'))
           )
         );
       }
 
       function renderGlossarySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Chemistry glossary'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Common chemistry terms students mix up. Bookmarkable reference for vocabulary.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.chemistry_glossary', '📖 Chemistry glossary')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.common_chemistry_terms_students_mix_up', 'Common chemistry terms students mix up. Bookmarkable reference for vocabulary.')),
           React.createElement('div', { className: 'space-y-1' },
             GLOSSARY.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
@@ -4242,16 +4730,16 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       // ═════════════════════════════════════════════════════════════════════
 
       var GAS_LAWS = [
-        { name: 'Boyle\'s Law', formula: 'P₁V₁ = P₂V₂', plain: 'Pressure and volume are inversely related at constant temperature.', example: 'Compress a syringe → pressure rises. Push 50 mL down to 25 mL at constant T → pressure doubles.', year: 1662 },
-        { name: 'Charles\'s Law', formula: 'V₁/T₁ = V₂/T₂', plain: 'Volume and absolute temperature are directly proportional at constant pressure.', example: 'Heat a balloon → it expands. Heating from 273 K to 546 K doubles volume.', year: 1787 },
-        { name: 'Gay-Lussac\'s Law', formula: 'P₁/T₁ = P₂/T₂', plain: 'Pressure and absolute temperature are directly proportional at constant volume.', example: 'Heat a sealed gas can → pressure rises (and may explode!).', year: 1802 },
-        { name: 'Avogadro\'s Law', formula: 'V₁/n₁ = V₂/n₂', plain: 'Equal volumes of gas at same T and P contain equal numbers of molecules.', example: '22.4 L of any ideal gas at STP contains 1 mole (6.022×10²³ molecules).', year: 1811 },
-        { name: 'Combined Gas Law', formula: 'P₁V₁/T₁ = P₂V₂/T₂', plain: 'Combines Boyle\'s, Charles\'s, and Gay-Lussac\'s laws.', example: 'Tracking a weather balloon as it rises (T drops, P drops, V grows).', year: 1834 },
-        { name: 'Ideal Gas Law', formula: 'PV = nRT', plain: 'Relates pressure, volume, moles, and temperature using the gas constant R.', example: 'R = 0.0821 L·atm/(mol·K). 1 mol gas at 1 atm, 273 K occupies 22.4 L.', year: 1834 },
-        { name: 'Dalton\'s Law of Partial Pressures', formula: 'P_total = P₁ + P₂ + P₃ + ...', plain: 'Total pressure of a gas mixture = sum of partial pressures.', example: 'Atmosphere: ~78% N₂ (0.78 atm) + ~21% O₂ (0.21 atm) + trace gases = 1 atm.', year: 1801 },
-        { name: 'Graham\'s Law of Effusion', formula: 'rate₁/rate₂ = √(M₂/M₁)', plain: 'Lighter gases effuse faster than heavier gases.', example: 'H₂ (M=2) effuses 4× faster than O₂ (M=32). √(32/2) = 4.', year: 1848 },
-        { name: 'Henry\'s Law', formula: 'C = k·P', plain: 'Solubility of a gas in liquid is proportional to its partial pressure above the liquid.', example: 'Open a soda bottle → CO₂ partial pressure drops → CO₂ comes out of solution → fizz.', year: 1803 },
-        { name: 'Van der Waals equation', formula: '(P + a/V²)(V − b) = nRT', plain: 'Modifies ideal gas law to account for real gas behavior (intermolecular attractions + molecular volume).', example: 'Real gases deviate at high P and low T. CO₂ has a=3.6, b=0.043.', year: 1873 }
+        { name: __alloT('stem.molecule.boyle_s_law', 'Boyle\'s Law'), formula: 'P₁V₁ = P₂V₂', plain: 'Pressure and volume are inversely related at constant temperature.', example: 'Compress a syringe → pressure rises. Push 50 mL down to 25 mL at constant T → pressure doubles.', year: 1662 },
+        { name: __alloT('stem.molecule.charles_s_law', 'Charles\'s Law'), formula: 'V₁/T₁ = V₂/T₂', plain: 'Volume and absolute temperature are directly proportional at constant pressure.', example: 'Heat a balloon → it expands. Heating from 273 K to 546 K doubles volume.', year: 1787 },
+        { name: __alloT('stem.molecule.gay_lussac_s_law', 'Gay-Lussac\'s Law'), formula: 'P₁/T₁ = P₂/T₂', plain: 'Pressure and absolute temperature are directly proportional at constant volume.', example: 'Heat a sealed gas can → pressure rises (and may explode!).', year: 1802 },
+        { name: __alloT('stem.molecule.avogadro_s_law', 'Avogadro\'s Law'), formula: 'V₁/n₁ = V₂/n₂', plain: 'Equal volumes of gas at same T and P contain equal numbers of molecules.', example: '22.4 L of any ideal gas at STP contains 1 mole (6.022×10²³ molecules).', year: 1811 },
+        { name: __alloT('stem.molecule.combined_gas_law', 'Combined Gas Law'), formula: 'P₁V₁/T₁ = P₂V₂/T₂', plain: 'Combines Boyle\'s, Charles\'s, and Gay-Lussac\'s laws.', example: 'Tracking a weather balloon as it rises (T drops, P drops, V grows).', year: 1834 },
+        { name: __alloT('stem.molecule.ideal_gas_law', 'Ideal Gas Law'), formula: 'PV = nRT', plain: 'Relates pressure, volume, moles, and temperature using the gas constant R.', example: 'R = 0.0821 L·atm/(mol·K). 1 mol gas at 1 atm, 273 K occupies 22.4 L.', year: 1834 },
+        { name: __alloT('stem.molecule.dalton_s_law_of_partial_pressures', 'Dalton\'s Law of Partial Pressures'), formula: 'P_total = P₁ + P₂ + P₃ + ...', plain: 'Total pressure of a gas mixture = sum of partial pressures.', example: 'Atmosphere: ~78% N₂ (0.78 atm) + ~21% O₂ (0.21 atm) + trace gases = 1 atm.', year: 1801 },
+        { name: __alloT('stem.molecule.graham_s_law_of_effusion', 'Graham\'s Law of Effusion'), formula: 'rate₁/rate₂ = √(M₂/M₁)', plain: 'Lighter gases effuse faster than heavier gases.', example: 'H₂ (M=2) effuses 4× faster than O₂ (M=32). √(32/2) = 4.', year: 1848 },
+        { name: __alloT('stem.molecule.henry_s_law', 'Henry\'s Law'), formula: 'C = k·P', plain: 'Solubility of a gas in liquid is proportional to its partial pressure above the liquid.', example: 'Open a soda bottle → CO₂ partial pressure drops → CO₂ comes out of solution → fizz.', year: 1803 },
+        { name: __alloT('stem.molecule.van_der_waals_equation', 'Van der Waals equation'), formula: '(P + a/V²)(V − b) = nRT', plain: 'Modifies ideal gas law to account for real gas behavior (intermolecular attractions + molecular volume).', example: 'Real gases deviate at high P and low T. CO₂ has a=3.6, b=0.043.', year: 1873 }
       ];
 
       var COLLIGATIVE_PROPS = [
@@ -4280,48 +4768,48 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var ORGANIC_GROUPS = [
-        { name: 'Alkane', formula: 'R–H (single bonds only)', example: 'Methane CH₄, Ethane C₂H₆', notes: 'Saturated. Unreactive baseline. Combust to CO₂ + H₂O.' },
-        { name: 'Alkene', formula: 'R–CH=CH–R', example: 'Ethene C₂H₄ (ethylene)', notes: 'C=C double bond. Reactive at the double bond. Plant ripening hormone.' },
-        { name: 'Alkyne', formula: 'R–C≡C–R', example: 'Ethyne C₂H₂ (acetylene)', notes: 'Triple bond. Welding torches burn acetylene + O₂ → ~3,500°C.' },
-        { name: 'Alcohol', formula: 'R–OH', example: 'Methanol CH₃OH, Ethanol C₂H₅OH', notes: 'Hydroxyl group. Polar, can H-bond. Beverages, fuels, antiseptics.' },
-        { name: 'Ether', formula: 'R–O–R', example: 'Diethyl ether (C₂H₅)₂O', notes: 'Oxygen bridge. Historically used as anesthetic.' },
-        { name: 'Aldehyde', formula: 'R–CHO', example: 'Formaldehyde HCHO', notes: 'C=O at end of chain. Preservatives. Vanilla flavor (vanillin).' },
-        { name: 'Ketone', formula: 'R–CO–R', example: 'Acetone (CH₃)₂CO', notes: 'C=O in middle of chain. Nail polish remover.' },
-        { name: 'Carboxylic acid', formula: 'R–COOH', example: 'Acetic acid CH₃COOH', notes: '–COOH. Acidic. Vinegar (acetic), citrus (citric), aspirin (salicylic).' },
-        { name: 'Ester', formula: 'R–COO–R', example: 'Ethyl acetate CH₃COOC₂H₅', notes: 'Carboxylic acid + alcohol. Fruity smells (banana ester, pineapple ester).' },
-        { name: 'Amine', formula: 'R–NH₂', example: 'Methylamine CH₃NH₂', notes: 'Nitrogen with lone pair. Basic. Fishy smells, neurotransmitters.' },
-        { name: 'Amide', formula: 'R–CONH₂', example: 'Acetamide CH₃CONH₂', notes: 'C=O attached to N. Peptide bonds in proteins.' },
-        { name: 'Nitrile', formula: 'R–C≡N', example: 'Acetonitrile CH₃CN', notes: 'Cyanide group. Some plant defenses (amygdalin in almonds).' },
-        { name: 'Thiol (mercaptan)', formula: 'R–SH', example: 'Methanethiol CH₃SH', notes: 'Sulfur analog of alcohol. STRONG smell — added to natural gas as warning.' },
-        { name: 'Aromatic (arene)', formula: 'Benzene ring C₆H₆', example: 'Benzene, toluene, naphthalene', notes: 'Delocalized π electrons. Stable. Coal tar, mothballs.' }
+        { name: __alloT('stem.molecule.alkane', 'Alkane'), formula: 'R–H (single bonds only)', example: 'Methane CH₄, Ethane C₂H₆', notes: 'Saturated. Unreactive baseline. Combust to CO₂ + H₂O.' },
+        { name: __alloT('stem.molecule.alkene', 'Alkene'), formula: 'R–CH=CH–R', example: 'Ethene C₂H₄ (ethylene)', notes: 'C=C double bond. Reactive at the double bond. Plant ripening hormone.' },
+        { name: __alloT('stem.molecule.alkyne', 'Alkyne'), formula: 'R–C≡C–R', example: 'Ethyne C₂H₂ (acetylene)', notes: 'Triple bond. Welding torches burn acetylene + O₂ → ~3,500°C.' },
+        { name: __alloT('stem.molecule.alcohol', 'Alcohol'), formula: 'R–OH', example: 'Methanol CH₃OH, Ethanol C₂H₅OH', notes: 'Hydroxyl group. Polar, can H-bond. Beverages, fuels, antiseptics.' },
+        { name: __alloT('stem.molecule.ether', 'Ether'), formula: 'R–O–R', example: 'Diethyl ether (C₂H₅)₂O', notes: 'Oxygen bridge. Historically used as anesthetic.' },
+        { name: __alloT('stem.molecule.aldehyde', 'Aldehyde'), formula: 'R–CHO', example: 'Formaldehyde HCHO', notes: 'C=O at end of chain. Preservatives. Vanilla flavor (vanillin).' },
+        { name: __alloT('stem.molecule.ketone', 'Ketone'), formula: 'R–CO–R', example: 'Acetone (CH₃)₂CO', notes: 'C=O in middle of chain. Nail polish remover.' },
+        { name: __alloT('stem.molecule.carboxylic_acid', 'Carboxylic acid'), formula: 'R–COOH', example: 'Acetic acid CH₃COOH', notes: '–COOH. Acidic. Vinegar (acetic), citrus (citric), aspirin (salicylic).' },
+        { name: __alloT('stem.molecule.ester', 'Ester'), formula: 'R–COO–R', example: 'Ethyl acetate CH₃COOC₂H₅', notes: 'Carboxylic acid + alcohol. Fruity smells (banana ester, pineapple ester).' },
+        { name: __alloT('stem.molecule.amine', 'Amine'), formula: 'R–NH₂', example: 'Methylamine CH₃NH₂', notes: 'Nitrogen with lone pair. Basic. Fishy smells, neurotransmitters.' },
+        { name: __alloT('stem.molecule.amide', 'Amide'), formula: 'R–CONH₂', example: 'Acetamide CH₃CONH₂', notes: 'C=O attached to N. Peptide bonds in proteins.' },
+        { name: __alloT('stem.molecule.nitrile', 'Nitrile'), formula: 'R–C≡N', example: 'Acetonitrile CH₃CN', notes: 'Cyanide group. Some plant defenses (amygdalin in almonds).' },
+        { name: __alloT('stem.molecule.thiol_mercaptan', 'Thiol (mercaptan)'), formula: 'R–SH', example: 'Methanethiol CH₃SH', notes: 'Sulfur analog of alcohol. STRONG smell — added to natural gas as warning.' },
+        { name: __alloT('stem.molecule.aromatic_arene', 'Aromatic (arene)'), formula: 'Benzene ring C₆H₆', example: 'Benzene, toluene, naphthalene', notes: 'Delocalized π electrons. Stable. Coal tar, mothballs.' }
       ];
 
       var SPECTRO_METHODS = [
-        { name: 'UV-Vis spectroscopy', range: '200–800 nm', detects: 'Electronic transitions; conjugated π systems, transition metal complexes', use: 'Concentration via Beer\'s law (A = εbc); color of compounds.' },
-        { name: 'IR (infrared) spectroscopy', range: '2.5–25 μm (4000–400 cm⁻¹)', detects: 'Molecular vibrations; functional groups', use: '–OH (~3300, broad), C=O (~1700), C≡N (~2250). Identifies functional groups.' },
-        { name: '¹H NMR (proton NMR)', range: 'Radio (MHz)', detects: 'Hydrogen environments', use: 'Counts H atoms in different environments. Chemical shift + splitting → structure.' },
-        { name: '¹³C NMR', range: 'Radio (MHz)', detects: 'Carbon framework', use: 'Counts unique C environments. ¹³C is only 1.1% natural abundance.' },
-        { name: 'Mass spectrometry (MS)', range: 'm/z', detects: 'Mass-to-charge ratio of ions', use: 'Molecular weight + fragmentation pattern → structure. Drug testing, forensics.' },
-        { name: 'X-ray crystallography', range: 'X-ray (~1 Å)', detects: '3D atomic positions in crystal', use: 'Determines exact molecular geometry. Used to solve DNA structure (1953).' },
-        { name: 'Raman spectroscopy', range: 'Vis to NIR laser', detects: 'Vibrational modes (complementary to IR)', use: 'Detects symmetric vibrations that IR misses. Useful for inorganic compounds, water-containing samples.' },
-        { name: 'Atomic absorption (AAS)', range: 'UV-Vis', detects: 'Specific metal elements', use: 'Each element absorbs at characteristic wavelength. Water quality, blood lead testing.' },
-        { name: 'Fluorescence spectroscopy', range: 'UV → Vis', detects: 'Excited state emission', use: 'GFP (green fluorescent protein) tracking in biology. Forensics (luminol).' },
-        { name: 'EPR (electron paramagnetic resonance)', range: 'Microwave', detects: 'Unpaired electrons (radicals)', use: 'Free radical research, transition metal complexes.' }
+        { name: __alloT('stem.molecule.uv_vis_spectroscopy', 'UV-Vis spectroscopy'), range: '200–800 nm', detects: 'Electronic transitions; conjugated π systems, transition metal complexes', use: 'Concentration via Beer\'s law (A = εbc); color of compounds.' },
+        { name: __alloT('stem.molecule.ir_infrared_spectroscopy', 'IR (infrared) spectroscopy'), range: '2.5–25 μm (4000–400 cm⁻¹)', detects: 'Molecular vibrations; functional groups', use: '–OH (~3300, broad), C=O (~1700), C≡N (~2250). Identifies functional groups.' },
+        { name: __alloT('stem.molecule.h_nmr_proton_nmr', '¹H NMR (proton NMR)'), range: 'Radio (MHz)', detects: 'Hydrogen environments', use: 'Counts H atoms in different environments. Chemical shift + splitting → structure.' },
+        { name: __alloT('stem.molecule.c_nmr', '¹³C NMR'), range: 'Radio (MHz)', detects: 'Carbon framework', use: 'Counts unique C environments. ¹³C is only 1.1% natural abundance.' },
+        { name: __alloT('stem.molecule.mass_spectrometry_ms', 'Mass spectrometry (MS)'), range: 'm/z', detects: 'Mass-to-charge ratio of ions', use: 'Molecular weight + fragmentation pattern → structure. Drug testing, forensics.' },
+        { name: __alloT('stem.molecule.x_ray_crystallography', 'X-ray crystallography'), range: 'X-ray (~1 Å)', detects: '3D atomic positions in crystal', use: 'Determines exact molecular geometry. Used to solve DNA structure (1953).' },
+        { name: __alloT('stem.molecule.raman_spectroscopy', 'Raman spectroscopy'), range: 'Vis to NIR laser', detects: 'Vibrational modes (complementary to IR)', use: 'Detects symmetric vibrations that IR misses. Useful for inorganic compounds, water-containing samples.' },
+        { name: __alloT('stem.molecule.atomic_absorption_aas', 'Atomic absorption (AAS)'), range: 'UV-Vis', detects: 'Specific metal elements', use: 'Each element absorbs at characteristic wavelength. Water quality, blood lead testing.' },
+        { name: __alloT('stem.molecule.fluorescence_spectroscopy', 'Fluorescence spectroscopy'), range: 'UV → Vis', detects: 'Excited state emission', use: 'GFP (green fluorescent protein) tracking in biology. Forensics (luminol).' },
+        { name: __alloT('stem.molecule.epr_electron_paramagnetic_resonance', 'EPR (electron paramagnetic resonance)'), range: 'Microwave', detects: 'Unpaired electrons (radicals)', use: 'Free radical research, transition metal complexes.' }
       ];
 
       var CRYSTAL_STRUCTURES = [
-        { name: 'Simple cubic', coord: 6, packing: '52.4%', example: 'Polonium (rare)', notes: 'Atoms only at corners of cube. Inefficient packing.' },
-        { name: 'Body-centered cubic (BCC)', coord: 8, packing: '68.0%', example: 'Iron (α), W, Mo, Cr', notes: 'Atom at corners + one in center.' },
-        { name: 'Face-centered cubic (FCC) / Cubic close-packed', coord: 12, packing: '74.0%', example: 'Cu, Ag, Au, Al, Pb, Ni', notes: 'Most efficient cubic packing. ABCABC layer sequence.' },
-        { name: 'Hexagonal close-packed (HCP)', coord: 12, packing: '74.0%', example: 'Mg, Zn, Ti, Co', notes: 'Same efficiency as FCC but ABAB sequence. Different mechanical properties.' },
-        { name: 'Diamond cubic', coord: 4, packing: '34.0%', example: 'C (diamond), Si, Ge', notes: 'Each atom bonded to 4 neighbors tetrahedrally.' },
-        { name: 'Sodium chloride (rock salt)', coord: '6 (each ion)', packing: '~67% (ionic)', example: 'NaCl, KCl, MgO', notes: 'FCC of Cl⁻ with Na⁺ in octahedral holes.' },
-        { name: 'Cesium chloride', coord: '8 (each ion)', packing: '~73% (ionic)', example: 'CsCl, CsBr, CsI', notes: 'Simple cubic of Cl⁻ with Cs⁺ at body center.' },
-        { name: 'Zinc blende (sphalerite)', coord: '4 (each ion)', packing: '~50% (ionic)', example: 'ZnS, GaAs, CdTe', notes: 'FCC of S²⁻ with Zn²⁺ in half the tetrahedral holes.' },
-        { name: 'Wurtzite', coord: '4 (each ion)', packing: '~50% (ionic)', example: 'ZnS (high-T form), ZnO, AlN', notes: 'HCP analog of zinc blende.' },
-        { name: 'Fluorite', coord: 'Ca: 8, F: 4', packing: '~75%', example: 'CaF₂, UO₂, ZrO₂', notes: 'FCC of cations with anions in all tetrahedral holes.' },
-        { name: 'Perovskite', coord: 'varies', packing: 'varies', example: 'CaTiO₃, BaTiO₃, organic-inorganic hybrids', notes: 'ABX₃ structure. Hot in solar cell research (perovskite solar cells).' },
-        { name: 'Graphite', coord: 3, packing: 'layered (sparse)', example: 'C (graphite)', notes: 'Hexagonal layers held by weak van der Waals → slippery, soft.' }
+        { name: __alloT('stem.molecule.simple_cubic', 'Simple cubic'), coord: 6, packing: '52.4%', example: 'Polonium (rare)', notes: 'Atoms only at corners of cube. Inefficient packing.' },
+        { name: __alloT('stem.molecule.body_centered_cubic_bcc', 'Body-centered cubic (BCC)'), coord: 8, packing: '68.0%', example: 'Iron (α), W, Mo, Cr', notes: 'Atom at corners + one in center.' },
+        { name: __alloT('stem.molecule.face_centered_cubic_fcc_cubic_close_pa', 'Face-centered cubic (FCC) / Cubic close-packed'), coord: 12, packing: '74.0%', example: 'Cu, Ag, Au, Al, Pb, Ni', notes: 'Most efficient cubic packing. ABCABC layer sequence.' },
+        { name: __alloT('stem.molecule.hexagonal_close_packed_hcp', 'Hexagonal close-packed (HCP)'), coord: 12, packing: '74.0%', example: 'Mg, Zn, Ti, Co', notes: 'Same efficiency as FCC but ABAB sequence. Different mechanical properties.' },
+        { name: __alloT('stem.molecule.diamond_cubic', 'Diamond cubic'), coord: 4, packing: '34.0%', example: 'C (diamond), Si, Ge', notes: 'Each atom bonded to 4 neighbors tetrahedrally.' },
+        { name: __alloT('stem.molecule.sodium_chloride_rock_salt', 'Sodium chloride (rock salt)'), coord: '6 (each ion)', packing: '~67% (ionic)', example: 'NaCl, KCl, MgO', notes: 'FCC of Cl⁻ with Na⁺ in octahedral holes.' },
+        { name: __alloT('stem.molecule.cesium_chloride', 'Cesium chloride'), coord: '8 (each ion)', packing: '~73% (ionic)', example: 'CsCl, CsBr, CsI', notes: 'Simple cubic of Cl⁻ with Cs⁺ at body center.' },
+        { name: __alloT('stem.molecule.zinc_blende_sphalerite', 'Zinc blende (sphalerite)'), coord: '4 (each ion)', packing: '~50% (ionic)', example: 'ZnS, GaAs, CdTe', notes: 'FCC of S²⁻ with Zn²⁺ in half the tetrahedral holes.' },
+        { name: __alloT('stem.molecule.wurtzite', 'Wurtzite'), coord: '4 (each ion)', packing: '~50% (ionic)', example: 'ZnS (high-T form), ZnO, AlN', notes: 'HCP analog of zinc blende.' },
+        { name: __alloT('stem.molecule.fluorite', 'Fluorite'), coord: 'Ca: 8, F: 4', packing: '~75%', example: 'CaF₂, UO₂, ZrO₂', notes: 'FCC of cations with anions in all tetrahedral holes.' },
+        { name: __alloT('stem.molecule.perovskite', 'Perovskite'), coord: 'varies', packing: 'varies', example: 'CaTiO₃, BaTiO₃, organic-inorganic hybrids', notes: 'ABX₃ structure. Hot in solar cell research (perovskite solar cells).' },
+        { name: __alloT('stem.molecule.graphite', 'Graphite'), coord: 3, packing: 'layered (sparse)', example: 'C (graphite)', notes: 'Hexagonal layers held by weak van der Waals → slippery, soft.' }
       ];
 
       var BIOCHEM_MOLECULES = [
@@ -4342,11 +4830,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var ATMOSPHERE_LAYERS = [
-        { name: 'Troposphere', altitude: '0–12 km', temp: '15°C → −56°C', notes: 'Weather happens here. ~80% of atmospheric mass.' },
-        { name: 'Stratosphere', altitude: '12–50 km', temp: '−56°C → −2°C', notes: 'Ozone layer absorbs UV → temperature rises with altitude.' },
-        { name: 'Mesosphere', altitude: '50–85 km', temp: '−2°C → −90°C', notes: 'Coldest layer. Meteors burn up here.' },
-        { name: 'Thermosphere', altitude: '85–600 km', temp: '−90°C → 2000°C+', notes: 'ISS orbits here (~400 km). Auroras form here.' },
-        { name: 'Exosphere', altitude: '600–10,000 km', temp: 'varies', notes: 'Outermost layer. Gradually fades into space.' }
+        { name: __alloT('stem.molecule.troposphere', 'Troposphere'), altitude: '0–12 km', temp: '15°C → −56°C', notes: 'Weather happens here. ~80% of atmospheric mass.' },
+        { name: __alloT('stem.molecule.stratosphere', 'Stratosphere'), altitude: '12–50 km', temp: '−56°C → −2°C', notes: 'Ozone layer absorbs UV → temperature rises with altitude.' },
+        { name: __alloT('stem.molecule.mesosphere', 'Mesosphere'), altitude: '50–85 km', temp: '−2°C → −90°C', notes: 'Coldest layer. Meteors burn up here.' },
+        { name: __alloT('stem.molecule.thermosphere', 'Thermosphere'), altitude: '85–600 km', temp: '−90°C → 2000°C+', notes: 'ISS orbits here (~400 km). Auroras form here.' },
+        { name: __alloT('stem.molecule.exosphere', 'Exosphere'), altitude: '600–10,000 km', temp: 'varies', notes: 'Outermost layer. Gradually fades into space.' }
       ];
 
       var ATMOSPHERIC_GASES = [
@@ -4365,15 +4853,15 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var NUCLEAR_PROCESSES = [
-        { name: 'Alpha decay (α)', particle: 'He nucleus (⁴He)', notes: 'Heavy nuclei eject ⁴He. Atomic number drops 2, mass drops 4. Stopped by paper.' },
-        { name: 'Beta-minus decay (β⁻)', particle: 'electron + antineutrino', notes: 'Neutron → proton + e⁻ + ν̄. Atomic number rises 1. Stopped by aluminum.' },
-        { name: 'Beta-plus decay (β⁺)', particle: 'positron + neutrino', notes: 'Proton → neutron + e⁺ + ν. Atomic number drops 1. Used in PET scans.' },
-        { name: 'Electron capture', particle: 'absorbs inner electron', notes: 'Proton + e⁻ → neutron + ν. Mimics β⁺ effect on Z but no positron emitted.' },
-        { name: 'Gamma decay (γ)', particle: 'high-energy photon', notes: 'Nucleus releases excess energy. No change in Z or A. Needs lead/concrete shielding.' },
-        { name: 'Neutron emission', particle: 'free neutron', notes: 'Rare. Some fission products emit delayed neutrons (critical for reactor control).' },
-        { name: 'Fission', particle: 'splits into 2+ nuclei', notes: 'Heavy nuclei (U-235, Pu-239) split when struck by neutron. Releases 2-3 more neutrons + energy.' },
-        { name: 'Fusion', particle: 'two light nuclei combine', notes: 'Powers stars. D + T → He + n + energy. Requires extreme T and P.' },
-        { name: 'Spontaneous fission', particle: 'self-splitting', notes: 'Some heavy isotopes (Cf-252) split without provocation.' }
+        { name: __alloT('stem.molecule.alpha_decay', 'Alpha decay (α)'), particle: 'He nucleus (⁴He)', notes: 'Heavy nuclei eject ⁴He. Atomic number drops 2, mass drops 4. Stopped by paper.' },
+        { name: __alloT('stem.molecule.beta_minus_decay', 'Beta-minus decay (β⁻)'), particle: 'electron + antineutrino', notes: 'Neutron → proton + e⁻ + ν̄. Atomic number rises 1. Stopped by aluminum.' },
+        { name: __alloT('stem.molecule.beta_plus_decay', 'Beta-plus decay (β⁺)'), particle: 'positron + neutrino', notes: 'Proton → neutron + e⁺ + ν. Atomic number drops 1. Used in PET scans.' },
+        { name: __alloT('stem.molecule.electron_capture', 'Electron capture'), particle: 'absorbs inner electron', notes: 'Proton + e⁻ → neutron + ν. Mimics β⁺ effect on Z but no positron emitted.' },
+        { name: __alloT('stem.molecule.gamma_decay', 'Gamma decay (γ)'), particle: 'high-energy photon', notes: 'Nucleus releases excess energy. No change in Z or A. Needs lead/concrete shielding.' },
+        { name: __alloT('stem.molecule.neutron_emission', 'Neutron emission'), particle: 'free neutron', notes: 'Rare. Some fission products emit delayed neutrons (critical for reactor control).' },
+        { name: __alloT('stem.molecule.fission', 'Fission'), particle: 'splits into 2+ nuclei', notes: 'Heavy nuclei (U-235, Pu-239) split when struck by neutron. Releases 2-3 more neutrons + energy.' },
+        { name: __alloT('stem.molecule.fusion', 'Fusion'), particle: 'two light nuclei combine', notes: 'Powers stars. D + T → He + n + energy. Requires extreme T and P.' },
+        { name: __alloT('stem.molecule.spontaneous_fission', 'Spontaneous fission'), particle: 'self-splitting', notes: 'Some heavy isotopes (Cf-252) split without provocation.' }
       ];
 
       var COMMON_ISOTOPES = [
@@ -4405,24 +4893,24 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var FAMOUS_CHEMISTS = [
-        { name: 'Antoine Lavoisier', year: '1780s', contrib: 'Law of conservation of mass; oxygen theory of combustion (overturned phlogiston).', notes: 'Executed in French Revolution (1794). "It took only an instant to cut off that head, and 100 years may not produce another like it."' },
-        { name: 'John Dalton', year: '1803', contrib: 'Atomic theory: matter is made of indivisible atoms; elements have unique atom types.', notes: 'Also studied color blindness (which he had).' },
-        { name: 'Amedeo Avogadro', year: '1811', contrib: 'Equal volumes of gas at same T,P contain equal numbers of molecules.', notes: 'Number named for him: 6.022×10²³ (number of particles in a mole).' },
-        { name: 'Dmitri Mendeleev', year: '1869', contrib: 'Periodic table arranged by atomic mass; left gaps for undiscovered elements + predicted their properties.', notes: 'Predicted gallium, scandium, germanium — all later confirmed.' },
-        { name: 'Marie Curie', year: '1898–1911', contrib: 'Discovered polonium + radium; coined "radioactivity".', notes: 'Two Nobels (Physics 1903, Chemistry 1911). Only person to win Nobel in two distinct sciences.' },
-        { name: 'Fritz Haber', year: '1909', contrib: 'Haber-Bosch process: N₂ + 3H₂ → 2NH₃. Made synthetic fertilizer possible.', notes: 'Nobel 1918. Also developed chemical weapons in WWI. Complex legacy.' },
-        { name: 'Linus Pauling', year: '1930s–60s', contrib: 'Nature of the chemical bond; protein α-helix; electronegativity scale.', notes: 'Two Nobels (Chemistry 1954, Peace 1962). Promoted vitamin C megadosing — that part was wrong.' },
-        { name: 'Rosalind Franklin', year: '1952', contrib: 'X-ray diffraction "Photo 51" — essential to determining DNA double helix.', notes: 'Died 1958 (ovarian cancer); Nobel awarded 1962 (posthumous Nobels not allowed). Watson & Crick + Wilkins shared it.' },
-        { name: 'Dorothy Hodgkin', year: '1950s–60s', contrib: 'X-ray crystallography of penicillin, B12, insulin.', notes: 'Nobel 1964. Only British woman to win a science Nobel.' },
-        { name: 'Stephanie Kwolek', year: '1965', contrib: 'Invented Kevlar (poly-paraphenylene terephthalamide).', notes: 'Body armor, ballistic vests. Stiffer than steel by weight.' },
-        { name: 'Frances Arnold', year: '1990s–2018', contrib: 'Directed evolution of enzymes.', notes: 'Nobel 2018. Engineered enzymes for sustainable manufacturing.' },
-        { name: 'Jennifer Doudna & Emmanuelle Charpentier', year: '2012', contrib: 'CRISPR-Cas9 gene editing.', notes: 'Nobel 2020. Revolutionized genetic engineering.' }
+        { name: __alloT('stem.molecule.antoine_lavoisier', 'Antoine Lavoisier'), year: '1780s', contrib: 'Law of conservation of mass; oxygen theory of combustion (overturned phlogiston).', notes: 'Executed in French Revolution (1794). "It took only an instant to cut off that head, and 100 years may not produce another like it."' },
+        { name: __alloT('stem.molecule.john_dalton', 'John Dalton'), year: '1803', contrib: 'Atomic theory: matter is made of indivisible atoms; elements have unique atom types.', notes: 'Also studied color blindness (which he had).' },
+        { name: __alloT('stem.molecule.amedeo_avogadro', 'Amedeo Avogadro'), year: '1811', contrib: 'Equal volumes of gas at same T,P contain equal numbers of molecules.', notes: 'Number named for him: 6.022×10²³ (number of particles in a mole).' },
+        { name: __alloT('stem.molecule.dmitri_mendeleev', 'Dmitri Mendeleev'), year: '1869', contrib: 'Periodic table arranged by atomic mass; left gaps for undiscovered elements + predicted their properties.', notes: 'Predicted gallium, scandium, germanium — all later confirmed.' },
+        { name: __alloT('stem.molecule.marie_curie', 'Marie Curie'), year: '1898–1911', contrib: 'Discovered polonium + radium; coined "radioactivity".', notes: 'Two Nobels (Physics 1903, Chemistry 1911). Only person to win Nobel in two distinct sciences.' },
+        { name: __alloT('stem.molecule.fritz_haber', 'Fritz Haber'), year: '1909', contrib: 'Haber-Bosch process: N₂ + 3H₂ → 2NH₃. Made synthetic fertilizer possible.', notes: 'Nobel 1918. Also developed chemical weapons in WWI. Complex legacy.' },
+        { name: __alloT('stem.molecule.linus_pauling', 'Linus Pauling'), year: '1930s–60s', contrib: 'Nature of the chemical bond; protein α-helix; electronegativity scale.', notes: 'Two Nobels (Chemistry 1954, Peace 1962). Promoted vitamin C megadosing — that part was wrong.' },
+        { name: __alloT('stem.molecule.rosalind_franklin', 'Rosalind Franklin'), year: '1952', contrib: 'X-ray diffraction "Photo 51" — essential to determining DNA double helix.', notes: 'Died 1958 (ovarian cancer); Nobel awarded 1962 (posthumous Nobels not allowed). Watson & Crick + Wilkins shared it.' },
+        { name: __alloT('stem.molecule.dorothy_hodgkin', 'Dorothy Hodgkin'), year: '1950s–60s', contrib: 'X-ray crystallography of penicillin, B12, insulin.', notes: 'Nobel 1964. Only British woman to win a science Nobel.' },
+        { name: __alloT('stem.molecule.stephanie_kwolek', 'Stephanie Kwolek'), year: '1965', contrib: 'Invented Kevlar (poly-paraphenylene terephthalamide).', notes: 'Body armor, ballistic vests. Stiffer than steel by weight.' },
+        { name: __alloT('stem.molecule.frances_arnold', 'Frances Arnold'), year: '1990s–2018', contrib: 'Directed evolution of enzymes.', notes: 'Nobel 2018. Engineered enzymes for sustainable manufacturing.' },
+        { name: __alloT('stem.molecule.jennifer_doudna_emmanuelle_charpentier', 'Jennifer Doudna & Emmanuelle Charpentier'), year: '2012', contrib: 'CRISPR-Cas9 gene editing.', notes: 'Nobel 2020. Revolutionized genetic engineering.' }
       ];
 
       function renderGasLawsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💨 Gas laws'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Quantitative relationships between P, V, T, and n (moles) for gases. Use Kelvin for temperature.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.gas_laws_2', '💨 Gas laws')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.quantitative_relationships_between_p_v', 'Quantitative relationships between P, V, T, and n (moles) for gases. Use Kelvin for temperature.')),
           React.createElement('div', { className: 'space-y-2' },
             GAS_LAWS.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4441,8 +4929,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderColligativeSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧂 Colligative properties'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Properties that depend on the NUMBER of solute particles, not their identity. i = van\'t Hoff factor (1 for non-electrolyte, ~2 for NaCl, ~3 for CaCl₂).'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.colligative_properties', '🧂 Colligative properties')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.properties_that_depend_on_the_number_o', 'Properties that depend on the NUMBER of solute particles, not their identity. i = van\'t Hoff factor (1 for non-electrolyte, ~2 for NaCl, ~3 for CaCl₂).')),
           React.createElement('div', { className: 'space-y-2' },
             COLLIGATIVE_PROPS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4458,8 +4946,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderRedoxSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔋 Standard reduction potentials (E°)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Higher E° = stronger oxidizer (more eager to GAIN electrons). To predict a redox reaction: cell potential = E°(cathode) − E°(anode). Positive → spontaneous.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.standard_reduction_potentials_e', '🔋 Standard reduction potentials (E°)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.higher_e_stronger_oxidizer_more_eager_', 'Higher E° = stronger oxidizer (more eager to GAIN electrons). To predict a redox reaction: cell potential = E°(cathode) − E°(anode). Positive → spontaneous.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -4485,8 +4973,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderOrganicSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧪 Organic functional groups'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Recognize functional groups to predict chemical behavior. R = "rest of molecule" (any carbon chain).'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.organic_functional_groups', '🧪 Organic functional groups')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.recognize_functional_groups_to_predict', 'Recognize functional groups to predict chemical behavior. R = "rest of molecule" (any carbon chain).')),
           React.createElement('div', { className: 'space-y-2' },
             ORGANIC_GROUPS.map(function(o, i) {
               return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4504,8 +4992,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderSpectroSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 Spectroscopy methods'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Different wavelengths probe different molecular properties. Chemists combine multiple methods to determine structure of unknown compounds.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.spectroscopy_methods', '📡 Spectroscopy methods')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.different_wavelengths_probe_different_', 'Different wavelengths probe different molecular properties. Chemists combine multiple methods to determine structure of unknown compounds.')),
           React.createElement('div', { className: 'space-y-2' },
             SPECTRO_METHODS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4523,8 +5011,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderCrystalSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💎 Crystal structures'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'How atoms/ions pack in solids determines material properties (hardness, conductivity, melting point, optical behavior).'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.crystal_structures_2', '💎 Crystal structures')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.how_atoms_ions_pack_in_solids_determin', 'How atoms/ions pack in solids determines material properties (hardness, conductivity, melting point, optical behavior).')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -4552,7 +5040,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderBiochemSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧬 Biochemistry — classes of biomolecules'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.biochemistry_classes_of_biomolecules', '🧬 Biochemistry — classes of biomolecules')),
           React.createElement('div', { className: 'space-y-2' },
             BIOCHEM_MOLECULES.map(function(b, i) {
               return React.createElement('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4570,9 +5058,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderEnvironmentSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌫 Atmospheric chemistry'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.atmospheric_chemistry', '🌫 Atmospheric chemistry')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Atmospheric layers (bottom to top)'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.atmospheric_layers_bottom_to_top', 'Atmospheric layers (bottom to top)')),
             React.createElement('div', { className: 'space-y-1' },
               ATMOSPHERE_LAYERS.map(function(L, i) {
                 return React.createElement('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -4586,7 +5074,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Atmospheric composition (dry air, by volume)'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.atmospheric_composition_dry_air_by_vol', 'Atmospheric composition (dry air, by volume)')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -4612,9 +5100,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderNuclearSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '☢ Nuclear chemistry'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.nuclear_chemistry', '☢ Nuclear chemistry')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Decay and nuclear processes'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.decay_and_nuclear_processes', 'Decay and nuclear processes')),
             React.createElement('div', { className: 'space-y-1' },
               NUCLEAR_PROCESSES.map(function(n, i) {
                 return React.createElement('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -4627,7 +5115,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Notable isotopes'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.notable_isotopes', 'Notable isotopes')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -4653,7 +5141,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderElectrochemSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚡ Electrochemistry — cell types'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.electrochemistry_cell_types', '⚡ Electrochemistry — cell types')),
           React.createElement('div', { className: 'space-y-2' },
             ELECTROCHEM_CELLS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4669,7 +5157,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderFamousSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 Chemistry history — selected figures'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.chemistry_history_selected_figures', '🕰 Chemistry history — selected figures')),
           React.createElement('div', { className: 'space-y-2' },
             FAMOUS_CHEMISTS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
@@ -4693,6 +5181,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
         if (expSection === 'library') return renderLibrarySection();
         if (expSection === 'acidbase') return renderAcidBaseSection();
         if (expSection === 'quantum') return renderQuantumSection();
+        if (expSection === 'orbitals') return renderOrbitalsSection();
         if (expSection === 'periodic') return renderPeriodicSection();
         if (expSection === 'molarity') return renderMolaritySection();
         if (expSection === 'stoich') return renderStoichSection();
@@ -4764,8 +5253,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderIndustrialSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏗 Industrial-scale chemicals'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Volumes are approximate annual world production. Chemistry at industrial scale underlies modern civilization.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.industrial_scale_chemicals', '🏗 Industrial-scale chemicals')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.volumes_are_approximate_annual_world_p', 'Volumes are approximate annual world production. Chemistry at industrial scale underlies modern civilization.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -4817,8 +5306,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderColorsChemSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Color chemistry — pigments + dyes'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Color in chemistry usually comes from absorption of specific visible wavelengths. Conjugated double-bond systems (like in chlorophyll, beta-carotene) absorb in the visible.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.color_chemistry_pigments_dyes', '🎨 Color chemistry — pigments + dyes')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.color_in_chemistry_usually_comes_from_', 'Color in chemistry usually comes from absorption of specific visible wavelengths. Conjugated double-bond systems (like in chlorophyll, beta-carotene) absorb in the visible.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -4880,8 +5369,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderFlavorChemSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👃 Flavor + scent molecules'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Olfactory receptors detect specific molecules. Humans have ~400 different olfactory receptors and can distinguish ~10,000 distinct smells (some claim trillions).'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.flavor_scent_molecules', '👃 Flavor + scent molecules')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.olfactory_receptors_detect_specific_mo', 'Olfactory receptors detect specific molecules. Humans have ~400 different olfactory receptors and can distinguish ~10,000 distinct smells (some claim trillions).')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -4947,49 +5436,49 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var COMMON_COMPOUNDS = [
-        { name: 'Water', formula: 'H₂O', mw: 18.0, notes: 'Most familiar molecule. Universal solvent. 70% of body weight.' },
-        { name: 'Carbon dioxide', formula: 'CO₂', mw: 44.0, notes: 'Greenhouse gas. Plant food via photosynthesis. ~420 ppm in atmosphere (2024).' },
-        { name: 'Methane', formula: 'CH₄', mw: 16.0, notes: 'Natural gas. Powerful greenhouse gas. Cow burps, landfills.' },
-        { name: 'Ammonia', formula: 'NH₃', mw: 17.0, notes: 'Fertilizer feedstock (Haber process). Pungent smell. Household cleaner.' },
-        { name: 'Hydrochloric acid', formula: 'HCl', mw: 36.5, notes: 'Stomach acid. Strong acid in lab.' },
-        { name: 'Sulfuric acid', formula: 'H₂SO₄', mw: 98.1, notes: 'Most produced industrial chemical. Battery acid, fertilizer.' },
-        { name: 'Nitric acid', formula: 'HNO₃', mw: 63.0, notes: 'Strong oxidizer. Explosives, fertilizers.' },
-        { name: 'Sodium hydroxide (lye)', formula: 'NaOH', mw: 40.0, notes: 'Strong base. Soap-making, drain cleaner.' },
-        { name: 'Calcium hydroxide (slaked lime)', formula: 'Ca(OH)₂', mw: 74.1, notes: 'Construction mortar, pH adjustment.' },
-        { name: 'Sodium chloride', formula: 'NaCl', mw: 58.4, notes: 'Table salt. Essential for life.' },
-        { name: 'Calcium carbonate', formula: 'CaCO₃', mw: 100.1, notes: 'Limestone, marble, chalk, eggshells.' },
-        { name: 'Sodium bicarbonate', formula: 'NaHCO₃', mw: 84.0, notes: 'Baking soda. Antacid. Fire extinguishers.' },
-        { name: 'Hydrogen peroxide', formula: 'H₂O₂', mw: 34.0, notes: 'Disinfectant. Decomposes to water + O₂.' },
-        { name: 'Ozone', formula: 'O₃', mw: 48.0, notes: 'Protective in stratosphere; pollutant at ground level.' },
-        { name: 'Glucose', formula: 'C₆H₁₂O₆', mw: 180.2, notes: 'Body\'s primary fuel. Blood sugar.' },
-        { name: 'Sucrose (table sugar)', formula: 'C₁₂H₂₂O₁₁', mw: 342.3, notes: 'Glucose + fructose disaccharide.' },
-        { name: 'Ethanol', formula: 'C₂H₅OH', mw: 46.1, notes: 'Alcoholic beverages, fuel additive, hand sanitizer.' },
-        { name: 'Methanol', formula: 'CH₃OH', mw: 32.0, notes: 'Wood alcohol. Toxic — causes blindness, death.' },
-        { name: 'Acetone', formula: '(CH₃)₂CO', mw: 58.1, notes: 'Nail polish remover. Common organic solvent.' },
-        { name: 'Acetic acid', formula: 'CH₃COOH', mw: 60.1, notes: 'Vinegar (~5% in water). Glacial form solid below 17°C.' },
-        { name: 'Formaldehyde', formula: 'HCHO', mw: 30.0, notes: 'Preservative (formalin). Indoor air contaminant.' },
-        { name: 'Benzene', formula: 'C₆H₆', mw: 78.1, notes: 'Aromatic ring. Carcinogen. Industrial solvent (regulated).' },
-        { name: 'Caffeine', formula: 'C₈H₁₀N₄O₂', mw: 194.2, notes: 'Stimulant. World\'s most consumed psychoactive drug.' },
-        { name: 'Aspirin', formula: 'C₉H₈O₄', mw: 180.2, notes: 'Acetylsalicylic acid. Pain reliever, blood thinner.' },
-        { name: 'Penicillin G', formula: 'C₁₆H₁₈N₂O₄S', mw: 334.4, notes: 'First mass antibiotic. β-lactam ring.' },
+        { name: __alloT('stem.molecule.water_2', 'Water'), formula: 'H₂O', mw: 18.0, notes: 'Most familiar molecule. Universal solvent. 70% of body weight.' },
+        { name: __alloT('stem.molecule.carbon_dioxide_2', 'Carbon dioxide'), formula: 'CO₂', mw: 44.0, notes: 'Greenhouse gas. Plant food via photosynthesis. ~420 ppm in atmosphere (2024).' },
+        { name: __alloT('stem.molecule.methane_2', 'Methane'), formula: 'CH₄', mw: 16.0, notes: 'Natural gas. Powerful greenhouse gas. Cow burps, landfills.' },
+        { name: __alloT('stem.molecule.ammonia_3', 'Ammonia'), formula: 'NH₃', mw: 17.0, notes: 'Fertilizer feedstock (Haber process). Pungent smell. Household cleaner.' },
+        { name: __alloT('stem.molecule.hydrochloric_acid_3', 'Hydrochloric acid'), formula: 'HCl', mw: 36.5, notes: 'Stomach acid. Strong acid in lab.' },
+        { name: __alloT('stem.molecule.sulfuric_acid_3', 'Sulfuric acid'), formula: 'H₂SO₄', mw: 98.1, notes: 'Most produced industrial chemical. Battery acid, fertilizer.' },
+        { name: __alloT('stem.molecule.nitric_acid_3', 'Nitric acid'), formula: 'HNO₃', mw: 63.0, notes: 'Strong oxidizer. Explosives, fertilizers.' },
+        { name: __alloT('stem.molecule.sodium_hydroxide_lye', 'Sodium hydroxide (lye)'), formula: 'NaOH', mw: 40.0, notes: 'Strong base. Soap-making, drain cleaner.' },
+        { name: __alloT('stem.molecule.calcium_hydroxide_slaked_lime', 'Calcium hydroxide (slaked lime)'), formula: 'Ca(OH)₂', mw: 74.1, notes: 'Construction mortar, pH adjustment.' },
+        { name: __alloT('stem.molecule.sodium_chloride_2', 'Sodium chloride'), formula: 'NaCl', mw: 58.4, notes: 'Table salt. Essential for life.' },
+        { name: __alloT('stem.molecule.calcium_carbonate_2', 'Calcium carbonate'), formula: 'CaCO₃', mw: 100.1, notes: 'Limestone, marble, chalk, eggshells.' },
+        { name: __alloT('stem.molecule.sodium_bicarbonate', 'Sodium bicarbonate'), formula: 'NaHCO₃', mw: 84.0, notes: 'Baking soda. Antacid. Fire extinguishers.' },
+        { name: __alloT('stem.molecule.hydrogen_peroxide', 'Hydrogen peroxide'), formula: 'H₂O₂', mw: 34.0, notes: 'Disinfectant. Decomposes to water + O₂.' },
+        { name: __alloT('stem.molecule.ozone', 'Ozone'), formula: 'O₃', mw: 48.0, notes: 'Protective in stratosphere; pollutant at ground level.' },
+        { name: __alloT('stem.molecule.glucose_2', 'Glucose'), formula: 'C₆H₁₂O₆', mw: 180.2, notes: 'Body\'s primary fuel. Blood sugar.' },
+        { name: __alloT('stem.molecule.sucrose_table_sugar', 'Sucrose (table sugar)'), formula: 'C₁₂H₂₂O₁₁', mw: 342.3, notes: 'Glucose + fructose disaccharide.' },
+        { name: __alloT('stem.molecule.ethanol_2', 'Ethanol'), formula: 'C₂H₅OH', mw: 46.1, notes: 'Alcoholic beverages, fuel additive, hand sanitizer.' },
+        { name: __alloT('stem.molecule.methanol_2', 'Methanol'), formula: 'CH₃OH', mw: 32.0, notes: 'Wood alcohol. Toxic — causes blindness, death.' },
+        { name: __alloT('stem.molecule.acetone', 'Acetone'), formula: '(CH₃)₂CO', mw: 58.1, notes: 'Nail polish remover. Common organic solvent.' },
+        { name: __alloT('stem.molecule.acetic_acid_2', 'Acetic acid'), formula: 'CH₃COOH', mw: 60.1, notes: 'Vinegar (~5% in water). Glacial form solid below 17°C.' },
+        { name: __alloT('stem.molecule.formaldehyde', 'Formaldehyde'), formula: 'HCHO', mw: 30.0, notes: 'Preservative (formalin). Indoor air contaminant.' },
+        { name: __alloT('stem.molecule.benzene', 'Benzene'), formula: 'C₆H₆', mw: 78.1, notes: 'Aromatic ring. Carcinogen. Industrial solvent (regulated).' },
+        { name: __alloT('stem.molecule.caffeine_3', 'Caffeine'), formula: 'C₈H₁₀N₄O₂', mw: 194.2, notes: 'Stimulant. World\'s most consumed psychoactive drug.' },
+        { name: __alloT('stem.molecule.aspirin_3', 'Aspirin'), formula: 'C₉H₈O₄', mw: 180.2, notes: 'Acetylsalicylic acid. Pain reliever, blood thinner.' },
+        { name: __alloT('stem.molecule.penicillin_g', 'Penicillin G'), formula: 'C₁₆H₁₈N₂O₄S', mw: 334.4, notes: 'First mass antibiotic. β-lactam ring.' },
         { name: 'DDT', formula: 'C₁₄H₉Cl₅', mw: 354.5, notes: 'Pesticide. Banned in most countries due to environmental persistence.' },
         { name: 'TNT', formula: 'C₇H₅N₃O₆', mw: 227.1, notes: 'Trinitrotoluene. Explosive standard reference.' },
-        { name: 'Glycerin (glycerol)', formula: 'C₃H₈O₃', mw: 92.1, notes: 'Sweet, viscous. Moisturizer, food additive, explosive precursor (nitroglycerin).' },
-        { name: 'Urea', formula: 'CO(NH₂)₂', mw: 60.1, notes: 'First organic compound synthesized from inorganic (Wöhler 1828). Fertilizer.' },
-        { name: 'Iron(III) oxide (rust)', formula: 'Fe₂O₃', mw: 159.7, notes: 'Iron rust. Red pigment. Same as hematite mineral.' },
-        { name: 'Calcium phosphate', formula: 'Ca₃(PO₄)₂', mw: 310.2, notes: 'Main bone + tooth mineral (as hydroxyapatite).' },
-        { name: 'Silicon dioxide', formula: 'SiO₂', mw: 60.1, notes: 'Quartz, sand, glass. Most abundant mineral.' },
-        { name: 'Aluminum oxide', formula: 'Al₂O₃', mw: 102.0, notes: 'Corundum, sapphire, ruby (with chromium). Abrasive.' },
-        { name: 'Titanium dioxide', formula: 'TiO₂', mw: 79.9, notes: 'White pigment in paint, sunscreen, food. Highly reflective.' },
-        { name: 'Sodium fluoride', formula: 'NaF', mw: 42.0, notes: 'Toothpaste additive. Strengthens enamel as fluorapatite.' }
+        { name: __alloT('stem.molecule.glycerin_glycerol', 'Glycerin (glycerol)'), formula: 'C₃H₈O₃', mw: 92.1, notes: 'Sweet, viscous. Moisturizer, food additive, explosive precursor (nitroglycerin).' },
+        { name: __alloT('stem.molecule.urea_2', 'Urea'), formula: 'CO(NH₂)₂', mw: 60.1, notes: 'First organic compound synthesized from inorganic (Wöhler 1828). Fertilizer.' },
+        { name: __alloT('stem.molecule.iron_iii_oxide_rust', 'Iron(III) oxide (rust)'), formula: 'Fe₂O₃', mw: 159.7, notes: 'Iron rust. Red pigment. Same as hematite mineral.' },
+        { name: __alloT('stem.molecule.calcium_phosphate', 'Calcium phosphate'), formula: 'Ca₃(PO₄)₂', mw: 310.2, notes: 'Main bone + tooth mineral (as hydroxyapatite).' },
+        { name: __alloT('stem.molecule.silicon_dioxide', 'Silicon dioxide'), formula: 'SiO₂', mw: 60.1, notes: 'Quartz, sand, glass. Most abundant mineral.' },
+        { name: __alloT('stem.molecule.aluminum_oxide_2', 'Aluminum oxide'), formula: 'Al₂O₃', mw: 102.0, notes: 'Corundum, sapphire, ruby (with chromium). Abrasive.' },
+        { name: __alloT('stem.molecule.titanium_dioxide', 'Titanium dioxide'), formula: 'TiO₂', mw: 79.9, notes: 'White pigment in paint, sunscreen, food. Highly reflective.' },
+        { name: __alloT('stem.molecule.sodium_fluoride', 'Sodium fluoride'), formula: 'NaF', mw: 42.0, notes: 'Toothpaste additive. Strengthens enamel as fluorapatite.' }
       ];
 
       function renderSolubilitySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◐ Solubility rules + data'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Rules of thumb for ionic compound solubility in water. Helpful for predicting precipitation reactions.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.solubility_rules_data', '◐ Solubility rules + data')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.rules_of_thumb_for_ionic_compound_solu', 'Rules of thumb for ionic compound solubility in water. Helpful for predicting precipitation reactions.')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'General solubility rules'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.general_solubility_rules', 'General solubility rules')),
             React.createElement('div', { className: 'overflow-x-auto' },
               React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
                 React.createElement('thead', null,
@@ -5012,7 +5501,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               )
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Solubility of specific compounds in water'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.solubility_of_specific_compounds_in_wa', 'Solubility of specific compounds in water')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5038,8 +5527,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderCompoundsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌬ Common chemical compounds'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Molecular weights in g/mol. Listed in rough order of familiarity.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_chemical_compounds', '⌬ Common chemical compounds')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molecular_weights_in_g_mol_listed_in_r', 'Molecular weights in g/mol. Listed in rough order of familiarity.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5146,8 +5635,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderPhScaleSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'H⁺ pH scale of common substances'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'pH = −log[H⁺]. Each unit = 10× change in [H⁺]. pH 7 = neutral; <7 = acidic; >7 = basic. Scale theoretically goes beyond 0-14 but rarely encountered.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.h_ph_scale_of_common_substances', 'H⁺ pH scale of common substances')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.ph_log_h_each_unit_10_change_in_h_ph_7', 'pH = −log[H⁺]. Each unit = 10× change in [H⁺]. pH 7 = neutral; <7 = acidic; >7 = basic. Scale theoretically goes beyond 0-14 but rarely encountered.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5173,8 +5662,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderFoodsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🥦 Food + nutrition (chemistry context)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Macronutrients: carbs, fats, proteins. Each gram: carbs ~4 cal, protein ~4 cal, fat ~9 cal, alcohol ~7 cal.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.food_nutrition_chemistry_context', '🥦 Food + nutrition (chemistry context)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.macronutrients_carbs_fats_proteins_eac', 'Macronutrients: carbs, fats, proteins. Each gram: carbs ~4 cal, protein ~4 cal, fat ~9 cal, alcohol ~7 cal.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5201,8 +5690,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderMeltboilSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌡 Melting + boiling points'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'At 1 atm. Materials with strong intermolecular forces (ionic, network covalent) have higher melting/boiling points than those with weak forces (London).'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.melting_boiling_points', '🌡 Melting + boiling points')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.at_1_atm_materials_with_strong_intermo', 'At 1 atm. Materials with strong intermolecular forces (ionic, network covalent) have higher melting/boiling points than those with weak forces (London).')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5232,149 +5721,149 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       // ═════════════════════════════════════════════════════════════════════
 
       var ALL_ELEMENTS = [
-        { z: 1, sym: 'H', name: 'Hydrogen', mass: 1.008, cat: 'Nonmetal', notes: 'Most abundant in universe. Fuel of stars.' },
-        { z: 2, sym: 'He', name: 'Helium', mass: 4.003, cat: 'Noble gas', notes: 'Second most abundant in universe.' },
-        { z: 3, sym: 'Li', name: 'Lithium', mass: 6.94, cat: 'Alkali metal', notes: 'Lightest metal. Batteries, mood stabilizer.' },
-        { z: 4, sym: 'Be', name: 'Beryllium', mass: 9.012, cat: 'Alkaline earth', notes: 'Aerospace alloys. Toxic dust.' },
-        { z: 5, sym: 'B', name: 'Boron', mass: 10.81, cat: 'Metalloid', notes: 'Borosilicate glass (Pyrex). Detergents.' },
-        { z: 6, sym: 'C', name: 'Carbon', mass: 12.011, cat: 'Nonmetal', notes: 'Backbone of organic chemistry + life.' },
-        { z: 7, sym: 'N', name: 'Nitrogen', mass: 14.007, cat: 'Nonmetal', notes: '78% of atmosphere. Essential for proteins, DNA.' },
-        { z: 8, sym: 'O', name: 'Oxygen', mass: 15.999, cat: 'Nonmetal', notes: '21% of atmosphere. Essential for respiration.' },
-        { z: 9, sym: 'F', name: 'Fluorine', mass: 18.998, cat: 'Halogen', notes: 'Most electronegative. Toothpaste, Teflon, refrigerants.' },
-        { z: 10, sym: 'Ne', name: 'Neon', mass: 20.180, cat: 'Noble gas', notes: 'Red-orange signs.' },
-        { z: 11, sym: 'Na', name: 'Sodium', mass: 22.990, cat: 'Alkali metal', notes: 'Reactive! Table salt is NaCl. Vital for nerves.' },
-        { z: 12, sym: 'Mg', name: 'Magnesium', mass: 24.305, cat: 'Alkaline earth', notes: 'Light + strong (alloys). Chlorophyll center.' },
-        { z: 13, sym: 'Al', name: 'Aluminum', mass: 26.982, cat: 'Post-transition', notes: 'Most abundant metal in crust. Cans, foil, aircraft.' },
-        { z: 14, sym: 'Si', name: 'Silicon', mass: 28.085, cat: 'Metalloid', notes: 'Semiconductor electronics. Glass, sand, quartz.' },
-        { z: 15, sym: 'P', name: 'Phosphorus', mass: 30.974, cat: 'Nonmetal', notes: 'DNA backbone, ATP. Fertilizer. Matches.' },
-        { z: 16, sym: 'S', name: 'Sulfur', mass: 32.06, cat: 'Nonmetal', notes: 'Amino acids cys + met. Volcanic. Gunpowder.' },
-        { z: 17, sym: 'Cl', name: 'Chlorine', mass: 35.45, cat: 'Halogen', notes: 'Pool water sanitizer. Bleach. PVC.' },
-        { z: 18, sym: 'Ar', name: 'Argon', mass: 39.948, cat: 'Noble gas', notes: 'Inert gas for welding, light bulbs.' },
-        { z: 19, sym: 'K', name: 'Potassium', mass: 39.098, cat: 'Alkali metal', notes: 'Essential for nerves + muscles. Bananas.' },
-        { z: 20, sym: 'Ca', name: 'Calcium', mass: 40.078, cat: 'Alkaline earth', notes: 'Bones, teeth. Milk source.' },
-        { z: 21, sym: 'Sc', name: 'Scandium', mass: 44.956, cat: 'Transition metal', notes: 'Bicycle frames, baseball bats (aluminum-scandium alloys).' },
-        { z: 22, sym: 'Ti', name: 'Titanium', mass: 47.867, cat: 'Transition metal', notes: 'Strong + light. Aerospace, implants, paint (TiO₂).' },
-        { z: 23, sym: 'V', name: 'Vanadium', mass: 50.942, cat: 'Transition metal', notes: 'High-strength steel alloys.' },
-        { z: 24, sym: 'Cr', name: 'Chromium', mass: 51.996, cat: 'Transition metal', notes: 'Stainless steel (with Ni). Plating.' },
-        { z: 25, sym: 'Mn', name: 'Manganese', mass: 54.938, cat: 'Transition metal', notes: 'Steelmaking. Batteries.' },
-        { z: 26, sym: 'Fe', name: 'Iron', mass: 55.845, cat: 'Transition metal', notes: 'Most common metal in Earth\'s crust + core. Hemoglobin.' },
-        { z: 27, sym: 'Co', name: 'Cobalt', mass: 58.933, cat: 'Transition metal', notes: 'Permanent magnets. Vitamin B12.' },
-        { z: 28, sym: 'Ni', name: 'Nickel', mass: 58.693, cat: 'Transition metal', notes: 'Coins, stainless steel, batteries.' },
-        { z: 29, sym: 'Cu', name: 'Copper', mass: 63.546, cat: 'Transition metal', notes: 'Electrical wiring, plumbing. Antimicrobial surfaces.' },
-        { z: 30, sym: 'Zn', name: 'Zinc', mass: 65.38, cat: 'Transition metal', notes: 'Galvanizing iron. Brass (with Cu).' },
-        { z: 31, sym: 'Ga', name: 'Gallium', mass: 69.723, cat: 'Post-transition', notes: 'Melts in your hand (29.8°C). Semiconductors (GaN LEDs).' },
-        { z: 32, sym: 'Ge', name: 'Germanium', mass: 72.630, cat: 'Metalloid', notes: 'First transistors. Now mostly for IR optics.' },
-        { z: 33, sym: 'As', name: 'Arsenic', mass: 74.922, cat: 'Metalloid', notes: 'Famous poison. Doped in semiconductors. Wood preservative.' },
-        { z: 34, sym: 'Se', name: 'Selenium', mass: 78.971, cat: 'Nonmetal', notes: 'Trace nutrient. Photocells. Glass color.' },
-        { z: 35, sym: 'Br', name: 'Bromine', mass: 79.904, cat: 'Halogen', notes: 'Only liquid nonmetal at RT. Flame retardants (some banned).' },
-        { z: 36, sym: 'Kr', name: 'Krypton', mass: 83.798, cat: 'Noble gas', notes: 'Specialty lighting. Once defined the meter.' },
-        { z: 37, sym: 'Rb', name: 'Rubidium', mass: 85.468, cat: 'Alkali metal', notes: 'Atomic clocks.' },
-        { z: 38, sym: 'Sr', name: 'Strontium', mass: 87.62, cat: 'Alkaline earth', notes: 'Red fireworks. ⁹⁰Sr — radioactive fallout concern.' },
-        { z: 39, sym: 'Y', name: 'Yttrium', mass: 88.906, cat: 'Transition metal', notes: 'YBCO superconductors. Red phosphor in old TVs.' },
-        { z: 40, sym: 'Zr', name: 'Zirconium', mass: 91.224, cat: 'Transition metal', notes: 'Nuclear fuel cladding. ZrO₂ — fake diamond.' },
-        { z: 41, sym: 'Nb', name: 'Niobium', mass: 92.906, cat: 'Transition metal', notes: 'Superconductors (NbTi in MRI magnets).' },
-        { z: 42, sym: 'Mo', name: 'Molybdenum', mass: 95.95, cat: 'Transition metal', notes: 'High-strength steel alloys.' },
-        { z: 43, sym: 'Tc', name: 'Technetium', mass: 98, cat: 'Transition metal', notes: 'No stable isotopes. ⁹⁹ᵐTc most common medical isotope.' },
-        { z: 44, sym: 'Ru', name: 'Ruthenium', mass: 101.07, cat: 'Transition metal', notes: 'Platinum group. Catalysts, electronics.' },
-        { z: 45, sym: 'Rh', name: 'Rhodium', mass: 102.906, cat: 'Transition metal', notes: 'Most expensive metal (some years). Catalytic converters.' },
-        { z: 46, sym: 'Pd', name: 'Palladium', mass: 106.42, cat: 'Transition metal', notes: 'Catalytic converters. H₂ storage.' },
-        { z: 47, sym: 'Ag', name: 'Silver', mass: 107.868, cat: 'Transition metal', notes: 'Best conductor of heat + electricity. Photography (historical).' },
-        { z: 48, sym: 'Cd', name: 'Cadmium', mass: 112.414, cat: 'Transition metal', notes: 'Toxic. Old yellow paints. NiCd batteries.' },
-        { z: 49, sym: 'In', name: 'Indium', mass: 114.818, cat: 'Post-transition', notes: 'ITO — transparent conductor for touchscreens.' },
+        { z: 1, sym: 'H', name: __alloT('stem.molecule.hydrogen_2', 'Hydrogen'), mass: 1.008, cat: 'Nonmetal', notes: 'Most abundant in universe. Fuel of stars.' },
+        { z: 2, sym: 'He', name: __alloT('stem.molecule.helium', 'Helium'), mass: 4.003, cat: 'Noble gas', notes: 'Second most abundant in universe.' },
+        { z: 3, sym: 'Li', name: __alloT('stem.molecule.lithium', 'Lithium'), mass: 6.94, cat: 'Alkali metal', notes: 'Lightest metal. Batteries, mood stabilizer.' },
+        { z: 4, sym: 'Be', name: __alloT('stem.molecule.beryllium', 'Beryllium'), mass: 9.012, cat: 'Alkaline earth', notes: 'Aerospace alloys. Toxic dust.' },
+        { z: 5, sym: 'B', name: __alloT('stem.molecule.boron', 'Boron'), mass: 10.81, cat: 'Metalloid', notes: 'Borosilicate glass (Pyrex). Detergents.' },
+        { z: 6, sym: 'C', name: __alloT('stem.molecule.carbon_2', 'Carbon'), mass: 12.011, cat: 'Nonmetal', notes: 'Backbone of organic chemistry + life.' },
+        { z: 7, sym: 'N', name: __alloT('stem.molecule.nitrogen_3', 'Nitrogen'), mass: 14.007, cat: 'Nonmetal', notes: '78% of atmosphere. Essential for proteins, DNA.' },
+        { z: 8, sym: 'O', name: __alloT('stem.molecule.oxygen_3', 'Oxygen'), mass: 15.999, cat: 'Nonmetal', notes: '21% of atmosphere. Essential for respiration.' },
+        { z: 9, sym: 'F', name: __alloT('stem.molecule.fluorine', 'Fluorine'), mass: 18.998, cat: 'Halogen', notes: 'Most electronegative. Toothpaste, Teflon, refrigerants.' },
+        { z: 10, sym: 'Ne', name: __alloT('stem.molecule.neon', 'Neon'), mass: 20.180, cat: 'Noble gas', notes: 'Red-orange signs.' },
+        { z: 11, sym: 'Na', name: __alloT('stem.molecule.sodium_2', 'Sodium'), mass: 22.990, cat: 'Alkali metal', notes: 'Reactive! Table salt is NaCl. Vital for nerves.' },
+        { z: 12, sym: 'Mg', name: __alloT('stem.molecule.magnesium', 'Magnesium'), mass: 24.305, cat: 'Alkaline earth', notes: 'Light + strong (alloys). Chlorophyll center.' },
+        { z: 13, sym: 'Al', name: __alloT('stem.molecule.aluminum', 'Aluminum'), mass: 26.982, cat: 'Post-transition', notes: 'Most abundant metal in crust. Cans, foil, aircraft.' },
+        { z: 14, sym: 'Si', name: __alloT('stem.molecule.silicon_2', 'Silicon'), mass: 28.085, cat: 'Metalloid', notes: 'Semiconductor electronics. Glass, sand, quartz.' },
+        { z: 15, sym: 'P', name: __alloT('stem.molecule.phosphorus_2', 'Phosphorus'), mass: 30.974, cat: 'Nonmetal', notes: 'DNA backbone, ATP. Fertilizer. Matches.' },
+        { z: 16, sym: 'S', name: __alloT('stem.molecule.sulfur_2', 'Sulfur'), mass: 32.06, cat: 'Nonmetal', notes: 'Amino acids cys + met. Volcanic. Gunpowder.' },
+        { z: 17, sym: 'Cl', name: __alloT('stem.molecule.chlorine_2', 'Chlorine'), mass: 35.45, cat: 'Halogen', notes: 'Pool water sanitizer. Bleach. PVC.' },
+        { z: 18, sym: 'Ar', name: __alloT('stem.molecule.argon', 'Argon'), mass: 39.948, cat: 'Noble gas', notes: 'Inert gas for welding, light bulbs.' },
+        { z: 19, sym: 'K', name: __alloT('stem.molecule.potassium_2', 'Potassium'), mass: 39.098, cat: 'Alkali metal', notes: 'Essential for nerves + muscles. Bananas.' },
+        { z: 20, sym: 'Ca', name: __alloT('stem.molecule.calcium_2', 'Calcium'), mass: 40.078, cat: 'Alkaline earth', notes: 'Bones, teeth. Milk source.' },
+        { z: 21, sym: 'Sc', name: __alloT('stem.molecule.scandium', 'Scandium'), mass: 44.956, cat: 'Transition metal', notes: 'Bicycle frames, baseball bats (aluminum-scandium alloys).' },
+        { z: 22, sym: 'Ti', name: __alloT('stem.molecule.titanium', 'Titanium'), mass: 47.867, cat: 'Transition metal', notes: 'Strong + light. Aerospace, implants, paint (TiO₂).' },
+        { z: 23, sym: 'V', name: __alloT('stem.molecule.vanadium', 'Vanadium'), mass: 50.942, cat: 'Transition metal', notes: 'High-strength steel alloys.' },
+        { z: 24, sym: 'Cr', name: __alloT('stem.molecule.chromium', 'Chromium'), mass: 51.996, cat: 'Transition metal', notes: 'Stainless steel (with Ni). Plating.' },
+        { z: 25, sym: 'Mn', name: __alloT('stem.molecule.manganese', 'Manganese'), mass: 54.938, cat: 'Transition metal', notes: 'Steelmaking. Batteries.' },
+        { z: 26, sym: 'Fe', name: __alloT('stem.molecule.iron_2', 'Iron'), mass: 55.845, cat: 'Transition metal', notes: 'Most common metal in Earth\'s crust + core. Hemoglobin.' },
+        { z: 27, sym: 'Co', name: __alloT('stem.molecule.cobalt', 'Cobalt'), mass: 58.933, cat: 'Transition metal', notes: 'Permanent magnets. Vitamin B12.' },
+        { z: 28, sym: 'Ni', name: __alloT('stem.molecule.nickel', 'Nickel'), mass: 58.693, cat: 'Transition metal', notes: 'Coins, stainless steel, batteries.' },
+        { z: 29, sym: 'Cu', name: __alloT('stem.molecule.copper', 'Copper'), mass: 63.546, cat: 'Transition metal', notes: 'Electrical wiring, plumbing. Antimicrobial surfaces.' },
+        { z: 30, sym: 'Zn', name: __alloT('stem.molecule.zinc', 'Zinc'), mass: 65.38, cat: 'Transition metal', notes: 'Galvanizing iron. Brass (with Cu).' },
+        { z: 31, sym: 'Ga', name: __alloT('stem.molecule.gallium', 'Gallium'), mass: 69.723, cat: 'Post-transition', notes: 'Melts in your hand (29.8°C). Semiconductors (GaN LEDs).' },
+        { z: 32, sym: 'Ge', name: __alloT('stem.molecule.germanium', 'Germanium'), mass: 72.630, cat: 'Metalloid', notes: 'First transistors. Now mostly for IR optics.' },
+        { z: 33, sym: 'As', name: __alloT('stem.molecule.arsenic', 'Arsenic'), mass: 74.922, cat: 'Metalloid', notes: 'Famous poison. Doped in semiconductors. Wood preservative.' },
+        { z: 34, sym: 'Se', name: __alloT('stem.molecule.selenium', 'Selenium'), mass: 78.971, cat: 'Nonmetal', notes: 'Trace nutrient. Photocells. Glass color.' },
+        { z: 35, sym: 'Br', name: __alloT('stem.molecule.bromine', 'Bromine'), mass: 79.904, cat: 'Halogen', notes: 'Only liquid nonmetal at RT. Flame retardants (some banned).' },
+        { z: 36, sym: 'Kr', name: __alloT('stem.molecule.krypton', 'Krypton'), mass: 83.798, cat: 'Noble gas', notes: 'Specialty lighting. Once defined the meter.' },
+        { z: 37, sym: 'Rb', name: __alloT('stem.molecule.rubidium', 'Rubidium'), mass: 85.468, cat: 'Alkali metal', notes: 'Atomic clocks.' },
+        { z: 38, sym: 'Sr', name: __alloT('stem.molecule.strontium', 'Strontium'), mass: 87.62, cat: 'Alkaline earth', notes: 'Red fireworks. ⁹⁰Sr — radioactive fallout concern.' },
+        { z: 39, sym: 'Y', name: __alloT('stem.molecule.yttrium', 'Yttrium'), mass: 88.906, cat: 'Transition metal', notes: 'YBCO superconductors. Red phosphor in old TVs.' },
+        { z: 40, sym: 'Zr', name: __alloT('stem.molecule.zirconium', 'Zirconium'), mass: 91.224, cat: 'Transition metal', notes: 'Nuclear fuel cladding. ZrO₂ — fake diamond.' },
+        { z: 41, sym: 'Nb', name: __alloT('stem.molecule.niobium', 'Niobium'), mass: 92.906, cat: 'Transition metal', notes: 'Superconductors (NbTi in MRI magnets).' },
+        { z: 42, sym: 'Mo', name: __alloT('stem.molecule.molybdenum', 'Molybdenum'), mass: 95.95, cat: 'Transition metal', notes: 'High-strength steel alloys.' },
+        { z: 43, sym: 'Tc', name: __alloT('stem.molecule.technetium', 'Technetium'), mass: 98, cat: 'Transition metal', notes: 'No stable isotopes. ⁹⁹ᵐTc most common medical isotope.' },
+        { z: 44, sym: 'Ru', name: __alloT('stem.molecule.ruthenium', 'Ruthenium'), mass: 101.07, cat: 'Transition metal', notes: 'Platinum group. Catalysts, electronics.' },
+        { z: 45, sym: 'Rh', name: __alloT('stem.molecule.rhodium', 'Rhodium'), mass: 102.906, cat: 'Transition metal', notes: 'Most expensive metal (some years). Catalytic converters.' },
+        { z: 46, sym: 'Pd', name: __alloT('stem.molecule.palladium', 'Palladium'), mass: 106.42, cat: 'Transition metal', notes: 'Catalytic converters. H₂ storage.' },
+        { z: 47, sym: 'Ag', name: __alloT('stem.molecule.silver', 'Silver'), mass: 107.868, cat: 'Transition metal', notes: 'Best conductor of heat + electricity. Photography (historical).' },
+        { z: 48, sym: 'Cd', name: __alloT('stem.molecule.cadmium', 'Cadmium'), mass: 112.414, cat: 'Transition metal', notes: 'Toxic. Old yellow paints. NiCd batteries.' },
+        { z: 49, sym: 'In', name: __alloT('stem.molecule.indium', 'Indium'), mass: 114.818, cat: 'Post-transition', notes: 'ITO — transparent conductor for touchscreens.' },
         { z: 50, sym: 'Sn', name: 'Tin', mass: 118.710, cat: 'Post-transition', notes: 'Solder, bronze (with Cu), cans. Low melting point.' },
-        { z: 51, sym: 'Sb', name: 'Antimony', mass: 121.760, cat: 'Metalloid', notes: 'Flame retardants. Old "stibnite" eye makeup.' },
-        { z: 52, sym: 'Te', name: 'Tellurium', mass: 127.60, cat: 'Metalloid', notes: 'Photovoltaics (CdTe solar cells).' },
-        { z: 53, sym: 'I', name: 'Iodine', mass: 126.904, cat: 'Halogen', notes: 'Thyroid hormone. Antiseptic. Iodized salt.' },
-        { z: 54, sym: 'Xe', name: 'Xenon', mass: 131.293, cat: 'Noble gas', notes: 'Bright arc lamps. Anesthetic.' },
-        { z: 55, sym: 'Cs', name: 'Cesium', mass: 132.905, cat: 'Alkali metal', notes: 'Atomic clocks define the second. Reactive.' },
-        { z: 56, sym: 'Ba', name: 'Barium', mass: 137.327, cat: 'Alkaline earth', notes: 'Green fireworks. BaSO₄ for X-ray contrast (insoluble = nontoxic).' },
-        { z: 57, sym: 'La', name: 'Lanthanum', mass: 138.905, cat: 'Lanthanide', notes: 'Camera lenses (high refractive index).' },
-        { z: 58, sym: 'Ce', name: 'Cerium', mass: 140.116, cat: 'Lanthanide', notes: 'Most abundant rare earth. Catalytic converters.' },
-        { z: 59, sym: 'Pr', name: 'Praseodymium', mass: 140.908, cat: 'Lanthanide', notes: 'Magnets. Tinted welding goggles.' },
-        { z: 60, sym: 'Nd', name: 'Neodymium', mass: 144.242, cat: 'Lanthanide', notes: 'Strongest permanent magnets (NdFeB). Speakers, hard drives, motors.' },
-        { z: 61, sym: 'Pm', name: 'Promethium', mass: 145, cat: 'Lanthanide', notes: 'No stable isotopes. Glow-in-dark paints.' },
-        { z: 62, sym: 'Sm', name: 'Samarium', mass: 150.36, cat: 'Lanthanide', notes: 'SmCo magnets (high-temp).' },
-        { z: 63, sym: 'Eu', name: 'Europium', mass: 151.964, cat: 'Lanthanide', notes: 'Red phosphors. Anti-counterfeit ink in euros.' },
-        { z: 64, sym: 'Gd', name: 'Gadolinium', mass: 157.25, cat: 'Lanthanide', notes: 'MRI contrast. Magnetic refrigeration research.' },
-        { z: 65, sym: 'Tb', name: 'Terbium', mass: 158.925, cat: 'Lanthanide', notes: 'Green phosphors. Magnetostrictive alloys.' },
-        { z: 66, sym: 'Dy', name: 'Dysprosium', mass: 162.500, cat: 'Lanthanide', notes: 'Magnets that work at high temp (EV motors, wind turbines).' },
-        { z: 67, sym: 'Ho', name: 'Holmium', mass: 164.930, cat: 'Lanthanide', notes: 'Highest magnetic strength among elements.' },
-        { z: 68, sym: 'Er', name: 'Erbium', mass: 167.259, cat: 'Lanthanide', notes: 'Fiber amplifiers (EDFA) for internet backbones.' },
-        { z: 69, sym: 'Tm', name: 'Thulium', mass: 168.934, cat: 'Lanthanide', notes: 'Portable X-ray sources.' },
-        { z: 70, sym: 'Yb', name: 'Ytterbium', mass: 173.045, cat: 'Lanthanide', notes: 'Atomic clocks (most accurate today).' },
-        { z: 71, sym: 'Lu', name: 'Lutetium', mass: 174.967, cat: 'Lanthanide', notes: 'PET scan crystals.' },
-        { z: 72, sym: 'Hf', name: 'Hafnium', mass: 178.49, cat: 'Transition metal', notes: 'Nuclear control rods. CPU gate dielectric.' },
-        { z: 73, sym: 'Ta', name: 'Tantalum', mass: 180.948, cat: 'Transition metal', notes: 'Capacitors in electronics. Conflict mineral concerns.' },
-        { z: 74, sym: 'W', name: 'Tungsten', mass: 183.84, cat: 'Transition metal', notes: 'Highest melting point of metals (3422°C). Filaments, drill bits.' },
-        { z: 75, sym: 'Re', name: 'Rhenium', mass: 186.207, cat: 'Transition metal', notes: 'Jet engine alloys (high-T strength).' },
-        { z: 76, sym: 'Os', name: 'Osmium', mass: 190.23, cat: 'Transition metal', notes: 'Densest natural element (22.59 g/cm³). Fountain pen nibs.' },
-        { z: 77, sym: 'Ir', name: 'Iridium', mass: 192.217, cat: 'Transition metal', notes: 'Second densest. Spark plugs. Asteroid layer marker (K-Pg boundary).' },
-        { z: 78, sym: 'Pt', name: 'Platinum', mass: 195.084, cat: 'Transition metal', notes: 'Catalytic converters. Jewelry. Chemotherapy (cisplatin).' },
-        { z: 79, sym: 'Au', name: 'Gold', mass: 196.967, cat: 'Transition metal', notes: 'Doesn\'t tarnish. Jewelry, electronics, dental, money standard.' },
-        { z: 80, sym: 'Hg', name: 'Mercury', mass: 200.592, cat: 'Transition metal', notes: 'Only metal liquid at RT. Thermometers (banned now). Toxic.' },
-        { z: 81, sym: 'Tl', name: 'Thallium', mass: 204.38, cat: 'Post-transition', notes: 'Extremely toxic. Famous Agatha Christie poison.' },
-        { z: 82, sym: 'Pb', name: 'Lead', mass: 207.2, cat: 'Post-transition', notes: 'Lead-acid batteries, X-ray shielding. Neurotoxin — phased out of paint, gasoline.' },
-        { z: 83, sym: 'Bi', name: 'Bismuth', mass: 208.980, cat: 'Post-transition', notes: 'Pepto-Bismol. Heavy but relatively non-toxic.' },
-        { z: 84, sym: 'Po', name: 'Polonium', mass: 209, cat: 'Metalloid', notes: 'Highly radioactive. Discovered by Marie Curie. Poisoning agent (Litvinenko).' },
-        { z: 85, sym: 'At', name: 'Astatine', mass: 210, cat: 'Halogen', notes: 'Rarest element on Earth (~1g exists at any time).' },
-        { z: 86, sym: 'Rn', name: 'Radon', mass: 222, cat: 'Noble gas', notes: 'Radioactive. Major basement lung cancer risk.' },
-        { z: 87, sym: 'Fr', name: 'Francium', mass: 223, cat: 'Alkali metal', notes: 'Highly radioactive + reactive. Only tiny amounts exist.' },
-        { z: 88, sym: 'Ra', name: 'Radium', mass: 226, cat: 'Alkaline earth', notes: 'Discovered by Curies. Glow-in-dark paints (radium girls).' },
-        { z: 89, sym: 'Ac', name: 'Actinium', mass: 227, cat: 'Actinide', notes: 'Radioactive. Limited research uses.' },
-        { z: 90, sym: 'Th', name: 'Thorium', mass: 232.038, cat: 'Actinide', notes: 'Potential nuclear fuel. Old lantern mantles.' },
-        { z: 92, sym: 'U', name: 'Uranium', mass: 238.029, cat: 'Actinide', notes: 'Nuclear fuel + weapons. ²³⁵U fissile, ²³⁸U fertile.' },
-        { z: 94, sym: 'Pu', name: 'Plutonium', mass: 244, cat: 'Actinide', notes: 'Synthetic. Reactor fuel + weapons. RTGs (Voyager, Mars rovers).' }
+        { z: 51, sym: 'Sb', name: __alloT('stem.molecule.antimony', 'Antimony'), mass: 121.760, cat: 'Metalloid', notes: 'Flame retardants. Old "stibnite" eye makeup.' },
+        { z: 52, sym: 'Te', name: __alloT('stem.molecule.tellurium', 'Tellurium'), mass: 127.60, cat: 'Metalloid', notes: 'Photovoltaics (CdTe solar cells).' },
+        { z: 53, sym: 'I', name: __alloT('stem.molecule.iodine', 'Iodine'), mass: 126.904, cat: 'Halogen', notes: 'Thyroid hormone. Antiseptic. Iodized salt.' },
+        { z: 54, sym: 'Xe', name: __alloT('stem.molecule.xenon', 'Xenon'), mass: 131.293, cat: 'Noble gas', notes: 'Bright arc lamps. Anesthetic.' },
+        { z: 55, sym: 'Cs', name: __alloT('stem.molecule.cesium', 'Cesium'), mass: 132.905, cat: 'Alkali metal', notes: 'Atomic clocks define the second. Reactive.' },
+        { z: 56, sym: 'Ba', name: __alloT('stem.molecule.barium', 'Barium'), mass: 137.327, cat: 'Alkaline earth', notes: 'Green fireworks. BaSO₄ for X-ray contrast (insoluble = nontoxic).' },
+        { z: 57, sym: 'La', name: __alloT('stem.molecule.lanthanum', 'Lanthanum'), mass: 138.905, cat: 'Lanthanide', notes: 'Camera lenses (high refractive index).' },
+        { z: 58, sym: 'Ce', name: __alloT('stem.molecule.cerium', 'Cerium'), mass: 140.116, cat: 'Lanthanide', notes: 'Most abundant rare earth. Catalytic converters.' },
+        { z: 59, sym: 'Pr', name: __alloT('stem.molecule.praseodymium', 'Praseodymium'), mass: 140.908, cat: 'Lanthanide', notes: 'Magnets. Tinted welding goggles.' },
+        { z: 60, sym: 'Nd', name: __alloT('stem.molecule.neodymium', 'Neodymium'), mass: 144.242, cat: 'Lanthanide', notes: 'Strongest permanent magnets (NdFeB). Speakers, hard drives, motors.' },
+        { z: 61, sym: 'Pm', name: __alloT('stem.molecule.promethium', 'Promethium'), mass: 145, cat: 'Lanthanide', notes: 'No stable isotopes. Glow-in-dark paints.' },
+        { z: 62, sym: 'Sm', name: __alloT('stem.molecule.samarium', 'Samarium'), mass: 150.36, cat: 'Lanthanide', notes: 'SmCo magnets (high-temp).' },
+        { z: 63, sym: 'Eu', name: __alloT('stem.molecule.europium', 'Europium'), mass: 151.964, cat: 'Lanthanide', notes: 'Red phosphors. Anti-counterfeit ink in euros.' },
+        { z: 64, sym: 'Gd', name: __alloT('stem.molecule.gadolinium', 'Gadolinium'), mass: 157.25, cat: 'Lanthanide', notes: 'MRI contrast. Magnetic refrigeration research.' },
+        { z: 65, sym: 'Tb', name: __alloT('stem.molecule.terbium', 'Terbium'), mass: 158.925, cat: 'Lanthanide', notes: 'Green phosphors. Magnetostrictive alloys.' },
+        { z: 66, sym: 'Dy', name: __alloT('stem.molecule.dysprosium', 'Dysprosium'), mass: 162.500, cat: 'Lanthanide', notes: 'Magnets that work at high temp (EV motors, wind turbines).' },
+        { z: 67, sym: 'Ho', name: __alloT('stem.molecule.holmium', 'Holmium'), mass: 164.930, cat: 'Lanthanide', notes: 'Highest magnetic strength among elements.' },
+        { z: 68, sym: 'Er', name: __alloT('stem.molecule.erbium', 'Erbium'), mass: 167.259, cat: 'Lanthanide', notes: 'Fiber amplifiers (EDFA) for internet backbones.' },
+        { z: 69, sym: 'Tm', name: __alloT('stem.molecule.thulium', 'Thulium'), mass: 168.934, cat: 'Lanthanide', notes: 'Portable X-ray sources.' },
+        { z: 70, sym: 'Yb', name: __alloT('stem.molecule.ytterbium', 'Ytterbium'), mass: 173.045, cat: 'Lanthanide', notes: 'Atomic clocks (most accurate today).' },
+        { z: 71, sym: 'Lu', name: __alloT('stem.molecule.lutetium', 'Lutetium'), mass: 174.967, cat: 'Lanthanide', notes: 'PET scan crystals.' },
+        { z: 72, sym: 'Hf', name: __alloT('stem.molecule.hafnium', 'Hafnium'), mass: 178.49, cat: 'Transition metal', notes: 'Nuclear control rods. CPU gate dielectric.' },
+        { z: 73, sym: 'Ta', name: __alloT('stem.molecule.tantalum', 'Tantalum'), mass: 180.948, cat: 'Transition metal', notes: 'Capacitors in electronics. Conflict mineral concerns.' },
+        { z: 74, sym: 'W', name: __alloT('stem.molecule.tungsten', 'Tungsten'), mass: 183.84, cat: 'Transition metal', notes: 'Highest melting point of metals (3422°C). Filaments, drill bits.' },
+        { z: 75, sym: 'Re', name: __alloT('stem.molecule.rhenium', 'Rhenium'), mass: 186.207, cat: 'Transition metal', notes: 'Jet engine alloys (high-T strength).' },
+        { z: 76, sym: 'Os', name: __alloT('stem.molecule.osmium', 'Osmium'), mass: 190.23, cat: 'Transition metal', notes: 'Densest natural element (22.59 g/cm³). Fountain pen nibs.' },
+        { z: 77, sym: 'Ir', name: __alloT('stem.molecule.iridium', 'Iridium'), mass: 192.217, cat: 'Transition metal', notes: 'Second densest. Spark plugs. Asteroid layer marker (K-Pg boundary).' },
+        { z: 78, sym: 'Pt', name: __alloT('stem.molecule.platinum', 'Platinum'), mass: 195.084, cat: 'Transition metal', notes: 'Catalytic converters. Jewelry. Chemotherapy (cisplatin).' },
+        { z: 79, sym: 'Au', name: __alloT('stem.molecule.gold', 'Gold'), mass: 196.967, cat: 'Transition metal', notes: 'Doesn\'t tarnish. Jewelry, electronics, dental, money standard.' },
+        { z: 80, sym: 'Hg', name: __alloT('stem.molecule.mercury', 'Mercury'), mass: 200.592, cat: 'Transition metal', notes: 'Only metal liquid at RT. Thermometers (banned now). Toxic.' },
+        { z: 81, sym: 'Tl', name: __alloT('stem.molecule.thallium', 'Thallium'), mass: 204.38, cat: 'Post-transition', notes: 'Extremely toxic. Famous Agatha Christie poison.' },
+        { z: 82, sym: 'Pb', name: __alloT('stem.molecule.lead', 'Lead'), mass: 207.2, cat: 'Post-transition', notes: 'Lead-acid batteries, X-ray shielding. Neurotoxin — phased out of paint, gasoline.' },
+        { z: 83, sym: 'Bi', name: __alloT('stem.molecule.bismuth', 'Bismuth'), mass: 208.980, cat: 'Post-transition', notes: 'Pepto-Bismol. Heavy but relatively non-toxic.' },
+        { z: 84, sym: 'Po', name: __alloT('stem.molecule.polonium', 'Polonium'), mass: 209, cat: 'Metalloid', notes: 'Highly radioactive. Discovered by Marie Curie. Poisoning agent (Litvinenko).' },
+        { z: 85, sym: 'At', name: __alloT('stem.molecule.astatine', 'Astatine'), mass: 210, cat: 'Halogen', notes: 'Rarest element on Earth (~1g exists at any time).' },
+        { z: 86, sym: 'Rn', name: __alloT('stem.molecule.radon', 'Radon'), mass: 222, cat: 'Noble gas', notes: 'Radioactive. Major basement lung cancer risk.' },
+        { z: 87, sym: 'Fr', name: __alloT('stem.molecule.francium', 'Francium'), mass: 223, cat: 'Alkali metal', notes: 'Highly radioactive + reactive. Only tiny amounts exist.' },
+        { z: 88, sym: 'Ra', name: __alloT('stem.molecule.radium', 'Radium'), mass: 226, cat: 'Alkaline earth', notes: 'Discovered by Curies. Glow-in-dark paints (radium girls).' },
+        { z: 89, sym: 'Ac', name: __alloT('stem.molecule.actinium', 'Actinium'), mass: 227, cat: 'Actinide', notes: 'Radioactive. Limited research uses.' },
+        { z: 90, sym: 'Th', name: __alloT('stem.molecule.thorium', 'Thorium'), mass: 232.038, cat: 'Actinide', notes: 'Potential nuclear fuel. Old lantern mantles.' },
+        { z: 92, sym: 'U', name: __alloT('stem.molecule.uranium', 'Uranium'), mass: 238.029, cat: 'Actinide', notes: 'Nuclear fuel + weapons. ²³⁵U fissile, ²³⁸U fertile.' },
+        { z: 94, sym: 'Pu', name: __alloT('stem.molecule.plutonium', 'Plutonium'), mass: 244, cat: 'Actinide', notes: 'Synthetic. Reactor fuel + weapons. RTGs (Voyager, Mars rovers).' }
       ];
 
       var MINERALS = [
-        { name: 'Quartz', formula: 'SiO₂', mohs: 7, notes: 'Most abundant mineral in crust. Sand. Watch crystals (piezo).' },
-        { name: 'Feldspar', formula: '(K,Na,Ca)(Al,Si)₄O₈', mohs: 6, notes: 'Most abundant mineral group. Ceramics, glass.' },
-        { name: 'Calcite', formula: 'CaCO₃', mohs: 3, notes: 'Limestone, marble. Reacts with HCl → CO₂ bubbles.' },
-        { name: 'Halite', formula: 'NaCl', mohs: 2.5, notes: 'Rock salt. Old salt mines.' },
-        { name: 'Gypsum', formula: 'CaSO₄·2H₂O', mohs: 2, notes: 'Drywall. Plaster of Paris (when partly dehydrated).' },
-        { name: 'Mica (muscovite)', formula: 'KAl₂(AlSi₃O₁₀)(OH)₂', mohs: 2.5, notes: 'Flakes into thin sheets. Used in cosmetics, capacitors.' },
-        { name: 'Olivine', formula: '(Mg,Fe)₂SiO₄', mohs: 6.5, notes: 'Mantle mineral. Green peridot gemstone.' },
-        { name: 'Pyrite', formula: 'FeS₂', mohs: 6, notes: '"Fool\'s gold". Brassy yellow cubic crystals.' },
-        { name: 'Galena', formula: 'PbS', mohs: 2.5, notes: 'Main lead ore. Heavy, silvery.' },
-        { name: 'Magnetite', formula: 'Fe₃O₄', mohs: 5.5, notes: 'Magnetic iron ore. Used in compass needles historically.' },
-        { name: 'Hematite', formula: 'Fe₂O₃', mohs: 6, notes: 'Iron ore. Red color in rocks + Mars soil.' },
-        { name: 'Talc', formula: 'Mg₃Si₄O₁₀(OH)₂', mohs: 1, notes: 'Softest mineral. Baby powder. Soapstone.' },
-        { name: 'Corundum', formula: 'Al₂O₃', mohs: 9, notes: 'Ruby (red) + sapphire (other colors). Watch crystals.' },
-        { name: 'Diamond', formula: 'C', mohs: 10, notes: 'Hardest natural material. Cutting tools, jewelry.' },
-        { name: 'Topaz', formula: 'Al₂SiO₄(F,OH)₂', mohs: 8, notes: 'Various colors. November birthstone.' },
-        { name: 'Beryl (emerald, aquamarine)', formula: 'Be₃Al₂Si₆O₁₈', mohs: 7.5, notes: 'Emerald = green (Cr); aquamarine = blue (Fe).' },
-        { name: 'Garnet', formula: 'X₃Y₂(SiO₄)₃ (various)', mohs: 7, notes: 'Many colors. Used in sandpaper + as gem.' },
-        { name: 'Fluorite', formula: 'CaF₂', mohs: 4, notes: 'Fluoresces under UV. Source of name "fluorescence".' },
-        { name: 'Apatite', formula: 'Ca₅(PO₄)₃(F,Cl,OH)', mohs: 5, notes: 'Main mineral in bones + teeth (hydroxyapatite form).' },
-        { name: 'Orthoclase', formula: 'KAlSi₃O₈', mohs: 6, notes: 'Mohs scale reference at 6.' }
+        { name: __alloT('stem.molecule.quartz', 'Quartz'), formula: 'SiO₂', mohs: 7, notes: 'Most abundant mineral in crust. Sand. Watch crystals (piezo).' },
+        { name: __alloT('stem.molecule.feldspar', 'Feldspar'), formula: '(K,Na,Ca)(Al,Si)₄O₈', mohs: 6, notes: 'Most abundant mineral group. Ceramics, glass.' },
+        { name: __alloT('stem.molecule.calcite', 'Calcite'), formula: 'CaCO₃', mohs: 3, notes: 'Limestone, marble. Reacts with HCl → CO₂ bubbles.' },
+        { name: __alloT('stem.molecule.halite', 'Halite'), formula: 'NaCl', mohs: 2.5, notes: 'Rock salt. Old salt mines.' },
+        { name: __alloT('stem.molecule.gypsum', 'Gypsum'), formula: 'CaSO₄·2H₂O', mohs: 2, notes: 'Drywall. Plaster of Paris (when partly dehydrated).' },
+        { name: __alloT('stem.molecule.mica_muscovite', 'Mica (muscovite)'), formula: 'KAl₂(AlSi₃O₁₀)(OH)₂', mohs: 2.5, notes: 'Flakes into thin sheets. Used in cosmetics, capacitors.' },
+        { name: __alloT('stem.molecule.olivine', 'Olivine'), formula: '(Mg,Fe)₂SiO₄', mohs: 6.5, notes: 'Mantle mineral. Green peridot gemstone.' },
+        { name: __alloT('stem.molecule.pyrite', 'Pyrite'), formula: 'FeS₂', mohs: 6, notes: '"Fool\'s gold". Brassy yellow cubic crystals.' },
+        { name: __alloT('stem.molecule.galena', 'Galena'), formula: 'PbS', mohs: 2.5, notes: 'Main lead ore. Heavy, silvery.' },
+        { name: __alloT('stem.molecule.magnetite', 'Magnetite'), formula: 'Fe₃O₄', mohs: 5.5, notes: 'Magnetic iron ore. Used in compass needles historically.' },
+        { name: __alloT('stem.molecule.hematite', 'Hematite'), formula: 'Fe₂O₃', mohs: 6, notes: 'Iron ore. Red color in rocks + Mars soil.' },
+        { name: __alloT('stem.molecule.talc', 'Talc'), formula: 'Mg₃Si₄O₁₀(OH)₂', mohs: 1, notes: 'Softest mineral. Baby powder. Soapstone.' },
+        { name: __alloT('stem.molecule.corundum', 'Corundum'), formula: 'Al₂O₃', mohs: 9, notes: 'Ruby (red) + sapphire (other colors). Watch crystals.' },
+        { name: __alloT('stem.molecule.diamond', 'Diamond'), formula: 'C', mohs: 10, notes: 'Hardest natural material. Cutting tools, jewelry.' },
+        { name: __alloT('stem.molecule.topaz', 'Topaz'), formula: 'Al₂SiO₄(F,OH)₂', mohs: 8, notes: 'Various colors. November birthstone.' },
+        { name: __alloT('stem.molecule.beryl_emerald_aquamarine', 'Beryl (emerald, aquamarine)'), formula: 'Be₃Al₂Si₆O₁₈', mohs: 7.5, notes: 'Emerald = green (Cr); aquamarine = blue (Fe).' },
+        { name: __alloT('stem.molecule.garnet', 'Garnet'), formula: 'X₃Y₂(SiO₄)₃ (various)', mohs: 7, notes: 'Many colors. Used in sandpaper + as gem.' },
+        { name: __alloT('stem.molecule.fluorite_2', 'Fluorite'), formula: 'CaF₂', mohs: 4, notes: 'Fluoresces under UV. Source of name "fluorescence".' },
+        { name: __alloT('stem.molecule.apatite', 'Apatite'), formula: 'Ca₅(PO₄)₃(F,Cl,OH)', mohs: 5, notes: 'Main mineral in bones + teeth (hydroxyapatite form).' },
+        { name: __alloT('stem.molecule.orthoclase', 'Orthoclase'), formula: 'KAlSi₃O₈', mohs: 6, notes: 'Mohs scale reference at 6.' }
       ];
 
       var DRUGS_LIST = [
-        { name: 'Aspirin', formula: 'C₉H₈O₄', class: 'NSAID', use: 'Pain, fever, blood thinner. Original drug from willow bark salicin.' },
-        { name: 'Ibuprofen', formula: 'C₁₃H₁₈O₂', class: 'NSAID', use: 'Pain, fever, inflammation. OTC since 1984.' },
-        { name: 'Acetaminophen (Tylenol)', formula: 'C₈H₉NO₂', class: 'Analgesic', use: 'Pain, fever. NOT anti-inflammatory. Overdose → liver failure.' },
-        { name: 'Caffeine', formula: 'C₈H₁₀N₄O₂', class: 'Stimulant', use: 'Adenosine receptor antagonist. Most consumed psychoactive drug.' },
-        { name: 'Penicillin G', formula: 'C₁₆H₁₈N₂O₄S', class: 'Antibiotic (β-lactam)', use: 'First mass-produced antibiotic. Inhibits bacterial cell-wall synthesis.' },
-        { name: 'Amoxicillin', formula: 'C₁₆H₁₉N₃O₅S', class: 'Antibiotic (β-lactam)', use: 'Common oral antibiotic. Broader spectrum than penicillin G.' },
-        { name: 'Insulin', formula: 'protein (51 aa)', class: 'Hormone', use: 'Diabetes. First recombinant drug (1982).' },
-        { name: 'Metformin', formula: 'C₄H₁₁N₅', class: 'Antidiabetic', use: 'First-line for type 2 diabetes. Reduces hepatic glucose output.' },
-        { name: 'Statins (e.g., atorvastatin)', formula: 'C₃₃H₃₅FN₂O₅', class: 'HMG-CoA reductase inhibitor', use: 'Lower LDL cholesterol. Most prescribed drug class in many countries.' },
-        { name: 'Levothyroxine', formula: 'C₁₅H₁₁I₄NO₄', class: 'Thyroid hormone', use: 'Hypothyroidism. Most prescribed drug in US most years.' },
-        { name: 'Sertraline (Zoloft)', formula: 'C₁₇H₁₇Cl₂N', class: 'SSRI', use: 'Depression, anxiety. Increases serotonin in synapse.' },
-        { name: 'Albuterol', formula: 'C₁₃H₂₁NO₃', class: 'Bronchodilator', use: 'Asthma rescue inhaler. β₂-adrenergic agonist.' },
-        { name: 'Lisinopril', formula: 'C₂₁H₃₁N₃O₅', class: 'ACE inhibitor', use: 'Hypertension. Inhibits angiotensin-converting enzyme.' },
-        { name: 'Atorvastatin (Lipitor)', formula: 'C₃₃H₃₅FN₂O₅', class: 'Statin', use: 'Cholesterol. Best-selling drug in history (~$148B lifetime).' },
-        { name: 'Omeprazole', formula: 'C₁₇H₁₉N₃O₃S', class: 'PPI (proton pump inhibitor)', use: 'Heartburn, GERD, ulcers.' },
-        { name: 'Diphenhydramine (Benadryl)', formula: 'C₁₇H₂₁NO', class: 'Antihistamine (1st gen)', use: 'Allergies, sleep aid. Sedating.' },
-        { name: 'Loratadine (Claritin)', formula: 'C₂₂H₂₃ClN₂O₂', class: 'Antihistamine (2nd gen)', use: 'Allergies. Non-sedating.' },
-        { name: 'Codeine', formula: 'C₁₈H₂₁NO₃', class: 'Opioid', use: 'Pain, cough. Liver metabolizes to morphine.' },
-        { name: 'Morphine', formula: 'C₁₇H₁₉NO₃', class: 'Opioid', use: 'Severe pain. First isolated drug from a plant (opium, 1804).' },
-        { name: 'Hydrocodone', formula: 'C₁₈H₂₁NO₃', class: 'Opioid', use: 'Pain. Often combined with acetaminophen.' },
-        { name: 'Diazepam (Valium)', formula: 'C₁₆H₁₃ClN₂O', class: 'Benzodiazepine', use: 'Anxiety, muscle spasms, seizures.' },
-        { name: 'Warfarin', formula: 'C₁₉H₁₆O₄', class: 'Anticoagulant', use: 'Blood thinner. Originally a rat poison.' },
-        { name: 'Furosemide (Lasix)', formula: 'C₁₂H₁₁ClN₂O₅S', class: 'Loop diuretic', use: 'Edema, heart failure. Increases urine output.' },
-        { name: 'Albuterol (salbutamol)', formula: 'C₁₃H₂₁NO₃', class: 'β₂ agonist', use: 'Asthma quick-relief.' },
-        { name: 'Metoprolol', formula: 'C₁₅H₂₅NO₃', class: 'Beta blocker', use: 'High blood pressure, heart failure, arrhythmia.' }
+        { name: __alloT('stem.molecule.aspirin_4', 'Aspirin'), formula: 'C₉H₈O₄', class: 'NSAID', use: 'Pain, fever, blood thinner. Original drug from willow bark salicin.' },
+        { name: __alloT('stem.molecule.ibuprofen', 'Ibuprofen'), formula: 'C₁₃H₁₈O₂', class: 'NSAID', use: 'Pain, fever, inflammation. OTC since 1984.' },
+        { name: __alloT('stem.molecule.acetaminophen_tylenol', 'Acetaminophen (Tylenol)'), formula: 'C₈H₉NO₂', class: 'Analgesic', use: 'Pain, fever. NOT anti-inflammatory. Overdose → liver failure.' },
+        { name: __alloT('stem.molecule.caffeine_4', 'Caffeine'), formula: 'C₈H₁₀N₄O₂', class: 'Stimulant', use: 'Adenosine receptor antagonist. Most consumed psychoactive drug.' },
+        { name: __alloT('stem.molecule.penicillin_g_2', 'Penicillin G'), formula: 'C₁₆H₁₈N₂O₄S', class: 'Antibiotic (β-lactam)', use: 'First mass-produced antibiotic. Inhibits bacterial cell-wall synthesis.' },
+        { name: __alloT('stem.molecule.amoxicillin', 'Amoxicillin'), formula: 'C₁₆H₁₉N₃O₅S', class: 'Antibiotic (β-lactam)', use: 'Common oral antibiotic. Broader spectrum than penicillin G.' },
+        { name: __alloT('stem.molecule.insulin', 'Insulin'), formula: 'protein (51 aa)', class: 'Hormone', use: 'Diabetes. First recombinant drug (1982).' },
+        { name: __alloT('stem.molecule.metformin', 'Metformin'), formula: 'C₄H₁₁N₅', class: 'Antidiabetic', use: 'First-line for type 2 diabetes. Reduces hepatic glucose output.' },
+        { name: __alloT('stem.molecule.statins_e_g_atorvastatin', 'Statins (e.g., atorvastatin)'), formula: 'C₃₃H₃₅FN₂O₅', class: 'HMG-CoA reductase inhibitor', use: 'Lower LDL cholesterol. Most prescribed drug class in many countries.' },
+        { name: __alloT('stem.molecule.levothyroxine', 'Levothyroxine'), formula: 'C₁₅H₁₁I₄NO₄', class: 'Thyroid hormone', use: 'Hypothyroidism. Most prescribed drug in US most years.' },
+        { name: __alloT('stem.molecule.sertraline_zoloft', 'Sertraline (Zoloft)'), formula: 'C₁₇H₁₇Cl₂N', class: 'SSRI', use: 'Depression, anxiety. Increases serotonin in synapse.' },
+        { name: __alloT('stem.molecule.albuterol', 'Albuterol'), formula: 'C₁₃H₂₁NO₃', class: 'Bronchodilator', use: 'Asthma rescue inhaler. β₂-adrenergic agonist.' },
+        { name: __alloT('stem.molecule.lisinopril', 'Lisinopril'), formula: 'C₂₁H₃₁N₃O₅', class: 'ACE inhibitor', use: 'Hypertension. Inhibits angiotensin-converting enzyme.' },
+        { name: __alloT('stem.molecule.atorvastatin_lipitor', 'Atorvastatin (Lipitor)'), formula: 'C₃₃H₃₅FN₂O₅', class: 'Statin', use: 'Cholesterol. Best-selling drug in history (~$148B lifetime).' },
+        { name: __alloT('stem.molecule.omeprazole', 'Omeprazole'), formula: 'C₁₇H₁₉N₃O₃S', class: 'PPI (proton pump inhibitor)', use: 'Heartburn, GERD, ulcers.' },
+        { name: __alloT('stem.molecule.diphenhydramine_benadryl', 'Diphenhydramine (Benadryl)'), formula: 'C₁₇H₂₁NO', class: 'Antihistamine (1st gen)', use: 'Allergies, sleep aid. Sedating.' },
+        { name: __alloT('stem.molecule.loratadine_claritin', 'Loratadine (Claritin)'), formula: 'C₂₂H₂₃ClN₂O₂', class: 'Antihistamine (2nd gen)', use: 'Allergies. Non-sedating.' },
+        { name: __alloT('stem.molecule.codeine', 'Codeine'), formula: 'C₁₈H₂₁NO₃', class: 'Opioid', use: 'Pain, cough. Liver metabolizes to morphine.' },
+        { name: __alloT('stem.molecule.morphine', 'Morphine'), formula: 'C₁₇H₁₉NO₃', class: 'Opioid', use: 'Severe pain. First isolated drug from a plant (opium, 1804).' },
+        { name: __alloT('stem.molecule.hydrocodone', 'Hydrocodone'), formula: 'C₁₈H₂₁NO₃', class: 'Opioid', use: 'Pain. Often combined with acetaminophen.' },
+        { name: __alloT('stem.molecule.diazepam_valium', 'Diazepam (Valium)'), formula: 'C₁₆H₁₃ClN₂O', class: 'Benzodiazepine', use: 'Anxiety, muscle spasms, seizures.' },
+        { name: __alloT('stem.molecule.warfarin', 'Warfarin'), formula: 'C₁₉H₁₆O₄', class: 'Anticoagulant', use: 'Blood thinner. Originally a rat poison.' },
+        { name: __alloT('stem.molecule.furosemide_lasix', 'Furosemide (Lasix)'), formula: 'C₁₂H₁₁ClN₂O₅S', class: 'Loop diuretic', use: 'Edema, heart failure. Increases urine output.' },
+        { name: __alloT('stem.molecule.albuterol_salbutamol', 'Albuterol (salbutamol)'), formula: 'C₁₃H₂₁NO₃', class: 'β₂ agonist', use: 'Asthma quick-relief.' },
+        { name: __alloT('stem.molecule.metoprolol', 'Metoprolol'), formula: 'C₁₅H₂₅NO₃', class: 'Beta blocker', use: 'High blood pressure, heart failure, arrhythmia.' }
       ];
 
       var HOUSEHOLD_CHEM = [
@@ -5404,8 +5893,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderAllElementsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🅻 Periodic table (90 elements)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A summary of the 90 naturally-occurring elements + selected synthetic ones. Full periodic table has 118 elements.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.periodic_table_90_elements', '🅻 Periodic table (90 elements)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.a_summary_of_the_90_naturally_occurrin', 'A summary of the 90 naturally-occurring elements + selected synthetic ones. Full periodic table has 118 elements.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5434,8 +5923,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderMineralsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💎 Common minerals'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Mohs scale measures relative hardness (1 = softest, 10 = hardest). The scale steps are NOT linear: corundum (9) is ~4× harder than topaz (8), and diamond (10) is ~4× harder than corundum.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_minerals', '💎 Common minerals')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.mohs_scale_measures_relative_hardness_', 'Mohs scale measures relative hardness (1 = softest, 10 = hardest). The scale steps are NOT linear: corundum (9) is ~4× harder than topaz (8), and diamond (10) is ~4× harder than corundum.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5462,8 +5951,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderPharmaSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💊 Common medications'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'For chemistry context only — NOT medical advice. Always consult a doctor or pharmacist before taking any medication.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_medications', '💊 Common medications')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.for_chemistry_context_only_not_medical', 'For chemistry context only — NOT medical advice. Always consult a doctor or pharmacist before taking any medication.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5490,9 +5979,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderHouseholdSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🧴 Household chemicals'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.household_chemicals', '🧴 Household chemicals')),
           React.createElement('div', { className: 'p-2.5 rounded bg-rose-50 border border-rose-200 text-[11px] text-rose-900 mb-3' },
-            React.createElement('strong', null, '⚠ Safety: '), 'NEVER mix bleach with ammonia (toxic chloramine vapors) or acids (deadly chlorine gas). Store cleaners separately. Keep away from children.'
+            React.createElement('strong', null, __alloT('stem.molecule.safety', '⚠ Safety: ')), __alloT('stem.molecule.never_mix_bleach_with_ammonia_toxic_ch', 'NEVER mix bleach with ammonia (toxic chloramine vapors) or acids (deadly chlorine gas). Store cleaners separately. Keep away from children.')
           ),
           React.createElement('div', { className: 'space-y-2' },
             HOUSEHOLD_CHEM.map(function(c, i) {
@@ -5513,22 +6002,22 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       // ═════════════════════════════════════════════════════════════════════
 
       var LAB_TECHNIQUES = [
-        { name: 'Recrystallization', use: 'Purify a solid by dissolving + slowly recrystallizing.', notes: 'Impurities stay in solution; pure crystals grow.' },
-        { name: 'Distillation (simple)', use: 'Separate liquids with different boiling points.', notes: 'Works when boiling points differ by >25°C.' },
-        { name: 'Distillation (fractional)', use: 'Separate liquids with close boiling points.', notes: 'Uses a fractionating column. Refines petroleum, vodka.' },
-        { name: 'Filtration (gravity)', use: 'Separate solid from liquid through filter paper.', notes: 'Slow but recovers liquid filtrate cleanly.' },
-        { name: 'Vacuum filtration (Büchner)', use: 'Faster filtration with suction.', notes: 'Used to collect crystallized product.' },
-        { name: 'Liquid-liquid extraction', use: 'Pull a compound from one solvent into another (immiscible) solvent.', notes: 'Separatory funnel. Caffeine extraction from tea.' },
-        { name: 'Chromatography (TLC)', use: 'Identify compounds by separation on a thin plate.', notes: 'Quick. Visualize with UV or stain. Rf values identify compounds.' },
-        { name: 'Chromatography (column)', use: 'Separate larger amounts.', notes: 'Silica gel column. Eluent washes compounds through at different speeds.' },
-        { name: 'Chromatography (HPLC)', use: 'High-resolution separation under pressure.', notes: 'Quantitative analysis of mixtures (e.g., drug purity).' },
-        { name: 'Chromatography (GC)', use: 'Separate volatile compounds in gas phase.', notes: 'Coupled to MS for forensics, environmental analysis.' },
-        { name: 'Reflux', use: 'Heat a reaction without losing solvent.', notes: 'Condenser returns vapor to flask. Drives reaction to completion.' },
-        { name: 'Titration', use: 'Determine concentration via reaction with known standard.', notes: 'Acid-base, redox, complexometric. Endpoint via indicator or pH meter.' },
-        { name: 'Gel electrophoresis', use: 'Separate molecules by size + charge in electric field.', notes: 'Common for DNA, proteins (SDS-PAGE).' },
-        { name: 'Rotary evaporator (rotovap)', use: 'Remove solvent quickly at reduced pressure.', notes: 'Standard in synthesis labs.' },
-        { name: 'Schlenk line', use: 'Air- + moisture-free synthesis.', notes: 'Vacuum/inert gas manifold. Essential for air-sensitive chemistry.' },
-        { name: 'Soxhlet extraction', use: 'Continuously extract a compound from solid with solvent.', notes: 'Used in food chem (fat content), natural product isolation.' }
+        { name: __alloT('stem.molecule.recrystallization', 'Recrystallization'), use: 'Purify a solid by dissolving + slowly recrystallizing.', notes: 'Impurities stay in solution; pure crystals grow.' },
+        { name: __alloT('stem.molecule.distillation_simple', 'Distillation (simple)'), use: 'Separate liquids with different boiling points.', notes: 'Works when boiling points differ by >25°C.' },
+        { name: __alloT('stem.molecule.distillation_fractional', 'Distillation (fractional)'), use: 'Separate liquids with close boiling points.', notes: 'Uses a fractionating column. Refines petroleum, vodka.' },
+        { name: __alloT('stem.molecule.filtration_gravity', 'Filtration (gravity)'), use: 'Separate solid from liquid through filter paper.', notes: 'Slow but recovers liquid filtrate cleanly.' },
+        { name: __alloT('stem.molecule.vacuum_filtration_b_chner', 'Vacuum filtration (Büchner)'), use: 'Faster filtration with suction.', notes: 'Used to collect crystallized product.' },
+        { name: __alloT('stem.molecule.liquid_liquid_extraction', 'Liquid-liquid extraction'), use: 'Pull a compound from one solvent into another (immiscible) solvent.', notes: 'Separatory funnel. Caffeine extraction from tea.' },
+        { name: __alloT('stem.molecule.chromatography_tlc', 'Chromatography (TLC)'), use: 'Identify compounds by separation on a thin plate.', notes: 'Quick. Visualize with UV or stain. Rf values identify compounds.' },
+        { name: __alloT('stem.molecule.chromatography_column', 'Chromatography (column)'), use: 'Separate larger amounts.', notes: 'Silica gel column. Eluent washes compounds through at different speeds.' },
+        { name: __alloT('stem.molecule.chromatography_hplc', 'Chromatography (HPLC)'), use: 'High-resolution separation under pressure.', notes: 'Quantitative analysis of mixtures (e.g., drug purity).' },
+        { name: __alloT('stem.molecule.chromatography_gc', 'Chromatography (GC)'), use: 'Separate volatile compounds in gas phase.', notes: 'Coupled to MS for forensics, environmental analysis.' },
+        { name: __alloT('stem.molecule.reflux', 'Reflux'), use: 'Heat a reaction without losing solvent.', notes: 'Condenser returns vapor to flask. Drives reaction to completion.' },
+        { name: __alloT('stem.molecule.titration', 'Titration'), use: 'Determine concentration via reaction with known standard.', notes: 'Acid-base, redox, complexometric. Endpoint via indicator or pH meter.' },
+        { name: __alloT('stem.molecule.gel_electrophoresis', 'Gel electrophoresis'), use: 'Separate molecules by size + charge in electric field.', notes: 'Common for DNA, proteins (SDS-PAGE).' },
+        { name: __alloT('stem.molecule.rotary_evaporator_rotovap', 'Rotary evaporator (rotovap)'), use: 'Remove solvent quickly at reduced pressure.', notes: 'Standard in synthesis labs.' },
+        { name: __alloT('stem.molecule.schlenk_line', 'Schlenk line'), use: 'Air- + moisture-free synthesis.', notes: 'Vacuum/inert gas manifold. Essential for air-sensitive chemistry.' },
+        { name: __alloT('stem.molecule.soxhlet_extraction', 'Soxhlet extraction'), use: 'Continuously extract a compound from solid with solvent.', notes: 'Used in food chem (fat content), natural product isolation.' }
       ];
 
       var DRUG_DISCOVERY = [
@@ -5544,43 +6033,43 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var DRUG_FACTS = [
-        { fact: 'Average time to market', detail: '10-15 years from initial discovery to approval.' },
-        { fact: 'Average cost', detail: 'Estimated $1-2.5 billion per approved drug (includes failures).' },
-        { fact: 'Attrition rate', detail: '~10% of candidates entering Phase I make it to market. Most fail at Phase II for efficacy or Phase III for safety.' },
-        { fact: 'Lipinski\'s Rule of 5', detail: 'Drug-likeness: MW < 500, logP < 5, ≤ 5 H-bond donors, ≤ 10 H-bond acceptors. Predicts oral bioavailability.' },
-        { fact: 'Generic drugs', detail: 'Available after patent expires (typically 20 years from filing). Much cheaper but bioequivalent.' },
-        { fact: 'Biologics', detail: 'Made by living cells (antibodies, vaccines). More complex, more expensive, "biosimilars" instead of generics.' }
+        { fact: __alloT('stem.molecule.average_time_to_market', 'Average time to market'), detail: __alloT('stem.molecule.10_15_years_from_initial_discovery_to_', '10-15 years from initial discovery to approval.') },
+        { fact: __alloT('stem.molecule.average_cost', 'Average cost'), detail: __alloT('stem.molecule.estimated_1_2_5_billion_per_approved_d', 'Estimated $1-2.5 billion per approved drug (includes failures).') },
+        { fact: __alloT('stem.molecule.attrition_rate', 'Attrition rate'), detail: __alloT('stem.molecule.10_of_candidates_entering_phase_i_make', '~10% of candidates entering Phase I make it to market. Most fail at Phase II for efficacy or Phase III for safety.') },
+        { fact: __alloT('stem.molecule.lipinski_s_rule_of_5', 'Lipinski\'s Rule of 5'), detail: __alloT('stem.molecule.drug_likeness_mw_500_logp_5_5_h_bond_d', 'Drug-likeness: MW < 500, logP < 5, ≤ 5 H-bond donors, ≤ 10 H-bond acceptors. Predicts oral bioavailability.') },
+        { fact: __alloT('stem.molecule.generic_drugs', 'Generic drugs'), detail: __alloT('stem.molecule.available_after_patent_expires_typical', 'Available after patent expires (typically 20 years from filing). Much cheaper but bioequivalent.') },
+        { fact: __alloT('stem.molecule.biologics', 'Biologics'), detail: __alloT('stem.molecule.made_by_living_cells_antibodies_vaccin', 'Made by living cells (antibodies, vaccines). More complex, more expensive, "biosimilars" instead of generics.') }
       ];
 
       var FOOD_CHEMISTRY = [
-        { topic: 'Maillard reaction', detail: 'Reducing sugar + amino acid → brown flavor compounds. Happens above ~140°C. Why bread crusts, seared steak, coffee are flavorful.' },
-        { topic: 'Caramelization', detail: 'Sugar molecules break + recombine at high heat (>160°C). Creates hundreds of flavor compounds. Different from Maillard (no amino acids needed).' },
-        { topic: 'Gelatinization (starch)', detail: 'Starch granules absorb water + swell when heated >60°C. Thickens sauces, cooks pasta.' },
-        { topic: 'Gluten', detail: 'Wheat proteins (glutenin + gliadin) form elastic network when hydrated. Develops with kneading. Captures CO₂ in bread.' },
-        { topic: 'Emulsion', detail: 'Stable mixture of oil + water with emulsifier (lecithin in egg yolk → mayonnaise; mustard or honey help too).' },
-        { topic: 'Denaturation', detail: 'Heat unfolds proteins → texture changes. Eggs cook (clear → white), meat firms.' },
-        { topic: 'Fermentation', detail: 'Microbes convert sugars to acids, alcohols, gases. Sauerkraut (lactic), beer (alcohol + CO₂), yogurt (lactic from lactose).' },
-        { topic: 'Capsaicin', detail: 'Spicy compound in chili peppers. Activates TRPV1 heat receptors. Soluble in fat + alcohol, not water — why milk soothes spicy mouth.' },
-        { topic: 'MSG (monosodium glutamate)', detail: 'Sodium salt of glutamate. Triggers umami taste receptor. Naturally abundant in tomatoes, parmesan, fish sauce, mushrooms.' },
-        { topic: 'Browning enzymes', detail: 'Polyphenol oxidase browns cut apples + bananas. Lemon juice (acid) or refrigeration slows it.' },
-        { topic: 'Carbonation', detail: 'CO₂ dissolves in cold water under pressure. Open bottle → pressure drops → CO₂ escapes as bubbles + H₂CO₃ tang.' },
-        { topic: 'Pectin', detail: 'Plant cell wall polysaccharide. Forms gel with sugar + acid → jams.' },
-        { topic: 'Saponification', detail: 'Fat + base → soap + glycerol. Soap molecules are amphipathic (one end loves water, one loves oil).' },
-        { topic: 'Spherification (molecular gastronomy)', detail: 'Sodium alginate + calcium → liquid gel "caviar" or "ravioli". Modernist cooking.' },
-        { topic: 'Sourdough leavening', detail: 'Wild yeast + lactic bacteria. Slower, more sour than commercial yeast.' }
+        { topic: 'Maillard reaction', detail: __alloT('stem.molecule.reducing_sugar_amino_acid_brown_flavor', 'Reducing sugar + amino acid → brown flavor compounds. Happens above ~140°C. Why bread crusts, seared steak, coffee are flavorful.') },
+        { topic: 'Caramelization', detail: __alloT('stem.molecule.sugar_molecules_break_recombine_at_hig', 'Sugar molecules break + recombine at high heat (>160°C). Creates hundreds of flavor compounds. Different from Maillard (no amino acids needed).') },
+        { topic: 'Gelatinization (starch)', detail: __alloT('stem.molecule.starch_granules_absorb_water_swell_whe', 'Starch granules absorb water + swell when heated >60°C. Thickens sauces, cooks pasta.') },
+        { topic: 'Gluten', detail: __alloT('stem.molecule.wheat_proteins_glutenin_gliadin_form_e', 'Wheat proteins (glutenin + gliadin) form elastic network when hydrated. Develops with kneading. Captures CO₂ in bread.') },
+        { topic: 'Emulsion', detail: __alloT('stem.molecule.stable_mixture_of_oil_water_with_emuls', 'Stable mixture of oil + water with emulsifier (lecithin in egg yolk → mayonnaise; mustard or honey help too).') },
+        { topic: 'Denaturation', detail: __alloT('stem.molecule.heat_unfolds_proteins_texture_changes_', 'Heat unfolds proteins → texture changes. Eggs cook (clear → white), meat firms.') },
+        { topic: 'Fermentation', detail: __alloT('stem.molecule.microbes_convert_sugars_to_acids_alcoh', 'Microbes convert sugars to acids, alcohols, gases. Sauerkraut (lactic), beer (alcohol + CO₂), yogurt (lactic from lactose).') },
+        { topic: 'Capsaicin', detail: __alloT('stem.molecule.spicy_compound_in_chili_peppers_activa', 'Spicy compound in chili peppers. Activates TRPV1 heat receptors. Soluble in fat + alcohol, not water — why milk soothes spicy mouth.') },
+        { topic: 'MSG (monosodium glutamate)', detail: __alloT('stem.molecule.sodium_salt_of_glutamate_triggers_umam', 'Sodium salt of glutamate. Triggers umami taste receptor. Naturally abundant in tomatoes, parmesan, fish sauce, mushrooms.') },
+        { topic: 'Browning enzymes', detail: __alloT('stem.molecule.polyphenol_oxidase_browns_cut_apples_b', 'Polyphenol oxidase browns cut apples + bananas. Lemon juice (acid) or refrigeration slows it.') },
+        { topic: 'Carbonation', detail: __alloT('stem.molecule.co_dissolves_in_cold_water_under_press', 'CO₂ dissolves in cold water under pressure. Open bottle → pressure drops → CO₂ escapes as bubbles + H₂CO₃ tang.') },
+        { topic: 'Pectin', detail: __alloT('stem.molecule.plant_cell_wall_polysaccharide_forms_g', 'Plant cell wall polysaccharide. Forms gel with sugar + acid → jams.') },
+        { topic: 'Saponification', detail: __alloT('stem.molecule.fat_base_soap_glycerol_soap_molecules_', 'Fat + base → soap + glycerol. Soap molecules are amphipathic (one end loves water, one loves oil).') },
+        { topic: 'Spherification (molecular gastronomy)', detail: __alloT('stem.molecule.sodium_alginate_calcium_liquid_gel_cav', 'Sodium alginate + calcium → liquid gel "caviar" or "ravioli". Modernist cooking.') },
+        { topic: 'Sourdough leavening', detail: __alloT('stem.molecule.wild_yeast_lactic_bacteria_slower_more', 'Wild yeast + lactic bacteria. Slower, more sour than commercial yeast.') }
       ];
 
       var MATERIALS_CLASSES = [
-        { name: 'Metals', properties: 'Ductile, conductive, lustrous, malleable, dense', examples: 'Steel, aluminum, copper, titanium, gold' },
-        { name: 'Ceramics', properties: 'Hard, brittle, high melting point, chemically stable, insulating (usually)', examples: 'Porcelain, alumina, silicon carbide, zirconia, glass' },
-        { name: 'Polymers (plastics)', properties: 'Light, formable, low melting, insulating', examples: 'Polyethylene, PVC, polystyrene, nylon, Kevlar, epoxy' },
-        { name: 'Composites', properties: 'Combine properties of constituents', examples: 'Carbon fiber, fiberglass, reinforced concrete, plywood' },
-        { name: 'Semiconductors', properties: 'Conductivity between metal + insulator; controllable via doping', examples: 'Si, GaAs, GaN, SiC, perovskites' },
-        { name: 'Biomaterials', properties: 'Compatible with living tissue', examples: 'Titanium implants, hydroxyapatite (bone-mimic), PLA sutures, hydrogels' },
-        { name: 'Nanomaterials', properties: 'Size 1-100 nm; properties different from bulk', examples: 'Carbon nanotubes, graphene, quantum dots, nanoparticles' },
-        { name: 'Smart materials', properties: 'Respond to stimuli (heat, light, voltage)', examples: 'Shape-memory alloys, piezoelectrics, electroactive polymers, thermochromics' },
-        { name: 'Superconductors', properties: 'Zero electrical resistance below critical temperature', examples: 'YBCO (Tc 93 K), Nb-Ti (used in MRI), MgB₂' },
-        { name: 'Metamaterials', properties: 'Engineered structure gives properties not found in nature', examples: 'Negative-index (cloaking research), perfect absorbers, acoustic cloaks' }
+        { name: __alloT('stem.molecule.metals', 'Metals'), properties: 'Ductile, conductive, lustrous, malleable, dense', examples: 'Steel, aluminum, copper, titanium, gold' },
+        { name: __alloT('stem.molecule.ceramics', 'Ceramics'), properties: 'Hard, brittle, high melting point, chemically stable, insulating (usually)', examples: 'Porcelain, alumina, silicon carbide, zirconia, glass' },
+        { name: __alloT('stem.molecule.polymers_plastics', 'Polymers (plastics)'), properties: 'Light, formable, low melting, insulating', examples: 'Polyethylene, PVC, polystyrene, nylon, Kevlar, epoxy' },
+        { name: __alloT('stem.molecule.composites', 'Composites'), properties: 'Combine properties of constituents', examples: 'Carbon fiber, fiberglass, reinforced concrete, plywood' },
+        { name: __alloT('stem.molecule.semiconductors', 'Semiconductors'), properties: 'Conductivity between metal + insulator; controllable via doping', examples: 'Si, GaAs, GaN, SiC, perovskites' },
+        { name: __alloT('stem.molecule.biomaterials', 'Biomaterials'), properties: 'Compatible with living tissue', examples: 'Titanium implants, hydroxyapatite (bone-mimic), PLA sutures, hydrogels' },
+        { name: __alloT('stem.molecule.nanomaterials', 'Nanomaterials'), properties: 'Size 1-100 nm; properties different from bulk', examples: 'Carbon nanotubes, graphene, quantum dots, nanoparticles' },
+        { name: __alloT('stem.molecule.smart_materials', 'Smart materials'), properties: 'Respond to stimuli (heat, light, voltage)', examples: 'Shape-memory alloys, piezoelectrics, electroactive polymers, thermochromics' },
+        { name: __alloT('stem.molecule.superconductors', 'Superconductors'), properties: 'Zero electrical resistance below critical temperature', examples: 'YBCO (Tc 93 K), Nb-Ti (used in MRI), MgB₂' },
+        { name: __alloT('stem.molecule.metamaterials', 'Metamaterials'), properties: 'Engineered structure gives properties not found in nature', examples: 'Negative-index (cloaking research), perfect absorbers, acoustic cloaks' }
       ];
 
       var MATERIAL_FACTS = [
@@ -5595,16 +6084,16 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var INORGANIC_TOPICS = [
-        { topic: 'Coordination compounds', detail: 'Central metal atom bonded to "ligands" (neutral or anionic). Geometry (octahedral, tetrahedral, square planar) determined by metal + ligands.' },
-        { topic: 'Crystal field theory', detail: 'Ligands split metal d-orbital energies. Determines color, magnetic properties. High-spin vs low-spin complexes.' },
-        { topic: 'Chelation', detail: 'A single ligand binds metal through multiple atoms (EDTA is hexadentate). Very stable complexes.' },
-        { topic: 'Lewis acid/base', detail: 'Lewis acid = electron-pair acceptor (e.g., BF₃, Cu²⁺); Lewis base = electron-pair donor (e.g., NH₃, OH⁻).' },
-        { topic: 'Hard-soft acid-base (HSAB) theory', detail: 'Hard acids prefer hard bases (small, non-polarizable). Soft prefer soft (large, polarizable). Predicts reactivity.' },
-        { topic: 'Lanthanides + actinides', detail: 'f-block. Similar chemistry within each series (lanthanide contraction). Many radioactive (all actinides).' },
-        { topic: 'Transition metals', detail: 'd-block. Multiple oxidation states (Fe²⁺/Fe³⁺), often colored complexes, catalytic activity.' },
-        { topic: 'Organometallic chemistry', detail: 'Metal-carbon bonds. Grignard reagents (RMgX), ferrocene (Fe(C₅H₅)₂), catalysts (Wilkinson, Grubbs).' },
-        { topic: 'Oxoacids', detail: 'Acids with O–H bonds. H₂SO₄, H₃PO₄, HNO₃, HClO₄. More O atoms → stronger acid (typically).' },
-        { topic: 'Hydrides', detail: 'Binary compounds with H. Ionic (NaH), covalent (CH₄), metallic (PdH, used in H₂ storage).' }
+        { topic: 'Coordination compounds', detail: __alloT('stem.molecule.central_metal_atom_bonded_to_ligands_n', 'Central metal atom bonded to "ligands" (neutral or anionic). Geometry (octahedral, tetrahedral, square planar) determined by metal + ligands.') },
+        { topic: 'Crystal field theory', detail: __alloT('stem.molecule.ligands_split_metal_d_orbital_energies', 'Ligands split metal d-orbital energies. Determines color, magnetic properties. High-spin vs low-spin complexes.') },
+        { topic: 'Chelation', detail: __alloT('stem.molecule.a_single_ligand_binds_metal_through_mu', 'A single ligand binds metal through multiple atoms (EDTA is hexadentate). Very stable complexes.') },
+        { topic: 'Lewis acid/base', detail: __alloT('stem.molecule.lewis_acid_electron_pair_acceptor_e_g_', 'Lewis acid = electron-pair acceptor (e.g., BF₃, Cu²⁺); Lewis base = electron-pair donor (e.g., NH₃, OH⁻).') },
+        { topic: 'Hard-soft acid-base (HSAB) theory', detail: __alloT('stem.molecule.hard_acids_prefer_hard_bases_small_non', 'Hard acids prefer hard bases (small, non-polarizable). Soft prefer soft (large, polarizable). Predicts reactivity.') },
+        { topic: 'Lanthanides + actinides', detail: __alloT('stem.molecule.f_block_similar_chemistry_within_each_', 'f-block. Similar chemistry within each series (lanthanide contraction). Many radioactive (all actinides).') },
+        { topic: 'Transition metals', detail: __alloT('stem.molecule.d_block_multiple_oxidation_states_fe_f', 'd-block. Multiple oxidation states (Fe²⁺/Fe³⁺), often colored complexes, catalytic activity.') },
+        { topic: 'Organometallic chemistry', detail: __alloT('stem.molecule.metal_carbon_bonds_grignard_reagents_r', 'Metal-carbon bonds. Grignard reagents (RMgX), ferrocene (Fe(C₅H₅)₂), catalysts (Wilkinson, Grubbs).') },
+        { topic: 'Oxoacids', detail: __alloT('stem.molecule.acids_with_o_h_bonds_h_so_h_po_hno_hcl', 'Acids with O–H bonds. H₂SO₄, H₃PO₄, HNO₃, HClO₄. More O atoms → stronger acid (typically).') },
+        { topic: 'Hydrides', detail: __alloT('stem.molecule.binary_compounds_with_h_ionic_nah_cova', 'Binary compounds with H. Ionic (NaH), covalent (CH₄), metallic (PdH, used in H₂ storage).') }
       ];
 
       var POLLUTANTS = [
@@ -5623,18 +6112,18 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var GREEN_CHEMISTRY = [
-        { principle: 'Prevention', detail: 'Better to prevent waste than treat or clean it up.' },
-        { principle: 'Atom economy', detail: 'Maximize fraction of reactant atoms ending up in product.' },
-        { principle: 'Less hazardous synthesis', detail: 'Use + generate substances with little/no toxicity.' },
-        { principle: 'Safer products', detail: 'Design products with minimal toxicity while preserving function.' },
-        { principle: 'Safer solvents', detail: 'Avoid solvents when possible; use safer ones when not (water, supercritical CO₂).' },
-        { principle: 'Energy efficiency', detail: 'Run reactions at ambient T + P when possible.' },
-        { principle: 'Renewable feedstocks', detail: 'Use biomass/agricultural by-products instead of petroleum.' },
-        { principle: 'Reduce derivatives', detail: 'Avoid protecting groups and unnecessary modifications.' },
-        { principle: 'Catalysis', detail: 'Catalytic > stoichiometric. Reusable; less waste.' },
-        { principle: 'Design for degradation', detail: 'Products should break down to innocuous substances at end of life.' },
-        { principle: 'Real-time analysis', detail: 'Inline monitoring to prevent pollution.' },
-        { principle: 'Inherently safer chemistry', detail: 'Design for accident prevention — minimize releases, explosions, fires.' }
+        { principle: 'Prevention', detail: __alloT('stem.molecule.better_to_prevent_waste_than_treat_or_', 'Better to prevent waste than treat or clean it up.') },
+        { principle: 'Atom economy', detail: __alloT('stem.molecule.maximize_fraction_of_reactant_atoms_en', 'Maximize fraction of reactant atoms ending up in product.') },
+        { principle: 'Less hazardous synthesis', detail: __alloT('stem.molecule.use_generate_substances_with_little_no', 'Use + generate substances with little/no toxicity.') },
+        { principle: 'Safer products', detail: __alloT('stem.molecule.design_products_with_minimal_toxicity_', 'Design products with minimal toxicity while preserving function.') },
+        { principle: 'Safer solvents', detail: __alloT('stem.molecule.avoid_solvents_when_possible_use_safer', 'Avoid solvents when possible; use safer ones when not (water, supercritical CO₂).') },
+        { principle: 'Energy efficiency', detail: __alloT('stem.molecule.run_reactions_at_ambient_t_p_when_poss', 'Run reactions at ambient T + P when possible.') },
+        { principle: 'Renewable feedstocks', detail: __alloT('stem.molecule.use_biomass_agricultural_by_products_i', 'Use biomass/agricultural by-products instead of petroleum.') },
+        { principle: 'Reduce derivatives', detail: __alloT('stem.molecule.avoid_protecting_groups_and_unnecessar', 'Avoid protecting groups and unnecessary modifications.') },
+        { principle: 'Catalysis', detail: __alloT('stem.molecule.catalytic_stoichiometric_reusable_less', 'Catalytic > stoichiometric. Reusable; less waste.') },
+        { principle: 'Design for degradation', detail: __alloT('stem.molecule.products_should_break_down_to_innocuou', 'Products should break down to innocuous substances at end of life.') },
+        { principle: 'Real-time analysis', detail: __alloT('stem.molecule.inline_monitoring_to_prevent_pollution', 'Inline monitoring to prevent pollution.') },
+        { principle: 'Inherently safer chemistry', detail: __alloT('stem.molecule.design_for_accident_prevention_minimiz', 'Design for accident prevention — minimize releases, explosions, fires.') }
       ];
 
       var BOND_GEOMETRIES = [
@@ -5654,16 +6143,16 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       ];
 
       var ISOMER_TYPES = [
-        { name: 'Structural (constitutional) isomers', description: 'Different connectivity of atoms. Same molecular formula.', example: 'C₄H₁₀: n-butane vs isobutane.' },
-        { name: 'Chain isomers', description: 'Different carbon chain arrangements.', example: 'Pentane vs 2-methylbutane vs 2,2-dimethylpropane.' },
-        { name: 'Positional isomers', description: 'Same functional group, different position.', example: '1-propanol vs 2-propanol.' },
-        { name: 'Functional group isomers', description: 'Same molecular formula, different functional group.', example: 'C₂H₆O: ethanol (alcohol) vs dimethyl ether.' },
-        { name: 'Geometric (cis-trans) isomers', description: 'Different arrangement around a rigid bond (e.g., double bond or ring).', example: 'Cis-2-butene vs trans-2-butene; oleic vs elaidic acid (cis vs trans fat).' },
-        { name: 'Enantiomers (mirror-image stereoisomers)', description: 'Non-superimposable mirror images. "Chirality".', example: 'L- vs D-amino acids; (R)- vs (S)-thalidomide (one safe, one teratogenic).' },
-        { name: 'Diastereomers', description: 'Stereoisomers that are NOT mirror images.', example: 'D-glucose vs D-galactose (both right-handed sugars but differ at C4).' },
-        { name: 'Conformational isomers', description: 'Differ by rotation about single bonds — interconvert rapidly.', example: 'Ethane staggered vs eclipsed; chair vs boat cyclohexane.' },
-        { name: 'Tautomers', description: 'Constitutional isomers that interconvert by H-atom migration.', example: 'Keto-enol tautomerism. Crucial in DNA base pairing.' },
-        { name: 'Optical rotation', description: 'Chiral molecules rotate polarized light. (+) or (−) prefix.', example: '(+)-Glucose rotates light clockwise.' }
+        { name: __alloT('stem.molecule.structural_constitutional_isomers', 'Structural (constitutional) isomers'), description: __alloT('stem.molecule.different_connectivity_of_atoms_same_m', 'Different connectivity of atoms. Same molecular formula.'), example: 'C₄H₁₀: n-butane vs isobutane.' },
+        { name: __alloT('stem.molecule.chain_isomers', 'Chain isomers'), description: __alloT('stem.molecule.different_carbon_chain_arrangements', 'Different carbon chain arrangements.'), example: 'Pentane vs 2-methylbutane vs 2,2-dimethylpropane.' },
+        { name: __alloT('stem.molecule.positional_isomers', 'Positional isomers'), description: __alloT('stem.molecule.same_functional_group_different_positi', 'Same functional group, different position.'), example: '1-propanol vs 2-propanol.' },
+        { name: __alloT('stem.molecule.functional_group_isomers', 'Functional group isomers'), description: __alloT('stem.molecule.same_molecular_formula_different_funct', 'Same molecular formula, different functional group.'), example: 'C₂H₆O: ethanol (alcohol) vs dimethyl ether.' },
+        { name: __alloT('stem.molecule.geometric_cis_trans_isomers', 'Geometric (cis-trans) isomers'), description: __alloT('stem.molecule.different_arrangement_around_a_rigid_b', 'Different arrangement around a rigid bond (e.g., double bond or ring).'), example: 'Cis-2-butene vs trans-2-butene; oleic vs elaidic acid (cis vs trans fat).' },
+        { name: __alloT('stem.molecule.enantiomers_mirror_image_stereoisomers', 'Enantiomers (mirror-image stereoisomers)'), description: __alloT('stem.molecule.non_superimposable_mirror_images_chira', 'Non-superimposable mirror images. "Chirality".'), example: 'L- vs D-amino acids; (R)- vs (S)-thalidomide (one safe, one teratogenic).' },
+        { name: __alloT('stem.molecule.diastereomers', 'Diastereomers'), description: __alloT('stem.molecule.stereoisomers_that_are_not_mirror_imag', 'Stereoisomers that are NOT mirror images.'), example: 'D-glucose vs D-galactose (both right-handed sugars but differ at C4).' },
+        { name: __alloT('stem.molecule.conformational_isomers', 'Conformational isomers'), description: __alloT('stem.molecule.differ_by_rotation_about_single_bonds_', 'Differ by rotation about single bonds — interconvert rapidly.'), example: 'Ethane staggered vs eclipsed; chair vs boat cyclohexane.' },
+        { name: __alloT('stem.molecule.tautomers', 'Tautomers'), description: __alloT('stem.molecule.constitutional_isomers_that_interconve', 'Constitutional isomers that interconvert by H-atom migration.'), example: 'Keto-enol tautomerism. Crucial in DNA base pairing.' },
+        { name: __alloT('stem.molecule.optical_rotation', 'Optical rotation'), description: __alloT('stem.molecule.chiral_molecules_rotate_polarized_ligh', 'Chiral molecules rotate polarized light. (+) or (−) prefix.'), example: '(+)-Glucose rotates light clockwise.' }
       ];
 
       var NOBLE_GASES = [
@@ -5678,7 +6167,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderLabSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔬 Lab techniques'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.lab_techniques_2', '🔬 Lab techniques')),
           React.createElement('div', { className: 'space-y-2' },
             LAB_TECHNIQUES.map(function(t, i) {
               return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -5693,9 +6182,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderMedchemSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💊 Drug discovery pipeline'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.drug_discovery_pipeline', '💊 Drug discovery pipeline')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Stages'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.stages', 'Stages')),
             React.createElement('div', { className: 'space-y-1' },
               DRUG_DISCOVERY.map(function(d, i) {
                 return React.createElement('div', { key: 'd'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -5708,7 +6197,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Industry essentials'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.industry_essentials', 'Industry essentials')),
           React.createElement('div', { className: 'space-y-1' },
             DRUG_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-indigo-400 border border-slate-200' },
@@ -5722,7 +6211,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderFoodSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🍳 Food chemistry'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.food_chemistry_2', '🍳 Food chemistry')),
           React.createElement('div', { className: 'space-y-2' },
             FOOD_CHEMISTRY.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
@@ -5736,7 +6225,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderMaterialsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🪨 Materials classes'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.materials_classes', '🪨 Materials classes')),
           React.createElement('div', { className: 'mb-3' },
             React.createElement('div', { className: 'space-y-2' },
               MATERIALS_CLASSES.map(function(m, i) {
@@ -5748,7 +6237,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Notable materials'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.notable_materials', 'Notable materials')),
           React.createElement('div', { className: 'space-y-1' },
             MATERIAL_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-indigo-400 border border-slate-200' },
@@ -5765,7 +6254,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderInorganicSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛ Inorganic chemistry topics'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.inorganic_chemistry_topics', '⚛ Inorganic chemistry topics')),
           React.createElement('div', { className: 'space-y-2' },
             INORGANIC_TOPICS.map(function(t, i) {
               return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
@@ -5779,7 +6268,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderEnviro2Section() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏭 Environmental pollutants'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.environmental_pollutants', '🏭 Environmental pollutants')),
           React.createElement('div', { className: 'space-y-2' },
             POLLUTANTS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -5794,8 +6283,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderGreenSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌱 12 Principles of Green Chemistry'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Articulated by Anastas + Warner (1998). Guides chemists toward more sustainable methods.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.12_principles_of_green_chemistry', '🌱 12 Principles of Green Chemistry')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.articulated_by_anastas_warner_1998_gui', 'Articulated by Anastas + Warner (1998). Guides chemists toward more sustainable methods.')),
           React.createElement('div', { className: 'space-y-1' },
             GREEN_CHEMISTRY.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
@@ -5812,8 +6301,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderMolGeoSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∡ VSEPR — electron pair geometries'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Lone pairs (LP) take more space than bonding pairs → compress bond angles. VSEPR predicts molecular shape from total electron pairs.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.vsepr_electron_pair_geometries', '∡ VSEPR — electron pair geometries')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.lone_pairs_lp_take_more_space_than_bon', 'Lone pairs (LP) take more space than bonding pairs → compress bond angles. VSEPR predicts molecular shape from total electron pairs.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
@@ -5841,8 +6330,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderIsomersSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇄ Isomers'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Molecules with the same molecular formula but different arrangement. Isomers can have very different properties.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.isomers_2', '⇄ Isomers')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molecules_with_the_same_molecular_form', 'Molecules with the same molecular formula but different arrangement. Isomers can have very different properties.')),
           React.createElement('div', { className: 'space-y-2' },
             ISOMER_TYPES.map(function(I, i) {
               return React.createElement('div', { key: 'I'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -5857,8 +6346,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
       function renderNobleSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'He Noble gases (Group 18)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Full outer electron shell → very unreactive. Discovered late (Ramsay et al., 1894-1898) because they don\'t form compounds easily.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.he_noble_gases_group_18', 'He Noble gases (Group 18)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.full_outer_electron_shell_very_unreact', 'Full outer electron shell → very unreactive. Discovered late (Ramsay et al., 1894-1898) because they don\'t form compounds easily.')),
           React.createElement('div', { className: 'space-y-2' },
             NOBLE_GASES.map(function(n, i) {
               return React.createElement('div', { key: 'n'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },

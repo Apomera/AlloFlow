@@ -22,7 +22,7 @@ const CANVAS_LOADING_TIPS = [
   "🔊 Click any text to hear it read aloud in 30+ natural voices",
   "📊 BehaviorLens includes 80+ observation and analysis tools for educators",
   "✏️ The Report Writer creates clinical reports with AI accuracy checks",
-  "🌐 Change your app language anytime in Settings — 40+ languages supported",
+  "🌐 Change your app language anytime in Settings — 60+ languages supported",
   "🎮 Try Boss Battle mode in quizzes for gamified classroom engagement",
   "📱 Share a session code with students for live participation and collaboration",
   "❓ Toggle Help Mode for guided tooltips on every button and feature",

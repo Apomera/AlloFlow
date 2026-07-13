@@ -105,6 +105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (a) T0 -= b / (2 * a);
     }
 
+    if (!isFinite(T0) || T0 <= 0) return -1;
     return sampleRate / T0;
   }
 
@@ -287,7 +288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var lineGap = opts.lineGap || 10;
     var isDark = opts.isDark;
 
-    c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
+    c.strokeStyle = isDark ? '#94a3b8' : '#475569';
     c.lineWidth = 1;
 
     // 5 staff lines
@@ -374,11 +375,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
     }
 
-    // Note head (filled ellipse)
+    // Note head (filled ellipse) — glows in its note colour so active/coloured notes pop
+    ctx2d.save();
+    if (color) { ctx2d.shadowColor = color; ctx2d.shadowBlur = 8; }
     ctx2d.fillStyle = color || '#1e293b';
     ctx2d.beginPath();
     ctx2d.ellipse(x, y, r * 1.2, r, -0.3, 0, 2 * Math.PI);
     ctx2d.fill();
+    ctx2d.restore();
 
     // Stem
     var stemDir = y > staffTop + lineGap * 2 ? -1 : 1; // up if below middle, down if above
@@ -443,7 +447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         c.moveTo(plotX, noteY);
         c.lineTo(W, noteY);
         c.stroke();
-        c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+        c.fillStyle = isDark ? '#94a3b8' : '#475569';
         c.fillText(noteInfo.str, labelW - 3, noteY + 3);
       } else if (isNatural) {
         c.strokeStyle = isDark ? '#1e293b' : '#e2e8f0';
@@ -457,7 +461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Draw pitch history line
     if (!history || history.length < 2) {
-      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      c.fillStyle = isDark ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.font = '13px sans-serif';
       c.fillText('Start singing to see your pitch', W / 2, H / 2);
@@ -557,7 +561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Labels
     c.font = '8px sans-serif';
-    c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    c.fillStyle = isDark ? '#94a3b8' : '#475569';
     c.textAlign = 'center';
     c.fillText('Flat', barX + 10, barY + barH + 12);
     c.fillText('Sharp', barX + barW - 10, barY + barH + 12);
@@ -598,7 +602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     c.fillRect(0, 0, W, H);
 
     if (!history || history.length < 10) {
-      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      c.fillStyle = isDark ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.font = '12px sans-serif';
       c.fillText('Sustain a note to see vibrato waveform', W / 2, H / 2);
@@ -620,7 +624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var gridCents = [-40, -20, 0, 20, 40];
     c.font = '8px sans-serif';
     c.textAlign = 'right';
-    c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    c.fillStyle = isDark ? '#94a3b8' : '#475569';
     for (var gi = 0; gi < gridCents.length; gi++) {
       var gy = centerY - gridCents[gi] * scaleY;
       c.beginPath();
@@ -998,7 +1002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   ];
 
   var PREVENTION_TIPS = [
-    { icon: '\uD83D\uDCA7', title: 'Stay Hydrated', tip: 'Drink 6\u20138 glasses of water daily. Your vocal folds need a thin layer of mucus to vibrate smoothly. Caffeine and alcohol are dehydrating \u2014 drink extra water to compensate.', priority: 'essential' },
+    { icon: '\uD83D\uDCA7', title: 'Stay Hydrated', tip: 'Stay well-hydrated through the day \u2014 let thirst and pale-yellow urine be your guide (the fixed "8 glasses a day" rule has no clear scientific basis). Your vocal folds need a thin layer of mucus to vibrate smoothly. Caffeine and alcohol are dehydrating \u2014 drink extra water to compensate.', priority: 'essential' },
     { icon: '\uD83C\uDFB5', title: 'Always Warm Up', tip: 'Never sing "cold." Start with gentle humming, lip trills, or sirens for 5\u201310 minutes before any singing. This increases blood flow to the vocal folds and reduces injury risk.', priority: 'essential' },
     { icon: '\uD83E\uDD2B', title: 'Rest Your Voice', tip: 'After heavy vocal use (concerts, long rehearsals, teaching all day), give your voice recovery time. Aim for 10 minutes of silence for every 1 hour of heavy use. Complete vocal rest days are important.', priority: 'essential' },
     { icon: '\u26D4', title: 'Never Sing Through Pain', tip: 'Pain is your body\'s alarm system. If singing hurts, stop immediately. Pushing through pain causes real tissue damage. Hoarseness lasting more than 2 weeks needs medical evaluation.', priority: 'critical' },
@@ -1286,7 +1290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
       // Note name label below
       c.font = '9px sans-serif';
-      c.fillStyle = isDk ? '#94a3b8' : '#94a3b8';
+      c.fillStyle = isDk ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.fillText(info.str, nx, staffBottom + lineGap * 3.5);
     }
@@ -1978,6 +1982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     ],
 
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -2033,13 +2038,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         // ── Tab state ──
         var TABS = [
-          { id: 'pitch', label: 'Pitch Detective', icon: '\uD83C\uDFAF' },
-          { id: 'range', label: 'Vocal Range', icon: '\uD83C\uDFB9' },
-          { id: 'vibrato', label: 'Vibrato Lab', icon: '\uD83C\uDF0A' },
-          { id: 'intervals', label: 'Interval Singer', icon: '\uD83C\uDFB5' },
+          { id: 'pitch', label: t('stem.singing.pitch_detective', 'Pitch Detective'), icon: '\uD83C\uDFAF' },
+          { id: 'range', label: t('stem.singing.vocal_range', 'Vocal Range'), icon: '\uD83C\uDFB9' },
+          { id: 'vibrato', label: t('stem.singing.vibrato_lab', 'Vibrato Lab'), icon: '\uD83C\uDF0A' },
+          { id: 'intervals', label: t('stem.singing.interval_singer', 'Interval Singer'), icon: '\uD83C\uDFB5' },
           { id: 'warmups', label: 'Warm-ups', icon: '\u2764\uFE0F' },
-          { id: 'sightread', label: 'Sight Reading', icon: '\uD83C\uDFBC' },
-          { id: 'resoHunt', label: 'Resonance Lab', icon: '\uD83C\uDF99\uFE0F' }
+          { id: 'sightread', label: t('stem.singing.sight_reading', 'Sight Reading'), icon: '\uD83C\uDFBC' },
+          { id: 'resoHunt', label: t('stem.singing.resonance_lab', 'Resonance Lab'), icon: '\uD83C\uDF99\uFE0F' }
         ];
 
         var tabState = React.useState('pitch');
@@ -2276,6 +2281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               var sampleRate = audioCtx.sampleRate;
 
               function analyzeLoop() {
+                if (!analyserRef.current) return;
                 analyser.getFloatTimeDomainData(buf);
                 var rms = calculateRMS(buf);
                 var pitch = autoCorrelate(buf, sampleRate);
@@ -2684,11 +2690,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-          (isDark ? 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-400' : 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500');
+          (isDark ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-400 active:scale-[0.97]' : 'transition-colors bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500 active:scale-[0.97]');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400');
+          (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400 active:scale-[0.97]');
         var btnDanger = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'bg-red-700 hover:bg-red-600 text-white focus:ring-red-400' : 'bg-red-100 hover:bg-red-200 text-red-700 focus:ring-red-400');
+          (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-700 focus:ring-red-400 active:scale-[0.97]');
 
         // ════════════════════════════════════════
         // Mic toggle button (shared across tabs)
@@ -2713,7 +2719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-600'),
               role: 'status',
               'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), 'Listening'),
+            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.singing.listening', 'Listening')),
             micError && h('div', {
               className: 'text-xs text-red-500 ml-2',
               role: 'alert'
@@ -2728,7 +2734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         function renderPitchDetective() {
           // Note display color
           var centsAbs = Math.abs(currentNote.cents || 0);
-          var noteColor = currentNote.midi <= 0 ? (isDark ? '#94a3b8' : '#94a3b8')
+          var noteColor = currentNote.midi <= 0 ? (isDark ? '#94a3b8' : '#475569')
             : centsAbs <= 10 ? '#22c55e'
             : centsAbs <= 25 ? '#eab308'
             : '#ef4444';
@@ -2760,10 +2766,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Cents meter
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\u2194\uFE0F', 'Cents Meter'),
+                '\u2194\uFE0F', t('stem.singing.cents_meter', 'Cents Meter')),
               h('p', { className: subTextClass + ' mb-2' },
-                'How sharp or flat you are. Aim for the green center zone (\u00B110 cents).'),
-              h('canvas', { 'aria-label': 'Singing visualization',
+                t('stem.singing.how_sharp_or_flat_you_are_aim_for_the_', 'How sharp or flat you are. Aim for the green center zone (\u00B110 cents).')),
+              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization', 'Singing visualization'),
                 ref: centsMeterCanvasRef,
                 width: 400,
                 height: 40,
@@ -2776,25 +2782,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Piano roll
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83C\uDFB9', 'Piano Roll'),
+                '\uD83C\uDFB9', t('stem.singing.piano_roll', 'Piano Roll')),
               h('p', { className: subTextClass + ' mb-2' },
-                'Your pitch over time, mapped to musical notes. Green = on pitch, yellow = close, red = off.'),
-              h('canvas', { 'aria-label': 'Singing visualization',
+                t('stem.singing.your_pitch_over_time_mapped_to_musical', 'Your pitch over time, mapped to musical notes. Green = on pitch, yellow = close, red = off.')),
+              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_2', 'Singing visualization'),
                 ref: pitchRollCanvasRef,
                 width: 600,
                 height: 200,
                 className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
                 role: 'img',
-                'aria-label': 'Piano roll showing pitch history. Green line indicates on-pitch singing (within 10 cents), yellow indicates close (within 25 cents), red indicates off-pitch (beyond 25 cents).'
+                'aria-label': t('stem.singing.piano_roll_showing_pitch_history_green', 'Piano roll showing pitch history. Green line indicates on-pitch singing (within 10 cents), yellow indicates close (within 25 cents), red indicates off-pitch (beyond 25 cents).')
               })
             ),
 
             // Reference tone generator
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83D\uDD0A', 'Reference Tones'),
+                '\uD83D\uDD0A', t('stem.singing.reference_tones', 'Reference Tones')),
               h('p', { className: subTextClass + ' mb-2' },
-                'Click a note to hear the tone. Try to match it with your voice!'),
+                t('stem.singing.click_a_note_to_hear_the_tone_try_to_m', 'Click a note to hear the tone. Try to match it with your voice!')),
               h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                 REF_TONE_NOTES.map(function(rn) {
                   var isActive = refTonePlaying === rn.midi;
@@ -2803,7 +2809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     className: 'px-2 py-1.5 rounded text-xs font-mono font-bold transition-colors ' +
                       (isActive
                         ? 'bg-rose-700 text-white ring-2 ring-rose-300'
-                        : (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-700')),
+                        : (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-[0.97]')),
                     onClick: function() {
                       if (isActive) {
                         stopRefTone();
@@ -2823,15 +2829,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   stopRefTone();
                   setRefTonePlaying(null);
                 }
-              }, '\u23F9 Stop Tone')
+              }, t('stem.singing.stop_tone', '\u23F9 Stop Tone'))
             ),
 
             // Pitch match game
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83C\uDFAE', 'Pitch Match Game'),
+                '\uD83C\uDFAE', t('stem.singing.pitch_match_game', 'Pitch Match Game')),
               h('p', { className: subTextClass + ' mb-2' },
-                'A tone plays \u2014 match it with your voice! Hold the correct pitch for 1 second. Score is based on speed.'),
+                t('stem.singing.a_tone_plays_match_it_with_your_voice_', 'A tone plays \u2014 match it with your voice! Hold the correct pitch for 1 second. Score is based on speed.')),
 
               pitchMatchMode === 'idle' && h('button', {
                 className: btnPrimary,
@@ -2851,30 +2857,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   setRefTonePlaying(targetMidi);
                   if (announceToSR) announceToSR('Match this note: ' + midiToNoteName(targetMidi).str);
                 }
-              }, '\uD83C\uDFB2 Play Round'),
+              }, t('stem.singing.play_round', '\uD83C\uDFB2 Play Round')),
 
               pitchMatchMode === 'playing' && h('div', { className: 'space-y-2' },
                 h('div', {
-                  className: 'text-center text-3xl font-black ' + (isDark ? 'text-rose-300' : 'text-rose-600'),
+                  className: 'text-center text-3xl font-black  tracking-tight' + (isDark ? 'text-rose-300' : 'text-rose-600'),
                   role: 'status'
                 }, 'Match: ' + (pitchMatchTarget ? midiToNoteName(pitchMatchTarget).str : '')),
                 h('div', { className: 'text-center ' + subTextClass },
-                  'Sing this note and hold it within 10 cents for 1 second'),
+                  t('stem.singing.sing_this_note_and_hold_it_within_10_c', 'Sing this note and hold it within 10 cents for 1 second')),
                 h('button', {
                   className: btnSecondary,
-                  'aria-label': 'Cancel pitch match game',
+                  'aria-label': t('stem.singing.cancel_pitch_match_game', 'Cancel pitch match game'),
                   onClick: function() {
                     stopRefTone();
                     setRefTonePlaying(null);
                     setPitchMatchMode('idle');
                   }
-                }, 'Cancel')
+                }, t('stem.singing.cancel', 'Cancel'))
               ),
 
               pitchMatchMode === 'matched' && h('div', { className: 'space-y-2 text-center' },
                 h('div', {
-                  className: 'text-2xl font-black ' + (isDark ? 'text-green-400' : 'text-green-600')
-                }, '\u2705 Matched!'),
+                  className: 'text-2xl font-black  tracking-tight' + (isDark ? 'text-green-400' : 'text-green-600')
+                }, t('stem.singing.matched', '\u2705 Matched!')),
                 h('div', { className: headingClass + ' text-lg' },
                   'Score: ' + pitchMatchScore),
                 h('button', {
@@ -2884,7 +2890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     setPitchMatchScore(null);
                     setRefTonePlaying(null);
                   }
-                }, 'Play Again')
+                }, t('stem.singing.play_again', 'Play Again'))
               )
             )
           );
@@ -2906,11 +2912,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Range finder flow
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
-                '\uD83C\uDFBC', 'Find Your Range'),
+                '\uD83C\uDFBC', t('stem.singing.find_your_range', 'Find Your Range')),
 
               rangeStep === 0 && h('div', { className: 'space-y-3' },
                 h('p', { className: subTextClass },
-                  'This will guide you through finding your lowest and highest comfortable notes. Make sure your microphone is on.'),
+                  t('stem.singing.this_will_guide_you_through_finding_yo', 'This will guide you through finding your lowest and highest comfortable notes. Make sure your microphone is on.')),
                 h('button', {
                   className: btnPrimary,
                   onClick: function() {
@@ -2925,7 +2931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     rangeLastMidiRef.current = 0;
                     if (announceToSR) announceToSR('Step 1: Sing your lowest comfortable note and hold it.');
                   }
-                }, '\uD83C\uDFAF Start Range Test')
+                }, t('stem.singing.start_range_test', '\uD83C\uDFAF Start Range Test'))
               ),
 
               rangeStep === 1 && h('div', { className: 'space-y-2' },
@@ -2934,19 +2940,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 },
                   h('div', { className: 'text-2xl mb-2' }, '\u2B07\uFE0F'),
                   h('div', { className: headingClass + ' text-lg', role: 'status', 'aria-live': 'polite' },
-                    'Sing your LOWEST comfortable note'),
+                    t('stem.singing.sing_your_lowest_comfortable_note', 'Sing your LOWEST comfortable note')),
                   h('div', { className: subTextClass + ' mt-1' },
-                    'Hold the note steady for about 1 second.'),
+                    t('stem.singing.hold_the_note_steady_for_about_1_secon', 'Hold the note steady for about 1 second.')),
                   currentNote.midi > 0 && h('div', {
-                    className: 'mt-2 text-lg font-bold',
+                    className: 'mt-2 text-lg font-bold tracking-tight',
                     style: { color: '#3b82f6' }
                   }, 'Detecting: ' + currentNote.note + currentNote.octave)
                 ),
                 h('button', {
                   className: btnSecondary,
-                  'aria-label': 'Cancel vocal range test (low range)',
+                  'aria-label': t('stem.singing.cancel_vocal_range_test_low_range', 'Cancel vocal range test (low range)'),
                   onClick: function() { setRangeStep(0); }
-                }, 'Cancel')
+                }, t('stem.singing.cancel_2', 'Cancel'))
               ),
 
               rangeStep === 2 && h('div', { className: 'space-y-2' },
@@ -2955,20 +2961,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 },
                   h('div', { className: 'text-2xl mb-2' }, '\u2B06\uFE0F'),
                   h('div', { className: headingClass + ' text-lg', role: 'status', 'aria-live': 'polite' },
-                    'Now sing your HIGHEST comfortable note'),
+                    t('stem.singing.now_sing_your_highest_comfortable_note', 'Now sing your HIGHEST comfortable note')),
                   h('div', { className: subTextClass + ' mt-1' },
                     'Hold it steady for about 1 second. Low note captured: ' +
                     (rangeLowTemp ? midiToNoteName(rangeLowTemp).str : '...')),
                   currentNote.midi > 0 && h('div', {
-                    className: 'mt-2 text-lg font-bold',
+                    className: 'mt-2 text-lg font-bold tracking-tight',
                     style: { color: '#a855f7' }
                   }, 'Detecting: ' + currentNote.note + currentNote.octave)
                 ),
                 h('button', {
                   className: btnSecondary,
-                  'aria-label': 'Cancel vocal range test (high range)',
+                  'aria-label': t('stem.singing.cancel_vocal_range_test_high_range', 'Cancel vocal range test (high range)'),
                   onClick: function() { setRangeStep(0); }
-                }, 'Cancel')
+                }, t('stem.singing.cancel_3', 'Cancel'))
               ),
 
               rangeStep === 3 && h('div', { className: 'space-y-3' },
@@ -2976,53 +2982,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: 'text-center p-4 rounded-lg ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')
                 },
                   h('div', { className: 'text-2xl mb-2' }, '\u2705'),
-                  h('div', { className: headingClass + ' text-lg' }, 'Range Found!'),
+                  h('div', { className: headingClass + ' text-lg' }, t('stem.singing.range_found', 'Range Found!')),
                   h('div', { className: 'flex justify-center gap-6 mt-3' },
                     h('div', null,
-                      h('div', { className: subTextClass }, 'Lowest'),
+                      h('div', { className: subTextClass }, t('stem.singing.lowest', 'Lowest')),
                       h('div', { className: headingClass + ' text-xl' },
                         displayLow ? midiToNoteName(displayLow).str : '--')),
                     h('div', null,
-                      h('div', { className: subTextClass }, 'Highest'),
+                      h('div', { className: subTextClass }, t('stem.singing.highest', 'Highest')),
                       h('div', { className: headingClass + ' text-xl' },
                         displayHigh ? midiToNoteName(displayHigh).str : '--')),
                     h('div', null,
-                      h('div', { className: subTextClass }, 'Span'),
+                      h('div', { className: subTextClass }, t('stem.singing.span', 'Span')),
                       h('div', { className: headingClass + ' text-xl' },
                         span + ' semitones'))
                   ),
                   voiceType && h('div', { className: 'mt-3' },
-                    h('span', { className: subTextClass }, 'Voice Type: '),
+                    h('span', { className: subTextClass }, t('stem.singing.closest_range_template', 'Closest range template: ')),
                     h('span', {
                       className: 'font-bold text-sm',
                       style: { color: voiceType.color }
                     }, voiceType.type),
-                    h('span', { className: subTextClass + ' ml-2' }, '(' + voiceType.range + ')'))
+                    h('span', { className: subTextClass + ' ml-2' }, '(' + voiceType.range + ')'),
+                    h('div', { className: subTextClass + ' mt-1 text-xs italic' }, t('stem.singing.estimated_from_your_lowest_note_true_v', 'Estimated from your lowest note — true voice type also depends on comfortable range (tessitura) and timbre, not range alone.')))
                 ),
                 h('button', {
                   className: btnPrimary + ' mt-2',
-                  'aria-label': 'Restart vocal range test',
+                  'aria-label': t('stem.singing.restart_vocal_range_test', 'Restart vocal range test'),
                   onClick: function() { setRangeStep(0); }
-                }, '\uD83D\uDD01 Test Again')
+                }, t('stem.singing.test_again', '\uD83D\uDD01 Test Again'))
               )
             ),
 
             // Piano keyboard visualization
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83C\uDFB9', 'Your Range on the Keyboard'),
+                '\uD83C\uDFB9', t('stem.singing.your_range_on_the_keyboard', 'Your Range on the Keyboard')),
               h('p', { className: subTextClass + ' mb-2' },
                 displayLow && displayHigh
                   ? 'Green keys show your vocal range from ' + midiToNoteName(displayLow).str + ' to ' + midiToNoteName(displayHigh).str + '.'
                   : 'Complete the range test above to see your range highlighted.'),
-              h('canvas', { 'aria-label': 'Singing visualization',
+              h('canvas', { 'aria-label': t('stem.singing.singing_visualization_3', 'Singing visualization'),
                 ref: rangeKeyboardCanvasRef,
                 width: 600,
                 height: 80,
                 tabIndex: 0,
                 className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200') + ' focus:outline-none focus:ring-2 focus:ring-rose-400',
                 role: 'img',
-                'aria-label': 'Piano keyboard showing vocal range. Use Left/Right arrows to navigate notes, Enter or Space to play.',
+                'aria-label': t('stem.singing.piano_keyboard_showing_vocal_range_use', 'Piano keyboard showing vocal range. Use Left/Right arrows to navigate notes, Enter or Space to play.'),
                 onClick: function(e) {
                   var cvs = rangeKeyboardCanvasRef.current;
                   if (!cvs || !cvs._keyRects) return;
@@ -3077,7 +3084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Range history
             (rangeHistory && rangeHistory.length > 0) && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83D\uDCCA', 'Range History'),
+                '\uD83D\uDCCA', t('stem.singing.range_history', 'Range History')),
               h('div', { className: 'space-y-1' },
                 rangeHistory.map(function(entry, idx) {
                   return h('div', {
@@ -3105,29 +3112,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           var depth = vibratoResult.depth;
 
           // Quality assessment
-          var quality = { label: 'No Signal', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'Start singing a sustained note.' };
+          var quality = { label: t('stem.singing.no_signal', 'No Signal'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.singing.start_singing_a_sustained_note', 'Start singing a sustained note.') };
           if (vibratoHistory.length >= 20 && currentNote.midi > 0) {
             if (depth < 10) {
-              quality = { label: 'Straight Tone', color: '#6366f1', desc: 'Very little pitch variation. Good for choral blend!' };
+              quality = { label: t('stem.singing.straight_tone', 'Straight Tone'), color: '#6366f1', desc: t('stem.singing.very_little_pitch_variation_good_for_c', 'Very little pitch variation. Good for choral blend!') };
             } else if (rate > 8) {
-              quality = { label: 'Too Fast (Tremolo)', color: '#f97316', desc: 'Vibrato rate is above 8 Hz. Try to relax and slow down.' };
+              quality = { label: t('stem.singing.too_fast_tremolo', 'Too Fast (Tremolo)'), color: '#f97316', desc: t('stem.singing.vibrato_rate_is_above_8_hz_try_to_rela', 'Vibrato rate is above 8 Hz. Try to relax and slow down.') };
             } else if (rate < 4 && depth > 10) {
-              quality = { label: 'Too Slow (Wobble)', color: '#f97316', desc: 'Vibrato rate is below 4 Hz. Try to energize your airflow.' };
+              quality = { label: t('stem.singing.too_slow_wobble', 'Too Slow (Wobble)'), color: '#f97316', desc: t('stem.singing.vibrato_rate_is_below_4_hz_try_to_ener', 'Vibrato rate is below 4 Hz. Try to energize your airflow.') };
             } else if (depth > 100) {
-              quality = { label: 'Too Wide', color: '#f97316', desc: 'Vibrato width exceeds 100 cents. Try for a narrower oscillation.' };
+              quality = { label: t('stem.singing.too_wide', 'Too Wide'), color: '#f97316', desc: t('stem.singing.vibrato_width_exceeds_100_cents_try_fo', 'Vibrato width exceeds 100 cents. Try for a narrower oscillation.') };
             } else if (rate >= 5 && rate <= 7 && depth >= 30 && depth <= 80) {
-              quality = { label: 'Healthy Vibrato', color: '#22c55e', desc: 'Beautiful! Rate and depth are in the ideal range.' };
+              quality = { label: t('stem.singing.healthy_vibrato', 'Healthy Vibrato'), color: '#22c55e', desc: t('stem.singing.beautiful_rate_and_depth_are_in_the_id', 'Beautiful! Rate and depth are in the ideal range.') };
             } else if (rate >= 4 && rate <= 8 && depth >= 15 && depth <= 100) {
-              quality = { label: 'Developing Vibrato', color: '#eab308', desc: 'Getting there! Aim for 5-7 Hz rate and 30-80 cents depth.' };
+              quality = { label: t('stem.singing.developing_vibrato', 'Developing Vibrato'), color: '#eab308', desc: t('stem.singing.getting_there_aim_for_5_7_hz_rate_and_', 'Getting there! Aim for 5-7 Hz rate and 30-80 cents depth.') };
             }
           }
 
           // Vibrato exercises
           var exercises = [
-            { id: 'straight', label: 'Steady Tone', desc: 'Sustain a note with NO vibrato. Practice controlling your voice to hold it perfectly still.', target: 'Straight tone (< 10\u00A2 variation)' },
-            { id: 'add', label: 'Add Vibrato', desc: 'Sustain a note and let your natural vibrato emerge. Don\'t force it \u2014 relax and let it happen.', target: 'Natural vibrato (5-7 Hz, 30-80\u00A2)' },
-            { id: 'speed', label: 'Speed Control', desc: 'Try to vibrate at exactly 6 Hz (6 oscillations per second). Watch the rate readout.', target: 'Rate: 6 Hz' },
-            { id: 'width', label: 'Width Control', desc: 'Try to keep vibrato depth around 50 cents. Not too wide, not too narrow.', target: 'Depth: ~50\u00A2' }
+            { id: 'straight', label: t('stem.singing.steady_tone', 'Steady Tone'), desc: t('stem.singing.sustain_a_note_with_no_vibrato_practic', 'Sustain a note with NO vibrato. Practice controlling your voice to hold it perfectly still.'), target: 'Straight tone (< 10\u00A2 variation)' },
+            { id: 'add', label: t('stem.singing.add_vibrato', 'Add Vibrato'), desc: t('stem.singing.sustain_a_note_and_let_your_natural_vi', 'Sustain a note and let your natural vibrato emerge. Don\'t force it \u2014 relax and let it happen.'), target: 'Natural vibrato (5-7 Hz, 30-80\u00A2)' },
+            { id: 'speed', label: t('stem.singing.speed_control', 'Speed Control'), desc: t('stem.singing.try_to_vibrate_at_exactly_6_hz_6_oscil', 'Try to vibrate at exactly 6 Hz (6 oscillations per second). Watch the rate readout.'), target: 'Rate: 6 Hz' },
+            { id: 'width', label: t('stem.singing.width_control', 'Width Control'), desc: t('stem.singing.try_to_keep_vibrato_depth_around_50_ce', 'Try to keep vibrato depth around 50 cents. Not too wide, not too narrow.'), target: 'Depth: ~50\u00A2' }
           ];
 
           return h('div', { className: 'space-y-4' },
@@ -3136,33 +3143,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Vibrato trace
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83C\uDF0A', 'Vibrato Waveform'),
+                '\uD83C\uDF0A', t('stem.singing.vibrato_waveform', 'Vibrato Waveform')),
               h('p', { className: subTextClass + ' mb-2' },
-                'Sustain a note to see your vibrato pattern. The center line is your average pitch.'),
-              h('canvas', { 'aria-label': 'Singing visualization',
+                t('stem.singing.sustain_a_note_to_see_your_vibrato_pat', 'Sustain a note to see your vibrato pattern. The center line is your average pitch.')),
+              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_4', 'Singing visualization'),
                 ref: vibratoCanvasRef,
                 width: 600,
                 height: 160,
                 className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
                 role: 'img',
-                'aria-label': 'Vibrato waveform trace showing pitch deviation over time'
+                'aria-label': t('stem.singing.vibrato_waveform_trace_showing_pitch_d', 'Vibrato waveform trace showing pitch deviation over time')
               })
             ),
 
             // Rate + Depth + Quality display
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: cardClass + ' text-center' },
-                h('div', { className: subTextClass + ' mb-1' }, 'Rate'),
+                h('div', { className: subTextClass + ' mb-1' }, t('stem.singing.rate', 'Rate')),
                 h('div', { className: headingClass + ' text-2xl' }, rate.toFixed(1) + ' Hz'),
-                h('div', { className: subTextClass }, 'Ideal: 5-7 Hz')),
+                h('div', { className: subTextClass }, t('stem.singing.ideal_5_7_hz', 'Ideal: 5-7 Hz'))),
               h('div', { className: cardClass + ' text-center' },
-                h('div', { className: subTextClass + ' mb-1' }, 'Depth'),
+                h('div', { className: subTextClass + ' mb-1' }, t('stem.singing.depth', 'Depth')),
                 h('div', { className: headingClass + ' text-2xl' }, Math.round(depth) + '\u00A2'),
-                h('div', { className: subTextClass }, 'Ideal: 30-80\u00A2')),
+                h('div', { className: subTextClass }, t('stem.singing.ideal_30_80', 'Ideal: 30-80\u00A2'))),
               h('div', { className: cardClass + ' text-center' },
-                h('div', { className: subTextClass + ' mb-1' }, 'Quality'),
+                h('div', { className: subTextClass + ' mb-1' }, t('stem.singing.quality', 'Quality')),
                 h('div', {
-                  className: 'text-lg font-bold',
+                  className: 'text-lg font-bold tracking-tight',
                   style: { color: quality.color }
                 }, quality.label),
                 h('div', { className: subTextClass }, quality.desc))
@@ -3171,7 +3178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Exercises
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
-                '\uD83C\uDFAF', 'Vibrato Exercises'),
+                '\uD83C\uDFAF', t('stem.singing.vibrato_exercises', 'Vibrato Exercises')),
               h('div', { className: 'grid grid-cols-2 gap-2' },
                 exercises.map(function(ex) {
                   var isActive = vibratoExercise === ex.id;
@@ -3181,7 +3188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     className: 'text-left p-3 rounded-lg border transition-colors ' +
                       (isActive
                         ? (isDark ? 'border-rose-500 bg-rose-900/30' : 'border-rose-400 bg-rose-50')
-                        : (isDark ? 'border-slate-600 bg-slate-700 hover:bg-slate-600' : 'border-slate-200 bg-slate-50 hover:bg-slate-100')),
+                        : (isDark ? 'transition-colors border-slate-600 bg-slate-700 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors border-slate-200 bg-slate-50 hover:bg-slate-100 active:scale-[0.97]')),
                     onClick: function() {
                       setVibratoExercise(isActive ? null : ex.id);
                       setVibratoHistory([]);
@@ -3252,7 +3259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               h('div', { className: 'flex flex-wrap items-center gap-4 mb-3' },
                 // Level selector
                 h('div', null,
-                  h('label', { className: subTextClass + ' block mb-1' }, 'Difficulty Level'),
+                  h('label', { className: subTextClass + ' block mb-1' }, t('stem.singing.difficulty_level', 'Difficulty Level')),
                   h('div', { className: 'flex gap-1' },
                     [1, 2, 3, 4, 5, 6].map(function(lvl) {
                       return h('button', {
@@ -3269,29 +3276,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 // Direction selector
                 h('div', null,
-                  h('label', { className: subTextClass + ' block mb-1' }, 'Direction'),
+                  h('label', { className: subTextClass + ' block mb-1' }, t('stem.singing.direction', 'Direction')),
                   h('div', { className: 'flex gap-1' },
                     h('button', {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (intervalDirection === 'up'
                           ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600')),
-                      'aria-label': 'Set interval direction to up',
+                      'aria-label': t('stem.singing.set_interval_direction_to_up', 'Set interval direction to up'),
                       onClick: function() { setIntervalDirection('up'); }
-                    }, '\u2B06 UP'),
+                    }, t('stem.singing.up', '\u2B06 UP')),
                     h('button', {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (intervalDirection === 'down'
                           ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600')),
-                      'aria-label': 'Set interval direction to down',
+                      'aria-label': t('stem.singing.set_interval_direction_to_down', 'Set interval direction to down'),
                       onClick: function() { setIntervalDirection('down'); }
-                    }, '\u2B07 DOWN')
+                    }, t('stem.singing.down', '\u2B07 DOWN'))
                   )
                 ),
                 // Streak
                 h('div', { className: 'text-center' },
-                  h('div', { className: subTextClass }, 'Streak'),
+                  h('div', { className: subTextClass }, t('stem.singing.streak', 'Streak')),
                   h('div', { className: headingClass + ' text-xl' }, intervalStreak.toString()),
                   bestStreak > 0 && h('div', { className: subTextClass }, 'Best: ' + bestStreak))
               ),
@@ -3314,7 +3321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               !intervalActive && h('button', {
                 className: btnPrimary + ' w-full',
                 onClick: startNewInterval
-              }, '\uD83C\uDFB5 New Interval'),
+              }, t('stem.singing.new_interval', '\uD83C\uDFB5 New Interval')),
 
               // Active interval challenge
               intervalActive && !intervalResult && h('div', { className: 'space-y-3' },
@@ -3322,7 +3329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: 'text-center p-4 rounded-lg ' +
                     (isDark ? 'bg-rose-900/30 border border-rose-700' : 'bg-rose-50 border border-rose-200')
                 },
-                  h('div', { className: 'text-lg font-bold ' + (isDark ? 'text-rose-300' : 'text-rose-600') },
+                  h('div', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-rose-300' : 'text-rose-600') },
                     'Sing a ' + intervalActive.interval.name + ' ' + intervalActive.direction.toUpperCase()),
                   h('div', { className: headingClass + ' text-2xl mt-2' },
                     'From: ' + midiToNoteName(intervalActive.refMidi).str + ' \u2192 Target: ' + midiToNoteName(intervalActive.targetMidi).str),
@@ -3333,13 +3340,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     ' (' + Math.round(Math.abs(currentNote.midi - intervalActive.targetMidi) * 100) + '\u00A2 off)')
                 ),
                 // Staff canvas
-                h('canvas', { 'aria-label': 'Singing visualization',
+                h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_5', 'Singing visualization'),
                   ref: intervalStaffCanvasRef,
                   width: 400,
                   height: 120,
                   className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
                   role: 'img',
-                  'aria-label': 'Staff notation showing reference, target, and your current note'
+                  'aria-label': t('stem.singing.staff_notation_showing_reference_targe', 'Staff notation showing reference, target, and your current note')
                 }),
                 h('div', { className: 'flex gap-2' },
                   h('button', {
@@ -3349,7 +3356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       setRefTonePlaying(intervalActive.refMidi);
                       setTimeout(function() { setRefTonePlaying(null); }, 1600);
                     }
-                  }, '\uD83D\uDD0A Replay Reference'),
+                  }, t('stem.singing.replay_reference', '\uD83D\uDD0A Replay Reference')),
                   h('button', {
                     className: btnSecondary,
                     onClick: function() {
@@ -3357,17 +3364,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       setRefTonePlaying(intervalActive.targetMidi);
                       setTimeout(function() { setRefTonePlaying(null); }, 1600);
                     }
-                  }, '\uD83D\uDCA1 Hear Target'),
+                  }, t('stem.singing.hear_target', '\uD83D\uDCA1 Hear Target')),
                   h('button', {
                     className: btnSecondary,
-                    'aria-label': 'Skip this interval',
+                    'aria-label': t('stem.singing.skip_this_interval', 'Skip this interval'),
                     onClick: function() {
                       stopRefTone();
                       setRefTonePlaying(null);
                       setIntervalActive(null);
                       setIntervalStreak(0);
                     }
-                  }, 'Skip')
+                  }, t('stem.singing.skip', 'Skip'))
                 )
               ),
 
@@ -3382,13 +3389,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     intervalActive.interval.name + ' ' + intervalActive.direction.toUpperCase() + ' \u2014 Correct!'),
                   h('div', { className: 'flex justify-center gap-6 mt-2' },
                     h('div', null,
-                      h('div', { className: subTextClass }, 'Accuracy'),
+                      h('div', { className: subTextClass }, t('stem.singing.accuracy', 'Accuracy')),
                       h('div', { className: headingClass }, intervalResult.centsOff + '\u00A2 off')),
                     h('div', null,
-                      h('div', { className: subTextClass }, 'Time'),
+                      h('div', { className: subTextClass }, t('stem.singing.time', 'Time')),
                       h('div', { className: headingClass }, intervalResult.time.toFixed(1) + 's')),
                     h('div', null,
-                      h('div', { className: subTextClass }, 'Score'),
+                      h('div', { className: subTextClass }, t('stem.singing.score', 'Score')),
                       h('div', { className: headingClass }, intervalResult.score))
                   )
                 ),
@@ -3399,14 +3406,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     setIntervalResult(null);
                     setTimeout(startNewInterval, 100);
                   }
-                }, '\u27A1\uFE0F Next Interval')
+                }, t('stem.singing.next_interval', '\u27A1\uFE0F Next Interval'))
               )
             ),
 
             // Score tracking per interval
             Object.keys(intervalScores).length > 0 && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83D\uDCCA', 'Interval Accuracy'),
+                '\uD83D\uDCCA', t('stem.singing.interval_accuracy', 'Interval Accuracy')),
               h('div', { className: 'space-y-1.5' },
                 Object.keys(intervalScores).map(function(name) {
                   var sc = intervalScores[name];
@@ -3516,7 +3523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 'aria-controls': 'anatomy-panel'
               },
                 h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
-                  '\uD83E\uDEC1', 'Vocal Anatomy Explorer'),
+                  '\uD83E\uDEC1', t('stem.singing.vocal_anatomy_explorer', 'Vocal Anatomy Explorer')),
                 h('span', { className: subTextClass + ' text-lg transition-transform ' + (anatomyOpen ? 'rotate-180' : '') },
                   '\u25BC')),
 
@@ -3525,17 +3532,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 className: 'mt-4 space-y-4'
               },
                 h('p', { className: subTextClass + ' mb-2' },
-                  'Explore how your body makes sound. Click a region to learn about it, or turn on animations to see it in action.'),
+                  t('stem.singing.explore_how_your_body_makes_sound_clic', 'Explore how your body makes sound. Click a region to learn about it, or turn on animations to see it in action.')),
 
                 // Canvas diagram
                 h('div', { className: 'flex justify-center' },
-                  h('canvas', { 'aria-label': 'Singing visualization',
+                  h('canvas', { 'aria-label': t('stem.singing.singing_visualization_6', 'Singing visualization'),
                     ref: anatomyCanvasRef,
                     width: 500,
                     height: 400,
                     tabIndex: 0,
                     role: 'img',
-                    'aria-label': 'Sagittal cross-section diagram of the human vocal tract. Use Left/Right arrows to cycle regions, Enter or Space to select.',
+                    'aria-label': t('stem.singing.sagittal_cross_section_diagram_of_the_', 'Sagittal cross-section diagram of the human vocal tract. Use Left/Right arrows to cycle regions, Enter or Space to select.'),
                     className: 'rounded-lg border ' + (isDark ? 'border-slate-600' : 'border-slate-200') + ' focus:outline-none focus:ring-2 focus:ring-rose-400',
                     style: { maxWidth: '100%', height: 'auto', cursor: 'pointer' },
                     onClick: function(e) {
@@ -3582,7 +3589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
                 // Animation controls
                 h('div', { className: 'space-y-2' },
-                  h('div', { className: headingClass + ' text-xs mb-1' }, 'Animations'),
+                  h('div', { className: headingClass + ' text-xs mb-1' }, t('stem.singing.animations', 'Animations')),
                   h('div', { className: 'flex flex-wrap gap-2' },
                     ['none', 'breathing', 'phonation', 'vowel'].map(function(mode) {
                       var labels = { none: 'None', breathing: 'Breathing', phonation: 'Phonation', vowel: 'Vowel Shaping' };
@@ -3593,7 +3600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         className: 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ' +
                           (isActive
                             ? (isDark ? 'bg-rose-600 border-rose-500 text-white' : 'bg-rose-600 border-rose-500 text-white')
-                            : (isDark ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100')),
+                            : (isDark ? 'transition-colors bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 active:scale-[0.97]')),
                         onClick: function() { setAnatomyAnim(mode); }
                       }, icons[mode] + ' ' + labels[mode]);
                     })
@@ -3608,14 +3615,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                           ? (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
                       onClick: function() { setAnatomyPitchHigh(false); }
-                    }, 'Low Pitch (slow vibration)'),
+                    }, t('stem.singing.low_pitch_slow_vibration', 'Low Pitch (slow vibration)')),
                     h('button', {
                       className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
                         (anatomyPitchHigh
                           ? (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
                       onClick: function() { setAnatomyPitchHigh(true); }
-                    }, 'High Pitch (fast vibration)')
+                    }, t('stem.singing.high_pitch_fast_vibration', 'High Pitch (fast vibration)'))
                   ),
 
                   // Vowel sub-controls: vowel selector
@@ -3637,7 +3644,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
                 // Region selector buttons
                 h('div', { className: 'space-y-2' },
-                  h('div', { className: headingClass + ' text-xs mb-1' }, 'Explore a Region'),
+                  h('div', { className: headingClass + ' text-xs mb-1' }, t('stem.singing.explore_a_region', 'Explore a Region')),
                   h('div', { className: 'flex flex-wrap gap-2' },
                     ANATOMY_REGIONS.map(function(region) {
                       var isActive = anatomyRegion === region.id;
@@ -3646,7 +3653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         className: 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border-2 ' +
                           (isActive
                             ? 'text-white shadow-md'
-                            : (isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900')),
+                            : (isDark ? 'transition-colors text-slate-300 hover:text-white' : 'transition-colors text-slate-600 hover:text-slate-900')),
                         style: isActive
                           ? { backgroundColor: region.color, borderColor: region.color }
                           : { borderColor: region.color + '60', backgroundColor: 'transparent' },
@@ -3675,30 +3682,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     }, region.label),
                     h('div', { className: 'space-y-2 text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
                       h('div', null,
-                        h('span', { className: 'font-bold' }, 'What is it? '),
+                        h('span', { className: 'font-bold' }, t('stem.singing.what_is_it', 'What is it? ')),
                         region.what),
                       h('div', null,
-                        h('span', { className: 'font-bold' }, 'Role in singing: '),
+                        h('span', { className: 'font-bold' }, t('stem.singing.role_in_singing', 'Role in singing: ')),
                         region.singing),
                       h('div', {
                         className: 'p-2 rounded ' + (isDark ? 'bg-amber-900/30' : 'bg-amber-50')
                       },
-                        h('span', { className: 'font-bold' }, '\u2728 Fun fact: '),
+                        h('span', { className: 'font-bold' }, t('stem.singing.fun_fact', '\u2728 Fun fact: ')),
                         region.funFact),
                       h('div', {
                         className: 'p-2 rounded ' + (isDark ? 'bg-green-900/30' : 'bg-green-50')
                       },
-                        h('span', { className: 'font-bold' }, '\uD83C\uDFAF Try this: '),
+                        h('span', { className: 'font-bold' }, t('stem.singing.try_this', '\uD83C\uDFAF Try this: ')),
                         region.tryThis),
                       region.injuries && h('div', {
                         className: 'p-2 rounded mt-1 ' + (isDark ? 'bg-red-900/30 border border-red-800/50' : 'bg-red-50 border border-red-200')
                       },
-                        h('span', { className: 'font-bold ' + (isDark ? 'text-red-300' : 'text-red-700') }, '\u26A0\uFE0F Common injuries: '),
+                        h('span', { className: 'font-bold ' + (isDark ? 'text-red-300' : 'text-red-700') }, t('stem.singing.common_injuries', '\u26A0\uFE0F Common injuries: ')),
                         region.injuries),
                       region.prevention && h('div', {
                         className: 'p-2 rounded mt-1 ' + (isDark ? 'bg-blue-900/30 border border-blue-800/50' : 'bg-blue-50 border border-blue-200')
                       },
-                        h('span', { className: 'font-bold ' + (isDark ? 'text-blue-300' : 'text-blue-700') }, '\uD83D\uDEE1\uFE0F Prevention: '),
+                        h('span', { className: 'font-bold ' + (isDark ? 'text-blue-300' : 'text-blue-700') }, t('stem.singing.prevention', '\uD83D\uDEE1\uFE0F Prevention: ')),
                         region.prevention)
                     )
                   );
@@ -3713,13 +3720,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 'aria-expanded': d.injuriesOpen || false,
                 onClick: function() { upd('injuriesOpen', !(d.injuriesOpen || false)); }
               },
-                h('span', { className: 'flex items-center gap-2' }, '\uD83C\uDFE5', 'Vocal Injuries & Prevention'),
+                h('span', { className: 'flex items-center gap-2' }, '\uD83C\uDFE5', t('stem.singing.vocal_injuries_prevention', 'Vocal Injuries & Prevention')),
                 h('span', { className: 'text-lg' }, (d.injuriesOpen ? '\u25B2' : '\u25BC'))),
               (d.injuriesOpen || false) && h('div', { className: 'mt-4 space-y-4' },
                 // Prevention tips grid
                 h('div', null,
                   h('h4', { className: headingClass + ' text-xs mb-2 flex items-center gap-2' },
-                    '\uD83D\uDEE1\uFE0F', 'Top Prevention Tips'),
+                    '\uD83D\uDEE1\uFE0F', t('stem.singing.top_prevention_tips', 'Top Prevention Tips')),
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                     PREVENTION_TIPS.map(function(tip) {
                       var priorityColor = tip.priority === 'critical'
@@ -3737,15 +3744,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                           tip.priority === 'critical' && h('span', {
                             className: 'text-[11px] font-bold uppercase px-1.5 py-0.5 rounded ' +
                               (isDark ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700')
-                          }, 'Critical')),
+                          }, t('stem.singing.critical', 'Critical'))),
                         h('p', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, tip.tip));
                     }))),
                 // Common injuries reference
                 h('div', { className: 'mt-3' },
                   h('h4', { className: headingClass + ' text-xs mb-2 flex items-center gap-2' },
-                    '\u26A0\uFE0F', 'Common Vocal Injuries'),
+                    '\u26A0\uFE0F', t('stem.singing.common_vocal_injuries', 'Common Vocal Injuries')),
                   h('p', { className: subTextClass + ' text-[11px] mb-2 italic' },
-                    'Understanding these conditions helps you recognize warning signs early. If you experience persistent symptoms, see a doctor.'),
+                    t('stem.singing.understanding_these_conditions_helps_y', 'Understanding these conditions helps you recognize warning signs early. If you experience persistent symptoms, see a doctor.')),
                   h('div', { className: 'space-y-2' },
                     VOCAL_INJURIES.map(function(injury) {
                       var isExpanded = d.expandedInjury === injury.name;
@@ -3776,28 +3783,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         isExpanded && h('div', {
                           className: 'px-3 pb-3 space-y-2 text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600')
                         },
-                          h('div', null, h('span', { className: 'font-bold' }, 'What is it? '), injury.what),
+                          h('div', null, h('span', { className: 'font-bold' }, t('stem.singing.what_is_it_2', 'What is it? ')), injury.what),
                           h('div', null, h('span', { className: 'font-bold' }, 'Causes: '), injury.causes),
                           h('div', null, h('span', { className: 'font-bold' }, 'Symptoms: '), injury.symptoms),
-                          h('div', null, h('span', { className: 'font-bold' }, 'Who gets it? '), injury.whoGetsIt),
+                          h('div', null, h('span', { className: 'font-bold' }, t('stem.singing.who_gets_it', 'Who gets it? ')), injury.whoGetsIt),
                           h('div', {
                             className: 'p-2 rounded ' + (isDark ? 'bg-green-900/30 border border-green-800/50' : 'bg-green-50 border border-green-200')
                           },
-                            h('span', { className: 'font-bold ' + (isDark ? 'text-green-300' : 'text-green-700') }, '\uD83D\uDC8A Treatment: '),
+                            h('span', { className: 'font-bold ' + (isDark ? 'text-green-300' : 'text-green-700') }, t('stem.singing.treatment', '\uD83D\uDC8A Treatment: ')),
                             injury.treatment)));
                     })),
                   h('div', {
                     className: 'mt-3 p-3 rounded-lg text-center text-xs italic ' +
                       (isDark ? 'bg-violet-900/30 text-violet-300 border border-violet-700' : 'bg-violet-50 text-violet-700 border border-violet-200')
                   },
-                    '\uD83D\uDC68\u200D\u2695\uFE0F This information is educational only. It is not medical advice. If you have concerns about your voice, see an otolaryngologist (ENT doctor) or speech-language pathologist.'))
+                    t('stem.singing.this_information_is_educational_only_i', '\uD83D\uDC68\u200D\u2695\uFE0F This information is educational only. It is not medical advice. If you have concerns about your voice, see an otolaryngologist (ENT doctor) or speech-language pathologist.')))
               )
             ),
 
             // Warm-up exercises
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
-                '\uD83C\uDFB6', 'Vocal Warm-ups'),
+                '\uD83C\uDFB6', t('stem.singing.vocal_warm_ups', 'Vocal Warm-ups')),
               h('p', { className: subTextClass + ' mb-3' },
                 'Complete a warm-up before singing practice. Reference tones play to guide you. ' +
                 '(' + warmUpsCompleted + ' completed so far)'),
@@ -3827,7 +3834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('button', {
                     className: btnPrimary,
                     onClick: completeWarmup
-                  }, '\u2705 Complete'),
+                  }, t('stem.singing.complete', '\u2705 Complete')),
                   h('button', {
                     className: btnSecondary,
                     onClick: function() {
@@ -3836,12 +3843,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         playNoteSequence(warmupActive.notes, 0.10);
                       }
                     }
-                  }, '\uD83D\uDD01 Replay Tones'),
+                  }, t('stem.singing.replay_tones', '\uD83D\uDD01 Replay Tones')),
                   h('button', {
                     className: btnSecondary,
-                    'aria-label': 'Cancel warm-up exercise',
+                    'aria-label': t('stem.singing.cancel_warm_up_exercise', 'Cancel warm-up exercise'),
                     onClick: cancelWarmup
-                  }, 'Cancel'))
+                  }, t('stem.singing.cancel_4', 'Cancel')))
               ),
 
               !warmupActive && h('div', { className: 'grid gap-2' },
@@ -3849,14 +3856,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   return h('button', {
                     key: ex.id,
                     className: 'text-left p-3 rounded-lg border transition-colors ' +
-                      (isDark ? 'border-slate-600 bg-slate-700 hover:bg-slate-600' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'),
+                      (isDark ? 'transition-colors border-slate-600 bg-slate-700 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors border-slate-200 bg-slate-50 hover:bg-slate-100 active:scale-[0.97]'),
                     onClick: function() { startWarmup(ex); }
                   },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
                       h('span', { className: 'text-lg' }, ex.icon),
                       h('span', { className: headingClass + ' text-sm' }, ex.label),
                       h('span', { className: subTextClass + ' ml-auto' }, '~' + ex.duration + 's')),
-                    h('div', { className: subTextClass }, ex.desc)
+                    h('div', { className: subTextClass }, __alloT('stem.singing.' + (ex.id) + '_desc', ex.desc))
                   );
                 })
               )
@@ -3865,21 +3872,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Vocal health tips
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
-                '\u2764\uFE0F', 'Vocal Health Tips'),
+                '\u2764\uFE0F', t('stem.singing.vocal_health_tips', 'Vocal Health Tips')),
 
               !healthTips && !healthLoading && h('div', { className: 'space-y-2' },
                 h('p', { className: subTextClass },
-                  'Get personalized vocal health tips appropriate for your grade level.'),
+                  t('stem.singing.get_personalized_vocal_health_tips_app', 'Get personalized vocal health tips appropriate for your grade level.')),
                 h('button', {
                   className: btnPrimary,
                   onClick: loadHealthTips
-                }, '\uD83D\uDCA1 Get Tips')
+                }, t('stem.singing.get_tips', '\uD83D\uDCA1 Get Tips'))
               ),
 
               healthLoading && h('div', {
                 className: 'text-center py-4 ' + subTextClass,
                 role: 'status'
-              }, 'Loading tips...'),
+              }, t('stem.singing.loading_tips', 'Loading tips...')),
 
               healthTips && h('div', { className: 'space-y-2' },
                 h('div', {
@@ -3892,61 +3899,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     setHealthTips(null);
                     loadHealthTips();
                   }
-                }, '\uD83D\uDD01 Refresh Tips')
+                }, t('stem.singing.refresh_tips', '\uD83D\uDD01 Refresh Tips'))
               )
             ),
 
             // Quick reference: breathing diagram
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83C\uDF2C\uFE0F', 'Breathing for Singing'),
+                '\uD83C\uDF2C\uFE0F', t('stem.singing.breathing_for_singing', 'Breathing for Singing')),
               h('div', { className: 'grid grid-cols-3 gap-3 text-center' },
                 h('div', {
                   className: 'p-3 rounded-lg ' + (isDark ? 'bg-blue-900/30' : 'bg-blue-50')
                 },
                   h('div', { className: 'text-2xl mb-1' }, '\u2B07\uFE0F'),
-                  h('div', { className: headingClass + ' text-xs' }, '1. Inhale'),
-                  h('div', { className: subTextClass }, 'Breathe deep into your belly (diaphragm), not your chest.')),
+                  h('div', { className: headingClass + ' text-xs' }, t('stem.singing.1_inhale', '1. Inhale')),
+                  h('div', { className: subTextClass }, t('stem.singing.breathe_deep_into_your_belly_diaphragm', 'Breathe deep into your belly (diaphragm), not your chest.'))),
                 h('div', {
                   className: 'p-3 rounded-lg ' + (isDark ? 'bg-green-900/30' : 'bg-green-50')
                 },
                   h('div', { className: 'text-2xl mb-1' }, '\u23F8\uFE0F'),
-                  h('div', { className: headingClass + ' text-xs' }, '2. Support'),
-                  h('div', { className: subTextClass }, 'Keep your core engaged to control airflow while singing.')),
+                  h('div', { className: headingClass + ' text-xs' }, t('stem.singing.2_support', '2. Support')),
+                  h('div', { className: subTextClass }, t('stem.singing.keep_your_core_engaged_to_control_airf', 'Keep your core engaged to control airflow while singing.'))),
                 h('div', {
                   className: 'p-3 rounded-lg ' + (isDark ? 'bg-purple-900/30' : 'bg-purple-50')
                 },
                   h('div', { className: 'text-2xl mb-1' }, '\uD83C\uDF0A'),
-                  h('div', { className: headingClass + ' text-xs' }, '3. Release'),
-                  h('div', { className: subTextClass }, 'Let the air flow smoothly and evenly through your vocal folds.'))
+                  h('div', { className: headingClass + ' text-xs' }, t('stem.singing.3_release', '3. Release')),
+                  h('div', { className: subTextClass }, t('stem.singing.let_the_air_flow_smoothly_and_evenly_t', 'Let the air flow smoothly and evenly through your vocal folds.')))
               )
             ),
 
             // Posture tips
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83E\uDDD1\u200D\uD83C\uDFA4', 'Singing Posture'),
+                '\uD83E\uDDD1\u200D\uD83C\uDFA4', t('stem.singing.singing_posture', 'Singing Posture')),
               h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex items-start gap-2' },
                   h('span', null, '\u2705'),
                   h('span', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                    'Feet shoulder-width apart, weight balanced evenly')),
+                    t('stem.singing.feet_shoulder_width_apart_weight_balan', 'Feet shoulder-width apart, weight balanced evenly'))),
                 h('div', { className: 'flex items-start gap-2' },
                   h('span', null, '\u2705'),
                   h('span', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                    'Shoulders relaxed and rolled back (not hunched)')),
+                    t('stem.singing.shoulders_relaxed_and_rolled_back_not_', 'Shoulders relaxed and rolled back (not hunched)'))),
                 h('div', { className: 'flex items-start gap-2' },
                   h('span', null, '\u2705'),
                   h('span', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                    'Chin level \u2014 not tilted up or down')),
+                    t('stem.singing.chin_level_not_tilted_up_or_down', 'Chin level \u2014 not tilted up or down'))),
                 h('div', { className: 'flex items-start gap-2' },
                   h('span', null, '\u2705'),
                   h('span', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                    'Jaw relaxed and slightly dropped when singing')),
+                    t('stem.singing.jaw_relaxed_and_slightly_dropped_when_', 'Jaw relaxed and slightly dropped when singing'))),
                 h('div', { className: 'flex items-start gap-2' },
                   h('span', null, '\u274C'),
                   h('span', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                    'Avoid: locking knees, tensing neck, or clenching jaw'))
+                    t('stem.singing.avoid_locking_knees_tensing_neck_or_cl', 'Avoid: locking knees, tensing neck, or clenching jaw')))
               )
             )
           );
@@ -4119,9 +4126,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Exercise source selector
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
-                '\uD83C\uDFBC', 'Sight Reading Trainer'),
+                '\uD83C\uDFBC', t('stem.singing.sight_reading_trainer', 'Sight Reading Trainer')),
               h('p', { className: subTextClass + ' mb-3' },
-                'Read the notes on the staff and sing them in order. Real-time pitch detection checks your accuracy.'),
+                t('stem.singing.read_the_notes_on_the_staff_and_sing_t', 'Read the notes on the staff and sing them in order. Real-time pitch detection checks your accuracy.')),
 
               // Source tabs
               h('div', { className: 'flex gap-1 mb-3' },
@@ -4129,23 +4136,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'generate'
                       ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                   onClick: function() { setSrSource('generate'); }
-                }, 'Random'),
+                }, t('stem.singing.random', 'Random')),
                 h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'melody'
                       ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                   onClick: function() { setSrSource('melody'); }
-                }, 'Melodies'),
+                }, t('stem.singing.melodies', 'Melodies')),
                 callGemini && h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'ai'
                       ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                   onClick: function() { setSrSource('ai'); }
-                }, 'AI Generate')
+                }, t('stem.singing.ai_generate', 'AI Generate'))
               ),
 
               // Difficulty selector (for generate & ai modes)
@@ -4160,7 +4167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (isActive
                           ? 'text-white'
-                          : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                          : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                       style: isActive ? { backgroundColor: colors[lvl] } : {},
                       onClick: function() { setSrDifficulty(lvl); }
                     }, lvl.charAt(0).toUpperCase() + lvl.slice(1));
@@ -4174,7 +4181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
               // Melody selector (for melody mode)
               srSource === 'melody' && h('div', { className: 'mb-3' },
-                h('label', { className: subTextClass + ' block mb-1' }, 'Choose a melody:'),
+                h('label', { className: subTextClass + ' block mb-1' }, t('stem.singing.choose_a_melody', 'Choose a melody:')),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   SIGHT_READ_MELODIES.map(function(mel) {
                     var isActive = srMelodyId === mel.id;
@@ -4184,7 +4191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       className: 'text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ' +
                         (isActive
                           ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                          : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+                          : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
                       onClick: function() { setSrMelodyId(mel.id); }
                     },
                       h('span', null, mel.label),
@@ -4212,8 +4219,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Staff notation canvas
             srNotes && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83C\uDFB5', 'Staff'),
-              h('canvas', { 'aria-label': 'Singing visualization',
+                '\uD83C\uDFB5', t('stem.singing.staff', 'Staff')),
+              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_7', 'Singing visualization'),
                 ref: sightReadCanvasRef,
                 width: 700,
                 height: 160,
@@ -4233,11 +4240,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 currentNote.midi > 0 && h('div', null,
                   h('span', { className: subTextClass }, 'You: '),
                   h('span', {
-                    className: 'font-bold text-lg',
+                    className: 'font-bold text-lg tracking-tight',
                     style: { color: Math.abs(currentNote.midi - srNotes[srCurrentIdx].midi) * 100 <= 25 ? '#22c55e' : '#ef4444' }
                   }, currentNote.note + currentNote.octave)),
                 h('div', null,
-                  h('span', { className: subTextClass }, 'Note '),
+                  h('span', { className: subTextClass }, t('stem.singing.note', 'Note ')),
                   h('span', { className: headingClass }, (srCurrentIdx + 1) + '/' + srNotes.length))
               )
             ),
@@ -4249,12 +4256,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 srMode === 'idle' && h('button', {
                   className: btnSecondary + ' flex items-center gap-1',
                   onClick: startPreview
-                }, '\uD83D\uDD0A', ' Preview'),
+                }, '\uD83D\uDD0A', t('stem.singing.preview', ' Preview')),
 
                 srMode === 'preview' && h('button', {
                   className: btnDanger + ' flex items-center gap-1',
                   onClick: stopPreview
-                }, '\u23F9', ' Stop Preview'),
+                }, '\u23F9', t('stem.singing.stop_preview', ' Stop Preview')),
 
                 // Sing controls
                 (srMode === 'idle' || srMode === 'done') && h('button', {
@@ -4265,19 +4272,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 srMode === 'singing' && h('button', {
                   className: btnDanger + ' flex items-center gap-1',
                   onClick: stopSinging
-                }, '\u23F9', ' Stop'),
+                }, '\u23F9', t('stem.singing.stop', ' Stop')),
 
                 // Tempo slider
                 h('div', { className: 'flex items-center gap-2 ml-auto' },
                   h('label', { className: subTextClass }, 'Tempo:'),
                   h('input', {
-                    type: 'range', 'aria-label': 'Singing slider',
+                    type: 'range', 'aria-valuetext': srTempo + ' BPM', 'aria-label': t('stem.singing.singing_slider', 'Singing slider'),
                     min: 40,
                     max: 120,
                     value: srTempo,
                     onChange: function(e) { setSrTempo(parseInt(e.target.value, 10)); },
                     className: 'w-24 accent-rose-500',
-                    'aria-label': 'Preview tempo'
+                    'aria-label': t('stem.singing.preview_tempo', 'Preview tempo')
                   }),
                   h('span', { className: headingClass + ' text-xs w-12 text-right' }, srTempo + ' BPM')
                 )
@@ -4292,7 +4299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       playMidiNote(srNotes[srCurrentIdx].midi, 1.5, 0.12);
                     }
                   }
-                }, '\uD83D\uDCA1 Hear Target Note')
+                }, t('stem.singing.hear_target_note', '\uD83D\uDCA1 Hear Target Note'))
               )
             ),
 
@@ -4304,22 +4311,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               },
                 h('div', { className: 'text-3xl mb-2' },
                   '\u2B50'.repeat(finalScore.stars) + '\u2606'.repeat(3 - finalScore.stars)),
-                h('div', { className: headingClass + ' text-lg mb-3' }, 'Exercise Complete!'),
+                h('div', { className: headingClass + ' text-lg mb-3' }, t('stem.singing.exercise_complete', 'Exercise Complete!')),
                 h('div', { className: 'grid grid-cols-4 gap-4' },
                   h('div', null,
-                    h('div', { className: subTextClass }, 'Correct 1st Try'),
+                    h('div', { className: subTextClass }, t('stem.singing.correct_1st_try', 'Correct 1st Try')),
                     h('div', { className: headingClass + ' text-xl' },
                       finalScore.correctFirst + '/' + finalScore.total)),
                   h('div', null,
-                    h('div', { className: subTextClass }, 'Avg. Deviation'),
+                    h('div', { className: subTextClass }, t('stem.singing.avg_deviation', 'Avg. Deviation')),
                     h('div', { className: headingClass + ' text-xl' },
                       finalScore.avgCents + '\u00A2')),
                   h('div', null,
-                    h('div', { className: subTextClass }, 'Time'),
+                    h('div', { className: subTextClass }, t('stem.singing.time_2', 'Time')),
                     h('div', { className: headingClass + ' text-xl' },
                       finalScore.time + 's')),
                   h('div', null,
-                    h('div', { className: subTextClass }, 'Stars'),
+                    h('div', { className: subTextClass }, t('stem.singing.stars', 'Stars')),
                     h('div', { className: headingClass + ' text-xl' },
                       finalScore.stars + '/3'))
                 ),
@@ -4333,7 +4340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Per-note result breakdown when done
             srMode === 'done' && srResults.length > 0 && srNotes && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83D\uDCCA', 'Note-by-Note Results'),
+                '\uD83D\uDCCA', t('stem.singing.note_by_note_results', 'Note-by-Note Results')),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 srResults.map(function(r, idx) {
                   var nInfo = midiToNoteName(srNotes[idx].midi);
@@ -4357,7 +4364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // High scores
             Object.keys(srScores).length > 0 && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-                '\uD83C\uDFC6', 'Best Scores'),
+                '\uD83C\uDFC6', t('stem.singing.best_scores', 'Best Scores')),
               h('div', { className: 'space-y-1.5' },
                 Object.keys(srScores).map(function(key) {
                   var sc = srScores[key];
@@ -4386,20 +4393,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         function renderQuestSummary() {
           var quests = [
-            { icon: '\uD83C\uDFBC', label: 'Discover your vocal range',
+            { icon: '\uD83C\uDFBC', label: t('stem.singing.discover_your_vocal_range', 'Discover your vocal range'),
               done: !!(rangeLow && rangeHigh),
               progress: (rangeLow && rangeHigh) ? '\u2713' : '\u2014' },
-            { icon: '\uD83C\uDFB5', label: 'Sing 5 intervals correctly',
+            { icon: '\uD83C\uDFB5', label: t('stem.singing.sing_5_intervals_correctly', 'Sing 5 intervals correctly'),
               done: intervalsCorrect >= 5,
               progress: intervalsCorrect + '/5' },
-            { icon: '\uD83C\uDF0A', label: 'Achieve healthy vibrato',
+            { icon: '\uD83C\uDF0A', label: t('stem.singing.achieve_healthy_vibrato', 'Achieve healthy vibrato'),
               done: !!achievedHealthyVibrato,
               progress: achievedHealthyVibrato ? '\u2713' : '\u2014' }
           ];
 
           return h('div', { className: cardClass },
             h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
-              '\uD83C\uDFC6', 'Quests'),
+              '\uD83C\uDFC6', t('stem.singing.quests', 'Quests')),
             h('div', { className: 'space-y-1.5', role: 'list' },
               quests.map(function(q, idx) {
                 return h('div', {
@@ -4428,7 +4435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         return h('div', {
           className: 'space-y-4 max-w-4xl mx-auto pb-8',
           role: 'main',
-          'aria-label': 'Singing and Vocal Lab'
+          'aria-label': t('stem.singing.singing_and_vocal_lab', 'Singing and Vocal Lab')
         },
           // Header
           h('div', { className: 'flex items-center justify-between' },
@@ -4440,28 +4447,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   stopRefTone();
                   setStemLabTool(null);
                 },
-                'aria-label': 'Go back to STEM Lab tool list'
+                'aria-label': t('stem.singing.go_back_to_stem_lab_tool_list', 'Go back to STEM Lab tool list')
               },
                 ArrowLeft && h(ArrowLeft, { size: 14 }),
-                'Back'),
+                t('stem.singing.back', 'Back')),
               h('div', null,
                 h('h2', { className: headingClass + ' text-lg flex items-center gap-2' },
-                  h('span', null, '\uD83C\uDFA4'), 'Singing Lab'),
+                  h('span', null, '\uD83C\uDFA4'), t('stem.singing.singing_lab', 'Singing Lab')),
                 h('p', { className: subTextClass },
-                  'Pitch training, vocal range, vibrato & interval singing'))),
+                  t('stem.singing.pitch_training_vocal_range_vibrato_int', 'Pitch training, vocal range, vibrato & interval singing')))),
             // Recording indicator
             isRecording && h('div', {
               className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ' +
                 (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-600'),
               role: 'status',
               'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), 'Listening')),
+            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.singing.listening_2', 'Listening'))),
 
           // Tab navigation
           h('div', {
             className: 'flex gap-1 p-1 rounded-xl overflow-x-auto ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'),
             role: 'tablist',
-            'aria-label': 'Singing Lab sections'
+            'aria-label': t('stem.singing.singing_lab_sections', 'Singing Lab sections')
           },
             TABS.map(function(tab) {
               var isActive = activeTab === tab.id;
@@ -4474,7 +4481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-400 ' +
                   (isActive
                     ? (isDark ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-rose-700 shadow-sm')
-                    : (isDark ? 'text-slate-200 hover:bg-slate-700 hover:text-white' : 'text-slate-600 hover:text-slate-700')),
+                    : (isDark ? 'transition-colors text-slate-200 hover:bg-slate-700 hover:text-white active:scale-[0.97]' : 'transition-colors text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });
@@ -4495,13 +4502,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           // ── Topic-accent hero band (per tab) ──
           (function() {
             var TAB_META = {
-              pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: 'Pitch Detective',           hint: 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.' },
-              range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: 'Vocal Range — your tessitura', hint: 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.' },
-              vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: 'Vibrato Lab',                hint: 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.' },
-              intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: 'Interval Singer — ear training', hint: 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.' },
-              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: 'Warm-ups',                  hint: 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.' },
-              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: 'Sight reading',              hint: 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.' },
-              resoHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '🎙️', title: 'Resonance Lab — discover your vocal tone', hint: 'Two sliders — throat openness and soft palate lift — combine into four tone qualities (rich, bright, warm, nasal). No score, no reveal: experiment, log, and explain what you find.' }
+              pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: t('stem.singing.pitch_detective_2', 'Pitch Detective'),           hint: t('stem.singing.sing_into_the_mic_the_lab_tracks_frequ', 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.') },
+              range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: t('stem.singing.vocal_range_your_tessitura', 'Vocal Range — your tessitura'), hint: t('stem.singing.most_untrained_voices_span_1_5_2_octav', 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.') },
+              vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: t('stem.singing.vibrato_lab_2', 'Vibrato Lab'),                hint: t('stem.singing.healthy_vibrato_5_7_hz_oscillation_60_', 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.') },
+              intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: t('stem.singing.interval_singer_ear_training', 'Interval Singer — ear training'), hint: t('stem.singing.major_3rd_vs_minor_3rd_is_the_single_m', 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.') },
+              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: 'Warm-ups',                  hint: t('stem.singing.lip_trills_sirens_before_any_sustained', 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.') },
+              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: t('stem.singing.sight_reading_2', 'Sight reading'),              hint: t('stem.singing.solf_ge_do_re_mi_letter_names_for_sigh', 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.') },
+              resoHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '🎙️', title: t('stem.singing.resonance_lab_discover_your_vocal_tone', 'Resonance Lab — discover your vocal tone'), hint: t('stem.singing.two_sliders_throat_openness_and_soft_p', 'Two sliders — throat openness and soft palate lift — combine into four tone qualities (rich, bright, warm, nasal). No score, no reveal: experiment, log, and explain what you find.') }
             };
             var meta = TAB_META[activeTab] || TAB_META.pitch;
             return h('div', {
@@ -4547,14 +4554,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               else if (iq.throat < 40 && iq.palate > 60) tone = 'warm';
               else tone = 'nasal';
               var tm = {
-                rich:   { label: '🎶 Rich (open + lifted)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Operatic / professional tone. Full resonance.' },
-                bright: { label: '✨ Bright (open + lowered)', color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Forward placement. Pop / belt style.' },
-                warm:   { label: '🌅 Warm (narrow + lifted)', color: '#f97316', bg: '#fff7ed', border: '#fdba74', desc: 'Mellow tone. Choral / acoustic.' },
-                nasal:  { label: '🐝 Nasal (narrow + lowered)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Tight resonance. Often unintended.' }
+                rich:   { label: t('stem.singing.rich_open_lifted', '🎶 Rich (open + lifted)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.singing.operatic_professional_tone_full_resona', 'Operatic / professional tone. Full resonance.') },
+                bright: { label: t('stem.singing.bright_open_lowered', '✨ Bright (open + lowered)'), color: '#facc15', bg: '#fefce8', border: '#fde047', desc: t('stem.singing.forward_placement_pop_belt_style', 'Forward placement. Pop / belt style.') },
+                warm:   { label: t('stem.singing.warm_narrow_lifted', '🌅 Warm (narrow + lifted)'), color: '#f97316', bg: '#fff7ed', border: '#fdba74', desc: t('stem.singing.mellow_tone_choral_acoustic', 'Mellow tone. Choral / acoustic.') },
+                nasal:  { label: t('stem.singing.nasal_narrow_lowered', '🐝 Nasal (narrow + lowered)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.singing.tight_resonance_often_unintended', 'Tight resonance. Often unintended.') }
               }[tone];
               return h('div', { className: cardClass + ' space-y-3' },
-                h('h3', { className: 'text-sm font-black' }, '🎙️ Resonance discovery'),
-                h('p', { className: 'text-[12px]' }, 'Sliders for throat openness, soft palate lift. Discrete 4-tone classification. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black' }, t('stem.singing.resonance_discovery', '🎙️ Resonance discovery')),
+                h('p', { className: 'text-[12px]' }, t('stem.singing.sliders_for_throat_openness_soft_palat', 'Sliders for throat openness, soft palate lift. Discrete 4-tone classification. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
                   h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, tm.desc)
@@ -4563,28 +4570,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   [{ k: 'throat', l: 'Throat openness (%)' }, { k: 'palate', l: 'Soft palate lift (%)' }].map(function(s) {
                     return h('div', { key: s.k },
                       h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[11px] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
-                      h('input', { id: 'rh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                      h('input', { id: 'rh-' + s.k, type: 'range', 'aria-valuetext': iq[s.k] + '%', min: 0, max: 100, step: 5, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.throat, p: iq.palate, st: tone }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.throat, p: iq.palate, st: tone }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, t('stem.singing.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.singing.reset', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What anatomical adjustments produce rich tone?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.singing.hypothesis_what_anatomical_adjustments', 'Hypothesis: What anatomical adjustments produce rich tone?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.singing.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Why do classical singers lift the palate?'),
-                    h('li', null, 'How does throat openness affect overtone series?'))),
+                    h('li', null, t('stem.singing.why_do_classical_singers_lift_the_pala', 'Why do classical singers lift the palate?')),
+                    h('li', null, t('stem.singing.how_does_throat_openness_affect_overto', 'How does throat openness affect overtone series?')))),
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how resonance cavity shape controls vocal tone.',
+                  t('stem.singing.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.singing.explain_how_resonance_cavity_shape_con', 'Explain how resonance cavity shape controls vocal tone.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.')
+                h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.singing.design_note_discrete_4_tone_marker_no_', 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.'))
               );
             })()
           ),

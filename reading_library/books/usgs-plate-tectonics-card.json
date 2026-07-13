@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-plate-tectonics-card",
+  "title": "USGS Plate Tectonics",
+  "description": "A USGS source card about plate boundaries, earthquakes, volcanoes, mountains, and Earth structure.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Geology",
+    "Plate tectonics",
+    "Earthquakes",
+    "Volcanoes"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/what-plate-tectonics",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/faqs/what-plate-tectonics"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS plate tectonics resources explain how Earth surface plates move and how boundaries relate to earthquakes, volcanoes, mountain building, and seafloor features."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for cause-and-effect reading and for connecting maps of hazards with geologic processes."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked media may have separate credit or rights requirements. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

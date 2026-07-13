@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-aeronautics-research-card",
+  "title": "NASA Aeronautics Research",
+  "description": "A NASA source card about aviation research, aircraft design, and flight systems.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Engineering",
+    "Flight",
+    "Aeronautics",
+    "Technology"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA",
+    "url": "https://www.nasa.gov/aeronautics/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Aeronautics resources explain research into flight safety, aircraft design, air traffic systems, sustainable aviation, and experimental vehicles."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for engineering reading where students connect forces, design constraints, testing, data, and environmental goals."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, insignia, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

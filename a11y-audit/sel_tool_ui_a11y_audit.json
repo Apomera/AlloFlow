@@ -1,0 +1,2750 @@
+{
+  "generatedAt": "2026-07-03T00:27:28.832Z",
+  "toolCount": 70,
+  "themesAudited": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "loadErrors": [],
+  "renderErrors": [],
+  "summary": {
+    "issueCount": 0,
+    "errorCount": 0,
+    "warningCount": 0,
+    "toolsWithIssues": 0,
+    "toolsWithoutStandardShell": []
+  },
+  "tools": [
+    {
+      "id": "advocacy",
+      "label": "Self-Advocacy Workshop",
+      "renderedBytes": 77274,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 25758,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 25758,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 25758,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "anxietyToolkit",
+      "label": "Anxiety Toolkit",
+      "renderedBytes": 24417,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 8139,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 8139,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 8139,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "behavioralActivation",
+      "label": "Behavioral Activation",
+      "renderedBytes": 25419,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 8472,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 8472,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 8475,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "bigFeelings",
+      "label": "Big Feelings (Anger)",
+      "renderedBytes": 35094,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 11698,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 11698,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 11698,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "bodyStory",
+      "label": "Body Story",
+      "renderedBytes": 39987,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 13329,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 13329,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 13329,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "careConstellations",
+      "label": "Care Constellations",
+      "renderedBytes": 34971,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 11654,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 11654,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 11663,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "careerCompass",
+      "label": "Career Compass",
+      "renderedBytes": 34440,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 11480,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 11480,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 11480,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "circlesOfSupport",
+      "label": "Circles of Support",
+      "renderedBytes": 19353,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 6450,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 6450,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 6453,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "civicAction",
+      "label": "Civic Action & Hope",
+      "renderedBytes": 51669,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 17223,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 17223,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 17223,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "community",
+      "label": "Community & Culture",
+      "renderedBytes": 69057,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 23019,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 23019,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 23019,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "compassion",
+      "label": "Self-Compassion",
+      "renderedBytes": 46482,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 15494,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 15494,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 15494,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "conflict",
+      "label": "Conflict Resolution Lab",
+      "renderedBytes": 58917,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 19639,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 19639,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 19639,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "conflicttheater",
+      "label": "Conflict Theater (Beta)",
+      "renderedBytes": 38199,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12733,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12733,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12733,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "coping",
+      "label": "Coping Toolkit",
+      "renderedBytes": 944439,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 314812,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 314812,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 314815,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "costBenefit",
+      "label": "Cost-Benefit Grid",
+      "renderedBytes": 19170,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 6389,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 6389,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 6392,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "crewProtocols",
+      "label": "Crew Protocols",
+      "renderedBytes": 34215,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 11405,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 11405,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 11405,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "crisiscompanion",
+      "label": "Crisis Companion",
+      "renderedBytes": 18666,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 6222,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 6222,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 6222,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "cultureExplorer",
+      "label": "Culture Explorer",
+      "renderedBytes": 87456,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 29152,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 29152,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 29152,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "dearMan",
+      "label": "DEAR MAN",
+      "renderedBytes": 53094,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 17697,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 17697,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 17700,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "decisions",
+      "label": "Decision Workshop",
+      "renderedBytes": 44064,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 14687,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 14687,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 14690,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "digitalWellbeing",
+      "label": "Digital Wellbeing Studio",
+      "renderedBytes": 48432,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 16144,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 16144,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 16144,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "disabilityVoices",
+      "label": "Disability Voices",
+      "renderedBytes": 75786,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 25262,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 25262,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 25262,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "ecomap",
+      "label": "Ecomap",
+      "renderedBytes": 19023,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 6340,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 6340,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 6343,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "emotions",
+      "label": "Emotions Explorer",
+      "renderedBytes": 73230,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 24410,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 24410,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 24410,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "ethicalReasoning",
+      "label": "Ethical Reasoning Lab",
+      "renderedBytes": 49032,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 16344,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 16344,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 16344,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "execfunction",
+      "label": "Executive Function",
+      "renderedBytes": 85167,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 28389,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 28389,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 28389,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "friendship",
+      "label": "Friendship Workshop",
+      "renderedBytes": 66600,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 22200,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 22200,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 22200,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "genogram",
+      "label": "Genogram",
+      "renderedBytes": 21243,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 7080,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 7080,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 7083,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "goals",
+      "label": "Goal Setter",
+      "renderedBytes": 37881,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12626,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12626,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12629,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "griefLoss",
+      "label": "Grief & Loss",
+      "renderedBytes": 44628,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 14876,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 14876,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 14876,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "growthmindset",
+      "label": "Growth Mindset Workshop",
+      "renderedBytes": 53493,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 17831,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 17831,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 17831,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "healthyRelationships",
+      "label": "Healthy Relationships",
+      "renderedBytes": 59157,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 19719,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 19719,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 19719,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "howlTracker",
+      "label": "HOWL Tracker",
+      "renderedBytes": 65739,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 21910,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 21910,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 21919,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "identitySupport",
+      "label": "Identity Support",
+      "renderedBytes": 35457,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 11819,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 11819,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 11819,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "journal",
+      "label": "Feelings Journal",
+      "renderedBytes": 63078,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 21025,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 21025,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 21028,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "landPlace",
+      "label": "Land & Place",
+      "renderedBytes": 52182,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 17394,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 17394,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 17394,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "maps",
+      "label": "MAPS",
+      "renderedBytes": 33465,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 11154,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 11154,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 11157,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "mindfulness",
+      "label": "Mindfulness Corner",
+      "renderedBytes": 77844,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 25946,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 25946,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 25952,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "motivationalInterviewing",
+      "label": "Motivational Interviewing",
+      "renderedBytes": 29733,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 9911,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 9911,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 9911,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "onePageProfile",
+      "label": "One-Page Profile",
+      "renderedBytes": 18477,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 6158,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 6158,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 6161,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "orientations",
+      "label": "Orientations",
+      "renderedBytes": 30825,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 10275,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 10275,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 10275,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "path",
+      "label": "PATH",
+      "renderedBytes": 38454,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12817,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12817,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12820,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "peersupport",
+      "label": "Peer Support Coach",
+      "renderedBytes": 45237,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 15079,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 15079,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 15079,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "perma",
+      "label": "PERMA Wellbeing",
+      "renderedBytes": 24378,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 8125,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 8125,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 8128,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "perspective",
+      "label": "Perspective-Taking Lab",
+      "renderedBytes": 50802,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 16930,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 16930,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 16942,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "quietQuestions",
+      "label": "Quiet Questions",
+      "renderedBytes": 25287,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 8427,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 8427,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 8433,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "restorativeCircle",
+      "label": "Restorative Circle",
+      "renderedBytes": 54021,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 18007,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 18007,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 18007,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "safety",
+      "label": "Safety & Boundaries",
+      "renderedBytes": 79062,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 26354,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 26354,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 26354,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "selfAdvocacy",
+      "label": "Self-Advocacy Studio",
+      "renderedBytes": 103956,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 34652,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 34652,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 34652,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "sensoryRegulation",
+      "label": "Sensory Regulation",
+      "renderedBytes": 54348,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 18116,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 18116,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 18116,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "sfbt",
+      "label": "Solution-Focused",
+      "renderedBytes": 28248,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 9416,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 9416,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 9416,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "sleep",
+      "label": "Sleep & Rest",
+      "renderedBytes": 30342,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 10114,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 10114,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 10114,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "social",
+      "label": "Social Skills Lab",
+      "renderedBytes": 35436,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 11810,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 11810,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 11816,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "sociallab",
+      "label": "Social Skills Roleplay",
+      "renderedBytes": 39540,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 13180,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 13180,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 13180,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "sourcesOfStrength",
+      "label": "Sources of Strength",
+      "renderedBytes": 36912,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12303,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12303,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12306,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "strengths",
+      "label": "Strengths Finder",
+      "renderedBytes": 71724,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 23908,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 23908,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 23908,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "stressBucket",
+      "label": "Stress Bucket",
+      "renderedBytes": 21573,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 7190,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 7190,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 7193,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "substancePsychoed",
+      "label": "Substance Use",
+      "renderedBytes": 37719,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12573,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12573,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12573,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "teamwork",
+      "label": "Teamwork Builder",
+      "renderedBytes": 49839,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 16613,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 16613,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 16613,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "thoughtRecord",
+      "label": "CBT Thought Record",
+      "renderedBytes": 67983,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 22660,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 22660,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 22663,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "tipp",
+      "label": "TIPP",
+      "renderedBytes": 36771,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12257,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12257,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12257,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "transitions",
+      "label": "Transitions & Change",
+      "renderedBytes": 48663,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 16221,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 16221,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 16221,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "traumaPsychoed",
+      "label": "Understanding Trauma",
+      "renderedBytes": 37179,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12393,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12393,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12393,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "upstander",
+      "label": "Upstander Workshop",
+      "renderedBytes": 97227,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 32408,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 32408,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 32411,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "valuesCommittedAction",
+      "label": "Values & Action",
+      "renderedBytes": 37176,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 12392,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 12392,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 12392,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "viaStrengths",
+      "label": "VIA Strengths",
+      "renderedBytes": 44016,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 14671,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 14671,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 14674,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "voicedetective",
+      "label": "Voice Detective",
+      "renderedBytes": 40185,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 13395,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 13395,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 13395,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "wheelOfLife",
+      "label": "Wheel of Life",
+      "renderedBytes": 18825,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 6274,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 6274,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 6277,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "windowOfTolerance",
+      "label": "Window of Tolerance",
+      "renderedBytes": 26835,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 8944,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 8944,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 8947,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    },
+    {
+      "id": "zones",
+      "label": "Emotion Zones",
+      "renderedBytes": 84758,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "themes": [
+        {
+          "theme": "light",
+          "renderedBytes": 28144,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "dark",
+          "renderedBytes": 28144,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        },
+        {
+          "theme": "high-contrast",
+          "renderedBytes": 28470,
+          "standardShell": true,
+          "issueCount": 0,
+          "errorCount": 0,
+          "warningCount": 0,
+          "issues": []
+        }
+      ],
+      "issues": []
+    }
+  ]
+}

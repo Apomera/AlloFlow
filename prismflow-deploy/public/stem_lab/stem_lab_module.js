@@ -94,6 +94,53 @@
       };
     }
 
+    // ── Shared "safe fullscreen" toggle for STEM tool canvases ──
+    // Real OS fullscreen only works where the host iframe grants it (document.fullscreenEnabled).
+    // Inside a sandboxed iframe (e.g. Gemini Canvas) requestFullscreen() rejects/throws
+    // "Disallowed by permissions policy" — which, left unhandled, breaks the button (the bug
+    // reported on the physics tool). window.__alloStemFS(el) toggles: in real fullscreen → exit;
+    // in CSS fill-frame → exit; else → try real (guarded, .catch), else a CSS "fill the frame"
+    // mode (wrapper → fixed/100vw/100vh with !important so React re-renders don't revert it, plus
+    // a window resize event so canvases that listen re-measure, and Escape to exit). Never throws.
+    if (typeof window !== 'undefined' && !window.__alloStemFS) {
+      var _stemFsProps = { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', width: '100vw', height: '100vh', margin: '0', 'border-radius': '0', 'z-index': '99998', background: '#0f172a' };
+      var _stemFsExit = function(el) {
+        if (!el) return;
+        el.__alloFsOn = false;
+        var s = el.style, saved = el.__alloFsSaved || {};
+        Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p]); else s.removeProperty(p); });
+        try { if (el.__alloFsEsc) document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+        try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+      };
+      var _stemFsEnter = function(el) {
+        el.__alloFsSaved = {}; el.__alloFsOn = true;
+        var s = el.style;
+        Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
+        el.__alloFsEsc = function(ev) { if (ev && ev.key === 'Escape') _stemFsExit(el); };
+        try { document.addEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+        try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+      };
+      window.__alloStemFS = function(el) {
+        if (!el) return;
+        try {
+          var realEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+          if (realEl) {
+            var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+            if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function() {}); }
+            return;
+          }
+          if (el.__alloFsOn) { _stemFsExit(el); return; }
+          var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+          if (rq && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+            var pr = rq.call(el);
+            if (pr && pr.catch) pr.catch(function() { _stemFsEnter(el); });
+            return;
+          }
+          _stemFsEnter(el);
+        } catch (e) { try { if (!el.__alloFsOn) _stemFsEnter(el); } catch (e2) {} }
+      };
+    }
+
     // ── StemLab Plugin Registry (Phase 2) ──
     // Initialize before the hub component so plugins can register tools.
     // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)
@@ -111,6 +158,8 @@
           // would cause visible degradation (slate tile, ungrouped category).
           if (!config.label) config.label = config.title || config.name || id;
           if (!config.desc) config.desc = config.description || '';
+          if (config.aliases && !Array.isArray(config.aliases)) config.aliases = [config.aliases];
+          if (!config.aliases && config.searchAliases) config.aliases = Array.isArray(config.searchAliases) ? config.searchAliases : [config.searchAliases];
           if (!config.color) config.color = 'slate';
           if (!config.category) config.category = 'general';
           this._registry[id] = config;
@@ -119,7 +168,7 @@
           // Populate STEM_TOOL_REGISTRY for lesson plan integration
           if (!window.STEM_TOOL_REGISTRY) window.STEM_TOOL_REGISTRY = [];
           var catMap = { science: ['Science'], math: ['Math'], engineering: ['Engineering'], art: ['Art'], coding: ['CS'] };
-          var entry = { id: id, name: config.label, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id] };
+          var entry = { id: id, name: config.label, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id].concat(config.aliases || []) };
           var exists = false;
           for (var ri = 0; ri < window.STEM_TOOL_REGISTRY.length; ri++) {
             if (window.STEM_TOOL_REGISTRY[ri].id === id) { exists = true; break; }
@@ -138,6 +187,23 @@
           try { rendered = tool.render(ctx); }
           catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
           if (rendered == null) return null;
+          // ── Keyless-list guard ──
+          // If a tool's render() returns a BARE ARRAY (fragment-style, e.g.
+          // `return [headerEl, bodyEl]`), React treats the elements as a list.
+          // Passed as a child below (or returned directly on the lightBackground
+          // path), those elements lack keys → "Each child in a list should have
+          // a unique key" — attributed to the StemPluginBridge fiber because
+          // renderTool is inlined there. Wrap bare arrays in a Fragment and give
+          // each element a stable per-index key so the warning can't originate
+          // from any tool, regardless of how its render was authored.
+          if (Array.isArray(rendered) && ctx && ctx.React) {
+            rendered = ctx.React.createElement(ctx.React.Fragment, null,
+              rendered.map(function(child, i) {
+                return (child != null && typeof child === 'object' && ctx.React.isValidElement && ctx.React.isValidElement(child) && child.key == null)
+                  ? ctx.React.cloneElement(child, { key: 'stem-frag-' + i })
+                  : child;
+              }));
+          }
           // ── WCAG dark-shell auto-wrap ──
           // Every STEM tool's text palette was designed for a dark navy
           // substrate (#86efac, #94a3b8, #cbd5e1, #e2e8f0 etc.). When the
@@ -165,7 +231,12 @@
               minHeight: 'calc(100vh - 32px)'
             },
             'data-stem-tool-shell': id
-          }, rendered);
+          },
+            // sr-only tool-name heading — gives every tool a semantic H1 landmark
+            // for screen readers (many tools' visible titles are non-heading text
+            // or sit behind a tab). Visual layout is unchanged.
+            ctx.React.createElement('h1', { style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, (tool.label || id)),
+            rendered);
         },
         // Shared HiDPI canvas setup. Resizes the internal pixel buffer
         // to match the device pixel ratio while keeping CSS dims at the
@@ -434,7 +505,14 @@
       React.useEffect(function() {
         var handler = function(e) {
           if (e && e.detail && e.detail.label !== 'Stem') return;
-          _setPluginProgressTick(function(t) { return t + 1; });
+          // Defer out of any in-progress React render. dispatchEvent runs its
+          // listeners synchronously, so if 'allo-plugins-changed' is ever
+          // dispatched while React is rendering AlloFlowContent, a direct
+          // setState here updates StemLabModal mid-render → "Cannot update a
+          // component while rendering a different component". This tick only
+          // refreshes the tool-tile grid as plugins stream in, so a microtask
+          // defer is imperceptible and render-safe.
+          Promise.resolve().then(function() { _setPluginProgressTick(function(t) { return t + 1; }); });
         };
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
@@ -463,7 +541,50 @@
           // WCAG 2.3.3: Reduced motion — disable ALL animations for users who prefer
           '@media (prefers-reduced-motion: reduce) { .stem-lab-modal *, .stem-lab-modal *::before, .stem-lab-modal *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
           // WCAG 1.4.11: Ensure focus indicators have adequate contrast on all backgrounds
-          '.stem-lab-modal [role="button"]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; }'
+          '.stem-lab-modal [role="button"]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; }',
+          '.stem-lab-modal-shell { max-height: calc(100vh - 16px); }',
+          '.stem-lab-topbar { gap: 16px; }',
+          '.stem-lab-brand-block, .stem-lab-actionbar { min-width: 0; }',
+          '.stem-lab-title-lockup { min-width: 0; }',
+          '.stem-lab-title-lockup p { max-width: 520px; }',
+          '.stem-lab-actionbar button { min-height: 34px; }',
+          '.stem-tool-catalog { width: min(100%, 1120px); }',
+          '.stem-tool-searchbar { position: sticky; top: 0; z-index: 12; padding-top: 8px; padding-bottom: 10px; backdrop-filter: blur(10px); }',
+          '.stem-catalog-context { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -4px 0 12px; flex-wrap: wrap; }',
+          '.stem-catalog-status { display: inline-flex; align-items: center; gap: 8px; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 900; border: 1px solid rgba(148,163,184,0.28); }',
+          '.stem-catalog-clear { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 900; border: 1px solid rgba(99,102,241,0.35); }',
+          '.stem-catalog-quickbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }',
+          '.stem-catalog-row-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; margin-right: 2px; }',
+          '.stem-catalog-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 11px; border-radius: 999px; font-size: 11px; font-weight: 900; border: 1px solid rgba(148,163,184,0.34); box-shadow: 0 6px 14px rgba(15,23,42,0.06); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }',
+          '.stem-catalog-chip:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(15,23,42,0.10); border-color: rgba(99,102,241,0.55); }',
+          '.stem-catalog-chip-icon { font-size: 14px; line-height: 1; }',
+          '.stem-tool-matchmaker { margin: 0 0 14px; padding: 12px; border-radius: 14px; border: 1px solid rgba(99,102,241,0.30); box-shadow: 0 10px 24px rgba(15,23,42,0.07); }',
+          '.stem-tool-matchmaker-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; }',
+          '.stem-tool-matchmaker-input { min-height: 42px; border-radius: 10px; padding: 0 12px; font-size: 13px; font-weight: 700; border: 1px solid rgba(148,163,184,0.45); outline: none; }',
+          '.stem-tool-matchmaker-button { min-height: 42px; padding: 0 14px; border-radius: 10px; font-size: 12px; font-weight: 900; border: 1px solid rgba(99,102,241,0.45); display: inline-flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; }',
+          '.stem-tool-matchmaker-status { margin-top: 8px; font-size: 11px; font-weight: 800; }',
+          '.stem-tool-ai-suggestions { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 10px; }',
+          '.stem-tool-ai-suggestion { text-align: left; min-height: 84px; padding: 10px 11px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.34); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }',
+          '.stem-tool-ai-suggestion:hover { transform: translateY(-1px); box-shadow: 0 12px 22px rgba(15,23,42,0.12); border-color: rgba(99,102,241,0.55); }',
+          '.stem-tool-ai-suggestion-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 950; margin-bottom: 4px; }',
+          '.stem-tool-ai-suggestion-reason { font-size: 11px; line-height: 1.35; font-weight: 700; }',
+          '.stem-tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; align-items: stretch; }',
+          '.stem-tool-category { grid-column: 1 / -1; }',
+          '.stem-tool-card { min-height: 148px; border-radius: 14px !important; box-shadow: 0 8px 20px rgba(15,23,42,0.06); display: flex; flex-direction: column; }',
+          '.stem-tool-card:hover { transform: translateY(-2px) !important; box-shadow: 0 16px 28px rgba(15,23,42,0.12) !important; }',
+          '.stem-tool-card h4 { line-height: 1.25; }',
+          '.stem-tool-card p { line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
+          '.stem-active-toolbar { position: sticky; top: 0; z-index: 16; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-bottom: 1px solid rgba(148,163,184,0.24); backdrop-filter: blur(12px); }',
+          '.stem-active-tool-main { display: flex; align-items: center; gap: 10px; min-width: 0; }',
+          '.stem-active-tool-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; background: rgba(99,102,241,0.10); }',
+          '.stem-active-tool-title { min-width: 0; }',
+          '.stem-active-tool-title h3 { margin: 0; font-size: 14px; line-height: 1.2; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+          '.stem-active-tool-title p { margin: 2px 0 0; font-size: 11px; line-height: 1.25; }',
+          '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
+          '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
+          '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
         document.head.appendChild(s);
         return function () { var el = document.getElementById('stem-xp-keyframes'); if (el) el.remove(); };
@@ -497,6 +618,26 @@
             '[data-stem-lab] .bg-purple-50 { background-color: #3b0764 !important; }',
             '[data-stem-lab] .bg-emerald-50 { background-color: #064e3b !important; }',
             '[data-stem-lab] .bg-gradient-to-br.from-slate-50 { background: #0f172a !important; }',
+            // ── Fill the theme-remap gaps that left "a few panels" bright in dark mode ──
+            // (1) solid light-tint cards missing above (amber/orange/cyan/… + the -100 tints)
+            '[data-stem-lab] .bg-amber-50, [data-stem-lab] .bg-orange-50, [data-stem-lab] .bg-amber-100, [data-stem-lab] .bg-orange-100, [data-stem-lab] .bg-yellow-100 { background-color: #422006 !important; }',
+            '[data-stem-lab] .bg-cyan-50, [data-stem-lab] .bg-sky-50, [data-stem-lab] .bg-blue-100, [data-stem-lab] .bg-indigo-100, [data-stem-lab] .bg-cyan-100, [data-stem-lab] .bg-sky-100 { background-color: #1e3a5f !important; }',
+            '[data-stem-lab] .bg-teal-50, [data-stem-lab] .bg-lime-50, [data-stem-lab] .bg-green-100, [data-stem-lab] .bg-emerald-100, [data-stem-lab] .bg-teal-100 { background-color: #064e3b !important; }',
+            '[data-stem-lab] .bg-rose-50, [data-stem-lab] .bg-pink-50, [data-stem-lab] .bg-red-100, [data-stem-lab] .bg-rose-100, [data-stem-lab] .bg-pink-100 { background-color: #4c0519 !important; }',
+            '[data-stem-lab] .bg-violet-50, [data-stem-lab] .bg-fuchsia-50, [data-stem-lab] .bg-purple-100, [data-stem-lab] .bg-violet-100, [data-stem-lab] .bg-fuchsia-100 { background-color: #3b0764 !important; }',
+            '[data-stem-lab] .bg-gray-50, [data-stem-lab] .bg-gray-100, [data-stem-lab] .bg-zinc-50, [data-stem-lab] .bg-neutral-50, [data-stem-lab] .bg-stone-50 { background-color: #111827 !important; }',
+            // (2) gradient cards: any light `from-*-50` start → neutral dark (only .from-slate-50 was covered).
+            //     `~=` matches the exact class token so `from-*-500` gradients (e.g. buttons) are untouched.
+            '[data-stem-lab] [class~="from-white"], [data-stem-lab] [class~="from-slate-50"], [data-stem-lab] [class~="from-gray-50"], [data-stem-lab] [class~="from-zinc-50"], [data-stem-lab] [class~="from-amber-50"], [data-stem-lab] [class~="from-orange-50"], [data-stem-lab] [class~="from-yellow-50"], [data-stem-lab] [class~="from-blue-50"], [data-stem-lab] [class~="from-indigo-50"], [data-stem-lab] [class~="from-sky-50"], [data-stem-lab] [class~="from-cyan-50"], [data-stem-lab] [class~="from-green-50"], [data-stem-lab] [class~="from-emerald-50"], [data-stem-lab] [class~="from-teal-50"], [data-stem-lab] [class~="from-lime-50"], [data-stem-lab] [class~="from-purple-50"], [data-stem-lab] [class~="from-violet-50"], [data-stem-lab] [class~="from-fuchsia-50"], [data-stem-lab] [class~="from-pink-50"], [data-stem-lab] [class~="from-rose-50"] { background-image: none !important; background-color: #1e293b !important; }',
+            // (3) lighten dark accent text (600–800) so headings/values stay legible on the darkened cards.
+            '[data-stem-lab] .text-blue-800, [data-stem-lab] .text-blue-700, [data-stem-lab] .text-blue-600 { color: #93c5fd !important; }',
+            '[data-stem-lab] .text-indigo-800, [data-stem-lab] .text-indigo-700, [data-stem-lab] .text-indigo-600 { color: #a5b4fc !important; }',
+            '[data-stem-lab] .text-sky-800, [data-stem-lab] .text-sky-700, [data-stem-lab] .text-sky-600, [data-stem-lab] .text-cyan-800, [data-stem-lab] .text-cyan-700, [data-stem-lab] .text-cyan-600 { color: #7dd3fc !important; }',
+            '[data-stem-lab] .text-amber-800, [data-stem-lab] .text-amber-700, [data-stem-lab] .text-amber-600, [data-stem-lab] .text-yellow-800, [data-stem-lab] .text-yellow-700, [data-stem-lab] .text-yellow-600 { color: #fcd34d !important; }',
+            '[data-stem-lab] .text-orange-800, [data-stem-lab] .text-orange-700, [data-stem-lab] .text-orange-600 { color: #fdba74 !important; }',
+            '[data-stem-lab] .text-green-800, [data-stem-lab] .text-green-700, [data-stem-lab] .text-green-600, [data-stem-lab] .text-emerald-800, [data-stem-lab] .text-emerald-700, [data-stem-lab] .text-emerald-600, [data-stem-lab] .text-teal-800, [data-stem-lab] .text-teal-700, [data-stem-lab] .text-teal-600 { color: #6ee7b7 !important; }',
+            '[data-stem-lab] .text-purple-800, [data-stem-lab] .text-purple-700, [data-stem-lab] .text-purple-600, [data-stem-lab] .text-violet-800, [data-stem-lab] .text-violet-700, [data-stem-lab] .text-violet-600, [data-stem-lab] .text-fuchsia-700, [data-stem-lab] .text-fuchsia-600 { color: #c4b5fd !important; }',
+            '[data-stem-lab] .text-rose-800, [data-stem-lab] .text-rose-700, [data-stem-lab] .text-rose-600, [data-stem-lab] .text-pink-800, [data-stem-lab] .text-pink-700, [data-stem-lab] .text-pink-600, [data-stem-lab] .text-red-700, [data-stem-lab] .text-red-600 { color: #fca5a5 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }',
           ].join('\n');
         } else if (isContrast) {
@@ -505,8 +646,12 @@
             '[data-stem-lab] .bg-slate-200, [data-stem-lab] .bg-slate-300 { background-color: #1a1a1a !important; color: #ffffff !important; }',
             '[data-stem-lab] .text-slate-900, [data-stem-lab] .text-slate-800, [data-stem-lab] .text-slate-700, [data-stem-lab] .text-slate-600, [data-stem-lab] .text-slate-500 { color: #ffffff !important; }',
             '[data-stem-lab] .text-indigo-700, [data-stem-lab] .text-indigo-600, [data-stem-lab] .text-blue-700, [data-stem-lab] .text-blue-600 { color: #fbbf24 !important; }',
+            // all other dark accent text → amber (mirror the -50 gap fix for contrast mode)
+            '[data-stem-lab] .text-amber-700, [data-stem-lab] .text-amber-600, [data-stem-lab] .text-orange-700, [data-stem-lab] .text-orange-600, [data-stem-lab] .text-green-700, [data-stem-lab] .text-green-600, [data-stem-lab] .text-emerald-700, [data-stem-lab] .text-emerald-600, [data-stem-lab] .text-teal-700, [data-stem-lab] .text-teal-600, [data-stem-lab] .text-cyan-700, [data-stem-lab] .text-cyan-600, [data-stem-lab] .text-sky-700, [data-stem-lab] .text-sky-600, [data-stem-lab] .text-purple-700, [data-stem-lab] .text-purple-600, [data-stem-lab] .text-violet-700, [data-stem-lab] .text-violet-600, [data-stem-lab] .text-rose-700, [data-stem-lab] .text-rose-600, [data-stem-lab] .text-pink-700, [data-stem-lab] .text-pink-600, [data-stem-lab] .text-red-700, [data-stem-lab] .text-red-600 { color: #fbbf24 !important; }',
             '[data-stem-lab] .border-slate-200, [data-stem-lab] .border-slate-100, [data-stem-lab] .border-slate-300 { border-color: #fbbf24 !important; }',
-            '[data-stem-lab] .bg-indigo-50, [data-stem-lab] .bg-blue-50, [data-stem-lab] .bg-green-50, [data-stem-lab] .bg-yellow-50, [data-stem-lab] .bg-red-50, [data-stem-lab] .bg-purple-50, [data-stem-lab] .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
+            '[data-stem-lab] .bg-indigo-50, [data-stem-lab] .bg-blue-50, [data-stem-lab] .bg-green-50, [data-stem-lab] .bg-yellow-50, [data-stem-lab] .bg-red-50, [data-stem-lab] .bg-purple-50, [data-stem-lab] .bg-emerald-50, [data-stem-lab] .bg-amber-50, [data-stem-lab] .bg-orange-50, [data-stem-lab] .bg-cyan-50, [data-stem-lab] .bg-sky-50, [data-stem-lab] .bg-teal-50, [data-stem-lab] .bg-lime-50, [data-stem-lab] .bg-rose-50, [data-stem-lab] .bg-pink-50, [data-stem-lab] .bg-violet-50, [data-stem-lab] .bg-fuchsia-50, [data-stem-lab] .bg-gray-50 { background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
+            // gradient cards → solid black + amber border in contrast mode
+            '[data-stem-lab] [class~="from-white"], [data-stem-lab] [class~="from-slate-50"], [data-stem-lab] [class~="from-gray-50"], [data-stem-lab] [class~="from-amber-50"], [data-stem-lab] [class~="from-orange-50"], [data-stem-lab] [class~="from-yellow-50"], [data-stem-lab] [class~="from-blue-50"], [data-stem-lab] [class~="from-indigo-50"], [data-stem-lab] [class~="from-sky-50"], [data-stem-lab] [class~="from-cyan-50"], [data-stem-lab] [class~="from-green-50"], [data-stem-lab] [class~="from-emerald-50"], [data-stem-lab] [class~="from-teal-50"], [data-stem-lab] [class~="from-lime-50"], [data-stem-lab] [class~="from-purple-50"], [data-stem-lab] [class~="from-violet-50"], [data-stem-lab] [class~="from-fuchsia-50"], [data-stem-lab] [class~="from-pink-50"], [data-stem-lab] [class~="from-rose-50"] { background-image: none !important; background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #000000 !important; color: #ffffff !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] button { border: 1px solid #fbbf24 !important; }',
           ].join('\n');
@@ -687,6 +832,116 @@
 
 
       var [_stemToolSearch, _setStemToolSearch] = React.useState('');
+      var [_stemToolInterest, _setStemToolInterest] = React.useState('');
+      var [_stemToolSuggesting, _setStemToolSuggesting] = React.useState(false);
+      var [_stemToolSuggestions, _setStemToolSuggestions] = React.useState([]);
+      var [_stemToolSuggestError, _setStemToolSuggestError] = React.useState('');
+      var _stemToolSuggestRequestRef = React.useRef(0);
+      var [_recentStemToolIds, _setRecentStemToolIds] = React.useState(function () {
+        try {
+          var saved = JSON.parse(localStorage.getItem('alloflow_stem_recent_tools') || '[]');
+          return Array.isArray(saved) ? saved.filter(Boolean).slice(0, 5) : [];
+        } catch (e) { return []; }
+      });
+      function _rememberStemToolUse(id) {
+        if (!id) return;
+        _setRecentStemToolIds(function (prev) {
+          var next = [id].concat((prev || []).filter(function (tid) { return tid && tid !== id; })).slice(0, 5);
+          try { localStorage.setItem('alloflow_stem_recent_tools', JSON.stringify(next)); } catch (e) {}
+          return next;
+        });
+      }
+      function _openStemTool(id, label) {
+        if (!id) return;
+        setStemLabTool(id);
+        _rememberStemToolUse(id);
+        _setStemToolSearch('');
+        upd('_categoryFilter', '');
+        setTimeout(function() {
+          var contentArea = document.querySelector('.stem-lab-modal .overflow-y-auto');
+          if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
+        if (typeof announceToSR === 'function') announceToSR('Opening ' + (label || _formatStemToolId(id)));
+      }
+      function _stemToolCatalogText(tool) {
+        if (!tool) return '';
+        return [
+          tool.id,
+          tool.label,
+          tool.desc,
+          tool.description,
+          tool.category,
+          Array.isArray(tool.aliases) ? tool.aliases.join(' ') : '',
+          Array.isArray(tool.searchAliases) ? tool.searchAliases.join(' ') : ''
+        ].filter(Boolean).join(' ').toLowerCase();
+      }
+      function _extractStemSuggestionJson(raw) {
+        var txt = '';
+        if (raw == null) return null;
+        if (typeof raw === 'string') txt = raw;
+        else if (typeof raw.text === 'string') txt = raw.text;
+        else if (typeof raw.content === 'string') txt = raw.content;
+        else {
+          try { txt = JSON.stringify(raw); } catch (e) { txt = String(raw); }
+        }
+        txt = txt.replace(/```json/gi, '```').replace(/```/g, '').trim();
+        var start = txt.indexOf('[');
+        var end = txt.lastIndexOf(']');
+        if (start < 0 || end <= start) return null;
+        try { return JSON.parse(txt.slice(start, end + 1)); } catch (e2) { return null; }
+      }
+      function _normalizeStemSuggestions(items, tools) {
+        var byId = {};
+        var byLabel = {};
+        tools.forEach(function (tool) {
+          byId[String(tool.id || '').toLowerCase()] = tool;
+          byLabel[String(tool.label || '').toLowerCase()] = tool;
+        });
+        var seen = {};
+        var out = [];
+        (Array.isArray(items) ? items : []).forEach(function (item) {
+          if (out.length >= 4) return;
+          var rawId = typeof item === 'string' ? item : (item && (item.id || item.toolId || item.tool || item.label || item.name));
+          if (!rawId) return;
+          var key = String(rawId).trim().toLowerCase();
+          var tool = byId[key] || byLabel[key];
+          if (!tool || seen[tool.id]) return;
+          seen[tool.id] = true;
+          out.push({
+            id: tool.id,
+            label: tool.label,
+            icon: tool.icon || 'AI',
+            reason: String((item && (item.reason || item.why || item.match)) || (tool.desc || 'Good match for this interest.')).replace(/\s+/g, ' ').slice(0, 150),
+            starter: String((item && (item.starter || item.firstStep || item.start)) || '').replace(/\s+/g, ' ').slice(0, 120)
+          });
+        });
+        return out;
+      }
+      function _localStemToolMatches(interest, tools) {
+        var raw = String(interest || '').toLowerCase();
+        var words = raw.split(/[^a-z0-9]+/).filter(function (w) {
+          return w.length > 2 && ['the', 'and', 'for', 'with', 'about', 'learn', 'want', 'how', 'why'].indexOf(w) === -1;
+        });
+        if (!words.length) return [];
+        return tools.map(function (tool) {
+          var hay = _stemToolCatalogText(tool);
+          var score = 0;
+          words.forEach(function (w) {
+            if (hay.indexOf(w) !== -1) score += 1;
+            if (String(tool.label || '').toLowerCase().indexOf(w) !== -1) score += 2;
+          });
+          if (raw && hay.indexOf(raw) !== -1) score += 4;
+          return { tool: tool, score: score };
+        }).filter(function (row) { return row.score > 0; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 4).map(function (row) {
+          return {
+            id: row.tool.id,
+            label: row.tool.label,
+            icon: row.tool.icon || 'AI',
+            reason: row.tool.desc || 'This tool has related STEM activities for your interest.',
+            starter: ''
+          };
+        });
+      }
 
       // ── Keyboard Help State ──
       var [_showKeyHelp, _setShowKeyHelp] = React.useState(false);
@@ -803,6 +1058,24 @@
         return (toolConfig && toolConfig.questHooks) || [];
       }
 
+      // Resolve where a tool keeps its quest-visible state. Most tools store it
+      // at toolData[toolId] or toolData['_' + toolId]; tools whose state lives
+      // under a different key (or split across several keys) declare
+      // questDataKey (string) or questDataKeys (array, shallow-merged) in their
+      // registerTool config — e.g. coordgrid ('coordinate' → '_coordGrid') and
+      // multtable ('_multTimer' + '_multExt').
+      function _getToolQuestState(toolId, toolData) {
+        var td = toolData || {};
+        var cfg = (window.StemLab && window.StemLab._registry && window.StemLab._registry[toolId]) || {};
+        if (cfg.questDataKeys && cfg.questDataKeys.length) {
+          var merged = {};
+          cfg.questDataKeys.forEach(function(k) { Object.assign(merged, td[k] || {}); });
+          return merged;
+        }
+        if (cfg.questDataKey) return td[cfg.questDataKey] || {};
+        return td[toolId] || td['_' + toolId] || {};
+      }
+
       // Auto-generate quest label
       function _questAutoLabel(type, toolId, params) {
         var toolName = 'this tool';
@@ -858,7 +1131,7 @@
               var hooks = _getToolQuestHooks(q.toolId);
               var hook = hooks.find(function(h) { return h.id === q.params.hookId; });
               if (hook && hook.check) {
-                var toolState2 = toolData[q.toolId] || toolData['_' + q.toolId] || {};
+                var toolState2 = _getToolQuestState(q.toolId, toolData);
                 complete = hook.check(toolState2);
               }
               break;
@@ -915,7 +1188,7 @@
             var hooks2 = _getToolQuestHooks(quest.toolId);
             var hook2 = hooks2.find(function(h2) { return h2.id === quest.params.hookId; });
             if (hook2 && hook2.progress) {
-              var ts2 = toolData[quest.toolId] || toolData['_' + quest.toolId] || {};
+              var ts2 = _getToolQuestState(quest.toolId, toolData);
               var progText = hook2.progress(ts2);
               var isDone2 = hook2.check ? hook2.check(ts2) : false;
               return { done: isDone2, text: progText, pct: isDone2 ? 100 : 50 };
@@ -1452,6 +1725,17 @@
           ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', '_tutorialSeen'].forEach(function (k) {
             if (labToolData[k]) _toSave[k] = labToolData[k];
           });
+          // flightSim progression (badges, visited airports, flight time,
+          // discoveries, tutorial dismissals) was never in the whitelist, so
+          // every "persists" promise in SkySchool silently reset on reload.
+          // Strip per-session keys: view must not reload into 'flying', and
+          // rescue/survey are transient mission state tied to the sim clock.
+          if (labToolData.flightSim) {
+            var _fs = Object.assign({}, labToolData.flightSim);
+            delete _fs.view; delete _fs.rescue; delete _fs.survey;
+            delete _fs.weatherLesson; delete _fs.nearestWaypoint; delete _fs.showHelp;
+            _toSave.flightSim = _fs;
+          }
           localStorage.setItem('alloflow_stemlab_v2', JSON.stringify(_toSave));
         } catch (e) { }
       }, [labToolData]);
@@ -1488,8 +1772,23 @@
       /* graphCalc canvas renderer: removed — see stem_tool_graphcalc.js */
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
-        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation')) return;
-        if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
+        var wcNeedsThree = stemLabTool === 'waterCycle' && labToolData.waterCycle && labToolData.waterCycle.journeyView === '3d';
+        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation' && stemLabTool !== 'geologyExplorer' && !wcNeedsThree)) return;
+        // THREE already present — but make sure OrbitControls came with it. This
+        // early-return used to skip OrbitControls whenever THREE was cached, so a
+        // 3D tool opened after the first got _threeLoaded with controls=null → the
+        // camera was never aimed (scene stuck in a corner, no orbit). If it's
+        // missing, load it first, THEN mark ready.
+        if (window.THREE) {
+          if (window.THREE.OrbitControls) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
+          var scOC = document.createElement('script');
+          scOC.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+          scOC.async = true;
+          scOC.onload = function () { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); };
+          scOC.onerror = function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); };
+          document.head.appendChild(scOC);
+          return;
+        }
         var s = document.createElement('script');
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
         s.async = true;
@@ -1510,10 +1809,13 @@
         };
         s.onerror = function () {
           console.error('[StemLab] Three.js failed to load');
+          setLabToolData(function (p) {
+            return Object.assign({}, p, { _threeLoadError: 'The 3D engine could not load. The 2D Water Cycle remains available.' });
+          });
           if (typeof addToast === 'function') addToast('\u274c 3D engine failed to load', 'error');
         };
         document.head.appendChild(s);
-      }, [stemLabTab, stemLabTool]);
+      }, [stemLabTab, stemLabTool, labToolData.waterCycle && labToolData.waterCycle.journeyView]);
       // ── Geometry Sandbox: Scene init, render loop, shape updates (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'geoSandbox') return;
@@ -1657,6 +1959,33 @@
           renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
           renderer.shadowMap.enabled = true;
           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+          // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+          // ArchStudio: gentle, high-threshold glow on bright block highlights over the
+          // dark navy bg; kept subtle so the build editor stays legible (same tuning
+          // philosophy as geometryworld). Plain render until the r128 addons load; any
+          // failure falls back to renderer.render — can never break the tool. This is
+          // the LAST un-bloomed 3D surface in STEM Lab.
+          renderer._alloComposer = null;
+          (function(){
+            if (window.AlloPostFXEnabled === false) return;
+            var _ens = function(cb){
+              if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+              var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+            };
+            _ens(function(){
+              try {
+                var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+                var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+                var cc=new T.EffectComposer(renderer);
+                cc.addPass(new T.RenderPass(scene, camera));
+                cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((cnv.clientWidth)*rs)),Math.max(1,Math.round((cnv.clientHeight)*rs))), lp?0.49:0.7, 0.35, 0.85));
+                renderer._alloComposer=cc;
+              } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+            });
+          })();
           // Lights
           var ambient = new THREE.AmbientLight(0xffffff, 0.45);
           scene.add(ambient);
@@ -1712,7 +2041,7 @@
           var animate = function () {
             animId = requestAnimationFrame(animate);
             if (controls) controls.update();
-            renderer.render(scene, camera);
+            var _ac = renderer._alloComposer; if (_ac) { try { _ac.render(); } catch (e) { renderer._alloComposer = null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
           };
           animate();
           // ── Pointer events for placement ──
@@ -2003,6 +2332,7 @@
         return function () {
           if (window._archScene) {
             cancelAnimationFrame(window._archScene.animId);
+            try { var _arc = window._archScene.renderer && window._archScene.renderer._alloComposer; if (_arc) { (_arc.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); window._archScene.renderer._alloComposer = null; } } catch (e) {}
             if (window._archScene.renderer) window._archScene.renderer.dispose();
             if (window._archScene.controls) window._archScene.controls.dispose();
             window._archScene.blockMeshes.forEach(function (m) { m.geometry.dispose(); if (m.material) m.material.dispose(); });
@@ -2141,21 +2471,22 @@
         var _turtleState = _cpgd.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
         var _drawnLines = _cpgd.lines || [];
         var _showTurtle = _cpgd.showTurtle !== false;
+        var _hc = !!_cpgd.highContrastMode; // C3: high-contrast = black bg, white thick lines (21:1, AA)
         var cvs = _codingCanvasRef.current;
         if (!cvs) return;
         var ctx = cvs.getContext('2d');
         var W = 500, H = 500;
         cvs.width = W; cvs.height = H;
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = _hc ? '#000000' : '#0f172a';
         ctx.fillRect(0, 0, W, H);
-        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 0.5;
+        ctx.strokeStyle = _hc ? '#1f1f1f' : '#1e293b'; ctx.lineWidth = 0.5;
         for (var gx = 0; gx <= W; gx += 25) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
         for (var gy = 0; gy <= H; gy += 25) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
-        ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+        ctx.strokeStyle = _hc ? '#3a3a3a' : '#334155'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
         _drawnLines.forEach(function (ln) {
-          ctx.strokeStyle = ln.color || '#6366f1'; ctx.lineWidth = ln.width || 2; ctx.lineCap = 'round';
+          ctx.strokeStyle = _hc ? '#ffffff' : (ln.color || '#6366f1'); ctx.lineWidth = _hc ? Math.max(3, (ln.width || 2) + 1) : (ln.width || 2); ctx.lineCap = 'round';
           ctx.beginPath(); ctx.moveTo(ln.x1, ln.y1); ctx.lineTo(ln.x2, ln.y2); ctx.stroke();
         });
         var tx = _turtleState.x, ty = _turtleState.y, ta = _turtleState.angle * Math.PI / 180;
@@ -2283,11 +2614,38 @@
         { text: 'Pick a Starter Template to load a prebuilt program, or tackle Challenges to earn XP. Switch to Code mode for JavaScript-like syntax!', top: '80%', left: '50%' }
       ];
 
+      var _activeToolFallbackMeta = {
+        volume: { label: '3D Volume Explorer', icon: 'ðŸ“¦' },
+        numberline: { label: 'Number Line', icon: 'ðŸ“' },
+        areamodel: { label: 'Area Model', icon: 'ðŸŸ§' },
+        fractionViz: { label: 'Fraction Lab', icon: 'ðŸ•' },
+        chemBalance: { label: 'Chemistry Lab', icon: 'âš–ï¸' },
+        opticsLab: { label: 'Optics Lab', icon: 'ðŸ”†' },
+        codingPlayground: { label: 'Coding Playground', icon: 'ðŸ’»' },
+        graphCalc: { label: 'Graphing Calculator', icon: 'ðŸ“ˆ' },
+        solarSystem: { label: 'Solar System Explorer', icon: 'ðŸª' },
+        anatomy: { label: 'Human Anatomy', icon: 'ðŸ«€' },
+        titrationLab: { label: 'Titration Lab', icon: 'ðŸ§ª' }
+      };
+      function _formatStemToolId(id) {
+        return String(id || 'Tool').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+      }
+      function _getActiveStemToolMeta(id) {
+        var reg = null;
+        try { reg = window.StemLab && window.StemLab._registry && window.StemLab._registry[id]; } catch (_) {}
+        var fallback = _activeToolFallbackMeta[id] || {};
+        var label = (reg && reg.label) || fallback.label || _formatStemToolId(id);
+        var icon = (reg && reg.icon) || fallback.icon || 'ðŸ§ª';
+        return { label: label, icon: icon };
+      }
+      var _activeStemToolMeta = stemLabTool ? _getActiveStemToolMeta(stemLabTool) : null;
+
       // STEM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
         "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEM Lab: " + stemLabTool : "STEM Lab",
         className: "fixed inset-0 z-[9999] flex items-stretch justify-center stem-lab-modal" + (_reduceMotion ? " reduce-motion" : ""),
         style: {
+          zIndex: 10020,
           background: 'rgba(15,23,42,0.7)',
           backdropFilter: 'blur(6px)'
         }
@@ -2298,15 +2656,15 @@
           style: { position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }
         }, a11yAnnouncement),
         /*#__PURE__*/React.createElement("div", {
-        className: "w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
+        className: "stem-lab-modal-shell w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
         style: { backgroundColor: _pal.bg, color: _pal.text }
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-center justify-between px-6 py-3 text-white", role: "banner",
+        className: "stem-lab-topbar flex items-center justify-between px-6 py-3 text-white", role: "banner",
         style: { background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-center gap-3"
+        className: "stem-lab-brand-block flex items-center gap-3"
       }, React.createElement("button", {
-        className: "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black relative cursor-pointer border-none outline-none focus:ring-2 focus:ring-white/50",
+        className: "stem-lab-xp-badge flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black relative cursor-pointer border-none outline-none focus:ring-2 focus:ring-white/50",
         style: {
           background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)',
           backgroundSize: '200% 200%',
@@ -2338,23 +2696,25 @@
         })
       ),
         React.createElement("div", {
-          className: "hidden md:flex items-center gap-1 bg-white/10 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white/70",
+          className: "stem-lab-keyboard-badge hidden md:flex items-center gap-1 bg-white/10 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white/70",
           title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Tab = navigate, Arrow keys = orbit 3D views"
         }, React.createElement("span", null, "\u2328\uFE0F"), React.createElement("span", null, "Keyboard accessible")),
       /*#__PURE__*/React.createElement("div", {
-          className: "bg-white/20 p-2 rounded-lg"
+          className: "stem-lab-brand-icon bg-white/20 p-2 rounded-lg"
         }, /*#__PURE__*/React.createElement(Calculator, {
           size: 20
-        })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+        })), /*#__PURE__*/React.createElement("div", {
+          className: "stem-lab-title-lockup"
+        }, /*#__PURE__*/React.createElement("h2", {
           className: "text-lg font-bold tracking-tight"
         }, "\uD83E\uDDEA STEM Lab"), /*#__PURE__*/React.createElement("p", {
           className: "text-xs text-white/70"
         }, "Create problems, build assessments, explore with manipulatives"))), /*#__PURE__*/React.createElement("div", {
-          className: "flex items-center gap-3"
+          className: "stem-lab-actionbar flex items-center gap-3"
         }, stemLabTab !== 'explore' && /*#__PURE__*/React.createElement("select", {
           value: mathSubject,
           onChange: e => setMathSubject(e.target.value),
-          className: "px-3 py-1.5 text-xs font-medium bg-white/15 border border-white/25 rounded-lg text-white outline-none focus:ring-2 focus:ring-indigo-400",
+          className: "stem-lab-subject-select px-3 py-1.5 text-xs font-medium bg-white/15 border border-white/25 rounded-lg text-white outline-none focus:ring-2 focus:ring-indigo-400",
           "aria-label": "Subject"
         }, /*#__PURE__*/React.createElement("option", {
           value: "General Math",
@@ -2428,7 +2788,7 @@
         }, /*#__PURE__*/React.createElement(X, {
           size: 20
         })))), /*#__PURE__*/React.createElement("div", {
-          className: "flex border-b px-6", role: "tablist", "aria-label": "STEM Lab navigation",
+          className: "stem-lab-tablist flex border-b px-6", role: "tablist", "aria-label": "STEM Lab navigation",
           style: { backgroundColor: _pal.bgAlt, borderColor: _pal.border }
         }, [{
           id: 'create',
@@ -2451,6 +2811,46 @@
         }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
           className: `text-[10px] font-normal ${stemLabTab === tab.id ? 'text-indigo-400' : 'text-slate-500'}`
         }, tab.desc)))),
+        stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && /*#__PURE__*/React.createElement("div", {
+          className: "stem-active-toolbar",
+          role: "region",
+          "aria-label": "Current STEM Lab tool",
+          style: {
+            backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.94)' : 'rgba(255,255,255,0.94)'),
+            borderColor: _pal.border
+          }
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "stem-active-tool-main"
+        }, /*#__PURE__*/React.createElement("button", {
+          type: "button",
+          className: "stem-active-tool-back",
+          onClick: function () {
+            setStemLabTool(null);
+            if (typeof announceToSR === 'function') announceToSR('Returned to all STEM Lab tools');
+          },
+          "aria-label": "Back to all STEM Lab tools",
+          style: {
+            backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
+            color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
+            borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.35)'
+          }
+        }, /*#__PURE__*/React.createElement(ArrowLeft, { size: 15 }), /*#__PURE__*/React.createElement("span", null, "All tools")),
+          /*#__PURE__*/React.createElement("span", {
+            className: "stem-active-tool-icon",
+            "aria-hidden": "true"
+          }, _activeStemToolMeta.icon),
+          /*#__PURE__*/React.createElement("div", {
+            className: "stem-active-tool-title"
+          }, /*#__PURE__*/React.createElement("h3", {
+            style: { color: _pal.text }
+          }, _activeStemToolMeta.label), /*#__PURE__*/React.createElement("p", {
+            style: { color: _pal.textMuted }
+          }, "Explore tool"))), /*#__PURE__*/React.createElement("div", {
+            className: "stem-active-tool-actions"
+          }, /*#__PURE__*/React.createElement("span", {
+            className: "stem-active-tool-hint",
+            style: { color: _pal.textMuted }
+          }, "Esc or Alt+B returns to all tools"))),
         // ── Keyboard Help Panel ──
         _showKeyHelp && React.createElement("div", {
           role: "region", "aria-label": "Keyboard shortcuts",
@@ -2741,7 +3141,7 @@
           key: tool.id,
           onClick: () => {
             setStemLabTab('explore');
-            setStemLabTool(tool.id);
+            _openStemTool(tool.id, tool.label);
           },
           className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
         }, tool.icon, " ", tool.label)))), stemLabTab === 'create' && showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
@@ -2988,12 +3388,12 @@
             className: "flex items-center gap-2"
           }, /*#__PURE__*/React.createElement("span", {
             className: "text-sm"
-          }, snap.tool === 'volume' ? '📦' : snap.tool === 'base10' ? '🧮' : snap.tool === 'coordinate' ? '📍' : '📐'), /*#__PURE__*/React.createElement("span", {
+          }, snap.tool === 'volume' ? '📦' : snap.tool === 'base10' ? '🧮' : snap.tool === 'coordinate' ? '📍' : snap.tool === 'codingPlayground' ? '🔬' : '📐'), /*#__PURE__*/React.createElement("span", {
             className: "text-xs font-bold text-slate-700 flex-1 truncate"
           }, snap.label), /*#__PURE__*/React.createElement("button", { "aria-label": "Open " + snap.label + " snapshot",
             onClick: () => {
               setStemLabTab('explore');
-              setStemLabTool(snap.tool);
+              _openStemTool(snap.tool, snap.label);
               if (snap.tool === 'volume' && snap.data) {
                 if (snap.mode === 'slider' && snap.data.dims) {
                   setCubeBuilderMode('slider');
@@ -3007,6 +3407,7 @@
               if (snap.tool === 'base10' && snap.data) setBase10Value(snap.data);
               if (snap.tool === 'coordinate' && snap.data) setGridPoints(snap.data.points || []);
               if (snap.tool === 'protractor' && snap.data) setAngleValue(snap.data.angle || 45);
+              if (snap.tool === 'codingPlayground' && snap.data) setLabToolData(function (prev) { return Object.assign({}, prev, { _codingPlayground: snap.data }); });
             },
             className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", { "aria-label": "Set Tool Snapshots",
@@ -3287,6 +3688,7 @@
                 // @tool chemBalance
                 id: 'chemBalance', icon: '⚖️', label: t('stem.tools_menu.equation_balancer'),
                 desc: t('stem.tools_menu.balance_chemical_equations_with_visual'),
+                aliases: ['Chemistry Lab', 'chem lab', 'chemical equations', 'equation balancing', 'stoichiometry', 'chemical reactions'],
                 color: 'lime', ready: true
               },
               {
@@ -3326,6 +3728,7 @@
               {
                 id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
                 desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
+                aliases: ['Optics Lab', 'optics', 'light lab', 'lenses', 'mirrors', 'reflection', 'refraction', 'Snell', 'AP Physics 2'],
                 color: 'sky', ready: true
               },
 
@@ -3385,7 +3788,7 @@
               { id: '_cat_Economics', icon: '', label: '💰 Social Studies & Economics', desc: '', color: 'slate', category: true },
               {
                 id: 'economicsLab', icon: '💰', label: 'Economics Lab',
-                desc: 'Supply & demand curves, personal finance life sim, stock market trading, macro economics dashboard, and lemonade stand entrepreneur sim.',
+                desc: 'Supply & demand curves, personal finance life sim, stock market trading, AI business startup sim, and a national economy policy simulator.',
                 color: 'emerald', ready: true
               },
               {
@@ -3395,7 +3798,7 @@
               },
               {
                 id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
-                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
+                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, records and paperwork, transportation planning, job readiness, resume building, portfolio proof organization, interview practice, communication skills, time management, health insurance, dental care, body care ergonomics, sleep routines, medication labels, appointment prep, home safety, digital safety, food confidence, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
               {
@@ -3520,6 +3923,7 @@
               { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
+              { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
               { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
 
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
@@ -3543,17 +3947,74 @@
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
 
               { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', category: true },
-              { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true }
+              { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true },
+              {
+                id: 'accessLens', icon: '\uD83D\uDCF7', label: 'Access Lens',
+                desc: 'Point your camera at the world: scene descriptions read aloud (built for students who are blind or have low vision), large-print re-reading of any text, translation of signs and handouts, and a Socratic investigate mode where the AI asks questions instead of pronouncing answers.',
+                color: 'sky', ready: true
+              },
+              {
+                id: 'dataLab', icon: '\uD83D\uDCCA', label: 'Data Lab',
+                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees the shape of your data (names and counts, never values) and asks questions instead of giving answers.',
+                color: 'indigo', ready: true
+              },
+              {
+                id: 'alphaFoldExplorer', icon: '\u03B1', label: 'AlphaFold Explorer',
+                desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, inspect them in Mol*, import downloaded prediction files, and prepare AlphaFold Server-ready JSON with guardrails for public or synthetic classroom sequences only.',
+                color: 'teal', ready: true
+              },
+              {
+                id: 'simShelf', icon: '\uD83E\uDDEA', label: 'Sim Shelf',
+                desc: 'Sixteen hand-picked PhET simulations (University of Colorado Boulder) \u2014 forces, circuits, light, matter, orbits, evolution, fractions, probability \u2014 wrapped in a Predict \u2192 Explore \u2192 Explain coach that makes you commit to a guess before you touch anything.',
+                color: 'amber', ready: true
+              },
+              {
+                id: 'particleLab3d', icon: '\u2728', label: 'Particle Lab 3D',
+                desc: 'Run fully 3D particle experiments with states of matter, gas laws, diffusion, collisions, attraction, live measurements, and particle tracing.',
+                color: 'cyan', ready: true
+              },
+              {
+                id: 'zoomGallery', icon: '\uD83D\uDD0D', label: 'Zoom Gallery',
+                desc: 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
+                color: 'sky', ready: true
+              }
             ];
             // ── Tool search filter ──
-            var _searchLower = _stemToolSearch.toLowerCase().trim();
+            var _searchAliasMap = {
+              chemBalance: 'chemistry lab chemistry chemical equation balancer equation balancing stoichiometry reaction reactions molecule molecules',
+              opticsLab: 'optics lab light lab geometric optics wave optics lens lenses mirror mirrors reflection refraction snell diffraction interference polarization ap physics',
+              fractionViz: 'fraction lab fractions compare numerator denominator pizza visualizer',
+              base10: 'base ten base-10 manipulatives place value math blocks abacus slide rule',
+              titrationLab: 'chemistry lab titration acid base acids bases ph hcl',
+              anatomy: 'anatomy lab human anatomy body systems organs skeletal muscular',
+              solarSystem: 'solar system explorer planets astronomy space orbit orrery',
+              accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility',
+              dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes',
+              alphaFoldExplorer: 'alphafold alpha fold protein structure prediction uniprot accession molstar mol molecule molecular biology bioinformatics pdb cif mmcif bcif plddt pae confidence sequence amino acid fasta server deepmind ebi structure viewer',
+              simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive',
+              particleLab3d: 'particle particles 3d molecular dynamics states matter solid liquid gas diffusion kinetic theory temperature pressure collisions attraction intermolecular forces gas laws',
+              zoomGallery: 'zoom gallery deep zoom openseadragon iiif image images photo photos picture pictures magnify magnifier close up detail details observe observation notice wonder smithsonian open access nasa museum artifact artifacts space astronomy hubble webb pillars creation saturn moon apollo bootprint coral fossil low vision cc0 public domain'
+            };
+            function _normalizeToolSearchText(value) {
+              return String(value || '')
+                .replace(/([a-z])([A-Z])/g, '$1 $2')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, ' ')
+                .trim();
+            }
+            function _stemToolSearchHaystack(tool) {
+              var aliases = [];
+              if (tool.aliases) aliases = aliases.concat(tool.aliases);
+              if (_searchAliasMap[tool.id]) aliases.push(_searchAliasMap[tool.id]);
+              return _normalizeToolSearchText([tool.id, tool.label, tool.desc, tool.category, aliases.join(' ')].join(' '));
+            }
+            var _searchLower = _normalizeToolSearchText(_stemToolSearch);
             var _filteredTools = _searchLower ? _allStemTools.filter(function (tool) {
               if (tool.category) {
                 // Keep category if ANY tool in it matches
                 return true;
               }
-              return (tool.label || '').toLowerCase().indexOf(_searchLower) !== -1 ||
-                (tool.desc || '').toLowerCase().indexOf(_searchLower) !== -1;
+              return _stemToolSearchHaystack(tool).indexOf(_searchLower) !== -1;
             }) : _allStemTools;
             // Remove orphan category headers (categories with no matching tools after them)
             if (_searchLower) {
@@ -3586,6 +4047,19 @@
               });
             }
             // Category filter (from chip buttons)
+            var _categoryFilterOptions = [
+              { id: '', label: 'All', icon: '\u2B50' },
+              { id: 'science', label: 'Science', icon: '\uD83E\uDDEA' },
+              { id: 'math', label: 'Math', icon: '\uD83D\uDCCA' },
+              { id: 'engineering', label: 'Engineering', icon: '\u2699\uFE0F' },
+              { id: 'creative', label: 'Creative', icon: '\uD83C\uDFA8' },
+              { id: 'applied', label: 'Applied', icon: '\uD83D\uDE80' },
+              { id: 'strategy', label: 'Games', icon: '\uD83C\uDFAE' }
+            ];
+            function _categoryFilterLabel(id) {
+              var found = _categoryFilterOptions.find(function (cat) { return cat.id === id; });
+              return found ? found.label : 'All';
+            }
             var _catFilter = d._categoryFilter || '';
             if (_catFilter && !_activeStation) {
               var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo', 'life-skills', 'life skills', 'economics', 'social studies'], strategy: ['Strategy', 'strategy'] };
@@ -3618,6 +4092,72 @@
             var _cardIndex = 0;
             // Tool count summary
             var _toolCount = _filteredTools.filter(function(t2) { return !t2.category; }).length;
+            var _totalToolCount = _allStemTools.filter(function(t2) { return !t2.category; }).length;
+            var _catalogContextLabel = _activeStation ? _activeStation.name : (_searchLower ? 'Search results' : (_catFilter ? _categoryFilterLabel(_catFilter) : 'All tools'));
+            function _findStemToolById(id) {
+              return _allStemTools.find(function (tool) { return tool && !tool.category && tool.id === id; }) || null;
+            }
+            var _availableStemTools = _allStemTools.filter(function (tool) { return tool && !tool.category && tool.id; });
+            var _recentStemTools = (_recentStemToolIds || []).map(_findStemToolById).filter(Boolean);
+            function _requestStemToolSuggestions() {
+              var interest = String(_stemToolInterest || '').trim();
+              if (!interest) {
+                _setStemToolSuggestError('Add a topic, question, or project idea first.');
+                _setStemToolSuggestions([]);
+                if (typeof announceToSR === 'function') announceToSR('Add an interest first.');
+                return;
+              }
+              var reqId = _stemToolSuggestRequestRef.current + 1;
+              _stemToolSuggestRequestRef.current = reqId;
+              _setStemToolSuggesting(true);
+              _setStemToolSuggestError('');
+              _setStemToolSuggestions([]);
+              var catalogForPrompt = _availableStemTools.map(function (tool) {
+                return {
+                  id: tool.id,
+                  label: tool.label,
+                  category: tool.category || '',
+                  desc: String(tool.desc || tool.description || '').slice(0, 150),
+                  aliases: Array.isArray(tool.aliases) ? tool.aliases.slice(0, 8) : []
+                };
+              });
+              var prompt = [
+                'You are helping a student choose a STEM Lab tool.',
+                'Student interest: ' + interest,
+                'Choose up to 4 tools from this catalog. Use only exact ids from the catalog.',
+                'Return strict JSON only, no markdown, as an array of objects: [{"id":"toolId","reason":"short reason","starter":"first thing to try"}].',
+                'Catalog:',
+                JSON.stringify(catalogForPrompt)
+              ].join('\n');
+              var fallback = function (message) {
+                var local = _localStemToolMatches(interest, _availableStemTools);
+                if (_stemToolSuggestRequestRef.current !== reqId) return;
+                _setStemToolSuggesting(false);
+                _setStemToolSuggestions(local);
+                _setStemToolSuggestError(local.length ? '' : (message || 'No close matches yet. Try a more specific topic.'));
+                if (typeof announceToSR === 'function') announceToSR(local.length ? 'Suggested ' + local.length + ' STEM tools.' : 'No STEM tool suggestions found.');
+              };
+              if (typeof callGemini !== 'function') {
+                fallback('AI suggestions are unavailable right now; showing closest catalog matches.');
+                return;
+              }
+              callGemini(prompt, true).then(function (raw) {
+                if (_stemToolSuggestRequestRef.current !== reqId) return;
+                var parsed = _extractStemSuggestionJson(raw);
+                var suggestions = _normalizeStemSuggestions(parsed, _availableStemTools);
+                if (!suggestions.length) {
+                  fallback('AI did not return a usable tool list; showing closest catalog matches.');
+                  return;
+                }
+                _setStemToolSuggesting(false);
+                _setStemToolSuggestions(suggestions);
+                _setStemToolSuggestError('');
+                if (typeof announceToSR === 'function') announceToSR('Suggested ' + suggestions.length + ' STEM tools.');
+              }).catch(function () {
+                fallback('AI suggestions hit a snag; showing closest catalog matches.');
+              });
+            }
+            var _hasCatalogFilter = !!(_searchLower || (!_activeStation && _catFilter));
             // ── Mastery Atlas: cross-tool engagement dashboard ──
             // Reads each tool's persistent window slot (with localStorage
             // fallback) and renders a single dashboard tile per tool that
@@ -3693,7 +4233,7 @@
             var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
             var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
             return /*#__PURE__*/React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200"
+              className: "stem-tool-catalog max-w-6xl mx-auto animate-in fade-in duration-200"
             },
           // ── Mastery Atlas (only shows when at least one tool has progress) ──
           _atlasActive.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -3719,7 +4259,7 @@
                 var isFull = entry.current >= entry.total;
                 return /*#__PURE__*/React.createElement("button", {
                   key: entry.id,
-                  onClick: function () { setStemLabTool(entry.id); announceToSR && announceToSR('Opening ' + entry.label); },
+                  onClick: function () { _openStemTool(entry.id, entry.label); },
                   'aria-label': entry.label + ': ' + entry.current + ' of ' + entry.total + ' mastered. Click to open.',
                   className: "text-left p-3 rounded-xl border transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-400",
                   style: {
@@ -3753,34 +4293,167 @@
             )
           ),
           // Search input
-          /*#__PURE__*/React.createElement("div", { className: "mb-4 relative" },
+          /*#__PURE__*/React.createElement("div", { className: "stem-tool-searchbar mb-4 relative" },
             /*#__PURE__*/React.createElement("input", {
               type: "text",
               value: _stemToolSearch,
-              onChange: function (e) { _setStemToolSearch(e.target.value); },
-              placeholder: "\uD83D\uDD0D Search tools...",
+              onChange: function (e) {
+                _setStemToolSearch(e.target.value);
+                if (d._categoryFilter) upd('_categoryFilter', '');
+              },
+              placeholder: "Search " + _totalToolCount + " tools...",
               className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-400 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
               'aria-label': 'Search STEM Lab tools'
             }),
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
               _stemToolSearch && /*#__PURE__*/React.createElement("button", {
-                onClick: function () { _setStemToolSearch(''); },
+                onClick: function () { _setStemToolSearch(''); upd('_categoryFilter', ''); },
                 className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 text-xs font-bold transition-colors",
                 'aria-label': 'Clear search'
               }, "\u2715")
             ),
 
           // ── Category filter chips ──
-          !_activeStation && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3", role: 'group', 'aria-label': 'Filter tools by category' },
-            [
-              { id: '', label: 'All', icon: '\u2B50' },
-              { id: 'science', label: 'Science', icon: '\uD83E\uDDEA' },
-              { id: 'math', label: 'Math', icon: '\uD83D\uDCCA' },
-              { id: 'engineering', label: 'Engineering', icon: '\u2699\uFE0F' },
-              { id: 'creative', label: 'Creative', icon: '\uD83C\uDFA8' },
-              { id: 'applied', label: 'Applied', icon: '\uD83D\uDE80' },
-              { id: 'strategy', label: 'Games', icon: '\uD83C\uDFAE' }
-            ].map(function(cat) {
+          React.createElement("div", {
+            className: "stem-catalog-context"
+          },
+            React.createElement("span", {
+              className: "stem-catalog-status",
+              role: "status",
+              "aria-live": "polite",
+              style: {
+                backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(30,41,59,0.82)' : '#f8fafc'),
+                color: _pal.text,
+                borderColor: _pal.border
+              }
+            }, _catalogContextLabel + " · " + _toolCount + " tool" + (_toolCount === 1 ? "" : "s")),
+            _hasCatalogFilter && !_activeStation && React.createElement("button", {
+              type: "button",
+              className: "stem-catalog-clear",
+              onClick: function () {
+                _setStemToolSearch('');
+                upd('_categoryFilter', '');
+                if (typeof announceToSR === 'function') announceToSR('Showing all STEM Lab tools');
+              },
+              style: {
+                backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
+                color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
+                borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.35)'
+              },
+              "aria-label": "Clear STEM Lab catalog filters"
+            }, "\u2715", React.createElement("span", null, "Clear filters"))
+          ),
+
+          !_activeStation && _recentStemTools.length > 0 && React.createElement("div", {
+            className: "stem-catalog-quickbar",
+            role: "group",
+            "aria-label": "Recent STEM tools"
+          },
+            React.createElement("span", {
+              className: "stem-catalog-row-label",
+              style: { color: _pal.textMuted }
+            }, "Recent"),
+            _recentStemTools.map(function (tool) {
+              return React.createElement("button", {
+                key: "recent-" + tool.id,
+                type: "button",
+                className: "stem-catalog-chip",
+                onClick: function () { _openStemTool(tool.id, tool.label); },
+                style: {
+                  backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.82)' : '#ffffff'),
+                  color: _pal.text,
+                  borderColor: _pal.border
+                },
+                "aria-label": "Open recent STEM tool " + tool.label
+              }, React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, tool.icon), React.createElement("span", null, tool.label));
+            })
+          ),
+
+          !_activeStation && !_searchLower && !_catFilter && React.createElement("div", {
+            className: "stem-tool-matchmaker",
+            role: "region",
+            "aria-label": "AI STEM tool picker",
+            style: {
+              backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.76)' : '#ffffff'),
+              color: _pal.text,
+              borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.30)'
+            }
+          },
+            React.createElement("form", {
+              className: "stem-tool-matchmaker-form",
+              onSubmit: function (e) {
+                e.preventDefault();
+                _requestStemToolSuggestions();
+              }
+            },
+              React.createElement("label", { className: "sr-only", htmlFor: "stem-tool-interest" }, "Topic or project interest"),
+              React.createElement("input", {
+                id: "stem-tool-interest",
+                type: "text",
+                value: _stemToolInterest,
+                onChange: function (e) {
+                  _setStemToolInterest(e.target.value);
+                  if (_stemToolSuggestError) _setStemToolSuggestError('');
+                },
+                placeholder: "What do you want to learn about?",
+                className: "stem-tool-matchmaker-input",
+                style: {
+                  backgroundColor: isContrast ? '#000' : (isDark ? '#0f172a' : '#ffffff'),
+                  color: _pal.text,
+                  borderColor: _pal.border
+                },
+                "aria-label": "What do you want to learn about?"
+              }),
+              React.createElement("button", {
+                type: "submit",
+                className: "stem-tool-matchmaker-button",
+                disabled: _stemToolSuggesting,
+                style: {
+                  backgroundColor: isContrast ? '#fbbf24' : '#4f46e5',
+                  color: isContrast ? '#000' : '#ffffff',
+                  cursor: _stemToolSuggesting ? 'wait' : 'pointer',
+                  opacity: _stemToolSuggesting ? 0.78 : 1
+                },
+                "aria-label": "Suggest STEM tools with AI"
+              }, React.createElement("span", { "aria-hidden": "true" }, "AI"), React.createElement("span", null, _stemToolSuggesting ? "Thinking..." : "Suggest tools"))
+            ),
+            (_stemToolSuggesting || _stemToolSuggestError) && React.createElement("p", {
+              className: "stem-tool-matchmaker-status",
+              role: "status",
+              "aria-live": "polite",
+              style: { color: _stemToolSuggestError ? (isContrast ? '#fbbf24' : '#b45309') : _pal.textMuted }
+            }, _stemToolSuggesting ? "Finding tool matches..." : _stemToolSuggestError),
+            _stemToolSuggestions.length > 0 && React.createElement("div", {
+              className: "stem-tool-ai-suggestions",
+              role: "group",
+              "aria-label": "Suggested STEM tools"
+            },
+              _stemToolSuggestions.map(function (suggestion) {
+                return React.createElement("button", {
+                  key: "ai-suggest-" + suggestion.id,
+                  type: "button",
+                  className: "stem-tool-ai-suggestion",
+                  onClick: function () { _openStemTool(suggestion.id, suggestion.label); },
+                  style: {
+                    backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(30,41,59,0.92)' : '#f8fafc'),
+                    color: _pal.text,
+                    borderColor: _pal.border
+                  },
+                  "aria-label": "Open suggested STEM tool " + suggestion.label + ". " + suggestion.reason
+                },
+                  React.createElement("span", { className: "stem-tool-ai-suggestion-title" },
+                    React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, suggestion.icon),
+                    React.createElement("span", null, suggestion.label)
+                  ),
+                  React.createElement("span", { className: "stem-tool-ai-suggestion-reason", style: { color: _pal.textMuted } }, suggestion.reason),
+                  suggestion.starter && React.createElement("span", { className: "block mt-1 text-[10px] font-black", style: { color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#4338ca') } }, "Try: " + suggestion.starter)
+                );
+              })
+            )
+          ),
+
+          !_activeStation && React.createElement("div", { className: "stem-tool-filter-row flex flex-wrap gap-1.5 mb-3", role: 'group', 'aria-label': 'Filter tools by category' },
+            _categoryFilterOptions.map(function(cat) {
               var isActive = (_stemToolSearch === '' && !d._categoryFilter && cat.id === '') || d._categoryFilter === cat.id;
               return React.createElement("button", {
                 key: cat.id,
@@ -4419,12 +5092,12 @@
 
           // Tool grid
           /*#__PURE__*/React.createElement("div", { role: 'region', 'aria-label': _activeStation ? _activeStation.name + ' station tools' : 'STEM Lab tools',
-              className: "grid grid-cols-2 gap-4"
+              className: "stem-tool-grid"
             }, _filteredTools.map(function (tool) {
               if (tool.category) {
                 return /*#__PURE__*/React.createElement("div", {
                   key: tool.id,
-                  className: "col-span-2 mt-3 first:mt-0"
+                  className: "stem-tool-category mt-3 first:mt-0"
                 }, /*#__PURE__*/React.createElement("h3", {
                   className: "text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
                 }, tool.label));
@@ -4435,17 +5108,10 @@
                 key: tool.id,
                 onClick: function () {
                   if (tool.ready === false) { if (addToast) addToast(tool.label + ' is coming soon!', 'info'); return; }
-                  setStemLabTool(tool.id);
-                  _setStemToolSearch('');
-                  // Scroll to top of content area smoothly
-                  setTimeout(function() {
-                    var contentArea = document.querySelector('.stem-lab-modal .overflow-y-auto');
-                    if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
-                  }, 50);
-                  if (typeof announceToSR === 'function') announceToSR('Opening ' + tool.label);
+                  _openStemTool(tool.id, tool.label);
                 },
                 title: tool.desc || tool.label,
-                className: 'group p-5 rounded-2xl border-2 text-left transition-all duration-200 hover:scale-[1.04] hover:-translate-y-0.5 hover:shadow-xl ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
+                className: 'stem-tool-card group p-5 rounded-2xl border-2 text-left transition-all duration-200 ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
                 style: _reduceMotion ? {} : { animation: 'stemCardIn 0.35s ease-out both', animationDelay: (_ci * 40) + 'ms' }
               }, /*#__PURE__*/React.createElement("div", {
                 className: "text-3xl mb-2"
@@ -4456,13 +5122,13 @@
               }, tool.desc));
             })),
               // No results message
-              _searchLower && _filteredTools.length === 0 && /*#__PURE__*/React.createElement("div", { className: "text-center py-12 text-slate-400" },
+              _hasCatalogFilter && _toolCount === 0 && /*#__PURE__*/React.createElement("div", { className: "text-center py-12 text-slate-400" },
             /*#__PURE__*/React.createElement("div", { className: "text-4xl mb-2" }, "\uD83D\uDD0D"),
-            /*#__PURE__*/React.createElement("p", { className: "text-sm font-bold" }, 'No tools match "' + _stemToolSearch + '"'),
+            /*#__PURE__*/React.createElement("p", { className: "text-sm font-bold" }, _stemToolSearch ? ('No tools match "' + _stemToolSearch + '"') : 'No tools match this filter'),
             /*#__PURE__*/React.createElement("button", { "aria-label": "Clear search",
-                onClick: function () { _setStemToolSearch(''); },
+                onClick: function () { _setStemToolSearch(''); upd('_categoryFilter', ''); },
                 className: "mt-2 text-xs text-indigo-500 hover:text-indigo-700 font-bold transition-colors"
-              }, "Clear search")
+              }, "Clear filters")
               ));
           })()),
         /* base10: removed -- see stem_tool_manipulatives.js */
@@ -4691,9 +5357,9 @@
             // Science
             anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
-            dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
+            dataPlot: true, dinoLab: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
-            rocks: true, rockCycle: true, science: true, solarSystem: true,
+            rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
@@ -4703,7 +5369,7 @@
             // Earth & Space
             astronomy: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
             // Data & Logic
-            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true,
+            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
             // Applied
@@ -4750,7 +5416,40 @@
             bakingScience: true,
             alloBotSage: true,
             // Jun 2026: Lumen go-live — provenance-bound reactive research canvas.
-            lumen: true
+            lumen: true,
+            // Jun 2026: Cellular Automaton Lab — was registered + tiled but
+            // missing from this map (and from the stemToolModules loader), so
+            // the tile rendered a blank content area. Both fixed 2026-07-02.
+            cellularLab: true,
+            // Jul 2026: Access Lens — learner accessibility camera kit
+            // (describe / read / translate / Socratic investigate).
+            accessLens: true,
+            // Jul 5 2026: Arc City — registered + tiled since Phase 1 but never
+            // added here, so the tile rendered a blank content area (same bug
+            // as stewardshipHub May 15 and cellularLab Jul 2).
+            arccity: true,
+            // Jul 2026: Data Lab — CODAP companion window + Socratic tutor
+            // (launcher + AI bridge live in stem_tool_datalab.js).
+            dataLab: true,
+            // Jul 2026: AlphaFold Explorer — public AlphaFold DB lookup + Mol*
+            // viewer + safe AlphaFold Server input prep.
+            alphaFoldExplorer: true,
+            // Jul 2026: Sim Shelf — PhET companion window + POE coach
+            // (launcher + AI bridge live in stem_tool_simshelf.js).
+            simShelf: true,
+            // Jul 2026: Circuit Shelf — CircuitJS1 (Falstad/Sharp, GPL) companion
+            // window + POE coach (launcher + AI bridge in stem_tool_circuitshelf.js).
+            circuitShelf: true,
+            // Jul 2026: Molecule Shelf — Mol* (RCSB, MIT) companion window +
+            // Notice→Wonder coach (launcher + AI bridge in stem_tool_moleculeshelf.js).
+            moleculeShelf: true,
+            // Jul 2026: Particle Lab 3D — deterministic Three.js particle sandbox
+            // for states of matter, gas laws, diffusion, and collisions.
+            particleLab3d: true,
+            // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
+            // window over Smithsonian CC0 (IIIF) + NASA public-domain images +
+            // Notice→Wonder coach (launcher + AI bridge in stem_tool_zoomgallery.js).
+            zoomGallery: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
@@ -4990,7 +5689,23 @@
             }
             // The deferred setState bridge uses _renderingFlag to queue updates that
             // would otherwise trigger "Cannot update a component while rendering".
-            return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + stemLabTool, _toolId: stemLabTool, _ctx: _ctx });
+            //
+            // Hook-safety: the bridge inlines the tool's render() into ONE fiber,
+            // and many tools dispatch to different sub-renderers per tab/subtool,
+            // each calling a DIFFERENT set of canvas hooks (useRef/useEffect).
+            // Keying only by tool ID meant a same-fiber subtool switch reordered
+            // hooks → "Rendered fewer hooks than expected" (e.g. semiconductor
+            // bandgap→gates). Fold the active tab + the tool's own mode field into
+            // the key so switching sub-views remounts a fresh fiber (correct, and
+            // the expected UX). These fields only change on an explicit switch, so
+            // normal re-renders keep the same key and don't remount.
+            var _modeTd = (_ctx.toolData && _ctx.toolData[stemLabTool]) || {};
+            var _modeSig = [
+              stemLabTool,
+              _ctx.stemLabTab || '',
+              _modeTd.subtool || _modeTd.tab || _modeTd.mode || _modeTd.activeTab || _modeTd.activeSubtool || ''
+            ].join(':');
+            return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + _modeSig, _toolId: stemLabTool, _ctx: _ctx });
           } catch(e) {
             console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);
             return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-harlem-renaissance-primary-source-set-card",
+  "title": "Library of Congress Harlem Renaissance Primary Sources",
+  "description": "A LOC source card for Harlem Renaissance primary sources and classroom materials.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Harlem Renaissance",
+    "Arts",
+    "Primary sources",
+    "U.S. history"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/primary-source-sets/harlem-renaissance/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Library of Congress Harlem Renaissance source set supports study of literature, music, visual art, migration, identity, and cultural movements."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for interdisciplinary reading that combines history, art analysis, biography, and close reading."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress source sets include public-domain and rights-unknown primary sources. Use the item pages to confirm rights before mirroring individual documents."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

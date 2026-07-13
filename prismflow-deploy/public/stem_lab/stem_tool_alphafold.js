@@ -1,0 +1,371 @@
+// AlloFlow STEM Lab - AlphaFold Explorer launcher + AI bridge
+//
+// The explorer itself is a companion window:
+//   alphafold_explorer/alphafold_explorer.html
+//
+// It uses the same Canvas escape-hatch pattern as Molecule Shelf/Data Lab:
+// open a top-level browser window, keep AlloFlow as the AI bridge, and avoid
+// submitting anything automatically to AlphaFold Server. Students can inspect
+// public AlphaFold DB structures, import downloaded result files, and prepare
+// AlphaFold Server or AlphaFold 3 local-code JSON for teacher-approved,
+// non-sensitive classroom sequences.
+(function () {
+  'use strict';
+  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+
+  var ALPHAFOLD_CDN_URL = 'https://alloflow-cdn.pages.dev/alphafold_explorer/alphafold_explorer.html?v=1';
+
+  function companionUrl(path, cdnUrl) {
+    try {
+      var loc = window.location || {};
+      var host = loc.hostname || '';
+      var pathname = loc.pathname || '';
+      var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) return new URL(path, loc.href).toString();
+      if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
+    } catch (_) {}
+    return cdnUrl;
+  }
+
+  var ALPHAFOLD_URL = companionUrl('alphafold_explorer/alphafold_explorer.html?v=1', ALPHAFOLD_CDN_URL);
+
+  if (typeof document !== 'undefined' && !document.getElementById('alphafold-launcher-css')) {
+    var alphaFoldStyle = document.createElement('style');
+    alphaFoldStyle.id = 'alphafold-launcher-css';
+    alphaFoldStyle.textContent = [
+      '.af-launcher{width:min(100%,960px);margin:0 auto;display:grid;gap:14px;color:#e2e8f0;}',
+      '.af-launcher *{box-sizing:border-box;}',
+      '.af-mission{position:relative;overflow:hidden;padding:22px;border:1px solid rgba(45,212,191,.38);border-radius:20px;background:radial-gradient(circle at 92% 8%,rgba(56,189,248,.2),transparent 34%),linear-gradient(135deg,rgba(15,118,110,.3),rgba(2,6,23,.98) 62%);box-shadow:0 18px 46px rgba(2,6,23,.28);}',
+      '.af-mission-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
+      '.af-eyebrow{margin:0 0 7px;color:#5eead4;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
+      '.af-title{margin:0;color:#f8fafc;font-size:clamp(22px,3vw,32px);line-height:1.12;}',
+      '.af-subtitle{max-width:700px;margin:9px 0 0;color:#cbd5e1;font-size:13px;line-height:1.6;}',
+      '.af-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(94,234,212,.3);border-radius:999rem;background:rgba(15,23,42,.72);color:#99f6e4;font-size:11px;font-weight:800;white-space:nowrap;}',
+      '.af-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:18px;}',
+      '.af-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.7);}',
+      '.af-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.af-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.af-metric-note{display:block;margin-top:2px;color:#94a3b8;font-size:9px;line-height:1.35;}',
+      '.af-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;}',
+      '.af-primary{min-height:46px;padding:11px 17px;border:1px solid rgba(153,246,228,.38);border-radius:12px;background:linear-gradient(135deg,#0d9488,#0284c7);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(8,145,178,.23);transition:transform .18s,box-shadow .18s;}',
+      '.af-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(8,145,178,.3);}',
+      '.af-action-note{color:#94a3b8;font-size:10px;line-height:1.45;}',
+      '.af-section{padding:16px;border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.62);}',
+      '.af-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}',
+      '.af-section h3{margin:0;color:#f8fafc;font-size:15px;}',
+      '.af-section-head p{margin:3px 0 0;color:#94a3b8;font-size:11px;}',
+      '.af-route{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}',
+      '.af-route-card{min-width:0;padding:13px;border:1px solid #334155;border-radius:13px;background:#0f172a;}',
+      '.af-route-card[data-complete="true"]{border-color:rgba(45,212,191,.55);background:linear-gradient(145deg,rgba(13,148,136,.14),#0f172a 70%);}',
+      '.af-route-kicker{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#5eead4;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}',
+      '.af-route-card h4{margin:8px 0 5px;color:#f8fafc;font-size:13px;}',
+      '.af-route-card p{margin:0;color:#94a3b8;font-size:10px;line-height:1.5;}',
+      '.af-route-state{color:#cbd5e1;font-size:9px;}',
+      '.af-support-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:10px;}',
+      '.af-details,.af-guardrail{border:1px solid #334155;border-radius:14px;background:#0f172a;overflow:hidden;}',
+      '.af-details summary{min-height:48px;padding:14px;cursor:pointer;color:#e2e8f0;font-size:12px;font-weight:900;}',
+      '.af-details ol{margin:0;padding:0 20px 15px 34px;color:#cbd5e1;font-size:11px;line-height:1.55;}',
+      '.af-details li+li{margin-top:5px;}',
+      '.af-guardrail{padding:14px;border-color:rgba(251,191,36,.34);background:linear-gradient(145deg,rgba(120,53,15,.16),#0f172a 72%);}',
+      '.af-guardrail h3{margin:0 0 7px;color:#fde68a;font-size:12px;}',
+      '.af-guardrail p{margin:0;color:#cbd5e1;font-size:10px;line-height:1.55;}',
+      '.af-guardrail p+p{margin-top:7px;}',
+      '.af-alert{padding:11px 13px;border:1px solid rgba(251,191,36,.45);border-radius:12px;background:rgba(120,53,15,.2);color:#fde68a;font-size:11px;line-height:1.5;}',
+      '.af-alert a{color:#fef3c7;text-decoration:underline;font-weight:800;}',
+      '.af-credit{margin:0;padding:0 4px;color:#64748b;font-size:9px;line-height:1.5;}',
+      '@media(max-width:760px){.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:1fr;}.af-support-grid{grid-template-columns:1fr;}}',
+      '@media(max-width:520px){.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
+      '@media(prefers-reduced-motion:reduce){.af-primary{transition:none;}.af-primary:hover{transform:none;}}',
+      '.theme-contrast .af-mission,.theme-contrast .af-section,.theme-contrast .af-route-card,.theme-contrast .af-details,.theme-contrast .af-guardrail{box-shadow:none;border-width:2px;}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(alphaFoldStyle);
+  }
+
+  function safeClip(value, limit) {
+    return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, limit || 300);
+  }
+
+  function buildCoachPrompt(payload) {
+    var meta = payload && payload.meta ? payload.meta : {};
+    var guide = payload && payload.guide ? payload.guide : {};
+    var lines = [
+      'You are a warm, Socratic STRUCTURAL-BIOLOGY COACH for a K-12 student using an AlphaFold explorer.',
+      'The tool is for public, synthetic, or classroom sample proteins only. Do not discuss diagnosis, treatment, ancestry, personal genetic risk, or patient-specific interpretation.',
+      'RULES:',
+      '- At most 4 sentences.',
+      '- End with exactly one question.',
+      '- Ask the student to inspect the structure, confidence, domain layout, or a visible pocket/surface feature.',
+      '- Adapt vocabulary, sentence length, and next steps to the selected grade band and tutorial frame.',
+      '- Do not overstate AlphaFold predictions; remind them that predictions are hypotheses when needed.',
+      '- Do not request or repeat personal/family genetic or medical information.',
+      'CURRENT PUBLIC/LOCAL STRUCTURE CONTEXT:',
+      'Name: ' + safeClip(meta.name || meta.description || 'unknown protein', 160),
+      'Accession/source: ' + safeClip(meta.accession || meta.source || 'unknown', 120),
+      'Organism: ' + safeClip(meta.organism || 'unknown', 120),
+      'Length: ' + safeClip(meta.length || 'unknown', 40),
+      'Confidence summary: ' + safeClip(meta.confidence || 'not shown', 180),
+      'Grade band: ' + safeClip(guide.gradeBand || 'not specified', 140),
+      'Lesson sequence: ' + safeClip(guide.lessonLength || 'not specified', 120),
+      'Biology context: ' + safeClip(guide.biologyContext || 'not specified', 160),
+      'Anchor question: ' + safeClip(guide.biologyAnchor || 'not specified', 260),
+      'Assignment format: ' + safeClip(guide.assignmentFormat || 'not specified', 120),
+      'Learner support: ' + safeClip(guide.scaffoldLevel || 'not specified', 120),
+      'Diagnostic summary: ' + safeClip(guide.diagnostic || 'not provided', 420),
+      'Learning context: ' + safeClip(guide.learningContext || 'not specified', 120),
+      'Accessibility/pedagogy focus: ' + safeClip(guide.accessibilityFocus || 'not specified', 260),
+      'Learning route: ' + safeClip(guide.route || 'not specified', 120),
+      'Readiness: ' + safeClip(guide.readiness || 'not provided', 220),
+      'Local claim review: ' + safeClip(guide.claimReview || 'not provided', 320),
+      'Rubric feedback: ' + safeClip(guide.rubric || 'not provided', 420),
+      'Student observation: ' + safeClip(payload && payload.note, 700),
+      'Reply with plain text only.'
+    ];
+    return lines.join('\n');
+  }
+
+  function buildGuidePrompt(payload) {
+    var meta = payload && payload.meta ? payload.meta : {};
+    var guide = payload && payload.guide ? payload.guide : {};
+    var lines = [
+      'You are an AI GUIDANCE LAYER for a K-12 AlphaFold investigation.',
+      'Coach the student on scientific reasoning, not on personal genetics, diagnosis, treatment, ancestry, or patient-specific interpretation.',
+      'The tool sends structure metadata and student-written notes only. Do not ask for or repeat raw sequences or personal/family medical or genetic information.',
+      'RULES:',
+      '- Give 3 short bullets.',
+      '- Bullet 1: name what is strong or promising in their reasoning.',
+      '- Bullet 2: name the most important missing evidence or uncertainty.',
+      '- Bullet 3: give one concrete next action in the viewer or lab note.',
+      '- Match the selected grade band: use simpler model-literacy language for elementary grades and more technical validation language for AP/advanced students.',
+      '- Match the selected lesson sequence: keep launch guidance brief and make investigation guidance more evidence-rich.',
+      '- Use the biology context to choose relevant evidence, but do not infer function beyond what the student can support.',
+      '- Aim the next action at the selected assignment format, such as an exit ticket, lab note, discussion post, or mini-investigation.',
+      '- Match the learner-support scaffold: guided means simpler next steps; extension means stronger validation and evidence-hierarchy prompts.',
+      '- Use the diagnostic summary to target the highest-priority issue: privacy, overclaiming, missing evidence, missing limit, or validation.',
+      '- Use cautious language for AlphaFold predictions; predictions are hypotheses until supported by evidence.',
+      '- Do not write a final answer for the student.',
+      'CURRENT STRUCTURE CONTEXT:',
+      'Name: ' + safeClip(meta.name || meta.description || 'unknown', 160),
+      'Source/accession: ' + safeClip(meta.source || meta.accession || 'unknown', 120),
+      'Organism: ' + safeClip(meta.organism || 'unknown', 120),
+      'Components/length: ' + safeClip(meta.length || 'unknown', 120),
+      'Confidence summary: ' + safeClip(meta.confidence || 'not shown', 180),
+      'GUIDE STATE:',
+      'Current prompt: ' + safeClip(guide.currentPrompt || '', 240),
+      'Grade band: ' + safeClip(guide.gradeBand || 'not specified', 140),
+      'Grade tutorial: ' + safeClip(guide.gradeTutorial || 'not provided', 900),
+      'Lesson sequence: ' + safeClip(guide.lessonLength || 'not specified', 120),
+      'Lesson plan: ' + safeClip(guide.lessonSequence || 'not provided', 900),
+      'Biology context: ' + safeClip(guide.biologyContext || 'not specified', 160),
+      'Suggested public example: ' + safeClip(guide.suggestedExample || 'not specified', 160),
+      'Investigation brief: ' + safeClip(guide.investigationBrief || 'not provided', 900),
+      'Assignment format: ' + safeClip(guide.assignmentFormat || 'not specified', 120),
+      'LMS assignment: ' + safeClip(guide.lmsAssignment || 'not provided', 900),
+      'Learner support: ' + safeClip(guide.scaffoldLevel || 'not specified', 120),
+      'Scaffold support: ' + safeClip(guide.scaffoldSupport || 'not provided', 900),
+      'Confidence guide: ' + safeClip(guide.confidenceGuide || 'not provided', 900),
+      'Diagnostic summary: ' + safeClip(guide.diagnostic || 'not provided', 600),
+      'Learning context: ' + safeClip(guide.learningContext || 'not specified', 120),
+      'Accessibility/pedagogy focus: ' + safeClip(guide.accessibilityFocus || 'not specified', 260),
+      'Context-specific guidance: ' + safeClip(guide.contextGuidance || 'not specified', 260),
+      'Learning route: ' + safeClip(guide.route || 'not specified', 120),
+      'Readiness: ' + safeClip(guide.readiness || 'not provided', 220),
+      'Activity card: ' + safeClip(guide.activityCard || 'not provided', 360),
+      'Local claim review: ' + safeClip(guide.claimReview || 'not provided', 480),
+      'Rubric feedback: ' + safeClip(guide.rubric || 'not provided', 620),
+      'Completed steps: ' + safeClip(guide.completed || 'none', 160),
+      'Source confirmed: ' + (guide.sourceConfirmed ? 'yes' : 'no'),
+      'Observation: ' + safeClip(guide.observation || '', 700),
+      'Cautious claim: ' + safeClip(guide.claim || '', 700),
+      'Structure evidence: ' + safeClip(guide.evidence || '', 700),
+      'Limit or next test: ' + safeClip(guide.caution || '', 700),
+      'Reply with plain text only.'
+    ];
+    return lines.join('\n');
+  }
+
+  window.StemLab.registerTool('alphaFoldExplorer', {
+    icon: '\u03b1',
+    label: 'AlphaFold Explorer',
+    desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and guide students through classroom presets, grade-leveled lessons, biology-context investigation briefs, LMS-ready assignment packets, learner-support scaffolds, confidence/PAE interpretation, accessible claim-evidence-limit reasoning, local claim review, rubric feedback, and no automatic submission.',
+    color: 'teal',
+    category: 'science',
+    questHooks: [
+      { id: 'af_open', label: 'Open AlphaFold Explorer', icon: '\u03b1',
+        check: function (d) { return !!(d && d.opened); } },
+      { id: 'af_lookup', label: 'Load a public AlphaFold DB structure', icon: 'AF',
+        check: function (d) { return !!(d && (d.lookupCount || 0) >= 1); } },
+      { id: 'af_prepare', label: 'Prepare safe AlphaFold Server input', icon: '{}',
+        check: function (d) { return !!(d && (d.sequencePreparedCount || 0) >= 1); } },
+      { id: 'af_coach', label: 'Ask one structure-inspection question', icon: '?',
+        check: function (d) { return !!(d && (d.coachCount || 0) >= 1); } },
+      { id: 'af_ai_guide', label: 'Use AI guidance on a cautious claim', icon: 'AI',
+        check: function (d) { return !!(d && (d.guideCount || 0) >= 1); } }
+    ],
+    render: function (ctx) {
+      var React = ctx.React;
+      var h = React.createElement;
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var announceToSR = ctx.announceToSR;
+      var setLabToolData = ctx.setToolData;
+
+      var _win = React.useRef(null);
+      var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
+      var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
+      var progress = (ctx.toolData && ctx.toolData._alphaFoldExplorer) || {};
+      var openedCount = progress.openedCount || (progress.opened ? 1 : 0);
+      var lookupCount = progress.lookupCount || 0;
+      var preparedCount = progress.sequencePreparedCount || 0;
+      var guidanceCount = (progress.coachCount || 0) + (progress.guideCount || 0);
+
+      function metric(label, value, note) {
+        return h('div', { className: 'af-metric', role: 'listitem' },
+          h('span', { className: 'af-metric-label' }, label),
+          h('strong', { className: 'af-metric-value' }, value),
+          h('span', { className: 'af-metric-note' }, note));
+      }
+
+      function routeCard(step, title, body, complete, state) {
+        return h('article', { className: 'af-route-card', 'data-complete': complete ? 'true' : 'false' },
+          h('div', { className: 'af-route-kicker' },
+            h('span', null, 'Step ' + step),
+            h('span', { className: 'af-route-state' }, complete ? '\u2713 Complete' : state)),
+          h('h4', null, title),
+          h('p', null, body));
+      }
+
+      function bumpSlice(key) {
+        setLabToolData(function (prev) {
+          var cur = Object.assign({}, (prev && prev._alphaFoldExplorer) || {});
+          cur[key] = (cur[key] || 0) + 1;
+          if (key === 'openedCount') cur.opened = true;
+          var next = Object.assign({}, prev); next._alphaFoldExplorer = cur; return next;
+        });
+      }
+
+      React.useEffect(function () {
+        function onMsg(ev) {
+          var data = ev && ev.data;
+          if (!data || typeof data.type !== 'string') return;
+          if (data.type === 'allocaf-hello') {
+            try { if (ev.source) ev.source.postMessage({ type: 'allocaf-ready', ai: aiOn }, '*'); } catch (_) {}
+            setPopupState('open');
+            return;
+          }
+          if (data.type === 'allocaf-closed') { setPopupState('closed'); return; }
+          if (data.type === 'allocaf-db-hit') { bumpSlice('lookupCount'); return; }
+          if (data.type === 'allocaf-file-imported') { bumpSlice('fileImportCount'); return; }
+          if (data.type === 'allocaf-sequence-prepared') { bumpSlice('sequencePreparedCount'); return; }
+          var isCoachRequest = data.type === 'allocaf-ai-request';
+          var isGuideRequest = data.type === 'allocaf-ai-guide-request';
+          if ((!isCoachRequest && !isGuideRequest) || !data.id) return;
+          var replyTo = ev.source || _win.current;
+          var respond = function (payload) {
+            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocaf-ai-response', id: data.id }, payload), '*'); } catch (_) {}
+          };
+          if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
+          bumpSlice(isGuideRequest ? 'guideCount' : 'coachCount');
+          Promise.resolve().then(function () {
+            return ctx.callGemini(isGuideRequest ? buildGuidePrompt(data) : buildCoachPrompt(data), false, false, 0.7);
+          }).then(function (resp) {
+            var text = (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
+            respond({ text: String(text || '').slice(0, 1200) });
+          }).catch(function (e) {
+            respond({ error: String((e && e.message) || e).slice(0, 120) });
+          });
+        }
+        window.addEventListener('message', onMsg);
+        return function () { window.removeEventListener('message', onMsg); };
+      }, [aiOn]);
+
+      function openExplorer() {
+        var existing = _win.current;
+        if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
+        var lang = (ctx.lang || 'en');
+        var w = null;
+        try { w = window.open(ALPHAFOLD_URL + '&lang=' + encodeURIComponent(lang), 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
+        if (!w) {
+          setPopupState('blocked');
+          if (announceToSR) announceToSR(t('stem.alphaFold.popup_blocked', 'The AlphaFold Explorer window was blocked. Allow pop-ups for this page, then try again.'));
+          return;
+        }
+        _win.current = w;
+        setPopupState('opening');
+        bumpSlice('openedCount');
+        if (announceToSR) announceToSR(t('stem.alphaFold.opened_sr', 'Opened AlphaFold Explorer in a new window.'));
+      }
+
+      var statusText = popupState === 'open'
+        ? t('stem.alphaFold.status_open', 'Explorer connected')
+        : popupState === 'opening'
+          ? t('stem.alphaFold.status_opening', 'Opening companion window')
+          : popupState === 'blocked'
+            ? t('stem.alphaFold.status_blocked', 'Pop-up needs permission')
+            : t('stem.alphaFold.status_ready', 'Ready to investigate');
+
+      return h('main', { className: 'af-launcher', 'data-alphafold-mission': 'true' },
+        h('header', { className: 'af-mission' },
+          h('div', { className: 'af-mission-top' },
+            h('div', null,
+              h('p', { className: 'af-eyebrow' }, t('stem.alphaFold.mission_label', 'Structural biology mission')),
+              h('h2', { className: 'af-title' }, t('stem.alphaFold.title', 'AlphaFold Explorer')),
+              h('p', { className: 'af-subtitle' },
+                t('stem.alphaFold.mission_blurb', 'Explore a public protein prediction, inspect confidence and shape, then build a cautious claim from visible evidence.'))),
+            h('div', { className: 'af-status', role: 'status', 'aria-live': 'polite' }, statusText)),
+          h('div', { className: 'af-metrics', role: 'list', 'aria-label': t('stem.alphaFold.progress_label', 'AlphaFold investigation progress') },
+            metric(t('stem.alphaFold.metric_launches', 'Explorer launches'), String(openedCount), t('stem.alphaFold.metric_launches_note', 'companion-window sessions')),
+            metric(t('stem.alphaFold.metric_structures', 'Public structures'), String(lookupCount), t('stem.alphaFold.metric_structures_note', 'database lookups')),
+            metric(t('stem.alphaFold.metric_prepared', 'Inputs prepared'), String(preparedCount), t('stem.alphaFold.metric_prepared_note', 'safe classroom samples')),
+            metric(t('stem.alphaFold.metric_guidance', 'Reasoning checks'), String(guidanceCount), aiOn ? t('stem.alphaFold.metric_ai_on', 'AI guidance available') : t('stem.alphaFold.metric_ai_off', 'built-in prompts active'))),
+          h('div', { className: 'af-actions' },
+            h('button', {
+              type: 'button',
+              onClick: openExplorer,
+              className: 'af-primary',
+              'aria-label': t('stem.alphaFold.open_title', 'Open AlphaFold Explorer in a new window')
+            }, popupState === 'open' ? t('stem.alphaFold.refocus', 'Return to AlphaFold Explorer') : t('stem.alphaFold.open', 'Open AlphaFold Explorer')),
+            h('span', { className: 'af-action-note' },
+              t('stem.alphaFold.action_note', 'Opens a companion window. Keep AlloFlow open for progress and optional guidance.')))),
+
+        popupState === 'blocked' && h('div', { className: 'af-alert', role: 'alert' },
+          t('stem.alphaFold.blocked_note', 'Pop-up blocked - allow pop-ups for this page and try again. '),
+          h('a', {
+            href: ALPHAFOLD_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en'),
+            target: '_blank',
+            rel: 'noopener'
+          }, t('stem.alphaFold.blocked_link', 'Open AlphaFold Explorer directly'))),
+
+        h('section', { className: 'af-section', 'aria-labelledby': 'af-route-heading' },
+          h('div', { className: 'af-section-head' },
+            h('div', null,
+              h('h3', { id: 'af-route-heading' }, t('stem.alphaFold.route_title', 'Your investigation route')),
+              h('p', null, t('stem.alphaFold.route_subtitle', 'Move from model viewing to evidence-based explanation.'))),
+            h('span', { className: 'af-route-state' }, (openedCount > 0 ? 1 : 0) + (lookupCount > 0 ? 1 : 0) + (guidanceCount > 0 ? 1 : 0) + ' / 3')),
+          h('div', { className: 'af-route' },
+            routeCard('01', t('stem.alphaFold.route_launch', 'Launch safely'), t('stem.alphaFold.route_launch_body', 'Use a public, synthetic, or teacher-approved sample—never personal genetic data.'), openedCount > 0, t('stem.alphaFold.route_launch_state', 'Start here')),
+            routeCard('02', t('stem.alphaFold.route_inspect', 'Inspect the model'), t('stem.alphaFold.route_inspect_body', 'Compare folds, domains, surfaces, pLDDT confidence, and PAE uncertainty.'), lookupCount > 0, t('stem.alphaFold.route_inspect_state', 'Observe next')),
+            routeCard('03', t('stem.alphaFold.route_explain', 'Explain cautiously'), t('stem.alphaFold.route_explain_body', 'Connect one visible feature to evidence, uncertainty, and a useful next test.'), guidanceCount > 0, t('stem.alphaFold.route_explain_state', 'Build a claim')))),
+
+        h('section', { className: 'af-support-grid', 'aria-label': t('stem.alphaFold.support_label', 'Tutorial and classroom data guidance') },
+          h('details', { className: 'af-details' },
+            h('summary', null, t('stem.alphaFold.tutorial_title', 'How AlphaFold investigations work (4 steps)')),
+            h('ol', null,
+              h('li', null, t('stem.alphaFold.tutorial_1', 'AlphaFold predicts a protein 3D structure from an amino acid sequence; AlphaFold DB provides public predicted structures.')),
+              h('li', null, t('stem.alphaFold.tutorial_2', 'Start from a classroom preset or choose a grade-level tutorial, lesson length, biology context, assignment format, and support level.')),
+              h('li', null, t('stem.alphaFold.tutorial_3', 'Use cautious wording: the model suggests evidence, but it is not final proof by itself.')),
+              h('li', null, t('stem.alphaFold.tutorial_4', 'Only prepare JSON for public, synthetic, or teacher-approved classroom samples; the explorer does not automatically submit sequences.')))),
+          h('aside', { className: 'af-guardrail', 'aria-labelledby': 'af-guardrail-heading' },
+            h('h3', { id: 'af-guardrail-heading' }, t('stem.alphaFold.guardrail_title', 'Classroom data boundary')),
+            h('p', null, t('stem.alphaFold.guardrail1', 'Do not enter sequences from yourself, classmates, family members, patients, private genetic tests, or medical reports.')),
+            h('p', null, aiOn
+              ? t('stem.alphaFold.ai_on', 'AI guidance receives structure metadata, learner context, and student observations or claims—not full protein sequences.')
+              : t('stem.alphaFold.ai_off', 'AI hints are off. The explorer still works with built-in inspection prompts.')))),
+
+        h('p', { className: 'af-credit' },
+          t('stem.alphaFold.credit', 'Data/viewing: AlphaFold Protein Structure Database by Google DeepMind and EMBL-EBI; Mol* viewer under MIT license. AlphaFold Server opens separately for non-commercial research workflows. Internet is required for database lookup and web viewing.'))
+      );
+    }
+  });
+  console.log('[StemLab] stem_tool_alphafold.js loaded - AlphaFold Explorer launcher');
+})();

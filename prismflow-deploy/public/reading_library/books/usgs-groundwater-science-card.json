@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-groundwater-science-card",
+  "title": "USGS Groundwater Science",
+  "description": "A USGS source card about aquifers, wells, groundwater flow, and water availability.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Groundwater",
+    "Water",
+    "Earth science",
+    "Environmental science"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/water-science-school/science/groundwater-what-groundwater"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS groundwater resources explain aquifers, wells, recharge, pumping, water tables, and the connection between groundwater and surface water."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for systems thinking, diagrams, local water questions, and evaluating how communities balance water needs with environmental limits."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS education and science materials are generally public domain, while linked media and partner content should be checked for item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-climate-kids-water-cycle-card",
+  "title": "NASA Climate Kids: Water Cycle",
+  "description": "A NASA Climate Kids source card about water movement, weather, climate, and Earth systems.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Water cycle",
+    "Climate",
+    "Earth science",
+    "Weather"
+  ],
+  "authors": [
+    "NASA Climate Kids"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Climate Kids",
+    "url": "https://climatekids.nasa.gov/water-cycle/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Climate Kids explains the water cycle for learners who are ready to connect evaporation, clouds, precipitation, runoff, oceans, and climate patterns."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source as an accessible bridge from elementary water-cycle vocabulary toward older-student Earth systems reading."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 62
+  }
+}

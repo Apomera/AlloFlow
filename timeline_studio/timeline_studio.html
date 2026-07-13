@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Timeline Studio</title>
+<!--
+  AlloFlow Timeline Studio — TimelineJS renderer (companion window).
+
+  Opened by stem_lab/stem_tool_timeline.js with window.open. The interactive
+  timeline is TimelineJS3 by Northwestern University Knight Lab
+  (timeline.knightlab.com), free and open source under the Mozilla Public
+  License. Credit and thanks to the Knight Lab team. The library loads from
+  Knight Lab's CDN (internet required).
+
+  The opener AlloFlow window HOLDS the timeline data (either AI-generated from
+  a reading, or hand-built here) and sends it via postMessage:
+    this ── allotimeline-hello ────▶ opener (opener replies -data { timeline })
+    opener ── allotimeline-data ───▶ this (render / re-render)
+  With no opener, a built-in sample + the manual builder still work. Nothing
+  here is persisted.
+-->
+<link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #fb7185; --accent2: #f43f5e; --ok: #4ade80;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 11.5px; }
+  header .spacer { margin-left: auto; }
+  header button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  header button:hover { border-color: var(--accent); }
+  #timeline-embed { flex: 1 1 auto; min-height: 0; background: #fff; }
+  .empty { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; color: var(--dim); text-align: center; padding: 24px; }
+  .empty div { max-width: 460px; line-height: 1.6; }
+  /* Manual builder drawer */
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: 340px; max-width: 88vw; background: var(--panel); border-left: 1px solid var(--line); transform: translateX(100%); transition: transform 0.2s; z-index: 50; display: flex; flex-direction: column; overflow-y: auto; }
+  .drawer.open { transform: translateX(0); }
+  .drawer h2 { font-size: 13px; margin: 0; padding: 12px 14px 4px; color: #fecdd3; }
+  .drawer .body { padding: 6px 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .drawer label { font-size: 11px; color: var(--dim); font-weight: 700; }
+  .drawer input, .drawer textarea { width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 7px 9px; font-size: 13px; font-family: inherit; }
+  .drawer textarea { resize: vertical; min-height: 60px; }
+  .row { display: flex; gap: 6px; }
+  .row > div { flex: 1; }
+  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .evlist { font-size: 12px; color: var(--dim); }
+  .evlist .ev { padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .privacy { padding: 8px 14px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; margin-top: auto; }
+  .credit { padding: 4px 14px 6px; font-size: 10px; color: #64748b; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🕰️ Timeline Studio</h1>
+  <span class="sub">TimelineJS by Knight Lab (open source, MPL) + AlloFlow</span>
+  <span class="spacer"></span>
+  <button id="builderBtn" type="button" aria-label="Open the manual event builder">✍️ Add events</button>
+</header>
+<div id="timeline-embed"></div>
+<div class="empty" id="empty">
+  <div>
+    <p><b>No timeline yet.</b></p>
+    <p>Go back to AlloFlow, paste a reading, and press <b>Build the timeline</b> — it will appear here. Or press <b>✍️ Add events</b> to build one by hand.</p>
+  </div>
+</div>
+
+<aside class="drawer" id="drawer" aria-label="Manual timeline builder">
+  <h2>Build a timeline by hand</h2>
+  <div class="body">
+    <div>
+      <label for="mHeadline">Event headline</label>
+      <input id="mHeadline" type="text" placeholder="e.g. First Moon landing">
+    </div>
+    <div class="row">
+      <div><label for="mYear">Year</label><input id="mYear" type="text" inputmode="numeric" placeholder="1969"></div>
+      <div><label for="mMonth">Month</label><input id="mMonth" type="text" inputmode="numeric" placeholder="7"></div>
+      <div><label for="mDay">Day</label><input id="mDay" type="text" inputmode="numeric" placeholder="20"></div>
+    </div>
+    <div>
+      <label for="mText">Description (optional)</label>
+      <textarea id="mText" placeholder="One or two sentences about what happened."></textarea>
+    </div>
+    <button class="go" id="addEventBtn" type="button">＋ Add to timeline</button>
+    <div class="evlist" id="evList"></div>
+  </div>
+  <div class="privacy">Nothing here is saved — the timeline lives in this window only.</div>
+</aside>
+
+<div class="credit">Timeline rendering by <a href="https://timeline.knightlab.com" target="_blank" rel="noopener noreferrer" style="color:#94a3b8">TimelineJS · Knight Lab</a> (MPL). Thank you.</div>
+
+<script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var embed = document.getElementById('timeline-embed');
+  var empty = document.getElementById('empty');
+  var drawer = document.getElementById('drawer');
+  var builderBtn = document.getElementById('builderBtn');
+  var addEventBtn = document.getElementById('addEventBtn');
+  var evList = document.getElementById('evList');
+
+  var data = null;   // current TimelineJS object
+
+  function toOpener(payload) {
+    try { if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; } } catch (_) {}
+    return false;
+  }
+
+  function ensureData() {
+    if (!data) data = { title: { text: { headline: 'My Timeline', text: 'Add events to build your timeline.' } }, events: [] };
+    if (!Array.isArray(data.events)) data.events = [];
+    return data;
+  }
+
+  function render() {
+    if (!data || !Array.isArray(data.events) || data.events.length === 0) {
+      empty.style.display = 'flex';
+      embed.innerHTML = '';
+      return;
+    }
+    empty.style.display = 'none';
+    embed.innerHTML = '';
+    if (typeof window.TL === 'undefined' || !window.TL.Timeline) {
+      embed.innerHTML = '<div style="padding:24px;color:#334155">The timeline library did not load. Check your internet connection and reopen this window.</div>';
+      return;
+    }
+    try {
+      // Recreate the timeline each time — TimelineJS has no clean in-place reload.
+      window._alloTimeline = new window.TL.Timeline('timeline-embed', data, { timenav_position: 'bottom', initial_zoom: 2, hash_bookmark: false });
+    } catch (e) {
+      embed.innerHTML = '<div style="padding:24px;color:#334155">Could not render the timeline: ' + String((e && e.message) || e) + '</div>';
+    }
+  }
+
+  function refreshEvList() {
+    var d = ensureData();
+    if (!d.events.length) { evList.innerHTML = '<div class="ev">No events yet.</div>'; return; }
+    evList.innerHTML = '';
+    d.events.forEach(function (e) {
+      var div = document.createElement('div');
+      div.className = 'ev';
+      var yr = (e.start_date && e.start_date.year) || '?';
+      div.textContent = yr + ' — ' + ((e.text && e.text.headline) || '(untitled)');
+      evList.appendChild(div);
+    });
+  }
+
+  // ── Bridge with opener ──
+  window.addEventListener('message', function (event) {
+    var msg = event && event.data;
+    if (!msg || typeof msg.type !== 'string') return;
+    if (msg.type === 'allotimeline-data' && msg.timeline) {
+      data = msg.timeline;
+      ensureData();
+      render();
+      refreshEvList();
+    }
+  });
+
+  // ── Manual builder ──
+  builderBtn.addEventListener('click', function () {
+    drawer.classList.toggle('open');
+    refreshEvList();
+  });
+  addEventBtn.addEventListener('click', function () {
+    var headline = document.getElementById('mHeadline').value.trim();
+    var year = document.getElementById('mYear').value.trim();
+    var month = document.getElementById('mMonth').value.trim();
+    var day = document.getElementById('mDay').value.trim();
+    var text = document.getElementById('mText').value.trim();
+    if (!headline || !year) {
+      if (!year) document.getElementById('mYear').focus(); else document.getElementById('mHeadline').focus();
+      return;
+    }
+    var d = ensureData();
+    var sd = { year: year };
+    if (month) sd.month = month;
+    if (day) sd.day = day;
+    d.events.push({ start_date: sd, text: { headline: headline, text: text } });
+    // Sort chronologically by year (numeric), then month, then day.
+    d.events.sort(function (a, b) {
+      var ay = parseInt((a.start_date && a.start_date.year) || 0, 10), by = parseInt((b.start_date && b.start_date.year) || 0, 10);
+      if (ay !== by) return ay - by;
+      var am = parseInt((a.start_date && a.start_date.month) || 0, 10), bm = parseInt((b.start_date && b.start_date.month) || 0, 10);
+      if (am !== bm) return am - bm;
+      return parseInt((a.start_date && a.start_date.day) || 0, 10) - parseInt((b.start_date && b.start_date.day) || 0, 10);
+    });
+    document.getElementById('mHeadline').value = '';
+    document.getElementById('mYear').value = '';
+    document.getElementById('mMonth').value = '';
+    document.getElementById('mDay').value = '';
+    document.getElementById('mText').value = '';
+    document.getElementById('mHeadline').focus();
+    render();
+    refreshEvList();
+    toOpener({ type: 'allotimeline-manual-added' });
+  });
+
+  // ── Boot ──
+  var hello = function () { toOpener({ type: 'allotimeline-hello' }); };
+  hello();
+  setTimeout(hello, 800);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'allotimeline-closed' }); });
+})();
+</script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 # Typing Practice Module — PROGRESS
 
+> **Historical handoff, not current feature status (2026-07-09):** This April 2026 scheduled-agent log is preserved as a record of Typing Practice drift concerns. Re-verify against current source/tests before assuming any listed feature is present, missing, or deploy-ready.
+
 Handoff log for the scheduled remote agent (trigger `trig_01JVqwNDJ7MCKTyXAj26gkTm`).
 Updated by the chat session on **2026-04-23** (sixteen refinement passes after
 initial deploy). The scheduled trigger is currently **disabled** — Aaron
