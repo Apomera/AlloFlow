@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-217c1eaa-andiswa-foutb-l",
+  "title": "Andiswa foutbòl",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "African Storybook Initiative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Initiative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ilT4d1OEUU"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_02_Image_0001.png",
+      "text": "Andiswa ap gade ti gason yo kap jwe foutbòl. Li te swete jwenn yo. Li te mande antrenè a si li ka pratike avèk yo."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_03_Image_0001.png",
+      "text": "Antrenè a mete men l' sou ranch li."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_04_Image_0001.png",
+      "text": "Ti gason yo te di l' ale jwe volebòl. Yo te di ke volebòl se pou ti fi, e foutbòl se pou ti gason. Andiswa te fache."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_05_Image_0001.png",
+      "text": "Nan demen, lekòl la te gen yon gwo match foutbòl. Antrenè a te enkyete paske pi bon jwè la te malad e pa t' kapab jwe."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_06_Image_0001.png",
+      "text": "Andiswa kouri al kote antrenè a li mande l' pou li kite l' jwe. Antrenè a pat sèten de sa li te dwe fè. Lè sa a, li te deside ke Andiswa te kapab rantre nan ekip la."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_07_Image_0001.png",
+      "text": "Jwèt la te difisil. Okenn moun pa te bay yon gòl pa mitan."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_08_Image_0001.png",
+      "text": "Pandan dezyèm mitan nan match la, youn nan ti gason yo te pase boul la bay Andiswa. Li te deplase trè vit nan direksyon pou kan. Li kouri dèyè boul la di, e te bay yon gòl."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_09_Image_0001.png",
+      "text": "Foul moun yo te gen kè kontan. Depi jou sa a, yo te tou pèmèt ti fi yo jwe foutbòl nan lekòl la."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 197
+  }
+}

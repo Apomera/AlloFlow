@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-12T21:28:46.305Z",
+ "generatedAt": "2026-07-13T13:57:56.111Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -46,6 +46,11 @@
    "name": "Urdu",
    "code": "ur",
    "count": 32
+  },
+  {
+   "name": "Kinyarwanda",
+   "code": "rw",
+   "count": 30
   },
   {
    "name": "German",
@@ -136,6 +141,11 @@
    "name": "Russian",
    "code": "ru",
    "count": 25
+  },
+  {
+   "name": "Haitian Creole",
+   "code": "ht",
+   "count": 23
   },
   {
    "name": "Filipino",
@@ -233,14 +243,14 @@
    "count": 10
   },
   {
-   "name": "Kinyarwanda",
-   "code": "rw",
-   "count": 10
-  },
-  {
    "name": "Sinhala",
    "code": "si",
    "count": 10
+  },
+  {
+   "name": "Lingala",
+   "code": "ln",
+   "count": 9
   },
   {
    "name": "Lao",
@@ -263,9 +273,19 @@
    "count": 5
   },
   {
-   "name": "Haitian Creole",
-   "code": "ht",
+   "name": "Somali",
+   "code": "so",
+   "count": 5
+  },
+  {
+   "name": "Ukrainian",
+   "code": "uk",
    "count": 3
+  },
+  {
+   "name": "Kirundi",
+   "code": "rn",
+   "count": 2
   }
  ],
  "books": [
@@ -91766,6 +91786,1813 @@
    "pageCount": 116,
    "wordCount": 51303,
    "file": "books/gutenberg-ebook-7500-heidis-lehr-und-wanderjahre.json"
+  },
+  {
+   "slug": "bloom-7207291a-waxtarka-xoolaha",
+   "title": "Waxtarka Xoolaha",
+   "description": "A Somali picture book from Bloom Library.",
+   "language": "Somali",
+   "langCode": "so",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HXkBdhIECE"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f7207291a-855c-487a-9420-6c8512e4f0cc%2f4.4a+Waxtarka+Xoolaha%2fAOR_J132.png",
+   "authors": [
+    "RTI International"
+   ],
+   "illustrators": [],
+   "publisher": "RTI International",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 1417,
+   "file": "books/bloom-7207291a-waxtarka-xoolaha.json"
+  },
+  {
+   "slug": "bloom-09bb4857-beer-muus-iyo-liin-ah",
+   "title": "Beer Muus iyo Liin ah.",
+   "description": "A Somali picture book from Bloom Library.",
+   "language": "Somali",
+   "langCode": "so",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dChoCP6yl5"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil.org%2f09bb4857-3a2c-48f3-8c04-4f389d0d69c1%2f1.1b+Beer+Muus+iyo+Liin+ah%2fAOR_OVT015.png",
+   "authors": [
+    "RTI International"
+   ],
+   "illustrators": [],
+   "publisher": "RTI International",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 108,
+   "file": "books/bloom-09bb4857-beer-muus-iyo-liin-ah.json"
+  },
+  {
+   "slug": "bloom-card-91d6d28d-hal-il-le-lix-lugood-nimco",
+   "title": "Hal il le, Lix-lugood NIMCO",
+   "description": "Nimco waa hal Geela oo niyad jabsan oo  leh il keliya iyo lix lugood. Waxay keliya rabtaa inay ka farxiso mulkiilaheeda Cabdi iyo inay la jaan qaado xoolaha kale. Si kastaba ay isku dayday in ay si toos ah u socoto, haddana Nimco waxay keliya awoodaa inay iska daba wareegaaleysato.\n\nIlaa….. Intii ninkii qalaadaa ee naxariista badnaa ka imaanayey…",
+   "language": "Somali",
+   "langCode": "so",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY-NC-ND",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/uEDqddUFcr"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/uEDqddUFcr%2f1745998719549%2fTsega+-+Somali%2fTsega_English-Prophet+Isa_1.jpg",
+   "authors": [
+    "Hopeful Hearts"
+   ],
+   "illustrators": [],
+   "publisher": "Hopeful Hearts",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 119,
+   "file": "books/bloom-card-91d6d28d-hal-il-le-lix-lugood-nimco.json"
+  },
+  {
+   "slug": "bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii",
+   "title": "04 - Bisad iyo eyga iyo koofiyadihii",
+   "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again. Bloom Reader layout",
+   "language": "Somali",
+   "langCode": "so",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/SD1m3FG2lz"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/SD1m3FG2lz%2f1734890728814%2f04+-+Bisad+iyo+eyga+iyo+koofiyadihii%2fCover22.jpg",
+   "authors": [
+    "SIL Education for Life"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Education for Life",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 83,
+   "file": "books/bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii.json"
+  },
+  {
+   "slug": "bloom-card-e63e8f4b-a-aadana-adam",
+   "title": "A AADANA ADAM",
+   "description": "This is the first draft of the first  lesson in a Somali to English transition primer.  Questions and suggestions for improvement are welcome!",
+   "language": "Somali",
+   "langCode": "so",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Primer"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/bqQh1t1WuM"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/salt%40arriveministries.org%2fe63e8f4b-4491-496f-aba3-6713451b8794%2fA++++AADAN++A++++ADAM%2fADAM.jpg",
+   "authors": [
+    "SALT Somali Adult Literacy Training"
+   ],
+   "illustrators": [],
+   "publisher": "SALT Somali Adult Literacy Training",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 81,
+   "file": "books/bloom-card-e63e8f4b-a-aadana-adam.json"
+  },
+  {
+   "slug": "bloom-fc107a82-moko-mibale-misatu",
+   "title": "Moko Mibale Misatu",
+   "description": "Count in your own language!",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jk3n5vAMOZ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ffc107a82-c499-4e16-8c3f-22fc4b65ebdb%2fS1+Moko+Mibale+Misatu+-+Copy%2fBeans+Cover.jpg",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 10,
+   "file": "books/bloom-fc107a82-moko-mibale-misatu.json"
+  },
+  {
+   "slug": "bloom-4c3ddfc5-batu-nioso-baza-lolenge-moko-te",
+   "title": "Batu nioso baza lolenge moko te",
+   "description": "People come in all shapes and sizes and everyone is important.",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YITwhfDi8m"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2fDifferent+Cover.jpg",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 16,
+   "file": "books/bloom-4c3ddfc5-batu-nioso-baza-lolenge-moko-te.json"
+  },
+  {
+   "slug": "bloom-e42812f0-nzoto",
+   "title": "Nzoto",
+   "description": "Do you know all the parts of the body?",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ourzqcYc4y"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fe42812f0-90a9-47b7-bd18-0189992dc3de%2fS5+Nzoto%2fBody+cover.jpg",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 10,
+   "file": "books/bloom-e42812f0-nzoto.json"
+  },
+  {
+   "slug": "bloom-2cf4db1c-elongi",
+   "title": "Elongi",
+   "description": "Can you name all the parts of the face?",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/pSDQhr4m5w"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2cf4db1c-fd57-4231-84ee-f747221e7ef6%2fS4+Elongi%2fFace+cover.jpg",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 12,
+   "file": "books/bloom-2cf4db1c-elongi.json"
+  },
+  {
+   "slug": "bloom-2042d454-baniama-ndaku",
+   "title": "Baniama Ndaku",
+   "description": "Do you see these animals in the countryside where you live?",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/8eEJ6ys4sk"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2fDonkey+Cover.jpg",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 14,
+   "file": "books/bloom-2042d454-baniama-ndaku.json"
+  },
+  {
+   "slug": "bloom-a66961a3-yesu-atamboli-likolo-ya-ebale",
+   "title": "Yesu atamboli likolo ya ebale",
+   "description": "A Bible Story based on Matthew 14:22-33.",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Spiritual"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cWazvuhTUU"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fa66961a3-41c3-4b41-ad1e-9f41e38af6e3%2fJ2+Jesus+Walks+on+Water+2%2fJesus+Walks+Cover4.png",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 341,
+   "file": "books/bloom-a66961a3-yesu-atamboli-likolo-ya-ebale.json"
+  },
+  {
+   "slug": "bloom-f21242ab-yesu-na-zashe",
+   "title": "Yesu na Zashe",
+   "description": "A Bible story based on Luke 19:1-10.",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Spiritual"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cmZchxC4hB"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+Cover.png",
+   "authors": [
+    "Little Zebra Books"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 257,
+   "file": "books/bloom-f21242ab-yesu-na-zashe.json"
+  },
+  {
+   "slug": "bloom-card-5aa6731c-21-mbua-na-mbwa-na-minzoto",
+   "title": "21 - Mbua na Mbwa na Minzoto",
+   "description": "Sat ek Lisien anvi anvol ver bann zetwal...",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cH81MmrX47"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/cH81MmrX47%2f1735871081161%2f21+-+Sat+ek+Lisien+ek+bann+Zetwal%2fcoverImagecurved.jpg",
+   "authors": [
+    "SIL Education for Life"
+   ],
+   "illustrators": [],
+   "publisher": "SIL Education for Life",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 70,
+   "file": "books/bloom-card-5aa6731c-21-mbua-na-mbwa-na-minzoto.json"
+  },
+  {
+   "slug": "bloom-card-c504cffa-kotela-na-nsango-malamu-ya-luka",
+   "title": "Kotela na Nsango Malamu ya Luka",
+   "description": "Ce livre visent des gens qui enseignent la Bible. Nous voulons les aider à comprendre le contexte littéraire interne du livre concerné.",
+   "language": "Lingala",
+   "langCode": "ln",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Spiritual"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/VjQjvOuwXT"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_morgan%40sil.org%2fc504cffa-ab35-42a8-8325-63c970266be7%2fIntroduction+%c3%a0+l+Evangile+de+Luc%2fGT4.png",
+   "authors": [
+    "Wycliffe Bible Translators, Inc"
+   ],
+   "illustrators": [],
+   "publisher": "Wycliffe Bible Translators, Inc",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 83,
+   "file": "books/bloom-card-c504cffa-kotela-na-nsango-malamu-ya-luka.json"
+  },
+  {
+   "slug": "bloom-705de33b-umuserebanyi-n-imfyisi",
+   "title": "Umuserebanyi n'imfyisi",
+   "description": "A Kirundi picture book from Bloom Library.",
+   "language": "Kirundi",
+   "langCode": "rn",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/AhXAfoMwCD"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic6.jpg",
+   "authors": [
+    "FH Bdi"
+   ],
+   "illustrators": [],
+   "publisher": "FH Bdi",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 131,
+   "file": "books/bloom-705de33b-umuserebanyi-n-imfyisi.json"
+  },
+  {
+   "slug": "bloom-d4c391f7-ico-udashaka-ko-bagukorera-ntugikorere-uwundi",
+   "title": "Ico udashaka ko bagukorera ntugikorere uwundi",
+   "description": "A Kirundi picture book from Bloom Library.",
+   "language": "Kirundi",
+   "langCode": "rn",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ZXLGvubVTf"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_Pc15.png",
+   "authors": [
+    "FH Burundi"
+   ],
+   "illustrators": [],
+   "publisher": "FH Burundi",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 169,
+   "file": "books/bloom-d4c391f7-ico-udashaka-ko-bagukorera-ntugikorere-uwundi.json"
+  },
+  {
+   "slug": "bloom-5a8f7349-untitled",
+   "title": "Хто вкрав посмішку мого брата?",
+   "description": "Bhaiya doesn't feel like playing these days. Could it be because of his new monster friend Dukduk, who is always hanging around him? No one in the family takes Bhaiya seriously. But Chiru knows there's more than what meets the eye. A story about the lingering effects of depression.",
+   "language": "Ukrainian",
+   "langCode": "uk",
+   "isRtl": true,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jsGrv9V0Av"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_1S.png",
+   "authors": [
+    "Education Above All (EAA)"
+   ],
+   "illustrators": [],
+   "publisher": "Education Above All (EAA)",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 637,
+   "file": "books/bloom-5a8f7349-untitled.json"
+  },
+  {
+   "slug": "bloom-card-027ed695-1-1-1-1-1-2-1-3-1-4-1-5-1-6",
+   "title": "Доброго дня!1.1 Урок УЖМ1.1 Як привітатись та попрощатись; 1.2 Представитись;1.3 Звідки ви?; 1.4 Розповісти про себе; 1.5 Розмова; 1.6 Український алфавіт.",
+   "description": "http://localhost:8089/bloom/C:/Users/Lenovo T560/AppData/Local/Temp/blooma2v5zo5g.htm",
+   "language": "Ukrainian",
+   "langCode": "uk",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Primer"
+   ],
+   "license": "CC BY-NC-ND",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/JIExBpIJdG"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/JIExBpIJdG%2f1781703957095%2f%d0%94%d0%be%d0%b1%d1%80%d0%be%d0%b3%d0%be+%d0%b4%d0%bd%d1%8f!1.1+%d0%a3%d1%80%d0%be%d0%ba+%d0%a3%d0%96%d0%9c1.1+%d0%af%d0%ba+%d0%bf%d1%80%d0%b8%d0%b2%d1%96%d1%82%d0%b0%d1%82%d0%b8%d1%81%d1%8c+%d1%82%d0%b0+%d0%bf%d0%be%d0%bf%d1%80%2ffile_00000000b034720a8ab6233ab546b05b+(2).jpg",
+   "authors": [
+    "Anatolii Khyliuk"
+   ],
+   "illustrators": [],
+   "publisher": "Anatolii Khyliuk",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 78,
+   "file": "books/bloom-card-027ed695-1-1-1-1-1-2-1-3-1-4-1-5-1-6.json"
+  },
+  {
+   "slug": "bloom-card-eae77629-1-2-2-1-2-2-2-3-2-4-2-5-2-6",
+   "title": "Доброго дня!1.2 Граматика2.1 Запитання, 2.2 Відмінювання дієслова, 2.3 Привітання, 2.4 Попрощатися, 2.5 Ім'я та Прізвище, 2.6 Походження",
+   "description": "A Ukrainian picture book, readable free at Bloom Library.",
+   "language": "Ukrainian",
+   "langCode": "uk",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Primer"
+   ],
+   "license": "CC BY-NC-ND",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/20ZWswORF7"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/20ZWswORF7%2f1781704041595%2f1+1+%d0%94%d0%be%d0%b1%d1%80%d0%be%d0%b3%d0%be+%d0%b4%d0%bd%d1%8f!+1.2+%d0%93%d1%80%d0%b0%d0%bc%d0%b0%d1%82%d0%b8%d0%ba%d0%b0+2.1+%d0%97%d0%b0%d0%bf%d0%b8%d1%82%d0%b0%d0%bd%d0%bd%d1%8f++2.2%2ffile_0000000014c071f48dfd86f611469585+(2)2.jpg",
+   "authors": [
+    "Anatolii Khyliuk"
+   ],
+   "illustrators": [],
+   "publisher": "Anatolii Khyliuk",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 72,
+   "file": "books/bloom-card-eae77629-1-2-2-1-2-2-2-3-2-4-2-5-2-6.json"
+  },
+  {
+   "slug": "bloom-8f9b9b74-bibin",
+   "title": "Bibin",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ShL0un2KCv"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ShL0un2KCv%2f1768362077162%2fKarOsi+Tetenyinte%2f4l1-p0.jpg",
+   "authors": [
+    "NABU.ORG, Laforest Bichly-Marie-Gaëlle"
+   ],
+   "illustrators": [],
+   "publisher": "NABU.ORG, Laforest Bichly-Marie-Gaëlle",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 150,
+   "file": "books/bloom-8f9b9b74-bibin.json"
+  },
+  {
+   "slug": "bloom-5d5ec6d5-bibin",
+   "title": "Bibin",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/vGDLYDT5vi"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kendrajoseph1997%40gmail.com%2f5d5ec6d5-712c-416f-b569-2cd593ea44c4%2flittle+sally%2f4l1-p0.jpg",
+   "authors": [
+    "Bloom Library community"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 150,
+   "file": "books/bloom-5d5ec6d5-bibin.json"
+  },
+  {
+   "slug": "bloom-873ac958-david-e-golyat",
+   "title": "David e Golyat",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ExZyKj82s2"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/pcvcwhcomoros%40gmail.com%2f873ac958-694d-4b56-87fa-1f2642b6d675%2fDawud+na+Jalut%2fimage.png",
+   "authors": [
+    "Cam Houser"
+   ],
+   "illustrators": [],
+   "publisher": "Cam Houser",
+   "hasAudio": false,
+   "pageCount": 35,
+   "wordCount": 1493,
+   "file": "books/bloom-873ac958-david-e-golyat.json"
+  },
+  {
+   "slug": "bloom-4c88d493-yon-nonm-neglijan",
+   "title": "Yon nonm neglijan",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/xdYmZ6F7c0"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f4c88d493-a3e0-437a-8ee5-7599be7a2b3c%2fYon+nonm+neglijan%2fA_careless_man_Page_01_Image_0001.png",
+   "authors": [
+    "Candiru Enzikuru Mary"
+   ],
+   "illustrators": [],
+   "publisher": "Candiru Enzikuru Mary",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 106,
+   "file": "books/bloom-4c88d493-yon-nonm-neglijan.json"
+  },
+  {
+   "slug": "bloom-03a68c61-yon-mouch",
+   "title": "Yon Mouch",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Health"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/iy32O8WMwj"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f03a68c61-0c5a-44f9-b022-229ece2faa7c%2fYon+Mouche%2fA_FLY_Page_1_Image_0001.png",
+   "authors": [
+    "Kabubbu pilot site"
+   ],
+   "illustrators": [],
+   "publisher": "Kabubbu pilot site",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 52,
+   "file": "books/bloom-03a68c61-yon-mouch.json"
+  },
+  {
+   "slug": "bloom-751e8bdf-yon-batay",
+   "title": "Yon batay",
+   "description": "A true story about a fight",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/14Q6tCgi3K"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f751e8bdf-407b-47f1-be13-9a714925ed58%2fYon+batay%2ftile.jpg",
+   "authors": [
+    "Mario"
+   ],
+   "illustrators": [],
+   "publisher": "Mario",
+   "hasAudio": false,
+   "pageCount": 2,
+   "wordCount": 170,
+   "file": "books/bloom-751e8bdf-yon-batay.json"
+  },
+  {
+   "slug": "bloom-c5ba08ff-yon-chyen",
+   "title": "Yon chyen",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/R1oRAKq4S4"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_1_Image_0001.png",
+   "authors": [
+    "Ritah Katetemera and Cissy Namugerwa"
+   ],
+   "illustrators": [],
+   "publisher": "Ritah Katetemera and Cissy Namugerwa",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 73,
+   "file": "books/bloom-c5ba08ff-yon-chyen.json"
+  },
+  {
+   "slug": "bloom-6fc6c913-yon-b-f-se-zanmi-m",
+   "title": "Yon bèf se zanmi m'",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Xlc3oPCfrj"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6fc6c913-5ad8-4427-9d13-cd828b81b85d%2fYon+b%c3%a8f+se+zanmi+m'1%2fM_ASP_2_A_cow_is_my_friend_Page_1_Image_0001.png",
+   "authors": [
+    "African Storybook Project"
+   ],
+   "illustrators": [],
+   "publisher": "African Storybook Project",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 28,
+   "file": "books/bloom-6fc6c913-yon-b-f-se-zanmi-m.json"
+  },
+  {
+   "slug": "bloom-96bc95ec-b-t-yo-janty",
+   "title": "Bèt yo janty",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/9p3M2tACiZ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_01_Image_0001.png",
+   "authors": [
+    "preksha pc"
+   ],
+   "illustrators": [],
+   "publisher": "preksha pc",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 216,
+   "file": "books/bloom-96bc95ec-b-t-yo-janty.json"
+  },
+  {
+   "slug": "bloom-6aeee620-b-t-b-t",
+   "title": "Bèt, Bèt",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/3JqPj2GfcJ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_01_Image_0001.png",
+   "authors": [
+    "African Reading Matters"
+   ],
+   "illustrators": [],
+   "publisher": "African Reading Matters",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 65,
+   "file": "books/bloom-6aeee620-b-t-b-t.json"
+  },
+  {
+   "slug": "bloom-60d273ac-azizi-poupe-a",
+   "title": "Azizi poupe a",
+   "description": "Azizi is my doll. We do a lot together but he never says much.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Ivaw5VLWgv"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f60d273ac-f12c-45a2-9f67-facba0b1119e%2fAzizi+poupe+a%2fASP_146_azizi_the_doll_1_Page_01_Image_0001.png",
+   "authors": [
+    "African Storybook Initiative"
+   ],
+   "illustrators": [],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 126,
+   "file": "books/bloom-60d273ac-azizi-poupe-a.json"
+  },
+  {
+   "slug": "bloom-3e711b32-yon-makak-ki-rele-manki",
+   "title": "Yon makak ki rele Manki",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ESEAkdX87i"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f3e711b32-41fe-4ac2-be96-b2bc24ab12e4%2fYon+makak+ki+rele+Manki%2fSWPB_290-a-monkey-called-manki_Page_01_Image_0001.png",
+   "authors": [
+    "Ravi Ranjan Goswami"
+   ],
+   "illustrators": [],
+   "publisher": "Ravi Ranjan Goswami",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 1756,
+   "file": "books/bloom-3e711b32-yon-makak-ki-rele-manki.json"
+  },
+  {
+   "slug": "bloom-70b922fa-yon-leson-m-aprann-de-yon-zwazo-ki-gen-g-y",
+   "title": "Yon leson m aprann de yon zwazo ki gen ògèy",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HOcwgiglhl"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f70b922fa-b3de-43c4-98a5-d6b595ab7fd0%2fYon+leson+m+aprann+de+yon+zwazo+ki+gen+%c3%b2g%c3%a8y%2fSWPB_342-arrogant-bird-learned-lesson_Page_1_Image_0001.png",
+   "authors": [
+    "Shahul H"
+   ],
+   "illustrators": [],
+   "publisher": "Shahul H",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 161,
+   "file": "books/bloom-70b922fa-yon-leson-m-aprann-de-yon-zwazo-ki-gen-g-y.json"
+  },
+  {
+   "slug": "bloom-0139105d-yon-leson",
+   "title": "Yon leson",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/SUzRS4OUE7"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f0139105d-5805-4fda-aa96-15f56b9ae03a%2fYon+leson%2fSWPB_328-a-lesson_Page_1_Image_0001.png",
+   "authors": [
+    "Sherein Bansal, Ravi Ranjan Goswami"
+   ],
+   "illustrators": [],
+   "publisher": "Sherein Bansal, Ravi Ranjan Goswami",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 848,
+   "file": "books/bloom-0139105d-yon-leson.json"
+  },
+  {
+   "slug": "bloom-955263a8-yon-k-bo-saj",
+   "title": "Yon kòbo saj",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/AlIhhm6Df3"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_1_Image_0001.jpg",
+   "authors": [
+    "Mugulu Integrated Primary School"
+   ],
+   "illustrators": [],
+   "publisher": "Mugulu Integrated Primary School",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 289,
+   "file": "books/bloom-955263a8-yon-k-bo-saj.json"
+  },
+  {
+   "slug": "bloom-621519cd-ti-bebe-matant-jui-a",
+   "title": "Ti Bebe Matant Jui a",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Jer1EftqIe"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f621519cd-e4c5-4f0b-aeb3-e1f7a57bfdac%2fTi+Bebe+Matant+Jui+a%2fSWPB_6_aunty-jui-s-baby_Page_01_Image_0001.png",
+   "authors": [
+    "Pratham Books"
+   ],
+   "illustrators": [],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 1583,
+   "file": "books/bloom-621519cd-ti-bebe-matant-jui-a.json"
+  },
+  {
+   "slug": "bloom-8a5eef86-ot-nn-nan-l-a",
+   "title": "Otònn nan lè a",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cFRwWwLMmq"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f8a5eef86-3783-4207-ad4e-bc7235739526%2fOt%c3%b2nn+nan+l%c3%a8+a%2fSWPB_272-autumn-s-in-the-air_Page_1_Image_0001.png",
+   "authors": [
+    "Lucyanne Maria Anthony"
+   ],
+   "illustrators": [],
+   "publisher": "Lucyanne Maria Anthony",
+   "hasAudio": false,
+   "pageCount": 2,
+   "wordCount": 141,
+   "file": "books/bloom-8a5eef86-ot-nn-nan-l-a.json"
+  },
+  {
+   "slug": "bloom-645659cb-leson-dous-pou-akash-bwose",
+   "title": "Leson Dous pou Akash Bwose",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/EOZYZSgxHD"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f645659cb-0393-43ea-9e23-25c89a4ae208%2fLeson+Dous+pou%c2%a0Akash+Bwose1%2fSWPB_299-akash-s-sweet-lesson-to-brush_Page_01_Image_0001.png",
+   "authors": [
+    "Nisha Sridhar"
+   ],
+   "illustrators": [],
+   "publisher": "Nisha Sridhar",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 420,
+   "file": "books/bloom-645659cb-leson-dous-pou-akash-bwose.json"
+  },
+  {
+   "slug": "bloom-4f5efdcd-b-t-fouye-twou-byen",
+   "title": "Bèt fouye twou byen",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/g6Qp80Vxiz"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f4f5efdcd-dc71-4718-98bc-dd29d134d650%2fB%c3%a8t+fouye+twou+byen%2fASP_222_Animals_dig_a_well_Page_01_Image_0001.png",
+   "authors": [
+    "Little Zebra Books,"
+   ],
+   "illustrators": [],
+   "publisher": "Little Zebra Books,",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 1341,
+   "file": "books/bloom-4f5efdcd-b-t-fouye-twou-byen.json"
+  },
+  {
+   "slug": "bloom-217c1eaa-andiswa-foutb-l",
+   "title": "Andiswa foutbòl",
+   "description": "A Haitian Creole picture book from Bloom Library.",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ilT4d1OEUU"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f217c1eaa-5f20-4400-9812-358d33e46de8%2fAndiswa+foutb%c3%b2l%2fASP_221_Andiswa_Soccer_Star_Page_01_Image_0001.png",
+   "authors": [
+    "African Storybook Initiative"
+   ],
+   "illustrators": [],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 197,
+   "file": "books/bloom-217c1eaa-andiswa-foutb-l.json"
+  },
+  {
+   "slug": "bloom-d9c6cc03-umukobwa-wakundwaga-cyane",
+   "title": "Umukobwa wakundwaga cyane",
+   "description": "Akabindi keza ka Marebe karamenetse,  maze arababara cyane. Yahisemo kwigira mu ishyamba iwabo baramubura.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1Sk57ABGXo"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f13.png",
+   "authors": [
+    "Ritah Katetemera and Mulongo Bukheye"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 256,
+   "file": "books/bloom-d9c6cc03-umukobwa-wakundwaga-cyane.json"
+  },
+  {
+   "slug": "bloom-b6e359b0-umukecuru-na-bakame",
+   "title": "Umukecuru Na Bakame",
+   "description": "Iyi nkuru iravuga uko byagendekeye umukecuru ubwo yari agiye gusura umukobwa we wari utuye hakurya y'uruzi.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gBNKxwftFX"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage9.png",
+   "authors": [
+    "Sysvestre Ntabijyana"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 181,
+   "file": "books/bloom-b6e359b0-umukecuru-na-bakame.json"
+  },
+  {
+   "slug": "bloom-08eec07d-nyiramaterefone",
+   "title": "Nyiramaterefone",
+   "description": "Nyiramaterefone aratangaje cyane. Tekereza nawe umuntu ufite terefone eshanu zose. Azikoresha ate?",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1BLccZOHU2"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f13.png",
+   "authors": [
+    "Ursula Nafula"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 102,
+   "file": "books/bloom-08eec07d-nyiramaterefone.json"
+  },
+  {
+   "slug": "bloom-3c2ea146-nkuba-na-mirabyo",
+   "title": "Nkuba na Mirabyo",
+   "description": "Nkuba n'umuhungu we Mirabyo babanaga n'abantu ku isi. Bitewe n'uko Mirabyo yarangwaga n'imyitwarire mibi yo kwangiza, umwami yarabaciye ngo bajye gutura mu kirere kure y'abantu.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/AIFCBMstnU"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f3c2ea146-b931-46e9-b8e3-86c174a4fcfc%2fNkuba+na+Mirabyo%2fimage1.jpg",
+   "authors": [
+    "Ogot Owino"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 192,
+   "file": "books/bloom-3c2ea146-nkuba-na-mirabyo.json"
+  },
+  {
+   "slug": "bloom-59fa85e6-mukiza-yatabaye-se",
+   "title": "Mukiza yatabaye se",
+   "description": "Se wa Mukiza yabaga yasinze buri joro maze yataha agatabaza abeshya ko atewe n'impyisi. Ariko noneho umunsi umwe aterwa n'impyisi koko. Ese hari umuntu uri bumutabare?",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mDveikYivv"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f59fa85e6-f8ca-420f-a869-32412a045de2%2fMukiza+yatabaye+se%2f1.png",
+   "authors": [
+    "Kanyiva Sandi"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 264,
+   "file": "books/bloom-59fa85e6-mukiza-yatabaye-se.json"
+  },
+  {
+   "slug": "bloom-5c3e35c3-mpyisi-na-bakame",
+   "title": "Mpyisi na Bakame",
+   "description": "N'ubwo bari inshuti bwose,  Bakame yagiye yungukira mu bucucu bwa Mpyisi. Gusa n'ubwo Bakame ari inyaryenge,  ntabwo azakomeza guhenda ubwenge Mpyisi ubuziraherezo.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4EUHhyr0HL"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5c3e35c3-17ba-4748-a37f-d9cd155cdfff%2fMpyisi+na+Bakame%2fpage17.png",
+   "authors": [
+    "Mutugi Kamundi"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 491,
+   "file": "books/bloom-5c3e35c3-mpyisi-na-bakame.json"
+  },
+  {
+   "slug": "bloom-50d697be-maguru-atanga-amaguru",
+   "title": "Maguru Atanga Amaguru",
+   "description": "Emmanuel Sibomana, Wiehan de Jager",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Hnq8Dm3GPw"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage19.png",
+   "authors": [
+    "Mutugi Kamundi"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 284,
+   "file": "books/bloom-50d697be-maguru-atanga-amaguru.json"
+  },
+  {
+   "slug": "bloom-8499d6bd-injangwe-za-sano",
+   "title": "Injangwe za Sano",
+   "description": "Sano afite injangwe nyinshi. Injangwe za Sano zirangwa n'imico itandukanye. Zose ntizikunda Simba.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/E1kwNmwJlb"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f35.png",
+   "authors": [
+    "Khothatso Ranoosi and Marion Drew"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 147,
+   "file": "books/bloom-8499d6bd-injangwe-za-sano.json"
+  },
+  {
+   "slug": "bloom-829b151c-twirinde-koronavirusi",
+   "title": "Twirinde Koronavirusi",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga ku kwirinda koronavirusi.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Health"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/T4obBIOqUr"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_06_Image_3.png",
+   "authors": [
+    "Nyiraminani Oliviette"
+   ],
+   "illustrators": [],
+   "publisher": "CACTUS PUBLISHERS",
+   "hasAudio": false,
+   "pageCount": 30,
+   "wordCount": 392,
+   "file": "books/bloom-829b151c-twirinde-koronavirusi.json"
+  },
+  {
+   "slug": "bloom-adeb1b4e-kariza-akunda-kubaza",
+   "title": "Kariza akunda kubaza",
+   "description": "Ababyeyi ba Kariza bamutoje kubaza. Gukunda kubaza byatumye Kariza asobanukirwa akamaro ko gukaraba mbere yo kurya,  amenya no gukoresha kandagirukarabe.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Science"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/NPwHzaehiL"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fadeb1b4e-a345-48be-ac09-34c32ddfa67f%2fKariza+akunda+kubaza%2f25967.png",
+   "authors": [
+    "Jean de Dieu Bavugempore"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 44,
+   "wordCount": 548,
+   "file": "books/bloom-adeb1b4e-kariza-akunda-kubaza.json"
+  },
+  {
+   "slug": "bloom-5851665e-isi-n-izuba",
+   "title": "Isi N'izuba",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’isi n’izuba.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Science"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/U1GsFHG6Qk"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f5851665e-c4d8-47c3-88dc-5e2bfc605a88%2fIsi+N+izuba%2fISI_NIZUBA3.jpg",
+   "authors": [
+    "Ndahayo Ferdinand"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 53,
+   "wordCount": 657,
+   "file": "books/bloom-5851665e-isi-n-izuba.json"
+  },
+  {
+   "slug": "bloom-2ab86764-isaha-ya-mpeta",
+   "title": "Isaha Ya Mpeta",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru ya Mpeta nuko amenya igihe.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/li8QuZ14r8"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta8.png",
+   "authors": [
+    "Denise Nyinawumuntu"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 30,
+   "wordCount": 262,
+   "file": "books/bloom-2ab86764-isaha-ya-mpeta.json"
+  },
+  {
+   "slug": "bloom-b1824286-isabukuru-ya-cyusa",
+   "title": "Isabukuru Ya Cyusa",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’isabukuru ya Cyusa.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Community Living"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/WJ8PPLDDPQ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb1824286-b8c3-44d5-86b9-d7236c17e19f%2fIsabukuru+Ya+Cyusa%2fIsabukuru+-+Cover2.png",
+   "authors": [
+    "Niyonzima Isabelle"
+   ],
+   "illustrators": [],
+   "publisher": "CACTUS PUBLISHERS",
+   "hasAudio": false,
+   "pageCount": 30,
+   "wordCount": 321,
+   "file": "books/bloom-b1824286-isabukuru-ya-cyusa.json"
+  },
+  {
+   "slug": "bloom-f9003a7d-inzuki-n-indabyo",
+   "title": "Inzuki N'indabyo",
+   "description": "Igitabo cy'abana bagitangira gusoma kivuga inkuru ya Macibiri washakiye inzuki aho kuba zikamuha ubuki.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Agriculture"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lV27SO2m35"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_20_Image_3.png",
+   "authors": [
+    "Ndahayo Ferdinand"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 41,
+   "wordCount": 504,
+   "file": "books/bloom-f9003a7d-inzuki-n-indabyo.json"
+  },
+  {
+   "slug": "bloom-e754f933-inkima-ziririmba",
+   "title": "Inkima Ziririmba",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’inkima zikunda gutarama.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/944i74qc5D"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fcover3.png",
+   "authors": [
+    "Ubuntu publishers"
+   ],
+   "illustrators": [],
+   "publisher": "Ubuntu publishers",
+   "hasAudio": false,
+   "pageCount": 37,
+   "wordCount": 398,
+   "file": "books/bloom-e754f933-inkima-ziririmba.json"
+  },
+  {
+   "slug": "bloom-85a93192-imvura-iva-he",
+   "title": "Imvura Iva He",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’umwana wibazaga aho imvura iva.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Science"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ke0PM8txF5"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fImvura---Cover1.jpg",
+   "authors": [
+    "NDAHAYO Ferdinand"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 37,
+   "wordCount": 287,
+   "file": "books/bloom-85a93192-imvura-iva-he.json"
+  },
+  {
+   "slug": "bloom-c3b21783-igiti-cyanjye",
+   "title": "Igiti Cyanjye",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’umwana wateye igiti cy’umwembe",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Agriculture"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kvMUkmQzDi"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_12_Image_3.png",
+   "authors": [
+    "Ubuntu publishers"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 25,
+   "wordCount": 281,
+   "file": "books/bloom-c3b21783-igiti-cyanjye.json"
+  },
+  {
+   "slug": "bloom-1271ccda-igipupe-cya-mimi",
+   "title": "Igipupe Cya Mimi",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru ya Mimi n’igipupe cye.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Traditional Story"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kflP2b02kg"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fcover3.png",
+   "authors": [
+    "MURISA Jean Maurice"
+   ],
+   "illustrators": [],
+   "publisher": "Sankofa Creatives Ltd",
+   "hasAudio": false,
+   "pageCount": 33,
+   "wordCount": 272,
+   "file": "books/bloom-1271ccda-igipupe-cya-mimi.json"
+  },
+  {
+   "slug": "bloom-99f0e3bd-icyari-cya-ntashya-4-urutare",
+   "title": "ICYARI CYA NTASHYA 4 - Urutare",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru ya intashya yubaka icyari ikagishyire munsi y’urutare.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/WQTZtMpbZf"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare3.png",
+   "authors": [
+    "Nshimyumukiza Eric"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Library",
+   "hasAudio": false,
+   "pageCount": 32,
+   "wordCount": 221,
+   "file": "books/bloom-99f0e3bd-icyari-cya-ntashya-4-urutare.json"
+  },
+  {
+   "slug": "bloom-934c7348-icyari-cya-ntashya-3-utwondo",
+   "title": "Icyari Cya Ntashya 3 Utwondo",
+   "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’intashya yubaka icyari ikoresheje utwondo.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rhhqcPp5Cz"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fcover3.png",
+   "authors": [
+    "Eric NSHIMYUMUKIZA, Icyari Cya Ntashya Utwondo"
+   ],
+   "illustrators": [],
+   "publisher": "Sankofa Creatives Ltd",
+   "hasAudio": false,
+   "pageCount": 28,
+   "wordCount": 207,
+   "file": "books/bloom-934c7348-icyari-cya-ntashya-3-utwondo.json"
   }
  ]
 }

@@ -1,0 +1,102 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d9c6cc03-umukobwa-wakundwaga-cyane",
+  "title": "Umukobwa wakundwaga cyane",
+  "description": "Akabindi keza ka Marebe karamenetse,  maze arababara cyane. Yahisemo kwigira mu ishyamba iwabo baramubura.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Ritah Katetemera and Mulongo Bukheye"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1Sk57ABGXo"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f13.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f1.png",
+      "text": "Kera habayeho umugabo n'umugore babyara abahungu batandatu n'umukobwa umwe. Uwo mukobwa yitwaga Marebe. Ababyeyi bombi bakundaga Marebe cyane kurusha basaza be."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f2.png",
+      "text": "Nuko ababyeyi babumba akabindi gatoya maze bagaha Marebe nk'impano. Marebe yaragakundaga cyane, agakunda kugakinisha."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f3.png",
+      "text": "Umunsi umwe basaza be bamumenera akabindi. Karajanjaguritse gasigara ari utumene duto. Basaza be babuze icyo bakora, bajugunya bya bimene mu gihuru."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f4.png",
+      "text": "Marebe yashakishije akabindi ke arakabura. Arababara cyane, ararira ndetse yanga kurya ibintu byose. Yinginga se, nyina ndetse na basaza be ngo bashakishe akabindi ke. Bose bamubwira ko batazi aho kari."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f5.png",
+      "text": "Marebe arushaho kugira agahinda. Nuko ava iwabo aragenda, ajya mu ishyamba. Yurira igiti kirekire cyane."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f6.png",
+      "text": "Ababyeyi bashakishije umukobwa wabo. Bageze aho baza kumubona mu ishyamba ari mu bushorishori bw'igiti kirekire cyane. Baramubwira ngo amanuke aranga. Baramwinginga ngo amanuke ariko akomeza kwanga."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f7.png",
+      "text": "Basaza ba Marebe bose bakoranira munsi ya cya giti. Baramuririmbira bagira ngo amanuke bagira bati: \"Bucura bwacu, manuka twitahire!. Tuzakubonera akandi kabindi gashya.\""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f8.png",
+      "text": "Nuko Marebe we akabannyega. Yaririmbaga asubiramo iyo ndirimbo, akabigana agira ati: \"Ninini-ninio, ninini-ninio. Ninini-ninio, ninini-ninio.\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f9.png",
+      "text": "Marebe yarakomeje yanga kumanuka mu giti. Nuko umwana w'inshuti ye araza agerageza kumuhendahenda ngo amanuke. Atangira kuririmba igira iti: \"Nshuti yanjye, manuka twitahire. Tuzakubonera akandi kabindi gashya.\""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f10.png",
+      "text": "Nuko Marebe yumvishe inshuti ye, atangira kumanuka buhoro buhoro. Inshuti ye ikomeza kuririmba kugeza Marebe ageze hasi."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f11.png",
+      "text": "Marebe n'uwo mwana w'inshuti ye barishimye barahoberana. Nuko bagenda buhoro buhoro basubira mu rugo."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2f12.png",
+      "text": "Abo bakobwa bombi bageze mu rugo, basaza ba Marebe n'ababyeyi be barishimye cyane. Bategura ibirori, maze batumira inshuti nyinshi n'abavandimwe. Buri wese yashimishijwe n'ibyo birori. By'umwihariko, Marebe yari yishimiye cyane akabindi ke gashya."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fd9c6cc03-0cf8-47e4-b67f-c8f6f25d464c%2fUmukobwa+wakundwaga+cyane%2fSaide+ASOrg+orange+3.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 256
+  }
+}

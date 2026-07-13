@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-96bc95ec-b-t-yo-janty",
+  "title": "Bèt yo janty",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "preksha pc"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "preksha pc",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/9p3M2tACiZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_02_Image_0001.png",
+      "text": "Yon fwa sou yon tan, te gen yon kiltivatè. Li pa t' janm te renmen zwazo kòm li te kwè ke yo pral detwi rekòt li yo. Kiltivatè a toujou itilize wòch le l' wè zwazo yo."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_03_Image_0001.png",
+      "text": "Men, kiltivatè a te genyen yon sèl pitit gason, Sanju ki te kont li. Li te renmen zwazo e te renmen nouri yo. Fèmye an te rive reprimande Sanju pou sa a menm, Sanju pa janm sispann nouri zwazo yo."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_04_Image_0001.png",
+      "text": "Yon jou, pandan Sanju ta prale lekòl, Sanju glise li tombe. Li te blese, e pa t' kapab mache pou lontan. Pa gen moun ki te bò kote l' pou kapab ede li."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_05_Image_0001.png",
+      "text": "Yon zwazo wè Sanju e konprann ke Sanju te gen pwoblèm. Zwazo a vin chonje Sanju te kon ede l'. Se konsa, li tou deside ede Sanju."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_06_Image_0001.png",
+      "text": "Zwazo a te ale nan kay kiltivatè a e li te kòmanse fè yon gwo bri."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_07_Image_0001.png",
+      "text": "Sa t irite kiltivatè a. Se konsa, kiltivatè a te kòmanse kouri dèyè zwazo a jouk li jwenn Sanju kouche a tè a dekouraje."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f96bc95ec-5efc-4d60-a347-857011cfa26e%2fB%c3%a8t+yo+janty%2fSWPB_193-animals-are-kind_Page_08_Image_0001.png",
+      "text": "Fermye a te mennen Sanju lopital. Lè sa a Sanju, eksplike tout bagay a papa l'. Papa te santi li wont pou konpòtman gwosye l' yo. Apre sa li menm tou te kòmanse senpatik ak bèt ak zwazo yo."
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 216
+  }
+}

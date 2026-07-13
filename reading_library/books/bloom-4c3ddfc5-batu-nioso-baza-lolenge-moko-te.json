@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4c3ddfc5-batu-nioso-baza-lolenge-moko-te",
+  "title": "Batu nioso baza lolenge moko te",
+  "description": "People come in all shapes and sizes and everyone is important.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YITwhfDi8m"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2fDifferent+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f1+Woman.png",
+      "text": "Mwasi"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f2+Man.png",
+      "text": "Mobali"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f3+Slow.png",
+      "text": "Malembe"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f4+Fast.png",
+      "text": "Mbangu"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f5+Tall.png",
+      "text": "Molayi"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f6+Short.png",
+      "text": "Mukuse"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f7+Thin.png",
+      "text": "Muke"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f8+Fat.png",
+      "text": "Monene"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f9+Young.png",
+      "text": "Elenge"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2f10+Old.png",
+      "text": "Mpaka"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f4c3ddfc5-634d-4c60-8ddb-2fea357bed48%2fS9+Tonse+ndife+osiyana+-+Copy%2fDifferent+Cover1.jpg",
+      "text": "Batu nioso baza lolenge moko te!"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 16
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-50d697be-maguru-atanga-amaguru",
+  "title": "Maguru Atanga Amaguru",
+  "description": "Emmanuel Sibomana, Wiehan de Jager",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "Mutugi Kamundi"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Hnq8Dm3GPw"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage19.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage1.png",
+      "text": "Maguru atanga amaguru\nKera cyane nta nyamaswa yagiraga amaguru. Zose zakururukaga hasi."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage2.png",
+      "text": "Abantu ni bo bonyine bagiraga amaguru kuko Maguru yari yarayabahaye."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage3.png",
+      "text": "Umunsi umwe Maguru yiyemeje guha buri nyamaswa amaguru. Yatangiye kugendagenda mu mudugudu abitangaza n'indangururamajwi. Yashakaga ko buri nyamaswa yagendesha amaguru nk'abantu."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage4.png",
+      "text": "Inyamaswa zarishimye ubwo zumvaga ko zigiye guhabwa amaguru. Buri nyamaswa yifuzaga cyane kugira amaguru kugira ngo ishobore kugenda no kwiruka. Zararirimbye, zizunguza imirizo yazo, izindi zikubita amababa yazo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage5.png",
+      "text": "Inyamaswa zarateranye ziganira uburyo kugenda zikururuka byazigoraga. Ubutaka bwakomeretsaga inda zazo. Amaguru kandi yari kuzazifasha guhagarara zemye zikanareba kure nk'uko abantu babigenzaga."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage6.png",
+      "text": "Umunsi zahawe ugeze, inyamaswa nyinshi zirakururuka zigana kwa Maguru, kugira ngo zihabwe amaguru. Udusumbashyamba, intare, inzovu, inkwavu, ingona n'inyoni zose zitonda umurongo zitegereza guhabwa amaguru."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage7.png",
+      "text": "Buri nyamaswa yahawe amaguru ane. Inyoni zahawe amaguru abiri."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage8.png",
+      "text": "Inyamaswa zahise zihinduka zikimara guhabwa amaguru. Zimwe zarishimye zirabyina. Izindi kugendesha amaguru byarazigoye ziragwa."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage9.png",
+      "text": "Zatangiye kugendagenda mu mudugudu zirataku bantu. Inyamaswa zose ziravuga ziti: \"Ntituzongera gukururuka ukundi.\""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage10.png",
+      "text": "Inyamaswa ya nyuma ku murongo yari Magurijana. Nuko Maguru arayibaza ati: \"Ese hari undi usigaye inyuma yawe?\" Magurijana irasubiza iti: \"Oya ni njye wa nyuma.\""
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage11.png",
+      "text": "Maguru aribaza ati: \"Niba nta wundi usigaye aya maguru asigaye nzayamaza iki?\" Maze amaguru yose asigaye ayaha Magurijana."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage12.png",
+      "text": "Magurijana agenda yishimye kuko yariahaweamaguru menshi. Yaribwiraga ati: \"Nzajya nihuta mbarushe bose.\""
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage13.png",
+      "text": "Magurijana akimara kugenda, inzoka iba igeze kwa Maguru. Isaba Maguru ivuga iti: \"Nyamuna Maguru mpa amaguru nibura make.\""
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage14.png",
+      "text": "Maguru ati: \"Amaguru yose nayatanze. Wari uri he?\" Na yo iti: \"Nasinziriye sinamenya igihe bwakereye.\""
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage15.png",
+      "text": "Maguru ashakisha mu nzu hose ngo arebe niba hari amaguru yaba asigaye, ariko arayabura."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fpage16.png",
+      "text": "Maguru arasohoka aravuga ati: \"Nzoka rwose unyihanganire, nta maguru asigaye.\" Ubwo inzoka itaha ikururuka. Kuva uwo munsi, inzoka nijya isinzira cyane. Ihora itegereje andi mahirwe yo kuzahabwa amaguru."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f50d697be-9281-41f3-8b4e-b4f0c1b3d0dc%2fMaguru+atanga+amaguru%2fimage.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 284
+  }
+}

@@ -127,7 +127,8 @@ describe('browse view', () => {
     expect(textOf(host)).toContain('Reading Collections');
     expect(textOf(host)).toContain('Science & nonfiction');
     expect(textOf(host)).toContain('Frontiers for Young Minds');
-    const storyEntries = index.books.filter((b) => (b.sourceId || 'storyweaver') === 'storyweaver');
+    // The Stories shelf carries both picture-book sources.
+    const storyEntries = index.books.filter((b) => ['storyweaver', 'bloom'].includes(b.sourceId || 'storyweaver'));
     await chooseStories();
     // the grid defaults to the English language filter
     const langSelect = host.querySelector('select[aria-label="Language"]');
@@ -203,12 +204,15 @@ describe('browse view', () => {
     clickByText(host, 'button', 'Readable in app');
     await flush();
     expect(textOf(host)).toContain(readable.length + ' ');
-    // Stories shelf has no cards, so the toggle stays hidden there
+    // The toggle only appears on shelves that actually mix in cards
+    // (data-driven: Bloom NC link-out cards put cards on Stories too).
     clickByText(host, 'button', 'Collections');
     await flush();
     await chooseStories();
+    const storiesHasCards = index.books.some((b) =>
+      ['storyweaver', 'bloom'].includes(b.sourceId || 'storyweaver') && /card/.test(b.contentType || ''));
     const btns = Array.from(host.querySelectorAll('button')).map(textOf);
-    expect(btns.some((t) => t.includes('Readable in app'))).toBe(false);
+    expect(btns.some((t) => t.includes('Readable in app'))).toBe(storiesHasCards);
   });
 
   it('teacher searches Project Gutenberg (Gutendex) and queues an import request', async () => {
@@ -248,11 +252,12 @@ describe('browse view', () => {
   it('sorts by reading level (easiest first) by default', async () => {
     await mount();
     await chooseStories();
-    // filter controls: language, level, sort
-    const selects = host.querySelectorAll('select');
-    expect(selects[2].value).toBe('level');
+    // Find controls by aria-label — the Stories shelf gained a conditional
+    // source <select> (StoryWeaver + Bloom), so positional indexes shift.
+    const sortSel = host.querySelector('select[aria-label="Sort by"]');
+    expect(sortSel.value).toBe('level');
     // narrow to one language to keep the grid light; ordering still applies
-    act(() => { selects[0].value = 'English'; selects[0].dispatchEvent(new window.Event('change', { bubbles: true })); });
+    selectLang('English');
     await flush();
     const levels = Array.from(host.querySelectorAll('button'))
       .map((b) => { const m = /Level\s+(\d)/.exec(textOf(b)); return m ? Number(m[1]) : 0; })
@@ -264,9 +269,9 @@ describe('browse view', () => {
   it('re-sorts to Title A–Z when chosen', async () => {
     await mount();
     await chooseStories();
-    const selects = host.querySelectorAll('select');
-    act(() => { selects[0].value = 'English'; selects[0].dispatchEvent(new window.Event('change', { bubbles: true })); });
-    act(() => { selects[2].value = 'title'; selects[2].dispatchEvent(new window.Event('change', { bubbles: true })); });
+    selectLang('English');
+    const sortSel = host.querySelector('select[aria-label="Sort by"]');
+    act(() => { sortSel.value = 'title'; sortSel.dispatchEvent(new window.Event('change', { bubbles: true })); });
     await flush();
     // card buttons carry a "Level N" badge; the title is the .font-bold node
     const cards = Array.from(host.querySelectorAll('button')).filter((b) => /Level\s+\d/.test(textOf(b)));

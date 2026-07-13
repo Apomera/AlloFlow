@@ -1,0 +1,187 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-829b151c-twirinde-koronavirusi",
+  "title": "Twirinde Koronavirusi",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga ku kwirinda koronavirusi.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "Nyiraminani Oliviette"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CACTUS PUBLISHERS",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/T4obBIOqUr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_06_Image_3.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi4.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "© 2020 CACTUS PUBLISHERS, P.O.Box 1810, Kigali\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo: Kugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro, kugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu mpapuro, kugihererekanya yaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga (iziriho cyangwa izizavumburwa nyuma) no kugihindura mu ndimi izo ari zo zose. Abagikoresha ntibemerewe kugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje.\nwww.cactuspublishers.rw\nISBN: 978-99977-54-54-2"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_05_Image_0001.png",
+      "text": "Umunsi umwe, Mpano yambaye imyenda y’ishuri, aheka igikapu ngo age ku ishuri."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_06_Image_0001.png",
+      "text": "Nyina amubonye amubaza aho agiye, undi amubwira ko akumbuye kwiga no gukina na bagenzi be."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_07_Image_0001.png",
+      "text": "Nyina aramubwira ati: “Ntabwo muri kujya ku ishuri kubera kubarinda Koronavirusi. Amasomo muzajya muyakurikira kuri radiyo cyangwa tereviziyo”."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_08_Image_0001.png",
+      "text": "Hari ibintu tugomba gukora twese kugira ngo twirinde Koronavirusi."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_09_Image_0001.png",
+      "text": "Gukaraba intoki neza kandi kenshi, dukoresheje amazi meza n’isabune."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_10_Image_0001.png",
+      "text": "Kwirinda gusuhuzanya dukoresheje intoki kugira ngo tutanduzanya."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_11_Image_0001.png",
+      "text": "Kwambara neza agapfukamunwa mu gihe tugiye ahantu hari abantu benshi no kwirinda kwegerana na bo."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_12_Image_0001.png",
+      "text": "Bukeye bwaho, Kanyana wigana na Mpano aza kumutira amakayi. Mpano amubonye yanga kumusuhuza."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_13_Image_0001.png",
+      "text": "Mpano amusobanurira ko bakwanduzanya mu gihe basuhuzanyije bahana ibiganza. Amusukira amazi ngo abanze akarabe."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi_Page_14_Image_0001.png",
+      "text": "Kanyana amaze gukaraba, Mpano amutiza amakayi."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Umunsi umwe, Mpano yambaye imyenda y’ishuri, aheka igikapu ngo age ku ishuri."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Nyina amubonye amubaza aho agiye, undi amubwira ko akumbuye kwiga no gukina na bagenzi be."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Nyina aramubwira ati: “Ntabwo muri kujya ku ishuri kubera kubarinda Koronavirusi. Amasomo muzajya muyakurikira kuri radiyo cyangwa tereviziyo”."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Hari ibintu tugomba gukora twese kugira ngo twirinde Koronavirusi."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Gukaraba intoki neza kandi kenshi, dukoresheje amazi meza n’isabune."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Kwirinda gusuhuzanya dukoresheje intoki kugira ngo tutanduzanya."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Kwambara neza agapfukamunwa mu gihe tugiye ahantu hari abantu benshi no kwirinda kwegerana na bo."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Bukeye bwaho, Kanyana wigana na Mpano aza kumutira amakayi. Mpano amubonye yanga kumusuhuza."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Mpano amusobanurira ko bakwanduzanya mu gihe basuhuzanyije bahana ibiganza. Amusukira amazi ngo abanze akarabe."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Kanyana amaze gukaraba, Mpano amutiza amakayi."
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nAkarabe\nIjambo mu Inkuru"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nKoronavirusi\nIjambo mu Inkuru"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nKwegerana\nIjambo mu Inkuru"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nKwirinda\nIjambo mu Inkuru"
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "IBIBAZO\n1) Uzuza iyi nteruro ukoresheje ijambo wahawe;\nUmunsi umwe, Mpano yambaye imyenda y’ishuri, aheka igikapu ngo age ku _____.\na) kazi\nb) isoko\nc) ishuri"
+    },
+    {
+      "n": 28,
+      "img": null,
+      "text": "IBIBAZO\n2) Subiza YEGO cyangwa OYA:\nKugira ngo twirinde Koronavirusi tugomba gukaraba intoki neza kandi kenshi.\nYEGO\nOYA"
+    },
+    {
+      "n": 29,
+      "img": null,
+      "text": "IBIBAZO\n3) Hitamo igisubizo kiri cyo;\nKanyana amaze gukaraba, Mpano amutiza_______\na) amakayi\nb) inkwetoc\nc) mudasobwa"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f829b151c-90ec-4dc8-b9b3-ab275d55f0c4%2fTwirinde+Koronavirusi%2fTwirinde_Koronavirusi8.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 30,
+    "words": 392
+  }
+}

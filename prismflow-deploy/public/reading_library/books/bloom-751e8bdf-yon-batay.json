@@ -1,0 +1,45 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-751e8bdf-yon-batay",
+  "title": "Yon batay",
+  "description": "A true story about a fight",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Mario"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Mario",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/14Q6tCgi3K"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f751e8bdf-407b-47f1-be13-9a714925ed58%2fYon+batay%2ftile.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f751e8bdf-407b-47f1-be13-9a714925ed58%2fYon+batay%2fAOR_6M-P.png",
+      "text": "Tou sa te pase nan Charles Carrol Middle School. Yon jou, mwen te nan lekol la, lè kèk elèv klas setyèm ak uityèm te mache moute kotem. Yo te deklare ke mwen te ensilte de elèv klas sizyèm ak setyèm. Sizyèm yo ak setyèm yo te di sa, epi yo te vle fè yon bagay. Yo defye m' nan yon batay de kont de, mwen te di, ‹‹Oke . ›› Mwen te ale jwenn Kimberly, yon wo, blond elèv klas setyèm ki rekonèt pou moun ki goumen anpil. Li te wo e li te kabab pran kout pwen, ki fè l' se yon bon chwa kòm yon koekipyè."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f751e8bdf-407b-47f1-be13-9a714925ed58%2fYon+batay%2fAOR_pc076.png",
+      "text": "Nou tou lè kat lan nou te mache ale nan twalèt la, nou te swiv pa lòt elèv ki te tande pale de batay la. Nou tout te ale tou dwat nan batay la. Lòt timoun yo te eksite e yo te kòmanse pran videyo. Kimberly ak mwen te genyen batay la, lòt timoun yo te rete atè sal la.\nFen an."
+    }
+  ],
+  "stats": {
+    "pages": 2,
+    "words": 170
+  }
+}

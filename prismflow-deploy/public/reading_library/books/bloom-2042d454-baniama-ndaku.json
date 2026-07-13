@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-2042d454-baniama-ndaku",
+  "title": "Baniama Ndaku",
+  "description": "Do you see these animals in the countryside where you live?",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/8eEJ6ys4sk"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2fDonkey+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f1+Dog3.jpg",
+      "text": "Mbwa"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f2+Duck.jpg",
+      "text": "Libata"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f3+Cow4.jpg",
+      "text": "Ngombe"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f4+Donkey.jpg",
+      "text": "Mpunda ya mwasi"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f5+Mouse2.jpg",
+      "text": "Mpuku"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f6+Cat.jpg",
+      "text": "Niawu"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f7+Sheep.jpg",
+      "text": "Meme"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f8+Goat.jpg",
+      "text": "Ntaba"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f9+Pig.jpg",
+      "text": "Ngulu"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2f2042d454-8c3f-46fd-9006-e7db83d58afc%2fS3+Baniama+Ndaku%2f10+Chicken.jpg",
+      "text": "Soso ya mwasi"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 14
+  }
+}

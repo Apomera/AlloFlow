@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-c5ba08ff-yon-chyen",
+  "title": "Yon chyen",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Ritah Katetemera and Cissy Namugerwa"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ritah Katetemera and Cissy Namugerwa",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/R1oRAKq4S4"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_2_Image_0001.png",
+      "text": "Te gen yon nonm ak yon sèl chen l '."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_3_Image_0001.png",
+      "text": "Li te renmen chen l' anpil."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_4_Image_0001.png",
+      "text": "Li te travay di e li te itilize l' pou l' ale nan mache ak achte vyann."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_5_Image_0001.png",
+      "text": "Pou chèche dlo nan pi a."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_6_Image_0001.png",
+      "text": "Pou veye tout bagay nan kay la."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_7_Image_0001.png",
+      "text": "Yon jou, nonm lan te remèsye chen l' nan yon fason espesyal paske li fidèl."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2fc5ba08ff-c462-4d41-8e95-cf8686ec6313%2fYon+chyen%2fASP_311-A_dog_Page_8_Image_0001.png",
+      "text": "Chen an te vin tèlman kontan e li te kontinye travay di."
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 73
+  }
+}

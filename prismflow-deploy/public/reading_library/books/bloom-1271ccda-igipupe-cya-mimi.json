@@ -1,0 +1,202 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1271ccda-igipupe-cya-mimi",
+  "title": "Igipupe Cya Mimi",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru ya Mimi n’igipupe cye.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "MURISA Jean Maurice"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Sankofa Creatives Ltd",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kflP2b02kg"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fcover3.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fcover7.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Igipupe Cya Mimi\n© Sankofa Creatives LTD\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo: kugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro, kugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu mpapuro, kugihererekanya yaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga (iziriho cyangwa izizavumburwa nyuma) no kugihindura mu ndimi izo ari zo zose. Abagikoresha ntibemerewe kugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_05_Image_2.png",
+      "text": "Mimi afite igipupe akunda cyane, kitwa Nono."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_06_Image_2.png",
+      "text": "Iyo agiye kuryama, arakiryamisha."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_07_Image_3.png",
+      "text": "Iyo avuye kwiga, aragiheka."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_08_Image_2.png",
+      "text": "Umunsi umwe, Mimi aragishaka arakibura."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_09_Image_3.png",
+      "text": "Abaza mukuru we, amubwira ko atazi aho kiri."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_10_Image_2.png",
+      "text": "Ashakira inyuma y’igiti, arakibura."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_11_Image_2.png",
+      "text": "Ashakira mu kabati, arakibura."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_12_Image_2.png",
+      "text": "Atangira kurira ati: “Ndashaka igipupe cyange.”"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_13_Image_2.png",
+      "text": "Nyina ati: “Wirira, turaza kukibona.”"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_14_Image_2.png",
+      "text": "Ababyeyi be bashakira mu tubati, barakibura."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_15_Image_0002.png",
+      "text": "Bagiye kubona babona ipusi yabo irahingutse,\nirakimuzaniye."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_16_Image_2.png",
+      "text": "Mimi arishima, ayiha amata."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Mimi afite igipupe akunda cyane, kitwa Nono."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Iyo agiye kuryama, arakiryamisha."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Iyo avuye kwiga, aragiheka."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Umunsi umwe, Mimi aragishaka arakibura."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Abaza mukuru we, amubwira ko atazi aho kiri."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Ashakira inyuma y’igiti, arakibura."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Ashakira mu kabati, arakibura."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Atangira kurira ati: “Ndashaka igipupe cyange.”"
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "Nyina ati: “Wirira, turaza kukibona.”"
+    },
+    {
+      "n": 24,
+      "img": null,
+      "text": "Ababyeyi be bashakira mu tubati, barakibura."
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "Bagiye kubona babona ipusi yabo irahingutse, irakimuzaniye."
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "Mimi arishima, ayiha amata."
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nAkabati\nIjambo mu Inkuru"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nAragiheka\nIjambo mu Inkuru"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nIgipupe\nIjambo mu Inkuru"
+    },
+    {
+      "n": 30,
+      "img": null,
+      "text": "IBIBAZO\n1) Hitamo igisubizo kiri cyo;\nIgipupe cya Mimi cyitwa ngw'iki? ------\na) Inkoko\nb) Nono\nc) Mbeba"
+    },
+    {
+      "n": 31,
+      "img": null,
+      "text": "IBIBAZO\n2) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe; Mimi arishima ipusi ayiha ________\na) igikoma\nb) amata\nc) inka"
+    },
+    {
+      "n": 32,
+      "img": null,
+      "text": "IBIBAZO\n3) Subiza YEGO cyangwa OYA;\nIgipupe agishakira inyuma y'igiti, arakibona\nYEGO\nOYA"
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fAn_Intimate_Friend.png",
+      "text": "Cyacapwe bwa mbere na Pallotti-Presse Ltd."
+    }
+  ],
+  "stats": {
+    "pages": 33,
+    "words": 272
+  }
+}

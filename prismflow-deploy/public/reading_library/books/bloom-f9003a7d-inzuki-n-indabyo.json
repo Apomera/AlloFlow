@@ -1,0 +1,242 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f9003a7d-inzuki-n-indabyo",
+  "title": "Inzuki N'indabyo",
+  "description": "Igitabo cy'abana bagitangira gusoma kivuga inkuru ya Macibiri washakiye inzuki aho kuba zikamuha ubuki.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Agriculture"
+  ],
+  "authors": [
+    "Ndahayo Ferdinand"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lV27SO2m35"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_20_Image_3.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fimage.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Perdua Publishers\nPO Box 3405 Kigali\nEmail: info@perduap.com\nWebsite: www.perduap.com\n© Perdua Publishers 2021\nCyatangajwe bwa mbere mu mwaka wa 2021\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo:\nkugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro,\nkugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu\nmpapuro, kugihererekanya yaba ku mpapuro cyangwa ku mbuga\nz’ikoranabuhanga (iziriho cyangwa izizavumburwa nyuma) no\nkugihindura mu ndimi izo ari zo zose. Abagikoresha ntibemerewe\nkugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_05_Image_4.png",
+      "text": "Kwa Macibiri bari bafite umurima munini, bahingagamo ibishyimbo, amashaza n’ibihwagari."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_06_Image_2.png",
+      "text": "Umunsi umwe, Macibiri yahuriyemo n’inzuki."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_07_Image_2.png",
+      "text": "Inzuki ziti: “Nudushakira aho tuba, natwe tuzaguha ubuki.”"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_08_Image_1.jpg",
+      "text": "Macibiri asaba ababyeyi be kuboha imizinga y’inzuki."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_09_Image_0001.png",
+      "text": "Imizinga imaze kuzura, za nzuki ziyitahamo. Zimererwa neza maze zikajya ziha Macibiri ubuki bwinshi."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_10_Image_2.png",
+      "text": "Bukeye Macibiri abaza inzuki ati: “Ubu buki mubukura he?”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_11_Image_1.jpg",
+      "text": "Inzuki ziti: “Ku mushongi uva mu ndabyo z’ibihingwa byo mu murima wanyu, tuvanga n’ibindi bintu dukura hirya no hino.”"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_12_Image_0001.png",
+      "text": "Macibiri arazibaza ati: “Ko mufata umushongi w’indabyo mwe muzimarira iki?”"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_13_Image_0001.png",
+      "text": "Inzuki ziramusubiza ziti: “Izo ndabyo ziduha umushongi dukoramo ubuki, natwe tukazikwizamo umurama utuma zera zigatanga umusaruro.”"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_14_Image_0001.png",
+      "text": "Macibiri ati: “Ibyo simbyemeye. Ntimuzasubire mu ndabyo z’ibihingwa byacu.”"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_15_Image_0001.png",
+      "text": "Nuko inzuki ntizasubira mu ndabyo zo kwa Macibiri."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_16_Image_1.jpg",
+      "text": "Kuva ubwo, ubuki ntibwongera kuboneka."
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_17_Image_1.jpg",
+      "text": "Za ndabyo zirarwara, zihungukira hasi, ibihingwa ntibyongera gutanga umusaruro."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_18_Image_0001.png",
+      "text": "Ibishyimbo, amashaza n’ibihwagari ntibyonger kwera. Macibiri n’ababyeyi be batangira kwibaza aho bazakura ibibatunga."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_19_Image_0001.png",
+      "text": "Macibiri yibuka ibyo inzuki zamubwiye, nuko ajya kuzishaka. Azisaba kongera gutara ubuki mu ndabyo z’ibihingwa byabo."
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_20_Image_0001.png",
+      "text": "Inzuki zisubira mu ndabyo z’ibihingwa, ubuki burongera buraboneka, n’imyaka irera."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Kwa Macibiri bari bafite umurima munini, bahingagamo ibishyimbo, amashaza n’ibihwagari."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Umunsi umwe, Macibiri yahuriyemo n’inzuki."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Inzuki ziti: “Nudushakira aho tuba, natwe tuzaguha ubuki.”"
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Macibiri asaba ababyeyi be kuboha imizinga y’inzuki."
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "Imizinga imaze kuzura, za nzuki ziyitahamo. Zimererwa neza maze zikajya ziha Macibiri ubuki bwinshi."
+    },
+    {
+      "n": 24,
+      "img": null,
+      "text": "Bukeye Macibiri abaza inzuki ati: “Ubu buki mubukura he?”"
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "Inzuki ziti: “Ku mushongi uva mu ndabyo z’ibihingwa byo mu murima wanyu, tuvanga n’ibindi bintu dukura hirya no hino.”"
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "Macibiri arazibaza ati: “Ko mufata umushongi w’indabyo mwe muzimarira iki?”"
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "Inzuki ziramusubiza ziti: “Izo ndabyo ziduha umushongi dukoramo ubuki, natwe tukazikwizamo umurama utuma zera zigatanga umusaruro.”"
+    },
+    {
+      "n": 28,
+      "img": null,
+      "text": "Macibiri ati: “Ibyo simbyemeye. Ntimuzasubire mu ndabyo z’ibihingwa byacu.”"
+    },
+    {
+      "n": 29,
+      "img": null,
+      "text": "Nuko inzuki ntizasubira mu ndabyo zo kwa Macibiri."
+    },
+    {
+      "n": 30,
+      "img": null,
+      "text": "Kuva ubwo, ubuki ntibwongera kuboneka."
+    },
+    {
+      "n": 31,
+      "img": null,
+      "text": "Za ndabyo zirarwara, zihungukira hasi, ibihingwa ntibyongera gutanga umusaruro."
+    },
+    {
+      "n": 32,
+      "img": null,
+      "text": "Ibishyimbo, amashaza n’ibihwagari ntibyongera kwera. Macibiri n’ababyeyi be batangira kwibaza aho bazakura ibibatunga."
+    },
+    {
+      "n": 33,
+      "img": null,
+      "text": "Macibiri yibuka ibyo inzuki zamubwiye, nuko ajya kuzishaka. Azisaba kongera gutara ubuki mu ndabyo z’ibihingwa byabo."
+    },
+    {
+      "n": 34,
+      "img": null,
+      "text": "Inzuki zisubira mu ndabyo z’ibihingwa, ubuki burongera buraboneka, n’imyaka irera."
+    },
+    {
+      "n": 35,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nIbihingwa\nIjambo mu Inkuru"
+    },
+    {
+      "n": 36,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nImizinga\nIjambo mu Inkuru"
+    },
+    {
+      "n": 37,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nUmurama\nIjambo mu Inkuru"
+    },
+    {
+      "n": 38,
+      "img": null,
+      "text": "IBIBAZO\n1) Hitamo igisubizo kiri cyo;\nKwa Macibiri bari bafite umurima munini, bahingagamo iki?\na) Ibirayi\nb) Ibishyimbo\nc) Ibisheke"
+    },
+    {
+      "n": 39,
+      "img": null,
+      "text": "IBIBAZO\n2) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nMacibiri asaba ababyeyi be kuboha ______\na) umupira\nb) igikapu\nc) imizinga"
+    },
+    {
+      "n": 40,
+      "img": null,
+      "text": "IBIBAZO\n3) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nInzuki zisubira mu ndabyo z’ibihingwa, ubuki burongera buraboneka, n’imyaka _____\na) irera\nb) iruma\nc) irashira"
+    },
+    {
+      "n": 41,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO4.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 41,
+    "words": 504
+  }
+}

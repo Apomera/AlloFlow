@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-70b922fa-yon-leson-m-aprann-de-yon-zwazo-ki-gen-g-y",
+  "title": "Yon leson m aprann de yon zwazo ki gen ògèy",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Shahul H"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Shahul H",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HOcwgiglhl"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f70b922fa-b3de-43c4-98a5-d6b595ab7fd0%2fYon+leson+m+aprann+de+yon+zwazo+ki+gen+%c3%b2g%c3%a8y%2fSWPB_342-arrogant-bird-learned-lesson_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f70b922fa-b3de-43c4-98a5-d6b595ab7fd0%2fYon+leson+m+aprann+de+yon+zwazo+ki+gen+%c3%b2g%c3%a8y%2fSWPB_342-arrogant-bird-learned-lesson_Page_2_Image_0001.png",
+      "text": "Yon jou, yon zwazo ki gen ògèy bati nich li nan pwent yon branch.\nUn jour, un oiseau arrogant a construit son nid au bout d'une branche."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f70b922fa-b3de-43c4-98a5-d6b595ab7fd0%2fYon+leson+m+aprann+de+yon+zwazo+ki+gen+%c3%b2g%c3%a8y%2fSWPB_342-arrogant-bird-learned-lesson_Page_3_Image_0001.png",
+      "text": "Yon kòbo te bal konsèy, li danje! Li pa janti pou bati nich lan nan pwent branch lan. Men, zwazo a ki gen ògèy li pa t koute.\nUn corbeau lui a conseillé, c'est dangereux! Ce n'est pas sage de construire ton nid au bout de la branche. Mais l'oiseau arrogant ne l'a pas écouté."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f70b922fa-b3de-43c4-98a5-d6b595ab7fd0%2fYon+leson+m+aprann+de+yon+zwazo+ki+gen+%c3%b2g%c3%a8y%2fSWPB_342-arrogant-bird-learned-lesson_Page_4_Image_0001.png",
+      "text": "Yon jou, van tap soufle trè fò. Pye bwa a te kòmanse tranble e nich la tonbe plat atè.\nUn jour, le vent a soufflé violemment. L'arbre a commencé à trembler et le nid est tombé à terre."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f70b922fa-b3de-43c4-98a5-d6b595ab7fd0%2fYon+leson+m+aprann+de+yon+zwazo+ki+gen+%c3%b2g%c3%a8y%2fSWPB_342-arrogant-bird-learned-lesson_Page_5_Image_0001.png",
+      "text": "Kounya, zwazo a ki gen ògèy la te aprann leson ke « Li dwe koute bon konsèy lòt moun ba li. »\nMaintenant, l'oiseau arrogant a appris la leçon que « Il est important d'écouter les sages conseils des autres. »"
+    }
+  ],
+  "stats": {
+    "pages": 4,
+    "words": 161
+  }
+}

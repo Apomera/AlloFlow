@@ -1,0 +1,222 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e754f933-inkima-ziririmba",
+  "title": "Inkima Ziririmba",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’inkima zikunda gutarama.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Ubuntu publishers"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ubuntu publishers",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/944i74qc5D"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fcover3.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fcover7.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_02_Image_0001.jpg",
+      "text": "Iki gitabo cyatangajwe bwa mbere muri 2020\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo: kugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro, kugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu mpapuro, kugihererekanya yaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga (iziriho cyangwa izizavumburwa nyuma) no kugihindura mu ndimi izo ari zo zose. Abagikoresha ntibemerewe kugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_05_Image_2.png",
+      "text": "Mu ishyamba rya Nyungwe habamo inkima nyinshi. Inkima zaho zikunda umuziki cyane."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_06_Image_2.png",
+      "text": "Uko zose ziba muri iryo shyamba zirizihirwa, zikabyina ndetse zikivuga ibyivugo bitandukanye."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_07_Image_4.png",
+      "text": "Umunsi umwe, inkima zagombaga gutegura igitaramo zigataramira izindi nyamaswa. Nuko zitangira imyitozo."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_08_Image_4.png",
+      "text": "Ku wa Mbere inkima imwe ivuza inanga."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_09_Image_2.png",
+      "text": "Ku wa Kabiri inkima ebyiri zicuranga gitari."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_10_Image_2.png",
+      "text": "Ku wa Gatatu inkima eshatu zicuranga icyembe."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_11_Image_2.png",
+      "text": "Ku wa Kane inkima enye zivuza imiduri."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_12_Image_2.png",
+      "text": "Ku wa Gatanu inkima eshanu zivuza imyirongi."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_13_Image_2.png",
+      "text": "Ku wa Gatandatu inkima esheshatu zibyina ikinimba."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_14_Image_2.png",
+      "text": "Ku Cyumweru inkima zirindwi zirashayaya."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_15_Image_2.png",
+      "text": "Umunsi w’ibirori ugeze, zijya ahabera ibirori. Buri nkima yitwaza igikoresho cy’ umuziki iza gukoresha."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_16_Image_2.png",
+      "text": "Zitunganya ibikoresho byose zirabwirana ziti: “Abatumirwa bacu turabanezeza bishime.”"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA_Page_17_Image_4.png",
+      "text": "Igitaramo cyaratangiye zicinya umudiho, inyamaswa zose zirizihirwa. Inkima zinezezwa n’uko igitaramo kigenze neza."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Mu ishyamba rya Nyungwe habamo inkima nyinshi. Inkima zaho zikunda umuziki cyane."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Uko zose ziba muri iryo shyamba zirizihirwa, zikabyina ndetse zikivuga ibyivugo bitandukanye."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Umunsi umwe, inkima zagombaga gutegura igitaramo zigataramira izindi nyamaswa. Nuko zitangira imyitozo."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Ku wa Mbere inkima imwe ivuza inanga."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Ku wa Kabiri inkima ebyiri zicuranga gitari."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Ku wa Gatatu inkima eshatu zicuranga icyembe."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Ku wa Kane inkima enye zivuza imiduri."
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "Ku wa Gatanu inkima eshanu zivuza imyirongi."
+    },
+    {
+      "n": 24,
+      "img": null,
+      "text": "Ku wa Gatandatu inkima esheshatu zibyina ikinimba."
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "Ku Cyumweru inkima zirindwi zirashayaya."
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "Umunsi w’ibirori ugeze, zijya ahabera ibirori. Buri nkima yitwaza igikoresho cy’ umuziki iza gukoresha."
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "Zitunganya ibikoresho byose zirabwirana ziti: “Abatumirwa bacu turabanezeza bishime.”"
+    },
+    {
+      "n": 28,
+      "img": null,
+      "text": "Igitaramo cyaratangiye zicinya umudiho, inyamaswa zose zirizihirwa. Inkima zinezezwa n’uko igitaramo kigenze neza."
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nIcyembe\nIjambo mu Inkuru"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nImiduri\nIjambo mu Inkuru"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nInanga\nIjambo mu Inkuru"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nZikivuga\nIjambo mu Inkuru"
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nZirashayaya\nIjambo mu Inkuru"
+    },
+    {
+      "n": 34,
+      "img": null,
+      "text": "IBIBAZO\n1) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nUmunsi umwe, inkima zagombaga gutegura igitaramo zigataramira izindi nyamaswa. Nuko zitangira ______\na) kurwana\nb) imyitozo\nc) gutoroka"
+    },
+    {
+      "n": 35,
+      "img": null,
+      "text": "IBIBAZO\n2) Hitamo igisuzo kiri cyo;\nKuwa mbere inkima imwe ivuza iki? ____\na) Amabuye\nb) Gitari\nc) Inanga"
+    },
+    {
+      "n": 36,
+      "img": null,
+      "text": "IBIBAZO\n3) Subiza YEGO cyangwa OYA;\nKu wa Kabiri inkima ebyiri zicuranga gitari\nYEGO\nOYA"
+    },
+    {
+      "n": 37,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fe754f933-8285-4afd-9986-a96d878b9f55%2fInkima+Ziririmba%2fINKIMA_ZIRIRMBA.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 37,
+    "words": 398
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8a5eef86-ot-nn-nan-l-a",
+  "title": "Otònn nan lè a",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Lucyanne Maria Anthony"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Lucyanne Maria Anthony",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cFRwWwLMmq"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f8a5eef86-3783-4207-ad4e-bc7235739526%2fOt%c3%b2nn+nan+l%c3%a8+a%2fSWPB_272-autumn-s-in-the-air_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Otònn se sezon lè briz ki pi piti a ba nou douch fèy otònn. Vèt vire an jòn, jòn vire an mawon, tankou yon tapi, fèy kouvri tè a.\nL'automne est la saison lorsque la plus petite brise nous donne la douche des feuilles d'automne. Le vert devient jaune, le jaune vire au brun, comme un tapis, les feuilles couvrent le sol."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f8a5eef86-3783-4207-ad4e-bc7235739526%2fOt%c3%b2nn+nan+l%c3%a8+a%2fSWPB_272-autumn-s-in-the-air_Page_3_Image_0001.png",
+      "text": "Ak ritm krakan yo, ak jwa yo pote, lè m' kouri sou yo, mwen tande bri yo. Li se yon mwa kè kontan ak charite, ak pataj konfiti, pandan ete a pral fini, otònn lan te nan lè a!\nLeur rythme craquant et croquant, beaucoup de joies elles apportent, quand je les écrase, j'entends leurs bruissement. C'est un mois de joie et de don, avec de la confiture à partager, l'été touche à sa fin, l'automne est dans l'air!"
+    }
+  ],
+  "stats": {
+    "pages": 2,
+    "words": 141
+  }
+}

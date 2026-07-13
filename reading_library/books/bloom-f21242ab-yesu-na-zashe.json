@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f21242ab-yesu-na-zashe",
+  "title": "Yesu na Zashe",
+  "description": "A Bible story based on Luke 19:1-10.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cmZchxC4hB"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+Cover.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+1.png",
+      "text": "Zashe alingaki amona Yesu, kasi azalaki mokuse."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+2.png",
+      "text": "Akimaki mbangu liboso na bango, mpe amataki na nzete."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+3.png",
+      "text": "Tango Yesu atalaki likolo mpe alobaki na ye, “Zashe, kita noki.”"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+4+.png",
+      "text": "Zashe akitaki noki."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+5.png",
+      "text": "Zashe ayambaki Jesu na ndaku naye."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+6.png",
+      "text": "Zashe alobaki, “Nakopesa sik’oyo kati-kati ya biloko na ngai epai ya babola!”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+7.png",
+      "text": "Bongo Yesu alobaki naye, “Lobiko ekoti lelo na ndaku oyo.”"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "Zashe azwi lobiko\nLuka 19:1-10\nYesu akotaki na engumba Jeriko, mpe azalaki kokatisa yango. Nzokande, ezalaki na moto moko kuna, kombo na ye Zashe. Azalaki mokonzi ya bafutisi mpako, mpe azalaki na bozwi ebele; azalaki na posa ya komona soki Yesu azali nani, kasi lokola azalaki mokuse, akokaki te komona Ye mpo ete bato bazalaki ebele penza.\nBoye akimaki mbangu na liboso mpe amataki na nzete ya sikomori mpo na komona Yesu, pamba te Yesu akolekela na nzela wana. Tango Yesu akomaki na esika yango, atombolaki miso mpe alobaki na ye: — Zashe, kita noki ! Nasengeli kolala na ndako na yo lelo.\nMbala moko, Zashe akitaki mpe ayambaki Yesu na esengo. Tango bato nyonso bamonaki bongo, bakomaki koyimayima; bazalaki koloba: — Tala, akei kolala na ndako ya moto ya masumu!\nKasi Zashe atelemaki mpe alobaki na Ye: — Nkolo, nazali kopesa, awa mpe sik’oyo, kati-kati ya biloko na ngai epai ya babola ; mpe, soki nabotolaki biloko ya moto, nazali kozongisela ye yango mbala minei.\nYesu alobaki na ye: — Lelo, lobiko eyei na ndako oyo, mpo ete ye mpe azali mwana ya Abrayami. Pamba te Mwana na Moto ayaki mpo na koluka mpe kobikisa bato oyo babunga."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 257
+  }
+}

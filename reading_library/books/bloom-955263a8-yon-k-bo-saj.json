@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-955263a8-yon-k-bo-saj",
+  "title": "Yon kòbo saj",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Mugulu Integrated Primary School"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Mugulu Integrated Primary School",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/AlIhhm6Df3"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_1_Image_0001.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_2_Image_0001.jpg",
+      "text": "Yon kòbo te swaf dlo. Li te soti nan yon distans trè long ala rechèch dlo pou li bwè, men li echwe.\nUn corbeau avait soif. Il s'est deplacé d'une très longue distance à la recherche d'eau potable, mais il a échoué."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_3_Image_0001.jpg",
+      "text": "Apre sa, li te eseye tounen bò pyebwa kote l' tap viv la. Li te pran yon bon bout tan paske li te fèb.\nIl a ensuite tenté de retourner à l'arbre où il vivait. Il lui a fallu beaucoup de temps parce qu'il était faible."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_4_Image_0001.jpg",
+      "text": "Kòm li tap deplase, li wè dlo nan yon po kay yon moun.\nComme il se déplaçait, il a vu de l'eau dans une pot dans la maison de quelqu'un."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_5_Image_0001.jpg",
+      "text": "Dlo a te prèske nan fon po an. Bèk li pa te kapab rive jwenn dlo a nan po a. Li te panse ak yon fason pou li jwenn dlo a.\nL'eau était presque au fond du pot. Son bec ne pouvait pas atteindre l'eau dans le pot. Il pensait à un moyen d'obtenir l'eau."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_6_Image_0001.jpg",
+      "text": "Yon lide te vin pase nan lespri li. Li te gen yon ti wòch. Li lage li nan po a, e dlo a vole.\nUne idée lui a vint à l'esprit. Il a obtenu quelques petites pierres. Il en a laissé une tomber dans le pot, et l'eau dans le pot a sauté."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_7_Image_0001.jpg",
+      "text": "Kòbo an mete bouch li e bwè ti gout dlo yo.\nLe corbeau a mis sa bouche et a bu les gouttelettes d'eau."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/dimichoisil94%40gmail.com%2f955263a8-6687-40d7-bc2a-721bb732878c%2fYon+k%c3%b2bo+saj1%2fASP_133_a_wise_crow_3_Page_8_Image_0001.jpg",
+      "text": "Li te gen yon lòt wòch e li repete egzèsis la. Li te kontinye fè sa jouk li te satisfè...\nIl avait une autre pierre et a répé l'exercice. Il a continué à le faire jusqu'à ce qu'il soit satisfait..."
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 289
+  }
+}

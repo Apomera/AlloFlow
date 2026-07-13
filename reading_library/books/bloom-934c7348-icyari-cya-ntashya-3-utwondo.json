@@ -1,0 +1,177 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-934c7348-icyari-cya-ntashya-3-utwondo",
+  "title": "Icyari Cya Ntashya 3 Utwondo",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’intashya yubaka icyari ikoresheje utwondo.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Eric NSHIMYUMUKIZA, Icyari Cya Ntashya Utwondo"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Sankofa Creatives Ltd",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rhhqcPp5Cz"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fcover3.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fcover5.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Sankofa Creatives LTD\nsankofacr@gmail.com\nwww.sankofacreatives.rw\nInkuru ya © Nshimyumukiza Eric, 2020.\nIki gitabo cyatangajwe bwa mbere na SANKOFA CREATIVES ltd\nku bufatanye n’umushinga READING READY mu mwaka wa 2020.\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo: kugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro, kugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu mpapuro, kugihererekanya yaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga (iziriho cyangwa izizavumburwa nyuma) no kugihindura mu ndimi izo ari zo zose. Abagikoresha ntibemerewe kugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje.\nGutunganya igitabo byakozwe na © Nshimyumukiza Eric.\nIki gitabo cyashushanyijwe na © Iradukunda Sebastien."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_07_Image_1.jpg",
+      "text": "Ntashya yarazindutse."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_08_Image_1.jpg",
+      "text": "Atora utwondo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_09_Image_3.jpg",
+      "text": "Atwomeka ku cyari."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_10_Image_1.jpg",
+      "text": "Yubaka vubavuba."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_11_Image_1.jpg",
+      "text": "Yuzuza icyari."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_12_Image_3.jpg",
+      "text": "Imvura iragwa."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_13_Image_1.jpg",
+      "text": "Iragisenya."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_14_Image_1.jpg",
+      "text": "Ntashya agira ubwoba."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_15_Image_1.jpg",
+      "text": "Yitegereza hakurya."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_16_Image_3.jpg",
+      "text": "Araguruka."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Ntashya yarazindutse."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Atora utwondo."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Atwomeka ku cyari."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Yubaka vubavuba."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Yuzuza icyari."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Imvura iragwa."
+    },
+    {
+      "n": 19,
+      "img": null,
+      "text": "Iragisenya."
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Ntashya agira ubwoba."
+    },
+    {
+      "n": 21,
+      "img": null,
+      "text": "Yitegereza hakurya."
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "Araguruka"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nAraguruka\nIjambo mu Inkuru"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nUtwondo\nIjambo mu Inkuru"
+    },
+    {
+      "n": 25,
+      "img": null,
+      "text": "IBIBAZO\n1) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nNtashya atora utwondo atwomeka ku ______\na) cyari\nb) ntebe\nc) mazi"
+    },
+    {
+      "n": 26,
+      "img": null,
+      "text": "IBIBAZO\n2) Subiza YEGO cyangwa OYA;\nNtashya yubatse icyari aracyuzuza wenyine\nYEGO\nOYA"
+    },
+    {
+      "n": 27,
+      "img": null,
+      "text": "IBIBAZO\n3) Hitamo igisubizo kiri cyo;\nIcyari cyasenywe ni iki?\na) abana\nb) izuba\nc) imvura"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Uduti2.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 28,
+    "words": 207
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5a8f7349-untitled",
+  "title": "Хто вкрав посмішку мого брата?",
+  "description": "Bhaiya doesn't feel like playing these days. Could it be because of his new monster friend Dukduk, who is always hanging around him? No one in the family takes Bhaiya seriously. But Chiru knows there's more than what meets the eye. A story about the lingering effects of depression.",
+  "language": "Ukrainian",
+  "langCode": "uk",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Education Above All (EAA)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Education Above All (EAA)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jsGrv9V0Av"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_1S.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_2S.png",
+      "text": "Ніна і Брат постійно грали разом. Вони досліджували печери під сходами та боролися з інопланетянами на груші на задньому подвір’ї."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_3S.jpg",
+      "text": "Брат завжди веселив Ніну. “Пірасура з Марсу і вона тут, щоб знищити твій будинок! Ха-ха!,” — брат ревів.\n“Аааа! Я зловлю і зжеру Пірасуру. Хахахаха!,” — сказала Ніна."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_4S.jpg",
+      "text": "Але пройшло багато часу відтоді, коли Ніна і брат грали разом. Брату не подобається ні з ким грати цими днями!\n“Чому тобі не хочеться грати?” Ніна кричить на брата.\n“Я не хочу,— каже брат.— Я застряг із цим великим монстром на моїй спині.”"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_5S.jpg",
+      "text": "Ніна називає чудовисько Дукдук.\n“Дукдук має бути підлим і сварливим,” — думає Ніна. “Здається, що він проковтнув посмішку мого брата.”\nДукдук, здається, завжди з братом.\nСкажи своєму монстрові, щоб він йшов геть! Я не люблю його, — каже Ніна."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_6S.png",
+      "text": "Іноді Дукдук стає більшим за вантажівку. Брат у ці дні злиться на все. Він навіть сердито жує їжу!"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_7S.jpg",
+      "text": "Мама вважає, що знає, як зробити брата почуватися краще.\n“Тобі варто вийти на прогулянку. Свіже повітря піде на користь,” каже Мама."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_8S.jpg",
+      "text": "В інші дні Дукдук здається тримається за брата. Він навіть не відпускає брата з ліжка."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_9S.jpg",
+      "text": "Тато продовжує питати брата про його самопочуття та розповідає йому, як це виправити.\n“Що не так, чому ти не їсиш?” каже тато. “Їж добре і твоя проблема зникне.”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_10S.png",
+      "text": "Бувають дні, коли Дукдук маленький і літає навколо, як повітряний змій. Тоді брат навіть встає з ліжка і грає з Ніною. Але він дуже швидко втомлюється."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_11.jpg",
+      "text": "Бабуся і дідусь розповідають братові, щоз ним. “Ви, діти і ваші проблеми. В мій час, ми були сильніші за будь-які проблеми!,” - каже дідусь. “Ти просто занадто тривожний,” — каже бабуся."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_12S.jpg",
+      "text": "“Це все у твоїй голові. Треба просто заспокоїти розум, і ти відірвешся від цього,” всі кажуть. “Я спробую, — каже брат, — але це не так просто.”"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_13S.jpg",
+      "text": "Ніна намагається відволікти брата.\n“Подивись на цю нову книгу, брат! Хіба малюнки не гарні?” — каже Ніна.\n— З ними все гаразд, Ніна. – відповідає брат."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_14.jpg",
+      "text": "“Брате, ти бачив мій новий крутезний набір поїздів?,” — верещить Ніна.\n“Хм, добре,” — каже брат.\n— Пірасура тут! Біжи, Брате, — кричить Ніна.\n— Не зараз, Ніна. Я не хочу грати, — відповідає Брат."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_15S.jpg",
+      "text": "“Дукдук засмучує його та робить його злим,” — думає Ніна.\nВона кидає подушку в Дукдука. “На тобі, жахлива річ! Відійди від брата. Віддай, поверни його посмішку.”"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_16S.png",
+      "text": "Сьогодні у брата День народження. Ніна спекла пиріг.\n“Дякую тобі, Ніна,” — посміхається брат. Ніна хмуриться.\nПосмішка брата зовсім інша у ці дні."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_17S2.jpg",
+      "text": "Ніна сидить поруч збратом.\n“Це твій новий друг робить тебе такимнещасним?” Брат киває."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_18S.jpg",
+      "text": "“Мені хочеться бути щасливим, але це здається занадто тяжкою працею у ці дні,” — пояснює Брат.\n“Як довго твій друг залишиться?,” — запитує Ніна.\n“Не знаю,” — каже брат."
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_19S.jpg",
+      "text": "“Все добре,” — каже Ніна. “Ми можемо грати, коли ти захочеш.”\nБрат посміхається своєю старою посмішкою. Дукдук стає меншим."
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_20S.jpg",
+      "text": "Тепер брат навіть отримує допомогу ві доктора Анті."
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_21S.png",
+      "text": "Дукдук все ще там. У деякі дні він все ще великий. Ніна чекає щоб ці дні минули. Частіше Дукдук малий, і тоді брат полюбляє грати."
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_22S.png",
+      "text": "Дукдук = Депресія\nЯк і інші частини нашого тіла, які потребують ліків, коли вони страждають, так само це стосується й нашого мозку, він також страждає. Коли це відбувається, ми часто відчуваємо сум, злість, а іноді й плачемо. Це почуття зникає з часом, для нас це нормально, коли ми сумуємо.\nУ деяких із нас цей смуток тримається дуже довго. якщо це відбувається, це впливає на те, як ми думаємо, на те, як ми спілкуємося та взаємодіємо з людьми, і часто у нас не вистачає енергії, щоб щось зробити.\nКоли ти бачиш когось, хто сумний без причини, поговори з ним. Скажи йому, що ти можливо не розумієш, як це відчувається, але ти бачиш, що це важко і тобі б хотилося допомогти. Якщо ти сам так почуваєшся, скажи про це рідним та друзям. Також допомагає розмова з психологом або психіатром."
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_23S.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 22,
+    "words": 637
+  }
+}

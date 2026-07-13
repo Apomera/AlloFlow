@@ -58,6 +58,7 @@
 
   var SOURCE_LABELS = {
     storyweaver: 'StoryWeaver',
+    bloom: 'Bloom Library',
     frontiers: 'Frontiers for Young Minds',
     nasa: 'NASA',
     noaa: 'NOAA',
@@ -75,9 +76,9 @@
     {
       id: 'stories',
       label: 'Stories',
-      sourceLine: 'StoryWeaver picture books',
+      sourceLine: 'StoryWeaver & Bloom Library picture books',
       summary: 'Leveled picture books for early and multilingual readers.',
-      sourceIds: ['storyweaver'],
+      sourceIds: ['storyweaver', 'bloom'],
       defaultLanguage: 'English',
       accent: 'emerald',
     },
@@ -132,6 +133,7 @@
       book && book.publisher,
     ].join(' ').toLowerCase();
     if (raw.indexOf('storyweaver') !== -1 || raw.indexOf('pratham') !== -1) return 'storyweaver';
+    if (raw.indexOf('bloomlibrary') !== -1 || raw.indexOf('bloom library') !== -1) return 'bloom';
     if (raw.indexOf('frontiers') !== -1) return 'frontiers';
     if (raw.indexOf('nasa') !== -1) return 'nasa';
     if (raw.indexOf('noaa') !== -1) return 'noaa';

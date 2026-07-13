@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-5aa6731c-21-mbua-na-mbwa-na-minzoto",
+  "title": "21 - Mbua na Mbwa na Minzoto",
+  "description": "Sat ek Lisien anvi anvol ver bann zetwal...",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "SIL Education for Life"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Education for Life",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cH81MmrX47"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/cH81MmrX47%2f1735871081161%2f21+-+Sat+ek+Lisien+ek+bann+Zetwal%2fcoverImagecurved.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"21 - Mbua na Mbwa na Minzoto\" (Lingala). Sat ek Lisien anvi anvol ver bann zetwal..."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 70
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b6e359b0-umukecuru-na-bakame",
+  "title": "Umukecuru Na Bakame",
+  "description": "Iyi nkuru iravuga uko byagendekeye umukecuru ubwo yari agiye gusura umukobwa we wari utuye hakurya y'uruzi.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Traditional Story"
+  ],
+  "authors": [
+    "Sysvestre Ntabijyana"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/gBNKxwftFX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage9.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage1.png",
+      "text": "Kera habayeho umukecuru wari umuhinzi.\nUmukobwa we yaje gushyingirwa ku mugabo wari utuye hakurya y’uruzi."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage2.png",
+      "text": "Nuko umunsi umwe wa mukecuru ategura imyumbati, ibishyimbi n’ibikoro byiza mu nkangara maze ajya gusura umukobwa we n’umukwe we."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage3.png",
+      "text": "Akimara kwambuka uruzi, yumva ijwi rimutegeka: “Gutura ibyo yari yikoreye.”\nUmukecuru arabaza ati: “Uri nde?”"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage4.png",
+      "text": "Rya jwi riramusubiza iti: “Ndi umwami w’ishyamba. Ntera abantu umuriro, nkabatera kuribwa mu nda, nkabatera gutitira no kuribwa umubiri wose.”\nUmukecuru ashya ubwoba, ashyira igiseke hasi ariruka."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage5.png",
+      "text": "Ageze mu rugo rw’umukwe we amutekerereza ibya rya jwi ryamuteye ubwoba.\nUmukwe we aramubwira ati: “Ubutaha nugaruka, uzafate inkangara ushyiremo ya mbwa yawe.”"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage6.png",
+      "text": "Nyuma y’icyumweru, umukecuru yongera gutegura inkangara asubira gusura umukobwa we n’umukwe we. Akimara kwambuka uruzi, rya jwi rirongera riramubwira riti: “Shyira iyi nkangara yawe hasi. Ndi umwami w’ishyamba. Ntera abantu umuriro, nkabatera kuribwa mu nda, nkabatera gutitira no kuribwa umubiri wose.”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage7.png",
+      "text": "Nuko umukecuru ashyira inkangara hasi ariruka ariko akomeza gucungira hafi ngo arebe uko biza kugenda.\nYagiye kubona abona inyamaswa iturutse munsi y’ikiraro. Kari ka Bakame!\nBakame yahise ipfundura inkangara yishimye."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fpage8.png",
+      "text": "Hahise hasohokamo imbwa ifite umujinya mwinshi.\nIbya Bakame biba birangiriye aho."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fb6e359b0-1e7e-421a-8801-96a541719b68%2fUmukecuru+Na+Bakame%2fSaide+ASOrg+orange+3.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 181
+  }
+}

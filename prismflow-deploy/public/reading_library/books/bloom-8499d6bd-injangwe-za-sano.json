@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-8499d6bd-injangwe-za-sano",
+  "title": "Injangwe za Sano",
+  "description": "Sano afite injangwe nyinshi. Injangwe za Sano zirangwa n'imico itandukanye. Zose ntizikunda Simba.",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Khothatso Ranoosi and Marion Drew"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/E1kwNmwJlb"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f35.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f23.png",
+      "text": "Sano akunda injangwe. Iwabo ahafite injangwe nyinshi."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f19.png",
+      "text": "Sano afite injangwe y'umukara. Iyi njangwe irya inyama nyinshi."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f21.png",
+      "text": "Sano afite indi njangwe imwe ibyibushye. Iyi njangwe yo irya byose."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f4.png",
+      "text": "Sano afite indi njangwe ikunda kurira ibiti. Iyi njangwe igeze mu giti irafatwa iherayo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f5.png",
+      "text": "Sano yuriye igiti. Sano n'injangwebaheze mu giti. Nyina wa Sano niwe ubafasha kumanuka mu giti."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f25.png",
+      "text": "Sano afite izindi njangwe ebyiri zigira ubunebwe. Zirirwa ziryamiye hanze ku kazuba."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f7.png",
+      "text": "Sano afite izindi njangwe eshatu zikora cyane. Zirara zifata imbeba mu gikoni."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f27.png",
+      "text": "Sano agira imbwa imwe. Iyo mbwa yitwa Simba. Simba nta nshuti igira. Ihora ibabaye."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f29.png",
+      "text": "Injangwe za Sano ntizikunda Simba. Zirayirukana zikayisohora mu rugo, Simba ikigendera."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f10.png",
+      "text": "Sano ajya gushaka Simba akayigarura mu rugo. Injangwe ntibizishimisha. Ntiziba zishaka kongera kubona Simba."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f31.png",
+      "text": "Mbese Sano afite injangwe zingahe? Sano afite injangwe umunani."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2f33.png",
+      "text": "Ese Sano afite imbwa zingahe? Sano afite imbwa imwe."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Iwanyu mufite injangwe zingahe?\nNone se iwanyu mufite imbwa zingahe?"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f8499d6bd-7a23-44df-b1b1-ede77f28a2bd%2fInjangwe+za+Sano%2fimage2.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 147
+  }
+}

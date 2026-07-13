@@ -1,0 +1,102 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-08eec07d-nyiramaterefone",
+  "title": "Nyiramaterefone",
+  "description": "Nyiramaterefone aratangaje cyane. Tekereza nawe umuntu ufite terefone eshanu zose. Azikoresha ate?",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Ursula Nafula"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/1BLccZOHU2"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f13.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f1.png",
+      "text": "Yitwa Nyiramaterefone. Mwitegereze se!"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f2.png",
+      "text": "Afite terefone eshanu zigendanwa.\nUko abyutse ahita atondekanya izo terefone uko ari eshanu ku meza."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f3.png",
+      "text": "Iy'umuhondo ayikoresha mu kuvugana n'abo mu muryango we."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f4.png",
+      "text": "Iy'umweru ayikoresha avugana n'abo bakorana."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f5.png",
+      "text": "Itukura ayikoresha avugana n'abamurimo amafaranga."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f6.png",
+      "text": "Iy'iroza ayikoresha iyo avugana n'inshuti ze z'inkoramutima."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f7.png",
+      "text": "Iy'umuhemba akayikoresha avugana n'abamukeneyeho ubufasha."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f8.png",
+      "text": "Nyiraterefone akunda gushimisha abantu.\nNtabwo akunda amahane."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f9.png",
+      "text": "Yemererera abana kuza kureba tereviziyo my iduka rye."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f10.png",
+      "text": "Akunda gusura abarwayi, agasura abakecuru nꞌabasaza mu ngo zabo."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f11.png",
+      "text": "Aho anyuze hose baririmba izina rye bati, \"Nyiramaterefone! Nyiramaterefone!\""
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2f12.png",
+      "text": "Na we akishima avuga ati: \"Ndi Nyiramaterefone. Nimurebe uburyo terefone zange ari nziza!\"\nNguwo Nyiramaterefone na terefone ze eshanu agendana."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f08eec07d-8362-4911-a724-1eeb7b766ad4%2fNyiramaterefone%2fSaide+ASOrg+orange+7.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 102
+  }
+}

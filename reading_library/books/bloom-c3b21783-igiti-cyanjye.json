@@ -1,0 +1,162 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-c3b21783-igiti-cyanjye",
+  "title": "Igiti Cyanjye",
+  "description": "Igitabo cy’abana bagitangira gusoma kivuga inkuru y’umwana wateye igiti cy’umwembe",
+  "language": "Kinyarwanda",
+  "langCode": "rw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Agriculture"
+  ],
+  "authors": [
+    "Ubuntu publishers"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kvMUkmQzDi"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_12_Image_3.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fcover4.png",
+      "text": ""
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_02_Image_0001.jpg",
+      "text": "Iki gitabo cyatangajwe bwa mbere muri 2020\nAbantu bose bahawe uburenganzira bukurikira kuri iki gitabo: kugisoma yaba mu buryo bw’ikoranabuhanga cyangwa ku mpapuro, kugikura kuri murandasi, kugifotoza cyangwa kugicapisha mu mpapuro, kugihererekanya yaba ku mpapuro cyangwa ku mbuga z’ikoranabuhanga (iziriho cyangwa izizavumburwa nyuma) no kugihindura mu ndimi izo ari zo zose. Abagikoresha ntibemerewe kugicuruza cyangwa kukibyazamo amafaranga mu buryo ubwo ari bwo bwose, batabiherewe uburenganzira mu nyandiko n’abagitangaje.\nUmwanditsi: Ubuntu publishers\nUmushushanyi: KWIZERA Paisible\nUwatunganyije igitabo: Byiringiro B. Max"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_05_Image_2.png",
+      "text": "Umunsi umwe, Isimbi yariye umwembe uramuryohera. Abaza nyina uko bahinga imyembe."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_06_Image_4.png",
+      "text": "Nyina amubwira ko batera ingemwe zayo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_07_Image_2.png",
+      "text": "Bukeye, nyina amuzanira urugemwe."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_08_Image_2.png",
+      "text": "Nyina amubwira ko imyembe iterwa ahantu hagera izuba."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_09_Image_2.png",
+      "text": "Isimbi na nyina batera urugemwe rw’umwembe munsi y’urugo."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_10_Image_2.png",
+      "text": "Nuko barahazitira ngo hatazagira urukandagira."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_11_Image_2.png",
+      "text": "Buri gihe Isimbi yasuraga igiti ke, akacyuhira."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_12_Image_2.png",
+      "text": "Igihe kigeze umwembe urera. Isimbi akajya asoroma imyembe agaha abandi bana."
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Umunsi umwe, Isimbi yariye umwembe uramuryohera. Abaza nyina uko bahinga imyembe."
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Nyina amubwira ko batera ingemwe zayo."
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Bukeye, nyina amuzanira urugemwe."
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Nyina amubwira ko imyembe iterwa ahantu hagera izuba."
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "Isimbi na nyina batera urugemwe rw’umwembe munsi y’urugo."
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Nuko barahazitira ngo hatazagira urukandagira."
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Buri gihe Isimbi yasuraga igiti ke, akacyuhira."
+    },
+    {
+      "n": 18,
+      "img": null,
+      "text": "Igihe kigeze umwembe urera. Isimbi akajya asoroma imyembe agaha abandi bana."
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nUmwembe\nIjambo mu Inkuru"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nUrugemwe\nIjambo mu Inkuru"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fWELCOME-PAGE---Glossary1.png",
+      "text": "Amagambo Y’ingenzi\nYasuraga\nIjambo mu Inkuru"
+    },
+    {
+      "n": 22,
+      "img": null,
+      "text": "IBIBAZO\n1) Uzuza iyi nteruro ukoresheje rimwe mu magambo wahawe;\nUmunsi umwe, Isimbi yariye umwembe uramuryohera.\nAbaza nyina uko bahinga _____\na) imyembe\nb) avoka\nc) ibirayi"
+    },
+    {
+      "n": 23,
+      "img": null,
+      "text": "IBIBAZO\n2) Hitamo igisuzo kiri cyo;\nKuki Isimbi na Nyina bateye urugemwe nyuma bakaruzitira, barurindaga _____\na) imbeho\nb) abarukandagira\nc) rutanyagirwa"
+    },
+    {
+      "n": 24,
+      "img": null,
+      "text": "IBIBAZO\n3) Hitamo YEGO cyangwa OYA\nIsimbi akajya asoroma imyembe akima abandi bana.\nYEGO\nOYA"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 25,
+    "words": 281
+  }
+}

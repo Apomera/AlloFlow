@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6aeee620-b-t-b-t",
+  "title": "Bèt, Bèt",
+  "description": "A Haitian Creole picture book from Bloom Library.",
+  "language": "Haitian Creole",
+  "langCode": "ht",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "African Reading Matters"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Reading Matters",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/3JqPj2GfcJ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_02_Image_0001.png",
+      "text": "Gade bèt nou konn gade nan kay la."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_03_Image_0001.jpg",
+      "text": "Bèf la ba nou lèt."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_04_Image_0001.jpg",
+      "text": "Lapen yo ak chat yo se de bon zanmi pou moun."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_05_Image_0001.png",
+      "text": "Chwal la di: << hiyan >>"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_06_Image_0001.jpg",
+      "text": "Bèf yo ak kabrit yo ofry kòm kado lè moun ap marye nan Ouganda."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_07_Image_0001.png",
+      "text": "Poul la di: <<Koukouriko >>"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_08_Image_0001.png",
+      "text": "Chen yo se yon sous sekirite pou kay nou yo."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/glauredarwindy%40gmail.com%2f6aeee620-14f3-4d0b-9647-10e88b0a5c6b%2fB%c3%a8t%2c+B%c3%a8t%2fASP_134_animals_animals_1_Page_09_Image_0001.png",
+      "text": "Kiltivatè a pran swen yo anpil."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 65
+  }
+}
