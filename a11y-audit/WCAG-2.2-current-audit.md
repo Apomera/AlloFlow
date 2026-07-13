@@ -139,6 +139,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Completed the Cause/Effect Sort interaction remediation: replaced simulated/nested item controls with native 44 CSS-pixel move buttons and separate speech actions, contained and named the destination dialog with Escape/Tab handling and origin-item focus restoration, announced keyboard and drag results, hints, completion, reset, and reset cancellation, cleaned hint/reset timers, added zoom-safe scrolling and focus indicators, gated spatial motion, and hid decorative icons (WCAG 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Completed the T-Chart Sort interaction remediation: replaced simulated and nested item controls with native 44 CSS-pixel move buttons and separate speech actions; contained and named the destination dialog with initial focus, Escape and Tab handling, backdrop cancellation, and origin-item focus restoration; announced incorrect-placement hints, completion, reset, and reset cancellation; cleaned up hint and confirmation timers; added zoom-safe scrolling and wrapping controls; gated spatial motion and scaling; and hid decorative icons (WCAG 1.1.1, 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

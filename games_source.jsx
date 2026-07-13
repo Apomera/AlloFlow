@@ -3114,8 +3114,13 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   const playAgainRef = useRef(null);
   const tChartCloseRef = useRef(null);
   const tChartWinRef = useRef(null);
+  const reducedMotion = useReducedMotion();
   useGameDialogFocus(gameContainerRef, tChartCloseRef, onClose);
   useEffect(() => { if (isWon && playAgainRef.current) playAgainRef.current.focus(); }, [isWon]);
+  useEffect(() => () => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+  }, []);
   const leftTitle = data?.leftTitle || 'Left';
   const rightTitle = data?.rightTitle || 'Right';
   const showZoneHint = (zone) => {
@@ -3152,6 +3157,10 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     setScore(0);
     setIsWon(false);
     setAttempts(0);
+    setKeyboardSelectedItemId(null);
+    setLastHint(null);
+    setConfirmingReset(false);
+    setAnnouncement(`T-Chart ready. ${all.length} items are in the unsorted bank.`);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFingerprint]);
   useEffect(() => {
@@ -3178,28 +3187,36 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
       showZoneHint(item.correctZone);
-      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}.`);
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}. Try ${item.correctZone === 'left' ? leftTitle : rightTitle}.`);
     }
   };
-  const handleItemKeyDown = (e, item) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault(); e.stopPropagation();
-      if (keyboardSelectedItemId === item.id) {
-        setKeyboardSelectedItemId(null);
-        setAnnouncement('Selection cancelled.');
-      } else {
-        setKeyboardSelectedItemId(item.id);
-        setAnnouncement(`Selected: ${item.text}. Choose ${leftTitle} or ${rightTitle}.`);
-        if (playSound) playSound('click');
-      }
+  const focusTChartItem = (itemId) => {
+    window.setTimeout(() => gameContainerRef.current?.querySelector(`[data-tchart-item-id="${itemId}"]`)?.focus(), 0);
+  };
+  const cancelTChartSelection = () => {
+    const itemId = keyboardSelectedItemId;
+    setKeyboardSelectedItemId(null);
+    setAnnouncement('Selection cancelled.');
+    if (itemId) focusTChartItem(itemId);
+  };
+  const toggleTChartSelection = (event, item) => {
+    event.stopPropagation();
+    if (keyboardSelectedItemId === item.id) {
+      cancelTChartSelection();
+      return;
     }
+    setKeyboardSelectedItemId(item.id);
+    setAnnouncement(`Selected: ${item.text}. Choose ${leftTitle}, ${rightTitle}, or return it to the bank.`);
+    if (playSound) playSound('click');
   };
   const handleKeyboardMove = (zone) => {
     if (!keyboardSelectedItemId) return;
     const item = items.find(i => i.id === keyboardSelectedItemId);
     if (!item) return;
+    const itemId = item.id;
     placeItem(item, zone);
     setKeyboardSelectedItemId(null);
+    focusTChartItem(itemId);
   };
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -3221,6 +3238,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         setIsWon(true);
         if (onScoreUpdate) onScoreUpdate(score, 'T-Chart Sort');
         if (playSound) playSound('correct');
+        setAnnouncement(`Complete! Every item is correctly sorted. Final score: ${score} points.`);
         if (onGameComplete) {
           onGameComplete('tchartSort', { score, itemsSorted: items.length, totalItems: items.length, incorrectAttempts: attempts });
         }
@@ -3229,12 +3247,16 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
     const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+    setKeyboardSelectedItemId(null); setConfirmingReset(false);
+    setAnnouncement('Board reset. All items returned to the unsorted bank.');
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const handleResetClick = () => {
@@ -3247,11 +3269,38 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     setConfirmingReset(true);
     setAnnouncement('Press Reset again to confirm clearing the board, or wait to cancel.');
     if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
-    confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
+    confirmResetTimerRef.current = setTimeout(() => {
+      setConfirmingReset(false);
+      setAnnouncement('Reset cancelled.');
+    }, 3000);
   };
   const leftItems = useMemo(() => items.filter(i => i.currentZone === 'left'), [items]);
   const rightItems = useMemo(() => items.filter(i => i.currentZone === 'right'), [items]);
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  const renderTChartItem = (item, zone, title, colorClasses = null) => {
+    const selected = keyboardSelectedItemId === item.id;
+    const inBank = zone === 'bank';
+    return (
+      <div
+        key={item.id}
+        draggable={inBank}
+        onDragStart={inBank ? (event) => handleDragStart(event, item) : undefined}
+        className={`flex items-center gap-1.5 rounded-xl ${inBank ? 'bg-white shadow-sm border-b-4 border-slate-200' : 'bg-white shadow-sm'} ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in zoom-in duration-300'}`}
+      >
+        <button
+          type="button"
+          data-tchart-item-id={item.id}
+          aria-label={`${item.text}, ${inBank ? 'unsorted' : `sorted into ${title}`}. Press to ${selected ? 'cancel selection' : 'select and move'}.`}
+          aria-pressed={selected}
+          onClick={(event) => toggleTChartSelection(event, item)}
+          className={`min-h-11 flex-1 px-3 py-2 rounded-lg font-bold cursor-pointer text-center focus:outline-none focus:ring-2 focus:ring-offset-2 ${inBank ? 'text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-900 focus:ring-indigo-500' : `text-xs ${colorClasses.chip}`} ${selected && !reducedMotion ? 'scale-105' : ''}`}
+        >
+          {item.text}
+        </button>
+        <SpeakButton text={item.text} size={11} />
+      </div>
+    );
+  };
   const renderColumn = (zone, title, items, colorClasses) => {
     const hasSelection = !!keyboardSelectedItemId;
     return (
@@ -3259,32 +3308,13 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       onDrop={(e) => handleDrop(e, zone)}
       onDragOver={(e) => handleDragOver(e, zone)}
       onDragLeave={handleDragLeave}
-      onClick={hasSelection ? () => handleKeyboardMove(zone) : undefined}
-      role={hasSelection ? 'button' : undefined}
-      tabIndex={hasSelection ? 0 : undefined}
-      aria-label={hasSelection ? `Place selected item into ${title}` : undefined}
-      onKeyDown={hasSelection ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove(zone); } } : undefined}
-      className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10 ${activeDropZone === zone ? colorClasses.active : colorClasses.idle} ${hasSelection ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}`}
+      className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'} ${activeDropZone === zone ? colorClasses.active : colorClasses.idle}`}
     >
       <div className={`backdrop-blur-sm border-2 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 ${colorClasses.header} ${hasSelection ? 'ring-4 ring-yellow-300 ring-offset-2' : ''}`}>
         {title}
       </div>
       <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
-        {items.map(item => (
-          <div
-            key={item.id}
-            tabIndex={0}
-            role="button"
-            aria-label={`${item.text}, sorted into ${title}`}
-            aria-pressed={keyboardSelectedItemId === item.id}
-            onKeyDown={(e) => handleItemKeyDown(e, item)}
-            onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-            className={`bg-white px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold animate-in zoom-in cursor-pointer focus:outline-none focus:ring-2 flex items-center gap-1.5 ${colorClasses.chip} ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
-          >
-            {item.text}
-            <SpeakButton text={item.text} size={11} />
-          </div>
-        ))}
+        {items.map(item => renderTChartItem(item, zone, title, colorClasses))}
         {items.length === 0 && (
           <div className="text-slate-600 italic text-xs mt-8 text-center w-full">{hasSelection ? (t('concept_sort.tap_to_place') || `Tap here to place in ${title}`) : (t('concept_sort.drop_placeholder') || 'Drop here')}</div>
         )}
@@ -3293,29 +3323,29 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   );
   };
   const leftColors = {
-    active: 'bg-cyan-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(6,182,212,0.3)]',
+    active: `bg-cyan-200/60 shadow-[inset_0_0_40px_rgba(6,182,212,0.3)] ${reducedMotion ? '' : 'scale-[1.01]'}`,
     idle: 'bg-gradient-to-b from-cyan-50/80 to-cyan-100/40',
     header: 'bg-cyan-200/80 border-cyan-300 text-cyan-800 transform -rotate-1',
     chip: 'text-cyan-800 border-s-4 border-cyan-400 hover:bg-cyan-50 focus:ring-cyan-500'
   };
   const rightColors = {
-    active: 'bg-indigo-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(99,102,241,0.3)]',
+    active: `bg-indigo-200/60 shadow-[inset_0_0_40px_rgba(99,102,241,0.3)] ${reducedMotion ? '' : 'scale-[1.01]'}`,
     idle: 'bg-gradient-to-b from-indigo-50/80 to-indigo-100/40',
     header: 'bg-indigo-200/80 border-indigo-300 text-indigo-800 transform rotate-1',
     chip: 'text-indigo-800 border-s-4 border-indigo-400 hover:bg-indigo-50 focus:ring-indigo-500'
   };
   return (
-    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tchart-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
+    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tchart-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${reducedMotion ? '' : ' animate-in zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+      <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
         <div>
           <h3 id="tchart-game-title" className="font-bold text-xl flex items-center gap-2">
-            <ArrowRight size={24}/> {t('games.tchart_sort.title') || 'T-Chart Sort'}
+            <ArrowRight size={24} aria-hidden="true"/> {t('games.tchart_sort.title') || 'T-Chart Sort'}
           </h3>
           {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
         </div>
-        <div className="flex items-center gap-4">
-          <div className="bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
             {t('common.score') || 'Score'}: {score}
           </div>
           <GameThemeToggle />
@@ -3326,16 +3356,17 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
             onClick={onClose}
             className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white"
           >
-            <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+            <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
           </button>
         </div>
       </div>
-      <div className="flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch">
+      <div className="flex-grow relative overflow-auto flex flex-col lg:flex-row items-stretch">
         <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
         {isWon && (
           <div role="presentation" className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div ref={tChartWinRef} role="dialog" aria-modal="true" aria-labelledby="tchart-victory-title" aria-describedby="tchart-victory-description"
               onKeyDown={event => {
+                event.stopPropagation();
                 if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                 if (event.key !== 'Tab') return;
                 const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -3343,7 +3374,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
                 const first = focusable[0], last = focusable[focusable.length - 1];
                 if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+              }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${reducedMotion ? '' : 'animate-bounce'}`}>
               <h2 id="tchart-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || 'Perfect!'}</h2>
               <p id="tchart-victory-description" className="text-slate-600">{t('games.tchart_sort.victory_desc') || 'You sorted every item into the correct column!'}</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
@@ -3352,24 +3383,41 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
                 <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
               </div>
             </div>
-            {!useReducedMotion() && <ConfettiExplosion />}
+            {!reducedMotion && <ConfettiExplosion />}
           </div>
         )}
         {lastHint && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-            <HelpCircle size={16} /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'left' ? leftTitle : rightTitle}
+          <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2 ${reducedMotion ? '' : 'animate-in fade-in slide-in-from-top-2 duration-300'}`}>
+            <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'left' ? leftTitle : rightTitle}
           </div>
         )}
         {keyboardSelectedItemId && (
-          <div className="absolute inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-modal="true" aria-label={t('games.choose_column_aria') || 'Choose a column'}>
-              <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a column above, or pick one here:'}</h4>
+          <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={cancelTChartSelection}>
+            <div
+              ref={moveMenuRef}
+              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full ${reducedMotion ? '' : 'animate-in zoom-in duration-200'}`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="tchart-move-menu-title"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (event.key === 'Escape') { event.preventDefault(); cancelTChartSelection(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+            >
+              <h4 id="tchart-move-menu-title" className="text-sm font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Choose a column for the selected item:'}</h4>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => handleKeyboardMove('left')} className="px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">{leftTitle}</button>
-                <button onClick={() => handleKeyboardMove('right')} className="px-4 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl font-bold text-xs transition-colors border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{rightTitle}</button>
-                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
+                <button type="button" onClick={() => handleKeyboardMove('left')} className="min-h-11 px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">{leftTitle}</button>
+                <button type="button" onClick={() => handleKeyboardMove('right')} className="min-h-11 px-4 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl font-bold text-xs transition-colors border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{rightTitle}</button>
+                <button type="button" onClick={() => handleKeyboardMove('bank')} className="col-span-2 min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
               </div>
-              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
+              <button type="button" onClick={cancelTChartSelection} className="min-h-11 mt-1 text-xs text-slate-700 hover:text-slate-900 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
             </div>
           </div>
         )}
@@ -3377,7 +3425,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
           <div className="w-0.5 h-full bg-slate-200"></div>
           <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-            <ArrowRight size={20} className="text-slate-600" />
+            <ArrowRight size={20} className="text-slate-600" aria-hidden="true" />
           </div>
         </div>
         {renderColumn('right', rightTitle, rightItems, rightColors)}
@@ -3392,31 +3440,16 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
               )}
             </div>
             <button
+              type="button"
               onClick={handleResetClick}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!useReducedMotion() ? 'animate-pulse' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+              className={`min-h-11 px-4 py-1.5 rounded-full text-xs font-bold border focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${reducedMotion ? '' : 'transition-colors'} ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${reducedMotion ? '' : 'animate-pulse'}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
               aria-label={confirmingReset ? 'Confirm reset — clears the whole board' : 'Reset board'}
             >
-              {confirmingReset ? 'Click again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
+              {confirmingReset ? 'Press again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
             </button>
           </div>
           <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-4 pt-2">
-            {bankItems.map(item => (
-              <div
-                key={item.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, item)}
-                tabIndex={0}
-                role="button"
-                aria-label={`${item.text}, unsorted. Press Enter to select.`}
-                aria-pressed={keyboardSelectedItemId === item.id}
-                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
-              >
-                {item.text}
-                <SpeakButton text={item.text} size={11} />
-              </div>
-            ))}
+            {bankItems.map(item => renderTChartItem(item, 'bank', 'unsorted items'))}
             {bankItems.length === 0 && !isWon && (
               <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">{t('concept_map.venn.bank_empty') || 'All items sorted!'}</div>
             )}
