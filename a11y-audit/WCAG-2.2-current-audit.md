@@ -117,6 +117,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made Syntax Builder a named focus-managed dialog with initial Close focus, Tab containment, Escape closing, launcher focus restoration, and a 44 CSS-pixel Close target; exposed completion as a named status, moved focus to Finish, hid decorative icons, and made workspace/completion entry honor reduced motion (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Reworked Crossword as a named focus-managed dialog and removed its focus-stealing, aria-hidden input and invisible full-screen keyboard overlay. The visible grid now exposes keyboard focus, permits Tab navigation, and receives focus after pointer or keyboard clue selection; Across and Down clues support Enter/Space activation, the Close target is 44 CSS pixels, decorative icons are hidden, completion is announced, and dialog entry respects reduced motion (WCAG 1.1.1, 1.3.1, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
