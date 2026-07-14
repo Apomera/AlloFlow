@@ -1426,6 +1426,7 @@ function ExportPreviewView(props) {
               bl += _brfDigit[ch];
               continue;
             }
+            if (numMode && (ch >= "a" && ch <= "j" || ch >= "A" && ch <= "J")) bl += ";";
             numMode = false;
             if (ch >= "a" && ch <= "z") {
               bl += ch.toUpperCase();
@@ -1460,9 +1461,19 @@ function ExportPreviewView(props) {
         a.click();
         URL.revokeObjectURL(a.href);
       };
-      const _grade1 = _toBRF(text);
       const _ensureBrailleLoader = window.AlloBraille && typeof window.AlloBraille.toUEB === "function" ? Promise.resolve(true) : window.__alloLoadPlugin ? window.__alloLoadPlugin("liblouis_braille_loader.js") : Promise.resolve(false);
       Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
+        let _g1Dropped = 0, _grade1;
+        if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === "function") {
+          const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
+          _grade1 = _r.brf;
+          _g1Dropped = _r.dropped;
+        } else {
+          _grade1 = _toBRF(text);
+        }
+        const _warnDrop = () => {
+          if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + " character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.", "info");
+        };
         if (window.AlloBraille && typeof window.AlloBraille.toUEB === "function") {
           addToast("Preparing contracted braille (UEB Grade 2)\u2026", "info");
           Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
@@ -1471,14 +1482,17 @@ function ExportPreviewView(props) {
               addToast("Electronic Braille (UEB Grade 2) downloaded", "success");
             } else {
               _downloadBRF(_grade1);
+              _warnDrop();
               addToast("Electronic Braille (Grade 1) downloaded", "success");
             }
           }).catch(() => {
             _downloadBRF(_grade1);
+            _warnDrop();
             addToast("Electronic Braille (Grade 1) downloaded", "success");
           });
         } else {
           _downloadBRF(_grade1);
+          _warnDrop();
           addToast("Electronic Braille (BRF) downloaded", "success");
         }
       });

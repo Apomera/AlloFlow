@@ -9613,11 +9613,41 @@ Return ONLY JSON:
     }, "data-help-key": "pdf_audit_alt_formats_epub_btn", className: "w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" }, "\u{1F4DA} ePub (e-readers, mobile, Kindle)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = pdfFixResult?.accessibleHtml;
       if (!html) return;
-      const text = html.replace(/<[^>]*>/g, "\n").replace(/&[^;]+;/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+      let text = "";
+      try {
+        const _d = new DOMParser().parseFromString(html, "text/html");
+        _d.querySelectorAll("script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source, details.allo-chart-data").forEach((el) => {
+          try {
+            el.remove();
+          } catch (_) {
+          }
+        });
+        _d.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => {
+          try {
+            el.insertAdjacentText("beforebegin", "\n\n");
+            el.appendChild(_d.createTextNode("\n"));
+          } catch (_) {
+          }
+        });
+        _d.querySelectorAll("p,li,tr,figcaption,blockquote,div,br").forEach((el) => {
+          try {
+            el.appendChild(_d.createTextNode("\n"));
+          } catch (_) {
+          }
+        });
+        text = ((_d.body && _d.body.textContent) || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+      } catch (_) {
+        text = html.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]*>/g, "\n").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&#?[a-z0-9]+;/gi, " ").replace(/\n{3,}/g, "\n\n").trim();
+      }
       const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
       const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": "7", ")": "7", '"': "7", "'": "'", "-": "-", "/": "/", "*": "9", "&": "&", "@": "@", "#": "#" };
       const _toBRF = (src) => {
-        const lines = src.replace(/\r\n?/g, "\n").split("\n");
+        let _norm = src;
+        try {
+          _norm = src.normalize("NFD").replace(/[̀-ͯ]/g, "");
+        } catch (_) {
+        }
+        const lines = _norm.replace(/\r\n?/g, "\n").split("\n");
         const out = [];
         for (const line of lines) {
           let bl = "";
@@ -9632,6 +9662,7 @@ Return ONLY JSON:
               bl += _brfDigit[ch];
               continue;
             }
+            if (numMode && (ch >= "a" && ch <= "j" || ch >= "A" && ch <= "J")) bl += ";";
             numMode = false;
             if (ch >= "a" && ch <= "z") {
               bl += ch.toUpperCase();
@@ -9658,17 +9689,52 @@ Return ONLY JSON:
         }
         return out.join("\r\n");
       };
-      const brf = _toBRF(text);
-      const blob = new Blob([brf], { type: "application/x-brf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = (pendingPdfFile?.name || "document").replace(/\.\w+$/, "") + ".brf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      addToast(t("toasts.braille_file_downloaded_grade_brf"), "success");
+      const _downloadBRF = (brf) => {
+        const blob = new Blob([brf], { type: "application/x-brf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = (pendingPdfFile?.name || "document").replace(/\.\w+$/, "") + ".brf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+      const _ensureBrailleLoader = window.AlloBraille && typeof window.AlloBraille.toUEB === "function" ? Promise.resolve(true) : window.__alloLoadPlugin ? window.__alloLoadPlugin("liblouis_braille_loader.js") : Promise.resolve(false);
+      Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
+        let _g1Dropped = 0, _grade1;
+        if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === "function") {
+          const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
+          _grade1 = _r.brf;
+          _g1Dropped = _r.dropped;
+        } else {
+          _grade1 = _toBRF(text);
+        }
+        const _warnDrop = () => {
+          if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + " character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.", "info");
+        };
+        if (window.AlloBraille && typeof window.AlloBraille.toUEB === "function") {
+          addToast("Preparing contracted braille (UEB Grade 2)…", "info");
+          Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+            if (ueb && ueb.replace(/\s/g, "").length) {
+              _downloadBRF(ueb);
+              addToast("Electronic Braille (UEB Grade 2) downloaded", "success");
+            } else {
+              _downloadBRF(_grade1);
+              _warnDrop();
+              addToast(t("toasts.braille_file_downloaded_grade_brf"), "success");
+            }
+          }).catch(() => {
+            _downloadBRF(_grade1);
+            _warnDrop();
+            addToast(t("toasts.braille_file_downloaded_grade_brf"), "success");
+          });
+        } else {
+          _downloadBRF(_grade1);
+          _warnDrop();
+          addToast(t("toasts.braille_file_downloaded_grade_brf"), "success");
+        }
+      });
     }, "data-help-key": "pdf_audit_alt_formats_braille_btn", className: "w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" }, "\u2803\u2817\u2807 Electronic Braille (BRF)"), /* @__PURE__ */ React.createElement("button", { role: "menuitem", onClick: (e) => {
       const d = e.currentTarget.closest("details");
       if (d) d.open = false;

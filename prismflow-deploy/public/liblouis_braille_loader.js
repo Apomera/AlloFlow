@@ -22,7 +22,68 @@
  * NOT yet browser-smoke-tested. If liblouis fails to initialise the export
  * silently keeps working via the Grade-1 fallback.
  */
-(function () {
+
+// ── Grade-1 (uncontracted) Braille-ASCII — the offline, no-WASM converter ────
+// shared by BOTH .brf export lanes (the PDF remediation view + the Document
+// Builder export menu) so they can't drift. Fixes over the old inline copies:
+//   - a letter sign (dots 5-6 = ';') after a number so "1a" reads as "1" then
+//     "a", not "11" (the digits 1-0 share the a-j cells);
+//   - smart-punctuation normalization + NFD accent folding (curly quotes, em/en
+//     dashes, e-acute -> e) so accented / typographic text transliterates
+//     instead of being silently dropped;
+//   - word-aware 40-cell wrapping (no mid-word breaks); and
+//   - a dropped-character count (opts.withMeta) so a caller can warn honestly
+//     when a script has no Grade-1 English braille equivalent (CJK, Arabic...).
+var _G1_DIGIT = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+var _G1_PUNCT = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
+var _G1_SMART = { '‘': "'", '’': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...', ' ': ' ', '«': '"', '»': '"', '•': '*' };
+function _g1Wrap(line, into, cells) {
+  if (line.length <= cells) { into.push(line); return; }
+  var words = line.split(' '), cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i];
+    while (w.length > cells) { if (cur) { into.push(cur); cur = ''; } into.push(w.slice(0, cells)); w = w.slice(cells); }
+    if (!cur) cur = w;
+    else if (cur.length + 1 + w.length <= cells) cur += ' ' + w;
+    else { into.push(cur); cur = w; }
+  }
+  if (cur) into.push(cur);
+}
+function toGrade1BRF(text, opts) {
+  var src = String(text == null ? '' : text);
+  var cells = (opts && opts.cellsPerLine) || 40;
+  src = src.replace(/[‘’“”–—… «»•]/g, function (c) { return _G1_SMART[c] || ''; });
+  try { src = src.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (_) {}
+  var lines = src.replace(/\r\n?/g, '\n').split('\n');
+  var out = [], dropped = 0;
+  for (var li = 0; li < lines.length; li++) {
+    var line = lines[li], bl = '', numMode = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _G1_DIGIT[ch]; continue; }
+      if (numMode && ((ch >= 'a' && ch <= 'j') || (ch >= 'A' && ch <= 'J'))) bl += ';';
+      numMode = false;
+      if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
+      if (ch >= 'A' && ch <= 'Z') { bl += ',' + ch; continue; }
+      if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+      if (_G1_PUNCT[ch] !== undefined) { bl += _G1_PUNCT[ch]; continue; }
+      var cc = ch.charCodeAt(0);
+      if (cc >= 0x20 && cc <= 0x7e) { bl += ch.toUpperCase(); continue; }
+      dropped++;
+    }
+    _g1Wrap(bl, out, cells);
+  }
+  var brf = out.join('\r\n');
+  return (opts && opts.withMeta) ? { brf: brf, dropped: dropped } : brf;
+}
+if (typeof window !== 'undefined') {
+  window.AlloBraille = window.AlloBraille || {};
+  if (typeof window.AlloBraille.toGrade1BRF !== 'function') window.AlloBraille.toGrade1BRF = toGrade1BRF;
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { toGrade1BRF: toGrade1BRF };
+
+// ── UEB Grade 2 (contracted) via liblouis — browser only, lazy ──────────────
+if (typeof window !== 'undefined') (function () {
   'use strict';
   if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') return;
 
@@ -129,7 +190,7 @@
     if (cur) into.push(cur);
   }
 
-  window.AlloBraille = {
+  window.AlloBraille = Object.assign(window.AlloBraille || {}, {
     /**
      * Translate plain text to UEB Grade 2 Braille-ASCII (BRF-ready). Resolves
      * to a string, or NULL if liblouis is unavailable / anything goes wrong.
@@ -153,7 +214,7 @@
       }).catch(function () { return null; });
     },
     _tableList: TABLE_LIST
-  };
+  });
 
-  console.log('[AlloBraille] liblouis_braille_loader.js ready — window.AlloBraille.toUEB(text) (lazy UEB Grade 2)');
+  console.log('[AlloBraille] liblouis_braille_loader.js ready — window.AlloBraille.toUEB(text) (lazy UEB Grade 2) + toGrade1BRF(text) (Grade 1)');
 })();
