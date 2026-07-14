@@ -65,6 +65,7 @@ var MousePointerClick = _lazyIcon('MousePointerClick');
 var MessageSquare = _lazyIcon('MessageSquare');
 var PenTool = _lazyIcon('PenTool');
 var ShieldCheck = _lazyIcon('ShieldCheck');
+var quizreducedMotionClass = 'motion-reduce:animate-none';
 function _quizShuffleCopy(arr) {
   var copy = (arr || []).slice();
   for (var i = copy.length - 1; i > 0; i--) {
@@ -1199,7 +1200,7 @@ function LiveResultsDashboard(p) {
   }, 'Live Results — ' + modeLabel), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600"
   }, data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')), inFlightCount > 0 && /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse",
+    className: 'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse ' + quizreducedMotionClass,
     role: "status",
     "aria-live": "polite",
     "aria-label": 'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's'),
@@ -1334,15 +1335,20 @@ function LiveResultsDashboard(p) {
     }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
       className: "bg-slate-100"
     }, /*#__PURE__*/React.createElement("th", {
+      scope: "col",
       className: "w-7 px-1 py-1.5",
       "aria-label": t("a11y.expand_row")
     }), /*#__PURE__*/React.createElement("th", {
+      scope: "col",
       className: "text-left px-2 py-1.5 font-bold text-slate-700"
     }, "Student"), /*#__PURE__*/React.createElement("th", {
+      scope: "col",
       className: "text-center px-2 py-1.5 font-bold text-slate-700"
     }, "Answered"), /*#__PURE__*/React.createElement("th", {
+      scope: "col",
       className: "text-center px-2 py-1.5 font-bold text-slate-700"
     }, "Correct"), /*#__PURE__*/React.createElement("th", {
+      scope: "col",
       className: "text-center px-2 py-1.5 font-bold text-slate-700"
     }, "IDK"))), /*#__PURE__*/React.createElement("tbody", null, data.studentRows.map(function (row) {
       var pct = row.totalAnswered > 0 ? Math.round(row.totalCorrect / row.totalAnswered * 100) : 0;
@@ -1367,8 +1373,9 @@ function LiveResultsDashboard(p) {
         }
       }, isExpanded ? '▼' : '▶') : /*#__PURE__*/React.createElement("span", {
         className: "text-slate-600 text-xs"
-      }, "·")), /*#__PURE__*/React.createElement("td", {
-        className: "px-2 py-1.5 text-slate-800"
+      }, "·")), /*#__PURE__*/React.createElement("th", {
+        scope: "row",
+        className: "px-2 py-1.5 text-left font-medium text-slate-800"
       }, row.displayName), /*#__PURE__*/React.createElement("td", {
         className: "text-center px-2 py-1.5"
       }, /*#__PURE__*/React.createElement("span", {
@@ -1725,7 +1732,7 @@ function LiveResultsDashboard(p) {
   }, "×")), explainerModal.loading ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 text-center text-sm text-slate-600"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "inline-block animate-pulse"
+    className: 'inline-block animate-pulse ' + quizreducedMotionClass
   }, "✨ Generating explainer…")) : explainerModal.error ? /*#__PURE__*/React.createElement("div", {
     className: "p-3 rounded bg-rose-50 border border-rose-200 text-sm text-rose-800"
   }, explainerModal.error) : /*#__PURE__*/React.createElement("div", {
@@ -2033,6 +2040,7 @@ function FreeformItemCard(p) {
   }, typeLabel), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 leading-relaxed"
   }, q.question || ''))), q.type === 'fill-blank' ? /*#__PURE__*/React.createElement("input", {
+    "aria-label": t("a11y.fill_in_blank"),
     type: "text",
     value: response,
     onChange: function (ev) {
@@ -2046,9 +2054,9 @@ function FreeformItemCard(p) {
     },
     placeholder: t("placeholders.missing_word_or_phrase"),
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
-    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50",
-    "aria-label": t("a11y.fill_in_blank")
+    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
   }) : /*#__PURE__*/React.createElement("textarea", {
+    "aria-label": typeLabel + " response",
     value: response,
     onChange: function (ev) {
       setResponse(ev.target.value);
@@ -2056,8 +2064,7 @@ function FreeformItemCard(p) {
     placeholder: q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...',
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
     rows: q.type === 'self-explanation' ? 5 : 3,
-    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y",
-    "aria-label": typeLabel + ' response'
+    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y"
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between gap-2 mt-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2476,6 +2483,7 @@ function QuizView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "🧹 "), t("ui_common.remove_text"))), /*#__PURE__*/React.createElement("textarea", {
+      "aria-label": "Image refinement instructions",
       value: inputValue,
       onChange: function (e) {
         var v = e.target.value;
@@ -2492,7 +2500,6 @@ function QuizView(props) {
         }
       },
       placeholder: 'Describe how to refine this image (e.g. "make the background pure white", "add a clearer label")…',
-      "aria-label": "Image refinement instructions",
       rows: 2,
       className: "w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none resize-y",
       disabled: isLoading
@@ -2765,6 +2772,7 @@ function QuizView(props) {
   }, "Type any concept from the quiz (or any prior knowledge you're unsure about). The AI will give you a 60-90 word explanation tuned to your grade level."), /*#__PURE__*/React.createElement("div", {
     className: "flex items-stretch gap-2"
   }, /*#__PURE__*/React.createElement("input", {
+    "aria-label": "Concept to explain",
     type: "text",
     value: explainerInput,
     onChange: function (ev) {
@@ -2777,8 +2785,7 @@ function QuizView(props) {
       }
     },
     placeholder: _quizMode === 'pre-check' ? 'e.g., "what plants need to grow"' : 'e.g., "photosynthesis"',
-    className: "flex-1 min-w-0 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400",
-    "aria-label": "Concept to explain"
+    className: "flex-1 min-w-0 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
@@ -2813,7 +2820,7 @@ function QuizView(props) {
   }, isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.connect'),
     onClick: handleStartLiveSession,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200",
+    className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass,
     title: t('quiz.launch_live_tooltip')
   }, /*#__PURE__*/React.createElement(Wifi, {
     size: 14
@@ -3336,7 +3343,7 @@ function QuizView(props) {
     title: t('quiz.verify_tooltip')
   }, isFactChecking[i] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin " + quizreducedMotionClass
   }) : q.factCheck ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12
   }) : /*#__PURE__*/React.createElement(ShieldCheck, {
@@ -3448,7 +3455,7 @@ function QuizView(props) {
     title: t('quiz.regenerate_check')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: isFactChecking[i] ? "animate-spin" : ""
+    className: isFactChecking[i] ? "animate-spin " + quizreducedMotionClass : ""
   })), /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
     className: "mt-0.5 shrink-0 text-yellow-600"

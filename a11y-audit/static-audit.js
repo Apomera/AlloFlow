@@ -288,10 +288,15 @@ const CHECKS = [
     wcag: '1.3.1 Info and Relationships',
     severity: 'minor',
     description: 'Table <th> element lacks scope="col" or scope="row"',
-    test(line) {
+    test(line, lineNum, lines) {
       const isTh = /h\(\s*['"]th['"]/.test(line) || /createElement\(\s*['"]th['"]/.test(line);
       if (!isTh) return false;
-      return !/scope/.test(line);
+      const propLines = [line];
+      for (let i = lineNum; i < Math.min(lines.length, lineNum + 8); i++) {
+        propLines.push(lines[i]);
+        if (/^\s*\}/.test(lines[i])) break;
+      }
+      return !/\bscope\s*[:=]/.test(propLines.join(' '));
     },
     fix: 'Add scope="col" to column headers, scope="row" to row headers.',
   },
