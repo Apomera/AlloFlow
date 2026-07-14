@@ -824,9 +824,31 @@ function InfoModal({
   const MessageCircleQuestion = window.MessageCircleQuestion || noop;
   const [activeVideo, setActiveVideo] = React.useState("teacher");
   const [selectedFeature, setSelectedFeature] = React.useState(null);
+  const featureBackRef = React.useRef(null);
+  const featureReturnFocusRef = React.useRef(null);
+  const featureDetailsWereOpenRef = React.useRef(false);
   React.useEffect(() => {
     setSelectedFeature(null);
   }, [infoModalTab]);
+  const openFeatureDetails = (feature, categoryName, trigger) => {
+    featureReturnFocusRef.current = trigger;
+    setSelectedFeature({ ...feature, categoryName });
+  };
+  const closeFeatureDetails = () => setSelectedFeature(null);
+  React.useEffect(() => {
+    if (selectedFeature) {
+      featureDetailsWereOpenRef.current = true;
+      const frame2 = window.requestAnimationFrame(() => featureBackRef.current?.focus());
+      return () => window.cancelAnimationFrame(frame2);
+    }
+    if (!featureDetailsWereOpenRef.current) return void 0;
+    featureDetailsWereOpenRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      const trigger = featureReturnFocusRef.current;
+      if (trigger?.isConnected && typeof trigger.focus === "function") trigger.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedFeature]);
   const dialogRef = React.useRef(null);
   React.useEffect(() => {
     const dialog = dialogRef.current;
@@ -994,10 +1016,12 @@ function InfoModal({
   ))), /* @__PURE__ */ React.createElement(AccessibilityNote, { t })) : infoModalTab === "atlas" ? /* @__PURE__ */ React.createElement(AtlasTab, { t }) : infoModalTab === "privacy" ? /* @__PURE__ */ React.createElement(PrivacyTab, { t }) : infoModalTab === "opensource" ? /* @__PURE__ */ React.createElement(OpenSourceTab, { t }) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => setSelectedFeature(null),
-      className: "flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded p-1 cursor-pointer"
+      ref: featureBackRef,
+      type: "button",
+      onClick: closeFeatureDetails,
+      className: "min-h-11 flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 rounded px-3 py-2 cursor-pointer"
     },
-    /* @__PURE__ */ React.createElement(ArrowLeft, { size: 16 }),
+    /* @__PURE__ */ React.createElement(ArrowLeft, { size: 16, "aria-hidden": "true" }),
     " Back to Feature Guide"
   ), /* @__PURE__ */ React.createElement("div", { className: `p-4 rounded-xl border ${colorMap[selectedFeature.color || "slate"] || "bg-slate-50 border-slate-200 text-slate-700"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "p-2 bg-white/80 rounded-lg shadow-sm text-slate-800 flex items-center justify-center" }, React.createElement({
     "Search": Search,
@@ -1069,22 +1093,15 @@ function InfoModal({
       }[feature.icon] || Sparkles;
       const colorClass = colorMap[feature.color || "slate"];
       return /* @__PURE__ */ React.createElement(
-        "div",
+        "button",
         {
+          type: "button",
           key: idx,
-          role: "button",
-          tabIndex: 0,
-          onClick: () => setSelectedFeature({ ...feature, categoryName: categoryTitle }),
-          onKeyDown: (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setSelectedFeature({ ...feature, categoryName: categoryTitle });
-            }
-          },
-          className: `p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 ${colorClass}`
+          onClick: (event) => openFeatureDetails(feature, categoryTitle, event.currentTarget),
+          className: `w-full min-h-11 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${colorClass}`
         },
-        /* @__PURE__ */ React.createElement("h5", { className: "font-bold flex items-center gap-2 mb-1 text-sm" }, /* @__PURE__ */ React.createElement(IconComponent, { size: 16 }), " ", feature.title),
-        /* @__PURE__ */ React.createElement("p", { className: "text-xs opacity-90 leading-snug" }, feature.desc)
+        /* @__PURE__ */ React.createElement("span", { className: "font-bold flex items-center gap-2 mb-1 text-sm" }, /* @__PURE__ */ React.createElement(IconComponent, { size: 16, "aria-hidden": "true" }), " ", feature.title),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs opacity-90 leading-snug" }, feature.desc)
       );
     })));
   }), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-3 rounded border border-indigo-100 text-xs text-indigo-800 mt-2" }, /* @__PURE__ */ React.createElement("strong", null, t("tips.pro_tip_label")), " Use the ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, /* @__PURE__ */ React.createElement(Users, { size: 12, className: "inline" }), " ", t("profiles.title")), " feature to save settings (Grade, Language, Interests) for different groups.")))));

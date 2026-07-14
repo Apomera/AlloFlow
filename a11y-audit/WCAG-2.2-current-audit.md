@@ -201,6 +201,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Synchronized the Word Sounds setup-source review-row actions with accessible native semantics: removed an inert simulated button around image controls and false dialog semantics from the difficulty select; kept image regeneration persistently visible; added word-specific accessible names and busy states to audio/image actions; and provided 44 CSS-pixel audio, image, and select targets with strong visible focus (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Reworked Info/About Feature Guide navigation: converted every simulated feature card to a full-width native button with a 44 CSS-pixel minimum target and strong visible focus; removed redundant Enter/Space emulation; moved focus to the Back action when details replace the card grid; and restored focus to the exact originating feature card when returning to the guide (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

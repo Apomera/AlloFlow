@@ -1014,10 +1014,35 @@ function InfoModal({
 
   const [activeVideo, setActiveVideo] = React.useState('teacher');
   const [selectedFeature, setSelectedFeature] = React.useState(null);
+  const featureBackRef = React.useRef(null);
+  const featureReturnFocusRef = React.useRef(null);
+  const featureDetailsWereOpenRef = React.useRef(false);
 
   React.useEffect(() => {
     setSelectedFeature(null);
   }, [infoModalTab]);
+
+  const openFeatureDetails = (feature, categoryName, trigger) => {
+    featureReturnFocusRef.current = trigger;
+    setSelectedFeature({ ...feature, categoryName });
+  };
+
+  const closeFeatureDetails = () => setSelectedFeature(null);
+
+  React.useEffect(() => {
+    if (selectedFeature) {
+      featureDetailsWereOpenRef.current = true;
+      const frame = window.requestAnimationFrame(() => featureBackRef.current?.focus());
+      return () => window.cancelAnimationFrame(frame);
+    }
+    if (!featureDetailsWereOpenRef.current) return undefined;
+    featureDetailsWereOpenRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      const trigger = featureReturnFocusRef.current;
+      if (trigger?.isConnected && typeof trigger.focus === 'function') trigger.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedFeature]);
 
   const dialogRef = React.useRef(null);
   React.useEffect(() => {
@@ -1322,10 +1347,12 @@ function InfoModal({
             <div className="space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700">
               {/* Back Button */}
               <button
-                onClick={() => setSelectedFeature(null)}
-                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded p-1 cursor-pointer"
+                ref={featureBackRef}
+                type="button"
+                onClick={closeFeatureDetails}
+                className="min-h-11 flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 rounded px-3 py-2 cursor-pointer"
               >
-                <ArrowLeft size={16}/> Back to Feature Guide
+                <ArrowLeft size={16} aria-hidden="true"/> Back to Feature Guide
               </button>
 
               {/* Header Info */}
@@ -1467,19 +1494,17 @@ function InfoModal({
                         }[feature.icon] || Sparkles;
                         const colorClass = colorMap[feature.color || 'slate'];
                         return (
-                          <div
+                          <button
+                            type="button"
                             key={idx}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => setSelectedFeature({ ...feature, categoryName: categoryTitle })}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedFeature({ ...feature, categoryName: categoryTitle }); } }}
-                            className={`p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 ${colorClass}`}
+                            onClick={(event) => openFeatureDetails(feature, categoryTitle, event.currentTarget)}
+                            className={`w-full min-h-11 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${colorClass}`}
                           >
-                            <h5 className="font-bold flex items-center gap-2 mb-1 text-sm">
-                              <IconComponent size={16}/> {feature.title}
-                            </h5>
-                            <p className="text-xs opacity-90 leading-snug">{feature.desc}</p>
-                          </div>
+                            <span className="font-bold flex items-center gap-2 mb-1 text-sm">
+                              <IconComponent size={16} aria-hidden="true"/> {feature.title}
+                            </span>
+                            <span className="block text-xs opacity-90 leading-snug">{feature.desc}</span>
+                          </button>
                         );
                       })}
                     </div>
