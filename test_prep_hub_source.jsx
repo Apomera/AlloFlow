@@ -500,6 +500,7 @@ function testPrepBuildBatchDiagnostic(pack, answers, confidence, batchNumber) {
   const byDomain = {};
   const bySkill = {};
   const confidenceSummary = { sure: { correct: 0, total: 0 }, unsure: { correct: 0, total: 0 }, guess: { correct: 0, total: 0 }, unrated: { correct: 0, total: 0 } };
+  const itemResults = {};
   const confidentMissQuestionNumbers = [];
   let correct = 0;
   let uncertainCorrect = 0;
@@ -515,6 +516,7 @@ function testPrepBuildBatchDiagnostic(pack, answers, confidence, batchNumber) {
       if (isCorrect) bySkill[skillId].correct += 1;
     });
     const rating = ['sure', 'unsure', 'guess'].includes(confidenceMap[item.id]) ? confidenceMap[item.id] : 'unrated';
+    itemResults[item.id] = { correct: isCorrect, confidence: rating };
     confidenceSummary[rating].total += 1;
     if (isCorrect) confidenceSummary[rating].correct += 1;
     if (!isCorrect && rating === 'sure') confidentMissQuestionNumbers.push(startIndex + localIndex + 1);
@@ -553,6 +555,7 @@ function testPrepBuildBatchDiagnostic(pack, answers, confidence, batchNumber) {
     skillRows,
     focusSkillIds,
     confidenceSummary,
+    itemResults,
     confidentMissQuestionNumbers,
     uncertainCorrect,
     feedback,
@@ -585,10 +588,25 @@ function testPrepNormalizeConfidenceSummary(value) {
   return output;
 }
 
+
+function testPrepNormalizeItemResults(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const output = {};
+  Object.keys(input).slice(0, 500).forEach((key) => {
+    const id = testPrepSlug(key, '');
+    const entry = input[key] && typeof input[key] === 'object' && !Array.isArray(input[key]) ? input[key] : {};
+    if (!id) return;
+    output[id] = {
+      correct: entry.correct === true,
+      confidence: ['sure', 'unsure', 'guess'].includes(entry.confidence) ? entry.confidence : 'unrated',
+    };
+  });
+  return output;
+}
 function testPrepAttemptMetadata(metadata) {
   const input = metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
   return {
-    mode: ['standard', 'diagnostic', 'targeted', 'simulation'].includes(input.mode) ? input.mode : 'standard',
+    mode: ['standard', 'diagnostic', 'targeted', 'review', 'simulation'].includes(input.mode) ? input.mode : 'standard',
     label: String(input.label || '').trim().slice(0, 120),
     targetSkillId: testPrepSlug(input.targetSkillId, ''),
     sourceStartIndex: Math.max(0, Math.floor(testPrepFinite(input.sourceStartIndex, 0))),
@@ -614,6 +632,7 @@ function recordTestPrepBatchAttempt(progress, pack, diagnostic, confidence, now,
     percent: diagnostic.percent,
     confidence: confidence && typeof confidence === 'object' && !Array.isArray(confidence) ? confidence : {},
     confidenceSummary: testPrepNormalizeConfidenceSummary(diagnostic.confidenceSummary),
+    itemResults: testPrepNormalizeItemResults(diagnostic.itemResults),
     byDomain: testPrepNormalizeBreakdown(diagnostic.byDomain),
     bySkill: testPrepNormalizeBreakdown(diagnostic.bySkill),
     mode: meta.mode,
@@ -642,9 +661,10 @@ function normalizeTestPrepProgress(value) {
     percent: Math.max(0, Math.min(100, Math.round(testPrepFinite(attempt && attempt.percent, 0)))),
     confidence: attempt && attempt.confidence && typeof attempt.confidence === 'object' && !Array.isArray(attempt.confidence) ? attempt.confidence : {},
     confidenceSummary: testPrepNormalizeConfidenceSummary(attempt && attempt.confidenceSummary),
+    itemResults: testPrepNormalizeItemResults(attempt && attempt.itemResults),
     byDomain: testPrepNormalizeBreakdown(attempt && attempt.byDomain),
     bySkill: testPrepNormalizeBreakdown(attempt && attempt.bySkill),
-    mode: ['standard', 'diagnostic', 'targeted', 'simulation'].includes(attempt && attempt.mode) ? attempt.mode : 'standard',
+    mode: ['standard', 'diagnostic', 'targeted', 'review', 'simulation'].includes(attempt && attempt.mode) ? attempt.mode : 'standard',
     label: String(attempt && attempt.label || '').trim().slice(0, 120),
     targetSkillId: testPrepSlug(attempt && attempt.targetSkillId, ''),
     sourceStartIndex: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.sourceStartIndex, 0))),
@@ -734,6 +754,20 @@ function testPrepConfidenceForAttempt(pack, answers, confidence) {
   return testPrepNormalizeConfidenceSummary(summary);
 }
 
+
+function testPrepItemResultsForAttempt(pack, answers, confidence) {
+  const normalized = normalizeTestPrepPack(pack);
+  const responseMap = answers && typeof answers === 'object' && !Array.isArray(answers) ? answers : {};
+  const confidenceMap = confidence && typeof confidence === 'object' && !Array.isArray(confidence) ? confidence : {};
+  const results = {};
+  normalized.items.forEach((item) => {
+    results[item.id] = {
+      correct: Number(responseMap[item.id]) === item.answerIndex,
+      confidence: ['sure', 'unsure', 'guess'].includes(confidenceMap[item.id]) ? confidenceMap[item.id] : 'unrated',
+    };
+  });
+  return results;
+}
 function recordTestPrepAttempt(progress, pack, answers, confidence, now, metadata) {
   const score = scoreTestPrepAttempt(pack, answers);
   const next = normalizeTestPrepProgress(progress);
@@ -748,6 +782,7 @@ function recordTestPrepAttempt(progress, pack, answers, confidence, now, metadat
     percent: score.percent,
     confidence: confidence && typeof confidence === 'object' && !Array.isArray(confidence) ? confidence : {},
     confidenceSummary: testPrepConfidenceForAttempt(pack, answers, confidence),
+    itemResults: testPrepItemResultsForAttempt(pack, answers, confidence),
     byDomain: score.byDomain,
     bySkill: score.bySkill,
     mode: meta.mode,
@@ -806,6 +841,109 @@ function testPrepBuildProgressAnalytics(progress, packId) {
     repeatedResponses: Object.values(itemCounts).reduce((sum, count) => sum + Math.max(0, count - 1), 0),
   };
 }
+function testPrepBuildReviewSet(progress, pack, options) {
+  const normalizedPack = normalizeTestPrepPack(pack);
+  const normalizedProgress = normalizeTestPrepProgress(progress);
+  const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+  const limit = normalizedPack.items.length ? Math.max(1, Math.min(normalizedPack.items.length, Math.min(100, Math.floor(testPrepFinite(input.limit, 20))))) : 0;
+  const attempts = normalizedProgress.attempts.filter((attempt) => attempt.packId === normalizedPack.id);
+  const analytics = testPrepBuildProgressAnalytics(normalizedProgress, normalizedPack.id);
+  const stats = {};
+  attempts.forEach((attempt) => {
+    Object.keys(attempt.itemResults || {}).forEach((itemId) => {
+      const result = attempt.itemResults[itemId];
+      if (!stats[itemId]) stats[itemId] = { attempts: 0, correct: 0, misses: 0, confidentMisses: 0, uncertainCorrect: 0 };
+      const row = stats[itemId];
+      row.attempts += 1;
+      if (result.correct) row.correct += 1;
+      else row.misses += 1;
+      if (!result.correct && result.confidence === 'sure') row.confidentMisses += 1;
+      if (result.correct && (result.confidence === 'unsure' || result.confidence === 'guess')) row.uncertainCorrect += 1;
+    });
+  });
+  const domainPerformance = Object.fromEntries(analytics.domainRows.map((row) => [row.id, row]));
+  const candidates = normalizedPack.items.map((item, index) => {
+    const row = stats[item.id] || { attempts: 0, correct: 0, misses: 0, confidentMisses: 0, uncertainCorrect: 0 };
+    const domain = domainPerformance[item.domainId];
+    const weakness = domain && domain.total ? Math.max(0, 100 - domain.percent) / 25 : 1;
+    const score = row.confidentMisses * 8 + row.misses * 5 + row.uncertainCorrect * 3 + weakness + (row.attempts ? 0 : 2);
+    const reason = row.confidentMisses ? 'Confident miss to recalibrate'
+      : row.misses ? 'Previously missed'
+        : row.uncertainCorrect ? 'Correct with low confidence'
+          : row.attempts ? 'Retrieval practice for retention' : 'Not attempted yet';
+    return { item, index, score, reason, stats: row };
+  });
+  const domainOrder = normalizedPack.domains.slice().sort((left, right) => {
+    const a = domainPerformance[left.id], b = domainPerformance[right.id];
+    if (a && b) return a.percent - b.percent || b.total - a.total;
+    if (a) return -1;
+    if (b) return 1;
+    return normalizedPack.domains.findIndex((domain) => domain.id === left.id) - normalizedPack.domains.findIndex((domain) => domain.id === right.id);
+  }).map((domain) => domain.id);
+  const groups = Object.fromEntries(domainOrder.map((domainId) => [domainId, []]));
+  const unmatched = [];
+  candidates.forEach((candidate) => (groups[candidate.item.domainId] || unmatched).push(candidate));
+  Object.values(groups).forEach((group) => group.sort((left, right) => right.score - left.score || left.index - right.index));
+  unmatched.sort((left, right) => right.score - left.score || left.index - right.index);
+  const selected = [];
+  while (selected.length < limit) {
+    let added = false;
+    domainOrder.forEach((domainId) => {
+      if (selected.length >= limit || !groups[domainId].length) return;
+      selected.push(groups[domainId].shift());
+      added = true;
+    });
+    if (!added) break;
+  }
+  while (selected.length < limit && unmatched.length) selected.push(unmatched.shift());
+  const itemReasons = Object.fromEntries(selected.map((entry) => [entry.item.id, entry.reason]));
+  const priorityDomains = analytics.domainRows.slice(0, 3).map((row) => ({
+    id: row.id,
+    label: (normalizedPack.domains.find((domain) => domain.id === row.id) || { label: row.id.replace(/-/g, ' ') }).label,
+    correct: row.correct,
+    total: row.total,
+    percent: row.percent,
+  }));
+  return {
+    strategy: 'transparent-review-v1',
+    packId: normalizedPack.id,
+    attemptCount: attempts.length,
+    limit,
+    items: selected.map((entry) => entry.item),
+    itemIds: selected.map((entry) => entry.item.id),
+    itemReasons,
+    priorityDomains,
+    counts: {
+      confidentMisses: selected.filter((entry) => entry.stats.confidentMisses > 0).length,
+      priorMisses: selected.filter((entry) => entry.stats.misses > 0).length,
+      uncertainCorrect: selected.filter((entry) => entry.stats.uncertainCorrect > 0).length,
+      notAttempted: selected.filter((entry) => entry.stats.attempts === 0).length,
+    },
+    limitation: 'This queue uses transparent practice history and blueprint coverage; it is not computerized adaptive testing or an ability estimate.',
+  };
+}
+
+function testPrepExportProgress(progress, reviewItems, now) {
+  return {
+    schemaVersion: 1,
+    kind: 'alloflow-test-prep-progress',
+    exportedAt: Math.max(0, Math.floor(testPrepFinite(now, Date.now()))),
+    progress: normalizeTestPrepProgress(progress),
+    reviewItems: normalizeTestPrepReviewItems(reviewItems),
+  };
+}
+
+function testPrepImportProgress(value) {
+  let input = value;
+  if (typeof input === 'string') input = JSON.parse(input);
+  if (!input || typeof input !== 'object' || Array.isArray(input) || input.schemaVersion !== 1 || input.kind !== 'alloflow-test-prep-progress') {
+    throw new Error('Unsupported AlloFlow test-prep progress file.');
+  }
+  return {
+    progress: normalizeTestPrepProgress(input.progress),
+    reviewItems: normalizeTestPrepReviewItems(input.reviewItems),
+  };
+}
 
 registerTestPrepPack(WORKPLACE_SAFETY_DEMO);
 function testPrepNormalizeSession(value) {
@@ -861,6 +999,7 @@ registerTestPrepPack(SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK);
 registerTestPrepPack(SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK);
 registerTestPrepPack(AUDIOLOGY_5343_PRACTICE_PACK);
 registerTestPrepPack(READING_SPECIALIST_5302_PRACTICE_PACK);
+registerTestPrepPack(EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK);
 
 function TestPrepStatusBadge({ status }) {
   const styles = status === 'ready'
@@ -924,6 +1063,7 @@ function TestPrepHub(props) {
   const savedReviewItemIds = selectedPack ? (reviewItems[selectedPack.id] || []).filter((itemId) => itemLookup.has(itemId)) : [];
   const currentItemSavedForReview = !!(currentItem && savedReviewItemIds.includes(currentItem.id));
   const progressAnalytics = testPrepBuildProgressAnalytics(progress, selectedPackId);
+  const smartReviewPlan = selectedPack ? testPrepBuildReviewSet(progress, selectedPack, { limit: Math.min(20, selectedPack.items.length) }) : null;
   const skillById = Object.fromEntries((learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : []).map((skill) => [skill.id, skill]));
   const domainById = Object.fromEntries((selectedPack ? selectedPack.domains : []).map((domain) => [domain.id, domain]));
 
@@ -1135,6 +1275,46 @@ function TestPrepHub(props) {
     });
   }
 
+
+  function startSmartReview() {
+    if (!smartReviewPlan || !smartReviewPlan.items.length) { announce('No questions are available for smart review.', 'info'); return; }
+    startPracticeSet({
+      mode: 'review',
+      label: smartReviewPlan.attemptCount ? 'Smart review from practice history' : 'Balanced starter review',
+      items: smartReviewPlan.items,
+    });
+  }
+
+  function exportPracticeProgress() {
+    try {
+      const payload = testPrepExportProgress(progress, reviewItems, Date.now());
+      if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') throw new Error('File export is unavailable in this browser.');
+      const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = 'alloflow-test-prep-progress.json';
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      announce('Test-prep progress backup created.', 'success');
+    } catch (error) { announce(error && error.message ? error.message : 'Progress export failed.', 'warning'); }
+  }
+
+  function importPracticeProgressFile(event) {
+    const file = event && event.target && event.target.files && event.target.files[0];
+    if (!file || typeof FileReader === 'undefined') return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = testPrepImportProgress(String(reader.result || ''));
+        setProgress(writeTestPrepProgress(imported.progress));
+        setReviewItems(writeTestPrepReviewItems(imported.reviewItems));
+        announce('Test-prep progress backup restored.', 'success');
+      } catch (error) { announce(error && error.message ? error.message : 'Progress import failed.', 'warning'); }
+      if (event.target) event.target.value = '';
+    };
+    reader.onerror = () => announce('Progress import failed.', 'warning');
+    reader.readAsText(file);
+  }
   function startTargetedPractice(skillId) {
     if (!selectedPack) return;
     const skill = skillById[skillId];
@@ -1540,7 +1720,13 @@ function TestPrepHub(props) {
                   </section>
 
                   <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <article className="rounded-xl border border-emerald-300 bg-emerald-50 p-4">
+                    <article className="rounded-xl border border-fuchsia-300 bg-fuchsia-50 p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-fuchsia-800">Transparent smart review</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{smartReviewPlan && smartReviewPlan.attemptCount ? 'Review what needs another retrieval' : 'Start with a balanced review set'}</h5>
+                      <p className="mt-2 text-sm leading-relaxed text-fuchsia-950">{smartReviewPlan && smartReviewPlan.attemptCount ? 'Builds a 20-question set from confident misses, prior misses, low-confidence correct responses, weaker domains, and unseen items.' : 'Until practice history exists, the engine rotates across this pack’s domains. It never estimates ability or predicts passing.'}</p>
+                      {smartReviewPlan && smartReviewPlan.priorityDomains.length > 0 && <p className="mt-3 text-xs font-bold text-fuchsia-900">Current priority: {smartReviewPlan.priorityDomains.map((domain) => domain.label + ' (' + domain.percent + '%)').join(' · ')}</p>}
+                      <button type="button" disabled={!smartReviewPlan || !smartReviewPlan.items.length} onClick={startSmartReview} className="mt-4 rounded-lg bg-fuchsia-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-fuchsia-600 focus:ring-offset-2">Start {smartReviewPlan && smartReviewPlan.attemptCount ? 'smart review' : 'balanced review'}</button>
+                    </article>                    <article className="rounded-xl border border-emerald-300 bg-emerald-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-emerald-800">Saved-question review</p>
                       <h5 className="mt-1 text-lg font-black text-slate-900">{savedReviewItemIds.length} question{savedReviewItemIds.length === 1 ? '' : 's'} saved</h5>
                       <p className="mt-2 text-sm leading-relaxed text-emerald-950">Build a focused set from questions you marked while practicing this pack. Saved questions remain on this browser until you remove them.</p>
@@ -1894,7 +2080,11 @@ function TestPrepHub(props) {
             <div className="mx-auto max-w-6xl space-y-5">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div><h3 className="text-xl font-black text-slate-900">Practice progress</h3><p className="mt-1 text-sm text-slate-700">Stored only in this browser. Results describe practice activity, not credential readiness, an official score, or a pass prediction.</p></div>
-                <label className="text-sm font-bold text-slate-800">Test pack<select value={selectedPackId} onChange={(event) => setSelectedPackId(event.target.value)} className="mt-1 block rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600">{packs.map((pack) => <option key={pack.id} value={pack.id}>{pack.shortTitle}</option>)}</select></label>
+                <div className="flex flex-wrap items-end gap-2">
+                  <label className="text-sm font-bold text-slate-800">Test pack<select value={selectedPackId} onChange={(event) => setSelectedPackId(event.target.value)} className="mt-1 block rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600">{packs.map((pack) => <option key={pack.id} value={pack.id}>{pack.shortTitle}</option>)}</select></label>
+                  <button type="button" onClick={exportPracticeProgress} className="rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Export progress</button>
+                  <label htmlFor="test-prep-progress-import" className="cursor-pointer rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus-within:ring-2 focus-within:ring-indigo-600">Import progress<input id="test-prep-progress-import" type="file" accept="application/json,.json" onChange={importPracticeProgressFile} className="sr-only" /></label>
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl border border-slate-300 bg-white p-5"><p className="text-3xl font-black text-indigo-900">{totalAttempts}</p><p className="text-sm font-bold text-slate-700">Completed sets</p></div>

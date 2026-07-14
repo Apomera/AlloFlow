@@ -1,0 +1,899 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-14T16:15:52.417Z",
+  "packId": "praxis-educational-leadership-5412",
+  "standard": {
+    "label": "AlloFlow independent 5412 source, structure, feedback, originality, safety, and linkage QA v1",
+    "meaning": "A pass confirms exact diagnostic allocation, balanced answer positions, independently authored prompts, official-sample fragment screening, allowlisted sources, substantive feedback, stable identifiers, safety boundaries, and complete learning links.",
+    "limitation": "This is not ETS or NPBEA approval, independent practicing-school-leader validation, field testing, psychometric calibration, a scaled-score model, legal or personnel advice, an employment or licensure decision, or an emergency directive."
+  },
+  "blueprint": {
+    "officialQuestionCount": 120,
+    "timeMinutes": 165,
+    "selectedResponse": true,
+    "categories": {
+      "strategic-leadership": {
+        "questions": 20,
+        "percentage": 17
+      },
+      "instructional-leadership": {
+        "questions": 27,
+        "percentage": 23
+      },
+      "climate-cultural-leadership": {
+        "questions": 22,
+        "percentage": 18
+      },
+      "ethical-leadership": {
+        "questions": 19,
+        "percentage": 16
+      },
+      "organizational-leadership": {
+        "questions": 16,
+        "percentage": 13
+      },
+      "community-engagement-leadership": {
+        "questions": 16,
+        "percentage": 13
+      }
+    }
+  },
+  "diagnosticBatch": {
+    "batchCount": 2,
+    "batchSize": 100,
+    "categories": {
+      "strategic-leadership": 17,
+      "instructional-leadership": 23,
+      "climate-cultural-leadership": 18,
+      "ethical-leadership": 16,
+      "organizational-leadership": 13,
+      "community-engagement-leadership": 13
+    },
+    "batches": [
+      {
+        "batchNumber": 1,
+        "domains": {
+          "strategic-leadership": 17,
+          "instructional-leadership": 23,
+          "climate-cultural-leadership": 18,
+          "ethical-leadership": 16,
+          "organizational-leadership": 13,
+          "community-engagement-leadership": 13
+        },
+        "answerPositions": [
+          25,
+          25,
+          25,
+          25
+        ]
+      },
+      {
+        "batchNumber": 2,
+        "domains": {
+          "strategic-leadership": 17,
+          "instructional-leadership": 23,
+          "climate-cultural-leadership": 18,
+          "ethical-leadership": 16,
+          "organizational-leadership": 13,
+          "community-engagement-leadership": 13
+        },
+        "answerPositions": [
+          25,
+          25,
+          25,
+          25
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "reviewRequiredItems": 0,
+    "findings": 0,
+    "status": "pass"
+  },
+  "findings": [],
+  "items": [
+    {
+      "id": "lead5412-b1-001",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-002",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-003",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-004",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-005",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-006",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-007",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-008",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-009",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-010",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-011",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-012",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-013",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-014",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-015",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-016",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-017",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-018",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-019",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-020",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-021",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-022",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-023",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-024",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-025",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-026",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-027",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-028",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-029",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-030",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-031",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-032",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-033",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-034",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-035",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-036",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-037",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-038",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-039",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-040",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-041",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-042",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-043",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-044",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-045",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-046",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-047",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-048",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-049",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-050",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-051",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-052",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-053",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-054",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-055",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-056",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-057",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-058",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-059",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-060",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-061",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-062",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-063",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-064",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-065",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-066",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-067",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-068",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-069",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-070",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-071",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-072",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-073",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-074",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-075",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-076",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-077",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-078",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-079",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-080",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-081",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-082",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-083",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-084",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-085",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-086",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-087",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-088",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-089",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-090",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-091",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-092",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-093",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-094",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-095",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-096",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-097",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-098",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-099",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b1-100",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-001",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-002",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-003",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-004",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-005",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-006",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-007",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-008",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-009",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-010",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-011",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-012",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-013",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-014",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-015",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-016",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-017",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-018",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-019",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-020",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-021",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-022",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-023",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-024",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-025",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-026",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-027",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-028",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-029",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-030",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-031",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-032",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-033",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-034",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-035",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-036",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-037",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-038",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-039",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-040",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-041",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-042",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-043",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-044",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-045",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-046",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-047",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-048",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-049",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-050",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-051",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-052",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-053",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-054",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-055",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-056",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-057",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-058",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-059",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-060",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-061",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-062",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-063",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-064",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-065",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-066",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-067",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-068",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-069",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-070",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-071",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-072",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-073",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-074",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-075",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-076",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-077",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-078",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-079",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-080",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-081",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-082",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-083",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-084",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-085",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-086",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-087",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-088",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-089",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-090",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-091",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-092",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-093",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-094",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-095",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-096",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-097",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-098",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-099",
+      "findings": []
+    },
+    {
+      "id": "lead5412-b2-100",
+      "findings": []
+    }
+  ]
+}

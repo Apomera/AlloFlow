@@ -40,6 +40,7 @@ beforeAll(() => {
   const speechLanguagePathology5331LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/speech_language_pathology_5331_learning_library.json'), 'utf8'));
   const audiology5343LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/audiology_5343_learning_library.json'), 'utf8'));
   const readingSpecialist5302LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/reading_specialist_5302_learning_library.json'), 'utf8'));
+  const educationalLeadership5412LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/educational_leadership_5412_learning_library.json'), 'utf8'));
   const reportFetch = async (url) => {
     if (String(url).includes('content_audit.json')) return { ok: true, json: async () => auditFixture };
     if (String(url).includes('content_inventory.json')) return { ok: true, json: async () => inventoryFixture };
@@ -51,6 +52,7 @@ beforeAll(() => {
     if (String(url).includes('speech_language_pathology_5331_learning_library.json')) return { ok: true, json: async () => speechLanguagePathology5331LibraryFixture };
     if (String(url).includes('audiology_5343_learning_library.json')) return { ok: true, json: async () => audiology5343LibraryFixture };
     if (String(url).includes('reading_specialist_5302_learning_library.json')) return { ok: true, json: async () => readingSpecialist5302LibraryFixture };
+    if (String(url).includes('educational_leadership_5412_learning_library.json')) return { ok: true, json: async () => educationalLeadership5412LibraryFixture };
     return { ok: false, json: async () => ({}) };
   };
   global.fetch = window.fetch = reportFetch;
@@ -614,6 +616,60 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Targeted practice: Literacy Foundations, Development, and Learner Profiles');
     expect(host.textContent).toContain('Question 1 of 16');
   }, 30_000);
+
+  it('uses 5412 diagnostics, timed simulation, and native educational-leadership learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Praxis Educational Leadership: Administration and Supervision (5412)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('120 questions');
+    expect(host.textContent).toContain('165 minutes');
+    expect(host.textContent).toContain('original independent practice items');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-educational-leadership-5412');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('120-question timed simulation');
+    expect(host.textContent).toContain('Question 1 of 120');
+    expect(host.textContent).toContain('Time remaining 165:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis Educational Leadership: Administration and Supervision (5412) learning library');
+    expect(host.textContent).toContain('12');
+    expect(host.textContent).toContain('60');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Mission, Vision, Goals, and Core Values'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Mission, vision, and values as distinct tools');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('What should precede revision of a school mission'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('actual school context');
+    await expectNoAxeViolations('5412 native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Mission, Vision, Goals, and Core Values');
+    expect(host.textContent).toContain('Question 1 of 18');
+  }, 30_000);
+
 
   it('opens the native EPPP pilot and the complete guarded legacy workspace', async () => {
 

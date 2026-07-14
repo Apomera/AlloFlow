@@ -43,6 +43,11 @@ const readingSpecialist5302BuildPath = path.join(root, 'dev-tools', 'build_readi
 const readingSpecialist5302QaPath = path.join(root, 'dev-tools', 'qa_reading_specialist_5302_pack.cjs');
 const readingSpecialist5302LibraryBuildPath = path.join(root, 'dev-tools', 'build_reading_specialist_5302_learning_library.cjs');
 const readingSpecialist5302LibraryQaPath = path.join(root, 'dev-tools', 'qa_reading_specialist_5302_learning_library.cjs');
+const educationalLeadership5412SourcePath = path.join(root, 'test_prep', 'educational_leadership_5412_pack.json');
+const educationalLeadership5412BuildPath = path.join(root, 'dev-tools', 'build_educational_leadership_5412_pack.cjs');
+const educationalLeadership5412QaPath = path.join(root, 'dev-tools', 'qa_educational_leadership_5412_pack.cjs');
+const educationalLeadership5412LibraryBuildPath = path.join(root, 'dev-tools', 'build_educational_leadership_5412_learning_library.cjs');
+const educationalLeadership5412LibraryQaPath = path.join(root, 'dev-tools', 'qa_educational_leadership_5412_learning_library.cjs');
 const outputPath = path.join(root, 'test_prep_hub_module.js');
 const deployOutputPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const tempEntryPath = path.join(root, '_tmp_test_prep_hub_release_entry.jsx');
@@ -55,6 +60,7 @@ const schoolPsychologist5403Registration = 'registerTestPrepPack(SCHOOL_PSYCHOLO
 const speechLanguagePathology5331Registration = 'registerTestPrepPack(SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK);';
 const audiology5343Registration = 'registerTestPrepPack(AUDIOLOGY_5343_PRACTICE_PACK);';
 const readingSpecialist5302Registration = 'registerTestPrepPack(READING_SPECIALIST_5302_PRACTICE_PACK);';
+const educationalLeadership5412Registration = 'registerTestPrepPack(EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK);';
 
 if (!fs.existsSync(sourcePath)) throw new Error('Test Prep Hub source not found.');
 if (!fs.existsSync(epppBankPath)) throw new Error('EPPP bank not found.');
@@ -65,6 +71,7 @@ if (!fs.existsSync(schoolPsychologist5403SourcePath)) throw new Error('Praxis Sc
 if (!fs.existsSync(speechLanguagePathology5331SourcePath)) throw new Error('Praxis Speech-Language Pathology 5331 release source not found.');
 if (!fs.existsSync(audiology5343SourcePath)) throw new Error('Praxis Audiology 5343 release source not found.');
 if (!fs.existsSync(readingSpecialist5302SourcePath)) throw new Error('Praxis Reading Specialist 5302 release source not found.');
+if (!fs.existsSync(educationalLeadership5412SourcePath)) throw new Error('Praxis Educational Leadership 5412 release source not found.');
 execFileSync(process.execPath, [paraProBatch2BuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryBuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryQaPath], { cwd: root, stdio: 'inherit' });
@@ -93,6 +100,10 @@ execFileSync(process.execPath, [readingSpecialist5302BuildPath], { cwd: root, st
 execFileSync(process.execPath, [readingSpecialist5302LibraryBuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [readingSpecialist5302LibraryQaPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [readingSpecialist5302QaPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [educationalLeadership5412BuildPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [educationalLeadership5412LibraryBuildPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [educationalLeadership5412LibraryQaPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [educationalLeadership5412QaPath], { cwd: root, stdio: 'inherit' });
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
 if (!originalSource.includes(registrationMarker)) throw new Error('Test Prep Hub registration marker changed; review the ParaPro release injection.');
@@ -107,6 +118,7 @@ if (!source.includes(speechLanguagePathology5331Registration)) throw new Error('
 const paraProPack = JSON.parse(fs.readFileSync(paraProSourcePath, 'utf8'));
 if (!source.includes(audiology5343Registration)) throw new Error('Test Prep Hub source must register the Praxis Audiology 5343 pack.');
 if (!source.includes(readingSpecialist5302Registration)) throw new Error('Test Prep Hub source must register the Praxis Reading Specialist 5302 pack.');
+if (!source.includes(educationalLeadership5412Registration)) throw new Error('Test Prep Hub source must register the Praxis Educational Leadership 5412 pack.');
 const specialEducation5355Pack = JSON.parse(fs.readFileSync(specialEducation5355SourcePath, 'utf8'));
 const schoolCounselor5422Pack = JSON.parse(fs.readFileSync(schoolCounselor5422SourcePath, 'utf8'));
 const schoolPsychologist5403Pack = JSON.parse(fs.readFileSync(schoolPsychologist5403SourcePath, 'utf8'));
@@ -114,6 +126,7 @@ const speechLanguagePathology5331Pack = JSON.parse(fs.readFileSync(speechLanguag
 if (!Array.isArray(epppItems) || !epppItems.length) throw new Error('EPPP bank is empty or invalid.');
 const audiology5343Pack = JSON.parse(fs.readFileSync(audiology5343SourcePath, 'utf8'));
 const readingSpecialist5302Pack = JSON.parse(fs.readFileSync(readingSpecialist5302SourcePath, 'utf8'));
+const educationalLeadership5412Pack = JSON.parse(fs.readFileSync(educationalLeadership5412SourcePath, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
   throw new Error('ParaPro release pack is empty or invalid.');
 }
@@ -136,6 +149,9 @@ if (!audiology5343Pack || audiology5343Pack.id !== 'praxis-audiology-5343' || au
 if (!readingSpecialist5302Pack || readingSpecialist5302Pack.id !== 'praxis-reading-specialist-5302' || readingSpecialist5302Pack.batchSize !== 100 || !Array.isArray(readingSpecialist5302Pack.items) || readingSpecialist5302Pack.items.length !== 200) {
   throw new Error('Praxis Reading Specialist 5302 release pack is empty or invalid.');
 }
+if (!educationalLeadership5412Pack || educationalLeadership5412Pack.id !== 'praxis-educational-leadership-5412' || educationalLeadership5412Pack.batchSize !== 100 || !Array.isArray(educationalLeadership5412Pack.items) || educationalLeadership5412Pack.items.length !== 200) {
+  throw new Error('Praxis Educational Leadership 5412 release pack is empty or invalid.');
+}
 const prelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
@@ -143,7 +159,8 @@ const prelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\
   + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + JSON.stringify(schoolPsychologist5403Pack) + ';\n\n'
   + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n'
   + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + JSON.stringify(audiology5343Pack) + ';\n\n'
-  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n';
+  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n'
+  + 'const EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK = ' + JSON.stringify(educationalLeadership5412Pack) + ';\n\n';
 fs.writeFileSync(tempEntryPath, '/* global React */\n\n' + prelude + source + '\n', 'utf8');
 
 try {
@@ -201,7 +218,7 @@ ${compiled}
   fs.writeFileSync(outputPath, output, 'utf8');
   fs.mkdirSync(path.dirname(deployOutputPath), { recursive: true });
   fs.writeFileSync(deployOutputPath, output, 'utf8');
-  console.log('Built Test Prep Hub release with ParaPro, Praxis Special Education 5355, Praxis School Counselor 5422, Praxis School Psychologist 5403, Praxis Speech-Language Pathology 5331, Praxis Audiology 5343, and Praxis Reading Specialist 5302 (' + output.split('\n').length + ' lines).');
+  console.log('Built Test Prep Hub release with ParaPro, Praxis Special Education 5355, Praxis School Counselor 5422, Praxis School Psychologist 5403, Praxis Speech-Language Pathology 5331, Praxis Audiology 5343, Praxis Reading Specialist 5302, and Praxis Educational Leadership 5412 (' + output.split('\n').length + ' lines).');
 } finally {
   try { fs.unlinkSync(tempEntryPath); } catch (_) {}
   try { fs.unlinkSync(compiledPath); } catch (_) {}

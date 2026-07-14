@@ -13,6 +13,7 @@ const SCHOOL_PSYCHOLOGIST_5403_PACK_SOURCE = path.join(ROOT, 'test_prep', 'schoo
 const SPEECH_LANGUAGE_PATHOLOGY_5331_PACK_SOURCE = path.join(ROOT, 'test_prep', 'speech_language_pathology_5331_pack.json');
 const AUDIOLOGY_5343_PACK_SOURCE = path.join(ROOT, 'test_prep', 'audiology_5343_pack.json');
 const READING_SPECIALIST_5302_PACK_SOURCE = path.join(ROOT, 'test_prep', 'reading_specialist_5302_pack.json');
+const EDUCATIONAL_LEADERSHIP_5412_PACK_SOURCE = path.join(ROOT, 'test_prep', 'educational_leadership_5412_pack.json');
 const OUTPUT = path.join(ROOT, 'test_prep_hub_module.js');
 const DEPLOY_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
@@ -55,6 +56,10 @@ const READING_SPECIALIST_5302_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build
 const READING_SPECIALIST_5302_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_reading_specialist_5302_learning_library.cjs');
 const READING_SPECIALIST_5302_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_reading_specialist_5302_learning_library.cjs');
 const READING_SPECIALIST_5302_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_reading_specialist_5302_pack.cjs');
+const EDUCATIONAL_LEADERSHIP_5412_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_educational_leadership_5412_pack.cjs');
+const EDUCATIONAL_LEADERSHIP_5412_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_educational_leadership_5412_learning_library.cjs');
+const EDUCATIONAL_LEADERSHIP_5412_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_educational_leadership_5412_learning_library.cjs');
+const EDUCATIONAL_LEADERSHIP_5412_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_educational_leadership_5412_pack.cjs');
 const skipEpppRefresh = process.argv.includes('--skip-eppp-refresh');
 
 if (!fs.existsSync(SOURCE)) {
@@ -93,6 +98,10 @@ execSync(`node "${READING_SPECIALIST_5302_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: '
 execSync(`node "${READING_SPECIALIST_5302_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${READING_SPECIALIST_5302_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${READING_SPECIALIST_5302_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 if (!Array.isArray(bank) || !bank.length) throw new Error('EPPP native item bank is empty or invalid.');
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
@@ -122,6 +131,10 @@ const readingSpecialist5302Pack = JSON.parse(fs.readFileSync(READING_SPECIALIST_
 if (!readingSpecialist5302Pack || readingSpecialist5302Pack.id !== 'praxis-reading-specialist-5302' || readingSpecialist5302Pack.batchSize !== 100 || !Array.isArray(readingSpecialist5302Pack.items) || readingSpecialist5302Pack.items.length !== 200) {
   throw new Error('Praxis Reading Specialist 5302 release pack is empty or invalid.');
 }
+const educationalLeadership5412Pack = JSON.parse(fs.readFileSync(EDUCATIONAL_LEADERSHIP_5412_PACK_SOURCE, 'utf8'));
+if (!educationalLeadership5412Pack || educationalLeadership5412Pack.id !== 'praxis-educational-leadership-5412' || educationalLeadership5412Pack.batchSize !== 100 || !Array.isArray(educationalLeadership5412Pack.items) || educationalLeadership5412Pack.items.length !== 200) {
+  throw new Error('Praxis Educational Leadership 5412 release pack is empty or invalid.');
+}
 const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
@@ -129,7 +142,8 @@ const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n
   + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + JSON.stringify(schoolPsychologist5403Pack) + ';\n\n'
   + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n'
   + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + JSON.stringify(audiology5343Pack) + ';\n\n'
-  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n';
+  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n'
+  + 'const EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK = ' + JSON.stringify(educationalLeadership5412Pack) + ';\n\n';
 fs.writeFileSync(TMP, '/* global React */\n\n' + bankPrelude + source + '\n', 'utf8');
 
 try {
@@ -174,6 +188,10 @@ ${compiled}
     buildBatchDiagnostic: testPrepBuildBatchDiagnostic,
     recordBatchAttempt: recordTestPrepBatchAttempt,
     buildProgressAnalytics: testPrepBuildProgressAnalytics,
+    buildReviewSet: testPrepBuildReviewSet,
+    exportProgress: testPrepExportProgress,
+    importProgress: testPrepImportProgress,
+    normalizeReviewItems: normalizeTestPrepReviewItems,
     researchLanes: TEST_PREP_RESEARCH_LANES.slice()
   });
   console.log('[CDN] TestPrepHub loaded');
