@@ -249,18 +249,20 @@ const LargeFileTranscriptionModal = React.memo(({
     if (!isOpen || !file) return null;
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
     const estimatedChunks = Math.ceil(file.size / (15 * 1024 * 1024));
-    const progressPercent = totalChunks > 0 ? Math.round((progress / totalChunks) * 100) : 0;
+    const chunkTotal = Math.max(0, Number(totalChunks) || 0);
+    const chunkProgress = Math.max(0, Math.min(chunkTotal, Number(progress) || 0));
+    const progressPercent = chunkTotal > 0 ? Math.round((chunkProgress / chunkTotal) * 100) : 0;
     const isVideo = LargeFileHandler.getFileType(file) === 'video';
     return (
         <div
-            className="fixed inset-0 z-[99999] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+            className="fixed inset-0 z-[99999] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
             role="presentation"
             onClick={() => { if (!isProcessing) onClose(); }}
         >
             <div
                 ref={dialogRef}
                 tabIndex={-1}
-                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 focus:outline-none"
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none"
                 role="dialog" aria-modal="true" aria-labelledby="large-file-modal-title" aria-describedby="large-file-description" onClick={e => e.stopPropagation()}
             >
                 <button
@@ -269,19 +271,19 @@ const LargeFileTranscriptionModal = React.memo(({
                     disabled={isProcessing}
                     className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <span className="text-xl">×</span>
+                    <span className="text-xl" aria-hidden="true">{'\u00D7'}</span>
                 </button>
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-4 pr-10">
                     <div className="bg-amber-100 p-3 rounded-full">
-                        <span className="text-2xl" aria-hidden="true">{isVideo ? '🎬' : '🎵'}</span>
+                        <span className="text-2xl" aria-hidden="true">{isVideo ? '\uD83C\uDFAC' : '\uD83C\uDFB5'}</span>
                     </div>
                     <div>
-                        <h3 id="large-file-modal-title" className="text-lg font-black text-slate-800">
+                        <h2 id="large-file-modal-title" className="text-lg font-black text-slate-800">
                             {isVideo
                                 ? (t?.('large_file.title_video') || 'Large Video File Detected')
                                 : (t?.('large_file.title') || 'Large Audio File Detected')}
-                        </h3>
-                        <p className="text-sm text-slate-600 font-medium">{file.name}</p>
+                        </h2>
+                        <p className="text-sm text-slate-600 font-medium break-words">{file.name}</p>
                     </div>
                 </div>
                 <div id="large-file-description" className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
@@ -300,20 +302,19 @@ const LargeFileTranscriptionModal = React.memo(({
                                 {status || 'Processing...'}
                             </span>
                             <span className="text-xs font-bold text-indigo-600">
-                                {progress}/{totalChunks} ({progressPercent}%)
+                                {chunkProgress}/{chunkTotal} ({progressPercent}%)
                             </span>
                         </div>
-                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-label={status || 'Transcription progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent} aria-valuetext={`${progress} of ${totalChunks} chunks, ${progressPercent}%`}>
+                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-label={status || 'Transcription progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent} aria-valuetext={`${chunkProgress} of ${chunkTotal} chunks, ${progressPercent}%`}>
                             <div
-                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300 ease-out"
+                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300 ease-out motion-reduce:transition-none"
                                 style={{ width: `${progressPercent}%` }}
                             />
                         </div>
                     </div>
                 )}
-                <div className="flex gap-3 justify-end">
+                <div className="flex flex-col sm:flex-row gap-3 justify-end">
                     <button
-                        aria-label={t('common.close')}
                         onClick={onClose}
                         disabled={isProcessing}
                         className="px-4 py-2 text-slate-600 font-bold hover:text-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -321,19 +322,19 @@ const LargeFileTranscriptionModal = React.memo(({
                         {t?.('common.cancel') || 'Cancel'}
                     </button>
                     <button
-                        onClick={onConfirm}
-                        disabled={isProcessing}
+                        onClick={() => { if (!isProcessing) onConfirm(); }}
+                        aria-disabled={isProcessing}
                         aria-busy={isProcessing}
-                        className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
+                        className={`px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md flex items-center justify-center gap-2 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {isProcessing ? (
                             <>
-                                <span className="animate-spin" aria-hidden="true">⏳</span>
+                                <span className="animate-spin motion-reduce:animate-none" aria-hidden="true">{'\u23F3'}</span>
                                 {t?.('modals.large_file.processing') || 'Transcribing...'}
                             </>
                         ) : (
                             <>
-                                <span aria-hidden="true">✨</span>
+                                <span aria-hidden="true">{'\u2728'}</span>
                                 {t?.('modals.large_file.confirm') || 'Start Chunked Transcription'}
                             </>
                         )}

@@ -24,7 +24,26 @@ describe('Large-file transcription modal accessibility', () => {
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(source).toContain('role="progressbar"');
     expect(source).toContain('aria-valuenow={progressPercent}');
-    expect(source).toContain('aria-valuetext={`${progress} of ${totalChunks} chunks, ${progressPercent}%`}');
+    expect(source).toContain('const chunkTotal = Math.max(0, Number(totalChunks) || 0);');
+    expect(source).toContain('const chunkProgress = Math.max(0, Math.min(chunkTotal, Number(progress) || 0));');
+    expect(source).toContain('aria-valuetext={`${chunkProgress} of ${chunkTotal} chunks, ${progressPercent}%`}');
+  });
+
+  it('supports reflow, reduced motion, and visible fallback focus', () => {
+    expect(source).toContain('max-h-[calc(100vh-2rem)] overflow-y-auto');
+    expect(source).toContain('flex flex-col sm:flex-row gap-3');
+    expect(source).toContain('motion-reduce:animate-none');
+    expect(source).toContain('motion-reduce:transition-none');
+    expect(source).not.toContain('duration-200 focus:outline-none');
+  });
+
+  it('keeps busy confirmation focusable and preserves visible control names', () => {
+    expect(source).toContain('onClick={() => { if (!isProcessing) onConfirm(); }}');
+    expect(source).toContain('aria-disabled={isProcessing}');
+    expect(source).toContain('aria-busy={isProcessing}');
+    expect(source.match(/aria-label=\{t\('common.close'\)\}/g)).toHaveLength(1);
+    expect(source).toContain("{'\\u00D7'}");
+    expect(source).toContain("{'\\u23F3'}");
   });
 
   it('synchronizes the deployable module', () => {
