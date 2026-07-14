@@ -38,6 +38,20 @@ describe('device storage bridge — file contracts', () => {
     expect(moduleSrc).not.toMatch(/prismflow/i);
     expect(bridgeSrc).not.toMatch(/prismflow/i);
   });
+
+  it('ships the on-screen probe panel and its keyboard bootstrap', () => {
+    expect(moduleSrc).toContain('__openProbePanel');
+    const tuSource = readFileSync(resolve(process.cwd(), 'text_utility_helpers_source.jsx'), 'utf8');
+    const tuModule = readFileSync(resolve(process.cwd(), 'text_utility_helpers_module.js'), 'utf8');
+    const tuDeployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/text_utility_helpers_module.js'), 'utf8');
+    for (const src of [tuSource, tuModule]) {
+      expect(src).toContain('__alloOpenDeviceStorageProbe');
+      expect(src).toContain('__alloDeviceStorageProbeArmed');
+      expect(src).toMatch(/e\.ctrlKey && e\.altKey && e\.shiftKey && \(e\.key === ["']D["']/);
+      expect(src).toContain('allo_device_storage_module.js?v=');
+    }
+    expect(tuDeployed).toBe(tuModule);
+  });
 });
 
 describe('device storage adapter — behavior', () => {

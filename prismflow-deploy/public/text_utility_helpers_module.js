@@ -485,6 +485,40 @@ window.AlloModules.TextUtilityHelpers = {
   generateHelpfulHint,
   generateWordSearch
 };
+try {
+  if (typeof document !== "undefined" && !window.__alloDeviceStorageProbeArmed) {
+    window.__alloDeviceStorageProbeArmed = true;
+    const openDeviceStorageProbe = () => {
+      const ready = () => {
+        try {
+          window.alloDeviceStorage.__openProbePanel();
+        } catch (e) {
+          console.warn("[DeviceStorage] probe panel failed:", e);
+        }
+      };
+      if (window.alloDeviceStorage) {
+        ready();
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=" + Date.now();
+      s.onload = () => {
+        if (window.alloDeviceStorage) ready();
+        else console.warn("[DeviceStorage] module URL answered but global missing (CDN miss?)");
+      };
+      s.onerror = () => console.warn("[DeviceStorage] failed to load module from CDN");
+      document.head.appendChild(s);
+    };
+    window.__alloOpenDeviceStorageProbe = openDeviceStorageProbe;
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === "D" || e.key === "d")) {
+        e.preventDefault();
+        openDeviceStorageProbe();
+      }
+    });
+  }
+} catch (_) {
+}
 window.AlloModules.TextUtilityHelpersModule = true;
 console.log('[TextUtilityHelpers] 4 helpers registered');
 })();

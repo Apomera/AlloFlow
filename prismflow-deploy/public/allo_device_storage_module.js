@@ -412,6 +412,97 @@
     }
   };
 
+  // ── On-screen probe panel (no DevTools needed) ───────────────────
+  // Opened via Ctrl+Alt+Shift+D (bootstrap in text_utility_helpers_module)
+  // or window.alloDeviceStorage.__openProbePanel(). Plain DOM on purpose —
+  // must work before/without React and inside any surface.
+  var _probePanel = null;
+  api.__openProbePanel = function () {
+    if (typeof document === 'undefined' || !document.body) return null;
+    if (_probePanel && _probePanel.isConnected) { _probePanel.remove(); _probePanel = null; return null; }
+    var dark = false;
+    try { dark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (_) {}
+    var panel = document.createElement('div');
+    _probePanel = panel;
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'Device storage probe');
+    panel.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483000;width:360px;max-width:92vw;' +
+      'font:13px/1.5 system-ui,-apple-system,sans-serif;border-radius:12px;padding:14px;text-align:left;' +
+      (dark ? 'background:#1e293b;color:#e2e8f0;border:1px solid #475569;'
+            : 'background:#ffffff;color:#0f172a;border:1px solid #cbd5e1;') +
+      'box-shadow:0 8px 30px rgba(0,0,0,.35);';
+    var btnCss = 'font:inherit;font-weight:600;padding:5px 12px;border-radius:999px;cursor:pointer;' +
+      (dark ? 'background:#334155;color:#e2e8f0;border:1px solid #64748b;'
+            : 'background:#f1f5f9;color:#0f172a;border:1px solid #94a3b8;');
+    var close = function () {
+      document.removeEventListener('keydown', onKey, true);
+      panel.remove();
+      _probePanel = null;
+    };
+    var onKey = function (e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+    document.addEventListener('keydown', onKey, true);
+
+    var head = document.createElement('div');
+    head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;';
+    var title = document.createElement('strong');
+    title.textContent = '🔌 Device storage probe';
+    var x = document.createElement('button');
+    x.textContent = '✕';
+    x.setAttribute('aria-label', 'Close probe panel');
+    x.style.cssText = btnCss;
+    x.onclick = close;
+    head.appendChild(title); head.appendChild(x);
+
+    var blurb = document.createElement('p');
+    blurb.style.cssText = 'margin:0 0 10px;opacity:.85;';
+    blurb.textContent = 'Tests whether on-device storage survives Canvas reloads. ' +
+      'Run once, then run again in a completely fresh session — the second run gives the verdict. ' +
+      'A small window may flash open; that is the storage bridge.';
+
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;';
+    var runBtn = document.createElement('button');
+    runBtn.textContent = '▶ Run probe';
+    runBtn.style.cssText = btnCss;
+    var reviewBtn = document.createElement('button');
+    reviewBtn.textContent = '🔍 Open review page';
+    reviewBtn.style.cssText = btnCss;
+    reviewBtn.onclick = function () {
+      try { window.open(state.bridgeUrl, '_blank', 'noopener'); } catch (_) {}
+    };
+    row.appendChild(runBtn); row.appendChild(reviewBtn);
+
+    var out = document.createElement('div');
+    out.setAttribute('aria-live', 'polite');
+    out.style.cssText = 'white-space:pre-wrap;word-break:break-word;font-size:12px;';
+
+    runBtn.onclick = function () {
+      runBtn.disabled = true;
+      runBtn.textContent = '… probing (up to ~15s)';
+      out.textContent = '';
+      api.probe().then(function (res) {
+        out.textContent =
+          'POPUP channel:  ' + res.summary.popup + '\n\n' +
+          'IFRAME channel: ' + res.summary.iframe + '\n\n' +
+          '(popup needs the click you just made; iframe needs no gesture — ' +
+          'if the iframe persists, features can save silently)';
+      }, function (err) {
+        out.textContent = 'Probe failed: ' + (err && (err.code || err.message) || err);
+      }).then(function () {
+        runBtn.disabled = false;
+        runBtn.textContent = '▶ Run probe again';
+      });
+    };
+
+    panel.appendChild(head);
+    panel.appendChild(blurb);
+    panel.appendChild(row);
+    panel.appendChild(out);
+    document.body.appendChild(panel);
+    try { runBtn.focus(); } catch (_) {}
+    return panel;
+  };
+
   window.alloDeviceStorage = api;
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.DeviceStorageModule = true;

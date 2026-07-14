@@ -42,7 +42,7 @@ messages that (a) come from its opener/parent window reference and (b) echo
 that nonce. Replies go to `event.source` only. Protocol tag: `ds1` — keep
 `storage_bridge.html` and `allo_device_storage_module.js` in sync.
 
-## The probe (do this first — two Canvas sessions)
+## The probe (do this first — two Canvas sessions, no DevTools)
 
 Popup vs hidden-iframe is an open question: `window.open` needs a user
 gesture but is proven from Canvas (veraPDF / Video Studio pattern); the
@@ -50,29 +50,23 @@ iframe needs no gesture but relies on Chrome storage partitioning keyed to
 (top-level site = gemini.google.com, frame origin = the CDN) surviving
 Canvas reloads, and on Canvas CSP allowing the frame at all.
 
-1. Push to main so Cloudflare Pages serves both new files. Verify with
+A TEMPORARY bootstrap rides `text_utility_helpers_module.js` (already in
+every surface's loadModule list — Cloudflare serves current content for
+existing module URLs, so it reaches the Canvas app on its next reload
+without republishing the monolith). Remove it when the module gets its own
+loadModule line.
+
+1. Push to main so Cloudflare Pages serves the new files. Verify with
    `curl -I https://alloflow-cdn.pages.dev/storage_bridge.html` →
    `content-type: text/html` (a Pages miss returns the SPA index as 200 —
    the lame.min.js lesson).
-2. In the Canvas app, open DevTools on the app iframe and paste:
-
-   ```js
-   (async () => {
-     const s = document.createElement('script');
-     s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=' + Date.now();
-     document.head.appendChild(s);
-     await new Promise(r => { s.onload = r; });
-     const run = async () => {
-       const res = await window.alloDeviceStorage.probe();
-       console.log('ALLO DEVICE STORAGE PROBE\n' + JSON.stringify(res.summary, null, 2), res);
-     };
-     console.log('Click anywhere in the app to run the probe (popup needs the gesture)...');
-     document.addEventListener('click', run, { once: true });
-   })();
-   ```
-
-   Click once in the app. Expect a small popup to flash and a summary in the
-   console. First run reports "first run on this device".
+2. Open the Canvas app (fresh load so the updated module comes down), click
+   once anywhere in the app, then press **Ctrl+Alt+Shift+D**. A small
+   "Device storage probe" panel appears bottom-right. Click **Run probe** —
+   a bridge window flashes briefly, then both channel verdicts render in
+   the panel. First run reports "first run on this device".
+   (Fallback if the chord is swallowed: DevTools console →
+   `window.__alloOpenDeviceStorageProbe()`.)
 3. Close Canvas completely, start a **fresh session**, repeat step 2.
    - `popup: PERSISTS across sessions` ⇒ popup channel is viable.
    - `iframe: PERSISTS across sessions` ⇒ the no-gesture channel works —
