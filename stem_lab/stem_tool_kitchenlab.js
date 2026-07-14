@@ -1572,6 +1572,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // Module-scope interval handle for the live cooking tick. Only one
   // active recipe simulation at a time, so a single handle is fine.
   var _recipeTickHandle = null;
+  var _handwashTickHandle = null;
+  var _handwashCompleteHandle = null;
+  var _klConfirmReturnEl = null;
+  var _klSuggesterReturnEl = null;
 
   // ───────────────────────────────────────────────────────────
   // STATE
@@ -1581,7 +1585,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       activeSection: 'safety',
       // Safety
       safetyTemp: 70,      // Danger-zone slider position (°F)
-      handwashStart: null, // Timestamp when started
+      handwashStart: null, // Timestamp when started or resumed
+      handwashElapsedSec: 0,
+      handwashPaused: false,
+      handwashTickAt: null,
       handwashStep: 0,
       // Knife
       knifeSelectedCut: 'mediumDice',
@@ -1598,6 +1605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       recipeActiveId: null,                // which recipe is currently being cooked
       recipePhase: 'idle',                 // 'idle' | 'cooking' | 'done'
       recipeStartedAt: null,               // ms timestamp
+      recipePausedAt: null,                // ms timestamp while the simulation is paused
       recipeCurrentStep: 0,                // index into recipe.steps
       recipeStepStartedAt: null,
       recipePanTempF: 70,                  // simulated pan temp (ambient start)
@@ -1659,6 +1667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       suggesterLoading: false,
       suggesterResult: null,               // { recipeId, reasoning } | null
       suggesterError: null,
+      pendingConfirmation: null,           // 'recipe' | 'tournament' | null
       // Progression
       klXp: 0,
       klAchievements: [],
@@ -1719,6 +1728,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { kitchenLab: next });
         });
+      }
+
+      function trapDialogFocus(e, dialogId, onEscape) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          onEscape();
+          return;
+        }
+        if (e.key !== 'Tab' || typeof document === 'undefined') return;
+        var dialog = document.getElementById(dialogId);
+        if (!dialog) return;
+        var focusable = dialog.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+
+      function stopHandwashTimers() {
+        if (_handwashTickHandle) { clearInterval(_handwashTickHandle); _handwashTickHandle = null; }
+        if (_handwashCompleteHandle) { clearTimeout(_handwashCompleteHandle); _handwashCompleteHandle = null; }
+      }
+      function completeHandwashTimer() {
+        stopHandwashTimers();
+        setKL(function(prior) {
+          if (!prior.handwashStart) return {};
+          return { handwashStart: null, handwashElapsedSec: 20, handwashPaused: false,
+            handwashTickAt: Date.now(), klHandwashCompleted: true };
+        });
+        klAnnounce('Handwash complete — 20 seconds reached.');
+        awardXP(5);
+      }
+      function scheduleHandwashTimers(remainingSec) {
+        stopHandwashTimers();
+        _handwashTickHandle = setInterval(function() {
+          setKL({ handwashTickAt: Date.now() });
+        }, 500);
+        _handwashCompleteHandle = setTimeout(completeHandwashTimer, Math.max(0, remainingSec) * 1000);
+      }
+      function startOrResumeHandwashTimer() {
+        var elapsed = Math.min(20, Math.max(0, d.handwashElapsedSec || 0));
+        if (elapsed >= 20) elapsed = 0;
+        var remaining = 20 - elapsed;
+        setKL({ handwashStart: Date.now(), handwashElapsedSec: elapsed, handwashPaused: false, handwashTickAt: Date.now() });
+        scheduleHandwashTimers(remaining);
+        klAnnounce((elapsed > 0 ? 'Handwash timer resumed. ' : 'Handwash timer started. ') + Math.ceil(remaining) + ' seconds remaining.');
+      }
+      function pauseHandwashTimer() {
+        var elapsed = Math.min(20, Math.max(0, (d.handwashElapsedSec || 0) + (d.handwashStart ? (Date.now() - d.handwashStart) / 1000 : 0)));
+        stopHandwashTimers();
+        setKL({ handwashStart: null, handwashElapsedSec: elapsed, handwashPaused: true, handwashTickAt: Date.now() });
+        klAnnounce('Handwash timer paused with ' + Math.ceil(20 - elapsed) + ' seconds remaining.');
+      }
+      function resetHandwashTimer() {
+        stopHandwashTimers();
+        setKL({ handwashStart: null, handwashElapsedSec: 0, handwashPaused: false, handwashTickAt: Date.now() });
+        klAnnounce('Handwash timer reset.');
       }
       var section = d.activeSection || 'safety';
 
@@ -1945,38 +2017,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // ─── WHO Handwash 20-second timer ───
       function renderHandwashTimer() {
         var started = d.handwashStart;
-        var elapsed = started ? Math.min(20, (Date.now() - started) / 1000) : 0;
+        var baseElapsed = Math.min(20, Math.max(0, d.handwashElapsedSec || 0));
+        var elapsed = started ? Math.min(20, baseElapsed + (Date.now() - started) / 1000) : baseElapsed;
+        var paused = !!d.handwashPaused;
         var pct = Math.min(100, (elapsed / 20) * 100);
+        if (started && !_handwashTickHandle && !_handwashCompleteHandle) {
+          setTimeout(function() {
+            if (!_handwashTickHandle && !_handwashCompleteHandle) scheduleHandwashTimers(20 - elapsed);
+          }, 0);
+        }
         return h('div', { style: cardStyle() },
           h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.20_second_handwash_cdc_who', '🧼 20-Second Handwash (CDC + WHO)')),
           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
             __alloT('stem.kitchenlab.soap_20_seconds_friction_the_minimum_f', 'Soap + 20 seconds + friction = the minimum for hand sanitation in a kitchen. The mechanical action (friction) is what dislodges bacteria — soap loosens them, water rinses them away.')),
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
-            h('button', { onClick: function() {
-                if (!started) {
-                  setKL({ handwashStart: Date.now() });
-                  klAnnounce('Handwash timer started. 20 seconds.');
-                  // Auto-complete after 20s
-                  setTimeout(function() {
-                    var c = (labToolData.kitchenLab) || {};
-                    if (c.handwashStart) {
-                      setKL({ handwashStart: null, klHandwashCompleted: true });
-                      klAnnounce('Handwash complete — 20 seconds reached.');
-                      awardXP(5);
-                    }
-                  }, 20000);
-                } else {
-                  setKL({ handwashStart: null });
-                }
-              },
-              style: { padding: '10px 18px', background: started ? '#b91c1c' : '#15803d', color: 'white',
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+            h('button', { type: 'button', onClick: started ? pauseHandwashTimer : startOrResumeHandwashTimer,
+              'aria-pressed': started ? 'true' : 'false',
+              style: { padding: '10px 18px', background: started ? '#b45309' : '#15803d', color: 'white',
                 border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
-              started ? '⏹ Stop' : '▶ Start 20s timer'),
+              started ? '⏸ Pause timer' : paused ? '▶ Resume timer' : elapsed >= 20 ? '↻ Start again' : '▶ Start 20s timer'),
+            (paused || elapsed > 0) ? h('button', { type: 'button', onClick: resetHandwashTimer,
+              style: { padding: '10px 14px', background: 'transparent', color: '#fde68a', border: '1px solid rgba(251,146,60,0.5)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+              __alloT('stem.kitchenlab.reset_timer', 'Reset timer')) : null,
             h('div', { style: { flex: 1, minWidth: 200 } },
-              h('div', { style: { height: 12, background: 'rgba(15,23,42,0.6)', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)' } },
-                h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #16a34a, #22c55e)', transition: started ? 'width 1s linear' : 'none' } })),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                Math.round(elapsed) + ' / 20 sec' + (elapsed >= 20 ? ' ✓ complete' : '')))),
+              h('div', { role: 'progressbar', 'aria-label': 'Handwash timer progress', 'aria-valuemin': 0, 'aria-valuemax': 20, 'aria-valuenow': Math.round(elapsed),
+                style: { height: 12, background: 'rgba(15,23,42,0.6)', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)' } },
+                h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #16a34a, #22c55e)', transition: started ? 'width 0.5s linear' : 'none' } })),
+              h('div', { role: 'timer', 'aria-live': 'off', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                Math.round(elapsed) + ' / 20 sec' + (elapsed >= 20 ? ' ✓ complete' : paused ? ' — paused' : '')))),
           h('ol', { style: { margin: '4px 0 0 0', padding: 0, listStyle: 'none', counterReset: 'hw-steps' } },
             [
               'Wet hands with running water (warm preferred but not required).',
@@ -2083,16 +2151,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // ─── SVG visualization of a knife cut ───
       function renderCutSvg(cut) {
         // Different shapes per cut family
-        if (cut.id === 'largeDice') return cubeGrid(3, 28, '#fb923c');
-        if (cut.id === 'mediumDice') return cubeGrid(4, 22, '#fb923c');
-        if (cut.id === 'smallDice') return cubeGrid(6, 14, '#fb923c');
-        if (cut.id === 'brunoise') return cubeGrid(10, 8, '#fb923c');
-        if (cut.id === 'julienne') return matchsticks(8, 60, 4, '#fb923c');
-        if (cut.id === 'chiffonade') return ribbons(6, '#86efac');
-        if (cut.id === 'mince') return cubeGrid(14, 4, '#fb923c');
-        return roughChunks(6, '#fb923c');
+        var label = cut.name + ' knife-cut diagram';
+        if (cut.id === 'largeDice') return cubeGrid(3, 28, '#fb923c', label);
+        if (cut.id === 'mediumDice') return cubeGrid(4, 22, '#fb923c', label);
+        if (cut.id === 'smallDice') return cubeGrid(6, 14, '#fb923c', label);
+        if (cut.id === 'brunoise') return cubeGrid(10, 8, '#fb923c', label);
+        if (cut.id === 'julienne') return matchsticks(8, 60, 4, '#fb923c', label);
+        if (cut.id === 'chiffonade') return ribbons(6, '#86efac', label);
+        if (cut.id === 'mince') return cubeGrid(14, 4, '#fb923c', label);
+        return roughChunks(6, '#fb923c', label);
       }
-      function cubeGrid(cols, size, color) {
+      function cubeGrid(cols, size, color, label) {
         var rows = cols;
         var w = cols * size + (cols + 1) * 4;
         var hH = rows * size + (rows + 1) * 4;
@@ -2102,32 +2171,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             cells.push(h('rect', { key: r + '-' + c, x: 4 + c * (size + 4), y: 4 + r * (size + 4), width: size, height: size, fill: color, rx: 2, opacity: 0.85 }));
           }
         }
-        return h('svg', { width: Math.min(w, 280), height: Math.min(hH, 130), viewBox: '0 0 ' + w + ' ' + hH, style: { maxWidth: '100%' } }, cells);
+        return h('svg', { role: 'img', 'aria-label': label, width: Math.min(w, 280), height: Math.min(hH, 130), viewBox: '0 0 ' + w + ' ' + hH, style: { maxWidth: '100%' } }, cells);
       }
-      function matchsticks(count, len, width, color) {
+      function matchsticks(count, len, width, color, label) {
         var w = (width + 4) * count + 4;
         var hH = len + 8;
         var ms = [];
         for (var i = 0; i < count; i++) {
           ms.push(h('rect', { key: i, x: 4 + i * (width + 4), y: 4, width: width, height: len, fill: color, rx: 1, opacity: 0.85 }));
         }
-        return h('svg', { width: Math.min(w, 280), height: hH, viewBox: '0 0 ' + w + ' ' + hH, style: { maxWidth: '100%' } }, ms);
+        return h('svg', { role: 'img', 'aria-label': label, width: Math.min(w, 280), height: hH, viewBox: '0 0 ' + w + ' ' + hH, style: { maxWidth: '100%' } }, ms);
       }
-      function ribbons(count, color) {
+      function ribbons(count, color, label) {
         var ribs = [];
         for (var i = 0; i < count; i++) {
           ribs.push(h('rect', { key: i, x: 4, y: 4 + i * 16, width: 240, height: 4, fill: color, rx: 2, opacity: 0.85 }));
         }
-        return h('svg', { width: 260, height: count * 16 + 8, viewBox: '0 0 260 ' + (count * 16 + 8), style: { maxWidth: '100%' } }, ribs);
+        return h('svg', { role: 'img', 'aria-label': label, width: 260, height: count * 16 + 8, viewBox: '0 0 260 ' + (count * 16 + 8), style: { maxWidth: '100%' } }, ribs);
       }
-      function roughChunks(count, color) {
+      function roughChunks(count, color, label) {
         var chunks = [];
         var positions = [[10, 10, 50, 35], [80, 15, 40, 45], [140, 8, 60, 28], [20, 60, 45, 50], [90, 65, 55, 30], [170, 50, 50, 45]];
         for (var i = 0; i < count && i < positions.length; i++) {
           var p = positions[i];
           chunks.push(h('rect', { key: i, x: p[0], y: p[1], width: p[2], height: p[3], fill: color, rx: 6, opacity: 0.75 + (i % 3) * 0.08 }));
         }
-        return h('svg', { width: 240, height: 120, viewBox: '0 0 240 120', style: { maxWidth: '100%' } }, chunks);
+        return h('svg', { role: 'img', 'aria-label': label, width: 240, height: 120, viewBox: '0 0 240 120', style: { maxWidth: '100%' } }, chunks);
       }
 
       // ═══════════════════════════════════════════════════════
@@ -2306,13 +2375,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
                 h('thead', null,
                   h('tr', { style: { borderBottom: '2px solid rgba(251,146,60,0.3)' } },
-                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fb923c', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.aspect', 'Aspect')),
-                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fbbf24', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.caramelization', 'Caramelization')),
-                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#86efac', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.maillard_3', 'Maillard')))),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '8px 12px', color: '#fb923c', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.aspect', 'Aspect')),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '8px 12px', color: '#fbbf24', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.caramelization', 'Caramelization')),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '8px 12px', color: '#86efac', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.maillard_3', 'Maillard')))),
                 h('tbody', null,
                   CARAM_VS_MAILLARD.map(function(row, i) {
                     return h('tr', { key: i, style: { borderBottom: '1px solid rgba(100,116,139,0.15)' } },
-                      h('td', { style: { padding: '10px 12px', color: '#fde68a', fontWeight: 700, verticalAlign: 'top' } }, row.aspect),
+                      h('th', { scope: 'row', style: { padding: '10px 12px', color: '#fde68a', fontWeight: 700, verticalAlign: 'top', textAlign: 'left' } }, row.aspect),
                       h('td', { style: { padding: '10px 12px', color: '#fef3c7', verticalAlign: 'top', lineHeight: 1.5 } }, row.caram),
                       h('td', { style: { padding: '10px 12px', color: '#dcfce7', verticalAlign: 'top', lineHeight: 1.5 } }, row.mai));
                   }))))),
@@ -2482,6 +2551,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function stopRecipeTick() {
         if (_recipeTickHandle) { clearInterval(_recipeTickHandle); _recipeTickHandle = null; }
       }
+      function pauseRecipe() {
+        if (d.recipePhase !== 'cooking') return;
+        var pausedAt = Date.now();
+        stopRecipeTick();
+        setKL({ recipePhase: 'paused', recipePausedAt: pausedAt });
+        klAnnounce('Cooking paused. Recipe and competition timers are stopped.');
+      }
+      function resumeRecipe() {
+        if (d.recipePhase !== 'paused' || !d.recipePausedAt) return;
+        var now = Date.now();
+        var pausedFor = Math.max(0, now - d.recipePausedAt);
+        function shiftTimestamp(value) { return value ? value + pausedFor : value; }
+        var shiftedItemTimes = {};
+        Object.keys(d.recipeItemAddTimes || {}).forEach(function(key) {
+          shiftedItemTimes[key] = shiftTimestamp(d.recipeItemAddTimes[key]);
+        });
+        setKL({
+          recipePhase: 'cooking', recipePausedAt: null,
+          recipeStartedAt: shiftTimestamp(d.recipeStartedAt),
+          recipeStepStartedAt: shiftTimestamp(d.recipeStepStartedAt),
+          recipeLastTickAt: now,
+          recipeHeatRemovedAt: shiftTimestamp(d.recipeHeatRemovedAt),
+          recipeItemAddTimes: shiftedItemTimes,
+          potStartedAt: shiftTimestamp(d.potStartedAt),
+          potPastaInAt: shiftTimestamp(d.potPastaInAt),
+          potPastaDoneAt: shiftTimestamp(d.potPastaDoneAt),
+          potDrainedAt: shiftTimestamp(d.potDrainedAt),
+          competitionStartedAt: shiftTimestamp(d.competitionStartedAt),
+          competitionDeadline: shiftTimestamp(d.competitionDeadline)
+        });
+        klAnnounce('Cooking resumed.');
+      }
       // Auto-start/stop the tick based on phase (called from render below)
       function ensureTickMatches(phase) {
         if (phase === 'cooking' && !_recipeTickHandle) setTimeout(startRecipeTick, 0);
@@ -2497,6 +2598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         setKL({
           recipeActiveId: recipeId,
           recipePhase: 'cooking',
+          recipePausedAt: null,
           recipeStartedAt: Date.now(),
           recipeLastTickAt: Date.now(),
           recipeStepStartedAt: Date.now(),
@@ -2523,9 +2625,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         awardXP(5);
       }
       function abortRecipe() {
-        setKL({ recipePhase: 'idle', recipeActiveId: null, recipeJudgement: null,
-          competitionActive: false, competitionConstraints: [], competitionDeadline: null });
+        setKL({ recipePhase: 'idle', recipeActiveId: null, recipeJudgement: null, recipePausedAt: null,
+          competitionActive: false, competitionConstraints: [], competitionDeadline: null, pendingConfirmation: null });
         klAnnounce('Recipe abandoned.');
+      }
+      function openConfirmation(kind) {
+        if (typeof document !== 'undefined') _klConfirmReturnEl = document.activeElement;
+        setKL({ pendingConfirmation: kind });
+        setTimeout(function() {
+          if (typeof document === 'undefined') return;
+          var cancel = document.getElementById('kitchen-confirm-cancel');
+          if (cancel) cancel.focus();
+        }, 0);
+      }
+      function closeConfirmation() {
+        setKL({ pendingConfirmation: null });
+        setTimeout(function() {
+          if (_klConfirmReturnEl && typeof _klConfirmReturnEl.focus === 'function') _klConfirmReturnEl.focus();
+          _klConfirmReturnEl = null;
+        }, 0);
+      }
+      function confirmPendingAction() {
+        var kind = d.pendingConfirmation;
+        if (kind === 'tournament') exitTournament();
+        else abortRecipe();
+        setTimeout(function() {
+          var region = typeof document !== 'undefined' ? document.getElementById('kitchen-lab-region') : null;
+          if (region) region.focus();
+          _klConfirmReturnEl = null;
+        }, 0);
+      }
+      function renderConfirmationDialog() {
+        var tournament = d.pendingConfirmation === 'tournament';
+        var title = tournament ? 'Abandon tournament?' : 'Abandon this recipe?';
+        var description = tournament ? 'Your current tournament progress and round will be discarded.' : 'Your current cooking progress will be discarded.';
+        return h('div', {
+            onClick: function(e) { if (e.target === e.currentTarget) closeConfirmation(); },
+            style: { position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(10,7,4,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }
+          },
+          h('div', { id: 'kitchen-confirm-dialog', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'kitchen-confirm-title', 'aria-describedby': 'kitchen-confirm-description',
+              onKeyDown: function(e) { trapDialogFocus(e, 'kitchen-confirm-dialog', closeConfirmation); },
+              style: { maxWidth: 460, width: '100%', background: '#1c1410', color: '#f1f5f9', border: '2px solid rgba(248,113,113,0.65)', borderRadius: 14, padding: 24, boxShadow: '0 18px 60px rgba(0,0,0,0.6)' } },
+            h('h2', { id: 'kitchen-confirm-title', style: { fontSize: 20, fontWeight: 900, color: '#fecaca', margin: '0 0 10px' } }, title),
+            h('p', { id: 'kitchen-confirm-description', style: { fontSize: 13, lineHeight: 1.6, color: '#cbd5e1', margin: '0 0 20px' } }, description),
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' } },
+              h('button', { id: 'kitchen-confirm-cancel', type: 'button', onClick: closeConfirmation,
+                style: { padding: '10px 16px', background: 'transparent', color: '#f1f5f9', border: '1px solid #94a3b8', borderRadius: 8, fontWeight: 700, cursor: 'pointer' } }, 'Keep cooking'),
+              h('button', { id: 'kitchen-confirm-action', type: 'button', onClick: confirmPendingAction,
+                style: { padding: '10px 16px', background: '#b91c1c', color: 'white', border: 'none', borderRadius: 8, fontWeight: 800, cursor: 'pointer' } },
+                tournament ? 'Abandon tournament' : 'Abandon recipe'))));
       }
 
       // ─── Tournament Mode (3-round bracket) ───
@@ -2593,6 +2741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           return {
             recipeActiveId: rid,
             recipePhase: 'cooking',
+            recipePausedAt: null,
             recipeStartedAt: Date.now(),
             recipeLastTickAt: Date.now(),
             recipeStepStartedAt: Date.now(),
@@ -2661,11 +2810,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
 
       function exitTournament() {
-        setKL({ recipePhase: 'idle', recipeActiveId: null,
+        setKL({ recipePhase: 'idle', recipeActiveId: null, recipePausedAt: null,
           tournamentActive: false, tournamentRound: 0, tournamentRecipes: [],
           tournamentConstraintIds: [], tournamentScores: [],
           competitionActive: false, competitionConstraints: [], competitionDeadline: null,
-          aiCritique: null, aiCritiqueLoading: false });
+          aiCritique: null, aiCritiqueLoading: false, pendingConfirmation: null });
       }
 
       // ─── AI Judge (Gemini-powered personalized critique) ───
@@ -2707,10 +2856,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // student's free-text constraints (pantry, time, mood, audience).
       // Returns recipeId + a paragraph of reasoning.
       function openSuggester() {
+        if (typeof document !== 'undefined') _klSuggesterReturnEl = document.activeElement;
         setKL({ suggesterOpen: true, suggesterInput: '', suggesterResult: null, suggesterError: null });
+        setTimeout(function() {
+          if (typeof document === 'undefined') return;
+          var close = document.getElementById('kitchen-suggester-close');
+          if (close) close.focus();
+        }, 0);
       }
       function closeSuggester() {
         setKL({ suggesterOpen: false, suggesterLoading: false, suggesterError: null });
+        setTimeout(function() {
+          if (_klSuggesterReturnEl && typeof _klSuggesterReturnEl.focus === 'function') _klSuggesterReturnEl.focus();
+          _klSuggesterReturnEl = null;
+        }, 0);
       }
       function runSuggester(input) {
         var callGemini = ctx.callGemini;
@@ -2786,6 +2945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         setKL({
           recipeActiveId: recipe.id,
           recipePhase: 'cooking',
+          recipePausedAt: null,
           recipeStartedAt: Date.now(),
           recipeLastTickAt: Date.now(),
           recipeStepStartedAt: Date.now(),
@@ -3244,7 +3404,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // Competition overlay data
         var inCompetition = !!d.competitionActive;
         var deadline = d.competitionDeadline;
-        var msLeft = deadline ? Math.max(0, deadline - Date.now()) : null;
+        var isPaused = d.recipePhase === 'paused';
+        var effectiveNow = isPaused && d.recipePausedAt ? d.recipePausedAt : Date.now();
+        var msLeft = deadline ? Math.max(0, deadline - effectiveNow) : null;
         var secLeft = msLeft != null ? Math.round(msLeft / 1000) : null;
         var deadlineExceeded = msLeft != null && msLeft <= 0;
         var deadlineWarn = secLeft != null && secLeft <= 30 && secLeft > 0;
@@ -3268,7 +3430,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         return h('div', null,
           panelHeader(rec.icon + ' Cooking: ' + rec.name + (inCompetition ? ' 🏆 (Competition)' : ''),
             'Step ' + (stepIdx + 1) + ' of ' + rec.steps.length + ' — total elapsed: ' +
-            (d.recipeStartedAt ? Math.round((Date.now() - d.recipeStartedAt) / 1000) + 's' : '0s')),
+            (d.recipeStartedAt ? Math.round((effectiveNow - d.recipeStartedAt) / 1000) + 's' : '0s')),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+            h('button', { type: 'button', onClick: isPaused ? resumeRecipe : pauseRecipe, 'aria-pressed': isPaused ? 'true' : 'false',
+              style: { padding: '10px 16px', background: isPaused ? '#15803d' : '#b45309', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+              isPaused ? '▶ Resume cooking' : '⏸ Pause cooking'),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: 12, color: isPaused ? '#fde68a' : 'var(--allo-stem-text-soft, #94a3b8)' } },
+              isPaused ? 'Cooking and competition timers are paused.' : 'Cooking timer is running.')),
 
           // ─── COMPETITION HUD (only in competition mode) ───
           inCompetition ? h('div', { style: Object.assign({}, cardStyle(), {
@@ -3328,7 +3496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('label', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                   h('span', null, thermal.controlLabel),
                   h('span', { style: { color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14, fontWeight: 800 } }, thermal.controlSubLabel(burnerLevel))),
-                h('input', { type: 'range', min: 0, max: 10, step: 1, value: burnerLevel,
+                h('input', { type: 'range', min: 0, max: 10, step: 1, value: burnerLevel, disabled: isPaused,
                   onChange: function(e) { setBurner(parseInt(e.target.value, 10)); },
                   'aria-label': isOven ? 'Oven temperature dial' : 'Burner level',
                   style: { width: '100%', accentColor: tempColor } }),
@@ -3352,7 +3520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, __alloT('stem.kitchenlab.all_ingredients_are_in_the_pan', 'All ingredients are in the pan.')) :
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 availableItems.map(function(ing) {
-                  return h('button', { key: ing.id,
+                  return h('button', { key: ing.id, disabled: isPaused,
                     onClick: function() { addItem(ing.id); },
                     style: { padding: '10px 14px', background: 'rgba(15,23,42,0.7)',
                       border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8,
@@ -3373,7 +3541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     background: isPast ? '#22c55e' : isCurrent ? '#fb923c' : 'rgba(100,116,139,0.3)' } });
               })),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              step.completeWhen === 'userClick' ? h('button', {
+              step.completeWhen === 'userClick' ? h('button', { disabled: isPaused,
                 onClick: function() { nextStep(); klAnnounce('Step complete.'); },
                 style: { padding: '12px 24px', background: '#22c55e', color: '#052e16',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
@@ -3384,7 +3552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 step.completeWhen === 'internalTempReached' ? '⏳ Auto-advances when internal food temperature reaches target — use the readout on the chicken' :
                 step.completeWhen === 'potStateReached' ? '⏳ Auto-advances when the pasta pot reaches the target state — use the pot controls above' : '⏳ Continue when ready'),
               h('button', {
-                onClick: function() { if (confirm('Abandon this recipe?')) abortRecipe(); },
+                onClick: function() { openConfirmation('recipe'); },
                 style: { padding: '12px 18px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.abandon', '✕ Abandon'))))
@@ -3404,8 +3572,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var recommendedRec = result ? RECIPES[result.recipeId] : null;
         var recommendedCat = result ? RECIPE_CATALOG.find(function(r) { return r.id === result.recipeId; }) : null;
         return h('div', {
-            role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.kitchenlab.ai_recipe_suggester', 'AI recipe suggester'),
+            id: 'kitchen-suggester-dialog', role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.kitchenlab.ai_recipe_suggester', 'AI recipe suggester'),
             onClick: function(e) { if (e.target === e.currentTarget) closeSuggester(); },
+            onKeyDown: function(e) { trapDialogFocus(e, 'kitchen-suggester-dialog', closeSuggester); },
             style: {
               position: 'fixed', inset: 0, zIndex: 9999,
               background: 'rgba(10,7,4,0.85)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
@@ -3425,7 +3594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { flex: 1 } },
                 h('div', { style: { fontSize: 18, fontWeight: 900, color: '#e9d5ff', letterSpacing: '-0.01em' } }, __alloT('stem.kitchenlab.what_should_i_cook', 'What should I cook?')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.kitchenlab.powered_by_ai_picks_from_your_unlocked', 'Powered by AI · picks from your unlocked recipes'))),
-              h('button', { onClick: closeSuggester, 'aria-label': __alloT('stem.kitchenlab.close_suggester', 'Close suggester'),
+              h('button', { id: 'kitchen-suggester-close', type: 'button', onClick: closeSuggester, 'aria-label': __alloT('stem.kitchenlab.close_suggester', 'Close suggester'),
                 style: { background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: 'none', fontSize: 22, fontWeight: 700, cursor: 'pointer', padding: 4 } },
                 '✕')),
             // Body — varies by state
@@ -3460,10 +3629,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 __alloT('stem.kitchenlab.chef_is_thinking_about_what_suits_your', 'Chef is thinking about what suits your night...'))
             ) : h('div', null,
               // Input view
-              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12 } },
+              h('label', { htmlFor: 'kitchen-suggester-input', style: { display: 'block', fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12 } },
                 __alloT('stem.kitchenlab.tell_the_chef_about_your_situation_wha', 'Tell the chef about your situation — what you have in the kitchen, how much time, whether you\'re feeding kids, mood, etc. Or leave blank for a free pick.')),
               h('textarea', {
-                value: inputVal,
+                id: 'kitchen-suggester-input', value: inputVal,
                 onChange: function(e) { setKL({ suggesterInput: e.target.value, suggesterError: null }); },
                 placeholder: __alloT('stem.kitchenlab.e_g_i_ve_got_eggs_and_butter_10_minute', 'e.g., "I\'ve got eggs and butter, 10 minutes, kids are hungry"\nor\n"want something impressive for date night"\nor leave blank'),
                 rows: 4,
@@ -3493,7 +3662,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function renderPotWidget(d, rec) {
         var simSpeed = rec.simSpeedMultiplier || 1;
         var phase = d.potState || 'cold';
-        var nowMs = Date.now();
+        var controlsDisabled = d.recipePhase === 'paused';
+        var nowMs = controlsDisabled && d.recipePausedAt ? d.recipePausedAt : Date.now();
         // Compute progress + temp
         var potTempF = 70;
         var progressPct = 0;
@@ -3572,19 +3742,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('div', { style: { height: '100%', width: progressPct + '%', background: phaseColor, transition: 'width 0.3s' } })),
               // Action buttons (vary by phase)
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                phase === 'cold' ? h('button', {
+                phase === 'cold' ? h('button', { disabled: controlsDisabled,
                   onClick: function() { startPot(); awardXP(1); },
                   style: { padding: '8px 14px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.start_pasta_water', '🔥 Start pasta water')) : null,
-                phase === 'boiling' ? h('button', {
+                phase === 'boiling' ? h('button', { disabled: controlsDisabled,
                   onClick: function() { dropPasta(); awardXP(2); },
                   style: { padding: '8px 14px', background: '#22c55e', color: '#052e16',
                     border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.drop_pasta', '🍝 Drop pasta')) : null,
                 (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', {
                   onClick: function() { drainPasta(true); awardXP(2); },
-                  disabled: phase !== 'pasta-done',
+                  disabled: controlsDisabled || phase !== 'pasta-done',
                   style: { padding: '8px 14px',
                     background: phase === 'pasta-done' ? '#22c55e' : 'rgba(100,116,139,0.3)',
                     color: phase === 'pasta-done' ? '#052e16' : '#94a3b8',
@@ -3593,7 +3763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   __alloT('stem.kitchenlab.drain_save_water', '✓ Drain (save water)')) : null,
                 (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', {
                   onClick: function() { drainPasta(false); },
-                  disabled: phase !== 'pasta-done',
+                  disabled: controlsDisabled || phase !== 'pasta-done',
                   style: { padding: '8px 14px',
                     background: 'transparent', color: '#fca5a5',
                     border: '1px solid rgba(220,38,38,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 600,
@@ -3864,7 +4034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
                 border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.back_to_recipe_list_2', '🍽️ Back to recipe list')) :
-              h('button', { onClick: function() { if (confirm('Abandon tournament?')) exitTournament(); },
+              h('button', { onClick: function() { openConfirmation('tournament'); },
                 style: { padding: '12px 24px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.abandon_tournament', '✕ Abandon tournament')))
@@ -4113,7 +4283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
             h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
           ),
-          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
+          h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': 'Maillard reaction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
             className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -4123,17 +4293,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             __alloT('stem.kitchenlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-          iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.explain_the_chemistry_of_maillard_brow', 'Explain the chemistry of Maillard browning.'),
+          iq.understood && h('textarea', { id: 'kitchen-maillard-explanation', 'aria-label': 'Explain the chemistry of Maillard browning', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.explain_the_chemistry_of_maillard_brow', 'Explain the chemistry of Maillard browning.'),
             className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
           h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.kitchenlab.design_note_discrete_5_state_browning_', 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.'))
         );
       })();
       else content = renderSafety();
 
-      return h('div', { style: rootStyle, role: 'region', 'aria-label': __alloT('stem.kitchenlab.kitchen_lab_2', 'Kitchen Lab') },
+      return h('div', { id: 'kitchen-lab-region', tabIndex: -1, style: rootStyle, role: 'region', 'aria-label': __alloT('stem.kitchenlab.kitchen_lab_2', 'Kitchen Lab') },
         renderHeader(),
         renderTabs(),
-        h('div', { style: { padding: 20 } }, content)
+        h('div', { style: { padding: 20 } }, content),
+        d.pendingConfirmation ? renderConfirmationDialog() : null
       );
     }
   });
