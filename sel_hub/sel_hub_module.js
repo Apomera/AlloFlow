@@ -1069,6 +1069,16 @@
       var _showForEducators = React.useState(false);
       var showForEducators = _showForEducators[0];
       var setShowForEducators = _showForEducators[1];
+      var _showClearSelConfirm = React.useState(false);
+      var showClearSelConfirm = _showClearSelConfirm[0];
+      var setShowClearSelConfirm = _showClearSelConfirm[1];
+      function closeClearSelConfirm() {
+        setShowClearSelConfirm(false);
+        setTimeout(function() {
+          var clearButton = document.getElementById('sel-clear-all-data-button');
+          if (clearButton && clearButton.focus) clearButton.focus();
+        }, 0);
+      }
       var _showSharePacket = React.useState(false);
       var showSharePacket = _showSharePacket[0];
       var setShowSharePacket = _showSharePacket[1];
@@ -1142,10 +1152,11 @@
 
       // Tab-trap + ESC for the ephemeral explainer, For-Educators modal, and share packet builder.
       React.useEffect(function() {
-        if (!showEphemeralExplainer && !showForEducators && !showSharePacket) return;
+        if (!showEphemeralExplainer && !showForEducators && !showClearSelConfirm && !showSharePacket) return;
         function onKey(e) {
           if (e.key === 'Escape') {
-            if (showSharePacket) { setShowSharePacket(false); alloRestoreOrFocusSelHubStart(); }
+            if (showClearSelConfirm) { closeClearSelConfirm(); }
+            else if (showSharePacket) { setShowSharePacket(false); alloRestoreOrFocusSelHubStart(); }
             else if (showForEducators) { setShowForEducators(false); alloRestoreOrFocusSelHubStart(); }
             else if (showEphemeralExplainer) {
               setShowEphemeralExplainer(false);
@@ -1155,7 +1166,7 @@
             return;
           }
           if (e.key === 'Tab') {
-            var modalId = showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal');
+            var modalId = showClearSelConfirm ? 'sel-clear-data-confirm-modal' : (showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal'));
             var modal = document.getElementById(modalId);
             if (!modal) return;
             var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -1169,7 +1180,7 @@
         document.addEventListener('keydown', onKey);
         // Focus the primary action on open.
         setTimeout(function() {
-          var modalId = showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal');
+          var modalId = showClearSelConfirm ? 'sel-clear-data-confirm-modal' : (showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal'));
           var modal = document.getElementById(modalId);
           if (modal) {
             var primary = modal.querySelector('[data-primary-action]') || modal.querySelector('button');
@@ -1177,7 +1188,7 @@
           }
         }, 50);
         return function() { document.removeEventListener('keydown', onKey); };
-      }, [showEphemeralExplainer, showForEducators, showSharePacket]);
+      }, [showEphemeralExplainer, showForEducators, showClearSelConfirm, showSharePacket]);
 
       function awardSelXP(amount) {
         var pts = amount || 5;
@@ -2668,10 +2679,7 @@
       // (journal entries, reflections, safety plan, streak, stations, progress)
       // from this device. FERPA-positive; destructive, so confirm-gated.
       var clearAllSelData = function() {
-        var ok = (typeof window !== 'undefined' && window.confirm)
-          ? window.confirm('Permanently delete ALL your SEL work on this device — journal entries, reflections, safety plan, streak, stations, and progress?\n\nThis cannot be undone.')
-          : false;
-        if (!ok) return;
+        setShowClearSelConfirm(false);
         // Remove every SEL-namespaced localStorage key (hub keys, legacy per-tool
         // keys, and per-session crisiscompanion namespaced keys) via a scan so no
         // variant is missed.
@@ -2720,8 +2728,31 @@
         if (typeof addToast === 'function') addToast('Your SEL data has been cleared from this device.', 'success');
         if (announceToSR) announceToSR('Your SEL data has been cleared from this device.');
       };
-
-      var forEducatorsModal = showForEducators && h('div', {
+      var clearSelDataConfirmModal = showClearSelConfirm && h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'sel-clear-data-confirm-title',
+        'aria-describedby': 'sel-clear-data-confirm-description',
+        id: 'sel-clear-data-confirm-modal',
+        style: { position: 'fixed', inset: 0, zIndex: 10002, background: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
+      },
+        h('div', { style: { background: _t.bgCard, color: _t.text, borderRadius: 14, border: '1px solid ' + _t.border, maxWidth: 520, width: '100%', padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.45)' } },
+          h('h2', { id: 'sel-clear-data-confirm-title', style: { margin: '0 0 10px', fontSize: 18, fontWeight: 900 } }, 'Permanently clear all SEL data?'),
+          h('p', { id: 'sel-clear-data-confirm-description', style: { margin: '0 0 18px', color: _t.textMuted, fontSize: 13, lineHeight: 1.6 } }, 'This deletes journal entries, reflections, your safety plan, streak, stations, and progress from this device. This cannot be undone.'),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 10 } },
+            h('button', {
+              'data-primary-action': 'true',
+              onClick: closeClearSelConfirm,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.text, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: clearAllSelData,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid ' + _t.dangerText, background: isContrast ? '#000000' : 'rgba(220,38,38,0.12)', color: _t.dangerText, fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+            }, 'Permanently delete all SEL data')
+          )
+        )
+      );
+      var forEducatorsModal = showForEducators && !showClearSelConfirm && h('div', {
         role: 'dialog',
         'aria-modal': 'true',
         'aria-labelledby': 'sel-for-educators-title',
@@ -2762,7 +2793,8 @@
               h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _t.textMuted, lineHeight: 1.5 } },
                 'SEL work (journal entries, reflections, safety plan, streak, stations, and progress) is stored on this device and can be included when a project file is saved. This permanently deletes all of it from this device.'),
               h('button', {
-                onClick: clearAllSelData,
+                id: 'sel-clear-all-data-button',
+                onClick: function() { setShowClearSelConfirm(true); },
                 'aria-label': 'Clear all my SEL data from this device',
                 style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _t.dangerText, background: isContrast ? '#000000' : 'rgba(220,38,38,0.08)', color: _t.dangerText, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, '🗑️ Clear my SEL data')
@@ -4165,6 +4197,7 @@
         // CHANGE 1 + CHANGE 3: stacked above the hub modal via zIndex
         ephemeralExplainerModal,
         forEducatorsModal,
+        clearSelDataConfirmModal,
         sharePacketModal
       );
     };
