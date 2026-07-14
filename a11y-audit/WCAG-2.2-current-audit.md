@@ -173,6 +173,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Adventure's ledger and inventory-detail dialogs: both reuse contained initial focus, Tab cycling, Escape closure, and launcher focus restoration; dialogs now have programmatic descriptions, narrow-height scrolling, reduced-motion entry, 44 CSS-pixel Close and action targets, and strong visible focus. The ledger narrative is a named keyboard-scrollable region, Storybook export has an accurate name and busy state, disabled key items and usable items retain their visible names, contrast is strengthened, and duplicated item imagery plus decorative book, close, lock, glow, loading, download, and use symbols are hidden from assistive technology (WCAG 1.1.1, 1.3.1, 1.4.3, 1.4.10, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
 
+- Remediated Adventure's saved-game entry and new-game setup workflow: Resume, overwrite, return, and Start actions now have accurate names, explicit native button behavior, larger targets, strong visible focus, busy/disabled protection, decorative-icon suppression, reduced-motion handling, and narrow-width reflow. Core, modifier, and customization settings are named groups; interaction mode, difficulty, language, climax rounds, and custom instructions are associated with visible labels; checkbox cards use their visible label/description instead of generic override names and provide larger focusable controls; small-text and header contrast is strengthened; and text instructions can resize vertically (WCAG 1.1.1, 1.3.1, 1.3.5, 1.4.3, 1.4.10, 2.1.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 3.2.2, 3.3.2, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

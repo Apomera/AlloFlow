@@ -429,68 +429,69 @@ function AdventureView(props) {
                     </div>
                     <div className="flex-grow bg-slate-100 rounded-xl border border-slate-400 shadow-inner overflow-hidden flex flex-col relative">
                         {!adventureState.isImmersiveMode ? (
-                        <div ref={adventureScrollRef} className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                        <div ref={adventureScrollRef} className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
                             {!adventureState.currentScene && adventureState.history.length === 0 && !adventureState.isLoading && (
-                                <div className="min-h-full flex flex-col items-center py-10 animate-in fade-in zoom-in duration-300">
+                                <div className="min-h-full flex flex-col items-center py-4 sm:py-10 animate-in fade-in zoom-in duration-300 motion-reduce:animate-none">
                                     {hasSavedAdventure && !showNewGameSetup ? (
                                         <div className="max-w-md w-full text-center space-y-6 my-auto">
-                                            <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-indigo-100">
+                                            <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-indigo-100">
                                                 <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm border-2 border-indigo-200">
-                                                    <MapIcon size={40} />
+                                                    <MapIcon size={40} aria-hidden="true" />
                                                 </div>
                                                 <h2 className="text-2xl font-black text-slate-800 mb-2">{t('adventure.paused_title')}</h2>
                                                 <p className="text-slate-600 mb-6 font-medium">
                                                     {t('adventure.paused_desc')}
                                                 </p>
-                                                <button
-                                                    aria-label={t('common.history')}
+                                                <button type="button"
+                                                    aria-label={t('adventure.resume')}
                                                     data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
-                                                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-lg shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2"
+                                                    className="min-h-11 w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-lg shadow-lg hover:scale-105 transition-all motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                                 >
-                                                    <History size={20}/> {t('adventure.resume')}
+                                                    <History size={20} aria-hidden="true"/> {t('adventure.resume')}
                                                 </button>
                                             </div>
-                                            <button
-                                                aria-label={t('common.new_game_setup')}
+                                            <button type="button"
+                                                aria-label={t('adventure.start_overwrite')}
                                                 onClick={handleSetShowNewGameSetupToTrue}
-                                                className="text-slate-600 hover:text-red-500 font-bold text-xs flex items-center justify-center gap-2 transition-colors py-2 uppercase tracking-wider"
+                                                className="min-h-11 text-slate-700 hover:text-red-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors px-3 py-2 uppercase tracking-wider rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
                                             >
-                                                <RefreshCw size={12}/> {t('adventure.start_overwrite')}
+                                                <RefreshCw size={12} aria-hidden="true"/> {t('adventure.start_overwrite')}
                                             </button>
                                         </div>
                                     ) : (
                                         <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl border-2 border-indigo-100 overflow-hidden relative my-auto">
                                             {hasSavedAdventure && (
-                                                <button
+                                                <button type="button"
+                                                    aria-label={t('adventure.back_to_resume')}
                                                     onClick={handleSetShowNewGameSetupToFalse}
-                                                    className="absolute top-4 left-4 text-white/70 hover:text-white hover:bg-white/20 p-1 rounded-full transition-colors z-10"
+                                                    className="absolute top-2 left-2 sm:top-4 sm:left-4 min-w-11 min-h-11 text-white hover:bg-white/20 p-2 rounded-full transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
                                                     title={t('adventure.back_to_resume')}
                                                 >
-                                                    <ArrowDown className="rotate-90" size={20}/>
+                                                    <ArrowDown className="rotate-90" size={20} aria-hidden="true"/>
                                                 </button>
                                             )}
                                             <div className="bg-indigo-600 p-4 text-white flex justify-between items-center relative">
-                                                <div className="flex-grow text-center">
-                                                    <h2 className="text-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                                                        <MapIcon size={24}/> {t('adventure.title')}
+                                                <div className="flex-grow text-center px-12">
+                                                    <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wide sm:tracking-widest flex items-center justify-center gap-2">
+                                                        <MapIcon size={24} aria-hidden="true"/> {t('adventure.title')}
                                                     </h2>
-                                                    <p className="text-indigo-200 text-sm font-medium">{t('adventure.setup_subtitle')}</p>
+                                                    <p className="text-white text-sm font-medium">{t('adventure.setup_subtitle')}</p>
                                                 </div>
                                             </div>
-                                            <div className="p-6">
+                                            <div className="p-4 sm:p-6">
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.core')}</h4>
+                                                    <div role="group" aria-labelledby="adventure-setup-core-heading" className="space-y-4">
+                                                        <h4 id="adventure-setup-core-heading" className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.core')}</h4>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
+                                                            <label htmlFor="adventure-setup-input-mode" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                                                                 {t('adventure.interaction_mode')}
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600" aria-hidden="true"/>}
                                                             </label>
-                                                            <select aria-label={t('common.selection')}
+                                                            <select id="adventure-setup-input-mode"
                                                                 data-help-key="adventure_setup_input_mode" value={adventureInputMode}
                                                                 onChange={(e) => setAdventureInputMode(e.target.value)}
                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                                className="min-h-11 w-full p-2 border border-slate-500 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 transition-all"
                                                             >
                                                                 <option value="choice">{t('adventure.mode_choice')}</option>
                                                                 <option value="debate">{t('adventure.mode_debate')}</option>
@@ -498,15 +499,15 @@ function AdventureView(props) {
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
+                                                            <label htmlFor="adventure-setup-difficulty" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                                                                 {t('adventure.difficulty_label')}
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600" aria-hidden="true"/>}
                                                             </label>
-                                                            <select aria-label={t('common.selection')}
+                                                            <select id="adventure-setup-difficulty"
                                                                 data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
                                                                 onChange={(e) => setAdventureDifficulty(e.target.value)}
                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                                className="min-h-11 w-full p-2 border border-slate-500 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 transition-all"
                                                             >
                                                                 <option value="Story">{t('adventure.diff_story_option')}</option>
                                                                 <option value="Normal">{t('adventure.diff_normal_option')}</option>
@@ -515,15 +516,15 @@ function AdventureView(props) {
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
+                                                            <label htmlFor="adventure-setup-language" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                                                                 {t('adventure.language_label')}
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600" aria-hidden="true"/>}
                                                             </label>
-                                                            <select aria-label={t('common.selection')}
+                                                            <select id="adventure-setup-language"
                                                                 data-help-key="adventure_setup_language" value={adventureLanguageMode}
                                                                 onChange={(e) => setAdventureLanguageMode(e.target.value)}
                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                                className="min-h-11 w-full p-2 border border-slate-500 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 transition-all"
                                                             >
                                                                 <option value="English">{t('adventure.lang_options.english_only')}</option>
                                                                 {selectedLanguages.map(lang => (
@@ -544,65 +545,65 @@ function AdventureView(props) {
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.modifiers')}</h4>
+                                                    <div role="group" aria-labelledby="adventure-setup-modifiers-heading" className="space-y-4">
+                                                        <h4 id="adventure-setup-modifiers-heading" className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.modifiers')}</h4>
                                                         <div className="grid grid-cols-1 gap-2">
-                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                                                <input aria-label={t('common.toggle_adventure_free_response_enabled')}
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_freeresponse" checked={adventureFreeResponseEnabled}
                                                                     onChange={(e) => setAdventureFreeResponseEnabled(e.target.checked)}
                                                                     disabled={!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
+                                                                    className="w-5 h-5 shrink-0 text-indigo-600 rounded focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.free_response_label')}</span>
-                                                                    <span className="block text-[11px] text-slate-600 opacity-80">{t('adventure.free_response_desc')}</span>
+                                                                    <span className="block text-[11px] text-slate-700">{t('adventure.free_response_desc')}</span>
                                                                 </div>
                                                             </label>
-                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                                                <input aria-label={t('common.toggle_adventure_chance_mode')}
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_chance" checked={adventureChanceMode}
                                                                     onChange={(e) => setAdventureChanceMode(e.target.checked)}
                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
-                                                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
+                                                                    className="w-5 h-5 shrink-0 text-indigo-600 rounded focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.chance_mode_label')}</span>
-                                                                    <span className="block text-[11px] text-slate-600 opacity-80">{t('adventure.chance_mode_desc')}</span>
+                                                                    <span className="block text-[11px] text-slate-700">{t('adventure.chance_mode_desc')}</span>
                                                                 </div>
                                                             </label>
-                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                                                <input aria-label={t('common.toggle_is_adventure_story_mode')}
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_story" checked={isAdventureStoryMode}
                                                                     onChange={(e) => setIsAdventureStoryMode(e.target.checked)}
                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
-                                                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
+                                                                    className="w-5 h-5 shrink-0 text-indigo-600 rounded focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.story_mode_label')}</span>
-                                                                    <span className="block text-[11px] text-slate-600 opacity-80">{t('adventure.story_mode_desc')}</span>
+                                                                    <span className="block text-[11px] text-slate-700">{t('adventure.story_mode_desc')}</span>
                                                                 </div>
                                                             </label>
-                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureConsistentCharacters ? 'bg-violet-50 border-violet-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                                                <input aria-label={t('common.toggle_consistent_characters') || 'Toggle consistent characters'}
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureConsistentCharacters ? 'bg-violet-50 border-violet-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_consistent_characters" checked={adventureConsistentCharacters}
                                                                     onChange={(e) => setAdventureConsistentCharacters(e.target.checked)}
                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
-                                                                    className="w-4 h-4 text-violet-600 rounded focus:ring-violet-500 cursor-pointer disabled:cursor-not-allowed"
+                                                                    className="w-5 h-5 shrink-0 text-violet-600 rounded focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">🎭 {t('adventure.consistent_characters_label') || 'Consistent Characters'}</span>
-                                                                    <span className="block text-[11px] text-slate-600 opacity-80">{t('adventure.consistent_characters_desc') || 'Persistent visual cast across scenes'}</span>
+                                                                    <span className="block text-[11px] text-slate-700">{t('adventure.consistent_characters_desc') || 'Persistent visual cast across scenes'}</span>
                                                                 </div>
                                                             </label>
                                                             <div className="flex items-center gap-3 p-2 rounded-lg border border-indigo-100 bg-indigo-50/50">
                                                                 <div className="flex-1">
                                                                     <span className="block text-xs font-bold text-slate-700">🎨 {t('adventure.art_style_label') || 'Art Style'}</span>
-                                                                    <select aria-label={t('adventure.art_style_label') || 'Art style'} value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="mt-1 w-full text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none cursor-pointer">
+                                                                    <select aria-label={t('adventure.art_style_label') || 'Art style'} value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="mt-1 min-h-11 w-full text-xs px-2 py-2 border border-indigo-600 rounded-lg bg-white focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 focus:outline-none cursor-pointer">
                                                                         <option value="auto">🎨 {t('adventure.art_auto') || 'Auto (default)'}</option>
                                                                         <option value="storybook">📚 {t('adventure.art_storybook') || 'Storybook'}</option>
                                                                         <option value="pixel">🎮 {t('adventure.art_pixel') || 'Pixel Art'}</option>
@@ -612,78 +613,78 @@ function AdventureView(props) {
                                                                         <option value="custom">✏️ {t('adventure.art_custom') || 'Custom...'}</option>
                                                                     </select>
                                                                     {adventureArtStyle === 'custom' && (
-                                                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="mt-1 w-full text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+                                                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="mt-1 min-h-11 w-full text-xs px-2 py-2 border border-indigo-600 rounded-lg bg-white focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 focus:outline-none"/>
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                                                <input aria-label={t('common.toggle_use_low_quality_visuals')}
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_lowqual" checked={useLowQualityVisuals}
                                                                     onChange={(e) => setUseLowQualityVisuals(e.target.checked)}
                                                                     disabled={!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
+                                                                    className="w-5 h-5 shrink-0 text-indigo-600 rounded focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
                                                                 />
                                                                 <div>
                                                                     <span className="block text-xs font-bold text-slate-700">{t('adventure.low_quality_label')}</span>
-                                                                    <span className="block text-[11px] text-slate-600 opacity-80">{t('adventure.low_quality_desc')}</span>
+                                                                    <span className="block text-[11px] text-slate-700">{t('adventure.low_quality_desc')}</span>
                                                                 </div>
                                                             </label>
                                                             {adventureInputMode === 'system' && (
-                                                                <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${enableFactionResources ? 'bg-amber-50 border-amber-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                                                    <input aria-label={t('common.toggle_enable_faction_resources')}
+                                                                <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${enableFactionResources ? 'bg-amber-50 border-amber-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                    <input
                                                                         type="checkbox"
                                                                         checked={enableFactionResources}
                                                                         onChange={(e) => setEnableFactionResources(e.target.checked)}
                                                                         disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
-                                                                        className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer disabled:cursor-not-allowed"
+                                                                        className="w-5 h-5 shrink-0 text-amber-700 rounded focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
                                                                     />
                                                                     <div>
                                                                         <span className="block text-xs font-bold text-slate-700">{t('adventure.system_state_label')}</span>
-                                                                        <span className="block text-[11px] text-slate-600 opacity-80">{t('adventure.system_state_desc')}</span>
+                                                                        <span className="block text-[11px] text-slate-700">{t('adventure.system_state_desc')}</span>
                                                                     </div>
                                                                 </label>
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="space-y-4">
-                                                        <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.customization')}</h4>
+                                                    <div role="group" aria-labelledby="adventure-setup-customization-heading" className="space-y-4">
+                                                        <h4 id="adventure-setup-customization-heading" className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.customization')}</h4>
                                                         <div className={`bg-indigo-50 p-3 rounded-lg border border-indigo-100 ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                             <div className="flex items-center justify-between mb-2">
-                                                                <label htmlFor="setupAutoClimax" className="text-xs font-bold text-slate-700 cursor-pointer select-none flex items-center gap-2">
-                                                                    <input aria-label={t('common.toggle_enable_auto_climax_false')}
+                                                                <label htmlFor="setupAutoClimax" className="min-h-11 text-xs font-bold text-slate-700 cursor-pointer select-none flex items-center gap-2 rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2">
+                                                                    <input
                                                                         id="setupAutoClimax"
                                                                         type="checkbox"
                                                                         checked={adventureState.enableAutoClimax || false}
                                                                         onChange={(e) => handleSetEnableAutoClimax(e.target.checked)}
                                                                         disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
-                                                                        className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer"
+                                                                        className="w-5 h-5 shrink-0 text-indigo-600 border-slate-400 rounded focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
                                                                     />
                                                                     {t('adventure.climax.enable_label')}
                                                                 </label>
                                                             </div>
                                                             <div className="flex items-center justify-between">
-                                                                <label className="text-[11px] text-slate-600 font-bold uppercase">{t('adventure.climax.min_rounds_label')}</label>
-                                                                <input aria-label={t('common.enter_adventure_state')}
+                                                                <label htmlFor="adventure-setup-climax-min-turns" className="text-[11px] text-slate-700 font-bold uppercase">{t('adventure.climax.min_rounds_label')}</label>
+                                                                <input id="adventure-setup-climax-min-turns"
                                                                     type="number"
                                                                     min="3"
                                                                     max="50"
                                                                     value={adventureState.climaxMinTurns || 20}
                                                                     onChange={(e) => handleSetClimaxMinTurns(e.target.value)}
                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
-                                                                    className="w-12 text-xs border border-indigo-600 rounded p-1 text-center focus:ring-indigo-500 outline-none font-bold text-indigo-900 bg-white"
+                                                                    className="w-16 min-h-11 text-xs border border-indigo-600 rounded p-2 text-center focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 outline-none font-bold text-indigo-900 bg-white"
                                                                 />
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-slate-600 mb-1 flex items-center justify-between">
+                                                            <label htmlFor="adventure-setup-custom-instructions" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                                                                 <span>
                                                                     {t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                                                                 </span>
-                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600"/>}
+                                                                {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-600" aria-hidden="true"/>}
                                                             </label>
                                                             <textarea
-                                                                aria-label={t('input.custom_instructions') || 'Custom instructions for adventure'}
+                                                                id="adventure-setup-custom-instructions"
                                                                 value={adventureCustomInstructions}
                                                                 onChange={(e) => setAdventureCustomInstructions(e.target.value)}
                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)}
@@ -691,19 +692,20 @@ function AdventureView(props) {
                                                                     ? t('adventure.placeholder_locked')
                                                                     : t('adventure.placeholder_custom')
                                                                 }
-                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm h-28 resize-none focus:border-indigo-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white transition-all shadow-inner"
+                                                                className="w-full p-2 border border-slate-500 rounded-lg text-sm h-28 resize-y focus:border-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 outline-none disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white transition-all shadow-inner"
                                                             />
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-center">
-                                                <button
-                                                    aria-label={t('common.generate')}
+                                                <button type="button"
+                                                    aria-label={t('adventure.start')}
                                                     onClick={() => executeStartAdventure()}
-                                                    className="w-full md:w-auto px-16 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-3"
+                                                    disabled={adventureState.isLoading} aria-busy={adventureState.isLoading}
+                                                    className="min-h-11 w-full md:w-auto px-8 sm:px-16 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transform-none flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                                 >
-                                                    <Sparkles size={20} className="text-yellow-700 fill-current animate-pulse"/>
+                                                    <Sparkles size={20} className="animate-pulse motion-reduce:animate-none" aria-hidden="true"/>
                                                     {t('adventure.start')}
                                                 </button>
                                             </div>
