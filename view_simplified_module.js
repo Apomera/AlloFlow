@@ -398,6 +398,10 @@ function SimplifiedView(props) {
   var immersiveDialogRef = React.useRef(null);
   var phonicsDialogRef = React.useRef(null);
   var phonicsCloseRef = React.useRef(null);
+  var definitionDialogRef = React.useRef(null);
+  var definitionCloseRef = React.useRef(null);
+  var revisionDialogRef = React.useRef(null);
+  var revisionCloseRef = React.useRef(null);
   var stopEditAudioPlayback = function () {
     editAudioPlayTokenRef.current += 1;
     try {
@@ -976,6 +980,28 @@ function SimplifiedView(props) {
       if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [!!phonicsData]);
+  React.useEffect(function () {
+    if (!definitionData) return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      if (definitionCloseRef.current) definitionCloseRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function' && document.contains(previouslyFocused)) previouslyFocused.focus();
+    };
+  }, [!!definitionData]);
+  React.useEffect(function () {
+    if (!revisionData) return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      if (revisionCloseRef.current) revisionCloseRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function' && document.contains(previouslyFocused)) previouslyFocused.focus();
+    };
+  }, [!!revisionData]);
   var renderEditAudioSentenceTools = function () {
     if (!isTeacherMode || !isEditingLeveledText) return null;
     var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
@@ -1712,7 +1738,13 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
   }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))))), definitionData && /*#__PURE__*/React.createElement("div", {
-    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-75 duration-300 ease-out`,
+    ref: definitionDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "simplified-definition-title",
+    tabIndex: -1,
+    onKeyDown: e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition),
+    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`,
     style: {
       top: Math.min(window.innerHeight - 300, definitionData.y + 10) + 'px',
       left: Math.min(window.innerWidth - 280, definitionData.x - 20) + 'px'
@@ -1720,10 +1752,13 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-start mb-2"
   }, /*#__PURE__*/React.createElement("h5", {
+    id: "simplified-definition-title",
     className: "font-bold text-indigo-900 text-lg capitalize"
   }, definitionData.word), /*#__PURE__*/React.createElement("button", {
+    ref: definitionCloseRef,
+    type: "button",
     onClick: closeDefinition,
-    className: "text-slate-600 hover:text-slate-600",
+    className: "min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
@@ -1754,11 +1789,7 @@ function SimplifiedView(props) {
   }), " ", t('glossary.popups.show_picture') || 'Show picture')), /*#__PURE__*/React.createElement("div", {
     className: "absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45"
   })), definitionData && /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
-    },
+    "aria-hidden": "true",
     className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closeDefinition
   }), phonicsData && /*#__PURE__*/React.createElement("div", {
@@ -1929,7 +1960,13 @@ function SimplifiedView(props) {
       setIsCustomReviseOpen(false);
     }
   }), revisionData && /*#__PURE__*/React.createElement("div", {
-    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200`,
+    ref: revisionDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "simplified-revision-title",
+    tabIndex: -1,
+    onKeyDown: e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision),
+    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`,
     style: {
       top: Math.min(window.innerHeight - 300, revisionData.y + 20) + 'px',
       left: Math.min(window.innerWidth - 300, Math.max(20, revisionData.x - 140)) + 'px'
@@ -1937,6 +1974,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-3 pb-2 border-b border-slate-100"
   }, /*#__PURE__*/React.createElement("h5", {
+    id: "simplified-revision-title",
     className: "font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2"
   }, revisionData.type === 'simplify' ? /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
@@ -1948,17 +1986,20 @@ function SimplifiedView(props) {
     size: 14,
     className: "text-teal-500"
   }), revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')), /*#__PURE__*/React.createElement("button", {
+    ref: revisionCloseRef,
+    type: "button",
     onClick: closeRevision,
-    className: "text-slate-600 hover:text-slate-600",
+    className: "min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
   }))), revisionData.result ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3"
   }, renderFormattedText(revisionData.result, false)), (revisionData.type === 'simplify' || revisionData.type === 'custom') && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.apply_text_revision'),
     onClick: applyTextRevision,
-    className: "w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+    className: "min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12
   }), " ", t('simplified.revision.replace_btn'))) : /*#__PURE__*/React.createElement("div", {
@@ -1969,11 +2010,7 @@ function SimplifiedView(props) {
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs"
   }, t('simplified.revision.working')))), revisionData && /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
-    },
+    "aria-hidden": "true",
     className: `fixed inset-0 ${_popupBackdropZ} bg-black/5`,
     onClick: closeRevision
   }), isTeacherMode && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && /*#__PURE__*/React.createElement("div", {
