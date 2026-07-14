@@ -992,6 +992,72 @@ window.SelHub = window.SelHub || {
       var earnedBadges   = d.earnedBadges || {};
       var showBadgePopup = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
+      var badgeDialogRef = React.useRef(null);
+      var badgeDialogOpenerRef = React.useRef(null);
+      var badgeDialogOpen = !!showBadgePopup || !!showBadgesPanel;
+
+      function closeBadgeDialogs() {
+        upd('showBadgePopup', null);
+        upd('showBadgesPanel', false);
+      }
+
+      React.useEffect(function() {
+        if (!badgeDialogOpen) return undefined;
+        var opener = document.activeElement;
+        if (opener && typeof opener.focus === 'function') badgeDialogOpenerRef.current = opener;
+
+        function getFocusable(dialog) {
+          if (!dialog) return [];
+          return Array.prototype.filter.call(
+            dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+            function(el) { return !el.hidden && el.getAttribute('aria-hidden') !== 'true'; }
+          );
+        }
+
+        function handleBadgeDialogKeyDown(event) {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            closeBadgeDialogs();
+            return;
+          }
+          if (event.key !== 'Tab') return;
+          var dialog = badgeDialogRef.current;
+          var focusable = getFocusable(dialog);
+          if (!focusable.length) {
+            event.preventDefault();
+            if (dialog) dialog.focus();
+            return;
+          }
+          var first = focusable[0];
+          var last = focusable[focusable.length - 1];
+          if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+
+        document.addEventListener('keydown', handleBadgeDialogKeyDown, true);
+        var focusTimer = setTimeout(function() {
+          var dialog = badgeDialogRef.current;
+          var focusable = getFocusable(dialog);
+          if (focusable.length) focusable[0].focus();
+          else if (dialog) dialog.focus();
+        }, 0);
+
+        return function() {
+          clearTimeout(focusTimer);
+          document.removeEventListener('keydown', handleBadgeDialogKeyDown, true);
+          var previous = badgeDialogOpenerRef.current;
+          badgeDialogOpenerRef.current = null;
+          if (previous && previous.isConnected !== false && typeof previous.focus === 'function') {
+            setTimeout(function() { previous.focus(); }, 0);
+          }
+        };
+      }, [badgeDialogOpen]);
 
       // ── Helpers ──
       function tryAwardBadge(badgeId) {
@@ -1188,21 +1254,21 @@ window.SelHub = window.SelHub || {
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
         if (popBadge) {
-          badgePopup = h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Badge earned: ' + popBadge.name, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
+          badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badge-earned-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: closeBadgeDialogs },
             h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: _cflBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-              h('button', { 'aria-label': 'Close', onClick: function() { upd('showBadgePopup', null); }, style: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+              h('button', { 'aria-label': 'Close badge announcement', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
               h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
-              h('div', { style: { fontSize: 18, fontWeight: 700, color: _cflFg('#f1f5f9'), marginBottom: 6 } }, popBadge.name),
+              h('h3', { id: 'conflict-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _cflFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
               h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8') } }, popBadge.desc)
             )
           );
         }
       }
       if (showBadgesPanel) {
-        badgePopup = h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Badges panel', style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd('showBadgesPanel', false); } },
+        badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: closeBadgeDialogs },
           h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
-            h('button', { 'aria-label': 'Close badges panel', onClick: function() { upd('showBadgesPanel', false); }, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
-            h('h3', { style: { textAlign: 'center', color: _cflFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('button', { 'aria-label': 'Close badges panel', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+            h('h3', { id: 'conflict-badges-panel-title', style: { textAlign: 'center', color: _cflFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               BADGES.map(function(b) {
                 var earned = !!earnedBadges[b.id];
