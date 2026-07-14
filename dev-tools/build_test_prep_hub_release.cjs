@@ -209,6 +209,21 @@ ${compiled}
     buildBatchDiagnostic: testPrepBuildBatchDiagnostic,
     recordBatchAttempt: recordTestPrepBatchAttempt,
     buildProgressAnalytics: testPrepBuildProgressAnalytics,
+    buildReviewSet: testPrepBuildReviewSet,
+    buildCustomQuiz: testPrepBuildCustomQuiz,
+    searchPack: testPrepSearchPack,
+    normalizeFlashcardSchedule: normalizeTestPrepFlashcardSchedule,
+    rateFlashcard: testPrepRateFlashcard,
+    buildFlashcardQueue: testPrepBuildFlashcardQueue,
+    normalizeAnnotations: normalizeTestPrepAnnotations,
+    upsertAnnotation: testPrepUpsertAnnotation,
+    deleteAnnotation: testPrepDeleteAnnotation,
+    normalizeStudyPlans: normalizeTestPrepStudyPlans,
+    studyPlanForPack: testPrepStudyPlanForPack,
+    buildStudyPlanStatus: testPrepBuildStudyPlanStatus,
+    exportProgress: testPrepExportProgress,
+    importProgress: testPrepImportProgress,
+    normalizeReviewItems: normalizeTestPrepReviewItems,
     researchLanes: TEST_PREP_RESEARCH_LANES.slice()
   });
   console.log('[CDN] TestPrepHub loaded');

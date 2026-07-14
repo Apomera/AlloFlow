@@ -32,6 +32,7 @@ The native AlloFlow Test Prep Hub should reuse the legacy Pass the EPPP content 
 
 - 1,443 of 2,933 legacy questions have entered the native QA-passed bank; 1,490 remain quarantined.
 - The next 500 quarantined candidates are organized into five blueprint-weighted editorial batches. Each carries explicit automated risks and review tasks; none is learner-visible or counted as reviewed merely because it appears in the docket.
+- The first claim-level adjudication batch reviewed the 10 candidates with no detected docket risks. Four needed minor corrections and six needed major rewrites; none was promoted. This confirms that automated risk screening is prioritization, not approval.
 - All 49 textbook chapters have source-review status, but independent qualified psychology/assessment review is still pending.
 - Only a small reviewed subset of the 415 flashcards and 255 memory aids is release-ready; the rest remain preserved but gated.
 - Diagram templates and term definitions are inventoried, but need claim-level source review and accessible interaction review before broad native release.
