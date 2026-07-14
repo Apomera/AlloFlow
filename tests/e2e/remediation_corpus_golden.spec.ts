@@ -235,6 +235,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
       const toBytes = (b64: string) => Uint8Array.from(atob(b64), (c: string) => c.charCodeAt(0));
       const tagged = await w.__pipeline.createTaggedPdf(toBytes(textB64), result, { title: 'Text Fixture', lang: 'en' });
       const bytes = tagged && tagged.bytes ? tagged.bytes : tagged;
+      const roundTrip = tagged && tagged.roundTrip;
       let invariants: any = null;
       if (bytes) {
         const NS = w.PDFLib;
@@ -254,6 +255,14 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
           sweepMcrCount: sweep.mcrCount,
         };
       }
+      let taggedB64 = '';
+      if (bytes) {
+        let binary = '';
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + 0x8000, bytes.length)));
+        }
+        taggedB64 = btoa(binary);
+      }
       return {
         htmlLen: result.accessibleHtml.length,
         htmlHasSourceText: /Photosynthesis|light energy|chlorophyll/i.test(result.accessibleHtml),
@@ -263,9 +272,24 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
         hasOcrAccuracyKey: 'ocrAccuracy' in result,
         afterScore: result.afterScore,
         invariants,
+        roundTripOk: roundTrip && roundTrip.ok,
+        tagTreeOrder: roundTrip && roundTrip.tagTreeOrder,
+        tagTreeOrderCheck: roundTrip && (roundTrip.checks || []).find((c: any) => c.rule === 'Logical reading order follows saved StructTreeRoot /K'),
+        taggedB64,
       };
     }, fixtures!.textB64);
+
     expect((out as any).error).toBeUndefined();
+    expect(out.taggedB64, 'full remediation must return a nonempty PDF artifact').toMatch(/^JVBER/);
+
+    // Persist this full remediation pair for the optional independent veraPDF
+    // source-to-tagged clause-diff job. Artifact generation is part of the gate:
+    // a missing pair must not let the external validator pass vacuously.
+    const artDir = path.resolve(__dirname, 'artifacts');
+    fs.mkdirSync(artDir, { recursive: true });
+    fs.writeFileSync(path.join(artDir, 'remediation-e2e.source.pdf'), Buffer.from(fixtures!.textB64, 'base64'));
+    fs.writeFileSync(path.join(artDir, 'remediation-e2e.tagged.pdf'), Buffer.from(out.taggedB64, 'base64'));
+
     expect(out.htmlLen).toBeGreaterThan(100);
     expect(out.htmlHasSourceText).toBe(true); // the document's own words survived remediation
     expect(out.htmlHasHeading).toBe(true); // the JSON pipeline rendered real heading structure
@@ -276,6 +300,16 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     expect(out.invariants.hasStructTreeRoot).toBe(true);
     expect(out.invariants.marked).toBe(true);
     expect(out.invariants.lang).toContain('en');
+    // This is the authoritative assistive-technology order: it comes from
+    // re-parsing the SAVED PDF and walking StructTreeRoot /K, then comparing
+    // every semantic leaf fingerprint with the HTML-derived expected order.
+    expect(out.roundTripOk, 'the shipped bytes must pass all post-save checks').toBe(true);
+    expect(out.tagTreeOrder, 'post-save verifier must report the saved tag-tree order').toBeTruthy();
+    expect(out.tagTreeOrder.exact, JSON.stringify(out.tagTreeOrder)).toBe(true);
+    expect(out.tagTreeOrder.expectedLeafCount).toBeGreaterThan(0);
+    expect(out.tagTreeOrder.savedLeafCount).toBe(out.tagTreeOrder.expectedLeafCount);
+    expect(out.tagTreeOrder.mismatchIndex).toBe(-1);
+    expect(out.tagTreeOrderCheck && out.tagTreeOrderCheck.status).toBe('pass');
     // Shared structural-invariant sweep (2026-07-09): the full dup-claim/dangling-MCR/balance/
     // artifact-StructParents set, on a REAL end-to-end run's bytes.
     expect(out.invariants.sweepViolations, JSON.stringify(out.invariants.sweepViolations)).toEqual([]);

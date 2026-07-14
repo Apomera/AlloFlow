@@ -12,10 +12,11 @@
 //   inheritedRemaining — rules failing in BOTH (e.g. non-embedded fonts in
 //                        the source — honest scope: tagging can't fix these)
 //
-// Input pairs come from the tag-tree golden master, which saves its produced
-// fixtures to tests/e2e/artifacts/ as <stem>.source.pdf + <stem>.tagged.pdf
-// on every Playwright run. Re-generate with:
-//   npx playwright test tests/e2e/pdf_tag_tree_golden.spec.ts
+// Input pairs come from the browser PDF goldens, which save their produced
+// fixtures to tests/e2e/artifacts/ as <stem>.source.pdf + <stem>.tagged.pdf.
+// This includes both direct tagger fixtures and a full audit-to-remediation run.
+// Re-generate with:
+//   npx playwright test tests/e2e/pdf_tag_tree_golden.spec.ts tests/e2e/remediation_corpus_golden.spec.ts
 //
 // Usage:
 //   node dev-tools/verapdf_diff.cjs                  # human report, informational

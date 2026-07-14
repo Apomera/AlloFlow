@@ -33,7 +33,10 @@ const ROOT = path.resolve(__dirname, '..');
 const MONOLITH = path.join(ROOT, 'AlloFlowANTI.txt');
 
 const args = process.argv.slice(2);
-const SINGLE_VIEW = (args.find(a => a.startsWith('--view=')) || '').split('=')[1] || null;
+const viewFlagIndex = args.indexOf('--view');
+const SINGLE_VIEW = (args.find(a => a.startsWith('--view=')) || '').split('=')[1]
+  || (viewFlagIndex >= 0 ? args[viewFlagIndex + 1] : null)
+  || null;
 const VERBOSE = args.includes('--verbose');
 // Default scope: view_*_source.jsx only (live components that the monolith
 // passes a giant props bundle to via React.createElement). Pass --all-sources
@@ -107,6 +110,12 @@ function analyzeView(filePath) {
     });
   } catch (e) {
     return { error: 'parse failed: ' + e.message };
+  }
+  // Babel can return a partial AST for recoverable syntax errors when
+  // errorRecovery is enabled. Treat those exactly like thrown parse errors:
+  // analyzing a partial tree would make the verification gate unsound.
+  if (Array.isArray(ast.errors) && ast.errors.length > 0) {
+    return { error: 'parse failed: ' + ast.errors.map((e) => e.message).join('; ') };
   }
 
   function newScope(parent) { return { parent, names: new Set() }; }
@@ -282,18 +291,20 @@ const fileFilter = ALL_SOURCES
   ? (f => /_source\.jsx$/.test(f))
   : (f => /^view_.*_source\.jsx$/.test(f));
 const viewFiles = SINGLE_VIEW
-  ? [path.join(ROOT, SINGLE_VIEW)]
+  ? [path.resolve(ROOT, SINGLE_VIEW)]
   : fs.readdirSync(ROOT).filter(fileFilter).map(f => path.join(ROOT, f));
 
 console.log('\nView modules to check: ' + viewFiles.length);
 
 let totalFindings = 0;
 const findings = [];
+const analysisFailures = [];
 
 for (const filePath of viewFiles) {
   const fileName = path.basename(filePath);
   const result = analyzeView(filePath);
   if (result.error) {
+    analysisFailures.push({ file: fileName, error: result.error });
     console.error('  ' + fileName + ': ' + result.error);
     continue;
   }
@@ -329,20 +340,31 @@ for (const filePath of viewFiles) {
 
 console.log('\n──────────────────────────────────────────');
 console.log('  Views checked:           ' + viewFiles.length);
+console.log('  Views with parse failures: ' + analysisFailures.length);
 console.log('  Views with risk findings: ' + findings.length);
 console.log('  Total dangerous refs:    ' + totalFindings);
 
-if (totalFindings === 0) {
+if (totalFindings === 0 && analysisFailures.length === 0) {
   console.log('\n  ✅ No missing-prop candidates found.\n');
   process.exit(0);
 }
 
-console.log('\n  ⚠ Each "dangerous ref" means a view file references an identifier');
-console.log('    that (a) is not in its destructured props and (b) matches a real');
-console.log('    React useState name in AlloFlowANTI.txt. This is the bug class');
-console.log('    that crashed ExportPreviewView (May 11 2026, "history.some is not');
-console.log('    a function"). Add the missing name to:');
-console.log('      1. the destructured props in the view source jsx');
-console.log('      2. the props passed at the React.createElement call site in AlloFlowANTI.txt');
-console.log('      3. rebuild the module (_build_view_<name>_module.js)\n');
+if (analysisFailures.length > 0) {
+  console.log('\n  [FAIL] Analysis was incomplete. A view that cannot be parsed is a failed');
+  console.log('    verification, because silently skipping it would make this gate pass');
+  console.log('    without checking the file for missing props. Fix the parse failure(s):');
+  for (const failure of analysisFailures) console.log('      - ' + failure.file + ': ' + failure.error);
+}
+
+if (totalFindings > 0) {
+  console.log('\n  ⚠ Each "dangerous ref" means a view file references an identifier');
+  console.log('    that (a) is not in its destructured props and (b) matches a real');
+  console.log('    React useState name in AlloFlowANTI.txt. This is the bug class');
+  console.log('    that crashed ExportPreviewView (May 11 2026, "history.some is not');
+  console.log('    a function"). Add the missing name to:');
+  console.log('      1. the destructured props in the view source jsx');
+  console.log('      2. the props passed at the React.createElement call site in AlloFlowANTI.txt');
+  console.log('      3. rebuild the module (_build_view_<name>_module.js)');
+}
+console.log('');
 process.exit(1);
