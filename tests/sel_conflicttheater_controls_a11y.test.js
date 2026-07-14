@@ -19,9 +19,29 @@ describe('Conflict Theater control accessibility', () => {
     expect(source()).toContain("style: { padding: '4px 10px', minHeight: 24");
   });
 
-  it('requires an informative confirmation before irreversible memory deletion', () => {
+  it('uses a labelled modal confirmation before irreversible memory deletion', () => {
     const text = source();
-    expect(text).toContain("window.confirm('Make all characters forget your past conversations? This cannot be undone.')");
-    expect(text).toContain("if (ok) { upd('memory', {});");
+    expect(text).not.toContain('window.confirm');
+    expect(text).toContain("role: 'alertdialog'");
+    expect(text).toContain("'aria-modal': 'true'");
+    expect(text).toContain("'aria-labelledby': 'cft-memory-reset-title'");
+    expect(text).toContain("'aria-describedby': 'cft-memory-reset-description'");
+    expect(text).toContain('This cannot be undone.');
+  });
+
+  it('contains keyboard focus and restores a meaningful focus target', () => {
+    const text = source();
+    expect(text).toContain("if (event.key === 'Escape')");
+    expect(text).toContain("if (event.key !== 'Tab') return;");
+    expect(text).toContain("focusConflictControl('cft-memory-reset-cancel')");
+    expect(text).toContain("focusConflictControl('cft-memory-reset-trigger')");
+    expect(text).toContain("focusConflictControl('cft-scenario-heading')");
+  });
+
+  it('only clears memory from the confirmed action', () => {
+    const text = source();
+    expect(text).toContain('if (!memoryResetConfirm) return;');
+    expect(text).toContain('upd({ memoryResetConfirm: false, memory: {} });');
+    expect(text).toContain('onClick: openMemoryResetConfirm');
   });
 });
