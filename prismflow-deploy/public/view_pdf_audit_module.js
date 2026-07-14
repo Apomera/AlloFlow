@@ -1065,7 +1065,7 @@ function _buildMoSmil(segments, durations, ext, hasAudio) {
     const dur = durations && durations[idx] || 0;
     return '<par id="par' + (idx + 1) + '">' + text + '<audio src="audio/seg' + (idx + 1) + "." + _ext + '" clipBegin="' + _moClock(0) + '" clipEnd="' + _moClock(dur) + '"/></par>';
   }).join("\n");
-  return '<?xml version="1.0" encoding="utf-8"?>\n<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n<body><seq>' + pars + "</seq></body>\n</smil>";
+  return '<?xml version="1.0" encoding="utf-8"?>\n<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n<body><seq epub:textref="content.xhtml">' + pars + "</seq></body>\n</smil>";
 }
 function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio) {
   const _ext = ext || "mp3";
@@ -9590,10 +9590,11 @@ Return ONLY JSON:
       } catch (_) {
         xhtml = html.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
       }
-      if (!xhtml.includes("xmlns")) xhtml = xhtml.replace("<html", '<html xmlns="http://www.w3.org/1999/xhtml"');
+      if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
       zip.file("OEBPS/content.xhtml", xhtml);
-      const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];
-      const navItems = headings.length > 0 ? headings.map((m) => `<li><a href="content.xhtml#${m[2]}">${m[3].trim()}</a></li>`).join("\n") : '<li><a href="content.xhtml">Document</a></li>';
+      const _navEsc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const headings = [...html.matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
+      const navItems = headings.length > 0 ? headings.map((m) => `<li><a href="content.xhtml#${_navEsc(m[2])}">${_navEsc(m[3].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim()) || "Section"}</a></li>`).join("\n") : '<li><a href="content.xhtml">Document</a></li>';
       zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
 <head><title>Navigation</title></head>

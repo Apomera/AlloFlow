@@ -1054,7 +1054,9 @@ function _buildMoSmil(segments, durations, ext, hasAudio) {
   }).join('\n');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n' +
-    '<body><seq>' + pars + '</seq></body>\n</smil>';
+    // EPUB 3 Media Overlays requires epub:textref on the seq (epubcheck RSC-005);
+    // it points at the content document this overlay narrates.
+    '<body><seq epub:textref="content.xhtml">' + pars + '</seq></body>\n</smil>';
 }
 // OPF for the media-overlay ePub: content references its overlay; manifest lists
 // the SMIL + every audio clip; media:duration (global + per-overlay) is required.
@@ -11708,11 +11710,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const _d = new DOMParser().parseFromString(html, 'text/html');
                               xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
                             } catch (_) { xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;'); }
-                            if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
+                            // #8: ALWAYS restore the XHTML namespace on the ROOT html element. The old
+                            // `!includes('xmlns')` check was defeated by any child xmlns (a MathML/SVG
+                            // equation), leaving the root in no namespace so readers reject the book.
+                            if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
                             zip.file('OEBPS/content.xhtml', xhtml);
-                            const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];
+                            // Escape the id + heading text into nav.xhtml (an unescaped & or a heading
+                            // that starts with an inline tag produced malformed XML / a missing entry);
+                            // capture the FULL heading text, then strip inline tags.
+                            const _navEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                            const headings = [...html.matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
                             const navItems = headings.length > 0
-                              ? headings.map(m => `<li><a href="content.xhtml#${m[2]}">${m[3].trim()}</a></li>`).join('\n')
+                              ? headings.map(m => `<li><a href="content.xhtml#${_navEsc(m[2])}">${_navEsc(m[3].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()) || 'Section'}</a></li>`).join('\n')
                               : '<li><a href="content.xhtml">Document</a></li>';
                             zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
