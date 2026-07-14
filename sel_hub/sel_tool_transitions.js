@@ -452,7 +452,7 @@ window.SelHub = window.SelHub || {
           ),
           // Input
           h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
-            h('input', {
+            h('input', { 'aria-label': 'Add an anchor',
               type: 'text', value: newAnchor,
               onChange: function(ev) { upd('newAnchor', ev.target.value); },
               onKeyDown: function(ev) {
@@ -463,7 +463,6 @@ window.SelHub = window.SelHub || {
                 }
               },
               placeholder: band === 'elementary' ? 'Something that stays the same for me...' : 'What stays constant when everything changes...',
-              'aria-label': 'Add an anchor',
               style: { flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
@@ -487,7 +486,7 @@ window.SelHub = window.SelHub || {
                     h('button', {
                       onClick: function() { upd('anchors', anchors.filter(function(a) { return a.id !== anchor.id; })); },
                       'aria-label': 'Remove anchor',
-                      style: { background: _trC('#fee2e2'), border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: _trC('#991b1b'), fontSize: '10px', padding: '2px 6px' }
+                      style: { minWidth: 24, minHeight: 24, background: _trC('#fee2e2'), border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: _trC('#991b1b'), fontSize: '10px', padding: '2px 6px' }
                     }, '\u2715')
                   );
                 })
@@ -512,7 +511,7 @@ window.SelHub = window.SelHub || {
               : 'You can\u2019t control the change, but you can choose your response. What\u2019s your plan?')
           ),
           h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
-            h('input', {
+            h('input', { 'aria-label': 'Add a plan step',
               type: 'text', value: newStep,
               onChange: function(ev) { upd('newStep', ev.target.value); },
               onKeyDown: function(ev) {
@@ -523,7 +522,6 @@ window.SelHub = window.SelHub || {
                 }
               },
               placeholder: band === 'elementary' ? 'One small thing I can try...' : 'A concrete step I can take...',
-              'aria-label': 'Add a plan step',
               style: { flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
@@ -556,7 +554,7 @@ window.SelHub = window.SelHub || {
                     h('button', {
                       onClick: function(ev) { ev.stopPropagation(); upd('planSteps', planSteps.filter(function(s) { return s.id !== step.id; })); },
                       'aria-label': 'Remove step',
-                      style: { background: 'none', border: 'none', cursor: 'pointer', color: _trC('#9ca3af'), fontSize: '14px', padding: '2px' }
+                      style: { minWidth: 24, minHeight: 24, background: 'none', border: 'none', cursor: 'pointer', color: _trC('#9ca3af'), fontSize: '14px', padding: '2px' }
                     }, '\u2715')
                   );
                 }),
@@ -620,7 +618,7 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('div', { style: { display: 'flex', gap: '8px' } },
-            h('input', {
+            h('input', { 'aria-label': 'Message the transition coach',
               type: 'text', value: coachInput,
               onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
@@ -663,10 +661,10 @@ window.SelHub = window.SelHub || {
               },
               disabled: coachLoading || !callGemini,
               placeholder: coachLoading ? 'Listening...' : 'How are you feeling about the change?',
-              'aria-label': 'Message the transition coach',
               style: { flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
+              'aria-label': coachLoading ? 'Transition coach is responding' : 'Send message to transition coach',
               onClick: function() {
                 if (!coachInput.trim() || coachLoading || !callGemini) return;
                 // Same send logic — trigger via synthetic Enter
