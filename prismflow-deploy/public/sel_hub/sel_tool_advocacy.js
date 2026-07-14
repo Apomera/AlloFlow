@@ -16173,8 +16173,19 @@ window.SelHub = window.SelHub || {
       }, extra || {})
     }), label);
   }
+  function advFieldConfig(extra, fallbackLabel) {
+    var fieldProps = {};
+    var styleProps = {};
+    Object.keys(extra || {}).forEach(function(key) {
+      if (key === 'id' || key === 'name' || key === 'required' || key === 'autoComplete' || key === 'inputMode' || key.indexOf('aria-') === 0) fieldProps[key] = extra[key];
+      else styleProps[key] = extra[key];
+    });
+    if (!fieldProps.id && !fieldProps['aria-label'] && fallbackLabel) fieldProps['aria-label'] = fallbackLabel;
+    return { props: fieldProps, style: styleProps };
+  }
   function advInput(value, onChange, placeholder, extra) {
-    return hh('input', Object.assign({
+    var config = advFieldConfig(extra, placeholder);
+    return hh('input', Object.assign({ 'aria-label': config.props['aria-label'] || undefined,
       type: 'text', value: value || '', placeholder: placeholder || '',
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
@@ -16183,11 +16194,12 @@ window.SelHub = window.SelHub || {
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
         borderRadius: 6, outline: 'none', boxSizing: 'border-box'
-      }, extra || {})
-    }));
+      }, config.style)
+    }, config.props));
   }
   function advTextarea(value, onChange, placeholder, rows, extra) {
-    return hh('textarea', Object.assign({
+    var config = advFieldConfig(extra, placeholder);
+    return hh('textarea', Object.assign({ 'aria-label': config.props['aria-label'] || undefined,
       value: value || '', placeholder: placeholder || '', rows: rows || 3,
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
@@ -16197,8 +16209,8 @@ window.SelHub = window.SelHub || {
         border: '1px solid rgba(100,116,139,0.40)',
         borderRadius: 6, outline: 'none', boxSizing: 'border-box',
         fontFamily: 'inherit', resize: 'vertical'
-      }, extra || {})
-    }));
+      }, config.style)
+    }, config.props));
   }
   function advSectionHeader(icon, title, subtitle, accent) {
     accent = accent || '#6366f1';
@@ -16574,7 +16586,7 @@ window.SelHub = window.SelHub || {
             advInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
             (function() {
               var first = ROLES[0];
-              return hh('select', { value: form.role || '',
+              return hh('select', { 'aria-label': 'Champion role', value: form.role || '',
                 onChange: function(e) { setForm(Object.assign({}, form, { role: e.target.value })); },
                 style: { padding: '10px 8px', fontSize: 11, color: '#10b981', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(16,185,129,0.40)', borderRadius: 6 }
               },
@@ -16830,7 +16842,7 @@ window.SelHub = window.SelHub || {
           hh('div', { style: { marginBottom: 8 } },
             hh('span', { style: { fontSize: 11, color: '#f472b6', marginRight: 6 } }, 'How did it feel?'),
             hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.felt + '/10'),
-            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.felt,
+            hh('input', { 'aria-label': 'How did it feel?', 'aria-valuetext': form.felt + ' out of 10', type: 'range', min: 1, max: 10, step: 1, value: form.felt,
               onChange: function(e) { setForm(Object.assign({}, form, { felt: parseInt(e.target.value, 10) })); },
               style: { width: '100%', accentColor: '#ec4899', marginTop: 4 }
             })
@@ -17466,7 +17478,7 @@ window.SelHub = window.SelHub || {
           h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '💬 Phrase Library'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ADVOCACY_PHRASES.length + ' phrases by context. Tap ⭐ to favorite. Copy any phrase to clipboard.'),
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
-            h('input', { type: 'text', value: d.phraseQuery || '',
+            h('input', { 'aria-label': 'Search advocacy phrases', type: 'text', value: d.phraseQuery || '',
               onChange: function(e) { upd('phraseQuery', e.target.value); },
               placeholder: '🔍 Search phrases...',
               style: { flex: '1 1 200px', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13 }
@@ -17532,7 +17544,7 @@ window.SelHub = window.SelHub || {
         accomLibContent = h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🛠 Accommodation Library'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ACCOMMODATIONS_LIBRARY.length + ' accommodations across 12 categories. Each includes: who it helps, why it works, when to ask, and sample request language.'),
-          h('input', { type: 'text', value: d.accomLibQuery || '',
+          h('input', { 'aria-label': 'Search accommodations', type: 'text', value: d.accomLibQuery || '',
             onChange: function(e) { upd('accomLibQuery', e.target.value); },
             placeholder: '🔍 Search accommodations...',
             style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, marginBottom: 10, boxSizing: 'border-box' }
@@ -18003,7 +18015,7 @@ window.SelHub = window.SelHub || {
               ),
               isOpen && h('div', { style: { padding: '0 16px 16px' } },
                 h('p', { style: { fontSize: 12, color: _advFg('#cbd5e1'), fontStyle: 'italic', margin: '0 0 10px', lineHeight: 1.55 } }, '📝 ' + lt.purpose),
-                h('textarea', { value: body,
+                h('textarea', { 'aria-label': 'Editable ' + lt.title + ' letter template', value: body,
                   onChange: function(e) { updateCustom(lt.id, e.target.value); },
                   rows: Math.min(body.split('\n').length + 1, 16),
                   style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1.65, resize: 'vertical', boxSizing: 'border-box' }
@@ -18958,11 +18970,10 @@ window.SelHub = window.SelHub || {
           !done && currentQ && h('div', { style: { padding: 16, background: _advBg('#0f172a'), borderRadius: 12, borderLeft: '4px solid #a5b4fc', marginBottom: 14 } },
             h('h4', { style: { margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: _advFg('#a5b4fc') } }, currentQ.q),
             h('p', { style: { fontSize: 12, color: _advFg('#94a3b8'), fontStyle: 'italic', margin: '0 0 12px' } }, currentQ.help),
-            currentQ.input === 'text' && h('input', {
+            currentQ.input === 'text' && h('input', { 'aria-label': currentQ.q,
               type: 'text', value: path[currentQ.field] || '',
               onChange: function(e) { updateDis(currentQ.field, e.target.value); },
               placeholder: currentQ.placeholder,
-              'aria-label': currentQ.q,
               style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, boxSizing: 'border-box' }
             }),
             currentQ.input === 'radio' && (currentQ.options || []).map(function(opt) {
