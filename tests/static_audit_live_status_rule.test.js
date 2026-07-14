@@ -34,4 +34,12 @@ describe('static audit live-status rule', () => {
     );
     expect(report).toContain('LIVE-001');
   });
+
+  it('accepts alertdialog as an assertive dialog status mechanism', () => {
+    const report = scanModule(
+      'React.createElement("div", { role: "alertdialog", onClick: close }, "Confirm deletion");',
+      'confirm_module.js',
+    );
+    expect(report).not.toContain('LIVE-001');
+  });
 });
