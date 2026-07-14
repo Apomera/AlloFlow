@@ -796,18 +796,21 @@
     var _b64 = useState(initialBase64); var audioBase64 = _b64[0]; var setAudioBase64 = _b64[1];
     var _dur = useState(initialDuration); var durationS = _dur[0]; var setDurationS = _dur[1];
     var _elapsed = useState(0); var elapsed = _elapsed[0]; var setElapsed = _elapsed[1];
+    var _paused = useState(false); var isPaused = _paused[0]; var setIsPaused = _paused[1];
     var _err = useState(null); var err = _err[0]; var setErr = _err[1];
 
     var recorderRef = useRef(null);
     var chunksRef = useRef([]);
     var streamRef = useRef(null);
     var startRef = useRef(0);
+    var pauseStartedRef = useRef(0);
+    var pausedTotalRef = useRef(0);
     var tickRef = useRef(null);
     var stoppedRef = useRef(false);
 
     var hardStop = function () {
       if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
-      if (recorderRef.current && recorderRef.current.state === 'recording') {
+      if (recorderRef.current && (recorderRef.current.state === 'recording' || recorderRef.current.state === 'paused')) {
         try { recorderRef.current.stop(); } catch (_) {}
       }
       if (streamRef.current) {
@@ -817,6 +820,11 @@
     };
 
     useEffect(function () { return function () { hardStop(); }; }, []);
+
+    var getActiveElapsedSeconds = function (now) {
+      var currentPause = pauseStartedRef.current ? (now - pauseStartedRef.current) : 0;
+      return Math.max(0, Math.round((now - startRef.current - pausedTotalRef.current - currentPause) / 1000));
+    };
 
     var startRec = async function () {
       setErr(null);
@@ -841,7 +849,7 @@
             reader.onloadend = function () {
               var b64 = String(reader.result || '');
               setAudioBase64(b64);
-              var finalDur = Math.min(VOICE_NOTE_MAX_SECONDS, Math.round((Date.now() - startRef.current) / 1000));
+              var finalDur = Math.min(VOICE_NOTE_MAX_SECONDS, getActiveElapsedSeconds(Date.now()));
               setDurationS(finalDur);
               if (typeof onChange === 'function') {
                 try { onChange({ audioBase64: b64, durationS: finalDur }); } catch (_) {}
@@ -856,15 +864,19 @@
           if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
         };
         startRef.current = Date.now();
+        pauseStartedRef.current = 0;
+        pausedTotalRef.current = 0;
         setElapsed(0);
+        setIsPaused(false);
         mr.start();
         setIsRecording(true);
         tickRef.current = setInterval(function () {
-          var sec = Math.round((Date.now() - startRef.current) / 1000);
+          var sec = getActiveElapsedSeconds(Date.now());
           setElapsed(sec);
           if (sec >= VOICE_NOTE_MAX_SECONDS) {
-            if (mr.state === 'recording') { try { mr.stop(); } catch (_) {} }
+            if (mr.state === 'recording' || mr.state === 'paused') { try { mr.stop(); } catch (_) {} }
             setIsRecording(false);
+            setIsPaused(false);
           }
         }, 250);
       } catch (e) {
@@ -875,8 +887,28 @@
 
     var stopRec = function () {
       setIsRecording(false);
-      if (recorderRef.current && recorderRef.current.state === 'recording') {
+      setIsPaused(false);
+      if (recorderRef.current && (recorderRef.current.state === 'recording' || recorderRef.current.state === 'paused')) {
         try { recorderRef.current.stop(); } catch (_) {}
+      }
+    };
+
+    var togglePause = function () {
+      var mr = recorderRef.current;
+      if (!mr || !isRecording) return;
+      try {
+        if (mr.state === 'recording') {
+          mr.pause();
+          pauseStartedRef.current = Date.now();
+          setIsPaused(true);
+        } else if (mr.state === 'paused') {
+          pausedTotalRef.current += Math.max(0, Date.now() - pauseStartedRef.current);
+          pauseStartedRef.current = 0;
+          mr.resume();
+          setIsPaused(false);
+        }
+      } catch (_) {
+        setErr(t('research_hub.voice_note_pause_unsupported') || 'Pause is not supported in this browser. Stop and start a new note instead.');
       }
     };
 
@@ -903,9 +935,9 @@
           <span style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b' }}>
             <span aria-hidden="true">{'\u{1F3A4} '}</span>{label}
           </span>
-          <span style={{ fontSize: '10px', color: '#64748b' }}>
+          <span role="timer" style={{ fontSize: '10px', color: '#64748b' }}>
             {isRecording
-              ? ((t('research_hub.voice_note_recording') || 'Recording') + ' ' + elapsed + 's / ' + VOICE_NOTE_MAX_SECONDS + 's')
+              ? ((isPaused ? (t('research_hub.voice_note_paused') || 'Paused') : (t('research_hub.voice_note_recording') || 'Recording')) + ' ' + elapsed + 's / ' + VOICE_NOTE_MAX_SECONDS + 's')
               : (durationS > 0 ? (durationS + 's saved') : (t('research_hub.voice_note_idle') || 'Up to 60s — local only'))}
           </span>
         </div>
@@ -927,6 +959,22 @@
           {isRecording && (
             <button
               type="button"
+              onClick={togglePause}
+              aria-pressed={isPaused}
+              aria-label={isPaused ? (t('research_hub.voice_note_resume_aria') || 'Resume voice note recording') : (t('research_hub.voice_note_pause_aria') || 'Pause voice note recording')}
+              style={{
+                padding: '6px 12px', borderRadius: '999px',
+                background: isPaused ? '#047857' : '#fff', color: isPaused ? '#fff' : '#334155',
+                border: '1px solid ' + (isPaused ? '#047857' : '#94a3b8'),
+                fontWeight: 800, fontSize: '11px', cursor: 'pointer',
+              }}
+            >
+              {isPaused ? (t('research_hub.voice_note_resume') || 'Resume') : (t('research_hub.voice_note_pause') || 'Pause')}
+            </button>
+          )}
+          {isRecording && (
+            <button
+              type="button"
               onClick={stopRec}
               aria-label={t('research_hub.voice_note_stop_aria') || 'Stop recording'}
               style={{
@@ -940,7 +988,7 @@
           )}
           {audioBase64 && !isRecording && (
             <React.Fragment>
-              <audio controls src={audioBase64} style={{ height: '32px' }} />
+              <audio controls src={audioBase64} aria-label={label + ' playback'} style={{ height: '32px' }} />
               <button
                 type="button"
                 onClick={clearRec}
@@ -957,7 +1005,7 @@
           )}
         </div>
         {err && (
-          <p style={{ margin: 0, fontSize: '11px', color: '#b91c1c' }}>{err}</p>
+          <p role="alert" style={{ margin: 0, fontSize: '11px', color: '#b91c1c' }}>{err}</p>
         )}
       </div>
     );
