@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "deploymentMode": "desktop-local",
+  "text": { "available": true, "providers": ["alloflow-local"] },
+  "vision": { "available": false, "providers": [] },
+  "imageGeneration": { "available": true, "providers": ["sd-local"] },
+  "imageEditing": { "available": false, "providers": [] },
+  "speech": { "tts": false, "asr": true },
+  "webSearch": { "available": false },
+  "catalog": { "read": true, "stage": false },
+  "permissions": ["artifact:read", "artifact:draft", "artifact:execute", "artifact:export"]
+}
