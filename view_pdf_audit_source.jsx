@@ -2703,6 +2703,21 @@ function PdfAuditView(props) {
       if (pdfAutoVeraPdf && _isPdfIn && _veraEmbedPref() !== 'blocked' && !_veraIframeRef.current) warmVeraPdfIframe();
     } catch (_) {}
   }, [pendingPdfBase64, pendingPdfFile, pdfAutoVeraPdf]);
+  // Panel-open pre-warm (2026-07-13): the PDF-load warm above still leaves the very
+  // FIRST session boot (~25MB CheerpJ download + JVM start, ~15s) racing a quick
+  // validate on a small document. Warming once at panel mount overlaps that boot
+  // with file picking instead. Delayed 3s so it never competes with the panel's own
+  // first paint; same guards as above (opt-out and known-blocked embeds untouched).
+  React.useEffect(() => {
+    const _warmTimer = setTimeout(() => {
+      try {
+        if (pdfAutoVeraPdf && _veraEmbedPref() !== 'blocked' && !_veraIframeRef.current) warmVeraPdfIframe();
+      } catch (_) {}
+    }, 3000);
+    return () => clearTimeout(_warmTimer);
+    // Mount-only by design: this is a one-shot boot overlap, not a reactive subscription.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Human-readable tagged-PDF result lines, pinned in a dismissable panel.
   // Previously these were ~8 sequential toasts that auto-dismissed faster
   // than anyone could read them (user-testing finding 2026-06-10).

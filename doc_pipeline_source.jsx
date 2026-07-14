@@ -13934,7 +13934,12 @@ HTML section ${chunkNum}/${chunks.length}:
     if (typeof window !== 'undefined' && window.temml && window.temml.renderToString) return Promise.resolve();
     if (_temmlPromise) return _temmlPromise;
     _temmlPromise = new Promise((resolve, reject) => {
-      const urls = ['https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js', 'https://unpkg.com/temml@0.10.34/dist/temml.min.js'];
+      // Self-hosted copy FIRST (2026-07-13): school firewalls that block third-party
+      // CDNs silently degraded math to spoken-alt-only. alloflow-cdn serves the repo
+      // (temml/temml.min.js, pinned 0.10.34) and is already required for the app's own
+      // modules, so if it is reachable at all, MathML enrichment now works. The
+      // third-party mirrors stay as fallbacks.
+      const urls = ['https://alloflow-cdn.pages.dev/temml/temml.min.js', 'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js', 'https://unpkg.com/temml@0.10.34/dist/temml.min.js'];
       const tryAt = (i) => {
         if (i >= urls.length) { _temmlPromise = null; reject(new Error('temml load failed')); return; }
         const s = document.createElement('script');

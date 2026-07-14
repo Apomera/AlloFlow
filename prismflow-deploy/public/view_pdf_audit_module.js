@@ -2900,6 +2900,15 @@ function PdfAuditView(props) {
     } catch (_) {
     }
   }, [pendingPdfBase64, pendingPdfFile, pdfAutoVeraPdf]);
+  React.useEffect(() => {
+    const _warmTimer = setTimeout(() => {
+      try {
+        if (pdfAutoVeraPdf && _veraEmbedPref() !== "blocked" && !_veraIframeRef.current) warmVeraPdfIframe();
+      } catch (_) {
+      }
+    }, 3e3);
+    return () => clearTimeout(_warmTimer);
+  }, []);
   const [lastTaggedReport, setLastTaggedReport] = useState(null);
   const [pptxThemeId, setPptxThemeId] = useState(() => {
     try {
