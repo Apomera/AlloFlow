@@ -91,6 +91,7 @@ window.StemLab = window.StemLab || {
 
   // ── Sound effects ──
   var _audioCtx = null;
+  var _volumeDeleteReturnEl = null;
   function getAudioCtx() {
     if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return _audioCtx;
@@ -381,6 +382,7 @@ window.StemLab = window.StemLab || {
       var t = ctx.t;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var callGemini = ctx.callGemini;
+      var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // ── State via toolData ──
       var ld = ctx.toolData || {};
@@ -497,6 +499,8 @@ window.StemLab = window.StemLab || {
       // Lets students save "my house" and reload it later. Persists across sessions.
       var saved = _v.saved || {};
       var showSaved = _v.showSaved || false;
+      var pendingDeleteName = _v.pendingDeleteName || null;
+      var formulasPaused = !!_v.formulasPaused;
       var saveCurrent = function(name) {
         if (!name) return;
         var trimmed = String(name).trim().slice(0, 40);
@@ -530,6 +534,62 @@ window.StemLab = window.StemLab || {
         var next = Object.assign({}, saved);
         delete next[name];
         upd({ saved: next });
+      };
+      var requestDeleteSaved = function(name) {
+        if (typeof document !== 'undefined') _volumeDeleteReturnEl = document.activeElement;
+        upd({ pendingDeleteName: name });
+        setTimeout(function() {
+          if (typeof document === 'undefined') return;
+          var cancel = document.getElementById('volume-delete-cancel');
+          if (cancel) cancel.focus();
+        }, 0);
+      };
+      var cancelDeleteSaved = function() {
+        upd({ pendingDeleteName: null });
+        setTimeout(function() {
+          if (_volumeDeleteReturnEl && typeof _volumeDeleteReturnEl.focus === 'function') _volumeDeleteReturnEl.focus();
+          _volumeDeleteReturnEl = null;
+        }, 0);
+      };
+      var confirmDeleteSaved = function() {
+        var name = pendingDeleteName;
+        if (!name) return;
+        deleteSaved(name);
+        upd({ pendingDeleteName: null });
+        announceToSR('Deleted saved construction ' + name);
+        setTimeout(function() {
+          if (typeof document !== 'undefined') {
+            var toggle = document.getElementById('volume-saved-toggle');
+            if (toggle) toggle.focus();
+          }
+          _volumeDeleteReturnEl = null;
+        }, 0);
+      };
+      var handleDeleteDialogKeyDown = function(e) {
+        if (e.key === 'Escape') { e.preventDefault(); cancelDeleteSaved(); return; }
+        if (e.key !== 'Tab' || typeof document === 'undefined') return;
+        var cancel = document.getElementById('volume-delete-cancel');
+        var confirm = document.getElementById('volume-delete-confirm');
+        if (!cancel || !confirm) return;
+        if (e.shiftKey && document.activeElement === cancel) { e.preventDefault(); confirm.focus(); }
+        else if (!e.shiftKey && document.activeElement === confirm) { e.preventDefault(); cancel.focus(); }
+      };
+      var renderDeleteDialog = function() {
+        return h('div', {
+            onClick: function(e) { if (e.target === e.currentTarget) cancelDeleteSaved(); },
+            className: 'fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/80 p-5'
+          },
+          h('div', { id: 'volume-delete-dialog', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'volume-delete-title', 'aria-describedby': 'volume-delete-description',
+              onKeyDown: handleDeleteDialogKeyDown,
+              className: 'w-full max-w-md rounded-2xl border-2 border-rose-400 bg-white p-5 shadow-2xl' },
+            h('h2', { id: 'volume-delete-title', className: 'text-xl font-black text-rose-900' }, 'Delete saved construction?'),
+            h('p', { id: 'volume-delete-description', className: 'mt-2 text-sm leading-relaxed text-slate-700' },
+              '"' + pendingDeleteName + '" will be permanently removed from your saved constructions.'),
+            h('div', { className: 'mt-5 flex flex-wrap justify-end gap-2' },
+              h('button', { id: 'volume-delete-cancel', type: 'button', onClick: cancelDeleteSaved,
+                className: 'min-h-11 rounded-lg border-2 border-slate-400 bg-white px-4 py-2 font-bold text-slate-800' }, 'Keep construction'),
+              h('button', { id: 'volume-delete-confirm', type: 'button', onClick: confirmDeleteSaved,
+                className: 'min-h-11 rounded-lg bg-rose-700 px-4 py-2 font-black text-white' }, 'Delete construction'))));
       };
 
       // Real-world unit mapping: lets students see "8 cubic feet" instead of
@@ -1261,12 +1321,11 @@ window.StemLab = window.StemLab || {
           ),
           // Fold slider
           h('div', { className: 'flex items-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.flat', 'Flat')),
-            h('input', {
+            h('label', { htmlFor: 'volume-net-fold', className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.flat', 'Flat')),
+            h('input', { id: 'volume-net-fold', 'aria-label': __alloT('stem.volume.fold_the_net_from_flat_0_to_fully_fold', 'Fold the net from flat (0) to fully folded (1)'),
               type: 'range', min: '0', max: '1', step: '0.02',
               value: netFold,
               onChange: function(e) { upd({ netFold: parseFloat(e.target.value) }); },
-              'aria-label': __alloT('stem.volume.fold_the_net_from_flat_0_to_fully_fold', 'Fold the net from flat (0) to fully folded (1)'),
               className: 'flex-1 h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
             }),
             h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.volume.folded', 'Folded')),
@@ -1950,11 +2009,10 @@ window.StemLab = window.StemLab || {
                   '1. Predict the object volume',
                   h('span', { className: 'mt-1 block text-[11px] font-normal text-slate-600' }, 'Estimate before you see the final reading.'),
                   h('div', { className: 'mt-2 flex items-center gap-2' },
-                    h('input', {
+                    h('input', { 'aria-label': 'Predicted object volume in cubic centimeters',
                       type: 'number', min: 0, max: 100, step: 1,
                       value: dispPrediction,
                       onChange: function(e) { upd({ dispPrediction: e.target.value }); },
-                      'aria-label': 'Predicted object volume in cubic centimeters',
                       className: 'min-h-[2.75rem] min-w-0 flex-1 rounded-lg border-2 border-amber-300 px-3 py-2 font-mono text-base'
                     }),
                     h('span', { className: 'text-xs font-bold text-amber-900' }, 'cm\u00B3')
@@ -1979,13 +2037,12 @@ window.StemLab = window.StemLab || {
                 h('label', { className: 'block text-sm font-black text-teal-900' },
                   dispUsesSinker ? '3. Calculate combined - sinker-only' : '3. Calculate final - initial',
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                    h('input', {
+                    h('input', { 'aria-label': 'Calculated displaced volume in cubic centimeters',
                       type: 'number', min: 0, max: 100, step: 1,
                       value: dispAnswer,
                       disabled: !dispSubmerged || dispOverflow || !!(dispFeedback && dispFeedback.correct),
                       onChange: function(e) { upd({ dispAnswer: e.target.value, dispFeedback: null }); },
                       onKeyDown: function(e) { if (e.key === 'Enter') checkDisplacementAnswer(); },
-                      'aria-label': 'Calculated displaced volume in cubic centimeters',
                       className: 'min-h-[2.75rem] min-w-0 flex-1 rounded-lg border-2 border-teal-300 px-3 py-2 font-mono text-base disabled:bg-slate-100'
                     }),
                     h('span', { className: 'text-xs font-bold text-teal-900' }, 'cm\u00B3'),
@@ -2035,14 +2092,13 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'block text-sm font-black text-emerald-900' },
                 'Explain what the water showed',
                 h('span', { className: 'mt-1 block text-[11px] font-normal text-slate-600' }, 'Sentence starter: The object\'s volume is ___ because...'),
-                h('textarea', {
+                h('textarea', { 'aria-label': 'Explain the displacement evidence in your own words',
                   rows: 3,
                   maxLength: 600,
                   value: dispExplanation,
                   onChange: function(e) { upd({ dispExplanation: e.target.value }); },
                   placeholder: 'The object\'s volume is ... because the water level changed from ... to ...',
                   className: 'mt-2 w-full rounded-lg border-2 border-emerald-200 p-2 text-sm leading-relaxed',
-                  'aria-label': 'Explain the displacement evidence in your own words'
                 })
               )
             ),
@@ -2201,7 +2257,7 @@ window.StemLab = window.StemLab || {
             (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: __alloT('stem.volume.recent_attempts_newest_at_right', 'Recent attempts (newest at right)'), role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
               _v.attemptHist.slice(-12).map(function (v, i) { return h('span', { key: i, className: 'inline-block w-1 h-3.5 rounded-sm ' + (v ? 'bg-emerald-500' : 'bg-rose-400') }); })),
             streak >= 2 && h('div', {
-              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
+              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full' + (reducedMotion ? '' : ' animate-pulse')
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
             earnedCount > 0 && h('button', { onClick: function() { upd({ showBadges: !showBadges }); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
@@ -2324,7 +2380,7 @@ window.StemLab = window.StemLab || {
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
-                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                h('div', { 'aria-hidden': 'true', className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full' + (reducedMotion ? '' : ' animate-spin') }),
                 h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
@@ -2396,7 +2452,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
               h('p', { className: 'text-base font-bold text-amber-900 leading-relaxed mb-3' }, '📖 ' + story),
               h('div', { className: 'flex gap-2 items-center' },
-                h('input', {
+                h('input', { 'aria-label': __alloT('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
                   type: 'number', value: wpAnswer,
                   onChange: function(e) { upd({ wpAnswer: e.target.value }); },
                   onKeyDown: function(e) {
@@ -2422,7 +2478,6 @@ window.StemLab = window.StemLab || {
                     }
                   },
                   placeholder: __alloT('stem.volume.v', 'V = ?'),
-                  'aria-label': __alloT('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
                   className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono'
                 }),
                 h('span', { className: 'text-xs font-bold text-amber-700' }, ctx2.unit),
@@ -2472,8 +2527,8 @@ window.StemLab = window.StemLab || {
           ['l','w','h'].map(function(dim) {
             var label = dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height';
             return h('div', { key: dim, className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-100' },
-              h('label', { className: 'block text-xs text-emerald-700 mb-1 font-bold uppercase' }, label),
-              h('input', {
+              h('label', { htmlFor: 'volume-dimension-' + dim, className: 'block text-xs text-emerald-700 mb-1 font-bold uppercase' }, label),
+              h('input', { id: 'volume-dimension-' + dim,
                 type: 'range',
                 min: _v.allowFractional ? '0.5' : '1',
                 max: '10',
@@ -2542,9 +2597,9 @@ window.StemLab = window.StemLab || {
 
         // Layer slider (slider mode)
         isSlider && h('div', { className: 'flex items-center gap-2 bg-emerald-50 rounded-lg p-2 border border-emerald-100' },
-          h('span', { className: 'text-xs font-bold text-emerald-700' }, 'Layers:'),
-          h('input', {
-            type: 'range', 'aria-label': __alloT('stem.volume.volume_slider', 'Volume slider'), min: '1', max: dims.h,
+          h('label', { htmlFor: 'volume-visible-layers', className: 'text-xs font-bold text-emerald-700' }, 'Layers:'),
+          h('input', { id: 'volume-visible-layers',
+            type: 'range', min: '1', max: dims.h,
             value: showLayers != null ? showLayers : dims.h,
             onChange: function(e) {
               var lv = parseInt(e.target.value);
@@ -2668,8 +2723,8 @@ window.StemLab = window.StemLab || {
         // Cross-section slice slider
         isSlider && showCrossSection && h('div', { className: 'bg-rose-50 rounded-lg p-2 border border-rose-200' },
           h('div', { className: 'flex items-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-rose-700' }, __alloT('stem.volume.cut_at_layer', '✂ Cut at layer:')),
-            h('input', {
+            h('label', { htmlFor: 'volume-cross-section-layer', className: 'text-[11px] font-bold text-rose-700' }, __alloT('stem.volume.cut_at_layer', '✂ Cut at layer:')),
+            h('input', { id: 'volume-cross-section-layer',
               type: 'range', min: '0', max: Math.max(0, Math.ceil(dims.h) - 1),
               value: Math.min(crossSectionLayer, Math.ceil(dims.h) - 1),
               onChange: function(e) {
@@ -2771,7 +2826,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ lpred: 3, wpred: 3, hpred: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.volume.reset_3', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
+            h('textarea', { id: 'volume-predictor-hypothesis', 'aria-label': 'Volume prediction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, __alloT('stem.volume.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
@@ -2782,7 +2837,7 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               __alloT('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
+            iq.understood && h('textarea', { id: 'volume-predictor-explanation', 'aria-label': 'Explain how each dimension contributes to total volume', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
             h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.'))
           );
@@ -2899,11 +2954,11 @@ window.StemLab = window.StemLab || {
         isSlider && challenge && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
           h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, __alloT('stem.volume.what_is_the_volume', '\uD83E\uDD14 What is the volume?')),
           h('div', { className: 'flex gap-2 items-center' },
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.volume.volume_answer', 'Volume answer'),
               type: 'number', value: answer,
               onChange: function(e) { upd({ answer: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
-              placeholder: __alloT('stem.volume.v_2', 'V = ?'), 'aria-label': __alloT('stem.volume.volume_answer', 'Volume answer'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
+              placeholder: __alloT('stem.volume.v_2', 'V = ?'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
             }),
             h('button', { 'aria-label': __alloT('stem.volume.check_2', 'Check'),
               onClick: checkChallenge, disabled: !answer,
@@ -2984,6 +3039,7 @@ window.StemLab = window.StemLab || {
             }, __alloT('stem.volume.save', '💾 Save')),
             // Toggle saved-list panel
             h('button', {
+              id: 'volume-saved-toggle',
               onClick: function() { upd({ showSaved: !showSaved }); },
               'aria-expanded': showSaved,
               'aria-label': __alloT('stem.volume.show_saved_constructions', 'Show saved constructions'),
@@ -3030,11 +3086,7 @@ window.StemLab = window.StemLab || {
                         className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'
                       }, __alloT('stem.volume.load', 'Load')),
                       h('button', {
-                        onClick: function() {
-                          if (typeof window !== 'undefined' && window.confirm && window.confirm('Delete "' + name + '"?')) {
-                            deleteSaved(name);
-                          }
-                        },
+                        onClick: function() { requestDeleteSaved(name); },
                         'aria-label': 'Delete ' + name,
                         title: __alloT('stem.volume.delete_this_construction', 'Delete this construction'),
                         className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-white text-rose-700 border border-rose-300 hover:bg-rose-100'
@@ -3065,28 +3117,42 @@ window.StemLab = window.StemLab || {
         // VOLUME FORMULAS — interactive reference panel
         // ═══════════════════════════════════════════════════════
         !isDisplacement && h('div', { className: 'mt-5 rounded-2xl border border-cyan-300 bg-white p-3 shadow-sm' },
-          h('div', { className: 'flex items-center justify-between mb-2' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
             h('div', { className: 'flex items-center gap-2' },
-              h('span', { className: 'text-lg' }, '📐'),
+              h('span', { className: 'text-lg', 'aria-hidden': 'true' }, '📐'),
               h('h4', { className: 'text-sm font-bold text-cyan-700' }, __alloT('stem.volume.volume_formulas_in_motion', 'Volume Formulas in Motion'))
             ),
-            h('span', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.volume.6_solids_rotating_with_live_formulas', '6 solids rotating with live formulas'))
+            h('div', { className: 'flex items-center gap-2' },
+              h('span', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.volume.6_solids_rotating_with_live_formulas', '6 solids rotating with live formulas')),
+              h('button', { type: 'button', disabled: reducedMotion, 'aria-pressed': (formulasPaused || reducedMotion) ? 'true' : 'false',
+                onClick: function() { upd({ formulasPaused: !formulasPaused }); },
+                'aria-label': reducedMotion ? 'Formula animation disabled by reduced motion preference' : formulasPaused ? 'Resume formula animation' : 'Pause formula animation',
+                className: 'min-h-8 rounded-lg border border-cyan-500 bg-white px-2 py-1 text-[10px] font-bold text-cyan-800 disabled:cursor-not-allowed disabled:opacity-70' },
+                reducedMotion ? 'Motion off (system)' : formulasPaused ? '▶ Resume' : '⏸ Pause'))
           ),
+          h('p', { id: 'volume-formulas-description', className: 'sr-only' },
+            'Cube: V equals s cubed. Sphere: V equals four thirds pi r cubed. Cylinder: V equals pi r squared h. Cone: V equals one third pi r squared h. Pyramid: V equals one third base area times height. Prism: V equals base area times height.'),
           h('div', { className: 'rounded-xl overflow-hidden border border-cyan-200', style: { background: '#020210', aspectRatio: '16/6' } },
             h('canvas', {
-              role: 'img', tabIndex: 0, 'aria-label': 'Volume and 3D shape visualization.',
+              role: 'img', tabIndex: 0, 'aria-label': 'Volume and 3D shape visualization.', 'aria-describedby': 'volume-formulas-description',
               ref: function(cvEl) {
                 if (!cvEl) return;
+                cvEl._volPaused = formulasPaused || reducedMotion;
                 if (cvEl._volAnim) return;
                 var c2 = cvEl.getContext('2d');
                 var W = cvEl.offsetWidth || 600;
                 var H = cvEl.offsetHeight || 220;
                 cvEl.width = W * 2; cvEl.height = H * 2;
                 c2.scale(2, 2);
-                var start = performance.now();
+                cvEl._volTime = 0;
+                cvEl._volLastFrame = performance.now();
                 function drawVol() {
                   if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._volAnim); if (cvEl._volRO) cvEl._volRO.disconnect(); return; }
-                  var t = (performance.now() - start) / 1000;
+                  var frameNow = performance.now();
+                  var frameDelta = Math.max(0, (frameNow - cvEl._volLastFrame) / 1000);
+                  cvEl._volLastFrame = frameNow;
+                  if (!cvEl._volPaused) cvEl._volTime += frameDelta;
+                  var t = cvEl._volTime;
                   c2.fillStyle = '#020210';
                   c2.fillRect(0, 0, W, H);
                   var solids = [
@@ -3230,7 +3296,8 @@ window.StemLab = window.StemLab || {
               style: { width: '100%', height: '100%', display: 'block' }
             })
           )
-        )
+        ),
+        pendingDeleteName ? renderDeleteDialog() : null
       );
     }
   });
@@ -3335,6 +3402,10 @@ window.StemLab = window.StemLab || {
     var img = new Image();
     img.onload = function() {
       var canvas = document.createElement('canvas');
+      // Export-only detached canvas; it is never inserted into the accessibility tree.
+      canvas.setAttribute('role', 'presentation');
+      canvas.setAttribute('aria-label', 'Export-only image conversion canvas');
+      canvas.setAttribute('aria-hidden', 'true');
       canvas.width = w;
       canvas.height = h2;
       var c2d = canvas.getContext('2d');
