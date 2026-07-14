@@ -475,7 +475,7 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('div', { style: { display: 'flex', gap: '8px' } },
-            h('input', { type: 'text', value: coachInput, onChange: function(ev) { upd('coachInput', ev.target.value); },
+            h('input', { 'aria-label': 'Share your inner critic thought', type: 'text', value: coachInput, onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
                 if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && callGemini) {
                   var msg = coachInput.trim();
@@ -496,7 +496,6 @@ window.SelHub = window.SelHub || {
               },
               disabled: coachLoading || !callGemini,
               placeholder: coachLoading ? 'Listening with care...' : 'What is your inner critic saying?',
-              'aria-label': 'Share your inner critic thought',
               style: { flex: 1, border: '2px solid #ddd6fe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
