@@ -19707,7 +19707,7 @@ if (activeTab === 'plutchik') {
     var b = parseInt(hex.substring(4, 6), 16);
     return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
   }
-  var wheelSvg = h('svg', {
+  var wheelSvg = h('svg', { role: 'group', 'aria-label': 'Interactive Plutchik emotion wheel',
     width: 440, height: 440, viewBox: '0 0 440 440',
     style: { maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto' }
   },
@@ -19849,7 +19849,7 @@ if (activeTab === 'face_builder') {
     var y2 = browY - sign * browTilt;
     return h('line', { key: 'brow' + side, x1: x1, y1: y1, x2: x2, y2: y2, stroke: P.card, strokeWidth: 6, strokeLinecap: 'round' });
   }
-  var faceSvg = h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 220, display: 'block', margin: '0 auto' } },
+  var faceSvg = h('svg', { role: 'img', 'aria-label': 'Adjustable facial expression with eyebrow, eye, mouth, and cheek controls', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 220, display: 'block', margin: '0 auto' } },
     // face circle
     h('circle', { cx: 100, cy: 100, r: 88, fill: '#fef3c7', stroke: '#fbbf24', strokeWidth: 2 }),
     // cheeks (visible only with genuine smile / cheekR)
@@ -19980,7 +19980,7 @@ if (activeTab === 'weather') {
     ].join('');
     document.head.appendChild(st);
   })();
-  var weatherSvg = h('svg', {
+  var weatherSvg = h('svg', { role: 'img', 'aria-label': 'Weather metaphor for ' + scene.label,
     width: '100%', height: 320, viewBox: '0 0 400 320',
     style: { background: scene.bg, borderRadius: 12, display: 'block' }
   },
@@ -20127,7 +20127,7 @@ if (activeTab === 'iceberg') {
         }, p.visibleLabel);
       })
     ),
-    h('svg', { width: '100%', height: 380, viewBox: '0 0 400 380', style: { display: 'block' } },
+    h('svg', { role: 'img', 'aria-label': 'Emotion iceberg for ' + pair.visibleLabel + ', showing hidden feelings below the surface', width: '100%', height: 380, viewBox: '0 0 400 380', style: { display: 'block' } },
       // sky
       h('rect', { x: 0, y: 0, width: 400, height: 150, fill: P.card }),
       // water
@@ -20183,7 +20183,7 @@ if (activeTab === 'volcano') {
   var stage = VOLCANO_STAGES.find(function(s) { return vcLevel >= s.range[0] && vcLevel <= s.range[1]; }) || VOLCANO_STAGES[0];
   // SVG volcano with lava height proportional to vcLevel
   var lavaHeight = 10 + vcLevel * 18; // 10..190
-  var volcanoSvg = h('svg', { width: '100%', height: 320, viewBox: '0 0 400 320', style: { display: 'block', borderRadius: 12, background: P.bg } },
+  var volcanoSvg = h('svg', { role: 'img', 'aria-label': 'Anger volcano level ' + vcLevel + ' of 10: ' + stage.label, width: '100%', height: 320, viewBox: '0 0 400 320', style: { display: 'block', borderRadius: 12, background: P.bg } },
     // sky gradient
     h('defs', null,
       h('linearGradient', { id: 'sky-grad' },
@@ -20290,7 +20290,7 @@ if (activeTab === 'arc') {
       return { x: x, y: y, e: e };
     });
     var pathD = pts.map(function(p, i) { return (i === 0 ? 'M ' : 'L ') + p.x + ' ' + p.y; }).join(' ');
-    var chartSvg = h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { display: 'block', background: P.bg, borderRadius: 10 } },
+    var chartSvg = h('svg', { role: 'img', 'aria-label': recent.length + ' emotion check-ins intensity line chart', width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { display: 'block', background: P.bg, borderRadius: 10 } },
       // Y axis lines
       Array.from({ length: 6 }, function(_, i) {
         var y = pad.t + (i / 5) * chartH;
@@ -20411,7 +20411,7 @@ if (activeTab === 'nameit') {
               }, opt);
             })
           ) : null,
-          step.invitesAnswer ? h('textarea', { rows: 3, value: niAnswers[niStep] || '',
+          step.invitesAnswer ? h('textarea', { 'aria-label': step.prompt, rows: 3, value: niAnswers[niStep] || '',
             onChange: function(e) { var n = Object.assign({}, niAnswers); n[niStep] = e.target.value; upd({ niAnswers: n }); },
             placeholder: 'Take your time...',
             style: { width: '100%', marginTop: 10, padding: 10, borderRadius: 8, border: ('1px solid ' + P.borderDim), background: P.bg, color: P.text3, fontSize: 13, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical' }
@@ -20458,18 +20458,29 @@ if (activeTab === 'bodymap') {
     // Map intensity 0-1 to color from gray to deep red
     var alpha = 0.15 + intensity * 0.75;
     var fill = intensity > 0 ? 'rgba(239,68,68,' + alpha + ')' : 'rgba(100,116,139,0.15)';
-    return h('g', { key: regionId },
-      h('rect', { x: x, y: y, width: w, height: h_, fill: fill, stroke: bmRegion === regionId ? '#fbbf24' : P.borderDim, strokeWidth: bmRegion === regionId ? 2 : 0.5, rx: 4, style: { cursor: 'pointer' },
-        onClick: function() { upd({ bmRegion: regionId }); if (soundEnabled) sfxClick(); }
-      })
+    var hitW = Math.max(w, 24), hitH = Math.max(h_, 24);
+    function selectRegion() { upd({ bmRegion: regionId }); if (soundEnabled) sfxClick(); }
+    return h('g', {
+      key: regionId,
+      role: 'button',
+      tabIndex: 0,
+      focusable: 'true',
+      'aria-label': label + ' for ' + bmEmotion,
+      'aria-pressed': bmRegion === regionId ? 'true' : 'false',
+      onClick: selectRegion,
+      onKeyDown: function(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectRegion(); } }
+    },
+      h('rect', { x: x - (hitW - w) / 2, y: y - (hitH - h_) / 2, width: hitW, height: hitH, fill: 'transparent', pointerEvents: 'all' }),
+      h('rect', { x: x, y: y, width: w, height: h_, fill: fill, stroke: bmRegion === regionId ? '#fbbf24' : P.borderDim, strokeWidth: bmRegion === regionId ? 2 : 0.5, rx: 4, pointerEvents: 'none', style: { cursor: 'pointer' } })
     );
   }
   var emotionList = ['joy','sadness','fear','anger','love','anxiety','shame','pride','disgust','surprise','grief','overwhelm','calm','excitement'];
-  var bodySvg = h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 360', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
+  var bodySvg = h('svg', { role: 'group', 'aria-label': 'Interactive body map for ' + bmEmotion, width: '100%', height: 'auto', viewBox: '0 0 200 360', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
     // body outline
     h('path', { d: 'M 100 30 Q 80 30 80 50 Q 80 70 95 80 L 95 90 L 70 95 Q 50 100 45 130 L 50 200 Q 55 230 65 235 L 60 320 Q 60 340 75 345 L 90 345 Q 95 345 95 340 L 95 250 Q 100 245 105 250 L 105 340 Q 105 345 110 345 L 125 345 Q 140 340 140 320 L 135 235 Q 145 230 150 200 L 155 130 Q 150 100 130 95 L 105 90 L 105 80 Q 120 70 120 50 Q 120 30 100 30 Z',
       fill: P.card, stroke: P.borderDim, strokeWidth: 1.5 }),
-    // Region overlays (rough rectangles inside body)
+    // Region overlays (rough rectangles inside body). Whole-body target sits behind specific regions.
+    _bodyRegion('whole',      40, 100, 120, 240, 'Whole body'),
     _bodyRegion('head',       80,  35, 40, 50, 'Head'),
     _bodyRegion('throat',     90,  85, 20, 12, 'Throat'),
     _bodyRegion('chest',      70, 100, 60, 50, 'Chest'),
@@ -20483,8 +20494,7 @@ if (activeTab === 'bodymap') {
     _bodyRegion('hands_r',   139, 195, 14,  18, 'Right hand'),
     _bodyRegion('legs_l',     65, 240, 30,  95, 'Left leg'),
     _bodyRegion('legs_r',    105, 240, 30,  95, 'Right leg'),
-    _bodyRegion('feet',       70, 335, 60,  10, 'Feet'),
-    _bodyRegion('whole',      40, 100, 120, 240, 'Whole body')
+    _bodyRegion('feet',       70, 335, 60,  10, 'Feet')
   );
   bodyMapContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
@@ -20579,7 +20589,7 @@ if (activeTab === 'atlas') {
           }, c);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search...', value: d.atSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search the cultural emotion atlas', placeholder: '🔎 Search...', value: d.atSearch || '',
         onChange: function(e) { upd({ atSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: ('1px solid ' + P.border), background: P.bg, color: P.text3, fontSize: 13, marginBottom: 14 }
       }),
@@ -20794,7 +20804,7 @@ if (activeTab === 'compounds') {
           }, c);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search...', value: d.cmpSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search compound emotions', placeholder: '🔎 Search...', value: d.cmpSearch || '',
         onChange: function(e) { upd({ cmpSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: ('1px solid ' + P.border), background: P.bg, color: P.text3, fontSize: 13, marginBottom: 14 }
       }),
@@ -20862,7 +20872,7 @@ if (activeTab === 'coreg') {
           'Coregulation = lending your calm nervous system to someone whose is overwhelmed. Polyvagal social engagement (Porges). Browse scripts for common scenarios you might face.'
         )
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search scenarios...', value: d.crSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search coregulation scenarios', placeholder: '🔎 Search scenarios...', value: d.crSearch || '',
         onChange: function(e) { upd({ crSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: ('1px solid ' + P.border), background: P.bg, color: P.text3, fontSize: 13, marginBottom: 14 }
       }),
@@ -20961,7 +20971,7 @@ if (activeTab === 'vocab') {
           }, v);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search words...', value: d.vbSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search emotion vocabulary', placeholder: '🔎 Search words...', value: d.vbSearch || '',
         onChange: function(e) { upd({ vbSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: ('1px solid ' + P.border), background: P.bg, color: P.text3, fontSize: 13, marginBottom: 14 }
       }),
