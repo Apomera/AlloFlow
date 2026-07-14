@@ -28,7 +28,7 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(demo.status).toBe('ready');
     expect(demo.items).toHaveLength(5);
     expect(eppp.status).toBe('ready');
-    expect(eppp.items).toHaveLength(1000);
+    expect(eppp.items).toHaveLength(1500);
     expect(eppp.batchSize).toBe(100);
     expect(eppp.domains).toHaveLength(8);
     expect(new Set(eppp.items.map((item) => item.domainId)).size).toBe(8);
@@ -39,24 +39,24 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(eppp.legacyUrl).toBe('./test_prep/eppp_legacy/index.html?embedded=1');
     expect(eppp.legacyAuditUrl).toBe('./test_prep/eppp_legacy/content_audit.json');
     expect(eppp.curation500Url).toBe('./test_prep/eppp_legacy/curation_500.json');
-    expect(eppp.curation1000Url).toBe('./test_prep/eppp_legacy/curation_1000.json');
-    expect(eppp.expansionAuditUrl).toBe('./test_prep/eppp_native_expansion_1000_audit.json');
+    expect(eppp.curation1000Url).toBe('./test_prep/eppp_legacy/curation_1500.json');
+    expect(eppp.expansionAuditUrl).toBe('./test_prep/eppp_native_expansion_1500_audit.json');
     expect(eppp.disclaimer).toContain('not official scores or pass predictions');
   });
 
-  it('organizes the EPPP bank into ten blueprint-balanced batches of 100', () => {
+  it('organizes the EPPP bank into fifteen blueprint-balanced batches of 100', () => {
     const eppp = Hub.listPacks().find((pack) => pack.id === 'eppp-part-one');
     const expected = { biological: 10, 'cognitive-affective': 13, 'social-cultural': 11, lifespan: 12, assessment: 16, intervention: 15, research: 7, professional: 16 };
 
-    expect(new Set(eppp.items.map((item) => item.id)).size).toBe(1000);
-    for (let batchIndex = 0; batchIndex < 10; batchIndex += 1) {
+    expect(new Set(eppp.items.map((item) => item.id)).size).toBe(1500);
+    for (let batchIndex = 0; batchIndex < 15; batchIndex += 1) {
       const batch = eppp.items.slice(batchIndex * 100, batchIndex * 100 + 100);
       const counts = Object.fromEntries(Object.keys(expected).map((domainId) => [domainId, batch.filter((item) => item.domainId === domainId).length]));
       expect(batch).toHaveLength(100);
       expect(counts).toEqual(expected);
     }
-    expect(Hub.batchMeta(eppp, 99)).toMatchObject({ batchNumber: 1, batchCount: 10, position: 100, startIndex: 0, endIndex: 100 });
-    expect(Hub.batchMeta(eppp, 100)).toMatchObject({ batchNumber: 2, batchCount: 10, position: 1, startIndex: 100, endIndex: 200 });
+    expect(Hub.batchMeta(eppp, 99)).toMatchObject({ batchNumber: 1, batchCount: 15, position: 100, startIndex: 0, endIndex: 100 });
+    expect(Hub.batchMeta(eppp, 100)).toMatchObject({ batchNumber: 2, batchCount: 15, position: 1, startIndex: 100, endIndex: 200 });
   });
 
   it('builds descriptive domain and confidence diagnostics without a pass claim', () => {

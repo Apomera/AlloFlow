@@ -19,8 +19,8 @@ describe('EPPP native learning-library catalog', () => {
 
   it('keeps unreviewed content gated while recording complete provenance and learner structure', () => {
     expect(catalog.chapters.every((chapter) => ['review-required', 'source-reviewed-editorial-pass'].includes(chapter.reviewStatus) && chapter.legacySource)).toBe(true);
-    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'source-reviewed-editorial-pass').map((chapter) => chapter.id)).toEqual(['ch-1', 'ch-2', 'ch-3', 'ch-4', 'ch-5', 'ch-6', 'ch-7', 'ch-8', 'ch-9', 'ch-10', 'ch-11', 'ch-12', 'ch-13', 'ch-14', 'ch-15', 'ch-16', 'ch-17', 'ch-18', 'ch-19', 'ch-20', 'ch-21', 'ch-22', 'ch-23', 'ch-24', 'ch-25', 'ch-26', 'ch-27', 'ch-28', 'ch-29', 'ch-30', 'ch-31', 'ch-32', 'ch-33', 'ch-34', 'ch-35', 'ch-36', 'ch-37', 'ch-38', 'ch-39', 'ch-47', 'ch-49']);
-    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'review-required')).toHaveLength(8);
+    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'source-reviewed-editorial-pass').map((chapter) => chapter.id)).toEqual(Array.from({ length: 49 }, (_, index) => 'ch-' + (index + 1)));
+    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'review-required')).toHaveLength(0);
     expect(catalog.chapters.find((chapter) => chapter.id === 'ch-12')).toMatchObject({ diagramCount: 1, checks: { 'expert-review': 'pending-independent-review' } });
     const psychometrics = catalog.chapters.find((chapter) => chapter.id === 'ch-1');
     expect(psychometrics).toMatchObject({
@@ -40,7 +40,7 @@ describe('EPPP native learning-library catalog', () => {
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'review-required')).toHaveLength(245);
     expect(catalog.diagrams.every((diagram) => diagram.hasSvg && diagram.description)).toBe(true);
     expect(qa.status).toBe('review-in-progress');
-    expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 41, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
+    expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 49, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
   });
 
   it('keeps Chapter 1 psychometric claims qualified and interaction metadata intact', () => {

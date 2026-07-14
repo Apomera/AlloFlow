@@ -1,17 +1,17 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-14T13:00:18.249Z
+Generated: 2026-07-14T14:58:51.987Z
 
 ## Inventory
 
 | Content type | Count |
 | --- | ---: |
 | Legacy learner-visible questions | 2933 |
-| Total native QA-passed questions | 1000 |
+| Total native QA-passed questions | 1500 |
 | Native-original QA-passed questions | 8 |
-| Legacy questions migrated and QA-passed | 962 |
+| Legacy questions migrated and QA-passed | 1443 |
 | Legacy full-review target | 2933 |
-| Remaining to target | 1971 |
+| Remaining to target | 1490 |
 | Flashcards | 415 |
 | Memory aids and mnemonics | 255 |
 | Textbook chapters | 49 |
@@ -20,7 +20,7 @@ Generated: 2026-07-14T13:00:18.249Z
 | Interactive diagram templates | 25 |
 | Diagram placements in chapters | 61 |
 | Searchable term definitions | 1583 |
-| Chapter reference entries | 379 |
+| Chapter reference entries | 383 |
 | AI-reflective chapter codas | 49 |
 | Learner modes/pages | 14 |
 
@@ -28,14 +28,14 @@ Generated: 2026-07-14T13:00:18.249Z
 
 | Domain | Blueprint weight | Legacy-pool share | Legacy items QA passed | Review universe | Remaining |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Biological Bases of Behavior | 10% | 17% | 99 | 500 | 401 |
-| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 129 | 344 | 215 |
-| Social & Cultural Bases of Behavior | 11% | 11.4% | 104 | 335 | 231 |
-| Growth & Lifespan Development | 12% | 12.4% | 119 | 364 | 245 |
-| Assessment & Diagnosis | 16% | 11.6% | 152 | 341 | 189 |
-| Treatment, Intervention & Prevention | 15% | 12.9% | 149 | 378 | 229 |
-| Research Methods & Statistics | 7% | 11.7% | 59 | 343 | 284 |
-| Ethical, Legal & Professional Issues | 16% | 11.2% | 151 | 328 | 177 |
+| Biological Bases of Behavior | 10% | 17% | 149 | 500 | 351 |
+| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 194 | 344 | 150 |
+| Social & Cultural Bases of Behavior | 11% | 11.4% | 159 | 335 | 176 |
+| Growth & Lifespan Development | 12% | 12.4% | 179 | 364 | 185 |
+| Assessment & Diagnosis | 16% | 11.6% | 232 | 341 | 109 |
+| Treatment, Intervention & Prevention | 15% | 12.9% | 224 | 378 | 154 |
+| Research Methods & Statistics | 7% | 11.7% | 94 | 343 | 249 |
+| Ethical, Legal & Professional Issues | 16% | 11.2% | 212 | 328 | 116 |
 
 Recommended release gates: 100-question foundation, 300-question alpha, 1,000-question beta, 2,000-question expansion, and the complete 2,933-question reviewed universe. Reviewing all questions does not guarantee publishing every original wording: failures must be corrected, diversified, or retired. Practice forms should sample by blueprint weight rather than mirror the uneven legacy-pool distribution.
 
@@ -72,7 +72,7 @@ Recommended release gates: 100-question foundation, 300-question alpha, 1,000-qu
 | Content | Count | Status | Next gate |
 | --- | ---: | --- | --- |
 | legacy questions | 2933 | active-full-review | re-author or correct, source QA, item-writing QA, accessibility, independent expert validation |
-| textbook chapters | 49 | review-in-progress | 8 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
+| textbook chapters | 49 | review-in-progress | 0 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
 | interactive diagrams | 25 | legacy-preserved-review-not-started | concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review |
 | flashcards | 415 | review-in-progress | remaining cards need deduplication, atomic-answer review, source support and clue checks |
 | memory aids | 255 | review-in-progress | remaining aids need oversimplification, outdated-guidance, bias, and source review |

@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-14T14:51:55.031Z",
+  "libraryId": "praxis-reading-specialist-5302-learning-library",
+  "standard": {
+    "label": "AlloFlow Praxis Reading Specialist 5302 learning-library source and editorial review v1",
+    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive lessons, one-best-answer knowledge checks, complete cards and aids, structured response workshops, format limitations, safety cautions, and item-compatible skills.",
+    "limitation": "This is not ETS or ILA approval, independent reading-specialist validation, psychometric validation, official constructed-response scoring, diagnosis, eligibility determination, supervision, legal advice, or a substitute for current qualified processes."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "constructedResponseWorkshops": 6,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "sourceReviewedConstructedResponseWorkshops": 6,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  },
+  "chapters": [
+    {
+      "id": "read5302-ch-01",
+      "title": "Literacy Foundations, Development, and Learner Profiles",
+      "domainId": "curriculum-instruction",
+      "skillId": "literacy-foundations-development-profiles",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-02",
+      "title": "Phonological Awareness, Print Concepts, and the Alphabetic Principle",
+      "domainId": "curriculum-instruction",
+      "skillId": "phonological-awareness-print-alphabetic",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-03",
+      "title": "Phonics, Word Recognition, Spelling, and Morphology",
+      "domainId": "curriculum-instruction",
+      "skillId": "phonics-word-recognition-spelling-morphology",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-04",
+      "title": "Fluency, Vocabulary, Comprehension, and Knowledge Building",
+      "domainId": "curriculum-instruction",
+      "skillId": "fluency-vocabulary-comprehension-knowledge",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-05",
+      "title": "Writing, Disciplinary Literacy, and Digital Texts",
+      "domainId": "curriculum-instruction",
+      "skillId": "writing-disciplinary-digital-literacy",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-06",
+      "title": "Instructional Design, Differentiation, Intervention, and Engagement",
+      "domainId": "curriculum-instruction",
+      "skillId": "instructional-design-differentiation-engagement",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-07",
+      "title": "Assessment Purposes, Measurement, Selection, and Fairness",
+      "domainId": "assessment",
+      "skillId": "assessment-purposes-measurement-fairness",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-08",
+      "title": "Diagnostic Literacy Assessment, Error Analysis, and Case Integration",
+      "domainId": "assessment",
+      "skillId": "diagnostic-error-analysis-case-integration",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 6,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-09",
+      "title": "Progress Monitoring, Instructional Decisions, and MTSS Data",
+      "domainId": "assessment",
+      "skillId": "progress-monitoring-data-mtss",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-10",
+      "title": "Diverse Learners, Family Partnership, Equity, and Access",
+      "domainId": "professional-leadership",
+      "skillId": "diverse-learners-family-equity-access",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 6,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-11",
+      "title": "Coaching, Professional Learning, Collaboration, and Conflict Resolution",
+      "domainId": "professional-leadership",
+      "skillId": "coaching-professional-learning-collaboration",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-ch-12",
+      "title": "Program Leadership, MTSS, Ethics, Privacy, and Advocacy",
+      "domainId": "professional-leadership",
+      "skillId": "program-leadership-mtss-ethics-privacy",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 7,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ],
+  "workshops": [
+    {
+      "id": "read5302-cr-01",
+      "title": "Professional Learning Plan From Schoolwide Evidence",
+      "taskType": "Professional leadership",
+      "taskParts": 3,
+      "criteria": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-cr-02",
+      "title": "Collaborative Response to Curriculum Disagreement",
+      "taskType": "Professional leadership",
+      "taskParts": 3,
+      "criteria": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-cr-03",
+      "title": "Family and Community Literacy Partnership",
+      "taskType": "Professional leadership",
+      "taskParts": 3,
+      "criteria": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-cr-04",
+      "title": "Elementary Case: Word Reading and Spelling",
+      "taskType": "Individual student case study",
+      "taskParts": 3,
+      "criteria": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-cr-05",
+      "title": "Elementary Case: Multilingual Comprehension Profile",
+      "taskType": "Individual student case study",
+      "taskParts": 3,
+      "criteria": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "read5302-cr-06",
+      "title": "Elementary Case: Progress Data and Intensification",
+      "taskType": "Individual student case study",
+      "taskParts": 3,
+      "criteria": 4,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ]
+}

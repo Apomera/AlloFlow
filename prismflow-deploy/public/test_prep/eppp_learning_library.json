@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-14T13:00:17.757Z",
+  "generatedAt": "2026-07-14T14:58:51.563Z",
   "libraryId": "eppp-learning-library",
   "reviewStandard": {
     "checks": [
@@ -23,7 +23,7 @@
     "flashcards": 415,
     "memoryAids": 255,
     "qaPassedChapters": 0,
-    "sourceReviewedChapters": 41,
+    "sourceReviewedChapters": 49,
     "qaPassedFlashcards": 0,
     "sourceReviewedFlashcards": 9,
     "qaPassedMemoryAids": 0,
@@ -5758,16 +5758,22 @@
       "referenceCount": 3,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch40.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Qualified randomized-experiment causal claims, separated random assignment from probability sampling and broader generalizability, bounded within-person efficiency, added single-case design-quality conditions, removed deterministic AI-replication claims, and aligned the two scenario checks with design-specific inference limits.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://ies.ed.gov/ncee/wwc/Handbooks",
+        "https://ies.ed.gov/ncee/wwc/Document/229",
+        "https://ies.ed.gov/ncee/wwc/Document/256",
+        "https://www.itl.nist.gov/div898/handbook/pri/section3/pri333.htm"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-official-assessment-blueprint-federal-design-standards-and-nist-methods",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-randomization-factorial-and-single-case-inference-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-and-scenario-rationales",
+        "bias-and-context": "editorial-pass-participation-setting-attrition-measurement-and-implementation-context",
+        "expert-review": "pending-independent-research-design-and-single-case-methods-review"
       },
       "sections": [
         {
@@ -5784,7 +5790,7 @@
         {
           "id": "ch-40-section-2",
           "heading": "Types of Research Designs",
-          "preview": "Design Key Feature Can Establish Causation? True Experimental Random assignment to conditions + manipulation of IV Yes Quasi-Experimental Manipulation of IV but no random assignment Limited (preexisting group differences) Correlational Measures relationship between variables; no manipulation No (correlation ≠ causation",
+          "preview": "Design Key Feature Can Establish Causation? True Experimental Random assignment to conditions + manipulation of IV Strongest basis for a causal inference when implementation, attrition, measurement, and analysis are credible Quasi-Experimental Manipulation of IV but no random assignment Limited (preexisting group diffe",
           "keyTerms": [
             "True experiment",
             "Quasi-experimental",
@@ -5802,7 +5808,7 @@
         {
           "id": "ch-40-section-3",
           "heading": "Between-Subjects, Within-Subjects & Factorial Designs",
-          "preview": "Between-subjects (independent groups): Different participants in each condition Requires more participants No order/carryover effects Individual differences can confound results Within-subjects (repeated measures): Same participants in all conditions More powerful (controls for individual differences) Vulnerable to ord",
+          "preview": "Between-subjects (independent groups): Different participants in each condition Requires more participants No order/carryover effects Individual differences can confound results Within-subjects (repeated measures): Same participants in all conditions Often more statistically efficient because each participant serves as",
           "keyTerms": [
             "Between-subjects",
             "Within-subjects",
@@ -5850,16 +5856,22 @@
       "referenceCount": 3,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch41.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected regression-to-the-mean mechanisms and certainty, replaced the automatic internal-versus-external validity tradeoff, reframed the Hawthorne label as heterogeneous research-participation reactivity, specified who masking can protect against which bias pathways, and removed identical-AI-instance assumptions.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://ies.ed.gov/ncee/wwc/Handbooks",
+        "https://doi.org/10.1093/ije/dyh299",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3969247/",
+        "https://pubmed.ncbi.nlm.nih.gov/40258524/"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-official-design-standards-systematic-review-methods-and-observer-bias-evidence",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-regression-reactivity-masking-and-validity-scenario-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-and-scenario-rationales",
+        "bias-and-context": "editorial-pass-nonabsolute-setting-participation-measurement-and-observer-context",
+        "expert-review": "pending-independent-validity-causal-inference-and-trial-methods-review"
       },
       "sections": [
         {
@@ -5946,16 +5958,23 @@
       "referenceCount": 3,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch42.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Replaced dichotomous p-value and clinical-significance shortcuts with model-based interpretation, estimates, uncertainty, and decision context; bounded alpha and power claims; made effect-size benchmarks contextual; corrected r-squared and regression language; and revised the large-sample scenario so its keyed conclusion no longer declares practical triviality without an outcome scale or meaningful-change threshold.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+        "https://www.amstat.org/news-listing/2021/06/22/asa-task-force-on-statistical-significance-and-replicability-report",
+        "https://www.itl.nist.gov/div898/handbook/dtoc.htm",
+        "https://www.itl.nist.gov/div898/handbook/prc/section1/prc14.htm",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5154046/"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-official-assessment-blueprint-asa-nist-and-consort-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-test-choice-error-power-effect-size-and-correlation-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-symbol-expansion-key-terms-and-scenario-rationales",
+        "bias-and-context": "editorial-pass-measurement-missingness-harms-benefits-costs-and-contextual-importance",
+        "expert-review": "pending-independent-statistics-psychometrics-and-clinical-interpretation-review"
       },
       "sections": [
         {
@@ -6014,7 +6033,7 @@
         {
           "id": "ch-42-section-4",
           "heading": "Type I/II Errors, Power & Effect Size",
-          "preview": "Hypothesis testing errors: H₀ is TRUE (no real effect) H₀ is FALSE (real effect exists) Reject H₀ Type I error (α) — false positive Correct! (Power = 1 – β) Fail to reject H₀ Correct! Type II error (β) — false negative Type I error (α) : Concluding there’s an effect when there isn’t. Controlled by setting α (usually .0",
+          "preview": "Hypothesis testing errors: H₀ is TRUE (no real effect) H₀ is FALSE (real effect exists) Reject H₀ Type I error (α) — false positive Correct! (Power = 1 – β) Fail to reject H₀ Correct! Type II error (β) — false negative Type I error (α) : Rejecting a true null hypothesis. A prespecified alpha bounds the long-run rejecti",
           "keyTerms": [
             "Type I error",
             "Type II error",
@@ -6062,19 +6081,25 @@
       "sectionCount": 4,
       "diagramCount": 0,
       "knowledgeCheckCount": 2,
-      "referenceCount": 4,
+      "referenceCount": 6,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch43.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Qualified rank-based test selection and power claims, replaced automatic factor-retention and SEM-causality shortcuts, reframed funnel plots as exploratory small-study-effect checks, removed invented missing-study and corrected-effect estimates, corrected incidence denominators, contextualized NNT, and removed unsupported AI factor and confidence claims.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://training.cochrane.org/handbook/current/chapter-10",
+        "https://training.cochrane.org/handbook/current/chapter-13",
+        "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html",
+        "https://www.itl.nist.gov/div898/handbook/dtoc.htm"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-official-assessment-blueprint-cochrane-cdc-and-nist-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-design-estimand-factor-retention-meta-analysis-and-epidemiology-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-option-specific-rationales",
+        "bias-and-context": "editorial-pass-nonabsolute-measurement-sampling-baseline-risk-harms-and-uncertainty-context",
+        "expert-review": "pending-independent-statistics-meta-analysis-and-epidemiology-review"
       },
       "sections": [
         {
@@ -6091,7 +6116,7 @@
         {
           "id": "ch-43-section-2",
           "heading": "Nonparametric Tests",
-          "preview": "Use when: Data violate parametric assumptions (non-normal, ordinal data, small samples). Parametric Test Nonparametric Alternative Independent t-test Mann-Whitney U Paired t-test Wilcoxon signed-rank One-way ANOVA Kruskal-Wallis H Repeated measures ANOVA Friedman Pearson r Spearman rho (ρ) Chi-square (χ²) : Used for ca",
+          "preview": "Use when: The outcome scale, estimand, sampling design, or distribution makes a rank-based or distribution-free procedure appropriate. Small samples alone do not automatically require a nonparametric test. Parametric Test Nonparametric Alternative Independent t-test Mann-Whitney U Paired t-test Wilcoxon signed-rank One",
           "keyTerms": [
             "Mann-Whitney",
             "Wilcoxon",
@@ -6111,7 +6136,7 @@
         {
           "id": "ch-43-section-3",
           "heading": "Factor Analysis, SEM & Meta-Analysis",
-          "preview": "Factor analysis: Exploratory (EFA) : Discovers underlying factor structure from data. Used when you don’t know the structure. Common in scale development. Confirmatory (CFA) : Tests whether data fit a pre-specified factor model. Used when you have a theoretical structure to test. Factor loadings : Correlations between ",
+          "preview": "Factor analysis: Exploratory (EFA) : Discovers underlying factor structure from data. Used when you don’t know the structure. Common in scale development. Confirmatory (CFA) : Tests whether data fit a pre-specified factor model. Used when you have a theoretical structure to test. Factor loadings : Relations between ind",
           "keyTerms": [
             "Factor analysis",
             "EFA",
@@ -6164,19 +6189,26 @@
       "sectionCount": 4,
       "diagramCount": 0,
       "knowledgeCheckCount": 2,
-      "referenceCount": 3,
+      "referenceCount": 5,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch44.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected the Tuskegee-to-Belmont timeline, aligned consent waiver and deception conditions with APA Standards 8.05 through 8.08, replaced risk-only exempt and expedited shortcuts with Common Rule categories and procedures, removed a nonexistent universal APA five-year retention rule, qualified multiple-testing expectations and preregistration claims, and refocused the AI coda on human participants, data subjects, bystanders, and downstream harms.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html",
+        "https://www.apa.org/ethics/code/manual-updates.html",
+        "https://www.ecfr.gov/current/title-45/part-46/subpart-A",
+        "https://www.hhs.gov/ohrp/regulations-and-policy/index.html",
+        "https://www.cos.io/r3ct/gfs-trial"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-official-assessment-blueprint-apa-hhs-ecfr-ohrp-and-open-science-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-belmont-consent-deception-irb-data-and-selective-reporting-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-option-specific-rationales",
+        "bias-and-context": "editorial-pass-race-vulnerability-coercion-confidentiality-bystander-and-downstream-impact-context",
+        "expert-review": "pending-independent-research-ethics-irb-and-open-science-review"
       },
       "sections": [
         {
@@ -6212,7 +6244,7 @@
         {
           "id": "ch-44-section-3",
           "heading": "APA Ethics Code Standard 8: Research",
-          "preview": "Key standards for research: 8.01 Institutional Approval : Obtain IRB approval before beginning research 8.02 Informed Consent : Participants must understand purpose, procedures, risks, benefits, right to withdraw, limits of confidentiality 8.03 Consent for Recording : Get permission before recording voices or images 8.",
+          "preview": "Key standards for research: 8.01 Institutional Approval : When institutional approval is required, provide accurate information, obtain approval before conducting the research, and follow the approved protocol. 8.02 Informed Consent : Participants must understand purpose, procedures, risks, benefits, right to withdraw,",
           "keyTerms": [
             "IRB",
             "Informed consent",
@@ -6231,7 +6263,7 @@
         {
           "id": "ch-44-section-4",
           "heading": "IRB Process, Data Management & Reproducibility",
-          "preview": "Institutional Review Board (IRB): Review Level Criteria Exempt Minimal risk: educational settings, surveys, existing data. No ongoing IRB oversight. Expedited Minimal risk with some procedures (blood draws, moderate exercise). One or two IRB members review. Full board Greater than minimal risk. Requires review by full ",
+          "preview": "Institutional Review Board (IRB): Review Level Criteria Exempt Must fit a regulatory exemption category and its conditions. Institutional determination procedures still apply, and some exempt research requires limited IRB review. Expedited Available for specified categories of no-more-than-minimal-risk research and cer",
           "keyTerms": [
             "IRB",
             "Exempt",
@@ -6264,16 +6296,22 @@
       "referenceCount": 3,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch45.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Replaced probability-sampling guarantees with design-based conditions, qualified nonprobability inference, corrected cluster and systematic sampling descriptions, removed mechanical measurement-level test selection, bounded IQ and ratio interpretations, qualified cross-sequential identification and mixed-method triangulation, and reframed the AI coda around explicit populations and constructs.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://www.itl.nist.gov/div898/handbook/ppc/section3/ppc332.htm",
+        "https://www.itl.nist.gov/div898/handbook/pmd/section2/pmd215.htm",
+        "https://aapor.org/standards-and-ethics/transparency-initiative/",
+        "https://www.science.org/doi/10.1126/science.103.2684.677"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-official-assessment-blueprint-nist-aapor-and-primary-measurement-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-sampling-measurement-design-and-inference-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-option-specific-rationales",
+        "bias-and-context": "editorial-pass-sampling-frame-nonresponse-identity-measurement-and-target-population-context",
+        "expert-review": "pending-independent-survey-methodology-measurement-and-mixed-methods-review"
       },
       "sections": [
         {
@@ -6290,7 +6328,7 @@
         {
           "id": "ch-45-section-2",
           "heading": "Sampling Methods",
-          "preview": "Probability sampling (every member has a known chance of selection — generalizable): Method Description Simple random Every member has an equal chance of selection Stratified random Population divided into strata (e.g., gender, ethnicity), then random sample from each stratum Cluster Randomly select groups (clusters), ",
+          "preview": "Probability sampling gives each population unit a known, nonzero selection probability and supports design-based estimates when the frame, selection, weighting, measurement, and response processes are adequate. It does not guarantee that one realized sample is representative or that findings generalize to every setting",
           "keyTerms": [
             "Simple random",
             "Stratified random",
@@ -6362,22 +6400,28 @@
       "referenceCount": 3,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch46.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Updated the 2026 Part 1 format and score description, removed the fixed 70-percent passing myth and invented universal two-step logic, replaced option-word and textbook-world tricks with evidence-based stem reading, corrected unsafe ethical hierarchies and automatic informal resolution, bounded pacing and note advice by current test-center rules, and removed unsupported AI performance equivalences.",
+      "reviewReferences": [
+        "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf",
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-handbook/",
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-sample-exams/",
+        "https://www.apa.org/ethics/code/manual-updates.html",
+        "https://asppb.net/news/five-things-to-know-requesting-eppp-accommodations/"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-current-asppb-candidate-handbook-official-exam-pages-and-apa-ethics-code",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-format-scaling-navigation-ethics-pacing-and-security-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-accommodation-aware-language",
+        "bias-and-context": "editorial-pass-jurisdiction-role-confidentiality-disability-and-nonfolklore-context",
+        "expert-review": "pending-independent-licensure-exam-ethics-and-accessibility-review"
       },
       "sections": [
         {
           "id": "ch-46-section-1",
           "heading": "Understanding the Beast",
-          "preview": "The EPPP (Examination for Professional Practice in Psychology) is less a test of your clinical intuition and more a test of your ability to memorize and apply specific theoretical frameworks, research findings, and ethical codes exactly as the ASPPB defines them. Format: 225 multiple-choice questions (only 175 are scor",
+          "preview": "The EPPP Part 1–Knowledge is a licensure examination owned by ASPPB and organized around eight job-analysis content domains. Questions can require recall, interpretation, or application, but ASPPB does not publish an official rule that every item follows a particular commercial test-prep logic. Format: 225 multiple-cho",
           "keyTerms": [
             "225 questions",
             "Scaled score of 500",
@@ -6393,7 +6437,7 @@
         {
           "id": "ch-46-section-2",
           "heading": "Core Test-Taking Strategies",
-          "preview": "Mastering the content is only half the battle. Surviving the exam format requires strict adherence to these strategies: Strategy Application The \"Textbook\" World Answer questions as if you live in a perfect, well-funded, textbook universe. Do not use your messy practicum experience to inform your answers. If the APA Et",
+          "preview": "Mastering the content is only half the battle. Surviving the exam format requires strict adherence to these strategies: Strategy Application Use the stated conditions Apply the governing evidence, ethics standard, and facts in the stem. Do not invent resources or barriers, and do not ignore real constraints the questio",
           "keyTerms": [
             "Textbook world",
             "Absolutes",
@@ -6409,7 +6453,7 @@
         {
           "id": "ch-46-section-3",
           "heading": "Navigating Ethical Dilemmas",
-          "preview": "Ethics questions are highly procedural. Follow the ASPPB's implicit hierarchy of actions: Is there an imminent threat to life? (e.g., Tarasoff warning, child abuse reporting). If yes, breach confidentiality immediately. Is there a legal mandate? (e.g., a judge's court order). If yes, comply. (Note: A subpoena is NOT a ",
+          "preview": "Ethical decisions require the applicable Ethics Code provisions, law, role, facts, and jurisdiction. A memorized universal hierarchy can be unsafe because confidentiality exceptions, reporting duties, privilege, and protective actions vary in their triggers and required scope. Safety: assess urgency and take reasonable",
           "keyTerms": [
             "Imminent threat",
             "Informal resolution",
@@ -6425,7 +6469,7 @@
         {
           "id": "ch-46-section-4",
           "heading": "Managing Exam Fatigue",
-          "preview": "Decision fatigue is real. By question 150, your prefrontal cortex will want to quit. To combat this: Pacing: Aim to complete 53 questions every hour. Write \"53\", \"106\", \"159\", \"212\" on your scratch paper to track targets. The \"Brain Dump\": During the tutorial period before the timer starts, use your whiteboard/scratch ",
+          "preview": "Decision fatigue is real. By question 150, your prefrontal cortex will want to quit. To combat this: Pacing: Use personal checkpoints that preserve time for every item and review. With 255 minutes for 225 items, the average is about 68 seconds, but individual items vary. Permitted notes: Follow the current Candidate Ha",
           "keyTerms": [
             "Pacing",
             "Brain dump",
@@ -6560,22 +6604,28 @@
       "referenceCount": 2,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch48.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Separated standard-score transformations from normality assumptions, qualified the T-score percentile conversion, corrected IRT b and c parameter interpretations, removed the unsupported claim that EPPP candidate responses receive item-specific IRT weights, replaced the impossible raw-score vignette with ASPPB raw-to-scaled equating, and removed neural-network and IRT equivalence claims.",
+      "reviewReferences": [
+        "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf",
+        "https://www.itl.nist.gov/div898/handbook/pmc/section5/pmc51.htm",
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm",
+        "https://www.jp.ets.org/content/dam/ets-org/pdfs/gre/gre-compendium.pdf",
+        "https://www.ets.org/research/policy_research_reports/publications/report/1974/hrog.html"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-current-asppb-handbook-nist-distribution-and-ets-psychometric-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-standard-score-normal-model-irt-parameter-and-equating-checks",
+        "accessibility": "shared-renderer-pass-labelled-diagram-headings-key-terms-case-and-option-specific-rationale",
+        "bias-and-context": "editorial-pass-reference-population-model-fit-uncertainty-and-nonanthropomorphic-context",
+        "expert-review": "pending-independent-psychometrics-irt-and-score-equating-review"
       },
       "sections": [
         {
           "id": "ch-48-section-1",
           "heading": "The Normal Distribution & Standard Scores",
-          "preview": "Standardizing scores allows us to compare results across entirely different tests. All standard scores (z-scores, T-scores, IQ scores) are based on the standard normal distribution, where 68% of scores fall within 1 SD of the mean, 95% within 2 SDs, and 99.7% within 3 SDs.",
+          "preview": "A standard score expresses position relative to a reference distribution through a defined transformation. A z score has mean 0 and standard deviation 1 in the reference data; T scores often use mean 50 and SD 10, and many IQ scales use mean 100 and SD 15. These transformations do not require the observed distribution ",
           "keyTerms": [
             "T-score",
             "z-score",
@@ -6583,7 +6633,7 @@
             "Percentile Rank"
           ],
           "hasDiagram": true,
-          "diagramDescription": "The Normal Distribution: Mean (μ) and Standard Deviations (σ)",
+          "diagramDescription": "The Normal Distribution: Mean (Î¼) and Standard Deviations (Ïƒ)",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -6591,7 +6641,7 @@
         {
           "id": "ch-48-section-2",
           "heading": "Item Response Theory (IRT)",
-          "preview": "Unlike Classical Test Theory (which focuses on total score), Item Response Theory focuses on the relationship between a person's latent ability (Theta or θ) and their probability of answering a specific item correctly. The EPPP is scored using IRT to ensure fairness across different versions of the exam. Parameter a (D",
+          "preview": "Item Response Theory (IRT) models the relationship between a latent-trait parameter and item responses under specified assumptions. Classical test theory summarizes observed scores with true-score and error concepts; the two frameworks answer different measurement questions. ASPPB’s current Candidate Handbook describes",
           "keyTerms": [
             "Item Response Theory",
             "Latent ability (Theta)",

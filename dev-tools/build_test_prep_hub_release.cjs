@@ -33,6 +33,16 @@ const speechLanguagePathology5331BuildPath = path.join(root, 'dev-tools', 'build
 const speechLanguagePathology5331QaPath = path.join(root, 'dev-tools', 'qa_speech_language_pathology_5331_pack.cjs');
 const speechLanguagePathology5331LibraryBuildPath = path.join(root, 'dev-tools', 'build_speech_language_pathology_5331_learning_library.cjs');
 const speechLanguagePathology5331LibraryQaPath = path.join(root, 'dev-tools', 'qa_speech_language_pathology_5331_learning_library.cjs');
+const audiology5343SourcePath = path.join(root, 'test_prep', 'audiology_5343_pack.json');
+const audiology5343BuildPath = path.join(root, 'dev-tools', 'build_audiology_5343_pack.cjs');
+const audiology5343QaPath = path.join(root, 'dev-tools', 'qa_audiology_5343_pack.cjs');
+const audiology5343LibraryBuildPath = path.join(root, 'dev-tools', 'build_audiology_5343_learning_library.cjs');
+const audiology5343LibraryQaPath = path.join(root, 'dev-tools', 'qa_audiology_5343_learning_library.cjs');
+const readingSpecialist5302SourcePath = path.join(root, 'test_prep', 'reading_specialist_5302_pack.json');
+const readingSpecialist5302BuildPath = path.join(root, 'dev-tools', 'build_reading_specialist_5302_pack.cjs');
+const readingSpecialist5302QaPath = path.join(root, 'dev-tools', 'qa_reading_specialist_5302_pack.cjs');
+const readingSpecialist5302LibraryBuildPath = path.join(root, 'dev-tools', 'build_reading_specialist_5302_learning_library.cjs');
+const readingSpecialist5302LibraryQaPath = path.join(root, 'dev-tools', 'qa_reading_specialist_5302_learning_library.cjs');
 const outputPath = path.join(root, 'test_prep_hub_module.js');
 const deployOutputPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const tempEntryPath = path.join(root, '_tmp_test_prep_hub_release_entry.jsx');
@@ -43,6 +53,8 @@ const specialEducation5355Registration = 'registerTestPrepPack(SPECIAL_EDUCATION
 const schoolCounselor5422Registration = 'registerTestPrepPack(SCHOOL_COUNSELOR_5422_PRACTICE_PACK);';
 const schoolPsychologist5403Registration = 'registerTestPrepPack(SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK);';
 const speechLanguagePathology5331Registration = 'registerTestPrepPack(SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK);';
+const audiology5343Registration = 'registerTestPrepPack(AUDIOLOGY_5343_PRACTICE_PACK);';
+const readingSpecialist5302Registration = 'registerTestPrepPack(READING_SPECIALIST_5302_PRACTICE_PACK);';
 
 if (!fs.existsSync(sourcePath)) throw new Error('Test Prep Hub source not found.');
 if (!fs.existsSync(epppBankPath)) throw new Error('EPPP bank not found.');
@@ -51,6 +63,8 @@ if (!fs.existsSync(specialEducation5355SourcePath)) throw new Error('Praxis Spec
 if (!fs.existsSync(schoolCounselor5422SourcePath)) throw new Error('Praxis School Counselor 5422 release source not found.');
 if (!fs.existsSync(schoolPsychologist5403SourcePath)) throw new Error('Praxis School Psychologist 5403 release source not found.');
 if (!fs.existsSync(speechLanguagePathology5331SourcePath)) throw new Error('Praxis Speech-Language Pathology 5331 release source not found.');
+if (!fs.existsSync(audiology5343SourcePath)) throw new Error('Praxis Audiology 5343 release source not found.');
+if (!fs.existsSync(readingSpecialist5302SourcePath)) throw new Error('Praxis Reading Specialist 5302 release source not found.');
 execFileSync(process.execPath, [paraProBatch2BuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryBuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryQaPath], { cwd: root, stdio: 'inherit' });
@@ -71,6 +85,14 @@ execFileSync(process.execPath, [speechLanguagePathology5331BuildPath], { cwd: ro
 execFileSync(process.execPath, [speechLanguagePathology5331LibraryBuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [speechLanguagePathology5331LibraryQaPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [speechLanguagePathology5331QaPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [audiology5343BuildPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [audiology5343LibraryBuildPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [audiology5343LibraryQaPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [audiology5343QaPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [readingSpecialist5302BuildPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [readingSpecialist5302LibraryBuildPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [readingSpecialist5302LibraryQaPath], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, [readingSpecialist5302QaPath], { cwd: root, stdio: 'inherit' });
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
 if (!originalSource.includes(registrationMarker)) throw new Error('Test Prep Hub registration marker changed; review the ParaPro release injection.');
@@ -83,11 +105,15 @@ if (!source.includes(schoolCounselor5422Registration)) throw new Error('Test Pre
 if (!source.includes(schoolPsychologist5403Registration)) throw new Error('Test Prep Hub source must register the Praxis School Psychologist 5403 pack.');
 if (!source.includes(speechLanguagePathology5331Registration)) throw new Error('Test Prep Hub source must register the Praxis Speech-Language Pathology 5331 pack.');
 const paraProPack = JSON.parse(fs.readFileSync(paraProSourcePath, 'utf8'));
+if (!source.includes(audiology5343Registration)) throw new Error('Test Prep Hub source must register the Praxis Audiology 5343 pack.');
+if (!source.includes(readingSpecialist5302Registration)) throw new Error('Test Prep Hub source must register the Praxis Reading Specialist 5302 pack.');
 const specialEducation5355Pack = JSON.parse(fs.readFileSync(specialEducation5355SourcePath, 'utf8'));
 const schoolCounselor5422Pack = JSON.parse(fs.readFileSync(schoolCounselor5422SourcePath, 'utf8'));
 const schoolPsychologist5403Pack = JSON.parse(fs.readFileSync(schoolPsychologist5403SourcePath, 'utf8'));
 const speechLanguagePathology5331Pack = JSON.parse(fs.readFileSync(speechLanguagePathology5331SourcePath, 'utf8'));
 if (!Array.isArray(epppItems) || !epppItems.length) throw new Error('EPPP bank is empty or invalid.');
+const audiology5343Pack = JSON.parse(fs.readFileSync(audiology5343SourcePath, 'utf8'));
+const readingSpecialist5302Pack = JSON.parse(fs.readFileSync(readingSpecialist5302SourcePath, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
   throw new Error('ParaPro release pack is empty or invalid.');
 }
@@ -104,12 +130,20 @@ if (!schoolPsychologist5403Pack || schoolPsychologist5403Pack.id !== 'praxis-sch
 if (!speechLanguagePathology5331Pack || speechLanguagePathology5331Pack.id !== 'praxis-speech-language-pathology-5331' || speechLanguagePathology5331Pack.batchSize !== 100 || !Array.isArray(speechLanguagePathology5331Pack.items) || speechLanguagePathology5331Pack.items.length !== 200) {
   throw new Error('Praxis Speech-Language Pathology 5331 release pack is empty or invalid.');
 }
+if (!audiology5343Pack || audiology5343Pack.id !== 'praxis-audiology-5343' || audiology5343Pack.batchSize !== 100 || !Array.isArray(audiology5343Pack.items) || audiology5343Pack.items.length !== 200) {
+  throw new Error('Praxis Audiology 5343 release pack is empty or invalid.');
+}
+if (!readingSpecialist5302Pack || readingSpecialist5302Pack.id !== 'praxis-reading-specialist-5302' || readingSpecialist5302Pack.batchSize !== 100 || !Array.isArray(readingSpecialist5302Pack.items) || readingSpecialist5302Pack.items.length !== 200) {
+  throw new Error('Praxis Reading Specialist 5302 release pack is empty or invalid.');
+}
 const prelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
   + 'const SCHOOL_COUNSELOR_5422_PRACTICE_PACK = ' + JSON.stringify(schoolCounselor5422Pack) + ';\n\n'
   + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + JSON.stringify(schoolPsychologist5403Pack) + ';\n\n'
-  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n';
+  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n'
+  + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + JSON.stringify(audiology5343Pack) + ';\n\n'
+  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n';
 fs.writeFileSync(tempEntryPath, '/* global React */\n\n' + prelude + source + '\n', 'utf8');
 
 try {
@@ -167,7 +201,7 @@ ${compiled}
   fs.writeFileSync(outputPath, output, 'utf8');
   fs.mkdirSync(path.dirname(deployOutputPath), { recursive: true });
   fs.writeFileSync(deployOutputPath, output, 'utf8');
-  console.log('Built Test Prep Hub release with ParaPro, Praxis Special Education 5355, Praxis School Counselor 5422, Praxis School Psychologist 5403, and Praxis Speech-Language Pathology 5331 (' + output.split('\n').length + ' lines).');
+  console.log('Built Test Prep Hub release with ParaPro, Praxis Special Education 5355, Praxis School Counselor 5422, Praxis School Psychologist 5403, Praxis Speech-Language Pathology 5331, Praxis Audiology 5343, and Praxis Reading Specialist 5302 (' + output.split('\n').length + ' lines).');
 } finally {
   try { fs.unlinkSync(tempEntryPath); } catch (_) {}
   try { fs.unlinkSync(compiledPath); } catch (_) {}

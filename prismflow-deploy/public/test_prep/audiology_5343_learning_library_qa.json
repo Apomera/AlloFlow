@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-14T14:51:53.489Z",
+  "libraryId": "praxis-audiology-5343-learning-library",
+  "standard": {
+    "label": "AlloFlow Praxis Audiology 5343 learning-library source and editorial review v1",
+    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive lessons, one-best-answer knowledge checks, complete card and aid metadata, safety cautions, and item-compatible skills.",
+    "limitation": "This is not ETS or ASHA approval, independent licensed-audiologist validation, psychometric validation, clinical evaluation, diagnosis, vestibular or medical decision, device fitting, treatment, supervision, legal advice, or a substitute for current individualized care and requirements."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  },
+  "chapters": [
+    {
+      "id": "aud5343-ch-01",
+      "title": "Auditory Anatomy, Physiology, Acoustics, and Instrumentation",
+      "domainId": "foundations-audiology",
+      "skillId": "auditory-anatomy-acoustics",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-02",
+      "title": "Psychoacoustics, Auditory Development, and Lifespan Effects",
+      "domainId": "foundations-audiology",
+      "skillId": "psychoacoustics-development",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-03",
+      "title": "Hearing Prevention, Conservation, and Ototoxic Monitoring",
+      "domainId": "prevention-screening",
+      "skillId": "hearing-prevention-conservation",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-04",
+      "title": "Screening, EHDI, and School Identification Programs",
+      "domainId": "prevention-screening",
+      "skillId": "screening-ehdi-school",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-05",
+      "title": "Behavioral Audiometry, Speech Measures, and Functional Listening",
+      "domainId": "assessment",
+      "skillId": "behavioral-audiologic-assessment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-06",
+      "title": "Immittance, Otoacoustic Emissions, and Electrophysiology",
+      "domainId": "assessment",
+      "skillId": "immittance-oae-electrophysiology",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-07",
+      "title": "Vestibular, Tinnitus, Sound-Tolerance, and Auditory-Processing Assessment",
+      "domainId": "assessment",
+      "skillId": "vestibular-tinnitus-apd-assessment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-08",
+      "title": "Integrated Diagnostic Reasoning and Pediatric Educational Assessment",
+      "domainId": "assessment",
+      "skillId": "integrated-pediatric-diagnostic",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-09",
+      "title": "Hearing-Aid Selection, Fitting, Verification, and Validation",
+      "domainId": "intervention",
+      "skillId": "hearing-aid-selection-verification",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-10",
+      "title": "Implants, Assistive Technology, Connectivity, and Device Management",
+      "domainId": "intervention",
+      "skillId": "implants-assistive-technology",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-11",
+      "title": "Audiologic Rehabilitation, Counseling, and Educational Access",
+      "domainId": "intervention",
+      "skillId": "audiologic-rehabilitation-education",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "aud5343-ch-12",
+      "title": "Professional, Ethical, Legal, Evidence-Based, and Practice Responsibilities",
+      "domainId": "professional-ethical",
+      "skillId": "professional-ethical-evidence-practice",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 7,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ]
+}

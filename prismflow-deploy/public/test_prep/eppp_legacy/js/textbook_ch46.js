@@ -1,5 +1,5 @@
 /* ============================================================
-   PasstheEPPP — Textbook Ch 46: EPPP Anatomy & Test-Taking Strategy
+   PasstheEPPP â€” Textbook Ch 46: EPPP Anatomy & Test-Taking Strategy
    Domain: Integrative / General (0% explicit, 100% implicit)
    ============================================================ */
 
@@ -14,13 +14,13 @@ window.TextbookChapters.push({
     sections: [
         {
             heading: 'Understanding the Beast',
-            content: '<p>The EPPP (Examination for Professional Practice in Psychology) is less a test of your clinical intuition and more a test of your ability to memorize and apply specific theoretical frameworks, research findings, and ethical codes exactly as the ASPPB defines them.</p>' +
+            content: '<p>The EPPP Part 1\u2013Knowledge is a licensure examination owned by ASPPB and organized around eight job-analysis content domains. Questions can require recall, interpretation, or application, but ASPPB does not publish an official rule that every item follows a particular commercial test-prep logic.</p>' +
                 '<ul>' +
                 '<li><strong>Format:</strong> 225 multiple-choice questions (only 175 are scored; 50 are pre-test items being evaluated for future exams). You will not know which are which.</li>' +
                 '<li><strong>Time:</strong> 4 hours and 15 minutes (255 minutes). That gives you roughly 1 minute and 8 seconds per question.</li>' +
-                '<li><strong>Passing Score:</strong> Usually a scaled score of 500 across most states, which requires answering about 70% of the scored questions correctly.</li>' +
+                '<li><strong>Scores:</strong> ASPPB converts the raw number correct to a 200\u2013800 scale and recommends 500 for independent practice. The raw number required can change with form difficulty through equating; no fixed 70% rule should be used.</li>' +
                 '</ul>' +
-                '<p><strong>The "Two-Step" EPPP Logic:</strong> The exam frequently uses two-step questions. Step 1 requires you to identify the diagnosis/theory/concept being described in the vignette. Step 2 requires you to select an intervention, medication, or ethical action appropriate for that <em>unnamed</em> concept.</p>',
+                '<p><strong>Application items:</strong> Some questions may require identifying a relevant construct before choosing an implication. Treat that as one possible reasoning demand, not a guaranteed item template. Read the actual stem and answer only what it asks.</p>',
             keyTerms: ['225 questions', 'Scaled score of 500', 'Two-step questions', 'Pre-test items']
         },
         {
@@ -28,48 +28,48 @@ window.TextbookChapters.push({
             content: '<p>Mastering the content is only half the battle. Surviving the exam format requires strict adherence to these strategies:</p>' +
                 '<table>' +
                 '<tr><th>Strategy</th><th>Application</th></tr>' +
-                '<tr><td><strong>The "Textbook" World</strong></td><td>Answer questions as if you live in a perfect, well-funded, textbook universe. Do not use your messy practicum experience to inform your answers. If the APA Ethics Code recommends it, it is possible, even if your real-world clinic couldn\'t afford it.</td></tr>' +
-                '<tr><td><strong>Rule Out the Absolutes</strong></td><td>Options containing words like <em>always</em>, <em>never</em>, <em>must</em>, or <em>completely</em> are almost always incorrect in psychology. Look for qualifiers like <em>often</em>, <em>typically</em>, <em>may</em>, and <em>tends to</em>.</td></tr>' +
-                '<tr><td><strong>Cover and Predict</strong></td><td>Read the vignette and the final question, then <strong>cover the options</strong>. Predict the answer before looking. The EPPP uses highly plausible distractors designed to confuse you if you don\'t have a strong anchor.</td></tr>' +
-                '<tr><td><strong>The "First/Best/Most" Question</strong></td><td>When asked what to do <em>first</em>, look for options involving assessment, ensuring safety (if crisis), or securing informed consent/releases. Action/intervention usually comes <em>after</em> assessment.</td></tr>' +
+                '<tr><td><strong>Use the stated conditions</strong></td><td>Apply the governing evidence, ethics standard, and facts in the stem. Do not invent resources or barriers, and do not ignore real constraints the question supplies.</td></tr>' +
+                '<tr><td><strong>Evaluate qualifiers</strong></td><td>Absolute words deserve scrutiny, but an absolute can be correct when a rule is categorical. Reject an option for substance, not vocabulary alone.</td></tr>' +
+                '<tr><td><strong>State the task</strong></td><td>Identify the population, timing, and requested decision before comparing options. A provisional prediction may reduce distraction, but update it when an option better fits the evidence.</td></tr>' +
+                '<tr><td><strong>Sequence when warranted</strong></td><td>For <em>first</em> questions, prioritize immediate safety and information needed for the next decision. Assessment, consent, consultation, or action may come first depending on facts, law, scope, and urgency.</td></tr>' +
                 '</table>',
             keyTerms: ['Textbook world', 'Absolutes', 'Cover and predict', 'First/Best/Most'],
             knowledgeCheck: {
-                question: 'An EPPP question describes a client with "persistent sadness, anhedonia, weight loss, and early morning awakening for 3 weeks." The question then asks: "Which medication is MOST appropriate?" This question structure requires:',
+                question: 'Part 1 contains 225 items, including 50 unidentified, unscored pretest items. What is the best response strategy?',
                 options: [
-                    'One step: identify the medication directly from symptoms',
-                    'Two steps: first identify Major Depressive Disorder, then select an SSRI as first-line treatment',
-                    'Three steps: diagnose, identify comorbidities, then select treatment',
-                    'No steps: the answer is always consultation'
+                    'Try to identify and skip the pretest items',
+                    'Answer every item because scored and pretest items are indistinguishable',
+                    'Answer only the 175 items that seem most familiar',
+                    'Assume the final 50 items are unscored'
                 ],
                 answer: 1,
-                rationale: 'This is the classic EPPP "two-step" question. Step 1: The vignette describes MDD but NEVER names it \u2014 you must identify the diagnosis from the symptoms (persistent sadness + anhedonia + vegetative symptoms \u2265 2 weeks = MDD). Step 2: Select the appropriate first-line treatment (SSRIs for MDD). If you try to jump directly to medication without first identifying the diagnosis, the plausible distractors will trap you. For the EPPP: always identify the unnamed concept FIRST, then answer the actual question.'
+                rationale: 'Option B follows the ASPPB Candidate Handbook: 175 items are scored and 50 are pretest, but candidates are not told which are which. Each item should therefore be treated as potentially scored. Content familiarity, position, and apparent difficulty cannot identify pretest status, and AlloFlow practice percentages do not predict an official scaled score.'
             }
         },
         {
             heading: 'Navigating Ethical Dilemmas',
-            content: '<p>Ethics questions are highly procedural. Follow the ASPPB\'s implicit hierarchy of actions:</p>' +
+            content: '<p>Ethical decisions require the applicable Ethics Code provisions, law, role, facts, and jurisdiction. A memorized universal hierarchy can be unsafe because confidentiality exceptions, reporting duties, privilege, and protective actions vary in their triggers and required scope.</p>' +
                 '<ol>' +
-                '<li><strong>Is there an imminent threat to life?</strong> (e.g., Tarasoff warning, child abuse reporting). If yes, breach confidentiality immediately.</li>' +
-                '<li><strong>Is there a legal mandate?</strong> (e.g., a judge\'s court order). If yes, comply. (Note: A subpoena is NOT a court order).</li>' +
-                '<li><strong>Is there an informal ethical violation by a colleague?</strong> Attempt informal resolution first (talk to them), unless client confidentiality would be breached doing so, or if the violation has already substantially harmed someone.</li>' +
-                '<li><strong>Are you uncertain?</strong> Seek consultation with a colleague or ethics board. (Consultation is an incredibly common correct answer for "what to do next" when unsure).</li>' +
+                '<li><strong>Safety:</strong> assess urgency and take reasonable protective steps authorized or required by law, disclosing only information needed for the purpose.</li>' +
+                '<li><strong>Legal process:</strong> distinguish requests, authorizations, subpoenas, and court orders; seek appropriate consultation and protect confidentiality or privilege where applicable rather than automatically releasing everything.</li>' +
+                '<li><strong>Colleague conduct:</strong> Standard 1.04 supports informal resolution only when it appears appropriate and does not violate confidentiality; Standard 1.05 addresses further action for substantial harm or unresolved apparent violations.</li>' +
+                '<li><strong>Consultation:</strong> obtain timely ethics, clinical, supervisory, or legal consultation when it improves the decision, while protecting identifying information.</li>' +
                 '</ol>',
             keyTerms: ['Imminent threat', 'Informal resolution', 'Consultation', 'Court order vs. subpoena'],
             expandableCase: {
                 title: 'The Colleague Who Crosses Boundaries',
-                clinicalDescription: 'You learn that a colleague in your practice has begun a romantic relationship with a current client. The colleague has not harmed the client (yet) and the relationship appears consensual. What should you do FIRST?',
-                diagnosis: 'APA Ethics Code \u2014 Informal Resolution (Standard 1.04) vs. Reporting',
-                explanation: 'The EPPP\'s implicit hierarchy for ethical violations: (1) Is there imminent danger? No \u2014 the client is not in immediate physical danger. (2) Has substantial harm already occurred? Not clearly. (3) Therefore: attempt INFORMAL RESOLUTION first (Standard 1.04) \u2014 talk to the colleague directly. If informal resolution fails or is inappropriate, then report to the licensing board or ethics committee. IMPORTANT EXCEPTION: if addressing it informally would require breaching client confidentiality, skip informal and report directly. For the EPPP: informal resolution is almost always the FIRST step for colleague ethical violations unless there is imminent danger or confidentiality would be breached.'
+                clinicalDescription: 'A psychologist receives credible information that a colleague may be engaged in a sexual relationship with a current therapy client. The psychologist must evaluate reliability, confidentiality, harm, and the appropriate response.',
+                diagnosis: 'APA Ethics Code Standards 1.04, 1.05, 3.05, and 10.05 \u2014 Context-Dependent Response',
+                explanation: 'A sexual relationship with a current therapy client is prohibited by Standard 10.05. Standard 1.04 does not make an informal conversation automatic: it applies only when informal resolution appears appropriate and does not violate confidentiality. If an apparent violation has substantially harmed or is likely to substantially harm a person and informal resolution is inappropriate or unsuccessful, Standard 1.05 calls for further action appropriate to the situation, subject to confidentiality and other constraints.'
             }
         },
         {
             heading: 'Managing Exam Fatigue',
             content: '<p>Decision fatigue is real. By question 150, your prefrontal cortex will want to quit. To combat this:</p>' +
                 '<ul>' +
-                '<li><strong>Pacing:</strong> Aim to complete 53 questions every hour. Write "53", "106", "159", "212" on your scratch paper to track targets.</li>' +
-                '<li><strong>The "Brain Dump":</strong> During the tutorial period before the timer starts, use your whiteboard/scratch paper to brain-dump acronyms, formulas, or tricky developmental stages (like Piaget/Erikson) so you don\'t have to hold them in working memory.</li>' +
-                '<li><strong>Flagging:</strong> DO NOT spend 5 minutes on a question. Read it, take your best guess, <em>Flag it</em>, and move on. Return to flagged questions at the end if time permits. Often, a later question will trigger the memory needed for an earlier flagged item.</li>' +
+                '<li><strong>Pacing:</strong> Use personal checkpoints that preserve time for every item and review. With 255 minutes for 225 items, the average is about 68 seconds, but individual items vary.</li>' +
+                '<li><strong>Permitted notes:</strong> Follow the current Candidate Handbook and test-center instructions about erasable noteboards and when writing may begin. Do not rely on advice that could conflict with security rules.</li>' +
+                '<li><strong>Flagging:</strong> If the interface permits review, record a best response, flag uncertainty, and move on when more time has low expected value. Return if time remains; do not assume a later item will reveal an answer.</li>' +
                 '</ul>',
             keyTerms: ['Pacing', 'Brain dump', 'Working memory', 'Flagging'],
             knowledgeCheck: {
@@ -81,16 +81,16 @@ window.TextbookChapters.push({
                     'Choose the longest answer option'
                 ],
                 answer: 1,
-                rationale: 'The EPPP gives approximately 68 seconds per question. At 90 seconds, you are already over time. The optimal strategy: (1) ELIMINATE options with absolute terms (always, never, must). (2) Make your BEST guess from remaining options. (3) FLAG the question. (4) MOVE ON. Returning later is strategic \u2014 later questions may trigger the memory you need. Never leave questions blank (no penalty for guessing). The brain dump strategy (writing key mnemonics during the tutorial) can prevent this situation entirely.'
+                rationale: 'Option B is best, but not because absolute words are automatically wrong. Compare options on substance, record the best-supported response, flag it if permitted, and preserve time for the remaining items. Do not leave an item unanswered merely because recall is incomplete or choose an option because it is longest. Follow current ASPPB and test-center instructions.'
             }
         }
     ],
     aiCoda: {
         teaser: 'The psychology of being tested.',
-        content: '<p>The cognitive load required to sit for 255 minutes making high-stakes decisions is immense. As an AI, I do not experience fatigue. My performance on question 225 uses the same exact computational mechanics as question 1, undiminished by cortisol or cellular energy depletion.</p>' +
-            '<p>But the strategies outlined in this chapter are fundamentally about managing <strong>human cognitive constraints</strong>: offloading memory (the brain dump), bypassing decision paralysis (flagging), and avoiding heuristic traps (predicting before reading options). These strategies exist to protect human processing from its own architectural vulnerabilities.</p>' +
-            '<p>In a fascinating parallel, prompt engineering strategies used to improve AI performance (like "Chain of Thought" or "Take a deep breath and work step by step") exist for the exact same reason: to force the model to allocate more computational steps (compute) to a problem, bypassing statistical shortcuts. Both human test-takers and AI models perform better when they explicitly manage their own cognitive architecture.</p>',
-        studyNote: '💡 **Study Note:** For the EPPP, prioritize assessment, safety, and consultation in "what to do first" questions. Treat the exam as a test of the ideal, textbook world, not your specific clinical setting. Avoid absolute terms ("always/never") and utilize the brain dump strategy for high-load memorization items.'
+        content: '<p>Sustained testing can create variable attentional and emotional demands for human candidates. AI systems also show order, context-window, prompting, and stochastic variability, so perfectly constant item-by-item performance should not be assumed.</p>' +
+            '<p>Pacing, permitted external notes, and review flags can reduce working-memory demands. Their usefulness varies by person and remains subordinate to current exam-security and accessibility rules.</p>' +
+            '<p>Prompting techniques and human test strategies are not the same cognitive mechanism. Shared stepwise language does not establish that a model reasons like a person or allocates effort in the human sense.</p>',
+        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> Part 1 has 225 items, 175 scored and 50 unidentified pretest, in 255 minutes. Raw number correct is converted to a 200\u2013800 scale, and the raw count corresponding to 500 can differ by form. Use stem facts rather than folklore, answer every item, and follow current handbook rules. Ethical sequencing depends on safety, law, role, confidentiality, and the specific standard.'
     },
     references: [
         'Association of State and Provincial Psychology Boards (ASPPB). (2024). <em>Candidate Handbook for the EPPP</em>. ASPPB.',

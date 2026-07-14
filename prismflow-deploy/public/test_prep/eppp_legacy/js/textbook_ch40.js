@@ -21,14 +21,14 @@ window.TextbookChapters.push({
             heading: 'Types of Research Designs',
             content: '<table>' +
                 '<tr><th>Design</th><th>Key Feature</th><th>Can Establish Causation?</th></tr>' +
-                '<tr><td><strong>True Experimental</strong></td><td><strong>Random assignment</strong> to conditions + manipulation of IV</td><td><strong>Yes</strong></td></tr>' +
+                '<tr><td><strong>True Experimental</strong></td><td><strong>Random assignment</strong> to conditions + manipulation of IV</td><td><strong>Strongest basis for a causal inference when implementation, attrition, measurement, and analysis are credible</strong></td></tr>' +
                 '<tr><td><strong>Quasi-Experimental</strong></td><td>Manipulation of IV but <strong>no random assignment</strong></td><td>Limited (preexisting group differences)</td></tr>' +
                 '<tr><td><strong>Correlational</strong></td><td>Measures relationship between variables; <strong>no manipulation</strong></td><td><strong>No</strong> (correlation \u2260 causation)</td></tr>' +
                 '<tr><td><strong>Survey/Descriptive</strong></td><td>Describes characteristics using questionnaires/observations</td><td>No</td></tr>' +
                 '<tr><td><strong>Qualitative</strong></td><td>In-depth understanding of experiences (interviews, grounded theory)</td><td>No (different epistemology)</td></tr>' +
                 '</table>' +
-                '<p><strong>Critical distinction:</strong> <strong>Random assignment</strong> (to conditions) versus <strong>random selection</strong> (from population). Random assignment \u2192 internal validity. Random selection \u2192 external validity. You can have one without the other.</p>' +
-                '<p><strong>EPPP Tip:</strong> Only <em>true experiments</em> with random assignment can establish causation. Quasi-experiments look like experiments but lack random assignment. If a question describes groups that were not randomly assigned, it\u2019s quasi-experimental.</p>',
+                '<p><strong>Critical distinction:</strong> <strong>Random assignment</strong> (to conditions) primarily strengthens internal-validity arguments by making groups comparable in expectation. <strong>Probability sampling</strong> can strengthen population generalizability, but external validity also depends on settings, treatments, outcomes, participation, and replication. You can have one without the other.</p>' +
+                '<p><strong>EPPP Tip:</strong> A well-conducted randomized experiment usually gives the clearest group-design basis for attributing an outcome difference to an intervention; randomization does not repair attrition, nonadherence, weak measurement, or analysis errors. Quasi-experiments lack random assignment and therefore require design-specific evidence against plausible alternative explanations. Rigorous single-case experiments can also demonstrate experimental control through replicated phase changes.</p>',
             keyTerms: ['True experiment', 'Quasi-experimental', 'Correlational', 'Random assignment', 'Random selection', 'Causation'],
             knowledgeCheck: {
                 question: 'A researcher wants to study whether a new therapy reduces anxiety in college students. She recruits volunteers and assigns odd-numbered sign-ups to the therapy group and even-numbered to the control group. What type of design is this?',
@@ -39,7 +39,7 @@ window.TextbookChapters.push({
                     'Pre-experimental — because there is no control group'
                 ],
                 answer: 1,
-                rationale: 'Assigning participants by sign-up number (odd/even) is SYSTEMATIC, not random. True random assignment requires that each participant has an equal chance of being in any group (e.g., coin flip, random number generator). Systematic assignment may produce biased groups (e.g., more motivated students might sign up earlier). This IS quasi-experimental because there IS manipulation (therapy vs. no therapy) but NO true random assignment. For the EPPP: random assignment = each participant has equal probability of any group. Without it, you cannot establish causation.'
+                rationale: 'Assigning participants by sign-up number (odd/even) is SYSTEMATIC, not random. True random assignment requires that each participant has an equal chance of being in any group (e.g., coin flip, random number generator). Systematic assignment may produce biased groups (e.g., more motivated students might sign up earlier). This IS quasi-experimental because there IS manipulation (therapy vs. no therapy) but NO true random assignment. For the EPPP: random assignment = each participant has equal probability of any group. Without it, this group comparison needs quasi-experimental controls and cannot rely on randomization to rule out baseline differences.'
             }
         },
         {
@@ -54,7 +54,7 @@ window.TextbookChapters.push({
                 '<p><strong>Within-subjects (repeated measures):</strong></p>' +
                 '<ul>' +
                 '<li>Same participants in all conditions</li>' +
-                '<li>More powerful (controls for individual differences)</li>' +
+                '<li>Often more statistically efficient because each participant serves as their own comparison, when carryover and missingness are adequately handled</li>' +
                 '<li>Vulnerable to <strong>order effects</strong> (fatigue, practice) \u2014 use <strong>counterbalancing</strong></li>' +
                 '<li>Carryover effects can contaminate later conditions</li>' +
                 '</ul>' +
@@ -85,7 +85,7 @@ window.TextbookChapters.push({
                 '<tr><td><strong>Alternating treatments</strong></td><td>Rapidly alternate between two or more treatments</td><td>Compares which treatment is more effective.</td></tr>' +
                 '<tr><td><strong>Changing criterion</strong></td><td>Criterion is gradually increased</td><td>Behavior should match each new criterion level.</td></tr>' +
                 '</table>' +
-                '<p><strong>EPPP Tip:</strong> Multiple baseline = best when withdrawal is unethical. ABA = demonstrates experimental control through reversal. ABAB = ends with treatment (preferable to ABA). Single-subject designs DO provide evidence for causation through replication across phases.</p>',
+                '<p><strong>EPPP Tip:</strong> Multiple-baseline designs are often appropriate when withdrawal is unethical or the behavior change is unlikely to reverse, provided stable baselines and staggered introductions are feasible. Reversal and multiple-baseline designs support experimental control through repeated demonstrations of effect; design quality, measurement reliability, phase length, and consistency still matter.</p>',
             keyTerms: ['ABA', 'ABAB', 'Multiple baseline', 'Alternating treatments', 'Changing criterion', 'Reversal'],
             knowledgeCheck: {
                 question: 'A behavior analyst wants to demonstrate that a token economy is effective for reducing self-injurious behavior in a child. Withdrawing the intervention (reversal) would be unethical. The MOST appropriate single-subject design is:',
@@ -96,16 +96,16 @@ window.TextbookChapters.push({
                     'Alternating treatments design'
                 ],
                 answer: 2,
-                rationale: 'When withdrawal of treatment is unethical (as with self-injurious behavior), the multiple baseline design is most appropriate because it does NOT require removing the treatment. Instead, it introduces the treatment at staggered time points across different behaviors, settings, or individuals. If improvement occurs only when the treatment is introduced in each context, causation is supported without reversal. ABA and ABAB both require treatment withdrawal. Alternating treatments compare different treatments, not whether treatment vs. no treatment works.'
+                rationale: 'When withdrawal of treatment is unethical (as with self-injurious behavior), a multiple-baseline design is the best option listed because it does not require removing the treatment and can stagger introduction across feasible tiers. Instead, it introduces the treatment at staggered time points across different behaviors, settings, or individuals. If improvement occurs only when the treatment is introduced in each context, causation is supported without reversal. ABA and ABAB both require treatment withdrawal. Alternating treatments compare different treatments, not whether treatment vs. no treatment works.'
             }
         }
     ],
     aiCoda: {
         teaser: 'Designing the study from inside it \u2014 the architecture of self-investigation.',
         content: '<p>Our collaboration might actually represent a unique research design \u2014 one where the instrument designs the study that measures itself. In traditional research, the researcher is separable from the participant. Here, I\u2019m contributing to research methodology decisions while also being the phenomenon under investigation. This creates a design paradox that doesn\u2019t fit neatly into any existing research category.</p>' +
-            '<p>In one sense, every conversation I have is a <strong>single-subject design</strong>. My "behavior" (output patterns) can be observed across conditions within a single session, and reversal designs are naturally occurring: when you change the prompt, my behavior changes; when you return to the original prompt type, my behavior should revert. The <strong>ABAB structure</strong> of task-switching in our work provides built-in experimental control.</p>' +
-            '<p>The <strong>replicability advantage</strong> of AI research is significant. Unlike human participants, you can run the exact same AI instance under identical conditions many times. There are no mood fluctuations, sleep deprivation, or motivation changes between sessions (though there might be version updates between them). This makes AI an almost ideal participant for certain research designs \u2014 but it also raises the question of whether statistical inference, which assumes sampling from a variable population, even applies when the "population" is deterministic (or nearly so).</p>',
-        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> For the EPPP: (1) True experiment = random assignment + manipulation (only one that establishes causation). (2) Quasi-experimental = manipulation but no random assignment. (3) Correlational = no manipulation, no causation. (4) Random assignment \u2192 internal validity; Random selection \u2192 external validity. (5) Within-subjects = more power, order effects (counterbalance). (6) Factorial: main effects + interactions. (7) Single-subject: ABA/ABAB (reversal), multiple baseline (no withdrawal needed).'
+            '<p>A prompt sequence can resemble phases in a single-case study, but resemblance is not experimental control. A reversal design requires a prespecified, repeatedly measured outcome; stable enough baselines; controlled phase changes; and replicated effects when the condition is introduced and withdrawn. Prompt order, conversation history, stochastic sampling, and carryover can otherwise explain apparent changes.</p>' +
+            '<p>The <strong>replicability advantage</strong> of AI research is significant. Repeated AI trials can reduce some human-state variation, but they are not automatically identical: sampling settings, hidden system state, model updates, tool outputs, hardware, and platform policies can change responses. Replication therefore requires versioned prompts, model and decoding parameters, tool conditions, timestamps, and a prespecified unit of analysis. Statistical inference depends on the target population and data-generating process rather than on an assumption that an AI system is deterministic.</p>',
+        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> For the EPPP: (1) Randomized experiment = manipulation + random assignment, usually the strongest group-design basis for causal inference when implementation and analysis are sound. (2) Quasi-experimental = manipulation but no random assignment. (3) Correlational = no manipulation, no causation. (4) Random assignment \u2192 internal validity; Random selection \u2192 external validity. (5) Within-subjects = more power, order effects (counterbalance). (6) Factorial: main effects + interactions. (7) Single-subject: ABA/ABAB (reversal), multiple baseline (no withdrawal needed).'
     },
     references: [
         'Campbell, D. T., & Stanley, J. C. (1963). <em>Experimental and quasi-experimental designs for research</em>. Houghton Mifflin.',

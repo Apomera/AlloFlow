@@ -38,6 +38,8 @@ beforeAll(() => {
   const schoolCounselor5422LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/school_counselor_5422_learning_library.json'), 'utf8'));
   const schoolPsychologist5403LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/school_psychologist_5403_learning_library.json'), 'utf8'));
   const speechLanguagePathology5331LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/speech_language_pathology_5331_learning_library.json'), 'utf8'));
+  const audiology5343LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/audiology_5343_learning_library.json'), 'utf8'));
+  const readingSpecialist5302LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/reading_specialist_5302_learning_library.json'), 'utf8'));
   const reportFetch = async (url) => {
     if (String(url).includes('content_audit.json')) return { ok: true, json: async () => auditFixture };
     if (String(url).includes('content_inventory.json')) return { ok: true, json: async () => inventoryFixture };
@@ -47,6 +49,8 @@ beforeAll(() => {
     if (String(url).includes('school_counselor_5422_learning_library.json')) return { ok: true, json: async () => schoolCounselor5422LibraryFixture };
     if (String(url).includes('school_psychologist_5403_learning_library.json')) return { ok: true, json: async () => schoolPsychologist5403LibraryFixture };
     if (String(url).includes('speech_language_pathology_5331_learning_library.json')) return { ok: true, json: async () => speechLanguagePathology5331LibraryFixture };
+    if (String(url).includes('audiology_5343_learning_library.json')) return { ok: true, json: async () => audiology5343LibraryFixture };
+    if (String(url).includes('reading_specialist_5302_learning_library.json')) return { ok: true, json: async () => readingSpecialist5302LibraryFixture };
     return { ok: false, json: async () => ({}) };
   };
   global.fetch = window.fetch = reportFetch;
@@ -116,6 +120,27 @@ describe('Test Prep Hub render flow', () => {
     await expectNoAxeViolations('practice question');
   }, 30_000);
 
+  it('persists saved questions and starts a focused review set', async () => {
+    await mount();
+    await clickButton('Open practice pack');
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'workplace-safety-foundations-demo');
+
+    expect(findButton('Save for review')).toBeTruthy();
+    await clickButton('Save for review');
+    expect(findButton('Remove from review')).toBeTruthy();
+
+    const stored = JSON.parse(localStorage.getItem('alloflow_test_prep_review_items_v1'));
+    expect(stored[pack.id]).toEqual([pack.items[0].id]);
+
+    await clickButton('Practice options');
+    expect(host.textContent).toContain('1 question saved');
+    await clickButton('Review 1 saved question');
+    expect(host.textContent).toContain('Saved-question review');
+    expect(host.textContent).toContain('Question 1 of 1');
+    expect(host.textContent).toContain(pack.items[0].prompt);
+    await expectNoAxeViolations('saved-question review');
+  }, 30_000);
+
   it('completes the demo, records progress, and avoids official-score claims', async () => {
     await mount();
     await clickButton('Open practice pack');
@@ -139,27 +164,27 @@ describe('Test Prep Hub render flow', () => {
     await expectNoAxeViolations('practice result');
   }, 30_000);
 
-  it('offers ten directly selectable EPPP practice banks with global ranges', async () => {
+  it('offers fifteen directly selectable EPPP practice banks with global ranges', async () => {
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
     await act(async () => { openButtons[1].click(); });
     await waitForText('Choose a 100-question practice bank');
 
     const bankButtons = Array.from(host.querySelectorAll('button')).filter((button) => /^Start Practice Bank [0-9]+$/.test(button.textContent.trim()));
-    expect(bankButtons).toHaveLength(10);
+    expect(bankButtons).toHaveLength(15);
     expect(host.textContent).toContain('Questions 1–100');
-    expect(host.textContent).toContain('Questions 901–1000');
-    expect(host.textContent).toContain('10 banks');
-    expect(host.textContent).toContain('1,000 questions total');
+    expect(host.textContent).toContain('Questions 1401–1500');
+    expect(host.textContent).toContain('15 banks');
+    expect(host.textContent).toContain('1,500 questions total');
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'eppp-part-one');
-    await clickButton('Start Practice Bank 10');
-    expect(host.textContent).toContain('Practice Bank 10 of 10');
+    await clickButton('Start Practice Bank 15');
+    expect(host.textContent).toContain('Practice Bank 15 of 15');
     expect(host.textContent).toContain('Question 1 of 100');
-    expect(host.textContent).toContain('Question bank item 901 of 1000');
-    expect(host.textContent).toContain(pack.items[900].prompt);
+    expect(host.textContent).toContain('Question bank item 1401 of 1500');
+    expect(host.textContent).toContain(pack.items[1400].prompt);
     expect(findButton('Practice options')).toBeTruthy();
-    await expectNoAxeViolations('EPPP bank 10');
+    await expectNoAxeViolations('EPPP bank 15');
   }, 30_000);
   it('browses, filters, and opens the native EPPP learning catalog', async () => {
     await mount();
@@ -483,6 +508,113 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Question 1 of 18');
   }, 30_000);
 
+  it('uses 5343 diagnostics, timed simulation, and native audiology learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Audiology (5343)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('120 questions');
+    expect(host.textContent).toContain('120 minutes');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-audiology-5343');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('Optional timed simulation');
+    expect(host.textContent).toContain('Question 1 of 120');
+    expect(host.textContent).toContain('Time remaining 120:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis Audiology (5343) learning library');
+    expect(host.textContent).toContain('12');
+    expect(host.textContent).toContain('60');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Auditory Anatomy, Physiology, Acoustics, and Instrumentation'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Learning objectives');
+    expect(host.textContent).toContain('Chapter lessons');
+    expect(host.textContent).toContain('Knowledge checks');
+    expect(host.textContent).toContain('Outer, middle, and inner-ear systems');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('What is the primary function of the ossicular chain'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('middle-ear system transfers energy');
+    await expectNoAxeViolations('5343 native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Auditory Anatomy, Physiology, Acoustics, and Instrumentation');
+    expect(host.textContent).toContain('Question 1 of 20');
+  }, 30_000);
+
+  it('uses 5302 diagnostics, mixed-format guidance, response workshops, and native reading-specialist learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Reading Specialist (5302)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('95 questions');
+    expect(host.textContent).toContain('150 minutes');
+    expect(host.textContent).toContain('selected-response items only');
+    expect(host.textContent).toContain('does not score constructed responses');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-reading-specialist-5302');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('95-question selected-response timed segment');
+    expect(host.textContent).toContain('Question 1 of 95');
+    expect(host.textContent).toContain('Time remaining 150:00');
+    expect(findButton('Check answer')).toBeFalsy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis Reading Specialist (5302) learning library');
+    expect(host.textContent).toContain('Response workshops');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+    await clickButton('Written-response workshops');
+    expect(host.textContent).toContain('Professional Learning Plan From Schoolwide Evidence');
+    expect(host.textContent).toContain('Individual student case study');
+    expect(host.textContent).toContain('AlloFlow does not score written responses');
+    await expectNoAxeViolations('5302 written-response workshops');
+
+    await clickButton('Chapters');
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Literacy Foundations, Development, and Learner Profiles'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Interacting models of literacy development');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('How should a reading specialist use a developmental literacy continuum'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('Literacy components develop');
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Literacy Foundations, Development, and Learner Profiles');
+    expect(host.textContent).toContain('Question 1 of 16');
+  }, 30_000);
+
   it('opens the native EPPP pilot and the complete guarded legacy workspace', async () => {
 
     await mount();
@@ -495,8 +627,8 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Choose a 100-question practice bank');
     await clickButton('Start Practice Bank 1');
     expect(host.textContent).toContain('Question 1 of 100');
-    expect(host.textContent).toContain('Question bank item 1 of 1000');
-    expect(host.textContent).toContain('1,000 source-reviewed practice items');
+    expect(host.textContent).toContain('Question bank item 1 of 1500');
+    expect(host.textContent).toContain('1,500 source-reviewed practice items');
     expect(host.textContent).toContain('Legacy source lead');
     expect(host.textContent).toContain('Source reviewed');
     expect(host.textContent).toContain('Independent expert review pending');
@@ -511,7 +643,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('415');
     expect(host.textContent).toContain('255');
     expect(host.textContent).toContain('1,583');
-    expect(host.textContent).toContain('962 / 2,933 legacy items');
+    expect(host.textContent).toContain('1,443 / 2,933 legacy items');
     expect(host.textContent).toContain('All 2,933 legacy questions are in the review universe');
     expect(host.querySelector('a[href*="content_inventory.md"]')).toBeTruthy();
     expect(host.querySelector('a[href*="review_ledger.md"]')).toBeTruthy();
@@ -570,39 +702,39 @@ describe('Test Prep Hub render flow', () => {
     const card = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Batch Checkpoint Render'));
     expect(card).toBeTruthy();
     await act(async () => { card.querySelector('button').click(); });
-    await clickButton('Start Practice Bank 2');
+    await clickButton('Start Practice Bank 1');
 
-    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Practice Bank 1 of 2');
     expect(host.textContent).toContain('Question 1 of 2');
-    expect(host.textContent).toContain('Question bank item 3 of 4');
+    expect(host.textContent).toContain('Question bank item 1 of 4');
     let radios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { radios[0].click(); });
     await clickButton('Check answer');
     await clickButton('I knew it');
     await clickButton('Next question');
 
-    expect(host.textContent).toContain('Question bank item 4 of 4');
+    expect(host.textContent).toContain('Question bank item 2 of 4');
     radios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { radios[0].click(); });
     await clickButton('Check answer');
     await clickButton('I knew it');
     await clickButton('View diagnostic feedback');
 
-    expect(host.textContent).toContain('Practice Bank 2 of 2 checkpoint');
-    expect(host.textContent).toContain('Questions 3–4');
+    expect(host.textContent).toContain('Practice Bank 1 of 2 checkpoint');
+    expect(host.textContent).toContain('Questions 1–2');
     expect(host.textContent).toContain('1/2');
     expect(host.textContent).toContain('50%');
     expect(host.textContent).toContain('Domain diagnostic for this batch');
     expect(host.textContent).toContain('Confidence calibration');
-    expect(host.textContent).toContain('Review confident misses first: question 4');
+    expect(host.textContent).toContain('Review confident misses first: question 2');
     expect(host.textContent).toContain('not an official score');
     await expectNoAxeViolations('batch checkpoint');
 
     const saved = JSON.parse(localStorage.getItem('alloflow_test_prep_progress_v1'));
-    expect(saved.attempts[0]).toMatchObject({ packId: 'batch-checkpoint-render', batchNumber: 2, batchCount: 2, firstQuestion: 3, lastQuestion: 4, correct: 1, total: 2 });
-    await clickButton('Continue to batch 2');
-    expect(host.textContent).toContain('Question 3 of 4');
-    expect(host.textContent).toContain('Batch 2 of 2 · Question 1 of 2');
+    expect(saved.attempts[0]).toMatchObject({ packId: 'batch-checkpoint-render', batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 2, correct: 1, total: 2 });
+    await clickButton('View overall summary');
+    expect(host.textContent).toContain('Practice Bank 1 of 2');
+    expect(host.textContent).toContain('1/2');
   }, 30_000);
 
   it('shows a checkpoint after a single complete batch before the overall summary', async () => {

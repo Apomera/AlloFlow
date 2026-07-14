@@ -20,8 +20,8 @@ beforeAll(() => {
 
 describe('EPPP native content QA gate', () => {
   it('requires every current native item to pass every named QA check', () => {
-    expect(report.summary).toMatchObject({ totalItems: 1000, passedItems: 1000, reviewRequiredItems: 0, status: 'pass' });
-    expect(report.items).toHaveLength(1000);
+    expect(report.summary).toMatchObject({ totalItems: 1500, passedItems: 1500, reviewRequiredItems: 0, status: 'pass' });
+    expect(report.items).toHaveLength(1500);
     expect(report.items.every((item) => item.qaStatus === 'pass')).toBe(true);
     expect(report.items.every((item) => item.checks.every((check) => check.status === 'pass'))).toBe(true);
     expect(report.standard.checks).toEqual([
@@ -42,7 +42,7 @@ describe('EPPP native content QA gate', () => {
     expect(report.standard.meaning).toContain('cited answer support');
     expect(report.standard.limitation).toContain('not psychometric calibration');
     expect(report.standard.limitation).toContain('independent licensed-psychologist validation');
-    expect(eppp.contentReview).toContain('1,000 source-reviewed practice items');
+    expect(eppp.contentReview).toContain('1,500 source-reviewed practice items');
     expect(eppp.contentReview).toContain('independent expert review pending');
     expect(eppp.items.every((item) => item.qaStatus === 'qa-passed')).toBe(true);
     expect(eppp.items.every((item) => /^\d{4}-\d{2}-\d{2}$/.test(item.qaReviewedAt))).toBe(true);

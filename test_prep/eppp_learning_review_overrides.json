@@ -1005,6 +1005,160 @@
         "bias-and-context": "editorial-pass-ageism-disability-culture-grief-and-access-context",
         "expert-review": "pending-independent-aging-neuropsychology-and-bereavement-review"
       }
+    },
+    "ch-40": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://ies.ed.gov/ncee/wwc/Handbooks",
+        "https://ies.ed.gov/ncee/wwc/Document/229",
+        "https://ies.ed.gov/ncee/wwc/Document/256",
+        "https://www.itl.nist.gov/div898/handbook/pri/section3/pri333.htm"
+      ],
+      "reviewNote": "Qualified randomized-experiment causal claims, separated random assignment from probability sampling and broader generalizability, bounded within-person efficiency, added single-case design-quality conditions, removed deterministic AI-replication claims, and aligned the two scenario checks with design-specific inference limits.",
+      "checks": {
+        "source-support": "editorial-pass-official-assessment-blueprint-federal-design-standards-and-nist-methods",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-randomization-factorial-and-single-case-inference-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-and-scenario-rationales",
+        "bias-and-context": "editorial-pass-participation-setting-attrition-measurement-and-implementation-context",
+        "expert-review": "pending-independent-research-design-and-single-case-methods-review"
+      }
+    },
+    "ch-41": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://ies.ed.gov/ncee/wwc/Handbooks",
+        "https://doi.org/10.1093/ije/dyh299",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3969247/",
+        "https://pubmed.ncbi.nlm.nih.gov/40258524/"
+      ],
+      "reviewNote": "Corrected regression-to-the-mean mechanisms and certainty, replaced the automatic internal-versus-external validity tradeoff, reframed the Hawthorne label as heterogeneous research-participation reactivity, specified who masking can protect against which bias pathways, and removed identical-AI-instance assumptions.",
+      "checks": {
+        "source-support": "editorial-pass-official-design-standards-systematic-review-methods-and-observer-bias-evidence",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-regression-reactivity-masking-and-validity-scenario-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-and-scenario-rationales",
+        "bias-and-context": "editorial-pass-nonabsolute-setting-participation-measurement-and-observer-context",
+        "expert-review": "pending-independent-validity-causal-inference-and-trial-methods-review"
+      }
+    },
+    "ch-42": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+        "https://www.amstat.org/news-listing/2021/06/22/asa-task-force-on-statistical-significance-and-replicability-report",
+        "https://www.itl.nist.gov/div898/handbook/dtoc.htm",
+        "https://www.itl.nist.gov/div898/handbook/prc/section1/prc14.htm",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5154046/"
+      ],
+      "reviewNote": "Replaced dichotomous p-value and clinical-significance shortcuts with model-based interpretation, estimates, uncertainty, and decision context; bounded alpha and power claims; made effect-size benchmarks contextual; corrected r-squared and regression language; and revised the large-sample scenario so its keyed conclusion no longer declares practical triviality without an outcome scale or meaningful-change threshold.",
+      "checks": {
+        "source-support": "editorial-pass-official-assessment-blueprint-asa-nist-and-consort-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-test-choice-error-power-effect-size-and-correlation-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-symbol-expansion-key-terms-and-scenario-rationales",
+        "bias-and-context": "editorial-pass-measurement-missingness-harms-benefits-costs-and-contextual-importance",
+        "expert-review": "pending-independent-statistics-psychometrics-and-clinical-interpretation-review"
+      }
+    },
+    "ch-43": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://training.cochrane.org/handbook/current/chapter-10",
+        "https://training.cochrane.org/handbook/current/chapter-13",
+        "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html",
+        "https://www.itl.nist.gov/div898/handbook/dtoc.htm"
+      ],
+      "reviewNote": "Qualified rank-based test selection and power claims, replaced automatic factor-retention and SEM-causality shortcuts, reframed funnel plots as exploratory small-study-effect checks, removed invented missing-study and corrected-effect estimates, corrected incidence denominators, contextualized NNT, and removed unsupported AI factor and confidence claims.",
+      "checks": {
+        "source-support": "editorial-pass-official-assessment-blueprint-cochrane-cdc-and-nist-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-design-estimand-factor-retention-meta-analysis-and-epidemiology-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-option-specific-rationales",
+        "bias-and-context": "editorial-pass-nonabsolute-measurement-sampling-baseline-risk-harms-and-uncertainty-context",
+        "expert-review": "pending-independent-statistics-meta-analysis-and-epidemiology-review"
+      }
+    },
+    "ch-44": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html",
+        "https://www.apa.org/ethics/code/manual-updates.html",
+        "https://www.ecfr.gov/current/title-45/part-46/subpart-A",
+        "https://www.hhs.gov/ohrp/regulations-and-policy/index.html",
+        "https://www.cos.io/r3ct/gfs-trial"
+      ],
+      "reviewNote": "Corrected the Tuskegee-to-Belmont timeline, aligned consent waiver and deception conditions with APA Standards 8.05 through 8.08, replaced risk-only exempt and expedited shortcuts with Common Rule categories and procedures, removed a nonexistent universal APA five-year retention rule, qualified multiple-testing expectations and preregistration claims, and refocused the AI coda on human participants, data subjects, bystanders, and downstream harms.",
+      "checks": {
+        "source-support": "editorial-pass-official-assessment-blueprint-apa-hhs-ecfr-ohrp-and-open-science-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-belmont-consent-deception-irb-data-and-selective-reporting-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-option-specific-rationales",
+        "bias-and-context": "editorial-pass-race-vulnerability-coercion-confidentiality-bystander-and-downstream-impact-context",
+        "expert-review": "pending-independent-research-ethics-irb-and-open-science-review"
+      }
+    },
+    "ch-45": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://www.itl.nist.gov/div898/handbook/ppc/section3/ppc332.htm",
+        "https://www.itl.nist.gov/div898/handbook/pmd/section2/pmd215.htm",
+        "https://aapor.org/standards-and-ethics/transparency-initiative/",
+        "https://www.science.org/doi/10.1126/science.103.2684.677"
+      ],
+      "reviewNote": "Replaced probability-sampling guarantees with design-based conditions, qualified nonprobability inference, corrected cluster and systematic sampling descriptions, removed mechanical measurement-level test selection, bounded IQ and ratio interpretations, qualified cross-sequential identification and mixed-method triangulation, and reframed the AI coda around explicit populations and constructs.",
+      "checks": {
+        "source-support": "editorial-pass-official-assessment-blueprint-nist-aapor-and-primary-measurement-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-sampling-measurement-design-and-inference-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-option-specific-rationales",
+        "bias-and-context": "editorial-pass-sampling-frame-nonresponse-identity-measurement-and-target-population-context",
+        "expert-review": "pending-independent-survey-methodology-measurement-and-mixed-methods-review"
+      }
+    },
+    "ch-46": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf",
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-handbook/",
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-sample-exams/",
+        "https://www.apa.org/ethics/code/manual-updates.html",
+        "https://asppb.net/news/five-things-to-know-requesting-eppp-accommodations/"
+      ],
+      "reviewNote": "Updated the 2026 Part 1 format and score description, removed the fixed 70-percent passing myth and invented universal two-step logic, replaced option-word and textbook-world tricks with evidence-based stem reading, corrected unsafe ethical hierarchies and automatic informal resolution, bounded pacing and note advice by current test-center rules, and removed unsupported AI performance equivalences.",
+      "checks": {
+        "source-support": "editorial-pass-current-asppb-candidate-handbook-official-exam-pages-and-apa-ethics-code",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-format-scaling-navigation-ethics-pacing-and-security-checks",
+        "accessibility": "shared-renderer-pass-tables-headings-key-terms-cases-and-accommodation-aware-language",
+        "bias-and-context": "editorial-pass-jurisdiction-role-confidentiality-disability-and-nonfolklore-context",
+        "expert-review": "pending-independent-licensure-exam-ethics-and-accessibility-review"
+      }
+    },
+    "ch-48": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf",
+        "https://www.itl.nist.gov/div898/handbook/pmc/section5/pmc51.htm",
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm",
+        "https://www.jp.ets.org/content/dam/ets-org/pdfs/gre/gre-compendium.pdf",
+        "https://www.ets.org/research/policy_research_reports/publications/report/1974/hrog.html"
+      ],
+      "reviewNote": "Separated standard-score transformations from normality assumptions, qualified the T-score percentile conversion, corrected IRT b and c parameter interpretations, removed the unsupported claim that EPPP candidate responses receive item-specific IRT weights, replaced the impossible raw-score vignette with ASPPB raw-to-scaled equating, and removed neural-network and IRT equivalence claims.",
+      "checks": {
+        "source-support": "editorial-pass-current-asppb-handbook-nist-distribution-and-ets-psychometric-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-14",
+        "instructional-quality": "editorial-pass-with-standard-score-normal-model-irt-parameter-and-equating-checks",
+        "accessibility": "shared-renderer-pass-labelled-diagram-headings-key-terms-case-and-option-specific-rationale",
+        "bias-and-context": "editorial-pass-reference-population-model-fit-uncertainty-and-nonanthropomorphic-context",
+        "expert-review": "pending-independent-psychometrics-irt-and-score-equating-review"
+      }
     }
   }
 }

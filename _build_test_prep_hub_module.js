@@ -11,6 +11,8 @@ const SPECIAL_EDUCATION_5355_PACK_SOURCE = path.join(ROOT, 'test_prep', 'special
 const SCHOOL_COUNSELOR_5422_PACK_SOURCE = path.join(ROOT, 'test_prep', 'school_counselor_5422_pack.json');
 const SCHOOL_PSYCHOLOGIST_5403_PACK_SOURCE = path.join(ROOT, 'test_prep', 'school_psychologist_5403_pack.json');
 const SPEECH_LANGUAGE_PATHOLOGY_5331_PACK_SOURCE = path.join(ROOT, 'test_prep', 'speech_language_pathology_5331_pack.json');
+const AUDIOLOGY_5343_PACK_SOURCE = path.join(ROOT, 'test_prep', 'audiology_5343_pack.json');
+const READING_SPECIALIST_5302_PACK_SOURCE = path.join(ROOT, 'test_prep', 'reading_specialist_5302_pack.json');
 const OUTPUT = path.join(ROOT, 'test_prep_hub_module.js');
 const DEPLOY_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
@@ -21,8 +23,10 @@ const LEARNING_LIBRARY_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_learnin
 const REVIEW_LEDGER_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_review_ledger.cjs');
 const CURATION_500_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_500_curation_manifest.cjs');
 const CURATION_1000_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_1000_curation_manifest.cjs');
-const EXPANSION_AUDIT_SOURCE = path.join(ROOT, 'test_prep', 'eppp_native_expansion_1000_audit.json');
-const EXPANSION_AUDIT_DEPLOY = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_expansion_1000_audit.json');
+const EPPP_1500_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_1500_expansion.cjs');
+const CURATION_1500_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_1500_curation_manifest.cjs');
+const EXPANSION_AUDIT_SOURCE = path.join(ROOT, 'test_prep', 'eppp_native_expansion_1500_audit.json');
+const EXPANSION_AUDIT_DEPLOY = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_expansion_1500_audit.json');
 const PARAPRO_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_parapro_pack_release.cjs');
 const PARAPRO_BATCH2_SCRIPT = path.join(ROOT, 'dev-tools', 'build_parapro_batch_2.cjs');
 const PARAPRO_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_parapro_learning_library.cjs');
@@ -43,6 +47,14 @@ const SPEECH_LANGUAGE_PATHOLOGY_5331_BUILD_SCRIPT = path.join(ROOT, 'dev-tools',
 const SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_speech_language_pathology_5331_learning_library.cjs');
 const SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_speech_language_pathology_5331_learning_library.cjs');
 const SPEECH_LANGUAGE_PATHOLOGY_5331_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_speech_language_pathology_5331_pack.cjs');
+const AUDIOLOGY_5343_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_audiology_5343_pack.cjs');
+const AUDIOLOGY_5343_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_audiology_5343_learning_library.cjs');
+const AUDIOLOGY_5343_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_audiology_5343_learning_library.cjs');
+const AUDIOLOGY_5343_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_audiology_5343_pack.cjs');
+const READING_SPECIALIST_5302_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_reading_specialist_5302_pack.cjs');
+const READING_SPECIALIST_5302_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_reading_specialist_5302_learning_library.cjs');
+const READING_SPECIALIST_5302_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_reading_specialist_5302_learning_library.cjs');
+const READING_SPECIALIST_5302_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_reading_specialist_5302_pack.cjs');
 const skipEpppRefresh = process.argv.includes('--skip-eppp-refresh');
 
 if (!fs.existsSync(SOURCE)) {
@@ -71,7 +83,16 @@ execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_BUILD_SCRIPT}"`, { cwd: ROOT, s
 execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EPPP_1500_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 const bank = JSON.parse(fs.readFileSync(BANK_SOURCE, 'utf8'));
+execSync(`node "${AUDIOLOGY_5343_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${AUDIOLOGY_5343_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${AUDIOLOGY_5343_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${AUDIOLOGY_5343_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${READING_SPECIALIST_5302_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${READING_SPECIALIST_5302_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${READING_SPECIALIST_5302_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${READING_SPECIALIST_5302_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 if (!Array.isArray(bank) || !bank.length) throw new Error('EPPP native item bank is empty or invalid.');
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
@@ -93,12 +114,22 @@ const speechLanguagePathology5331Pack = JSON.parse(fs.readFileSync(SPEECH_LANGUA
 if (!speechLanguagePathology5331Pack || speechLanguagePathology5331Pack.id !== 'praxis-speech-language-pathology-5331' || speechLanguagePathology5331Pack.batchSize !== 100 || !Array.isArray(speechLanguagePathology5331Pack.items) || speechLanguagePathology5331Pack.items.length !== 200) {
   throw new Error('Praxis Speech-Language Pathology 5331 release pack is empty or invalid.');
 }
+const audiology5343Pack = JSON.parse(fs.readFileSync(AUDIOLOGY_5343_PACK_SOURCE, 'utf8'));
+if (!audiology5343Pack || audiology5343Pack.id !== 'praxis-audiology-5343' || audiology5343Pack.batchSize !== 100 || !Array.isArray(audiology5343Pack.items) || audiology5343Pack.items.length !== 200) {
+  throw new Error('Praxis Audiology 5343 release pack is empty or invalid.');
+}
+const readingSpecialist5302Pack = JSON.parse(fs.readFileSync(READING_SPECIALIST_5302_PACK_SOURCE, 'utf8'));
+if (!readingSpecialist5302Pack || readingSpecialist5302Pack.id !== 'praxis-reading-specialist-5302' || readingSpecialist5302Pack.batchSize !== 100 || !Array.isArray(readingSpecialist5302Pack.items) || readingSpecialist5302Pack.items.length !== 200) {
+  throw new Error('Praxis Reading Specialist 5302 release pack is empty or invalid.');
+}
 const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
   + 'const SCHOOL_COUNSELOR_5422_PRACTICE_PACK = ' + JSON.stringify(schoolCounselor5422Pack) + ';\n\n'
   + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + JSON.stringify(schoolPsychologist5403Pack) + ';\n\n'
-  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n';
+  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n'
+  + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + JSON.stringify(audiology5343Pack) + ';\n\n'
+  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n';
 fs.writeFileSync(TMP, '/* global React */\n\n' + bankPrelude + source + '\n', 'utf8');
 
 try {
@@ -159,7 +190,7 @@ if (!skipEpppRefresh) {
   execSync(`node "${INVENTORY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${REVIEW_LEDGER_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 
-  execSync(`node "${CURATION_1000_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${CURATION_1500_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   fs.copyFileSync(EXPANSION_AUDIT_SOURCE, EXPANSION_AUDIT_DEPLOY);
 }
 

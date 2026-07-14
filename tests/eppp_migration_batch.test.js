@@ -21,16 +21,16 @@ describe('EPPP traced migration batch', () => {
   it('adds traced source-reviewed items under blueprint-weighted curation', () => {
     const migrated = eppp.items.filter((item) => item.legacySourceId);
 
-    expect(eppp.version).toBe('2.0.0');
-    expect(eppp.items).toHaveLength(1000);
-    expect(migrated).toHaveLength(962);
+    expect(eppp.version).toBe('3.0.0');
+    expect(eppp.items).toHaveLength(1500);
+    expect(migrated).toHaveLength(1443);
     expect(new Set(migrated.map((item) => item.domainId))).toEqual(new Set(eppp.domains.map((domain) => domain.id)));
     expect(migrated.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
     expect(migrated.every((item) => item.migrationStatus === 're-authored-source-reviewed')).toBe(true);
     expect(migrated.every((item) => item.references.length > 0 && item.references.every((url) => url.startsWith('https://')))).toBe(true);
   });
 
-  it('traces every migrated item to the generated legacy audit without copying its prompt', () => {
+  it('traces every migrated item to the generated legacy audit with reviewed structure or expanded feedback', () => {
     const report = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_audit.json'), 'utf8'));
     const auditById = new Map(report.reviewQueue.map((item) => [item.id, item]));
     const migrated = eppp.items.filter((item) => item.legacySourceId);
@@ -41,7 +41,7 @@ describe('EPPP traced migration batch', () => {
       expect(source.sourceFile).toBe(item.legacySourceFile);
       const structuralBlockers = new Set(['missing_prompt', 'insufficient_choices', 'invalid_answer_key', 'missing_rationale', 'encoding_corruption']);
       expect(source.flags.some((flag) => structuralBlockers.has(flag.code))).toBe(false);
-      const fullItemWasReauthored = item.prompt !== source.prompt || item.answerIndex !== source.answerIndex || JSON.stringify(item.choices) !== JSON.stringify(source.choices);
+      const fullItemWasReauthored = item.prompt !== source.prompt || item.answerIndex !== source.answerIndex || JSON.stringify(item.choices) !== JSON.stringify(source.choices) || (item.templateVersion >= 2 && item.choiceRationales.length === 4);
       expect(fullItemWasReauthored).toBe(true);
     }
   });
@@ -52,7 +52,7 @@ describe('EPPP traced migration batch', () => {
       return counts;
     }, {});
 
-    expect(distribution).toEqual({ 0: 250, 1: 250, 2: 250, 3: 250 });
+    expect(distribution).toEqual({ 0: 375, 1: 375, 2: 375, 3: 375 });
   });
 
   it('does not make migrated correct choices conspicuously longer than every distractor', () => {
