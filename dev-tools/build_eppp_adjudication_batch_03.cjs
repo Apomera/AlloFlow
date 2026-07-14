@@ -1,0 +1,236 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+const docket = readJson(path.join(sourceRoot, 'next_review_docket.json'));
+const priorIds = new Set(['01', '02'].flatMap((batch) => readJson(path.join(sourceRoot, `adjudication_batch_${batch}.json`)).items.map((item) => item.legacyId)));
+
+const sources = {
+  neglect: {
+    title: 'Spatial neglect clinical and neuroscience review: a wealth of information on the poverty of attention',
+    organization: 'Peer-reviewed review archived by PubMed Central, U.S. National Library of Medicine',
+    url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2962986/',
+    credibility: 'This clinical neuroscience review describes the strong association with right-hemisphere injury while documenting left-sided cases and the distributed cortical and subcortical attention network involved.',
+  },
+  reinforcement: {
+    title: 'APA Dictionary of Psychology: negative reinforcement',
+    organization: 'American Psychological Association',
+    url: 'https://dictionary.apa.org/negative-reinforcement',
+    credibility: 'The APA is the principal U.S. professional psychology association. Its dictionary directly defines negative reinforcement by both the removal or prevention contingency and the resulting increase in responding.',
+  },
+  intersectionality: {
+    title: 'Demarginalizing the Intersection of Race and Sex: A Black Feminist Critique of Antidiscrimination Doctrine, Feminist Theory and Antiracist Politics',
+    organization: 'Kimberle Crenshaw, University of Chicago Legal Forum, 1989(1), article 8',
+    url: 'https://chicagounbound.uchicago.edu/uclf/vol1989/iss1/8/',
+    credibility: 'This is Crenshaw\'s original scholarly article developing intersectionality through legal cases in which race-only or sex-only frameworks obscured the discrimination experienced by Black women.',
+  },
+  harlow: {
+    title: 'Affectional responses in the infant monkey',
+    organization: 'Harry F. Harlow and Robert R. Zimmermann, Science, 130(3373), 421-432 (1959), indexed by PubMed',
+    url: 'https://pubmed.ncbi.nlm.nih.gov/13675765/',
+    credibility: 'This is the primary peer-reviewed report of the surrogate-mother experiments. PubMed supplies the definitive citation and DOI, allowing the historical finding to be stated without overgeneralizing from rhesus monkeys to all attachment.',
+  },
+  wais: {
+    title: 'Wechsler Adult Intelligence Scale, Fifth Edition (WAIS-5): Product details and resources',
+    organization: 'Pearson Assessments, publisher of the WAIS-5',
+    url: 'https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Cognition-%26-Neuro/Wechsler-Adult-Intelligence-Scale-%7C-Fifth-Edition/p/P100071002',
+    credibility: 'Pearson publishes and maintains the WAIS-5. Its official 2024 materials identify the five-factor structure and primary index scores, making it the controlling source for current test nomenclature.',
+  },
+  mmpi: {
+    title: 'Minnesota Multiphasic Personality Inventory-2: Scales and interpretive resources',
+    organization: 'University of Minnesota Press Test Division, owner and publisher of the MMPI instruments',
+    url: 'https://www.upress.umn.edu/test-division/mmpi-2/',
+    credibility: 'The University of Minnesota owns the MMPI instruments and publishes their manuals. Its official overview documents validity indicators and more than 120 available scales, supporting whole-profile rather than one-scale diagnostic interpretation.',
+  },
+  emdr: {
+    title: 'VA/DoD Clinical Practice Guideline for Management of Posttraumatic Stress Disorder and Acute Stress Disorder',
+    organization: 'U.S. Department of Veterans Affairs and U.S. Department of Defense, 2023',
+    url: 'https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/ptsd/index.asp',
+    credibility: 'This current federal evidence-based clinical practice guideline evaluates PTSD treatments systematically and includes EMDR among recommended trauma-focused psychotherapies while preserving clinical judgment and patient context.',
+  },
+  determination: {
+    title: 'STAT 501: Simple Linear Regression, coefficient of determination',
+    organization: 'Pennsylvania State University Department of Statistics',
+    url: 'https://online.stat.psu.edu/stat501/Lesson01',
+    credibility: 'This university statistics course gives the formal sum-of-squares definition, explains that R-squared is a proportion, and distinguishes the simple-regression relationship R-squared equals r-squared from broader models.',
+  },
+  minorAccess: {
+    title: 'The HIPAA Privacy Rule and Parental Access to Minor Children\'s Medical Records',
+    organization: 'Office for Civil Rights, U.S. Department of Health and Human Services, December 3, 2025',
+    url: 'https://www.hhs.gov/sites/default/files/ocr-letter-hipaa-privacy-rule-and-parental-access-to-minor-childrens-medical-records.pdf',
+    credibility: 'HHS Office for Civil Rights administers and enforces HIPAA. This current official letter states the general personal-representative rule, three limited exceptions, state-law dependence, and the endangerment exception.',
+  },
+  elderReporting: {
+    title: 'State Elder Abuse Statutes and APS Reporting Resources',
+    organization: 'Elder Justice Initiative, U.S. Department of Justice',
+    url: 'https://www.justice.gov/elderjustice/elder-justice-statutes-0',
+    credibility: 'The U.S. Department of Justice maintains current state-by-state elder-justice resources and explicitly notes variation in covered adults, financial-exploitation definitions, reporting duties, and penalties.',
+  },
+};
+
+const revisions = [
+  {
+    legacyId: 'legacy-27626a69e5c6618c', decision: 'minor-revision', sourceVerification: 'key-supported-with-network-qualification',
+    findings: ['Persistent, clinically significant left neglect is most strongly associated with right-hemisphere injury, often involving posterior parietal and temporoparietal regions.', 'Neglect is an attention-network syndrome rather than a lesion exclusive to one cortical point; left-hemisphere and subcortical lesions can also produce it.'],
+    sources: [sources.neglect],
+    prompt: 'After a right-hemisphere stroke, a patient repeatedly omits targets on the left side of a cancellation page despite adequate primary vision. Which lesion location is most classically associated with this pattern?',
+    choices: ['Right posterior parietal or temporoparietal attention network', 'Left primary auditory cortex and adjacent temporal pole', 'Midline cerebellar vermis and deep cerebellar nuclei', 'Lower spinal cord dorsal columns below the lesion'], answerIndex: 0,
+    rationale: 'The behavior describes left hemispatial neglect, an attentional failure most classically associated with right-hemisphere injury involving posterior parietal or temporoparietal attention networks. The localization is probabilistic rather than exclusive: frontal, temporal, and subcortical network injury can contribute, and right neglect can follow left-hemisphere injury.',
+    choiceRationales: ['Right posterior parietal and temporoparietal injury is the classic association for persistent left neglect, especially after right middle cerebral artery stroke.', 'Left auditory-cortex injury can disrupt auditory processing and language-related functions but is not the classic localization for left visuospatial neglect.', 'Cerebellar vermis injury more directly produces gait, balance, and coordination abnormalities rather than the lateralized attention failure described.', 'Dorsal-column injury causes sensory pathway deficits below the lesion; neglect is a higher-order attentional disorder that cannot be explained by spinal sensory loss alone.'],
+  },
+  {
+    legacyId: 'legacy-4a4e040caa279674', decision: 'minor-revision', sourceVerification: 'key-supported',
+    findings: ['Negative reinforcement is defined functionally: a response becomes more likely because an aversive event is removed, prevented, or postponed.', 'The legacy key was accurate but much longer than the distractors, and the phrase always harmful confused negative with undesirable.'],
+    sources: [sources.reinforcement],
+    prompt: 'A driver fastens a seat belt, the car\'s warning tone stops, and fastening the belt promptly becomes more likely on later trips. Which process best explains the increase?',
+    choices: ['Negative reinforcement', 'Positive punishment', 'Extinction', 'Response cost'], answerIndex: 0,
+    rationale: 'The response increases because it terminates an aversive warning tone, which is negative reinforcement. Negative refers to removing or preventing a stimulus, not to whether the behavior or consequence is morally bad. Reinforcement is identified by a subsequent increase in the response, whereas punishment is defined by a decrease.',
+    choiceRationales: ['Fastening increases after the response removes the aversive tone, satisfying both parts of the negative-reinforcement contingency.', 'Positive punishment adds a consequence after behavior and reduces that behavior; here a stimulus is removed and belt fastening increases.', 'Extinction weakens behavior when a previously reinforcing consequence is discontinued; the example instead establishes a consequence that strengthens responding.', 'Response cost is negative punishment in which a valued stimulus is removed to reduce a behavior, not removal of an aversive stimulus that increases behavior.'],
+  },
+  {
+    legacyId: 'legacy-206aa2fa4cdf1075', decision: 'minor-revision', sourceVerification: 'core-framework-supported',
+    findings: ['Crenshaw\'s original analysis shows how single-axis race or sex frameworks can obscure discrimination experienced at their intersection.', 'The legacy wording expanded into broad lists of identity categories and privilege without anchoring the answer in the framework\'s original analytic problem.'],
+    sources: [sources.intersectionality],
+    prompt: 'A court evaluates a Black woman\'s discrimination claim only by comparing her with Black men and White women, leaving her combined race-and-sex experience unrecognized. Which framework most directly identifies this analytic failure?',
+    choices: ['Intersectionality', 'Just-world belief', 'Realistic group conflict', 'Social loafing'], answerIndex: 0,
+    rationale: 'Intersectionality identifies how systems and categories such as race and sex can interact so that a person\'s experience is not adequately represented by analyzing either category alone. Crenshaw developed the framework through legal cases in which single-axis approaches marginalized Black women\'s discrimination claims.',
+    choiceRationales: ['The scenario mirrors the single-axis legal problem that motivated Crenshaw\'s intersectional analysis of race and sex discrimination.', 'Just-world belief concerns the tendency to view outcomes as deserved, not the loss of claims when legal analysis separates intersecting categories.', 'Realistic group conflict theory explains antagonism through competition over scarce resources and does not specifically address single-axis discrimination doctrine.', 'Social loafing is reduced individual effort when contributions are pooled in a group, which is unrelated to the legal categorization problem presented.'],
+  },
+  {
+    legacyId: 'legacy-0d64083445ae7895', decision: 'major-rewrite', sourceVerification: 'historical-finding-supported-generalization-narrowed',
+    findings: ['The infant rhesus monkeys spent substantially more time clinging to a cloth surrogate even when a wire surrogate provided milk.', 'The study challenged a simple feeding-based account of attachment but does not by itself prove a universal ranking of contact comfort over food across species or contexts.'],
+    sources: [sources.harlow],
+    prompt: 'In Harlow and Zimmermann\'s surrogate-mother studies, infant rhesus monkeys received milk from a wire surrogate but spent much more time clinging to a soft cloth surrogate. What conclusion is best supported?',
+    choices: ['Contact comfort was a powerful determinant of surrogate preference, challenging a feeding-only account of attachment.', 'Food had no biological importance because the monkeys could develop normally without nourishment.', 'The monkeys formed attachments only to biological mothers and rejected both artificial surrogates.', 'The findings established that all human attachment relationships follow the same causal mechanism.'], answerIndex: 0,
+    rationale: 'The monkeys\' strong preference for the cloth surrogate showed that contact comfort was a major determinant of proximity and attachment-like behavior, challenging drive-reduction accounts centered only on feeding. The animal experiment was historically influential, but its design does not justify saying food is unimportant or that all human attachment follows one mechanism.',
+    choiceRationales: ['This conclusion matches the observed preference while keeping the inference at the level supported by the rhesus-monkey surrogate experiment.', 'The infants still required nourishment, and the experiment did not show that food lacked biological importance or that normal development occurs without it.', 'The monkeys developed persistent attachment-like behavior toward inanimate surrogates, directly contradicting a biological-mother-only conclusion.', 'Cross-species relevance can inform theory, but one animal paradigm cannot establish a complete, universal causal account of human attachment.'],
+  },
+  {
+    legacyId: 'legacy-1ab3253a928ebf0a', decision: 'major-rewrite', sourceVerification: 'key-supported-terminology-and-edition-corrected',
+    findings: ['The current U.S. WAIS-5 was published in 2024 and reports five primary index scores: verbal comprehension, visual spatial, fluid reasoning, working memory, and processing speed.', 'The legacy phrase subtest index conflated subtests with index scores and used a Roman-numeral edition label inconsistent with Pearson\'s current WAIS-5 branding.'],
+    sources: [sources.wais],
+    prompt: 'According to the current U.S. WAIS-5 structure, which option is not one of the five primary index scores?',
+    choices: ['Visual Spatial Index', 'Working Memory Index', 'Emotional Intelligence Index', 'Processing Speed Index'], answerIndex: 2,
+    rationale: 'The WAIS-5 primary indexes are Verbal Comprehension, Visual Spatial, Fluid Reasoning, Working Memory, and Processing Speed. Emotional Intelligence Index is not a WAIS-5 primary index. Index scores are composites derived from subtests, so calling an index a subtest is also technically inaccurate.',
+    choiceRationales: ['Visual Spatial is one of the five WAIS-5 primary index domains and is separated from Fluid Reasoning in the fifth edition.', 'Working Memory is a WAIS-5 primary index, with the edition also offering more specialized ancillary working-memory scores.', 'Pearson\'s current WAIS-5 materials do not list an Emotional Intelligence Index among the primary or named cognitive index scores.', 'Processing Speed remains one of the five primary WAIS-5 indexes and is distinct from ancillary motor-reduced processing-speed options.'],
+  },
+  {
+    legacyId: 'legacy-3ecedd1aa242fc8d', decision: 'major-rewrite', sourceVerification: 'profile-term-supported-diagnostic-inference-not-supported',
+    findings: ['A spike can describe one clinical scale standing distinctly above the rest of a valid profile.', 'One elevated scale cannot establish a focal disorder, rule out comorbidity, or replace review of response validity, other scales, base rates, history, and collateral evidence.'],
+    sources: [sources.mmpi],
+    prompt: 'An MMPI-2 profile has one clinical scale clearly elevated above the others. Which interpretation is most defensible?',
+    choices: ['Describe the elevation, first evaluate profile validity, and integrate the full scale pattern with history and other assessment data.', 'Diagnose the disorder named by that scale and conclude that no comorbid condition is present.', 'Treat the profile as automatically invalid because any single-scale elevation proves inconsistent responding.', 'Infer greater global severity than a multiscale profile because one peak necessarily represents more pathology.'], answerIndex: 0,
+    rationale: 'A single high point may be described as a spike, but it is not a stand-alone diagnosis or proof of an uncomplicated presentation. Responsible interpretation begins with response and profile validity, then considers the elevation\'s meaning in relation to other MMPI-2 scales, configuration, setting, base rates, interview findings, history, and collateral information.',
+    choiceRationales: ['This preserves the descriptive value of the elevation while following the necessary sequence of validity review and multimethod contextual interpretation.', 'Clinical scale names do not map one-to-one onto diagnoses, and one peak cannot rule out comorbidity or establish a circumscribed condition by itself.', 'Invalidity is evaluated with dedicated validity indicators and response patterns; a clinical-scale spike alone does not demonstrate inconsistent responding.', 'The number and relative height of elevations do not provide a simple universal severity rule, and the claimed comparison with multiscale profiles is unsupported.'],
+  },
+  {
+    legacyId: 'legacy-b6a2157195e702ce', decision: 'major-rewrite', sourceVerification: 'ptsd-use-supported-mechanism-and-exclusivity-qualified',
+    findings: ['Current VA/DoD guidance includes EMDR among recommended trauma-focused psychotherapies for PTSD.', 'The legacy rationale presented bilateral stimulation while processing memories as a settled causal mechanism and the options implied EMDR has only one possible clinical context.'],
+    sources: [sources.emdr],
+    prompt: 'For which condition does the 2023 VA/DoD guideline include Eye Movement Desensitization and Reprocessing among recommended individual trauma-focused psychotherapies?',
+    choices: ['Posttraumatic stress disorder', 'Primary intellectual disability', 'Schizophrenia spectrum disorder', 'Uncomplicated specific learning disorder'], answerIndex: 0,
+    rationale: 'The VA/DoD guideline includes EMDR among recommended individual trauma-focused psychotherapies for PTSD. EMDR uses a structured protocol that includes attention to traumatic memories and bilateral stimulation. Its evidence-based PTSD use should not be converted into a claim that eye movements alone are the established active mechanism or that clinical judgment is unnecessary.',
+    choiceRationales: ['PTSD is the condition for which the cited federal guideline evaluates and recommends EMDR as a trauma-focused psychotherapy option.', 'Intellectual disability may require supports and treatment for co-occurring conditions, but it is not the guideline indication being tested here.', 'Schizophrenia treatment typically relies on antipsychotic medication and psychosocial interventions; EMDR is not a primary stand-alone treatment for the disorder.', 'Specific learning disorders are addressed through educational assessment and intervention rather than a trauma-processing psychotherapy as the primary treatment.'],
+  },
+  {
+    legacyId: 'legacy-e1c3f09cbc26f61f', decision: 'minor-revision', sourceVerification: 'key-supported-with-model-qualification',
+    findings: ['In simple linear regression with an intercept, R-squared equals the squared Pearson correlation and gives the proportion of outcome variation accounted for by the fitted linear model.', 'The legacy wording treated two variables symmetrically and used explained language without specifying a model or warning that R-squared does not establish causation.'],
+    sources: [sources.determination],
+    prompt: 'In a simple linear regression with an intercept, the Pearson correlation between X and Y is -.60. Which interpretation of the coefficient of determination is correct?',
+    choices: ['R-squared is .36, so the fitted linear model accounts for 36% of the observed variation in Y.', 'R-squared is -.36, so it preserves the negative direction of the relationship.', 'R-squared is .60, so 60% of observations must fall exactly on the regression line.', 'R-squared is .36, which proves that changes in X cause 36% of the changes in Y.'], answerIndex: 0,
+    rationale: 'For simple linear regression with an intercept, R-squared equals r squared. Squaring -.60 gives .36, meaning the fitted linear model accounts for 36% of the sample variation in Y relative to the mean-only baseline. R-squared loses the sign of r, does not state how many observations lie on the line, and does not establish causation.',
+    choiceRationales: ['This calculation and model-specific interpretation are correct: (-.60) squared equals .36, or 36% of observed outcome variation accounted for by the line.', 'Squaring removes the correlation\'s sign, so R-squared is nonnegative in this standard setting and cannot indicate whether the slope is positive or negative.', 'R-squared is not the unsquared magnitude of r and does not represent the percentage of individual observations positioned exactly on the fitted line.', 'Association and model fit do not establish a causal effect; confounding, reverse direction, design, and assumptions must be considered separately.'],
+  },
+  {
+    legacyId: 'legacy-845af7cfc9846c99', decision: 'major-rewrite', sourceVerification: 'general-answer-incomplete-current-rule-more-specific',
+    findings: ['Under HIPAA, a parent who is the minor\'s personal representative generally has access to the designated medical record; age and maturity alone do not create a discretionary veto.', 'Exceptions depend on applicable law, who consented or directed care, an agreed confidential relationship, endangerment, and whether the request concerns separately maintained psychotherapy notes.'],
+    sources: [sources.minorAccess],
+    prompt: 'A parent requests a minor child\'s mental-health medical record from a HIPAA-covered provider. What is the best initial legal framework?',
+    choices: ['Determine whether the parent is the child\'s personal representative under applicable law and whether a HIPAA access exception applies.', 'Deny access whenever the clinician believes the minor is mature enough to prefer confidentiality.', 'Release every document immediately because parents always have an unrestricted right to psychotherapy notes.', 'Require the minor\'s written authorization in every case before the parent can receive any record information.'], answerIndex: 0,
+    rationale: 'A parent who has authority under applicable law is generally the minor\'s HIPAA personal representative and ordinarily exercises access rights. The provider must check state, Tribal, or other law and HIPAA exceptions, including minor-consented care, court-directed care, an agreed confidential relationship, possible endangerment, and the separate exclusion for psychotherapy notes.',
+    choiceRationales: ['This starts with the controlling personal-representative and applicable-law analysis and then checks the specific scope and exceptions relevant to the request.', 'Age and maturity may matter under some laws or clinical contexts, but they do not by themselves override a parent\'s HIPAA access right when the parent is the personal representative.', 'HIPAA excludes separately maintained psychotherapy notes from the right of access, and other legal and safety exceptions can also limit a parent\'s access.', 'A parent acting as personal representative generally exercises the child\'s access right; HIPAA does not universally require separate authorization from the minor.'],
+  },
+  {
+    legacyId: 'legacy-58fd953fd6d33aee', decision: 'major-rewrite', sourceVerification: 'jurisdiction-free-key-not-defensible',
+    findings: ['States and territories differ in who is protected, what financial exploitation includes, who must report, what threshold triggers a report, and where it is sent.', 'The legacy phrase most states does not supply enough jurisdictional facts to decide that this psychologist is a mandated reporter or that client capacity and consent are irrelevant.'],
+    sources: [sources.elderReporting],
+    prompt: 'A psychologist suspects that an older client is being financially exploited. No jurisdiction is specified. Which response is most professionally defensible?',
+    choices: ['Promptly identify the controlling jurisdiction and consult its current APS reporting statute, while addressing immediate safety and documenting the analysis.', 'Assume all psychologists nationwide must report every suspicion under one uniform federal elder-abuse mandate.', 'Promise the client absolute confidentiality before checking whether a reporting law or safety exception applies.', 'Wait for proof beyond a reasonable doubt because suspected exploitation can never be reported before a criminal conviction.'], answerIndex: 0,
+    rationale: 'Adult-protective-services and elder-abuse duties are jurisdiction specific. The psychologist should promptly determine the controlling law, whether the client fits its protected-adult definition, whether the psychologist is a mandated reporter, the reporting threshold and recipient, and any immediate safety obligations. Consultation and documentation should not cause unsafe delay.',
+    choiceRationales: ['This approach recognizes legal variation while requiring prompt, concrete review of reporting duties, protected status, safety, consultation, and documentation.', 'The United States does not have one uniform rule making every psychologist a mandated reporter for every older adult in every circumstance.', 'Ethical confidentiality has legal and safety limits, so an absolute promise before reviewing controlling duties could be misleading and professionally unsound.', 'APS statutes commonly use suspicion or reasonable-cause thresholds rather than the criminal-trial burden, and protective reporting need not await conviction.'],
+  },
+];
+
+const docketById = new Map(docket.items.map((item) => [item.legacyId, item]));
+const items = revisions.map((revision, index) => {
+  const candidate = docketById.get(revision.legacyId);
+  if (!candidate) throw new Error(`Missing docket candidate ${revision.legacyId}`);
+  if (priorIds.has(revision.legacyId)) throw new Error(`Candidate already adjudicated: ${revision.legacyId}`);
+  return {
+    adjudicationPosition: index + 1,
+    legacyId: revision.legacyId,
+    domainId: candidate.domainId,
+    originalPrompt: candidate.prompt,
+    originalAnswerIndex: candidate.answerIndex,
+    decision: revision.decision,
+    sourceVerification: revision.sourceVerification,
+    findings: revision.findings,
+    workflowStage: 'editorial-adjudicated-quarantine',
+    learnerVisibleInNativeBank: false,
+    independentExpertStatus: 'not-started',
+    productionStatus: 'not-production-validated',
+    revisedItem: { prompt: revision.prompt, choices: revision.choices, answerIndex: revision.answerIndex, rationale: revision.rationale, choiceRationales: revision.choiceRationales, sourceDetails: revision.sources },
+  };
+});
+
+const expectedDomains = { biological: 1, 'cognitive-affective': 1, 'social-cultural': 1, lifespan: 1, assessment: 2, intervention: 1, research: 1, professional: 2 };
+const actualDomains = Object.fromEntries(Object.keys(expectedDomains).map((domain) => [domain, items.filter((item) => item.domainId === domain).length]));
+if (JSON.stringify(actualDomains) !== JSON.stringify(expectedDomains)) throw new Error(`Unexpected domain distribution: ${JSON.stringify(actualDomains)}`);
+for (const item of items) {
+  const q = item.revisedItem;
+  if (q.choices.length !== 4 || q.choiceRationales.length !== 4) throw new Error(`${item.legacyId} must have four choices and explanations.`);
+  if (!Number.isInteger(q.answerIndex) || q.answerIndex < 0 || q.answerIndex > 3) throw new Error(`${item.legacyId} has an invalid key.`);
+  if (q.rationale.length < 140 || q.choiceRationales.some((text) => text.length < 90)) throw new Error(`${item.legacyId} has incomplete feedback.`);
+  if (!q.sourceDetails.length || q.sourceDetails.some((source) => !source.title || !source.organization || !/^https:\/\//.test(source.url) || source.credibility.length < 120)) throw new Error(`${item.legacyId} has incomplete provenance.`);
+}
+
+const summary = {
+  adjudicatedCandidates: items.length,
+  minorRevision: items.filter((item) => item.decision === 'minor-revision').length,
+  majorRewrite: items.filter((item) => item.decision === 'major-rewrite').length,
+  promotedToNativeBank: 0,
+  independentExpertValidated: 0,
+  domainDistribution: actualDomains,
+};
+const report = {
+  schemaVersion: 1,
+  generatedAt: new Date().toISOString(),
+  legalSourceReviewDate: '2026-07-14',
+  status: 'editorial-adjudication-complete-still-quarantined',
+  purpose: 'Perform claim-level adjudication on ten legacy EPPP candidates selected for consequential clinical, psychometric, cultural, statistical, and legal nuance without treating editorial revision as expert approval.',
+  reviewMethod: [
+    'Verify each key against an authoritative, official, or primary source and record material limits on the claim.',
+    'Prefer current publisher or government guidance for named tests, treatment recommendations, privacy rules, and reporting laws.',
+    'Require four plausible and conceptually distinct options plus a substantive explanation for every option.',
+    'Replace definition-only or overconfident stems with applied scenarios that test the supported inference boundary.',
+    'Keep every item quarantined pending independent qualified review in psychology, assessment, statistics, or law as appropriate.',
+  ],
+  summary,
+  items,
+};
+
+const rows = items.map((item) => `| ${item.adjudicationPosition} | ${item.legacyId} | ${item.domainId} | ${item.decision} | ${item.sourceVerification} |`).join('\n');
+const markdown = `# EPPP editorial adjudication batch 03\n\nGenerated: ${report.generatedAt}\n\n**Status: editorial adjudication complete; all items remain quarantined.**\n\n${report.purpose}\n\n## Outcome\n\n- ${summary.adjudicatedCandidates} candidates reviewed across all eight EPPP domains.\n- ${summary.minorRevision} required minor corrections.\n- ${summary.majorRewrite} required major rewriting.\n- ${summary.promotedToNativeBank} were promoted to the learner-facing bank.\n- Independent qualified review remains pending for every item.\n- Legal and current-edition sources were checked through ${report.legalSourceReviewDate}.\n\n| # | Legacy ID | Domain | Decision | Source finding |\n| ---: | --- | --- | --- | --- |\n${rows}\n\n## Review method\n\n${report.reviewMethod.map((step) => `- ${step}`).join('\n')}\n\nThe JSON companion preserves the original prompt and key, item-specific findings, the complete revised item, explanation of every option, and full source provenance.\n`;
+
+for (const outputRoot of [sourceRoot, deployRoot]) {
+  fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_03.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_03.md'), markdown, 'utf8');
+}
+
+console.log(`EPPP adjudication batch 03: ${summary.adjudicatedCandidates} reviewed, ${summary.minorRevision} minor revisions, ${summary.majorRewrite} major rewrites, 0 released.`);
