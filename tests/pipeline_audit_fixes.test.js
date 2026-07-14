@@ -85,8 +85,9 @@ describe('H-4 behavior: a block reorder that preserves char/word totals raises r
 describe('H-9: _reauditAndScore drops a stale write (score must describe the bytes in state)', () => {
   it('the terminal setPdfFixResult bails when the audited html is no longer current', () => {
     const fn = view.slice(view.indexOf('const _reauditAndScore = async'), view.indexOf('const _spliceBlock = '));
-    expect(fn).toMatch(/if \(prev\.accessibleHtml !== newHtml\) return prev;/); // stale guard inside the functional updater
-    expect(fn).toMatch(/_applied = true;/);
+    expect(fn).toContain('const _curFix = pdfFixResultRef.current;');
+    expect(fn).toContain('const _applied = !!(_curFix && _curFix.accessibleHtml === newHtml);');
+    expect(fn).toContain('setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);'); // pure CAS stale guard
     expect(fn).toMatch(/stale: !_applied/);                                     // reported to callers
   });
 });

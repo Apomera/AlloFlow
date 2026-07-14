@@ -2151,7 +2151,7 @@ function _alloSanitizeImportedCss(css) {
   }
   // Unknown escapes or any residual fetch/execution primitive fail closed for this style block.
   if (/\\|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
-  var residualBare = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, ' ');
+  var residualBare = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, '\0');
   if (residualBare === null || residualBare !== clean) return '';
   // A bare "image(/src(" LEFT OF a string is caught above; one INSIDE a string is inert output.
   return clean;

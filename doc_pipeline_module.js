@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -2153,7 +2153,7 @@ function _alloSanitizeImportedCss(css) {
   }
   // Unknown escapes or any residual fetch/execution primitive fail closed for this style block.
   if (/\\|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
-  var residualBare = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, ' ');
+  var residualBare = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, '\0');
   if (residualBare === null || residualBare !== clean) return '';
   // A bare "image(/src(" LEFT OF a string is caught above; one INSIDE a string is inert output.
   return clean;
@@ -34324,11 +34324,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

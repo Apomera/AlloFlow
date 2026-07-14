@@ -140,7 +140,7 @@ describe('anti-drift: the view shows two layers + the governing one, never an av
     expect(viewSrc).toContain('const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);');
     expect(viewSrc).toContain('_aiVerificationIncomplete: !_wvOk,');
     expect(viewSrc).toContain('const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);');
-    expect(viewSrc).toContain("pdfUaSelfCheck: _sameBoundHtml ? ((prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',");
+    expect(viewSrc).toContain("pdfUaSelfCheck: _sameBoundHtml ? ((_curFix.verificationCoverage && _curFix.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',");
   });
   it('the sticky dashboard bar neutralizes when the AI audit was incomplete (VDH-2)', () => {
     expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete \? 'text-slate-500' : 'text-emerald-800'/);

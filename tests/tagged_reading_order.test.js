@@ -12,6 +12,7 @@ import { resolve } from 'node:path';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const dpMod = readFileSync(resolve(process.cwd(), 'doc_pipeline_module.js'), 'utf8');
+const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 const _s = dp.indexOf('function readingOrderSequenceRatio(textA, textB) {');
 const _e = dp.indexOf('\n}', _s) + 2;
 if (_s === -1 || _e < 2) throw new Error('extraction markers for readingOrderSequenceRatio missing');
@@ -134,6 +135,12 @@ describe('H-5 wiring: the order ratio is exported + surfaced with a catastrophic
     expect(treeBlock).toMatch(/rule: 'Logical reading order follows saved StructTreeRoot \/K'/);
     expect(treeBlock).toMatch(/_orderExact \? 'pass' : 'fail'/);
     expect(dp).toMatch(/tagTreeOrder: _tagTreeOrderReport/);
+  });
+  it('surfaces the saved StructTreeRoot order as authoritative and labels content-stream order as supplemental', () => {
+    expect(view).toMatch(/roundTrip && _currentTaggedValidation\.roundTrip\.tagTreeOrder/);
+    expect(view).toMatch(/typeof _tree\.exact === 'boolean'/);
+    expect(view).toContain('saved StructTreeRoot /K');
+    expect(view).toContain('Supplemental content-stream sequence');
   });
 
 });
