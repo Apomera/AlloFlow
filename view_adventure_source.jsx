@@ -735,7 +735,7 @@ function AdventureView(props) {
                                             <span className="text-amber-600 font-bold text-xs uppercase tracking-wider">⚔️ {t('adventure.your_choice') || 'Your Choice'}</span>
                                         </div>
                                         <p className="text-amber-800 text-sm font-medium italic leading-relaxed">"{adventureState.pendingChoice}"</p>
-                                        <p className="text-amber-700 text-xs mt-2 animate-pulse">{t('adventure.story_unfolds') || '✨ The story unfolds...'}</p>
+                                        <p className="text-amber-700 text-xs mt-2 animate-pulse motion-reduce:animate-none">{t('adventure.story_unfolds') || 'The story unfolds...'}</p>
                                     </div>
                                 </div>
                             )}
@@ -747,50 +747,50 @@ function AdventureView(props) {
                                 </div>
                             )}
                             {adventureState.currentScene && (
-                                <div className="flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <div role="region" aria-labelledby="adventure-current-scene-heading" className="flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700 motion-reduce:animate-none">
                                     <div className="max-w-[90%] bg-white p-6 rounded-2xl rounded-bl-none border-l-4 border-l-yellow-400 shadow-md relative">
                                         <div className="flex justify-between items-center mb-2">
-                                            <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-wider flex items-center gap-1"><Flag size={12}/> {t('adventure.current_scene')}</h4>
+                                            <h4 id="adventure-current-scene-heading" className="text-xs font-bold text-yellow-700 uppercase tracking-wider flex items-center gap-1"><Flag size={12} aria-hidden="true"/> {t('adventure.current_scene')}</h4>
                                             {adventureState.sceneImage && (
                                                 <div className="flex items-center gap-1.5 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100" title={t('common.adjust_image_size')}>
-                                                    <ImageIcon size={10} className="text-yellow-500"/>
-                                                    <input aria-label={t('common.range_slider')}
+                                                    <ImageIcon size={14} className="text-yellow-700" aria-hidden="true"/>
+                                                    <input aria-label={t('common.adjust_image_size')} aria-valuetext={adventureImageSize + ' px'}
                                                         type="range"
                                                         min="150"
                                                         max="600"
                                                         step="50"
                                                         value={adventureImageSize}
                                                         onChange={(e) => setAdventureImageSize(Number(e.target.value))}
-                                                        className="w-16 h-1 bg-yellow-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                                                        className="w-24 h-11 bg-yellow-200 rounded-lg cursor-pointer accent-yellow-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-700 focus-visible:ring-offset-2"
                                                     />
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="mb-4 rounded-lg overflow-hidden bg-slate-100 border border-slate-400 shadow-inner relative group transition-all duration-300" style={{ minHeight: '200px' }}>
+                                        <div className="mb-4 rounded-lg overflow-hidden bg-slate-100 border border-slate-400 shadow-inner relative group transition-all duration-300 motion-reduce:transition-none" style={{ minHeight: '200px' }}>
                                             {adventureState.sceneImage ? (
                                                 <>
                                                     <img loading="lazy"
                                                         src={adventureState.sceneImage}
-                                                        alt={t('adventure.alt_scene')}
+                                                        alt=""
                                                         style={{ height: `${adventureImageSize}px` }}
-                                                        className="w-full object-cover animate-in fade-in duration-500"
+                                                        className="w-full object-cover animate-in fade-in duration-500 motion-reduce:animate-none"
                                                         decoding="async"
                                                     />
-                                                    <div className="absolute top-2 right-2 bg-black/60 text-white text-[11px] px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity backdrop-blur-sm">
+                                                    <div aria-hidden="true" className="absolute top-2 right-2 bg-black/60 text-white text-[11px] px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none backdrop-blur-sm">
                                                         <Sparkles size={10} className="inline mr-1"/> {t('adventure.nano_badge')}
                                                     </div>
                                                 </>
                                             ) : (
-                                                <div className="absolute inset-0 flex items-center justify-center text-slate-600 flex-col gap-2">
+                                                <div role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0 flex items-center justify-center text-slate-700 flex-col gap-2">
                                                     {adventureState.isImageLoading ? (
                                                         <>
-                                                            <ImageIcon size={24} className="animate-pulse"/>
-                                                            <span className="text-xs font-medium animate-pulse">{t('adventure.generating_scene')}</span>
+                                                            <ImageIcon size={24} className="animate-pulse motion-reduce:animate-none" aria-hidden="true"/>
+                                                            <span className="text-xs font-medium animate-pulse motion-reduce:animate-none">{t('adventure.generating_scene')}</span>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <ImageIcon size={24} className="opacity-20"/>
-                                                            <p className="text-sm font-bold opacity-50">{t('adventure.no_image')}</p>
+                                                            <ImageIcon size={24} className="opacity-40" aria-hidden="true"/>
+                                                            <p className="text-sm font-bold">{t('adventure.no_image')}</p>
                                                         </>
                                                     )}
                                                 </div>
@@ -814,19 +814,29 @@ function AdventureView(props) {
                                                                     const isHeader = s.trim().startsWith('#') || isHtmlHeader;
                                                                     const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
                                                                     return (
-                                                                        <span
-                                                                            key={sIdx}
-                                                                            id={isActive ? `sentence-${currentGlobalIdx}` : undefined}
-                                                                            className={`transition-colors duration-300 rounded px-1 py-0.5 ${isActive ? 'bg-yellow-200 text-black shadow-sm' : 'cursor-pointer hover:bg-yellow-100'} ${isHeader ? 'font-bold block text-lg mt-2' : ''}`}
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
-                                                                            }}
-                                                                            title={t('adventure.read_aloud_title')}
+                                                                        <React.Fragment key={sIdx}>
+                                                                            <button type="button"
+                                                                                aria-label={(t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim()}
+                                                                                aria-controls={`sentence-${currentGlobalIdx}`}
+                                                                                aria-pressed={isActive}
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
+                                                                                }}
+                                                                                className="min-w-8 min-h-8 mr-1 inline-flex items-center justify-center align-middle rounded-full bg-indigo-700 text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
+                                                                                title={t('adventure.read_aloud_title') || t('common.click_read_aloud')}
+                                                                            >
+                                                                                <Volume2 size={14} aria-hidden="true" />
+                                                                            </button>
+                                                                            <span
+                                                                            id={`sentence-${currentGlobalIdx}`}
+                                                                            className={`transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 ${isActive ? 'bg-yellow-200 text-black shadow-sm' : 'hover:bg-yellow-50'} ${isHeader ? 'font-bold block text-lg mt-2' : ''}`}
+
                                                                         >
                                                                             {formatInteractiveText(cleanText)}
                                                                             {" "}
                                                                         </span>
+                                                                        </React.Fragment>
                                                                     );
                                                                 })}
                                                             </p>
@@ -846,19 +856,19 @@ function AdventureView(props) {
                                     </div>
                                     <div className="text-sm text-slate-600 font-bold">{t('adventure.final_level')}: {adventureState.level}</div>
                                     {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
-                                        <button
+                                        <button type="button"
                                             onClick={handleSetShowStorybookExportModalToTrue}
                                             disabled={isProcessing} aria-busy={isProcessing}
-                                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all animate-in slide-in-from-bottom-4"
+                                            className="min-h-11 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all animate-in slide-in-from-bottom-4 motion-reduce:animate-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                             title={t('adventure.storybook')}
                                             aria-label={t('adventure.storybook')}
                                         >
-                                            {isProcessing ? <RefreshCw size={20} className="animate-spin"/> : <BookOpen size={20}/>}
+                                            {isProcessing ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <BookOpen size={20} aria-hidden="true"/>}
                                             {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
                                         </button>
                                     ) : (
-                                        <div className="flex items-center gap-2 bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-bold border-2 border-slate-200 shadow-inner animate-in slide-in-from-bottom-4 cursor-not-allowed opacity-80">
-                                            <Lock size={18} />
+                                        <div className="min-h-11 flex items-center gap-2 bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold border-2 border-slate-300 shadow-inner animate-in slide-in-from-bottom-4 motion-reduce:animate-none">
+                                            <Lock size={18} aria-hidden="true" />
                                             <span>{t('adventure.storybook_locked', { needed: studentProjectSettings.adventureMinXP - adventureState.xp })}</span>
                                         </div>
                                     )}
@@ -870,26 +880,26 @@ function AdventureView(props) {
                                 {adventureState.sceneImage ? (
                                     <img loading="lazy"
                                         src={adventureState.sceneImage}
-                                        className={`absolute inset-0 w-full h-full ${immersiveHideUI ? 'object-contain' : 'object-cover'} transition-opacity duration-700 animate-ken-burns`}
-                                        alt={adventureState.currentScene?.text || "Adventure Scene"}
+                                        className={`absolute inset-0 w-full h-full ${immersiveHideUI ? 'object-contain' : 'object-cover'} transition-opacity duration-700 animate-ken-burns motion-reduce:animate-none motion-reduce:transition-none`}
+                                        alt=""
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 bg-slate-900 flex items-center justify-center flex-col gap-4 text-slate-300">
+                                    <div role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0 bg-slate-900 flex items-center justify-center flex-col gap-4 text-slate-200">
                                         {adventureState.isImageLoading ? (
                                             <>
-                                                <RefreshCw size={48} className="animate-spin text-indigo-500"/>
-                                                <p className="text-sm font-bold animate-pulse">{t('adventure.generating_scene')}</p>
+                                                <RefreshCw size={48} className="animate-spin motion-reduce:animate-none text-indigo-300" aria-hidden="true"/>
+                                                <p className="text-sm font-bold animate-pulse motion-reduce:animate-none">{t('adventure.generating_scene')}</p>
                                             </>
                                         ) : (
                                             <>
-                                                <ImageIcon size={48} className="opacity-20"/>
-                                                <p className="text-sm font-bold opacity-50">{t('adventure.no_image')}</p>
+                                                <ImageIcon size={48} className="opacity-40" aria-hidden="true"/>
+                                                <p className="text-sm font-bold">{t('adventure.no_image')}</p>
                                             </>
                                         )}
                                     </div>
                                 )}
                                 {theme !== 'contrast' && (
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 pointer-events-none"></div>
+                                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 pointer-events-none"></div>
                                 )}
                                 <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20">
                                     <div className="flex flex-col gap-2">
@@ -897,8 +907,8 @@ function AdventureView(props) {
                                             {t('common.level_abbrev')} {adventureState.level}
                                         </div>
                                         {adventureInputMode === 'system' && (
-                                            <div className="bg-gradient-to-r from-amber-600/80 to-amber-800/80 backdrop-blur-md text-amber-100 border border-amber-400/50 px-3 py-1 rounded-full text-[11px] font-bold w-fit shadow-lg flex items-center gap-1.5 animate-pulse">
-                                                <span>🏛️</span> {t('adventure.system_simulation')}
+                                            <div className="bg-gradient-to-r from-amber-600/80 to-amber-800/80 backdrop-blur-md text-amber-100 border border-amber-400/50 px-3 py-1 rounded-full text-[11px] font-bold w-fit shadow-lg flex items-center gap-1.5 animate-pulse motion-reduce:animate-none">
+                                                {t('adventure.system_simulation')}
                                             </div>
                                         )}
                                         <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm" title={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })}>
@@ -1182,7 +1192,7 @@ function AdventureView(props) {
                                                             <p className="text-amber-100 text-sm font-medium italic leading-relaxed">"{adventureState.pendingChoice}"</p>
                                                             <div className="flex items-center gap-2 mt-3">
                                                                 <div aria-hidden="true" className="w-2 h-2 bg-amber-400 rounded-full animate-pulse motion-reduce:animate-none"></div>
-                                                                <p className="text-amber-400/80 text-xs animate-pulse">{t('adventure.story_unfolds') || '✨ The story unfolds...'}</p>
+                                                                <p className="text-amber-300 text-xs animate-pulse motion-reduce:animate-none">{t('adventure.story_unfolds') || 'The story unfolds...'}</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1191,14 +1201,14 @@ function AdventureView(props) {
                                                     const lastFeedback = adventureState.history.slice().reverse().find(h => h && h.type === 'feedback');
                                                     if (lastFeedback) {
                                                         return (
-                                                            <div className="text-yellow-700 text-sm mb-3 italic font-medium border-b border-white/10 pb-2">
+                                                            <div role="status" aria-live="polite" aria-atomic="true" className="text-yellow-300 text-sm mb-3 italic font-medium border-b border-white/20 pb-2">
                                                                 {renderFormattedText(lastFeedback.text, false, true)}
                                                             </div>
                                                         );
                                                     }
                                                     return null;
                                                 })()}
-                                                <div className="text-lg md:text-xl text-slate-100 font-medium leading-relaxed font-serif text-shadow-sm min-h-[80px]">
+                                                <div role="region" aria-label={t('adventure.current_scene')} className="text-lg md:text-xl text-slate-100 font-medium leading-relaxed font-serif text-shadow-sm min-h-[80px]">
                                                     {adventureState.currentScene && (
                                                             <div className="space-y-4">
                                                                 {(() => {
@@ -1217,23 +1227,33 @@ function AdventureView(props) {
                                                                                     const isHeader = s.trim().startsWith('#') || isHtmlHeader;
                                                                                     const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
                                                                                     return (
-                                                                                        <span
-                                                                                            key={sIdx}
-                                                                                            id={isActive ? `sentence-${currentGlobalIdx}` : undefined}
-                                                                                            className={`transition-colors duration-300 rounded px-1 py-0.5 ${
+                                                                                        <React.Fragment key={sIdx}>
+                                                                                            <button type="button"
+                                                                                                aria-label={(t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim()}
+                                                                                                aria-controls={`sentence-${currentGlobalIdx}`}
+                                                                                                aria-pressed={isActive}
+                                                                                                onClick={(e) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
+                                                                                                }}
+                                                                                                className="min-w-8 min-h-8 mr-1 inline-flex items-center justify-center align-middle rounded-full bg-indigo-700 text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
+                                                                                                title={t('adventure.read_aloud_title') || t('common.click_read_aloud')}
+                                                                                            >
+                                                                                                <Volume2 size={14} aria-hidden="true" />
+                                                                                            </button>
+                                                                                            <span
+                                                                                            id={`sentence-${currentGlobalIdx}`}
+                                                                                            className={`transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 ${
                                                                                                 isActive
                                                                                                     ? 'bg-cyan-700 text-white shadow-sm ring-2 ring-cyan-400/50'
-                                                                                                    : 'cursor-pointer hover:bg-white/10'
+                                                                                                    : 'hover:bg-white/10'
                                                                                             } ${isHeader ? 'font-bold block text-2xl mt-2 text-yellow-400' : ''}`}
-                                                                                            onClick={(e) => {
-                                                                                                e.stopPropagation();
-                                                                                                handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
-                                                                                            }}
-                                                                                            title={t('common.click_read_aloud')}
+
                                                                                         >
                                                                                             {formatInteractiveText(cleanText.replace(/\*\*([^*]+)\*\*/g, '$1'), false, true)}
                                                                                             {" "}
                                                                                         </span>
+                                                                                        </React.Fragment>
                                                                                     );
                                                                                 })}
                                                                             </p>
@@ -1403,16 +1423,16 @@ function AdventureView(props) {
                                         </div>
                                     )}
                                     {adventureState.canStartSequel && (
-                                        <div className="w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 flex flex-col items-center">
+                                        <div className="w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none flex flex-col items-center">
                                             <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">
                                                 {t('adventure.sequel_prompt')}
                                             </p>
-                                            <button
-                                                aria-label={t('common.start_sequel')}
+                                            <button type="button"
+                                                aria-label={t('adventure.start_sequel')}
                                                 onClick={handleStartSequel}
-                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all flex items-center gap-3 border-2 border-white/20"
+                                                className="min-h-11 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all motion-reduce:transform-none flex items-center gap-3 border-2 border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                             >
-                                                <Sparkles size={20} className="text-yellow-700 fill-current" />
+                                                <Sparkles size={20} aria-hidden="true" />
                                                 {t('adventure.start_sequel')}
                                             </button>
                                         </div>
