@@ -83,6 +83,7 @@ describe('_alloTableCellDrift — live module behavioral', () => {
 describe('acceptance-gate wiring (anti-drift)', () => {
   it('acceptFixedHtmlDetailed blocks on table-cell-transposition BEFORE the warn-only checks', () => {
     expect(pipeSrc).toContain("return { accepted: false, reason: 'table-cell-transposition', cellDrift: _cellDrift };");
+    expect(pipeSrc).toContain("if (/<table\\b/i.test(original) && /<table\\b/i.test(fixed))");
     const gateAt = pipeSrc.indexOf("reason: 'table-cell-transposition'");
     const roWarnAt = pipeSrc.indexOf('Reading-order WARN (H-4', gateAt - 4000);
     expect(gateAt).toBeGreaterThan(0);

@@ -4201,6 +4201,63 @@ const d = labToolData.waterCycle || {};
             );
             world3d.add(foam3d);
 
+            var coastalWaveGroup3d = new THREE.Group();
+            var coastalWaveCrests3d = [];
+            var coastalWaveCount3d = 7;
+            for (var coastalWaveIndex3d = 0; coastalWaveIndex3d < coastalWaveCount3d; coastalWaveIndex3d++) {
+              var coastalWavePoints3d = [];
+              for (var coastalWavePointIndex3d = 0; coastalWavePointIndex3d < 9; coastalWavePointIndex3d++) {
+                coastalWavePoints3d.push(new THREE.Vector3(
+                  Math.sin(coastalWavePointIndex3d * 1.05 + coastalWaveIndex3d * 0.72) * 0.075,
+                  Math.cos(coastalWavePointIndex3d * 1.45 + coastalWaveIndex3d * 0.5) * 0.008,
+                  -4.05 + coastalWavePointIndex3d * 0.86
+                ));
+              }
+              var coastalWaveCurve3d = new THREE.CatmullRomCurve3(coastalWavePoints3d, false, 'catmullrom', 0.35);
+              var coastalWaveMat3d = new THREE.MeshBasicMaterial({
+                color: coastalWaveIndex3d % 2 ? 0xbae6fd : 0xe0f7ff,
+                transparent: true, opacity: 0, depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              var coastalWaveCrest3d = new THREE.Mesh(
+                new THREE.TubeGeometry(coastalWaveCurve3d, 54, 0.021 + (coastalWaveIndex3d % 3) * 0.004, 5, false),
+                coastalWaveMat3d
+              );
+              coastalWaveCrest3d.position.set(-6, -1.12, 0);
+              coastalWaveCrest3d.userData.phase = coastalWaveIndex3d / coastalWaveCount3d;
+              coastalWaveCrest3d.renderOrder = 4;
+              coastalWaveCrests3d.push(coastalWaveCrest3d);
+              coastalWaveGroup3d.add(coastalWaveCrest3d);
+            }
+            coastalWaveGroup3d.visible = false;
+            world3d.add(coastalWaveGroup3d);
+
+            var shoreWashMat3d = new THREE.MeshBasicMaterial({
+              color: 0x2d8f9d, transparent: true, opacity: 0,
+              side: THREE.DoubleSide, depthWrite: false
+            });
+            var shoreWash3d = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 7.15), shoreWashMat3d);
+            shoreWash3d.rotation.x = -Math.PI / 2;
+            shoreWash3d.position.set(0.02, -1.092, -0.6);
+            shoreWash3d.scale.set(0.45, 1, 1);
+            shoreWash3d.visible = false;
+            world3d.add(shoreWash3d);
+
+            var breakingSprayCount3d = 32;
+            var breakingSpraySeeds3d = new Float32Array(breakingSprayCount3d * 2);
+            var breakingSprayGeometry3d = new THREE.BufferGeometry();
+            breakingSprayGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(breakingSprayCount3d * 3), 3));
+            for (var breakingSpraySeedIndex3d = 0; breakingSpraySeedIndex3d < breakingSprayCount3d; breakingSpraySeedIndex3d++) {
+              breakingSpraySeeds3d[breakingSpraySeedIndex3d * 2] = -4.02 + ((breakingSpraySeedIndex3d * 17) % 31) / 31 * 6.95;
+              breakingSpraySeeds3d[breakingSpraySeedIndex3d * 2 + 1] = (breakingSpraySeedIndex3d * 0.61803398875) % 1;
+            }
+            var breakingSpray3d = new THREE.Points(breakingSprayGeometry3d, new THREE.PointsMaterial({
+              color: 0xe0f7ff, size: 0.062, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            breakingSpray3d.visible = false;
+            world3d.add(breakingSpray3d);
+
             var landMat3d = new THREE.MeshStandardMaterial({ color: 0x6b482d, roughness: 0.95, transparent: true, opacity: 1 });
             var land3d = new THREE.Mesh(
               new THREE.BoxGeometry(9, 1.5, 7),
@@ -4508,7 +4565,9 @@ const d = labToolData.waterCycle || {};
             world3d.add(runoffConfluenceGroup3d);
 
             var mountainMat = new THREE.MeshStandardMaterial({ color: 0x52636b, roughness: 0.9 });
-            var snowMat3d = new THREE.MeshStandardMaterial({ color: 0xeaf7ff, roughness: 0.7 });
+            var snowMat3d = new THREE.MeshStandardMaterial({
+              color: 0xeaf7ff, roughness: 0.7, transparent: true, opacity: 1
+            });
             for (var mi3 = 0; mi3 < 4; mi3++) {
               var mountainHeight3d = 3.3 + mi3 * 0.5;
               var mountain = new THREE.Mesh(new THREE.ConeGeometry(1.6 + mi3 * 0.22, mountainHeight3d, 7), mountainMat);
@@ -4523,6 +4582,35 @@ const d = labToolData.waterCycle || {};
               snowCap3d.castShadow = true;
               world3d.add(snowCap3d);
             }
+
+            var snowmeltRouteGroup3d = new THREE.Group();
+            var snowmeltCurves3d = [];
+            var snowmeltRouteMat3d = new THREE.MeshBasicMaterial({
+              color: 0x7dd3fc, transparent: true, opacity: 0, depthWrite: false,
+              blending: THREE.AdditiveBlending
+            });
+            [
+              [[3.5, 1.45, -3.1], [4.1, 0.45, -2.55], [5.0, -0.45, -1.95], [5.7, -0.86, -1.4]],
+              [[5.2, 1.68, -3.7], [5.35, 0.55, -3.0], [5.5, -0.35, -2.1], [5.7, -0.86, -1.4]],
+              [[6.9, 1.88, -3.1], [7.25, 0.75, -2.9], [7.55, -0.2, -2.7], [7.8, -0.88, -2.5]],
+              [[8.6, 2.08, -3.7], [8.45, 0.8, -3.35], [8.1, -0.2, -2.85], [7.8, -0.88, -2.5]]
+            ].forEach(function(snowmeltRoutePoints3d) {
+              var snowmeltCurve3d = makeJourneyCurve3d(snowmeltRoutePoints3d);
+              snowmeltCurves3d.push(snowmeltCurve3d);
+              snowmeltRouteGroup3d.add(new THREE.Mesh(
+                new THREE.TubeGeometry(snowmeltCurve3d, 36, 0.022, 6, false), snowmeltRouteMat3d
+              ));
+            });
+            var snowmeltMarkerCount3d = 24;
+            var snowmeltMarkerGeometry3d = new THREE.BufferGeometry();
+            snowmeltMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(snowmeltMarkerCount3d * 3), 3));
+            var snowmeltMarkers3d = new THREE.Points(snowmeltMarkerGeometry3d, new THREE.PointsMaterial({
+              color: 0xbae6fd, size: 0.07, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            snowmeltRouteGroup3d.add(snowmeltMarkers3d);
+            snowmeltRouteGroup3d.visible = false;
+            world3d.add(snowmeltRouteGroup3d);
 
             var cloudGroup3d = new THREE.Group();
             var cloudMat3d = new THREE.MeshPhysicalMaterial({
@@ -4541,6 +4629,69 @@ const d = labToolData.waterCycle || {};
             }
             cloudGroup3d.position.set(0.5, 3.15, -1.7);
             world3d.add(cloudGroup3d);
+
+            var cloudMicrophysicsGroup3d = new THREE.Group();
+            var cloudMicrophysicsCount3d = 54;
+            var cloudMicrophysicsBase3d = new Float32Array(cloudMicrophysicsCount3d * 3);
+            for (var cloudMicrophysicsSeed3d = 0; cloudMicrophysicsSeed3d < cloudMicrophysicsCount3d; cloudMicrophysicsSeed3d++) {
+              cloudMicrophysicsBase3d[cloudMicrophysicsSeed3d * 3] = ((cloudMicrophysicsSeed3d * 17) % 53) / 52 * 3.8 - 1.9;
+              cloudMicrophysicsBase3d[cloudMicrophysicsSeed3d * 3 + 1] = ((cloudMicrophysicsSeed3d * 23) % 47) / 46 * 1.15 - 0.25;
+              cloudMicrophysicsBase3d[cloudMicrophysicsSeed3d * 3 + 2] = ((cloudMicrophysicsSeed3d * 29) % 43) / 42 * 1.3 - 0.65;
+            }
+            var cloudDropletGeometry3d = new THREE.BufferGeometry();
+            cloudDropletGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(cloudMicrophysicsBase3d), 3));
+            var cloudDroplets3d = new THREE.Points(cloudDropletGeometry3d, new THREE.PointsMaterial({
+              color: 0x7dd3fc, size: 0.045, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            cloudDroplets3d.renderOrder = 12;
+            cloudMicrophysicsGroup3d.add(cloudDroplets3d);
+
+            var cloudNucleusCount3d = 12;
+            var cloudNucleusGeometry3d = new THREE.BufferGeometry();
+            var cloudNucleusPositions3d = new Float32Array(cloudNucleusCount3d * 3);
+            for (var cloudNucleusSeed3d = 0; cloudNucleusSeed3d < cloudNucleusCount3d; cloudNucleusSeed3d++) {
+              var cloudNucleusSource3d = (cloudNucleusSeed3d * 5) % cloudMicrophysicsCount3d;
+              cloudNucleusPositions3d[cloudNucleusSeed3d * 3] = cloudMicrophysicsBase3d[cloudNucleusSource3d * 3];
+              cloudNucleusPositions3d[cloudNucleusSeed3d * 3 + 1] = cloudMicrophysicsBase3d[cloudNucleusSource3d * 3 + 1];
+              cloudNucleusPositions3d[cloudNucleusSeed3d * 3 + 2] = cloudMicrophysicsBase3d[cloudNucleusSource3d * 3 + 2];
+            }
+            cloudNucleusGeometry3d.setAttribute('position', new THREE.BufferAttribute(cloudNucleusPositions3d, 3));
+            var cloudNuclei3d = new THREE.Points(cloudNucleusGeometry3d, new THREE.PointsMaterial({
+              color: 0xfbbf24, size: 0.052, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            cloudNuclei3d.renderOrder = 13;
+            cloudMicrophysicsGroup3d.add(cloudNuclei3d);
+
+            var cloudCoalescenceCount3d = 18;
+            var cloudCoalescenceGeometry3d = new THREE.BufferGeometry();
+            cloudCoalescenceGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(cloudCoalescenceCount3d * 6), 3));
+            var cloudCoalescence3d = new THREE.LineSegments(cloudCoalescenceGeometry3d, new THREE.LineBasicMaterial({
+              color: 0x67e8f9, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            cloudCoalescence3d.renderOrder = 11;
+            cloudMicrophysicsGroup3d.add(cloudCoalescence3d);
+
+            var cloudIceCrystalGroup3d = new THREE.Group();
+            var cloudIceCrystalMat3d = new THREE.LineBasicMaterial({
+              color: 0xe0f2fe, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            for (var cloudIceCrystalIndex3d = 0; cloudIceCrystalIndex3d < 8; cloudIceCrystalIndex3d++) {
+              var cloudIceCrystalGeometry3d = new THREE.BufferGeometry();
+              cloudIceCrystalGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                -0.1,0,0, 0.1,0,0, 0,-0.1,0, 0,0.1,0, 0,0,-0.1, 0,0,0.1
+              ]), 3));
+              var cloudIceCrystal3d = new THREE.LineSegments(cloudIceCrystalGeometry3d, cloudIceCrystalMat3d);
+              cloudIceCrystal3d.userData.particleIndex = (cloudIceCrystalIndex3d * 7) % cloudMicrophysicsCount3d;
+              cloudIceCrystalGroup3d.add(cloudIceCrystal3d);
+            }
+            cloudIceCrystalGroup3d.visible = false;
+            cloudMicrophysicsGroup3d.add(cloudIceCrystalGroup3d);
+            cloudMicrophysicsGroup3d.visible = false;
+            cloudGroup3d.add(cloudMicrophysicsGroup3d);
             var distantClouds3d = new THREE.Group();
             var distantCloudMat3d = new THREE.MeshLambertMaterial({ color: 0xb8d6e5, transparent: true, opacity: 0.28, depthWrite: false });
             for (var distantCloudIndex3d = 0; distantCloudIndex3d < 12; distantCloudIndex3d++) {
@@ -4755,6 +4906,51 @@ const d = labToolData.waterCycle || {};
             vapor3d.position.set(-2.1, 0.8, 1.0);
             world3d.add(vapor3d);
             var vaporBasePositions3d = new Float32Array(vapor3d.geometry.attributes.position.array);
+
+            var evaporationInterfaceGroup3d = new THREE.Group();
+            var evaporationMoleculeCount3d = 48;
+            var evaporationMoleculeSeeds3d = new Float32Array(evaporationMoleculeCount3d * 4);
+            var evaporationMoleculeGeometry3d = new THREE.BufferGeometry();
+            evaporationMoleculeGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(evaporationMoleculeCount3d * 3), 3));
+            for (var evaporationMoleculeSeedIndex3d = 0; evaporationMoleculeSeedIndex3d < evaporationMoleculeCount3d; evaporationMoleculeSeedIndex3d++) {
+              evaporationMoleculeSeeds3d[evaporationMoleculeSeedIndex3d * 4] = -3 + (((evaporationMoleculeSeedIndex3d * 19) % 47) / 46 - 0.5) * 2.2;
+              evaporationMoleculeSeeds3d[evaporationMoleculeSeedIndex3d * 4 + 1] = 1.6 + (((evaporationMoleculeSeedIndex3d * 31) % 43) / 42 - 0.5) * 2;
+              evaporationMoleculeSeeds3d[evaporationMoleculeSeedIndex3d * 4 + 2] = (evaporationMoleculeSeedIndex3d * 0.61803398875) % 1;
+              evaporationMoleculeSeeds3d[evaporationMoleculeSeedIndex3d * 4 + 3] = ((evaporationMoleculeSeedIndex3d * 13) % 37) / 36;
+            }
+            var evaporationMolecules3d = new THREE.Points(evaporationMoleculeGeometry3d, new THREE.PointsMaterial({
+              color: 0x9ee7ff, size: 0.07, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            evaporationInterfaceGroup3d.add(evaporationMolecules3d);
+
+            var evaporationCoolingMat3d = new THREE.MeshBasicMaterial({
+              color: 0x075985, transparent: true, opacity: 0,
+              side: THREE.DoubleSide, depthWrite: false
+            });
+            var evaporationCoolingPatch3d = new THREE.Mesh(new THREE.CircleGeometry(1.15, 48), evaporationCoolingMat3d);
+            evaporationCoolingPatch3d.rotation.x = -Math.PI / 2;
+            evaporationCoolingPatch3d.position.set(-3, -1.085, 1.6);
+            evaporationCoolingPatch3d.scale.set(1.65, 0.86, 1);
+            evaporationInterfaceGroup3d.add(evaporationCoolingPatch3d);
+
+            var evaporationHeatRingGroup3d = new THREE.Group();
+            for (var evaporationHeatRingIndex3d = 0; evaporationHeatRingIndex3d < 3; evaporationHeatRingIndex3d++) {
+              var evaporationHeatRing3d = new THREE.Mesh(
+                new THREE.TorusGeometry(0.58, 0.02, 6, 48),
+                new THREE.MeshBasicMaterial({
+                  color: 0xfde68a, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                })
+              );
+              evaporationHeatRing3d.rotation.x = Math.PI / 2;
+              evaporationHeatRing3d.userData.phase = evaporationHeatRingIndex3d / 3;
+              evaporationHeatRingGroup3d.add(evaporationHeatRing3d);
+            }
+            evaporationInterfaceGroup3d.add(evaporationHeatRingGroup3d);
+            evaporationInterfaceGroup3d.visible = false;
+            world3d.add(evaporationInterfaceGroup3d);
+
             var rain3d = makePoints3d(120, 0x69d7ff, 0.075, 5.2, 5.5, 2.6);
             rain3d.position.set(1.2, 0.75, -0.8);
             world3d.add(rain3d);
@@ -5418,6 +5614,7 @@ const d = labToolData.waterCycle || {};
             var lastArrivalState3d = null;
             var arrivalAge3d = 2;
             var rainbowMemory3d = 0;
+            var snowpackMemory3d = null;
             var dropletScaleGoal3d = new THREE.Vector3(1, 1, 1);
             var vaporSourceGoal3d = new THREE.Vector3(-2.1, 0.8, 1.0);
 
@@ -5873,6 +6070,57 @@ const d = labToolData.waterCycle || {};
               vapor3d.position.lerp(vaporSourceGoal3d, motionReduced3d ? 1 : 0.08);
               canvasEl.dataset.moistureSource = condensationTransfer3d ? 'cloud' : (vaporFromPlant3d ? 'plant' : 'ocean');
 
+              var oceanEvaporationActive3d = (state3d === 'evaporating' || state3d === 'evaporation') && !undergroundMode3d;
+              var evaporationSolarEnergy3d = Math.max(0, Math.min(1, solarVisual3d / 2));
+              var evaporationThermalEnergy3d = Math.max(0, Math.min(1, (tempVisual3d + 5) / 40));
+              var evaporationWindEnergy3d = Math.max(0, Math.min(1, windVisual3d / 3));
+              var evaporationEnergy3d = Math.max(0, Math.min(1,
+                evaporationSolarEnergy3d * 0.45 + evaporationThermalEnergy3d * 0.35 + evaporationWindEnergy3d * 0.2));
+              evaporationInterfaceGroup3d.visible = oceanEvaporationActive3d;
+              evaporationMolecules3d.material.opacity = oceanEvaporationActive3d ? 0.32 + evaporationEnergy3d * 0.56 : 0;
+              evaporationMolecules3d.material.size = 0.055 + evaporationEnergy3d * 0.045;
+              evaporationMoleculeGeometry3d.setDrawRange(0, Math.max(8,
+                Math.floor(evaporationMoleculeCount3d * (0.22 + evaporationEnergy3d * 0.78))));
+              if (oceanEvaporationActive3d) {
+                var evaporationMoleculePosition3d = evaporationMoleculeGeometry3d.attributes.position;
+                for (var evaporationMoleculeIndex3d = 0; evaporationMoleculeIndex3d < evaporationMoleculePosition3d.count; evaporationMoleculeIndex3d++) {
+                  var evaporationMoleculePhase3d = (evaporationMoleculeSeeds3d[evaporationMoleculeIndex3d * 4 + 2] +
+                    visualTime3d * (0.055 + evaporationEnergy3d * 0.16 +
+                      evaporationMoleculeSeeds3d[evaporationMoleculeIndex3d * 4 + 3] * 0.035)) % 1;
+                  var evaporationMoleculeRise3d = evaporationMoleculePhase3d * (1.35 + evaporationEnergy3d * 1.55);
+                  evaporationMoleculePosition3d.setXYZ(evaporationMoleculeIndex3d,
+                    evaporationMoleculeSeeds3d[evaporationMoleculeIndex3d * 4] +
+                      evaporationMoleculePhase3d * windVisual3d * 0.28 + Math.sin(evaporationMoleculePhase3d * 8 + evaporationMoleculeIndex3d) * 0.055,
+                    -1.045 + evaporationMoleculeRise3d,
+                    evaporationMoleculeSeeds3d[evaporationMoleculeIndex3d * 4 + 1] +
+                      Math.cos(evaporationMoleculePhase3d * 7 + evaporationMoleculeIndex3d * 0.4) * 0.07
+                  );
+                }
+                evaporationMoleculePosition3d.needsUpdate = true;
+              }
+              evaporationCoolingPatch3d.visible = oceanEvaporationActive3d;
+              evaporationCoolingMat3d.opacity = oceanEvaporationActive3d ? 0.08 + evaporationEnergy3d * 0.24 : 0;
+              evaporationCoolingMat3d.color.setHSL(0.55, 0.78, 0.17 - evaporationEnergy3d * 0.045);
+              evaporationCoolingPatch3d.scale.set(1.5 + evaporationEnergy3d * 0.48, 0.78 + evaporationEnergy3d * 0.2, 1);
+              evaporationHeatRingGroup3d.children.forEach(function(evaporationHeatRing3d) {
+                var evaporationHeatPhase3d = motionReduced3d ? evaporationHeatRing3d.userData.phase :
+                  (evaporationHeatRing3d.userData.phase + visualTime3d * (0.22 + evaporationEnergy3d * 0.2)) % 1;
+                evaporationHeatRing3d.position.set(
+                  -3 + evaporationHeatPhase3d * windVisual3d * 0.14,
+                  -1.02 + evaporationHeatPhase3d * (0.85 + evaporationEnergy3d * 0.65),
+                  1.6
+                );
+                evaporationHeatRing3d.scale.setScalar(0.65 + evaporationHeatPhase3d * (1.1 + evaporationEnergy3d * 0.4));
+                evaporationHeatRing3d.material.opacity = oceanEvaporationActive3d ?
+                  (1 - evaporationHeatPhase3d) * (0.12 + evaporationEnergy3d * 0.32) : 0;
+              });
+              var evaporationEnergyBand3d = evaporationEnergy3d < 0.34 ? 'low-energy' :
+                (evaporationEnergy3d < 0.68 ? 'moderate-energy' : 'high-energy');
+              canvasEl.dataset.evaporationInterface = oceanEvaporationActive3d ? evaporationEnergyBand3d : 'hidden';
+              canvasEl.dataset.evaporationMotion = oceanEvaporationActive3d ?
+                (journeyPaused3d ? 'paused' : (motionReduced3d ? 'reduced-static' : 'molecules-escaping')) : 'hidden';
+              canvasEl.dataset.surfaceCooling = oceanEvaporationActive3d ? 'localized' : 'hidden';
+
               var activeSolarEnergyKey3d = vaporTransfer3d ? (vaporFromPlant3d ? 'plant' : 'ocean') : '';
               var solarEnergyActive3d = !!activeSolarEnergyKey3d && solarVisual3d > 0.12 && !undergroundMode3d;
               Object.keys(solarEnergyPaths3d).forEach(function(solarPathKey3d) {
@@ -5904,6 +6152,68 @@ const d = labToolData.waterCycle || {};
                 latentRingMesh3d.material.opacity = latentHeatVisible3d ?
                   (motionReduced3d ? 0.24 : (1 - latentHeatPhase3d) * (0.28 + journeyProgress3d * 0.18)) : 0;
               });
+              var cloudMicrophysicsActive3d = condensationTransfer3d && !undergroundMode3d;
+              var cloudGrowth3d = Math.max(0, Math.min(1, journeyProgress3d));
+              cloudMicrophysicsGroup3d.visible = cloudMicrophysicsActive3d;
+              cloudDroplets3d.material.size = 0.045 + cloudGrowth3d * 0.095;
+              cloudDroplets3d.material.opacity = cloudMicrophysicsActive3d ? 0.46 + cloudGrowth3d * 0.42 : 0;
+              cloudDroplets3d.material.color.setHex(tempVisual3d < 0 ? 0xbfdbfe : 0x7dd3fc);
+              cloudNuclei3d.material.opacity = cloudMicrophysicsActive3d ? 0.78 - cloudGrowth3d * 0.42 : 0;
+              cloudNuclei3d.material.size = 0.052 + (1 - cloudGrowth3d) * 0.018;
+              if (cloudMicrophysicsActive3d) {
+                var cloudDropletPosition3d = cloudDropletGeometry3d.attributes.position;
+                var cloudCompaction3d = 1 - cloudGrowth3d * 0.18;
+                for (var cloudDropletIndex3d = 0; cloudDropletIndex3d < cloudDropletPosition3d.count; cloudDropletIndex3d++) {
+                  var cloudDropletDrift3d = visualTime3d * (0.11 + windVisual3d * 0.025) + cloudDropletIndex3d * 0.73;
+                  cloudDropletPosition3d.setXYZ(cloudDropletIndex3d,
+                    cloudMicrophysicsBase3d[cloudDropletIndex3d * 3] * cloudCompaction3d + Math.sin(cloudDropletDrift3d) * 0.035,
+                    cloudMicrophysicsBase3d[cloudDropletIndex3d * 3 + 1] * cloudCompaction3d + Math.cos(cloudDropletDrift3d * 0.8) * 0.025,
+                    cloudMicrophysicsBase3d[cloudDropletIndex3d * 3 + 2] * cloudCompaction3d + Math.sin(cloudDropletDrift3d * 0.6) * 0.028
+                  );
+                }
+                cloudDropletPosition3d.needsUpdate = true;
+
+                var cloudCoalescenceStrength3d = Math.max(0, Math.min(1, (cloudGrowth3d - 0.35) / 0.45));
+                var cloudCoalescenceActive3d = tempVisual3d >= 0 && cloudCoalescenceStrength3d > 0.02;
+                cloudCoalescence3d.visible = cloudCoalescenceActive3d;
+                cloudCoalescence3d.material.opacity = cloudCoalescenceActive3d ? 0.08 + cloudCoalescenceStrength3d * 0.28 : 0;
+                if (cloudCoalescenceActive3d) {
+                  var cloudCoalescencePosition3d = cloudCoalescenceGeometry3d.attributes.position;
+                  for (var cloudCoalescenceIndex3d = 0; cloudCoalescenceIndex3d < cloudCoalescenceCount3d; cloudCoalescenceIndex3d++) {
+                    var cloudCoalescenceA3d = (cloudCoalescenceIndex3d * 3) % cloudMicrophysicsCount3d;
+                    var cloudCoalescenceB3d = (cloudCoalescenceA3d + 11 + cloudCoalescenceIndex3d % 5) % cloudMicrophysicsCount3d;
+                    cloudCoalescencePosition3d.setXYZ(cloudCoalescenceIndex3d * 2,
+                      cloudDropletPosition3d.getX(cloudCoalescenceA3d), cloudDropletPosition3d.getY(cloudCoalescenceA3d), cloudDropletPosition3d.getZ(cloudCoalescenceA3d));
+                    cloudCoalescencePosition3d.setXYZ(cloudCoalescenceIndex3d * 2 + 1,
+                      cloudDropletPosition3d.getX(cloudCoalescenceB3d), cloudDropletPosition3d.getY(cloudCoalescenceB3d), cloudDropletPosition3d.getZ(cloudCoalescenceB3d));
+                  }
+                  cloudCoalescencePosition3d.needsUpdate = true;
+                }
+
+                var cloudIceMicrophysicsActive3d = tempVisual3d < 0;
+                cloudIceCrystalGroup3d.visible = cloudIceMicrophysicsActive3d;
+                cloudIceCrystalMat3d.opacity = cloudIceMicrophysicsActive3d ? 0.38 + cloudGrowth3d * 0.42 : 0;
+                cloudIceCrystalGroup3d.children.forEach(function(cloudIceCrystal3d, cloudIceIndex3d) {
+                  var cloudIceParticle3d = cloudIceCrystal3d.userData.particleIndex;
+                  cloudIceCrystal3d.position.set(
+                    cloudDropletPosition3d.getX(cloudIceParticle3d),
+                    cloudDropletPosition3d.getY(cloudIceParticle3d),
+                    cloudDropletPosition3d.getZ(cloudIceParticle3d)
+                  );
+                  cloudIceCrystal3d.rotation.set(
+                    visualTime3d * 0.18 + cloudIceIndex3d * 0.4,
+                    visualTime3d * 0.24 + cloudIceIndex3d * 0.55,
+                    cloudIceIndex3d * 0.31
+                  );
+                  cloudIceCrystal3d.scale.setScalar(0.55 + cloudGrowth3d * 0.75);
+                });
+              } else {
+                cloudCoalescence3d.visible = false;
+                cloudIceCrystalGroup3d.visible = false;
+              }
+              canvasEl.dataset.cloudMicrophysics = !cloudMicrophysicsActive3d ? 'hidden' :
+                (tempVisual3d < 0 ? 'ice-nucleation' : (cloudGrowth3d < 0.32 ? 'nucleation' :
+                  (cloudGrowth3d < 0.72 ? 'droplet-growth' : 'collision-coalescence')));
               canvasEl.dataset.energyDriver = latentHeatVisible3d ? 'latent-heat-release' :
                 (solarEnergyActive3d ? 'solar-' + activeSolarEnergyKey3d : 'none');
 
@@ -5967,7 +6277,53 @@ const d = labToolData.waterCycle || {};
               dropletCore3d.material.opacity = 0.14 + hydroPoints3d / 900;
               oceanMat.color.setHSL(0.54, 0.78, 0.18 + daylight3d * 0.09);
               oceanMat.roughness = Math.min(0.55, 0.14 + windVisual3d * 0.11);
-              foam3d.material.opacity = 0.42 + Math.sin(visualTime3d * 1.7) * 0.12 + windVisual3d * 0.035;
+              var coastalWaveActive3d = !undergroundMode3d;
+              var coastalWaveSpeed3d = 0.028 + windVisual3d * 0.016;
+              var shoreBreakStrength3d = 0;
+              coastalWaveGroup3d.visible = coastalWaveActive3d;
+              coastalWaveCrests3d.forEach(function(coastalWaveCrest3d) {
+                var coastalWavePhase3d = (coastalWaveCrest3d.userData.phase + visualTime3d * coastalWaveSpeed3d) % 1;
+                var coastalWaveApproach3d = coastalWavePhase3d * coastalWavePhase3d * (3 - 2 * coastalWavePhase3d);
+                var coastalBreakBuild3d = Math.max(0, Math.min(1, (coastalWaveApproach3d - 0.68) / 0.24));
+                var coastalShoreFade3d = 1 - Math.max(0, Math.min(1, (coastalWaveApproach3d - 0.92) / 0.08));
+                var coastalBreakPulse3d = coastalBreakBuild3d * coastalShoreFade3d;
+                shoreBreakStrength3d = Math.max(shoreBreakStrength3d, coastalBreakPulse3d);
+                coastalWaveCrest3d.position.x = -6 + coastalWaveApproach3d * 6;
+                coastalWaveCrest3d.position.y = -1.13 + coastalBreakBuild3d * (0.035 + windVisual3d * 0.012);
+                coastalWaveCrest3d.scale.set(1,
+                  1 + coastalBreakBuild3d * (1.2 + windVisual3d * 0.2),
+                  0.98 + coastalWaveApproach3d * 0.04);
+                coastalWaveCrest3d.material.opacity = coastalWaveActive3d ?
+                  (0.07 + coastalWaveApproach3d * 0.32 + windVisual3d * 0.035) * coastalShoreFade3d : 0;
+              });
+              shoreWash3d.visible = coastalWaveActive3d;
+              shoreWash3d.scale.set(0.38 + shoreBreakStrength3d * 0.78, 1, 1);
+              shoreWash3d.position.x = 0.02 + shoreBreakStrength3d * 0.09;
+              shoreWashMat3d.opacity = coastalWaveActive3d ? 0.07 + shoreBreakStrength3d * 0.26 + windVisual3d * 0.012 : 0;
+              var breakingSprayActive3d = coastalWaveActive3d && shoreBreakStrength3d > 0.04;
+              breakingSpray3d.visible = breakingSprayActive3d;
+              breakingSpray3d.material.opacity = breakingSprayActive3d ?
+                Math.min(0.82, shoreBreakStrength3d * (0.42 + windVisual3d * 0.13)) : 0;
+              breakingSpray3d.material.size = 0.052 + windVisual3d * 0.012;
+              if (breakingSprayActive3d) {
+                var breakingSprayPosition3d = breakingSprayGeometry3d.attributes.position;
+                for (var breakingSprayIndex3d = 0; breakingSprayIndex3d < breakingSprayPosition3d.count; breakingSprayIndex3d++) {
+                  var breakingSprayPhase3d = (breakingSpraySeeds3d[breakingSprayIndex3d * 2 + 1] +
+                    visualTime3d * (0.32 + windVisual3d * 0.08)) % 1;
+                  breakingSprayPosition3d.setXYZ(breakingSprayIndex3d,
+                    -0.12 + Math.sin(breakingSprayPhase3d * Math.PI * 2 + breakingSprayIndex3d) * 0.045,
+                    -1.02 + Math.sin(breakingSprayPhase3d * Math.PI) * (0.07 + windVisual3d * 0.025),
+                    breakingSpraySeeds3d[breakingSprayIndex3d * 2] + Math.cos(breakingSprayPhase3d * 5 + breakingSprayIndex3d) * 0.035
+                  );
+                }
+                breakingSprayPosition3d.needsUpdate = true;
+              }
+              foam3d.material.opacity = coastalWaveActive3d ?
+                Math.min(0.92, 0.3 + shoreBreakStrength3d * 0.38 + Math.sin(visualTime3d * 1.7) * 0.055 + windVisual3d * 0.03) : 0.04;
+              canvasEl.dataset.coastalWaveField = coastalWaveActive3d ?
+                (windVisual3d > 1.6 ? 'wind-driven-breakers' : 'gentle-shoaling') : 'hidden';
+              canvasEl.dataset.shoreWash = shoreWash3d.visible ?
+                (journeyPaused3d ? 'paused' : (motionReduced3d ? 'reduced-static' : 'advancing')) : 'hidden';
               cloudMat3d.color.setHSL(0.55, 0.35, 0.88 - storminess3d * 0.22);
               cloudShadeMat3d.color.setHSL(0.56, 0.28, 0.62 - storminess3d * 0.18);
               cloudShadeMat3d.opacity = 0.34 + storminess3d * 0.34;
@@ -6007,9 +6363,45 @@ const d = labToolData.waterCycle || {};
                 pondingMesh3d.scale.set(pondingScale3d, pondingScale3d * 0.72, 1);
               });
               canvasEl.dataset.ponding = urbanPonding3d.visible ? 'visible' : 'hidden';
-              var snowCoverTarget3d = tempVisual3d < 0 && !undergroundMode3d ? Math.min(0.88, 0.42 + Math.abs(tempVisual3d) / 35) : 0;
+              var snowAccumulationTarget3d = tempVisual3d < 0 ?
+                Math.min(1, 0.5 + Math.abs(tempVisual3d) / 28 + rainVisual3d / 500) : 0;
+              if (snowpackMemory3d === null) snowpackMemory3d = snowAccumulationTarget3d;
+              if (!journeyPaused3d) {
+                if (snowAccumulationTarget3d > snowpackMemory3d) {
+                  if (motionReduced3d) snowpackMemory3d = snowAccumulationTarget3d;
+                  else snowpackMemory3d = Math.min(snowAccumulationTarget3d,
+                    snowpackMemory3d + frameDelta3d * (0.055 + rainVisual3d * 0.0012));
+                } else if (!motionReduced3d) {
+                  var snowmeltRate3d = frameDelta3d * (0.018 + Math.max(0, tempVisual3d) * 0.004 + solarVisual3d * 0.018);
+                  snowpackMemory3d = Math.max(0, snowpackMemory3d - snowmeltRate3d);
+                }
+              }
+              var snowmeltIntensity3d = Math.max(0, Math.min(1, snowpackMemory3d *
+                (Math.max(0, tempVisual3d) / 14 * 0.55 + solarVisual3d / 2 * 0.45)));
+              var snowmeltActive3d = tempVisual3d > 0 && snowpackMemory3d > 0.025 && !undergroundMode3d;
+              var snowCoverTarget3d = !undergroundMode3d ? snowpackMemory3d * 0.88 : 0;
               snowCoverMat3d.opacity += (snowCoverTarget3d - snowCoverMat3d.opacity) * (motionReduced3d ? 1 : 0.08);
               snowCover3d.visible = snowCoverMat3d.opacity > 0.01;
+              snowMat3d.opacity = 0.08 + snowpackMemory3d * 0.92;
+              snowmeltRouteGroup3d.visible = snowmeltActive3d;
+              snowmeltRouteMat3d.opacity = snowmeltActive3d ? 0.12 + snowmeltIntensity3d * 0.55 : 0;
+              snowmeltMarkers3d.material.opacity = snowmeltActive3d ? 0.25 + snowmeltIntensity3d * 0.72 : 0;
+              snowmeltMarkers3d.material.size = 0.05 + snowmeltIntensity3d * 0.055;
+              if (snowmeltActive3d) {
+                var snowmeltMarkerPosition3d = snowmeltMarkerGeometry3d.attributes.position;
+                for (var snowmeltMarkerIndex3d = 0; snowmeltMarkerIndex3d < snowmeltMarkerCount3d; snowmeltMarkerIndex3d++) {
+                  var snowmeltCurveIndex3d = snowmeltMarkerIndex3d % snowmeltCurves3d.length;
+                  var snowmeltProgress3d = (snowmeltMarkerIndex3d / snowmeltMarkerCount3d +
+                    visualTime3d * (0.035 + snowmeltIntensity3d * 0.09)) % 1;
+                  var snowmeltPoint3d = snowmeltCurves3d[snowmeltCurveIndex3d].getPointAt(snowmeltProgress3d);
+                  snowmeltMarkerPosition3d.setXYZ(snowmeltMarkerIndex3d, snowmeltPoint3d.x, snowmeltPoint3d.y, snowmeltPoint3d.z);
+                }
+                snowmeltMarkerPosition3d.needsUpdate = true;
+              }
+              canvasEl.dataset.snowpackStorage = snowpackMemory3d > 0.05 ?
+                (snowmeltActive3d ? 'melting' : (tempVisual3d < 0 ? 'accumulating' : 'stored')) : 'none';
+              canvasEl.dataset.snowmeltRunoff = snowmeltActive3d ?
+                (motionReduced3d ? 'static-paths' : (journeyPaused3d ? 'paused' : 'flowing-to-river')) : 'hidden';
               if (!motionReduced3d && !journeyPaused3d) {
                 dropletGroup3d.position.y += Math.sin(visualTime3d * 2.8) * 0.0025;
                 halo3d.scale.setScalar(1 + Math.sin(visualTime3d * 3.2) * 0.12);
@@ -6103,8 +6495,8 @@ const d = labToolData.waterCycle || {};
                   rippleMesh3d.material.opacity = (1 - ripplePhase3d) * (0.16 + rainVisual3d / 500);
                 });
               }
-              river3d.material.opacity = 0.3 + runoffVisual3d / 145;
-              river3d.material.emissiveIntensity = 0.1 + runoffVisual3d / 420;
+              river3d.material.opacity = Math.min(0.94, 0.3 + runoffVisual3d / 145 + snowmeltIntensity3d * 0.18);
+              river3d.material.emissiveIntensity = 0.1 + runoffVisual3d / 420 + snowmeltIntensity3d * 0.14;
               aquifer3d.material.opacity = Math.min(0.92, 0.28 + infiltrationVisual3d / 180 +
                 ((state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.2 : 0));
               aquifer3d.material.emissiveIntensity = 0.12 + infiltrationVisual3d / 300;
@@ -6632,7 +7024,7 @@ const d = labToolData.waterCycle || {};
                 }
               }),
               journeyView === '3d' && React.createElement("p", { id: "wcJourney3dInstructions", className: "sr-only" },
-                "Use left and right arrows to rotate, up and down arrows to zoom, and F to resume the guided droplet camera. At the land decision, select a highlighted route in the scene or use the route buttons. During river runoff, move across the estuary plume to compare river water, brackish mixing, and ocean water."
+                "Use left and right arrows to rotate, up and down arrows to zoom, and F to resume the guided droplet camera. At the land decision, select a highlighted route in the scene or use the route buttons. During river runoff, move across the estuary plume to compare river water, brackish mixing, and ocean water. The wind control changes ocean wave speed and breaking intensity. During condensation, bright nuclei seed growing cloud droplets; connecting lines show coalescence, while crystal glints indicate freezing. During evaporation, solar energy, temperature, and wind change how many surface molecules escape and how quickly they rise. Cold conditions store water as snow; warming and sunlight release meltwater down the mountains into the river."
               ),
               journeyView === '3d' && React.createElement("canvas", {
                 role: "img",

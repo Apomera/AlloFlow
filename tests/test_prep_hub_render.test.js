@@ -35,12 +35,18 @@ beforeAll(() => {
   const libraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_learning_library.json'), 'utf8'));
   const paraProLibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_learning_library.json'), 'utf8'));
   const specialEducation5355LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/special_education_5355_learning_library.json'), 'utf8'));
+  const schoolCounselor5422LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/school_counselor_5422_learning_library.json'), 'utf8'));
+  const schoolPsychologist5403LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/school_psychologist_5403_learning_library.json'), 'utf8'));
+  const speechLanguagePathology5331LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/speech_language_pathology_5331_learning_library.json'), 'utf8'));
   const reportFetch = async (url) => {
     if (String(url).includes('content_audit.json')) return { ok: true, json: async () => auditFixture };
     if (String(url).includes('content_inventory.json')) return { ok: true, json: async () => inventoryFixture };
     if (String(url).includes('eppp_learning_library.json')) return { ok: true, json: async () => libraryFixture };
     if (String(url).includes('parapro_learning_library.json')) return { ok: true, json: async () => paraProLibraryFixture };
     if (String(url).includes('special_education_5355_learning_library.json')) return { ok: true, json: async () => specialEducation5355LibraryFixture };
+    if (String(url).includes('school_counselor_5422_learning_library.json')) return { ok: true, json: async () => schoolCounselor5422LibraryFixture };
+    if (String(url).includes('school_psychologist_5403_learning_library.json')) return { ok: true, json: async () => schoolPsychologist5403LibraryFixture };
+    if (String(url).includes('speech_language_pathology_5331_learning_library.json')) return { ok: true, json: async () => speechLanguagePathology5331LibraryFixture };
     return { ok: false, json: async () => ({}) };
   };
   global.fetch = window.fetch = reportFetch;
@@ -133,6 +139,28 @@ describe('Test Prep Hub render flow', () => {
     await expectNoAxeViolations('practice result');
   }, 30_000);
 
+  it('offers ten directly selectable EPPP practice banks with global ranges', async () => {
+    await mount();
+    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
+    await act(async () => { openButtons[1].click(); });
+    await waitForText('Choose a 100-question practice bank');
+
+    const bankButtons = Array.from(host.querySelectorAll('button')).filter((button) => /^Start Practice Bank [0-9]+$/.test(button.textContent.trim()));
+    expect(bankButtons).toHaveLength(10);
+    expect(host.textContent).toContain('Questions 1–100');
+    expect(host.textContent).toContain('Questions 901–1000');
+    expect(host.textContent).toContain('10 banks');
+    expect(host.textContent).toContain('1,000 questions total');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'eppp-part-one');
+    await clickButton('Start Practice Bank 10');
+    expect(host.textContent).toContain('Practice Bank 10 of 10');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain('Question bank item 901 of 1000');
+    expect(host.textContent).toContain(pack.items[900].prompt);
+    expect(findButton('Practice options')).toBeTruthy();
+    await expectNoAxeViolations('EPPP bank 10');
+  }, 30_000);
   it('browses, filters, and opens the native EPPP learning catalog', async () => {
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
@@ -186,14 +214,14 @@ describe('Test Prep Hub render flow', () => {
     await act(async () => { paraProCard.querySelector('button').click(); });
     await waitForText('Choose a study mode');
 
-    expect(host.textContent).toContain('Start Batch 1');
-    expect(host.textContent).toContain('Start Batch 2');
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
     expect(host.textContent).toContain('90 questions');
     expect(host.textContent).toContain('150 minutes');
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'parapro-1755-practice-1');
-    await clickButton('Start Batch 2');
-    expect(host.textContent).toContain('Diagnostic Batch 2');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -242,14 +270,14 @@ describe('Test Prep Hub render flow', () => {
     await act(async () => { suiteCard.querySelector('button').click(); });
     await waitForText('Choose a study mode');
 
-    expect(host.textContent).toContain('Start Batch 1');
-    expect(host.textContent).toContain('Start Batch 2');
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
     expect(host.textContent).toContain('120 questions');
     expect(host.textContent).toContain('120 minutes');
 
     const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-special-education-5355');
-    await clickButton('Start Batch 2');
-    expect(host.textContent).toContain('Diagnostic Batch 2');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
     expect(host.textContent).toContain('Question 1 of 100');
     expect(host.textContent).toContain(pack.items[100].prompt);
 
@@ -290,6 +318,171 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Question 1 of 18');
   }, 30_000);
 
+  it('uses 5422 diagnostics, timed simulation, and native school-counselor learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('School Counselor (5422)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('120 questions');
+    expect(host.textContent).toContain('120 minutes');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-school-counselor-5422');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('Optional timed simulation');
+    expect(host.textContent).toContain('Question 1 of 120');
+    expect(host.textContent).toContain('Time remaining 120:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis School Counselor (5422) learning library');
+    expect(host.textContent).toContain('12');
+    expect(host.textContent).toContain('60');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('School Counselor Role and Program Foundations'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Learning objectives');
+    expect(host.textContent).toContain('Chapter lessons');
+    expect(host.textContent).toContain('Knowledge checks');
+    expect(host.textContent).toContain('A comprehensive program for every student');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('A principal asks the school counselor'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('comprehensive program is preventive');
+    await expectNoAxeViolations('5422 native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: School Counselor Role, Identity, and Program Foundations');
+    expect(host.textContent).toContain('Question 1 of 16');
+  }, 30_000);
+
+  it('uses 5403 diagnostics, timed simulation, and native school-psychologist learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('School Psychologist (5403)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('125 questions');
+    expect(host.textContent).toContain('125 minutes');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-school-psychologist-5403');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('Optional timed simulation');
+    expect(host.textContent).toContain('Question 1 of 125');
+    expect(host.textContent).toContain('Time remaining 125:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis School Psychologist (5403) learning library');
+    expect(host.textContent).toContain('12');
+    expect(host.textContent).toContain('60');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Problem Solving and Multimethod Data Integration'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Learning objectives');
+    expect(host.textContent).toContain('Chapter lessons');
+    expect(host.textContent).toContain('Knowledge checks');
+    expect(host.textContent).toContain('From referral label to measurable problem');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('A teacher says a student'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('observable performance');
+    await expectNoAxeViolations('5403 native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Problem Solving, Multimethod Assessment, and Data Integration');
+    expect(host.textContent).toContain('Question 1 of 20');
+  }, 30_000);
+
+  it('uses 5331 diagnostics, timed simulation, and native SLP learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Speech-Language Pathology (5331)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('132 questions');
+    expect(host.textContent).toContain('150 minutes');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-speech-language-pathology-5331');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('Optional timed simulation');
+    expect(host.textContent).toContain('Question 1 of 132');
+    expect(host.textContent).toContain('Time remaining 150:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis Speech-Language Pathology (5331) learning library');
+    expect(host.textContent).toContain('12');
+    expect(host.textContent).toContain('60');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Anatomy, Physiology, Development, and Scientific Foundations'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Learning objectives');
+    expect(host.textContent).toContain('Chapter lessons');
+    expect(host.textContent).toContain('Knowledge checks');
+    expect(host.textContent).toContain('Respiration, phonation, and resonance');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('Which cranial nerve is most directly responsible for tongue movement'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('Cranial nerve XII supplies');
+    await expectNoAxeViolations('5331 native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Anatomy, Physiology, Development, and Scientific Foundations');
+    expect(host.textContent).toContain('Question 1 of 18');
+  }, 30_000);
+
   it('opens the native EPPP pilot and the complete guarded legacy workspace', async () => {
 
     await mount();
@@ -299,7 +492,10 @@ describe('Test Prep Hub render flow', () => {
     expect(epppButton).toBeTruthy();
     await act(async () => { epppButton.click(); });
 
-    expect(host.textContent).toContain('Question 1 of 1000');
+    expect(host.textContent).toContain('Choose a 100-question practice bank');
+    await clickButton('Start Practice Bank 1');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain('Question bank item 1 of 1000');
     expect(host.textContent).toContain('1,000 source-reviewed practice items');
     expect(host.textContent).toContain('Legacy source lead');
     expect(host.textContent).toContain('Source reviewed');
@@ -347,7 +543,7 @@ describe('Test Prep Hub render flow', () => {
       }
       await clickButton('Next question');
     }
-    expect(host.textContent).toContain('Question 9 of 1000');
+    expect(host.textContent).toContain('Question 9 of 100');
     const migratedRadios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { migratedRadios[eppp.items[8].answerIndex].click(); });
     await clickButton('Check answer');
@@ -358,7 +554,7 @@ describe('Test Prep Hub render flow', () => {
     await expectNoAxeViolations('EPPP migrated item');
   }, 30_000);
 
-  it('pauses a multi-batch pack for accessible diagnostic feedback before continuing', async () => {
+  it('pauses a selected practice bank for accessible diagnostic feedback before its summary', async () => {
     Hub.registerPack({
       id: 'batch-checkpoint-render', title: 'Batch Checkpoint Render', shortTitle: 'Batch checkpoint', status: 'ready', batchSize: 2,
       disclaimer: 'Independent practice result, not an official score.',
@@ -374,33 +570,36 @@ describe('Test Prep Hub render flow', () => {
     const card = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Batch Checkpoint Render'));
     expect(card).toBeTruthy();
     await act(async () => { card.querySelector('button').click(); });
+    await clickButton('Start Practice Bank 2');
 
-    expect(host.textContent).toContain('Batch 1 of 2 · Question 1 of 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 2');
+    expect(host.textContent).toContain('Question bank item 3 of 4');
     let radios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { radios[0].click(); });
     await clickButton('Check answer');
     await clickButton('I knew it');
     await clickButton('Next question');
 
-    expect(host.textContent).toContain('Batch 1 of 2 · Question 2 of 2');
+    expect(host.textContent).toContain('Question bank item 4 of 4');
     radios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { radios[0].click(); });
     await clickButton('Check answer');
     await clickButton('I knew it');
     await clickButton('View diagnostic feedback');
 
-    expect(host.textContent).toContain('Batch 1 of 2 checkpoint');
-    expect(host.textContent).toContain('Questions 1–2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2 checkpoint');
+    expect(host.textContent).toContain('Questions 3–4');
     expect(host.textContent).toContain('1/2');
     expect(host.textContent).toContain('50%');
     expect(host.textContent).toContain('Domain diagnostic for this batch');
     expect(host.textContent).toContain('Confidence calibration');
-    expect(host.textContent).toContain('Review confident misses first: question 2');
+    expect(host.textContent).toContain('Review confident misses first: question 4');
     expect(host.textContent).toContain('not an official score');
     await expectNoAxeViolations('batch checkpoint');
 
     const saved = JSON.parse(localStorage.getItem('alloflow_test_prep_progress_v1'));
-    expect(saved.attempts[0]).toMatchObject({ packId: 'batch-checkpoint-render', batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 2, correct: 1, total: 2 });
+    expect(saved.attempts[0]).toMatchObject({ packId: 'batch-checkpoint-render', batchNumber: 2, batchCount: 2, firstQuestion: 3, lastQuestion: 4, correct: 1, total: 2 });
     await clickButton('Continue to batch 2');
     expect(host.textContent).toContain('Question 3 of 4');
     expect(host.textContent).toContain('Batch 2 of 2 · Question 1 of 2');

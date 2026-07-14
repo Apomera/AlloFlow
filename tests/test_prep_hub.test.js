@@ -88,6 +88,42 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(diagnostic).not.toHaveProperty('readiness');
   });
 
+  it('records a selected practice bank with its global bank number and question range', () => {
+    const pack = Hub.normalizePack({
+      id: 'global-bank-fixture', title: 'Global bank fixture', status: 'ready', batchSize: 2,
+      domains: [{ id: 'one', label: 'Domain one' }],
+      items: [
+        { id: 'q5', domainId: 'one', prompt: 'Five?', choices: ['Yes', 'No'], answerIndex: 0 },
+        { id: 'q6', domainId: 'one', prompt: 'Six?', choices: ['Yes', 'No'], answerIndex: 1 },
+      ],
+    });
+    const diagnostic = Hub.buildBatchDiagnostic(pack, { q5: 0, q6: 1 }, {}, 1);
+    const recorded = Hub.recordBatchAttempt({ attempts: [] }, pack, {
+      ...diagnostic,
+      sourceBatchNumber: 3,
+      sourceBatchCount: 10,
+      sourceFirstQuestion: 5,
+      sourceLastQuestion: 6,
+    }, {}, 1234, {
+      mode: 'diagnostic',
+      label: 'Practice Bank 3 of 10',
+      sourceStartIndex: 4,
+      sourceItemCount: 20,
+      sourceBatchSize: 2,
+    });
+
+    expect(recorded.attempts).toHaveLength(1);
+    expect(recorded.attempts[0]).toMatchObject({
+      mode: 'diagnostic',
+      label: 'Practice Bank 3 of 10',
+      batchNumber: 3,
+      batchCount: 10,
+      firstQuestion: 5,
+      lastQuestion: 6,
+      correct: 2,
+      total: 2,
+    });
+  });
   it('normalizes imported pack fields and applies safe limits', () => {
     const pack = Hub.normalizePack({
       id: ' My New Pack ',

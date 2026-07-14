@@ -1,6 +1,6 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-14T02:14:11.020Z
+Generated: 2026-07-14T13:00:18.249Z
 
 ## Inventory
 
@@ -16,11 +16,11 @@ Generated: 2026-07-14T02:14:11.020Z
 | Memory aids and mnemonics | 255 |
 | Textbook chapters | 49 |
 | Textbook sections | 278 |
-| Embedded knowledge checks | 98 |
+| Embedded knowledge checks | 109 |
 | Interactive diagram templates | 25 |
-| Diagram placements in chapters | 57 |
+| Diagram placements in chapters | 61 |
 | Searchable term definitions | 1583 |
-| Chapter reference entries | 332 |
+| Chapter reference entries | 379 |
 | AI-reflective chapter codas | 49 |
 | Learner modes/pages | 14 |
 
@@ -72,7 +72,7 @@ Recommended release gates: 100-question foundation, 300-question alpha, 1,000-qu
 | Content | Count | Status | Next gate |
 | --- | ---: | --- | --- |
 | legacy questions | 2933 | active-full-review | re-author or correct, source QA, item-writing QA, accessibility, independent expert validation |
-| textbook chapters | 49 | review-in-progress | 16 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
+| textbook chapters | 49 | review-in-progress | 8 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
 | interactive diagrams | 25 | legacy-preserved-review-not-started | concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review |
 | flashcards | 415 | review-in-progress | remaining cards need deduplication, atomic-answer review, source support and clue checks |
 | memory aids | 255 | review-in-progress | remaining aids need oversimplification, outdated-guidance, bias, and source review |

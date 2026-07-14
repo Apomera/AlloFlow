@@ -13,8 +13,8 @@ const start = src.indexOf('function _htmlToDocxSpec(html) {');
 const end = src.indexOf('\n// _buildDocxBlobFromSpec:', start);
 if (start === -1 || end === -1) throw new Error('extraction markers for the ODT/DAISY slice missing');
 const slice = src.slice(start, end);
-const { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes } =
-  new Function(slice + '; return { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes };')();
+const { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _htmlToDaisySmil, _DAISY_OPF_XML, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes } =
+  new Function(slice + '; return { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _htmlToDaisySmil, _DAISY_OPF_XML, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes };')();
 
 const wrap = (body, attrs) => `<!DOCTYPE html><html ${attrs || 'lang="en"'}><head><title>Test Doc</title></head><body>${body}</body></html>`;
 const parseXml = (xml) => {
@@ -226,6 +226,11 @@ describe('EPUB3 MO — blob-less segments (2026-06-15 P0: one failed TTS must no
   it('back-compat: omitting hasAudio keeps all-present behavior', () => {
     expect((_buildMoSmil(segs, [1, 2, 3], 'mp3').match(/<audio /g) || []).length).toBe(3);
   });
+  it('declares embedded SVG and MathML on the content manifest item', () => {
+    const opf = _buildMoOpf('Doc', 'en', segs, 6, '2026-06-15T00:00:00Z', 'mp3', 'audio/mpeg', [true, true, true], ['svg', 'mathml']);
+    expect(opf).toContain('properties="svg mathml" media-overlay="smil"');
+    expect(parseXml(opf).wellFormed).toBe(true);
+  });
 });
 
 describe('EPUB/DAISY well-formedness + navigation (2026-06-15 third-review fixes)', () => {
@@ -238,13 +243,22 @@ describe('EPUB/DAISY well-formedness + navigation (2026-06-15 third-review fixes
     expect(bodyHtml).toContain('input');  // the fillable field survives (just self-closed)
   });
 
-  it('#2 every DAISY NCX navPoint anchor resolves to a matching heading id in the DTBook', () => {
+  it('#2 every DAISY NCX target resolves through SMIL to a DTBook heading', () => {
     const html = wrap('<h1>Alpha</h1><p>x</p><h2>Beta</h2><p>y</p><h2>Gamma</h2>');
-    const ncx = _htmlToDaisyNcx(html, 'Doc');
-    const dtbook = _htmlToDtbookXml(html, 'en');
-    const anchors = [...ncx.matchAll(/dtbook\.xml#(h\d+)/g)].map((m) => m[1]);
-    expect(anchors.length).toBe(3);                         // one per heading
-    for (const a of anchors) expect(dtbook).toContain('id="' + a + '"'); // pre-fix: all dangling
+    const uid = 'urn:uuid:test';
+    const ncx = _htmlToDaisyNcx(html, 'Doc', uid);
+    const smil = _htmlToDaisySmil(html, uid);
+    const dtbook = _htmlToDtbookXml(html, 'en', uid);
+    const pars = [...ncx.matchAll(/book\.smil#(par\d+)/g)].map((m) => m[1]);
+    expect(pars.length).toBe(3);
+    for (const par of pars) {
+      const match = smil.match(new RegExp('<par id="' + par + '"><text src="dtbook\\.xml#(h\\d+)"'));
+      expect(match).toBeTruthy();
+      expect(dtbook).toContain('id="' + match[1] + '"');
+    }
+    expect(ncx).toContain('content="' + uid + '"');
+    expect(smil).toContain('content="' + uid + '"');
+    expect(_DAISY_OPF_XML('Doc', 'en', uid)).toContain('>' + uid + '</dc:Identifier>');
   });
 
   it('#2 the injected title/Notes <h1> do NOT consume a heading id (counter stays aligned)', () => {

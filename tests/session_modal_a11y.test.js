@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 
 const source = fs.readFileSync('view_session_modal_source.jsx', 'utf8');
@@ -16,6 +16,18 @@ describe('Live session modal accessibility', () => {
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (event.key !== 'Tab') return");
     expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
+  });
+
+  it('offers verified teacher test and print actions for a ready live QR', () => {
+    expect(source).toContain('const testStudentJoin = React.useCallback');
+    expect(source).toContain('const printLiveQr = React.useCallback');
+    expect(source).toContain('Test as student');
+    expect(source).toContain('Print QR');
+    expect(source).toContain('Ready to scan.');
+    expect(source).toContain('Fallback class code');    expect(source).toContain('Open projection mode');
+    expect(source).toContain('connectedStudentCount');
+    expect(source).toContain('Live session readiness');
+    expect(source).toContain('Selectable student join link');
   });
 
   it('synchronizes the deployable module', () => {

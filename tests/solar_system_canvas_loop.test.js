@@ -81,4 +81,58 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('roverGroup.rotation.x = Math.max(-0.22');
     });
   });
+
+  it('provides accessible pointer controls for the core drone science workflow', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const shortcutListener = "canvasEl.addEventListener('keydown', onDroneShortcutKeydown);";
+      const shortcutCleanup = "canvasEl.removeEventListener('keydown', onDroneShortcutKeydown);";
+
+      expect(source).toContain('"data-drone-vehicle-mode":');
+      expect(source).toContain('role: "application"');
+      expect(source).toContain('tabIndex: 0');
+      expect(source).toContain('"aria-label": ((sel &&');
+      expect(source).toContain("actionDock.setAttribute('data-drone-action-dock', 'true');");
+      expect(source).toContain("actionDock.setAttribute('role', 'group');");
+      expect(source).toContain("button.type = 'button';");
+      expect(source).toContain("button.setAttribute('data-drone-command', action.key);");
+      expect(source).toContain("button.setAttribute('aria-keyshortcuts', action.key.toUpperCase());");
+      expect(source).toContain('function dispatchDroneCommand(action)');
+      expect(source).toContain("{ key: 'g', label: 'Scan'");
+      expect(source).toContain("{ key: 'f', label: isFluid ? 'Sample' : 'Collect'");
+      expect(source).toContain("{ key: 'j', label: 'Journal'");
+      expect(source).toContain("{ key: 'n', label: 'Navigate'");
+      expect(source).toContain(shortcutListener);
+      expect(source).toContain(shortcutCleanup);
+      expect(source).toContain('if (actionDock.parentElement) actionDock.parentElement.removeChild(actionDock);');
+      expect(source.indexOf(shortcutListener)).toBeLessThan(source.indexOf(shortcutCleanup));
+    });
+  });
+
+  it('shows mode-specific live science relationships without covering the altitude gauge', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const focusDefinition = source.indexOf('function updateDroneScienceFocus(altitude)');
+      const focusUpdate = source.indexOf('updateDroneScienceFocus(altitude);');
+
+      expect(source).toContain('"aria-describedby": "hud-science-focus"');
+      expect(source).toContain("var scienceQuestion = isOcean ? 'How do pressure and light change as depth increases?'");
+      expect(source).toContain('id="hud-science-focus" role="note"');
+      expect(source).toContain('id="hud-science-reading"');
+      expect(source).toContain("scienceReadingEl.textContent = 'Depth '");
+      expect(source).toContain('oceanScienceZone.lightLevel');
+      expect(source).toContain("scienceReadingEl.textContent = 'Relative altitude '");
+      expect(source).toContain('gasScienceZone.windSpeed');
+      expect(source).toContain("scienceReadingEl.textContent = 'Elevation '");
+      expect(source).toContain('var slopeDegrees = roverGroup');
+      expect(source).toContain("announceToSR('Entered ' + curOceanZone");
+      expect(source).toContain("announceToSR('Entered ' + curZoneName");
+      expect(source).toContain("top:62px;right:48px");
+      expect(source).toContain("width:min(204px,calc(100% - 64px))");
+      expect(source).not.toContain("top:62px;right:8px;z-index:14");
+      expect(focusDefinition, filePath + ' should define the science updater').toBeGreaterThan(-1);
+      expect(focusUpdate, filePath + ' should update the science reading').toBeGreaterThan(-1);
+      expect(focusDefinition).toBeLessThan(focusUpdate);
+    });
+  });
 });

@@ -167,6 +167,8 @@ describe('remediation deep-dive hardening', () => {
     expect(pipe).toContain("const _ACTIVE_BATCH_STATUS_PREFIX = 'pdf_active_batch_status_v4_';");
     expect(pipe).toContain('schemaVersion: 4,');
     expect(pipe).toContain('_withBatchCheckpointRootLock(async () =>');
+    expect(pipe).toContain('const queue = _sourceQueue.filter(Boolean);');
+    expect(pipe.indexOf('const queue = _sourceQueue.filter(Boolean);')).toBeLessThan(pipe.indexOf('setPdfBatchProcessing(true);'));
     expect(pipe).toContain('rootWriteId: _newBatchCheckpointId()');
     expect(pipe).toContain('writeId: _newBatchCheckpointId()');
     expect(pipe).toContain('_sameBatchFilesRecord(activeFilesRec, initialFilesRec)');
@@ -239,6 +241,65 @@ describe('remediation deep-dive hardening', () => {
     expect(values.has(legacyOwned)).toBe(false);
     expect(values.has(legacyOrphan)).toBe(true);
   });
+  it('tombstones the authoritative batch root before deleting secondary artifacts', async () => {
+    const filesKey = 'pdf_active_batch_files_v1';
+    const batchId = 'batch_root_first';
+    const values = new Map();
+    const operations = [];
+    let failRootClear = true;
+    const storageDB = {
+      get: async (key) => values.get(key),
+      set: async (key, value) => {
+        if (key === filesKey && value === null) {
+          operations.push('root:null');
+          if (failRootClear) return false;
+        }
+        values.set(key, value);
+        return true;
+      },
+    };
+    const idbKeyval = {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => {
+        operations.push('del:' + key);
+        values.delete(key);
+      },
+    };
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval);
+    const statusKey = runtime.statusKeyFor(batchId);
+    const resultKey = runtime.keyFor(batchId, { id: 'file-a' });
+    values.set(filesKey, {
+      schemaVersion: 4,
+      batchId,
+      rootWriteId: 'root-write-a',
+      statusKey,
+      files: [{ id: 'file-a' }],
+      savedAt: 100,
+    });
+    values.set(statusKey, {
+      schemaVersion: 4,
+      batchId,
+      writeId: 'status-write-a',
+      statuses: [{ id: 'file-a', resultKey }],
+    });
+    values.set(resultKey, { serialized: '{}' });
+
+    await expect(runtime.clear(batchId)).resolves.toBe(false);
+    expect(operations).toEqual(['root:null']);
+    expect(values.get(filesKey).batchId).toBe(batchId);
+    expect(values.has(statusKey)).toBe(true);
+    expect(values.has(resultKey)).toBe(true);
+
+    failRootClear = false;
+    operations.length = 0;
+    await expect(runtime.clear(batchId)).resolves.toBe(true);
+    expect(operations[0]).toBe('root:null');
+    expect(operations.slice(1).every((op) => op.startsWith('del:'))).toBe(true);
+    expect(values.get(filesKey)).toBeNull();
+    expect(values.has(statusKey)).toBe(false);
+    expect(values.has(resultKey)).toBe(false);
+  });
+
   it('keeps root replacement and inactive cleanup in one lock and restores scoped v4 results', async () => {
     const filesKey = 'pdf_active_batch_files_v1';
     const legacyStatusKey = 'pdf_active_batch_status_v1';

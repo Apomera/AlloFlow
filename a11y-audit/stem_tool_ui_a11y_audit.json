@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T03:07:01.606Z",
+  "generatedAt": "2026-07-14T12:56:22.830Z",
   "source": {
     "stemToolFileCount": 119,
     "registeredToolCount": 122
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 38,
+    "issueCount": 37,
     "errorCount": 0,
-    "warningCount": 16,
+    "warningCount": 15,
     "noticeCount": 22,
     "toolsWithIssues": 33,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 15,
+    "toolsWithWarnings": 14,
     "toolsWithCanvas": 36,
     "shellCoverage": {
       "standardShellTools": 122,
@@ -31,7 +31,7 @@
       "general": {
         "toolCount": 11,
         "errorCount": 0,
-        "warningCount": 1,
+        "warningCount": 0,
         "noticeCount": 12
       },
       "math": {
@@ -210,16 +210,6 @@
         "appLab"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
-    },
-    {
-      "code": "svg-name",
-      "severity": "warning",
-      "count": 1,
-      "toolCount": 1,
-      "exampleTools": [
-        "birdLab"
-      ],
-      "recommendation": "Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title."
     },
     {
       "code": "metadata",
@@ -945,18 +935,18 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 145876,
+      "renderedBytes": 144075,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 2,
       "metrics": {
         "buttons": 127,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
-        "svgs": 2,
+        "svgs": 1,
         "images": 0,
         "headings": 128,
         "links": 0,
@@ -964,14 +954,6 @@
         "fixedWidthRiskCount": 2
       },
       "issues": [
-        {
-          "toolId": "birdLab",
-          "severity": "warning",
-          "code": "svg-name",
-          "message": "SVG is neither aria-hidden nor named.",
-          "index": 1,
-          "selector": "div.birdlab-shell.p-6 > button.w-full.mb-5:nth-of-type(1) > div.p-4.flex:nth-of-type(1) > div:nth-of-type(2) > svg"
-        },
         {
           "toolId": "birdLab",
           "severity": "notice",
@@ -1825,7 +1807,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25867,
+      "renderedBytes": 25909,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3025,7 +3007,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 18059,
+      "renderedBytes": 18063,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3190,7 +3172,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 25687,
+      "renderedBytes": 25699,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3246,7 +3228,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 40744,
+      "renderedBytes": 40771,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3463,7 +3445,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 70666,
+      "renderedBytes": 70650,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3668,7 +3650,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47814,
+      "renderedBytes": 47822,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,

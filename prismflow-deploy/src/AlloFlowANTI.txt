@@ -7411,7 +7411,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '4b32949f5';
+    var pluginCdnVersion = '1784033077662';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -7633,38 +7633,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=4b32949f5');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=4b32949f5');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=4b32949f5');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=4b32949f5');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=4b32949f5');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=4b32949f5');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=4b32949f5');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=4b32949f5');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=4b32949f5');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=4b32949f5');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=4b32949f5');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=4b32949f5');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=4b32949f5');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=4b32949f5');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=4b32949f5');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=4b32949f5');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=4b32949f5');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=4b32949f5');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=4b32949f5');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=4b32949f5');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=4b32949f5');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=4b32949f5');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=4b32949f5');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=4b32949f5');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=4b32949f5'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=4b32949f5'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -7673,84 +7673,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=4b32949f5');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=4b32949f5');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=4b32949f5');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=4b32949f5');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=4b32949f5');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=4b32949f5');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=4b32949f5');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=4b32949f5');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=4b32949f5');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=4b32949f5');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=4b32949f5');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=4b32949f5');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=4b32949f5');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=4b32949f5'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=4b32949f5');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=4b32949f5');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=4b32949f5');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=e3efe3e6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=4b32949f5');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=4b32949f5');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=4b32949f5');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=4b32949f5');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=4b32949f5');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=4b32949f5'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=4b32949f5');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=4b32949f5');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=4b32949f5'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=4b32949f5');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=4b32949f5');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=4b32949f5');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=4b32949f5');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=4b32949f5');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=4b32949f5');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=4b32949f5');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=4b32949f5'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=4b32949f5'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=4b32949f5'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=4b32949f5'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=4b32949f5'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=4b32949f5');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=4b32949f5');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=4b32949f5');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=4b32949f5');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=4b32949f5');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=4b32949f5');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=4b32949f5');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=4b32949f5');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=4b32949f5');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=4b32949f5');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=4b32949f5');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=4b32949f5');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=4b32949f5');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=4b32949f5');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -7787,64 +7787,64 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=488e97b5');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=4b32949f5');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=4b32949f5');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=4b32949f5');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=4b32949f5');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=4b32949f5');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=4b32949f5');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=4b32949f5');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=4b32949f5');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=4b32949f5');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=4b32949f5');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=4b32949f5');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=4b32949f5');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=2a568b03');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=4b32949f5');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=4b32949f5');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=4b32949f5');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=4b32949f5');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=4b32949f5');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=4b32949f5');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=4b32949f5');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=4b32949f5');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=4b32949f5');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=4b32949f5');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=4b32949f5');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=4b32949f5');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=4b32949f5');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=4b32949f5');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=4b32949f5');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=4b32949f5');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=4b32949f5');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=4b32949f5');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=4b32949f5');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=45f2dacc');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=4b32949f5');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=4b32949f5');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=4b32949f5');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=4b32949f5');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=4b32949f5');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=4b32949f5');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=4b32949f5');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=4b32949f5');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=4b32949f5');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=4b32949f5');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=4b32949f5');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=4b32949f5');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=4b32949f5');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=4b32949f5');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=4b32949f5');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=4b32949f5');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=4b32949f5');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=4b32949f5');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=4b32949f5');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=4b32949f5');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -13949,6 +13949,31 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [sourceLength, setSourceLength] = useState('250');
   const [sourceCustomInstructions, setSourceCustomInstructions] = useState('');
   const [qrShareModal, setQrShareModal] = useState(null);
+  const [homeworkExpiryDays, setHomeworkExpiryDays] = useState(() => {
+      const saved = Number(safeGetItem('allo_homework_expiry_days') || 14);
+      return [1, 7, 14, 30].includes(saved) ? saved : 14;
+  });
+  const [recentQrShares, setRecentQrShares] = useState(() => {
+      try {
+          const parsed = JSON.parse(safeGetItem('allo_recent_qr_shares') || '[]');
+          return Array.isArray(parsed) ? parsed.filter(item => item?.url && (!item.expiresAt || Date.parse(item.expiresAt) > Date.now())).slice(0, 6) : [];
+      } catch (_) { return []; }
+  });
+  const [showRecentQrShares, setShowRecentQrShares] = useState(false);
+  useEffect(() => {
+      try { safeSetItem('allo_homework_expiry_days', String(homeworkExpiryDays)); } catch (_) {}
+  }, [homeworkExpiryDays]);
+  useEffect(() => {
+      try { safeSetItem('allo_recent_qr_shares', JSON.stringify(recentQrShares.slice(0, 6))); } catch (_) {}
+  }, [recentQrShares]);
+  const rememberQrShare = useCallback((share) => {
+      if (!share?.url) return;
+      setRecentQrShares(previous => [share, ...previous.filter(item => item.url !== share.url)].slice(0, 6));
+  }, []);
+  const openQrShareModal = useCallback((share) => {
+      setQrShareModal(share);
+      rememberQrShare(share);
+  }, [rememberQrShare]);
   const [qrShareSvg, setQrShareSvg] = useState('');
   const [qrShareError, setQrShareError] = useState(false);
   const homeworkQrDialogRef = useRef(null);
@@ -14746,14 +14771,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           kind: 'assignment',
           title,
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(),
           currentResourceId: resources[0]?.id || null,
           resources,
           aiPolicy: { studentAi: 'off', defaultStudentAi: 'off', teacherPrepared: true },
       });
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
       return { encoded, title, count: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), expiresAt: packet.expiresAt };
-  }, [generatedContent, history, sourceTopic]);
+  }, [generatedContent, history, homeworkExpiryDays, sourceTopic]);
   // Latest-ref to the mailbox-host callback so the self-contained builder can
   // reroute oversize packs to it (hostPackOnMailbox is declared below), and so a
   // queued host can auto-run after a late mailbox connect. Mirrors the
@@ -14785,7 +14810,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;
           }
           copyToClipboard(shareUrl);
-          setQrShareModal({
+          openQrShareModal({
               type: 'assignment-pack',
               title: built.title,
               url: shareUrl,
@@ -14802,7 +14827,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Could not create a self-contained homework link.', 'error');
           return null;
       }
-  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig]);
+  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig, openQrShareModal]);
   // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
   // to the teacher's own Drive via their mailbox; the QR carries only a tiny
   // pointer, so it is always small enough to print.
@@ -14831,7 +14856,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const shareUrl = _buildAlloMailboxEntryUrl('allo_mbp', { u: mbConfig.url, id, k: secret });
           if (!shareUrl) throw new Error('no student app URL configured');
           copyToClipboard(shareUrl);
-          setQrShareModal({
+          openQrShareModal({
               type: 'assignment-pack-hosted',
               title: built.title,
               url: shareUrl,
@@ -14851,7 +14876,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbBusy(false);
           return null;
       }
-  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard]);
+  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard, openQrShareModal]);
   // Keep the host-callback ref fresh so the self-contained builder's oversize
   // reroute (above) always calls the current hostPackOnMailbox.
   useEffect(() => { hostPackOnMailboxRef.current = hostPackOnMailbox; });
@@ -14980,7 +15005,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               hostAppId: appId,
               hostId: user?.uid || null,
               createdAt: new Date().toISOString(),
-              expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+              expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000),
               status: 'assignment',
               mode: 'assignment',
               isActive: false,
@@ -14995,7 +15020,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               version: 1,
           }));
           copyToClipboard(shareUrl);
-          setQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length, resourceTitles: resourcesToAssign.map(item => item.title || item.type || 'Untitled resource'), expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId });
+          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length, resourceTitles: resourcesToAssign.map(item => item.title || item.type || 'Untitled resource'), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId });
           addToast('Homework QR ready. Students open teacher-prepared resources with AI generation off.', 'success');
           if (prepared.droppedCount > 0 || prepared.overLimit) {
               addToast('Some older resources were trimmed to keep the QR assignment reliable.', 'info');
@@ -15006,14 +15031,39 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Cloud homework link failed — making a self-contained link instead.', 'info');
           return createSelfContainedHomeworkLink();
       }
-  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, hostPackOnMailbox, mbConfig, generatedContent, history, sourceTopic, user?.uid]);
-  const testHomeworkAsStudent = useCallback(() => {
-      const url = qrShareModal?.url;
+  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, history, openQrShareModal, sourceTopic, user?.uid]);
+  const openStudentQrPreview = useCallback((url, label = 'student link') => {
       if (!url || typeof window === 'undefined') return;
       const preview = window.open(url, '_blank');
-      if (preview) { try { preview.opener = null; } catch (_) {} }
-      else addToast('Allow pop-ups to test this homework link as a student.', 'info');
-  }, [qrShareModal?.url, addToast]);
+      if (preview) {
+          try { preview.opener = null; } catch (_) {}
+          addToast('Student preview opened. Complete the check in the new tab, then return here.', 'success');
+      } else addToast('Allow pop-ups to test this ' + label + '.', 'info');
+  }, [addToast]);
+  const printQrSheet = useCallback((svg, heading, detail, modeLabel, fallbackCode = '') => {
+      if (!svg || typeof window === 'undefined') {
+          addToast('Wait for the QR code to finish loading before printing.', 'info');
+          return;
+      }
+      const popup = window.open('', '_blank', 'width=720,height=900');
+      if (!popup) {
+          addToast('Allow pop-ups to print this QR code.', 'info');
+          return;
+      }
+      try { popup.opener = null; } catch (_) {}
+      const escapeText = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      const safeHeading = escapeText(heading);
+      const safeDetail = escapeText(detail);
+      const safeMode = escapeText(modeLabel);
+      const safeCode = escapeText(String(fallbackCode || '').replace(/[^A-Z0-9-]/gi, ''));
+      popup.document.open();
+      popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeHeading}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.detail{font-size:18px;font-weight:700;margin-bottom:8px}.mode{font-weight:700;color:#6d28d9;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 52px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>${safeHeading}</h1><div class="detail">${safeDetail}</div><div class="mode">${safeMode}</div><div class="qr">${svg}</div>${safeCode ? '<div>Fallback class code</div><div class="code">' + safeCode + '</div>' : ''}<div class="note">Scan with a phone or tablet camera. If scanning is unavailable, ask the teacher for the link${safeCode ? ' or class code' : ''}.</div></body></html>`);
+      popup.document.close();
+      setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
+  }, [addToast]);
+  const testHomeworkAsStudent = useCallback(() => {
+      openStudentQrPreview(qrShareModal?.url, 'homework link as a student');
+  }, [openStudentQrPreview, qrShareModal?.url]);
   const revokeHomeworkAssignment = useCallback(async () => {
       const current = qrShareModal;
       if (!current || current.type === 'assignment-pack') return;
@@ -15026,6 +15076,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               await deleteDoc(doc(db, 'artifacts', current.hostAppId || appId, 'public', 'data', 'sessions', current.assignmentId));
           }
           setQrShareModal(null);
+          setRecentQrShares(previous => previous.filter(item => item.url !== current.url));
           addToast('Homework link revoked.', 'success');
       } catch (e) {
           warnLog('Homework revocation failed:', e);
@@ -25089,7 +25140,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
               } catch (e) {
                   warnLog('Homework QR load failed:', e);
-                  if (!cancelled) addToast('Could not load this homework QR assignment.', 'error');
+                  if (!cancelled) {
+                      const message = String(e?.message || '').toLowerCase();
+                      const code = String(e?.code || '').toLowerCase();
+                      const recovery = message.includes('expired')
+                          ? 'This homework link has expired. Ask your teacher for a new QR code.'
+                          : message.includes('not found')
+                              ? 'This homework link was revoked or is no longer available. Ask your teacher for a new QR code.'
+                              : message.includes('no resources') || message.includes('no openable')
+                                  ? 'This homework link is incomplete. Ask your teacher to create it again.'
+                                  : code.includes('permission-denied')
+                                      ? 'This homework link cannot access the teacher class storage. Ask your teacher to use a Class Mailbox or self-contained QR.'
+                                      : 'Could not load this homework assignment. Check the connection, then retry or ask your teacher for a new QR code.';
+                      addToast(recovery, 'error');
+                  }
               }
           };
           loadAssignment();
@@ -25137,9 +25201,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } catch (e) {
               warnLog('Self-contained homework load failed:', e);
               if (!cancelled) {
+                  const errorMessage = String(e?.message || '').toLowerCase();
                   const message = e?.code === 'allo/pack-unsupported-browser'
                       ? 'This browser is too old to open compressed homework links. Try another device or browser.'
-                      : 'Could not open this homework link. Ask your teacher for a new one.';
+                      : errorMessage.includes('expired')
+                          ? 'This homework link has expired. Ask your teacher for a new QR code.'
+                          : errorMessage.includes('no resources')
+                              ? 'This homework link is incomplete. Ask your teacher to create it again.'
+                              : 'Could not open this homework link. It may be damaged or truncated; ask your teacher for a new one.';
                   addToast(message, 'error');
               }
           }
@@ -32737,6 +32806,38 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
         ))}
       </div>
+      {showRecentQrShares && (
+        <div className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="recent-homework-links-title" onClick={() => setShowRecentQrShares(false)}>
+          <div className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" onClick={event => event.stopPropagation()}>
+            <button onClick={() => setShowRecentQrShares(false)} className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100" aria-label="Close recent homework links"><X size={20}/></button>
+            <h2 id="recent-homework-links-title" className="pr-10 text-xl font-black text-slate-900">Recent homework links</h2>
+            <p className="mt-1 text-xs text-slate-600">Saved only on this teacher device. Reopen a link to print, test, or revoke it.</p>
+            <div className="mt-4 space-y-3">
+              {recentQrShares.length === 0 && <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">No recent homework links on this device.</p>}
+              {recentQrShares.map((share, index) => {
+                const expired = share.expiresAt && Date.parse(share.expiresAt) <= Date.now();
+                return (
+                  <article key={share.url || index} className="rounded-xl border border-slate-200 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-black text-slate-900">{share.title || 'AlloFlow homework'}</h3>
+                        <p className="mt-0.5 text-[11px] text-slate-600">{share.resourceCount || 1} {(share.resourceCount || 1) === 1 ? 'resource' : 'resources'} · {expired ? 'Expired' : `Expires ${share.expiresAt ? new Date(share.expiresAt).toLocaleDateString() : 'later'}`}</p>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${expired ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>{expired ? 'Expired' : 'Active'}</span>
+                    </div>
+                    <input aria-label={`Selectable link for ${share.title || 'homework'}`} readOnly value={share.url} onFocus={event => event.target.select()} className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] text-slate-700" />
+                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      <button disabled={expired} onClick={() => { openQrShareModal(share); setShowRecentQrShares(false); }} className="min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50">Reopen</button>
+                      <button onClick={() => copyToClipboard(share.url)} className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800">Copy</button>
+                      <button onClick={() => setRecentQrShares(previous => previous.filter(item => item.url !== share.url))} className="min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800">Remove</button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       {qrShareModal && (
         <div className="fixed inset-0 bg-slate-950/80 z-[151] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="alloflow-homework-qr-title" aria-describedby="alloflow-homework-qr-description" onClick={() => setQrShareModal(null)}>
           <div ref={homeworkQrDialogRef} tabIndex={-1} className="bg-gradient-to-b from-violet-50 to-white rounded-3xl shadow-2xl border border-violet-200 p-6 text-center max-w-md w-full relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -32771,13 +32872,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               <p className="text-xs font-black text-violet-950">Students scan to open the assignment on their own time.</p>
               <p className="text-[11px] text-violet-800 mt-0.5">This QR does not join your class, show a session code, or connect to live pacing.</p>
             </div>
-            <p className="text-[11px] text-slate-500 mb-3">Expires {qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : '14 days after creation'}.</p>
-            <button onClick={testHomeworkAsStudent} className="w-full mb-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-500 rounded-lg p-2 transition-all">
-              Test as student <ExternalLink size={12}/>
-            </button>
+            <p className="text-[11px] text-slate-500 mb-3">{qrShareSvg ? 'Ready to scan' : qrShareError ? 'QR unavailable - use the link below' : 'Validating QR code...'} &middot; Expires {qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : '14 days after creation'}.</p>
+            <div className="mb-2 grid grid-cols-2 gap-2">
+              <button onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
+                Test as student <ExternalLink size={12}/>
+              </button>
+              <button onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, 'Teacher-prepared resources · Student AI off · No live session')} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                Print QR <Printer size={12}/>
+              </button>
+            </div>
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
               {qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
             </button>
+            <input aria-label="Selectable homework link" readOnly value={qrShareModal.url || ''} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-500" />
             {qrShareModal.type !== 'assignment-pack' && (
               <button onClick={revokeHomeworkAssignment} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 transition-all">
                 Revoke homework link <Trash2 size={12}/>
@@ -32963,8 +33070,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <div className="bg-white border border-slate-200 rounded-xl p-3 w-48 h-48 [&_svg]:w-full [&_svg]:h-full shadow-sm" dangerouslySetInnerHTML={{ __html: mbQrSvg }} />
                   </div>
                 ) : (
-                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="w-full mb-3 text-xs font-bold text-indigo-700 underline underline-offset-2">Copy join link</button>
+                  <p className="mb-3 text-center text-xs font-bold text-indigo-700">Validating live-session QR...</p>
                 )}
+                <p className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? 'Ready to scan · AI tools off · Active until you end the session' : 'The class code remains available while the QR loads.'}</p>
+                <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
+                    Copy link <Copy size={12}/>
+                  </button>
+                  <button onClick={() => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] font-bold text-emerald-900 hover:border-emerald-500">
+                    Test <ExternalLink size={12}/>
+                  </button>
+                  <button onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, 'Class Mailbox QR join · Student AI off', mbLive.code)} disabled={!mbQrSvg} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-[11px] font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                    Print <Printer size={12}/>
+                  </button>
+                  <button onClick={() => { setMbPanelOpen(false); setShowSessionModal(true); }} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-[11px] font-bold text-cyan-900 hover:border-cyan-500">
+                    Project <Maximize size={12}/>
+                  </button>
+                </div>
+                <input aria-label="Selectable mailbox live join link" readOnly value={mbLive.joinUrl || ''} onFocus={event => event.target.select()} className="mb-3 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
                 <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Connected students ({Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
                   {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">Waiting for students to scan…</p>}
@@ -32995,16 +33118,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </div>
         </div>
       )}
-      {liveJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (
-        <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
-          <span>{liveJoinStatus}</span>
-          {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="ml-3 rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">Retry</button>}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (liveJoinStatus || activeSessionCode) && (
+        <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{liveJoinStatus || `Class ${activeSessionCode} · ${studentNickname || 'Student'} · AI tools off`}</span>
+          {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">Retry</button>}
+          {!liveJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
         </div>
       )}
-      {mbJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (
-        <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
-          <span>{mbJoinStatus}</span>
-          {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="ml-3 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Retry</button>}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinStatus || activeSessionCode) && (
+        <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{mbJoinStatus || `Class ${activeSessionCode || window.__alloQrStudentMode?.code || ''} · ${studentNickname || 'Student'} · AI tools off`}</span>
+          {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Retry</button>}
+          {!mbJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
+        </div>
+      )}
+      {!isTeacherMode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) && (
+        <div role="status" aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>Homework ready · {studentNickname || 'Student'} · AI tools off</span>
+          <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-violet-300 bg-violet-50 px-2 py-1 text-xs font-bold text-violet-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>
         </div>
       )}
       {mbStudent && !isTeacherMode && (
@@ -33027,7 +33158,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           )}
         </div>
       )}
-      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onRequestEndSession={requestEndLiveSession} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
+      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} connectedStudentCount={mbLive ? Object.keys(mbRoster).length : Object.keys(sessionData?.roster || {}).length} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onRequestEndSession={requestEndLiveSession} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {endSessionPreview && (
         <div className="fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation">
           <div ref={endSessionPreviewRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="end-session-summary-title" className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100">
@@ -33894,7 +34025,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
       <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={() => setShowSessionStartOptions(true)} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={() => setShowSessionStartOptions(true)} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -39209,18 +39340,34 @@ export default function WrappedApp() {
 if (typeof __firebase_config !== 'undefined') {
   const container = document.getElementById('root');
   if (container) {
-    if (ReactDOM.createRoot) {
-       const originalConsoleError = console.error;
-       console.error = (...args) => {
-         if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
-           return;
-         }
-         originalConsoleError(...args);
-       };
-       const root = ReactDOM.createRoot(container);
-       root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
+    const _alloMountApp = () => {
+      if (ReactDOM.createRoot) {
+         const originalConsoleError = console.error;
+         console.error = (...args) => {
+           if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
+             return;
+           }
+           originalConsoleError(...args);
+         };
+         const root = ReactDOM.createRoot(container);
+         root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
+      } else {
+         ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
+      }
+    };
+    // Canvas localStorage hydration gate (2026-07-14): boot-time useState
+    // initializers read prefs (theme, a11y, voice) synchronously, but on
+    // Canvas the origin's localStorage starts empty every session. UtilsPure
+    // restores it from the device-storage bridge and announces via
+    // window.__alloPrefsHydrated / the allo-prefs-hydrated event — hold
+    // first paint for that (1.5s cap so a blocked bridge never stalls boot).
+    if (_isCanvasEnv && !window.__alloPrefsHydrated) {
+      let _alloMounted = false;
+      const _alloGo = () => { if (!_alloMounted) { _alloMounted = true; _alloMountApp(); } };
+      window.addEventListener('allo-prefs-hydrated', _alloGo, { once: true });
+      setTimeout(_alloGo, 1500);
     } else {
-       ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
+      _alloMountApp();
     }
   }
 }

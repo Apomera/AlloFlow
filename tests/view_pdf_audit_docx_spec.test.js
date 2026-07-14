@@ -177,4 +177,22 @@ describe('view_pdf_audit · _htmlToDocxSpec (accessible Word export)', () => {
     const spec = _htmlToDocxSpec(wrap('<p>   </p><h2></h2><ul><li> </li></ul>'));
     expect(spec.blocks.length).toBe(0);
   });
+
+  it('preserves images embedded inside paragraphs without dropping surrounding text', () => {
+    const spec = _htmlToDocxSpec(wrap('<p>Before <img src="data:image/png;base64,AA==" alt="diagram"> after</p>'));
+    expect(spec.blocks.map((b) => b.type)).toEqual(['paragraph', 'image', 'paragraph']);
+    expect(spec.blocks[0].runs.map((r) => r.text || '').join('')).toContain('Before');
+    expect(spec.blocks[1].alt).toBe('diagram');
+    expect(spec.blocks[2].runs.map((r) => r.text || '').join('')).toContain('after');
+  });
+
+  it('keeps nested tables separate and does not duplicate inner rows into the outer table', () => {
+    const spec = _htmlToDocxSpec(wrap('<table><tr><th>Outer</th></tr><tr><td>Cell<table><tr><th>Inner</th></tr><tr><td>Value</td></tr></table></td></tr></table>'));
+    const tables = spec.blocks.filter((b) => b.type === 'table');
+    expect(tables).toHaveLength(2);
+    expect(tables[0].rows).toHaveLength(2);
+    expect(JSON.stringify(tables[0])).not.toContain('Inner');
+    expect(JSON.stringify(tables[1])).toContain('Inner');
+  });
+
 });

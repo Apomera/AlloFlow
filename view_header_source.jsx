@@ -82,6 +82,7 @@ function HeaderBar(props) {
     GlobalMuteButton, KOKORO_VOICES, UiLanguageSelector, _isCanvasEnv, activeSessionCode,
     addToast, ai, appId, currentLevelXP,
     customExportCSS, createHomeworkAssignmentLink, dismissHelpOnboarding,
+    homeworkExpiryDays, openRecentQrShares, recentQrShareCount, setHomeworkExpiryDays,
     focusNarrationEnabled, generatedContent, globalLevel, globalProgress, globalXPNext,
     handleCloudToggleClick, handleExportIMS, handleExportQTI, handleRestoreView,
     handleSetActiveViewToDashboard, handleSetIsJoinPopoverOpenToFalse,
@@ -978,6 +979,18 @@ function HeaderBar(props) {
                                     >
                                         <Share2 size={14} /> Homework QR
                                     </button>
+                                    <div className="px-3 pb-2">
+                                      <label className="block text-[11px] font-bold text-slate-600" htmlFor="homework-qr-expiry">Homework link length</label>
+                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                        <option value={1}>1 day</option>
+                                        <option value={7}>1 week</option>
+                                        <option value={14}>2 weeks</option>
+                                        <option value={30}>30 days</option>
+                                      </select>
+                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
+                                        <History size={14}/> Recent homework links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
+                                      </button>
+                                    </div>
                                     <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">Teacher-prepared resources open for students with AI generation off.</p>
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
                                     {activeView === 'quiz' && !isIndependentMode && (

@@ -1,0 +1,95 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+let Hub;
+let pack;
+beforeAll(() => {
+  window.React = window.React || { useState: (value) => [typeof value === 'function' ? value() : value, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), createElement: () => null, Fragment: 'fragment' };
+  loadAlloModule('test_prep_hub_module.js');
+  Hub = window.AlloModules.TestPrepHub;
+  pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-speech-language-pathology-5331');
+});
+
+describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
+  it('registers two ready 100-item batches with the near-equal ETS category blueprint', () => {
+    expect(pack).toBeTruthy();
+    expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 132, simulationTimeMinutes: 150 });
+    expect(pack.items).toHaveLength(200);
+    expect(pack.sections).toEqual([
+      { id: 'diagnostic-batch-1', label: 'Independent 100-item diagnostic batch 1', timeMinutes: null },
+      { id: 'diagnostic-batch-2', label: 'Independent 100-item diagnostic batch 2', timeMinutes: null },
+    ]);
+    const weights = Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]));
+    expect(weights['foundations-professional-practice']).toBeCloseTo(1 / 3);
+    expect(weights['screening-assessment-diagnosis']).toBeCloseTo(1 / 3);
+    expect(weights['treatment-planning-evaluation']).toBeCloseTo(1 / 3);
+    const expected = { 'foundations-professional-practice': 34, 'screening-assessment-diagnosis': 33, 'treatment-planning-evaluation': 33 };
+    for (let batchIndex = 0; batchIndex < 2; batchIndex += 1) {
+      const batch = pack.items.slice(batchIndex * 100, batchIndex * 100 + 100);
+      for (const [domainId, count] of Object.entries(expected)) expect(batch.filter((item) => item.domainId === domainId)).toHaveLength(count);
+      expect(batch.reduce((counts, item) => { counts[item.answerIndex] += 1; return counts; }, [0, 0, 0, 0])).toEqual([25, 25, 25, 25]);
+    }
+    expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 2, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: true });
+  });
+
+  it('keeps every item original, fully explained, source-reviewed, and linked to one compatible chapter', () => {
+    const prompts = pack.items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').trim());
+    expect(new Set(prompts).size).toBe(200);
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(200);
+    for (const item of pack.items) {
+      expect(item.type).toBe('single-choice');
+      expect(item.choices).toHaveLength(4);
+      expect(new Set(item.choices).size).toBe(4);
+      expect(item.rationale.length).toBeGreaterThanOrEqual(100);
+      expect(item.choiceRationales).toHaveLength(4);
+      expect(item.choiceRationales.every((entry) => entry.length >= 100)).toBe(true);
+      expect(item.references).toContain('https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf');
+      expect(item).toMatchObject({ reviewStatus: 'source-reviewed', qaStatus: 'qa-passed' });
+      expect(item.skillIds).toHaveLength(1);
+      expect(item.chapterIds).toHaveLength(1);
+    }
+  });
+
+  it('builds category and confidence diagnostics without inventing a scaled score or credential result', () => {
+    const firstBatch = pack.items.slice(0, 100);
+    const answers = Object.fromEntries(firstBatch.map((item) => [item.id, item.answerIndex]));
+    const confidence = Object.fromEntries(firstBatch.map((item) => [item.id, 'sure']));
+    const missed = [firstBatch.find((item) => item.domainId === 'foundations-professional-practice'), firstBatch.find((item) => item.domainId === 'screening-assessment-diagnosis')];
+    for (const item of missed) answers[item.id] = (item.answerIndex + 1) % 4;
+    const diagnostic = Hub.buildBatchDiagnostic(pack, answers, confidence, 0);
+    const rows = Object.fromEntries(diagnostic.domainRows.map((row) => [row.id, row]));
+    expect(diagnostic).toMatchObject({ batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 100, correct: 98, total: 100, percent: 98, isFinalBatch: false });
+    expect(rows['foundations-professional-practice']).toMatchObject({ correct: 33, total: 34, missed: 1 });
+    expect(rows['screening-assessment-diagnosis']).toMatchObject({ correct: 32, total: 33, missed: 1 });
+    expect(diagnostic.feedback.join(' ')).toContain('Lowest accuracy in this batch');
+    expect(diagnostic.feedback.join(' ')).toContain('Review confident misses first');
+    expect(diagnostic).not.toHaveProperty('scaledScore');
+    expect(diagnostic).not.toHaveProperty('passed');
+    expect(pack.disclaimer).toContain('not official or scaled Praxis scores');
+    expect(pack.disclaimer).toContain('swallowing-safety decisions');
+  });
+
+  it('uses safety-first, access-first, and jurisdiction-aware clinical guidance', () => {
+    const acute = pack.items.find((item) => item.prompt.includes('acute inability to manage secretions'));
+    const aac = pack.items.find((item) => item.prompt.includes('cognitive readiness before receiving AAC'));
+    const telepractice = pack.items.find((item) => item.prompt.includes('located in another state'));
+    const thickened = pack.items.find((item) => item.prompt.includes('thicker liquid reduces aspiration'));
+    expect(acute.choices[acute.answerIndex]).toContain('activate appropriate medical or emergency response');
+    expect(aac.choices[aac.answerIndex]).toContain('no prerequisite cognitive or speech skills');
+    expect(telepractice.choices[telepractice.answerIndex]).toContain('where the client is located');
+    expect(thickened.choices[thickened.answerIndex]).toContain('hydration and nutrition');
+    expect(thickened.choices[thickened.answerIndex]).toContain('informed choice');
+  });
+
+  it('publishes zero-finding QA and exact deployment mirrors', () => {
+    const read = (file) => fs.readFileSync(resolve(process.cwd(), file), 'utf8');
+    const qa = JSON.parse(read('test_prep/speech_language_pathology_5331_native_qa.json'));
+    expect(qa.summary).toMatchObject({ totalItems: 200, passedItems: 200, reviewRequiredItems: 0, findings: 0, status: 'pass' });
+    expect(qa.blueprint).toMatchObject({ officialQuestionCount: 132, timeMinutes: 150, selectedResponse: true, categories: { 'foundations-professional-practice': { questions: 44 }, 'screening-assessment-diagnosis': { questions: 44 }, 'treatment-planning-evaluation': { questions: 44 } } });
+    expect(qa.diagnosticBatch).toMatchObject({ batchCount: 2, batchSize: 100, categories: { 'foundations-professional-practice': 34, 'screening-assessment-diagnosis': 33, 'treatment-planning-evaluation': 33 } });
+    expect(qa.standard.limitation).toContain('independent licensed-SLP validation');
+    for (const name of ['speech_language_pathology_5331_items.json', 'speech_language_pathology_5331_pack.json', 'speech_language_pathology_5331_native_qa.json', 'speech_language_pathology_5331_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+  });
+});

@@ -13949,6 +13949,31 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [sourceLength, setSourceLength] = useState('250');
   const [sourceCustomInstructions, setSourceCustomInstructions] = useState('');
   const [qrShareModal, setQrShareModal] = useState(null);
+  const [homeworkExpiryDays, setHomeworkExpiryDays] = useState(() => {
+      const saved = Number(safeGetItem('allo_homework_expiry_days') || 14);
+      return [1, 7, 14, 30].includes(saved) ? saved : 14;
+  });
+  const [recentQrShares, setRecentQrShares] = useState(() => {
+      try {
+          const parsed = JSON.parse(safeGetItem('allo_recent_qr_shares') || '[]');
+          return Array.isArray(parsed) ? parsed.filter(item => item?.url && (!item.expiresAt || Date.parse(item.expiresAt) > Date.now())).slice(0, 6) : [];
+      } catch (_) { return []; }
+  });
+  const [showRecentQrShares, setShowRecentQrShares] = useState(false);
+  useEffect(() => {
+      try { safeSetItem('allo_homework_expiry_days', String(homeworkExpiryDays)); } catch (_) {}
+  }, [homeworkExpiryDays]);
+  useEffect(() => {
+      try { safeSetItem('allo_recent_qr_shares', JSON.stringify(recentQrShares.slice(0, 6))); } catch (_) {}
+  }, [recentQrShares]);
+  const rememberQrShare = useCallback((share) => {
+      if (!share?.url) return;
+      setRecentQrShares(previous => [share, ...previous.filter(item => item.url !== share.url)].slice(0, 6));
+  }, []);
+  const openQrShareModal = useCallback((share) => {
+      setQrShareModal(share);
+      rememberQrShare(share);
+  }, [rememberQrShare]);
   const [qrShareSvg, setQrShareSvg] = useState('');
   const [qrShareError, setQrShareError] = useState(false);
   const homeworkQrDialogRef = useRef(null);
@@ -14746,14 +14771,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           kind: 'assignment',
           title,
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(),
           currentResourceId: resources[0]?.id || null,
           resources,
           aiPolicy: { studentAi: 'off', defaultStudentAi: 'off', teacherPrepared: true },
       });
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
       return { encoded, title, count: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), expiresAt: packet.expiresAt };
-  }, [generatedContent, history, sourceTopic]);
+  }, [generatedContent, history, homeworkExpiryDays, sourceTopic]);
   // Latest-ref to the mailbox-host callback so the self-contained builder can
   // reroute oversize packs to it (hostPackOnMailbox is declared below), and so a
   // queued host can auto-run after a late mailbox connect. Mirrors the
@@ -14785,7 +14810,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;
           }
           copyToClipboard(shareUrl);
-          setQrShareModal({
+          openQrShareModal({
               type: 'assignment-pack',
               title: built.title,
               url: shareUrl,
@@ -14802,7 +14827,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Could not create a self-contained homework link.', 'error');
           return null;
       }
-  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig]);
+  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig, openQrShareModal]);
   // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
   // to the teacher's own Drive via their mailbox; the QR carries only a tiny
   // pointer, so it is always small enough to print.
@@ -14831,7 +14856,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const shareUrl = _buildAlloMailboxEntryUrl('allo_mbp', { u: mbConfig.url, id, k: secret });
           if (!shareUrl) throw new Error('no student app URL configured');
           copyToClipboard(shareUrl);
-          setQrShareModal({
+          openQrShareModal({
               type: 'assignment-pack-hosted',
               title: built.title,
               url: shareUrl,
@@ -14851,7 +14876,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbBusy(false);
           return null;
       }
-  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard]);
+  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard, openQrShareModal]);
   // Keep the host-callback ref fresh so the self-contained builder's oversize
   // reroute (above) always calls the current hostPackOnMailbox.
   useEffect(() => { hostPackOnMailboxRef.current = hostPackOnMailbox; });
@@ -14980,7 +15005,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               hostAppId: appId,
               hostId: user?.uid || null,
               createdAt: new Date().toISOString(),
-              expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+              expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000),
               status: 'assignment',
               mode: 'assignment',
               isActive: false,
@@ -14995,7 +15020,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               version: 1,
           }));
           copyToClipboard(shareUrl);
-          setQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length, resourceTitles: resourcesToAssign.map(item => item.title || item.type || 'Untitled resource'), expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId });
+          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length, resourceTitles: resourcesToAssign.map(item => item.title || item.type || 'Untitled resource'), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId });
           addToast('Homework QR ready. Students open teacher-prepared resources with AI generation off.', 'success');
           if (prepared.droppedCount > 0 || prepared.overLimit) {
               addToast('Some older resources were trimmed to keep the QR assignment reliable.', 'info');
@@ -15006,12 +15031,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Cloud homework link failed — making a self-contained link instead.', 'info');
           return createSelfContainedHomeworkLink();
       }
-  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, hostPackOnMailbox, mbConfig, generatedContent, history, sourceTopic, user?.uid]);
+  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, history, openQrShareModal, sourceTopic, user?.uid]);
   const openStudentQrPreview = useCallback((url, label = 'student link') => {
       if (!url || typeof window === 'undefined') return;
       const preview = window.open(url, '_blank');
-      if (preview) { try { preview.opener = null; } catch (_) {} }
-      else addToast('Allow pop-ups to test this ' + label + '.', 'info');
+      if (preview) {
+          try { preview.opener = null; } catch (_) {}
+          addToast('Student preview opened. Complete the check in the new tab, then return here.', 'success');
+      } else addToast('Allow pop-ups to test this ' + label + '.', 'info');
   }, [addToast]);
   const printQrSheet = useCallback((svg, heading, detail, modeLabel, fallbackCode = '') => {
       if (!svg || typeof window === 'undefined') {
@@ -15049,6 +15076,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               await deleteDoc(doc(db, 'artifacts', current.hostAppId || appId, 'public', 'data', 'sessions', current.assignmentId));
           }
           setQrShareModal(null);
+          setRecentQrShares(previous => previous.filter(item => item.url !== current.url));
           addToast('Homework link revoked.', 'success');
       } catch (e) {
           warnLog('Homework revocation failed:', e);
@@ -32778,6 +32806,38 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
         ))}
       </div>
+      {showRecentQrShares && (
+        <div className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="recent-homework-links-title" onClick={() => setShowRecentQrShares(false)}>
+          <div className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" onClick={event => event.stopPropagation()}>
+            <button onClick={() => setShowRecentQrShares(false)} className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100" aria-label="Close recent homework links"><X size={20}/></button>
+            <h2 id="recent-homework-links-title" className="pr-10 text-xl font-black text-slate-900">Recent homework links</h2>
+            <p className="mt-1 text-xs text-slate-600">Saved only on this teacher device. Reopen a link to print, test, or revoke it.</p>
+            <div className="mt-4 space-y-3">
+              {recentQrShares.length === 0 && <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600">No recent homework links on this device.</p>}
+              {recentQrShares.map((share, index) => {
+                const expired = share.expiresAt && Date.parse(share.expiresAt) <= Date.now();
+                return (
+                  <article key={share.url || index} className="rounded-xl border border-slate-200 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-black text-slate-900">{share.title || 'AlloFlow homework'}</h3>
+                        <p className="mt-0.5 text-[11px] text-slate-600">{share.resourceCount || 1} {(share.resourceCount || 1) === 1 ? 'resource' : 'resources'} · {expired ? 'Expired' : `Expires ${share.expiresAt ? new Date(share.expiresAt).toLocaleDateString() : 'later'}`}</p>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${expired ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>{expired ? 'Expired' : 'Active'}</span>
+                    </div>
+                    <input aria-label={`Selectable link for ${share.title || 'homework'}`} readOnly value={share.url} onFocus={event => event.target.select()} className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] text-slate-700" />
+                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      <button disabled={expired} onClick={() => { openQrShareModal(share); setShowRecentQrShares(false); }} className="min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50">Reopen</button>
+                      <button onClick={() => copyToClipboard(share.url)} className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800">Copy</button>
+                      <button onClick={() => setRecentQrShares(previous => previous.filter(item => item.url !== share.url))} className="min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800">Remove</button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       {qrShareModal && (
         <div className="fixed inset-0 bg-slate-950/80 z-[151] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="alloflow-homework-qr-title" aria-describedby="alloflow-homework-qr-description" onClick={() => setQrShareModal(null)}>
           <div ref={homeworkQrDialogRef} tabIndex={-1} className="bg-gradient-to-b from-violet-50 to-white rounded-3xl shadow-2xl border border-violet-200 p-6 text-center max-w-md w-full relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -32824,6 +32884,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
               {qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
             </button>
+            <input aria-label="Selectable homework link" readOnly value={qrShareModal.url || ''} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-500" />
             {qrShareModal.type !== 'assignment-pack' && (
               <button onClick={revokeHomeworkAssignment} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 transition-all">
                 Revoke homework link <Trash2 size={12}/>
@@ -33012,7 +33073,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   <p className="mb-3 text-center text-xs font-bold text-indigo-700">Validating live-session QR...</p>
                 )}
                 <p className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? 'Ready to scan · AI tools off · Active until you end the session' : 'The class code remains available while the QR loads.'}</p>
-                <div className="mb-3 grid grid-cols-3 gap-2">
+                <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
                   <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
                     Copy link <Copy size={12}/>
                   </button>
@@ -33022,7 +33083,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   <button onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, 'Class Mailbox QR join · Student AI off', mbLive.code)} disabled={!mbQrSvg} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-[11px] font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
                     Print <Printer size={12}/>
                   </button>
+                  <button onClick={() => { setMbPanelOpen(false); setShowSessionModal(true); }} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-[11px] font-bold text-cyan-900 hover:border-cyan-500">
+                    Project <Maximize size={12}/>
+                  </button>
                 </div>
+                <input aria-label="Selectable mailbox live join link" readOnly value={mbLive.joinUrl || ''} onFocus={event => event.target.select()} className="mb-3 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
                 <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Connected students ({Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
                   {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">Waiting for students to scan…</p>}
@@ -33053,16 +33118,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </div>
         </div>
       )}
-      {liveJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (
-        <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
-          <span>{liveJoinStatus}</span>
-          {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="ml-3 rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">Retry</button>}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (liveJoinStatus || activeSessionCode) && (
+        <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{liveJoinStatus || `Class ${activeSessionCode} · ${studentNickname || 'Student'} · AI tools off`}</span>
+          {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">Retry</button>}
+          {!liveJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
         </div>
       )}
-      {mbJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (
-        <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
-          <span>{mbJoinStatus}</span>
-          {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="ml-3 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Retry</button>}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinStatus || activeSessionCode) && (
+        <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{mbJoinStatus || `Class ${activeSessionCode || window.__alloQrStudentMode?.code || ''} · ${studentNickname || 'Student'} · AI tools off`}</span>
+          {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Retry</button>}
+          {!mbJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
+        </div>
+      )}
+      {!isTeacherMode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) && (
+        <div role="status" aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>Homework ready · {studentNickname || 'Student'} · AI tools off</span>
+          <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-violet-300 bg-violet-50 px-2 py-1 text-xs font-bold text-violet-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>
         </div>
       )}
       {mbStudent && !isTeacherMode && (
@@ -33085,7 +33158,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           )}
         </div>
       )}
-      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onRequestEndSession={requestEndLiveSession} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
+      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} connectedStudentCount={mbLive ? Object.keys(mbRoster).length : Object.keys(sessionData?.roster || {}).length} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onRequestEndSession={requestEndLiveSession} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {endSessionPreview && (
         <div className="fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation">
           <div ref={endSessionPreviewRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="end-session-summary-title" className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100">
@@ -33952,7 +34025,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
       <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={() => setShowSessionStartOptions(true)} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={() => setShowSessionStartOptions(true)} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and

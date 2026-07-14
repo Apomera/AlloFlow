@@ -8401,6 +8401,16 @@ const d = labToolData.solarSystem || {};
 
                     "data-drone-canvas": "true",
 
+                    "data-drone-vehicle-mode": (sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'atmospheric-probe' : (sel && sel.terrainType === 'earthlike') ? 'deep-sea-submersible' : 'surface-rover',
+
+                    role: "application",
+
+                    tabIndex: 0,
+
+                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D or arrow keys to move. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation.',
+
+                    "aria-describedby": "hud-science-focus",
+
                     style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' },
 
                     ref: function (canvasEl) {
@@ -10308,6 +10318,10 @@ const d = labToolData.solarSystem || {};
 
                         var modeLabel = isOcean ? '\uD83D\uDEA4 DEEP-SEA SUBMERSIBLE' : isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
 
+                        var scienceQuestion = isOcean ? 'How do pressure and light change as depth increases?' : isGas ? 'How do pressure, temperature, and wind change below the clouds?' : 'How do slope and elevation affect rover travel?';
+
+                        var scienceInitialReading = isOcean ? 'Depth 0 m \u2022 compare pressure and light' : isGas ? 'Relative altitude 0 m \u2022 compare atmospheric layers' : 'Elevation 0 m \u2022 slope 0\u00B0 \u2022 speed 0 m/s';
+
                         var atmosLabel = sel.atmosphere || 'No data';
 
                         var gravLabel = sel.gravity || '?';
@@ -10448,6 +10462,12 @@ const d = labToolData.solarSystem || {};
 
                           '</div>' +
 
+                          '<div id="hud-science-focus" role="note" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:5px;margin-bottom:5px">' +
+                          '<div style="color:#7dd3fc;font-weight:bold;font-size:11px;margin-bottom:2px">\uD83D\uDD2C SCIENCE FOCUS</div>' +
+                          '<div style="color:#cbd5e1;font-size:11px;line-height:1.35">' + scienceQuestion + '</div>' +
+                          '<div id="hud-science-reading" style="color:#fbbf24;font-size:11px;line-height:1.35;margin-top:2px">' + scienceInitialReading + '</div>' +
+                          '</div>' +
+
                           '<div id="hud-standard-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:none;grid-template-columns:auto 1fr;gap:2px 8px">' +
 
                           '<span style="color:#64748b" title="Compass heading: 0=N, 90=E, 180=S, 270=W">\uD83E\uDDED Hdg</span><span id="hud-hdg" style="color:#67e8f9">N 0\u00B0</span>' +
@@ -10501,6 +10521,24 @@ const d = labToolData.solarSystem || {};
                         hud.innerHTML = hudStaticHTML;
 
                         canvasEl.parentElement.appendChild(hud);
+
+                        var scienceReadingEl = hud.querySelector('#hud-science-reading');
+                        function updateDroneScienceFocus(altitude) {
+                          if (!scienceReadingEl) return;
+                          if (isOcean && oceanAtmo) {
+                            var oceanScienceZone = oceanAtmo.getZone(playerPos.y);
+                            var lightPercent = Math.round((oceanScienceZone.lightLevel || 0) * 100);
+                            scienceReadingEl.textContent = 'Depth ' + Math.abs(playerPos.y * scaleFactor).toFixed(0) + ' m \u2022 ' + oceanScienceZone.pressure + ' \u2022 light ' + lightPercent + '%';
+                            return;
+                          }
+                          if (isGas && gasAtmo) {
+                            var gasScienceZone = gasAtmo.getZone(playerPos.y);
+                            scienceReadingEl.textContent = 'Relative altitude ' + altitude + ' m \u2022 ' + gasScienceZone.pressure + ' \u2022 ' + gasScienceZone.temp + ' \u2022 wind ' + gasScienceZone.windSpeed + ' km/h';
+                            return;
+                          }
+                          var slopeDegrees = roverGroup ? Math.max(Math.abs(roverGroup.rotation.x), Math.abs(roverGroup.rotation.z)) * 180 / Math.PI : 0;
+                          scienceReadingEl.textContent = 'Elevation ' + altitude + ' m \u2022 slope ' + slopeDegrees.toFixed(1) + '\u00B0 \u2022 speed ' + (lastSpeed || 0).toFixed(1) + ' m/s';
+                        }
 
                         // ── Gas Sample Inventory Panel (Tab to toggle) ──
                         if (isGas) {
@@ -11356,7 +11394,7 @@ const d = labToolData.solarSystem || {};
                         var currentHeadingLabel = 'N';
                         var currentHeadingDeg = 0;
 
-                        canvasEl.addEventListener('keydown', function (e) {
+                        var onDroneShortcutKeydown = function (e) {
 
                           if (e.key === 'v' || e.key === 'V') {
 
@@ -11478,7 +11516,64 @@ const d = labToolData.solarSystem || {};
                             recordDroneJournal('Photo', 'Photo evidence: ' + sel.name, photoLabel + ' at heading ' + currentHeadingLabel + ' ' + Math.round(currentHeadingDeg) + '\u00B0.', buildDroneCER('photo', sel.name + ' photo', 'Image captured at ' + photoLabel + ' while facing ' + currentHeadingLabel + '.', 'A timestamped image gives students evidence they can cite later.'), true);
                           }
 
+                        };
+
+                        canvasEl.addEventListener('keydown', onDroneShortcutKeydown);
+
+
+
+                        // Compact action dock: makes the core science workflow available
+                        // to pointer and touch users while preserving every keyboard shortcut.
+                        var actionDock = document.createElement('div');
+                        actionDock.setAttribute('data-drone-action-dock', 'true');
+                        actionDock.setAttribute('role', 'group');
+                        actionDock.setAttribute('aria-label', 'Exploration vehicle actions');
+                        actionDock.style.cssText = 'position:absolute;top:62px;right:48px;z-index:14;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:min(204px,calc(100% - 64px));pointer-events:auto;font-family:system-ui';
+
+                        var droneCommandTimers = [];
+                        function dispatchDroneCommand(action) {
+                          var keyDown = new KeyboardEvent('keydown', { key: action.key, bubbles: true, cancelable: true });
+                          canvasEl.dispatchEvent(keyDown);
+                          if (typeof announceToSR === 'function') announceToSR(action.announcement);
+
+                          var timerId = setTimeout(function () {
+                            canvasEl.dispatchEvent(new KeyboardEvent('keyup', { key: action.key, bubbles: true, cancelable: true }));
+                            var timerIndex = droneCommandTimers.indexOf(timerId);
+                            if (timerIndex >= 0) droneCommandTimers.splice(timerIndex, 1);
+                          }, action.hold || 40);
+                          droneCommandTimers.push(timerId);
+                        }
+
+                        var droneActions = [
+                          { key: 'g', label: 'Scan', announcement: 'Environment scan started.' },
+                          { key: 'f', label: isFluid ? 'Sample' : 'Collect', hold: 280, announcement: 'Collection command active. Move near a specimen to collect it.' },
+                          { key: 'c', label: 'Photo', announcement: 'Photo capture requested.' },
+                          { key: 'm', label: 'Mission', announcement: 'Mission progress toggled.' },
+                          { key: 'j', label: 'Journal', announcement: 'Evidence journal toggled.' },
+                          { key: 'n', label: 'Navigate', announcement: 'Navigation challenge toggled.' }
+                        ];
+
+                        droneActions.forEach(function (action) {
+                          var button = document.createElement('button');
+                          button.type = 'button';
+                          button.setAttribute('data-drone-command', action.key);
+                          button.setAttribute('aria-keyshortcuts', action.key.toUpperCase());
+                          button.setAttribute('aria-label', action.label + ', keyboard shortcut ' + action.key.toUpperCase());
+                          button.style.cssText = 'min-height:34px;padding:6px 8px;border:1px solid rgba(148,163,184,0.45);border-radius:8px;background:rgba(2,6,23,0.84);color:#e2e8f0;font:600 11px system-ui;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;backdrop-filter:blur(6px)';
+
+                          var buttonLabel = document.createElement('span');
+                          buttonLabel.textContent = action.label;
+                          var shortcut = document.createElement('kbd');
+                          shortcut.setAttribute('aria-hidden', 'true');
+                          shortcut.textContent = action.key.toUpperCase();
+                          shortcut.style.cssText = 'min-width:18px;padding:1px 4px;border-radius:4px;background:rgba(148,163,184,0.2);color:#bae6fd;text-align:center;font:700 11px ui-monospace,monospace';
+                          button.appendChild(buttonLabel);
+                          button.appendChild(shortcut);
+                          button.addEventListener('click', function () { dispatchDroneCommand(action); });
+                          actionDock.appendChild(button);
                         });
+
+                        canvasEl.parentElement.appendChild(actionDock);
 
 
 
@@ -12582,7 +12677,11 @@ const d = labToolData.solarSystem || {};
                             var curOceanZone = oZone.name;
                             if (!oceanAtmo.zonesVisited[curOceanZone]) {
                               oceanAtmo.zonesVisited[curOceanZone] = true;
-                              if (typeof addToast === 'function' && Object.keys(oceanAtmo.zonesVisited).length > 1) addToast('\uD83C\uDF0A Entered: ' + curOceanZone, 'info');
+                              var oceanZoneCount = Object.keys(oceanAtmo.zonesVisited).length;
+                              if (typeof addToast === 'function' && oceanZoneCount > 1) addToast('\uD83C\uDF0A Entered: ' + curOceanZone, 'info');
+                              if (typeof announceToSR === 'function' && oceanZoneCount > 1) {
+                                announceToSR('Entered ' + curOceanZone + '. Pressure ' + oZone.pressure + '. Temperature ' + oZone.temp + '.');
+                              }
                             }
 
                             // Bioluminescent creatures pulse and drift
@@ -12878,12 +12977,14 @@ const d = labToolData.solarSystem || {};
                               gasAtmo.deepestY = playerPos.y;
                               gasAtmo.depthRecord = Math.abs(playerPos.y * scaleFactor);
                             }
-                            var curZoneName = gasAtmo.getZone(playerPos.y).name;
+                            var enteredGasZone = gasAtmo.getZone(playerPos.y);
+                            var curZoneName = enteredGasZone.name;
                             if (!gasAtmo.zonesVisited[curZoneName]) {
                               gasAtmo.zonesVisited[curZoneName] = true;
                               var zoneCount = Object.keys(gasAtmo.zonesVisited).length;
                               if (zoneCount >= 3) { checkChallenges(); }
                               if (addToast && zoneCount > 1) addToast('\uD83C\uDF0A Entered: ' + curZoneName, 'info');
+                              if (typeof announceToSR === 'function' && zoneCount > 1) announceToSR('Entered ' + curZoneName + '. Pressure ' + enteredGasZone.pressure + '. Temperature ' + enteredGasZone.temp + '. Wind ' + enteredGasZone.windSpeed + ' kilometers per hour.');
                             }
 
                             // Spectrometer bar chart update (every 15 frames)
@@ -13085,6 +13186,8 @@ const d = labToolData.solarSystem || {};
                             var altitude = isOcean ? (Math.abs(playerPos.y) * scaleFactor).toFixed(0) : ((playerPos.y - (isGas ? 0 : 1.6)) * scaleFactor).toFixed(0);
 
                             if (altEl) altEl.textContent = altitude + ' m';
+
+                            updateDroneScienceFocus(altitude);
 
                             if (spdEl) spdEl.textContent = lastSpeed.toFixed(1) + ' m/s';
 
@@ -13544,6 +13647,11 @@ const d = labToolData.solarSystem || {};
 
                           document.removeEventListener('mousemove', onMouseMove);
 
+                          canvasEl.removeEventListener('keydown', onDroneShortcutKeydown);
+
+                          droneCommandTimers.forEach(function (timerId) { clearTimeout(timerId); });
+                          droneCommandTimers.length = 0;
+
                           // Memory-leak fix: detach every drone listener tracked on
                           // canvasEl._droneHandlers / canvasEl._droneDocHandlers and
                           // disconnect the drone-canvas ResizeObserver, none of which
@@ -13581,6 +13689,8 @@ const d = labToolData.solarSystem || {};
                           if (missionCard.parentElement) missionCard.parentElement.removeChild(missionCard);
 
                           if (journalPanel.parentElement) journalPanel.parentElement.removeChild(journalPanel);
+
+                          if (actionDock.parentElement) actionDock.parentElement.removeChild(actionDock);
 
                           if (discTimeout) clearTimeout(discTimeout);
 

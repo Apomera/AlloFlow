@@ -67,6 +67,12 @@ describe('_concatAudioBlobs — two-pass single-allocation WAV stitch (byte-fait
     expect(await _concatAudioBlobs([])).toBe(null);
   });
 
+  it('rejects mixed WAV and MP3 containers instead of emitting corrupt audio', async () => {
+    const mp3 = new Blob([new Uint8Array([0xff, 0xfb, 0x10, 0x20])], { type: 'audio/mpeg' });
+    expect(await _concatAudioBlobs([makeWav([1, 2], 24000), mp3])).toBe(null);
+    expect(await _concatAudioBlobs([mp3, makeWav([1, 2], 24000)])).toBe(null);
+  });
+
   it('non-WAV (mp3) input is frame-concatenated, not WAV-stitched', async () => {
     const mp3a = new Blob([new Uint8Array([0xff, 0xfb, 0x10, 0x20])], { type: 'audio/mpeg' });
     const mp3b = new Blob([new Uint8Array([0xff, 0xfb, 0x30, 0x40])], { type: 'audio/mpeg' });

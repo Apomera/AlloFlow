@@ -87,4 +87,38 @@ describe('view_pdf_audit · _docxSpecToSlides (accessible PowerPoint export)', (
     ] });
     expect(deck.slides.length).toBe(0);
   });
+  it('splits a single oversized paragraph so no slide exceeds the line budget', () => {
+    const original = 'x'.repeat(2100);
+    const deck = _docxSpecToSlides({ title: 'Doc', lang: 'en', blocks: [
+      { type: 'heading', level: 1, runs: R('Long section') },
+      { type: 'paragraph', runs: R(original) },
+    ] });
+    expect(deck.slides.length).toBeGreaterThan(2);
+    expect(deck.slides.every((slide) => slide.lineEst <= 13)).toBe(true);
+    expect(deck.slides.flatMap((slide) => slide.items).filter((item) => item.kind === 'text').map((item) => item.text).join('')).toBe(original);
+  });
+
+  it('paginates large tables, repeats header rows, and keeps the logical table count', () => {
+    const rows = [{ header: true, cells: [{ runs: R('Name') }, { runs: R('Description') }] }];
+    for (let i = 0; i < 24; i++) rows.push({ header: false, cells: [{ runs: R('Row ' + i) }, { runs: R('Detail ' + i) }] });
+    const deck = _docxSpecToSlides({ title: 'Doc', lang: 'en', blocks: [
+      { type: 'heading', level: 1, runs: R('Data') },
+      { type: 'table', rows },
+    ] });
+    const tables = deck.slides.flatMap((slide) => slide.items).filter((item) => item.kind === 'table');
+    expect(tables.length).toBeGreaterThan(1);
+    expect(tables.every((table) => table.rows[0].header)).toBe(true);
+    expect(tables.flatMap((table, index) => table.rows.slice(index ? 1 : 0)).filter((row) => !row.header)).toHaveLength(24);
+    expect(deck.counts.tables).toBe(1);
+    expect(deck.slides.every((slide) => slide.lineEst <= 13)).toBe(true);
+  });
+
+  it('propagates RTL into the deck consumed by the renderer', () => {
+    const deck = _docxSpecToSlides({ title: '?????', lang: 'ar', rtl: true, blocks: [
+      { type: 'paragraph', runs: R('?? ??????') },
+    ] });
+    expect(deck.rtl).toBe(true);
+    expect(deck.lang).toBe('ar');
+  });
+
 });

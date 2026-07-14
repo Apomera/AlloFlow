@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-14T13:03:20.437Z",
+  "libraryId": "praxis-speech-language-pathology-5331-learning-library",
+  "standard": {
+    "label": "AlloFlow Praxis Speech-Language Pathology 5331 learning-library source and editorial review v1",
+    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive lessons, one-best-answer knowledge checks, complete card and aid metadata, safety cautions, and item-compatible skills.",
+    "limitation": "This is not ETS or ASHA approval, independent licensed-SLP validation, psychometric validation, clinical evaluation, diagnosis, medical or swallowing-safety decision, treatment, supervision, legal advice, or a substitute for current individualized care and requirements."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  },
+  "chapters": [
+    {
+      "id": "slp5331-ch-01",
+      "title": "Anatomy, Physiology, Development, and Scientific Foundations",
+      "domainId": "foundations-professional-practice",
+      "skillId": "anatomy-development-sciences",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-02",
+      "title": "Professional Practice, Ethics, Law, and Interprofessional Care",
+      "domainId": "foundations-professional-practice",
+      "skillId": "professional-practice-ethics",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 7,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-03",
+      "title": "Evidence-Based and Culturally Responsive Practice",
+      "domainId": "foundations-professional-practice",
+      "skillId": "evidence-cultural-responsive-practice",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-04",
+      "title": "Disorder Characteristics, Etiology, and Differential Reasoning",
+      "domainId": "foundations-professional-practice",
+      "skillId": "disorders-characteristics-etiology",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 8,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-05",
+      "title": "Assessment Principles, Measurement, and Integrated Diagnosis",
+      "domainId": "screening-assessment-diagnosis",
+      "skillId": "assessment-principles-measurement",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-06",
+      "title": "Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech",
+      "domainId": "screening-assessment-diagnosis",
+      "skillId": "speech-fluency-voice-motor-assessment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 6,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-07",
+      "title": "Assessment of Language, Cognition, Social Communication, AAC, and Hearing",
+      "domainId": "screening-assessment-diagnosis",
+      "skillId": "language-cognition-aac-hearing-assessment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 6,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-08",
+      "title": "Feeding and Swallowing Assessment",
+      "domainId": "screening-assessment-diagnosis",
+      "skillId": "feeding-swallowing-assessment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-09",
+      "title": "Treatment Planning, Goal Design, Outcomes, and Counseling",
+      "domainId": "treatment-planning-evaluation",
+      "skillId": "treatment-planning-outcomes",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 4,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-10",
+      "title": "Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech",
+      "domainId": "treatment-planning-evaluation",
+      "skillId": "speech-fluency-voice-motor-treatment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 6,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-11",
+      "title": "Treatment of Language, Cognition, Social Communication, AAC, and Hearing",
+      "domainId": "treatment-planning-evaluation",
+      "skillId": "language-cognition-aac-hearing-treatment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 6,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "slp5331-ch-12",
+      "title": "Feeding and Swallowing Treatment",
+      "domainId": "treatment-planning-evaluation",
+      "skillId": "feeding-swallowing-treatment",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 5,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ]
+}

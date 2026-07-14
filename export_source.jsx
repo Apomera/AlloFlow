@@ -490,36 +490,52 @@ const createExport = (deps) => {
                 background: { color: lightBg },
                 objects: [
                     { rect: { x: 0, y: 0, w: "100%", h: 0.75, fill: { color: themeColor } } },
+                    { placeholder: { options: { name: "slideTitle", type: "title", x: 0.5, y: 0.15, w: 9, h: 0.5, fontSize: 20, bold: true, color: lightText }, text: "" } },
                     { rect: { x: 0, y: 5.25, w: "100%", h: 0.375, fill: { color: "E2E8F0" } } },
                     { text: { text: t('export.slides_master_footer'), options: { x: 0.5, y: 5.3, w: 4, h: 0.3, fontSize: 11, color: "64748B" } } },
                     { slideNumber: { x: 9.0, y: 5.3, fontSize: 11, color: "64748B" } }
                 ]
             });
+            pptx.defineSlideMaster({
+                title: "MASTER_TITLE", background: { color: themeColor }, objects: [
+                    { placeholder: { options: { name: "deckTitle", type: "title", x: 0.5, y: 1.5, w: 9, h: 2, fontSize: 44, fontFace: 'Arial', color: lightText, bold: true, align: 'center', valign: 'middle' }, text: "" } }
+                ]
+            });
             pptx.title = sourceTopic || t('export.slides_title_default');
             pptx.subject = t('export.slides_subject');
             pptx.author = "AlloFlow";
-            pptx.lang = 'en';
+            pptx.lang = (document.documentElement && document.documentElement.lang) || 'en';
             const addA11yNotes = (slide, title, content) => { try { slide.addNotes(title + (content ? ': ' + content.substring(0, 500) : '')); } catch(e) {} };
-            const titleSlide = pptx.addSlide();
+            const addSlideTitle = (slide, text) => slide.addText(text, { placeholder: 'slideTitle' });
+            const titleSlide = pptx.addSlide({ masterName: "MASTER_TITLE" });
             titleSlide.background = { color: themeColor };
             addA11yNotes(titleSlide, 'Title: ' + (sourceTopic || 'Lesson'), 'Grade level: ' + gradeLevel);
-            titleSlide.addText(sourceTopic || t('export.slides_title_default'), {
-                x: 0.5, y: 1.5, w: 9, h: 2,
-                fontSize: 44, fontFace: 'Arial', color: lightText,
-                bold: true, align: 'center', valign: 'middle'
-            });
+            titleSlide.addText(sourceTopic || t('export.slides_title_default'), { placeholder: 'deckTitle' });
             titleSlide.addText(`${t('export.ppt_grade_level')}: ${gradeLevel} | ${t('export.ppt_generated')}: ${new Date().toLocaleDateString()}`, {
                 x: 0.5, y: 3.5, w: 9, h: 0.5,
                 fontSize: 18, fontFace: 'Arial', color: 'E0E7FF',
                 align: 'center',
             });
+            const chunkText = (value, limit) => {
+                const chunks = []; let remaining = String(value || '').trim(); const max = Math.max(120, limit || 700);
+                while (remaining.length > max) { let at = remaining.lastIndexOf(' ', max); if (at < max * 0.55) at = remaining.indexOf(' ', max); if (at < 1) at = max; chunks.push(remaining.slice(0, at).trim()); remaining = remaining.slice(at).trim(); }
+                if (remaining) chunks.push(remaining); return chunks;
+            };
+            const resourceText = (value, seen) => {
+                if (value == null) return '';
+                if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+                if (typeof value !== 'object') return '';
+                seen = seen || new Set(); if (seen.has(value)) return ''; seen.add(value);
+                const parts = Array.isArray(value) ? value.map((v) => resourceText(v, seen)) : Object.keys(value).filter((k) => !/^(id|color|imageUrl|url)$/i.test(k)).map((k) => resourceText(value[k], seen));
+                return parts.filter(Boolean).join('\n');
+            };
             history.forEach(item => {
                 const type = item.type;
                 const itemTitle = item.title || getDefaultTitle(type);
                 if (type === 'simplified') {
                     const textData = typeof item.data === 'string' ? item.data : '';
                     if (!textData) return;
-                    const paragraphs = textData.split(/\n{2,}/);
+                    const paragraphs = textData.split(/\n{2,}/).flatMap((paragraph) => chunkText(paragraph, 700));
                     let currentSlideObjects = [];
                     let currentSlideLen = 0;
                     const MAX_SLIDE_CHARS = 900;
@@ -528,14 +544,11 @@ const createExport = (deps) => {
                         if (currentSlideLen + rawText.length > MAX_SLIDE_CHARS && currentSlideObjects.length > 0) {
                             const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
                             addA11yNotes(slide, itemTitle, rawText.substring(0, 300));
-                            slide.addText(itemTitle, {
-                                x: 0.5, y: 0.15, w: 9, h: 0.5,
-                                fontSize: 20, bold: true, color: lightText
-                            });
+                            addSlideTitle(slide, itemTitle);
                             slide.addText(currentSlideObjects, {
                                 x: 0.5, y: 1.0, w: 9, h: 4.0,
                                 fontSize: 14, color: darkText, valign: 'top', align: 'left',
-                                lineSpacing: 18
+                                lineSpacing: 18, fit: 'shrink', margin: 0.05
                             });
                             currentSlideObjects = [];
                             currentSlideLen = 0;
@@ -563,10 +576,7 @@ const createExport = (deps) => {
                     if (currentSlideObjects.length > 0) {
                         const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
                         addA11yNotes(slide, itemTitle, textData.substring(0, 300));
-                        slide.addText(itemTitle, {
-                            x: 0.5, y: 0.15, w: 9, h: 0.5,
-                            fontSize: 20, bold: true, color: lightText
-                        });
+                        addSlideTitle(slide, itemTitle);
                         slide.addText(currentSlideObjects, {
                             x: 0.5, y: 1.0, w: 9, h: 4.0,
                             fontSize: 14, color: darkText, valign: 'top', align: 'left',
@@ -574,54 +584,56 @@ const createExport = (deps) => {
                         });
                     }
                 } else if (type === 'glossary') {
-                    const rows = [];
-                    const hasTrans = item.data.some(d => d.translations && Object.keys(d.translations).length > 0);
-                    if (hasTrans) {
-                        rows.push([
+                    const entries = Array.isArray(item.data) ? item.data : [];
+                    const hasTrans = entries.some((entry) => entry.translations && Object.keys(entry.translations).length > 0);
+                    const header = hasTrans
+                        ? [
                             { text: t('export.term_col'), options: { bold: true, fill: "F1F5F9", color: darkText } },
                             { text: t('export.def_col'), options: { bold: true, fill: "F1F5F9", color: darkText } },
                             { text: t('export.trans_col'), options: { bold: true, fill: "F1F5F9", color: darkText } }
-                        ]);
-                    } else {
-                        rows.push([
+                          ]
+                        : [
                             { text: t('export.term_col'), options: { bold: true, fill: "F1F5F9", color: darkText } },
                             { text: t('export.def_col'), options: { bold: true, fill: "F1F5F9", color: darkText } }
-                        ]);
-                    }
-                    item.data.forEach(g => {
-                        const row = [g.term, g.def];
-                        if (hasTrans) {
-                            const transStr = g.translations ? Object.values(g.translations).join(' / ') : '';
-                            row.push(transStr);
-                        }
-                        rows.push(row);
+                          ];
+                    const pages = [];
+                    let page = [], pageLines = 0;
+                    entries.forEach((entry) => {
+                        const translations = hasTrans && entry.translations ? Object.values(entry.translations).join(' / ') : '';
+                        const row = hasTrans ? [entry.term || '', entry.def || '', translations] : [entry.term || '', entry.def || ''];
+                        const rowLines = Math.max(1, ...row.map((cell) => Math.ceil(String(cell).length / (hasTrans ? 34 : 48))));
+                        if (page.length && (page.length >= 7 || pageLines + rowLines > 10)) { pages.push(page); page = []; pageLines = 0; }
+                        page.push(row); pageLines += rowLines;
                     });
-                    const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
-                    slide.addText(itemTitle, { x: 0.5, y: 0.15, w: 9, h: 0.5, fontSize: 20, bold: true, color: lightText });
-                    addA11yNotes(slide, itemTitle, 'Glossary with ' + item.data.length + ' terms: ' + item.data.slice(0, 5).map(g => g.term).join(', '));
-                    slide.addTable(rows, {
-                        x: 0.5, y: 1.0, w: 9,
-                        colW: hasTrans ? [2, 4.5, 2.5] : [2.5, 6.5],
-                        border: { pt: 1, color: "E2E8F0" },
-                        fill: { color: "FFFFFF" },
-                        fontSize: 11,
-                        color: darkText,
-                        autoPage: true,
-                        autoPageLineWeight: -0.4,
-                        margin: 0.5,
-                        master: "MASTER_SLIDE",
+                    if (page.length || !pages.length) pages.push(page);
+                    pages.forEach((pageEntries, pageIndex) => {
+                        const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                        addSlideTitle(slide, itemTitle + (pageIndex ? ' (Cont.)' : ''));
+                        addA11yNotes(slide, itemTitle, 'Glossary terms: ' + pageEntries.slice(0, 5).map((row) => row[0]).join(', '));
+                        if (!pageEntries.length) {
+                            slide.addText(t('export.no_content') || 'No glossary entries.', { x: 0.6, y: 1.1, w: 8.8, h: 0.7, fontSize: 16, color: darkText, fit: 'shrink' });
+                            return;
+                        }
+                        slide.addTable([header].concat(pageEntries), {
+                            x: 0.5, y: 1.0, w: 9,
+                            colW: hasTrans ? [2, 4.5, 2.5] : [2.5, 6.5],
+                            border: { pt: 0.75, color: "CBD5E1" },
+                            fill: { color: "FFFFFF" },
+                            fontSize: hasTrans ? 9.5 : 10.5,
+                            color: darkText,
+                            autoPage: false,
+                            margin: 0.04,
+                            valign: 'mid',
+                        });
                     });
                 } else if (type === 'quiz') {
                     const questions = item.data.questions || [];
                     questions.forEach((q, i) => {
                         const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
-                        slide.addText(t('export.slides_question_title', { number: i + 1 }), {
-                            x: 0.5, y: 0.15, w: 9, h: 0.5,
-                            fontSize: 20, bold: true, color: lightText
-                        });
+                        addSlideTitle(slide, t('export.slides_question_title', { number: i + 1 }));
                         slide.addText(q.question, {
                             x: 0.5, y: 1.0, w: 9, h: 1.2,
-                            fontSize: 18, bold: true, color: darkText, valign: 'top',
+                            fontSize: 18, bold: true, color: darkText, valign: 'top', fit: 'shrink', margin: 0.04,
                         });
                         q.options.forEach((opt, idx) => {
                             const yPos = 2.3 + (idx * 0.7);
@@ -641,7 +653,7 @@ const createExport = (deps) => {
                             });
                             slide.addText(opt, {
                                 x: 1.6, y: yPos, w: 7.2, h: 0.55,
-                                fontSize: 14, color: darkText, valign: 'middle'
+                                fontSize: 14, color: darkText, valign: 'middle', fit: 'shrink', margin: 0.03
                             });
                         });
                         slide.addNotes(`${t('export.ppt_correct_note')}: ${q.correctAnswer}\n\n${q.factCheck || ''}`);
@@ -650,10 +662,7 @@ const createExport = (deps) => {
                     for (let ak = 0; ak < questions.length; ak += ANSWERS_PER_SLIDE) {
                         const akChunk = questions.slice(ak, ak + ANSWERS_PER_SLIDE);
                         const akSlide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
-                        akSlide.addText(ak === 0 ? `${itemTitle} — ${t('export.answer_key_title') || 'Answer Key'}` : `${itemTitle} — ${t('export.answer_key_title') || 'Answer Key'} (${t('common.continued') || 'Cont.'})`, {
-                            x: 0.5, y: 0.15, w: 9, h: 0.5,
-                            fontSize: 20, bold: true, color: lightText
-                        });
+                        addSlideTitle(akSlide, ak === 0 ? `${itemTitle} — ${t('export.answer_key_title') || 'Answer Key'}` : `${itemTitle} — ${t('export.answer_key_title') || 'Answer Key'} (${t('common.continued') || 'Cont.'})`);
                         const akRichText = [];
                         akChunk.forEach((q, idx) => {
                             const qNum = ak + idx + 1;
@@ -670,11 +679,11 @@ const createExport = (deps) => {
                             }
                         });
                         akSlide.addNotes('Answer Key: ' + akChunk.map(function(q,i){return 'Q'+(ak+i+1)+': '+q.correctAnswer}).join(', '));
-                        akSlide.addText(akRichText, { x: 0.5, y: 1.0, w: 9, h: 4.0, valign: 'top' });
+                        akSlide.addText(akRichText, { x: 0.5, y: 1.0, w: 9, h: 4.0, valign: 'top', fit: 'shrink', margin: 0.04 });
                     }
                 } else if (type === 'image' && item.data.imageUrl) {
                     const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
-                    slide.addText(itemTitle, { x: 0.5, y: 0.15, w: 9, h: 0.5, fontSize: 20, bold: true, color: lightText });
+                    addSlideTitle(slide, itemTitle);
                     slide.addImage({
                         data: item.data.imageUrl,
                         x: 'center', y: 1.0,
@@ -684,12 +693,12 @@ const createExport = (deps) => {
                     });
                     slide.addText(item.data.prompt, {
                         x: 0.5, y: 4.6, w: 9, h: 0.6,
-                        fontSize: 10, color: "64748B", italic: true, align: 'center', valign: 'top',
+                        fontSize: 10, color: "64748B", italic: true, align: 'center', valign: 'top', fit: 'shrink', margin: 0.03,
                     });
                     addA11yNotes(slide, itemTitle, 'Image: ' + (item.data.prompt || ''));
                 } else if (type === 'outline') {
                     const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
-                    slide.addText(item.data.main || itemTitle, { x: 0.5, y: 0.15, w: 9, h: 0.5, fontSize: 20, bold: true, color: lightText });
+                    addSlideTitle(slide, item.data.main || itemTitle);
                     const richText = [];
                     const branches = Array.isArray(item.data.branches) ? item.data.branches : [];
                     branches.forEach(b => {
@@ -709,11 +718,11 @@ const createExport = (deps) => {
                     addA11yNotes(slide, item.data.main || itemTitle, 'Graphic organizer with ' + branches.length + ' branches');
                     slide.addText(richText, {
                         x: 0.5, y: 1.0, w: 9, h: 4.2,
-                        valign: 'top',
+                        valign: 'top', fit: 'shrink', margin: 0.04,
                     });
                 } else if (type === 'timeline') {
                     const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
-                    slide.addText(itemTitle, { x: 0.5, y: 0.15, w: 9, h: 0.5, fontSize: 20, bold: true, color: lightText });
+                    addSlideTitle(slide, itemTitle);
                     const timelineItems = item.data || [];
                     addA11yNotes(slide, itemTitle, 'Timeline with ' + (item.data || []).length + ' events');
                     const ITEMS_PER_SLIDE = 5;
@@ -722,7 +731,7 @@ const createExport = (deps) => {
                         const isContinuation = i > 0;
                         const currentSlide = isContinuation ? pptx.addSlide({ masterName: "MASTER_SLIDE" }) : slide;
                         if (isContinuation) {
-                            currentSlide.addText(itemTitle + " (Cont.)", { x: 0.5, y: 0.15, w: 9, h: 0.5, fontSize: 20, bold: true, color: lightText });
+                            addSlideTitle(currentSlide, itemTitle + " (Cont.)");
                         }
                         chunk.forEach((tItem, idx) => {
                             const yBase = 1.0 + (idx * 0.8);
@@ -734,41 +743,55 @@ const createExport = (deps) => {
                             });
                             currentSlide.addText(tItem.event, {
                                 x: 3.4, y: yBase - 0.1, w: 6.0, h: 0.6,
-                                fontSize: 12, color: darkText, valign: 'top',
+                                fontSize: 12, color: darkText, valign: 'top', fit: 'shrink', margin: 0.03,
                             });
                         });
                     }
                 } else if (type === 'concept-sort') {
-                    const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
-                    slide.addText(itemTitle, { x: 0.5, y: 0.15, w: 9, h: 0.5, fontSize: 20, bold: true, color: lightText });
-                    const categories = item.data.categories || [];
-                    const items = item.data.items || [];
-                    const colWidth = 9 / categories.length;
-                    categories.forEach((cat, cIdx) => {
-                        const xPos = 0.5 + (cIdx * colWidth);
-                        let headerColor = "E0E7FF";
-                        if (cat.color) {
-                            const colorName = cat.color.replace('bg-', '').replace('-500', '');
-                            if (colorMap[colorName]) headerColor = colorMap[colorName];
-                        }
-                        slide.addShape(pptx.ShapeType.rect, {
-                            x: xPos + 0.1, y: 1.0, w: colWidth - 0.2, h: 0.5,
-                            fill: { color: headerColor },
-                        });
-                        slide.addText(cat.label, {
-                            x: xPos + 0.1, y: 1.0, w: colWidth - 0.2, h: 0.5,
-                            fontSize: 14, bold: true, color: darkText, align: 'center',
-                        });
-                        const catItems = items.filter(it => it.categoryId === cat.id);
-                        let yOffset = 1.6;
-                        catItems.forEach(it => {
-                            slide.addText(it.content, {
-                                x: xPos + 0.1, y: yOffset, w: colWidth - 0.2, h: 0.4,
-                                fontSize: 11, color: "475569", align: 'center',
-                                shape: pptx.ShapeType.rect, fill: { color: "FFFFFF" }, line: { color: "E2E8F0" }
+                    let categories = Array.isArray(item.data && item.data.categories) ? item.data.categories.slice() : [];
+                    const items = Array.isArray(item.data && item.data.items) ? item.data.items : [];
+                    const known = new Set(categories.map((category) => category.id));
+                    if (items.some((entry) => !known.has(entry.categoryId))) categories.push({ id: '__uncategorized', label: t('export.uncategorized') || 'Uncategorized', color: '' });
+                    if (!categories.length) {
+                        const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                        addSlideTitle(slide, itemTitle);
+                        slide.addText(t('export.no_categories') || 'No categories were provided.', { x: 0.6, y: 1.1, w: 8.8, h: 0.7, fontSize: 16, color: darkText, fit: 'shrink' });
+                    }
+                    const categoryGroups = [];
+                    for (let start = 0; start < categories.length; start += 4) categoryGroups.push(categories.slice(start, start + 4));
+                    categoryGroups.forEach((group, groupIndex) => {
+                        const lists = group.map((category) => items.filter((entry) => category.id === '__uncategorized' ? !known.has(entry.categoryId) : entry.categoryId === category.id));
+                        const pageCount = Math.max(1, ...lists.map((list) => Math.ceil(list.length / 6)));
+                        for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+                            const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                            const continuation = groupIndex > 0 || pageIndex > 0;
+                            addSlideTitle(slide, itemTitle + (continuation ? ' (Cont.)' : ''));
+                            const colWidth = 9 / group.length;
+                            group.forEach((category, categoryIndex) => {
+                                const xPos = 0.5 + categoryIndex * colWidth;
+                                let headerColor = "E0E7FF";
+                                if (category.color) {
+                                    const colorName = category.color.replace('bg-', '').replace('-500', '');
+                                    if (colorMap[colorName]) headerColor = colorMap[colorName];
+                                }
+                                slide.addShape(pptx.ShapeType.rect, { x: xPos + 0.08, y: 1.0, w: colWidth - 0.16, h: 0.52, fill: { color: headerColor }, line: { color: 'CBD5E1', width: 0.75 } });
+                                slide.addText(category.label || '', { x: xPos + 0.12, y: 1.04, w: colWidth - 0.24, h: 0.42, fontSize: 13, bold: true, color: darkText, align: 'center', valign: 'mid', fit: 'shrink', margin: 0.02 });
+                                lists[categoryIndex].slice(pageIndex * 6, pageIndex * 6 + 6).forEach((entry, itemIndex) => {
+                                    const yOffset = 1.62 + itemIndex * 0.58;
+                                    slide.addText(entry.content || '', { x: xPos + 0.08, y: yOffset, w: colWidth - 0.16, h: 0.48, fontSize: 10.5, color: "475569", align: 'center', valign: 'mid', fit: 'shrink', margin: 0.03, shape: pptx.ShapeType.rect, fill: { color: "FFFFFF" }, line: { color: "E2E8F0", width: 0.6 } });
+                                });
                             });
-                            yOffset += 0.5;
-                        });
+                            addA11yNotes(slide, itemTitle, group.map((category, index) => category.label + ': ' + lists[index].slice(pageIndex * 6, pageIndex * 6 + 6).map((entry) => entry.content).join(', ')).join('; '));
+                        }
+                    });
+                } else if (type === 'faq' || type === 'brainstorm' || type === 'sentence-frames') {
+                    const text = resourceText(item.data).replace(/\n{3,}/g, '\n\n').trim();
+                    const chunks = chunkText(text || itemTitle, 760);
+                    chunks.forEach((chunk, index) => {
+                        const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                        addSlideTitle(slide, itemTitle + (index ? ' (Cont.)' : ''));
+                        addA11yNotes(slide, itemTitle, chunk);
+                        slide.addText(chunk, { x: 0.6, y: 1.0, w: 8.8, h: 3.9, fontSize: 17, color: darkText, valign: 'top', breakLine: true, margin: 0.08, fit: 'shrink' });
                     });
                 }
             });

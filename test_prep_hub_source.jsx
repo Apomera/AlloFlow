@@ -587,6 +587,8 @@ function testPrepAttemptMetadata(metadata) {
     label: String(input.label || '').trim().slice(0, 120),
     targetSkillId: testPrepSlug(input.targetSkillId, ''),
     sourceStartIndex: Math.max(0, Math.floor(testPrepFinite(input.sourceStartIndex, 0))),
+    sourceItemCount: Math.max(0, Math.floor(testPrepFinite(input.sourceItemCount, 0))),
+    sourceBatchSize: Math.max(0, Math.floor(testPrepFinite(input.sourceBatchSize, 0))),
     timeLimitMinutes: Math.max(0, Math.min(600, Math.floor(testPrepFinite(input.timeLimitMinutes, 0)))),
     timedOut: input.timedOut === true,
     itemIds: (Array.isArray(input.itemIds) ? input.itemIds : []).slice(0, 500).map((id) => testPrepSlug(id, '')).filter(Boolean),
@@ -616,10 +618,10 @@ function recordTestPrepBatchAttempt(progress, pack, diagnostic, confidence, now,
     timeLimitMinutes: meta.timeLimitMinutes,
     timedOut: meta.timedOut,
     itemIds: meta.itemIds,
-    batchNumber: diagnostic.batchNumber,
-    batchCount: diagnostic.batchCount,
-    firstQuestion: diagnostic.firstQuestion,
-    lastQuestion: diagnostic.lastQuestion,
+    batchNumber: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchNumber, diagnostic.batchNumber))),
+    batchCount: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchCount, diagnostic.batchCount))),
+    firstQuestion: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceFirstQuestion, diagnostic.firstQuestion))),
+    lastQuestion: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceLastQuestion, diagnostic.lastQuestion))),
   });
   return writeTestPrepProgress(next);
 }
@@ -823,6 +825,9 @@ function clearTestPrepSession() {
 registerTestPrepPack(EPPP_PART_ONE_SCAFFOLD);
 registerTestPrepPack(PARAPRO_PRACTICE_PACK);
 registerTestPrepPack(SPECIAL_EDUCATION_5355_PRACTICE_PACK);
+registerTestPrepPack(SCHOOL_COUNSELOR_5422_PRACTICE_PACK);
+registerTestPrepPack(SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK);
+registerTestPrepPack(SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK);
 
 function TestPrepStatusBadge({ status }) {
   const styles = status === 'ready'
@@ -847,7 +852,7 @@ function TestPrepHub(props) {
   const [confidence, setConfidence] = React.useState({});
   const [result, setResult] = React.useState(null);
   const [checkpoint, setCheckpoint] = React.useState(null);
-  const [practiceStarted, setPracticeStarted] = React.useState(true);
+  const [practiceStarted, setPracticeStarted] = React.useState(false);
   const [practiceMode, setPracticeMode] = React.useState('standard');
   const [practiceLabel, setPracticeLabel] = React.useState('');
   const [activeItemIds, setActiveItemIds] = React.useState([]);
@@ -989,6 +994,8 @@ function TestPrepHub(props) {
       label: practiceLabel,
       targetSkillId,
       sourceStartIndex,
+      sourceItemCount: selectedPack ? selectedPack.items.length : 0,
+      sourceBatchSize: selectedPack ? selectedPack.batchSize : 0,
       timeLimitMinutes: practiceMode === 'simulation' ? selectedPack.simulationTimeMinutes : 0,
       itemIds: activeItemIds,
       questionIndex,
@@ -1028,7 +1035,7 @@ function TestPrepHub(props) {
   function openPack(pack, nextTab) {
     setSelectedPackId(pack.id);
     resetPracticeWorkspace();
-    setPracticeStarted(!pack.simulationItemCount);
+    setPracticeStarted(!(pack.simulationItemCount || pack.items.length > pack.batchSize));
     setPracticeMode('standard');
     setPracticeLabel('');
     setActiveItemIds([]);
@@ -1061,7 +1068,7 @@ function TestPrepHub(props) {
     const start = safeBatch * selectedPack.batchSize;
     startPracticeSet({
       mode: 'diagnostic',
-      label: 'Diagnostic Batch ' + (safeBatch + 1),
+      label: 'Practice Bank ' + (safeBatch + 1) + ' of ' + Math.ceil(selectedPack.items.length / selectedPack.batchSize),
       items: selectedPack.items.slice(start, start + selectedPack.batchSize),
       sourceStartIndex: start,
     });
@@ -1124,6 +1131,8 @@ function TestPrepHub(props) {
       label: practiceLabel,
       targetSkillId,
       sourceStartIndex,
+      sourceItemCount: selectedPack ? selectedPack.items.length : 0,
+      sourceBatchSize: selectedPack ? selectedPack.batchSize : 0,
       timeLimitMinutes: practiceMode === 'simulation' && selectedPack ? selectedPack.simulationTimeMinutes : 0,
       timedOut: timedOut === true,
       itemIds: activePack ? activePack.items.map((item) => item.id) : [],
@@ -1207,10 +1216,22 @@ function TestPrepHub(props) {
     if (activePack.items.length >= currentBatch.batchSize && reachedBatchEnd) {
       const diagnostic = testPrepBuildBatchDiagnostic(activePack, finalAnswers, confidence, currentBatch.batchNumber);
       const metadata = practiceAttemptMetadata(false);
+      const sourceBatchSize = Math.max(1, metadata.sourceBatchSize || diagnostic.total);
+      const sourceBatchNumber = Math.floor(metadata.sourceStartIndex / sourceBatchSize) + diagnostic.batchNumber;
+      const sourceConfidentMissQuestionNumbers = diagnostic.confidentMissQuestionNumbers.map((number) => metadata.sourceStartIndex + number);
+      const sourceFeedback = diagnostic.feedback.map((message) => message.startsWith('Review confident misses first:') ? 'Review confident misses first: question' + (sourceConfidentMissQuestionNumbers.length === 1 ? ' ' : 's ') + sourceConfidentMissQuestionNumbers.join(', ') + '. High confidence plus an incorrect answer is especially useful calibration feedback.' : message);
+      const sourceDiagnostic = Object.assign({}, diagnostic, {
+        sourceBatchNumber,
+        sourceBatchCount: metadata.sourceItemCount ? Math.ceil(metadata.sourceItemCount / sourceBatchSize) : diagnostic.batchCount,
+        sourceFirstQuestion: metadata.sourceStartIndex + diagnostic.firstQuestion,
+        sourceLastQuestion: metadata.sourceStartIndex + diagnostic.lastQuestion,
+        confidentMissQuestionNumbers: sourceConfidentMissQuestionNumbers,
+        feedback: sourceFeedback,
+      });
       metadata.itemIds = activePack.items.slice(currentBatch.startIndex, currentBatch.endIndex).map((item) => item.id);
-      const nextProgress = recordTestPrepBatchAttempt(progress, activePack, diagnostic, confidence, Date.now(), metadata);
+      const nextProgress = recordTestPrepBatchAttempt(progress, activePack, sourceDiagnostic, confidence, Date.now(), metadata);
       setProgress(nextProgress);
-      setCheckpoint(Object.assign({}, diagnostic, { practiceLabel: practiceLabel || ('Batch ' + diagnostic.batchNumber) }));
+      setCheckpoint(Object.assign({}, sourceDiagnostic, { practiceLabel: practiceLabel || ('Batch ' + sourceBatchNumber) }));
       clearTestPrepSession();
       setSavedSession(null);
       announce((practiceLabel || ('Batch ' + diagnostic.batchNumber)) + ' complete. Review the diagnostic feedback before continuing.', 'success');
@@ -1431,7 +1452,7 @@ function TestPrepHub(props) {
                 <section className="rounded-2xl border border-indigo-300 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="practice-options-title">
                   <p className="text-xs font-black uppercase tracking-wider text-indigo-700">Choose a study mode</p>
                   <h4 id="practice-options-title" className="mt-1 text-2xl font-black text-slate-900">What would you like to work on?</h4>
-                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">The two 100-item diagnostic batches provide answer feedback and a skill-by-skill checkpoint. Targeted sets contain up to 20 tagged questions. The timed simulation is optional and clearly separated from official scoring.</p>
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">Choose any of the {Math.ceil(selectedPack.items.length / selectedPack.batchSize)} independent practice banks. Each bank includes {selectedPack.batchSize} questions, answer explanations, confidence calibration, and diagnostic feedback. Targeted sets and the optional timed simulation remain available below.</p>
 
                   {savedSession && savedSession.packId === selectedPack.id && (
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
@@ -1440,11 +1461,24 @@ function TestPrepHub(props) {
                     </div>
                   )}
 
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <section className="mt-5 rounded-2xl border border-sky-300 bg-sky-50/60 p-4" aria-labelledby="practice-banks-title">
+                    <div className="flex flex-wrap items-end justify-between gap-2">
+                      <div><p className="text-xs font-black uppercase tracking-wide text-sky-800">Question bank</p><h5 id="practice-banks-title" className="text-xl font-black text-slate-900">Choose a {selectedPack.batchSize}-question practice bank</h5></div>
+                      <p className="text-sm font-bold text-sky-900">{Math.ceil(selectedPack.items.length / selectedPack.batchSize)} banks {'·'} {selectedPack.items.length.toLocaleString()} questions total</p>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     {Array.from({ length: Math.ceil(selectedPack.items.length / selectedPack.batchSize) }, (_, batchIndex) => {
-                      const count = Math.min(selectedPack.batchSize, selectedPack.items.length - batchIndex * selectedPack.batchSize);
-                      return <article key={'diagnostic-' + batchIndex} className="rounded-xl border border-sky-300 bg-sky-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-sky-800">Diagnostic batch {batchIndex + 1}</p><h5 className="mt-1 text-lg font-black text-slate-900">{count} questions with feedback</h5><p className="mt-2 text-sm text-slate-700">Untimed practice with rationales, confidence calibration, domain diagnostics, and recommended chapters.</p><button type="button" onClick={() => startDiagnosticBatch(batchIndex)} className="mt-4 rounded-lg bg-sky-800 px-4 py-2 font-black text-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:ring-offset-2">Start Batch {batchIndex + 1}</button></article>;
+                      const start = batchIndex * selectedPack.batchSize;
+                      const count = Math.min(selectedPack.batchSize, selectedPack.items.length - start);
+                      const bankNumber = batchIndex + 1;
+                      const prior = packAttempts.filter((attempt) => attempt.mode === 'diagnostic' && attempt.batchNumber === bankNumber);
+                      const latest = prior.length ? prior[prior.length - 1] : null;
+                      return <article key={'diagnostic-' + batchIndex} className="flex min-h-52 flex-col rounded-xl border border-sky-300 bg-white p-4 shadow-sm"><p className="text-xs font-black uppercase tracking-wide text-sky-800">Practice Bank {bankNumber}</p><h6 className="mt-1 text-lg font-black text-slate-900">Questions {start + 1}{'–'}{start + count}</h6><p className="mt-2 text-sm text-slate-700">{count} untimed questions with answer explanations and an end-of-bank diagnostic.</p><p className={'mt-3 text-xs font-bold ' + (latest ? 'text-emerald-800' : 'text-slate-600')}>{latest ? 'Latest: ' + latest.correct + '/' + latest.total + ' · ' + latest.percent + '% · ' + prior.length + ' attempt' + (prior.length === 1 ? '' : 's') : 'Not started on this browser'}</p><button type="button" onClick={() => startDiagnosticBatch(batchIndex)} className="mt-auto rounded-lg bg-sky-800 px-3 py-2 font-black text-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:ring-offset-2">Start Practice Bank {bankNumber}</button></article>;
                     })}
+                    </div>
+                  </section>
+
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
                     <article className="rounded-xl border border-violet-300 bg-violet-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-violet-800">Targeted practice</p>
                       <h5 className="mt-1 text-lg font-black text-slate-900">Practice one skill</h5>
@@ -1465,7 +1499,7 @@ function TestPrepHub(props) {
 
               {!legacyOpen && !!selectedPack.items.length && checkpoint && (
                 <section className="rounded-2xl border border-sky-300 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="batch-checkpoint-title" aria-live="polite">
-                  <p className="text-xs font-black uppercase tracking-wider text-sky-800">Questions {checkpoint.firstQuestion}–{checkpoint.lastQuestion}</p>
+                  <p className="text-xs font-black uppercase tracking-wider text-sky-800">Questions {checkpoint.sourceFirstQuestion || checkpoint.firstQuestion}{'–'}{checkpoint.sourceLastQuestion || checkpoint.lastQuestion}</p>
                   <h4 id="batch-checkpoint-title" className="mt-1 text-2xl font-black text-slate-900">{checkpoint.practiceLabel && !/^Batch \d+$/i.test(checkpoint.practiceLabel) ? checkpoint.practiceLabel : ('Batch ' + checkpoint.batchNumber + ' of ' + checkpoint.batchCount)} checkpoint</h4>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     <div className="rounded-xl bg-sky-50 p-4"><p className="text-3xl font-black text-sky-950">{checkpoint.correct}/{checkpoint.total}</p><p className="text-sm font-bold text-sky-900">Correct in this batch</p></div>
@@ -1532,9 +1566,9 @@ function TestPrepHub(props) {
               {!legacyOpen && !!selectedPack.items.length && !result && currentItem && (
                 <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-7">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">Question {questionIndex + 1} of {activePack.items.length}</p>{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <p className="mt-1 text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p>}</div>
+                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">Question {questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">Question bank item {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <p className="mt-1 text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p>}</div>
                     <button type="button" onClick={readQuestion} className="rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} Read question</button>
-                    {selectedPack.simulationItemCount && <button type="button" onClick={chooseAnotherPracticeSet} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">Practice options</button>}
+                    <button type="button" onClick={chooseAnotherPracticeSet} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">Practice options</button>
                   </div>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full bg-indigo-700" style={{ width: Math.round((questionIndex + 1) / Math.max(1, activePack.items.length) * 100) + '%' }} /></div>
                   <fieldset className="mt-6" disabled={checked}>

@@ -38,6 +38,7 @@ function SessionModal({
   addToast,
   appId,
   copyToClipboard,
+  connectedStudentCount = 0,
   db,
   deleteDoc,
   doc,
@@ -62,6 +63,12 @@ function SessionModal({
   const Users = window.Users || noop;
   const ChevronRight = window.ChevronRight || noop;
   const XCircle = window.XCircle || noop;
+  const ExternalLink = window.ExternalLink || noop;
+  const Printer = window.Printer || noop;
+  const Maximize = window.Maximize || noop;
+  const Minimize = window.Minimize || noop;
+  const CheckCircle2 = window.CheckCircle2 || noop;
+  const [isProjectionMode, setIsProjectionMode] = React.useState(false);
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : '';
   const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === 'local-preview';
   const [liveQrSvg, setLiveQrSvg] = React.useState('');
@@ -144,9 +151,40 @@ function SessionModal({
     return () => { cancelled = true; };
   }, [liveJoinUrl]);
 
+  const testStudentJoin = React.useCallback(() => {
+    if (!liveJoinUrl || typeof window === 'undefined') return;
+    const preview = window.open(liveJoinUrl, '_blank');
+    if (preview) {
+      try { preview.opener = null; } catch (_) {}
+    } else {
+      addToast('Allow pop-ups to test this student join link.', 'info');
+    }
+  }, [addToast, liveJoinUrl]);
+
+  const printLiveQr = React.useCallback(() => {
+    if (!liveQrSvg || typeof window === 'undefined') {
+      addToast('Wait for the QR code to finish loading before printing.', 'info');
+      return;
+    }
+    const popup = window.open('', '_blank', 'width=720,height=900');
+    if (!popup) {
+      addToast('Allow pop-ups to print this QR code.', 'info');
+      return;
+    }
+    try { popup.opener = null; } catch (_) {}
+    const safeCode = String(activeSessionCode || '').replace(/[^A-Z0-9-]/gi, '');
+    popup.document.open();
+    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>AlloFlow live session ${safeCode}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.mode{font-weight:700;color:#0e7490;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 54px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>AlloFlow live session</h1><div class="mode">${isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'} · AI tools off</div><div class="qr">${liveQrSvg}</div><div>Fallback class code</div><div class="code">${safeCode}</div><div class="note">Scan the QR code to join. This invitation works only while the teacher session is active.</div></body></html>`);
+    popup.document.close();
+    setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
+  }, [activeSessionCode, addToast, isMailboxSession, liveQrSvg]);
+
   return (
-    <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" role="presentation" onClick={handleSetShowSessionModalToFalse}>
-      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-5 sm:p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200 focus:outline-none" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title">
+    <div className={`fixed inset-0 bg-black/80 z-[150] flex items-center justify-center animate-in fade-in duration-200 ${isProjectionMode ? 'p-0' : 'p-4'}`} role="presentation" onClick={handleSetShowSessionModalToFalse}>
+      <div ref={dialogRef} tabIndex={-1} className={`bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 focus:outline-none ${isProjectionMode ? 'h-screen max-w-none rounded-none p-6 sm:p-10' : 'max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8'}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title">
+        {!isLocalOnly && liveJoinUrl && <button type="button" onClick={() => setIsProjectionMode(value => !value)} className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400" aria-label={isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}>
+          {isProjectionMode ? <Minimize size={16}/> : <Maximize size={16}/>} <span className="hidden sm:inline">{isProjectionMode ? 'Exit projection' : 'Project QR'}</span>
+        </button>}
         <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
         <div className="flex justify-center mb-4">
           <div className="bg-green-100 p-4 rounded-full shadow-inner">
@@ -157,11 +195,11 @@ function SessionModal({
         <p className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : isMailboxSession ? 'Students join through your Class Mailbox without accounts.' : t('session.live_instruction')}</p>
         <button
           type="button"
-          className="w-full bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-4 sm:p-6 mb-6 cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors group relative"
+          className={`w-full bg-indigo-50 border-4 border-indigo-100 rounded-2xl cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors group relative ${isProjectionMode ? 'mx-auto max-w-4xl p-4 mb-4' : 'p-4 sm:p-6 mb-6'}`}
           onClick={() => copyToClipboard(activeSessionCode)}
           title={t('common.click_to_copy')}
         >
-          <div className="text-5xl sm:text-7xl font-black text-indigo-600 tracking-[0.16em] sm:tracking-widest font-mono">
+          <div className={`font-black text-indigo-600 tracking-[0.16em] sm:tracking-widest font-mono ${isProjectionMode ? 'text-6xl sm:text-8xl' : 'text-5xl sm:text-7xl'}`}>
             {activeSessionCode}
           </div>
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1">
@@ -169,14 +207,19 @@ function SessionModal({
           </div>
         </button>
         {liveJoinUrl && (
-          <div className="mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left">
+          <div className={`bg-cyan-50 rounded-xl border border-cyan-200 text-left ${isProjectionMode ? 'mx-auto max-w-5xl p-5 mb-3' : 'p-4 mb-6'}`}>
             <p className="text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">{isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'}</p>
             <div className="flex justify-center mb-3">
-              <div className="bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm">
+              <div className={`bg-white border border-cyan-200 rounded-lg p-2 flex items-center justify-center shadow-sm ${isProjectionMode ? 'w-[min(52vh,72vw)] h-[min(52vh,72vw)]' : 'w-40 h-40'}`}>
                 {liveQrSvg
                   ? <div className="w-full h-full [&_svg]:w-full [&_svg]:h-full" dangerouslySetInnerHTML={{ __html: liveQrSvg }} />
                   : <span className="text-xs font-bold text-cyan-700 text-center">{liveQrError ? 'Copy link below' : 'QR loading'}</span>}
               </div>
+            </div>
+            <div className="mb-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-3" aria-label="Live session readiness">
+              <span className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800"><CheckCircle2 size={14}/> Session active</span>
+              <span className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800"><CheckCircle2 size={14}/> Student link ready</span>
+              <span className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800"><CheckCircle2 size={14}/> QR validated</span>
             </div>
             <button
               aria-label={t('common.copy')}
@@ -185,7 +228,16 @@ function SessionModal({
             >
               Copy student join link <Copy size={12}/>
             </button>
-            <p className="text-[11px] text-cyan-800 mt-2 text-center">{isMailboxSession ? 'This QR uses the mailbox session secret and does not require Firebase sign-in.' : 'QR students join this live session with AI generation off.'}</p>
+            <input aria-label="Selectable student join link" readOnly value={liveJoinUrl} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" />
+            <div className={`mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 ${isProjectionMode ? 'hidden' : ''}`}>
+              <button type="button" onClick={testStudentJoin} className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
+                Test as student <ExternalLink size={12}/>
+              </button>
+              <button type="button" onClick={printLiveQr} disabled={!liveQrSvg} className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                Print QR <Printer size={12}/>
+              </button>
+            </div>
+            <p className="text-[11px] text-cyan-800 mt-2 text-center">{connectedStudentCount > 0 ? connectedStudentCount + ' student' + (connectedStudentCount === 1 ? '' : 's') + ' connected. ' : ''}{isMailboxSession ? 'Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session.' : 'Ready to scan. QR students join this live session with AI generation off; the link stops working when the session ends.'}</p>
           </div>
         )}
         {!liveJoinUrl && (
@@ -194,7 +246,7 @@ function SessionModal({
             <p className="text-xs text-amber-900 text-center">{isLocalOnly ? 'This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears.' : 'This host is not configured as a student join path. Use the class code, local network link, or a student app URL.'}</p>
           </div>
         )}
-        {lanJoinUrl && (
+        {!isProjectionMode && lanJoinUrl && (
           <div className="mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
             <p className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1">Local network join link</p>
             <button
@@ -206,7 +258,7 @@ function SessionModal({
             </button>
           </div>
         )}
-        {!isMailboxSession && (
+        {!isProjectionMode && !isMailboxSession && (
           <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
             <p className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
             <button
@@ -218,7 +270,7 @@ function SessionModal({
             </button>
           </div>
         )}
-        {sessionData && (
+        {!isProjectionMode && sessionData && (
           <div className="mb-6 text-center animate-in slide-in-from-bottom-2">
             <button
               aria-label={t('common.groups')}
@@ -234,7 +286,7 @@ function SessionModal({
             </button>
           </div>
         )}
-        {sessionData && (
+        {!isProjectionMode && sessionData && (
           <div className="mb-8 flex justify-center">
             <button
               onClick={toggleSessionMode}
@@ -252,7 +304,7 @@ function SessionModal({
             </button>
           </div>
         )}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className={`flex flex-col sm:flex-row gap-3 justify-center ${isProjectionMode ? 'hidden' : ''}`}>
           <button
             onClick={handleSetShowSessionModalToFalse}
             className="w-full sm:w-auto px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"

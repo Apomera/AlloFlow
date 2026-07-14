@@ -1366,10 +1366,17 @@ function ExportPreviewView(props) {
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
       const _uid = "alloflow-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-      zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z")}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
+      const _contentProps = [];
+      try {
+        if (_clone.querySelector("svg")) _contentProps.push("svg");
+        if (_clone.querySelector("math")) _contentProps.push("mathml");
+      } catch (_) {
+      }
+      const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(" ") + '"' : "";
+      zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z")}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
       let xhtml;
       try {
-        xhtml = new XMLSerializer().serializeToString(_clone).replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, "");
+        xhtml = new XMLSerializer().serializeToString(_clone).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, "");
       } catch (_) {
         xhtml = _clone.outerHTML.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
       }
@@ -1409,20 +1416,68 @@ function ExportPreviewView(props) {
         text = doc.body.innerText || doc.body.textContent || "";
       }
       const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
-      const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": "7", ")": "7", '"': "7", "'": "'", "-": "-", "/": "/", "*": "9", "&": "&", "@": "@", "#": "#" };
-      const _toBRF = (src) => {
-        let norm = src;
+      const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": '"<', ")": '">', "'": "'", "-": "-", "/": "_/", "*": '"9', "&": "@&", "+": '"6', "=": '"7', "<": "@<", ">": "@>" };
+      const _brfSmart = { "\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-", "\u2026": "...", "\xA0": " ", "\u2022": "*" };
+      const _brfOpenQuote = "\uE000", _brfCloseQuote = "\uE001";
+      const _brfPrefix = /[#,;@_^".]$/;
+      const _brfHardSplit = (word, into, cells) => {
+        if (/^#[A-J14]+$/.test(word)) {
+          while (word.length > cells) {
+            into.push(word.slice(0, cells - 1) + '"');
+            word = word.slice(cells - 1);
+          }
+          if (word) into.push(word);
+          return;
+        }
+        while (word.length > cells) {
+          let cut = cells;
+          while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
+          into.push(word.slice(0, cut));
+          word = word.slice(cut);
+        }
+        if (word) into.push(word);
+      };
+      const _brfWrap = (line, into, cells) => {
+        if (line.length <= cells) {
+          into.push(line);
+          return;
+        }
+        const words = line.split(" ");
+        let cur = "";
+        for (let word of words) {
+          if (word.length > cells) {
+            if (cur) {
+              into.push(cur);
+              cur = "";
+            }
+            _brfHardSplit(word, into, cells);
+            continue;
+          }
+          if (!cur) cur = word;
+          else if (cur.length + 1 + word.length <= cells) cur += " " + word;
+          else {
+            into.push(cur);
+            cur = word;
+          }
+        }
+        if (cur) into.push(cur);
+      };
+      const _toBRF = (src, opts) => {
+        const cells = opts && opts.cellsPerLine || 40;
+        let norm = String(src == null ? "" : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
+        norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || "");
         try {
-          norm = src.normalize("NFD").replace(/[̀-ͯ]/g, "");
+          norm = norm.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         } catch (_) {
         }
-        const lines = norm.replace(/\r\n?/g, "\n").split("\n");
         const out = [];
-        for (const line of lines) {
+        let dropped = 0;
+        for (const line of norm.replace(/\r\n?/g, "\n").split("\n")) {
+          const chars = Array.from(line);
           let bl = "";
           let numMode = false;
-          for (let i = 0; i < line.length; i++) {
-            const ch = line[i];
+          for (let i = 0; i < chars.length; i++) {
+            const ch = chars[i];
             if (ch >= "0" && ch <= "9") {
               if (!numMode) {
                 bl += "#";
@@ -1431,32 +1486,54 @@ function ExportPreviewView(props) {
               bl += _brfDigit[ch];
               continue;
             }
-            if (numMode && (ch >= "a" && ch <= "j" || ch >= "A" && ch <= "J")) bl += ";";
+            if (numMode && (ch === "," || ch === ".")) {
+              bl += _brfPunct[ch];
+              continue;
+            }
+            if (numMode && ch >= "a" && ch <= "j") bl += ";";
             numMode = false;
             if (ch >= "a" && ch <= "z") {
               bl += ch.toUpperCase();
               continue;
             }
             if (ch >= "A" && ch <= "Z") {
-              bl += "," + ch;
+              let end = i;
+              while (end < chars.length && chars[end] >= "A" && chars[end] <= "Z") end++;
+              const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+              const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+              if (!prevIsLetter && !nextIsLetter && end - i >= 2) {
+                bl += ",," + chars.slice(i, end).join("");
+                i = end - 1;
+              } else bl += "," + ch;
               continue;
             }
             if (ch === " " || ch === "	") {
               bl += " ";
               continue;
             }
-            bl += _brfPunct[ch] !== void 0 ? _brfPunct[ch] : ch.charCodeAt(0) >= 32 && ch.charCodeAt(0) <= 126 ? ch.toUpperCase() : "";
-          }
-          out.push(bl.slice(0, 40));
-          if (bl.length > 40) {
-            let rest = bl.slice(40);
-            while (rest.length) {
-              out.push(rest.slice(0, 40));
-              rest = rest.slice(40);
+            if (ch === _brfOpenQuote) {
+              bl += "8";
+              continue;
             }
+            if (ch === _brfCloseQuote) {
+              bl += "0";
+              continue;
+            }
+            if (ch === '"') {
+              const prev = i > 0 ? chars[i - 1] : "";
+              bl += !prev || /\s|[([{]/.test(prev) ? "8" : "0";
+              continue;
+            }
+            if (_brfPunct[ch] !== void 0) {
+              bl += _brfPunct[ch];
+              continue;
+            }
+            dropped++;
           }
+          _brfWrap(bl, out, cells);
         }
-        return out.join("\r\n");
+        const brf = out.join("\r\n");
+        return opts && opts.withMeta ? { brf, dropped } : brf;
       };
       const _downloadBRF = (brf) => {
         const blob = new Blob([brf], { type: "application/x-brf" });
@@ -1474,7 +1551,9 @@ function ExportPreviewView(props) {
           _grade1 = _r.brf;
           _g1Dropped = _r.dropped;
         } else {
-          _grade1 = _toBRF(text);
+          const _r = _toBRF(text, { withMeta: true });
+          _grade1 = _r.brf;
+          _g1Dropped = _r.dropped;
         }
         const _warnDrop = () => {
           if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + " character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.", "info");
@@ -1791,7 +1870,7 @@ function ExportPreviewView(props) {
         ref: exportPreviewRef,
         title: "Editable document preview",
         className: "w-full h-full bg-white rounded-lg shadow-inner border border-slate-400",
-        sandbox: "allow-same-origin allow-scripts allow-forms",
+        sandbox: exportPreviewSource === "remediation" ? "allow-same-origin" : "allow-same-origin allow-scripts allow-forms",
         onLoad: () => {
           console.info("[ExportPreview] iframe loaded");
           try {

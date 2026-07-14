@@ -53,7 +53,7 @@ describe('_visionAltSpotCheck', () => {
     expect(await garbage(doc(img('anything')), { sample: 1 })).toBeNull();
   });
 
-  it('prioritizes heuristic-flagged alts over clean ones within the sample budget', async () => {
+  it('prioritizes plausible unflagged alts because they are the heuristic blind spot', async () => {
     const seen = [];
     const fn = makeSpotCheck(
       async (prompt) => { seen.push(prompt); return '{"match": true, "reason": "ok"}'; },
@@ -62,26 +62,43 @@ describe('_visionAltSpotCheck', () => {
     const html = doc(img('A detailed caption of the water cycle') + img('image'));
     const r = await fn(html, { sample: 1 });
     expect(r.checked).toBe(1);
-    expect(seen[0]).toContain('"image"');
+    expect(seen[0]).toContain('"A detailed caption of the water cycle"');
+  });
+
+  it('resolves production deferred-image tokens without restoring them into the HTML', async () => {
+    const calls = [];
+    const fn = makeSpotCheck(async (prompt, b64, mime) => {
+      calls.push({ prompt, b64, mime });
+      return '{"match": true, "reason": "accurate"}';
+    });
+    const token = '__ALLOFLOW_DATAURL_FINAL_7__';
+    const html = doc('<img alt="A red square" src="' + token + '">');
+    const r = await fn(html, {
+      sample: 1,
+      deferredImages: { [token]: 'data:image/png;base64,' + png1x1 },
+    });
+    expect(r.checked).toBe(1);
+    expect(calls).toEqual([{ prompt: expect.stringContaining('A red square'), b64: png1x1, mime: 'image/png' }]);
   });
 
   it('skips empty alts, non-data images, and oversized images entirely', async () => {
     const calls = [];
     const fn = makeSpotCheck(async () => { calls.push(1); return '{"match": true, "reason": "ok"}'; });
-    const huge = 'A'.repeat(3 * 1024 * 1024);
+    const huge = 'A'.repeat(128);
     const html = doc(
       `<img alt="" src="data:image/png;base64,${png1x1}">` +
       '<img alt="remote" src="https://example.com/x.png">' +
       `<img alt="too big" src="data:image/png;base64,${huge}">`
     );
-    expect(await fn(html, { sample: 3 })).toBeNull();
+    expect(await fn(html, { sample: 3, maxImageBytes: 16 })).toBeNull();
     expect(calls.length).toBe(0);
   });
 });
 
 describe('pipeline wiring (anti-drift)', () => {
   it('runs after the heuristic scan, batch-aware, and rides the altQuality note plumbing', () => {
-    expect(pipe).toContain("await _visionAltSpotCheck(accessibleHtml, { sample: _isBatch ? 1 : 2 })");
+    expect(pipe).toContain('await _visionAltSpotCheck(accessibleHtml, {');
+    expect(pipe).toContain('deferredImages: _deferredImageMap');
     expect(pipe).toContain('A Vision spot-check compared ');
     expect(pipe).toContain('A wrong description is worse than a missing one for a screen-reader user');
     expect(pipe).toContain('visionAltSpotCheck: _visionAltSpotCheck');

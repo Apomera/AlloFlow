@@ -74,6 +74,11 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('Color + label for every status');
     expect(html).toContain('Ready to harvest');
     expect(html).toContain('Needs care or conflict');
+    expect(html).toContain('data-community-plan-readiness="true"');
+    expect(html).toContain('Garden Blueprint Check');
+    expect(html).toContain('Use these signals as guidance, not requirements.');
+    expect(html).toContain('aria-label="Garden blueprint readiness"');
+    expect(html).toContain('Best next move');
     expect(html).toContain('data-community-plot-navigator="true"');
     expect(html).toContain('Garden plot navigator');
     expect(html).toContain('data-community-starter-plans="true"');
@@ -87,6 +92,22 @@ describe('Companion Planting refinements', () => {
     expect(html).not.toContain('data-companion-command="true"');
   });
 
+  it('renders a searchable Seed Shelf with clear plant selection feedback', () => {
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { selectedPlant: 'tomato' } },
+    });
+
+    expect(html).toContain('data-community-seed-shelf="true"');
+    expect(html).toContain('Seed Shelf');
+    expect(html).toContain('aria-label="Search plant catalog"');
+    expect(html).toContain('Search plants, families, or traits');
+    expect(html).toContain('data-community-selected-plant="true"');
+    expect(html).toContain('Ready to place');
+    expect(html).toContain('Choose any open plot below to plant it.');
+    expect(html).toContain('aria-label="Cancel selected plant"');
+    expect(html).toContain('Tomato (selected)');
+  });
+
   it('renders state-aware Community Garden care controls without the stale multi-day shortcut', () => {
     const grid = Array.from({ length: 16 }, (_, index) => index === 0
       ? { plantId: 'radish', growthDay: 25, health: 100, watered: false, pests: 0 }
@@ -98,6 +119,13 @@ describe('Companion Planting refinements', () => {
     });
 
     expect(html).toContain('data-community-actions="true"');
+    expect(html).toContain('data-community-season-deck="true"');
+    expect(html).toContain('Garden conditions');
+    expect(html).toContain('aria-label="Spring day progress"');
+    expect(html).toContain('aria-label="Moisture level"');
+    expect(html).toContain('Care control deck');
+    expect(html).toContain('Choose the garden&#x27;s next move');
+    expect(html).toContain('Simulate change');
     expect(html).toContain('data-community-day-report="true"');
     expect(html).toContain('Day 4 garden report');
     expect(html).toContain('Cause and effect');
@@ -138,7 +166,7 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('Provide a bee hotel.');
     expect(html).toContain('Garden Pulse');
     expect(html).toContain('Soil is saturated');
-    expect(html).toContain('1 harvest ready');
+    expect(html).toContain('1 ready to harvest');
     expect(html).toContain('aria-label="Radish growth"');
     expect(html).toContain('aria-valuenow="100"');
     expect(html).toContain('Harvest 1');

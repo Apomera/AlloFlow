@@ -24,9 +24,24 @@ describe('toGrade1BRF — Grade-1 (uncontracted) Braille-ASCII', () => {
     expect(toGrade1BRF('12 dogs')).toBe('#AB DOGS');
   });
 
-  it('marks capitals with the capital sign (comma)', () => {
+
+  it('keeps UEB numeric mode through comma/full stop and ends it correctly', () => {
+    expect(toGrade1BRF('1,234')).toBe('#A1BCD');
+    expect(toGrade1BRF('3.14')).toBe('#C4AD');
+    expect(toGrade1BRF('4C')).toBe('#D,C');
+    expect(toGrade1BRF('3/4')).toBe('#C_/#D');
+  });
+
+  it('marks capitals with UEB letter/word indicators', () => {
     expect(toGrade1BRF('Cat')).toBe(',CAT');
-    expect(toGrade1BRF('AB')).toBe(',A,B');
+    expect(toGrade1BRF('AB')).toBe(',,AB');
+  });
+
+
+  it('maps common UEB paired and mathematical symbols instead of raw ASCII cells', () => {
+    expect(toGrade1BRF('(hi)')).toBe('"<HI">');
+    expect(toGrade1BRF('"hi"')).toBe('8HI0');
+    expect(toGrade1BRF('2 + 2 = 4')).toBe('#B "6 #B "7 #D');
   });
 
   it('R2 #4: NFD-folds Latin accents instead of dropping them', () => {
@@ -45,7 +60,8 @@ describe('toGrade1BRF — Grade-1 (uncontracted) Braille-ASCII', () => {
 
   it('counts un-representable characters (CJK/Arabic/emoji) instead of silently losing them', () => {
     const r = toGrade1BRF('日本語 hi', { withMeta: true });
-    expect(r.dropped).toBe(3);        // three CJK code points had no G1 equivalent
+    expect(r.dropped).toBe(3);
+    expect(toGrade1BRF('\u{1F600}', { withMeta: true }).dropped).toBe(1);        // three CJK code points had no G1 equivalent
     expect(r.brf.trim()).toBe('HI');  // the ASCII survived
     // Without withMeta the return is a plain string (back-compat with callers).
     expect(typeof toGrade1BRF('hi')).toBe('string');
@@ -64,6 +80,13 @@ describe('toGrade1BRF — Grade-1 (uncontracted) Braille-ASCII', () => {
     const wrapped = toGrade1BRF(long).split('\r\n');
     expect(wrapped.length).toBe(3);
     expect(wrapped[0].length).toBe(40);
+  });
+
+
+  it('never strands a braille indicator at the end of a hard-wrapped line', () => {
+    const wrapped = toGrade1BRF('a'.repeat(39) + 'B').split('\r\n');
+    expect(wrapped).toEqual(['A'.repeat(39), ',B']);
+    expect(wrapped[0]).not.toMatch(/[#,;@_^".]$/);
   });
 
   it('preserves blank-line structure and is safe on empty input', () => {

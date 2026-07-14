@@ -11,7 +11,7 @@ describe('EPPP native learning-library catalog', () => {
   const reviewOverrides = read('test_prep/eppp_learning_review_overrides.json');
 
   it('catalogs the complete preserved learning library with stable unique IDs', () => {
-    expect(catalog.summary).toMatchObject({ chapters: 49, sections: 278, diagrams: 25, diagramPlacements: 57, knowledgeChecks: 98, flashcards: 415, memoryAids: 255 });
+    expect(catalog.summary).toMatchObject({ chapters: 49, sections: 278, diagrams: 25, diagramPlacements: 61, knowledgeChecks: 109, flashcards: 415, memoryAids: 255 });
     expect(new Set(catalog.chapters.map((item) => item.id)).size).toBe(49);
     expect(new Set(catalog.flashcards.map((item) => item.id)).size).toBe(415);
     expect(new Set(catalog.memoryAids.map((item) => item.id)).size).toBe(255);
@@ -19,8 +19,8 @@ describe('EPPP native learning-library catalog', () => {
 
   it('keeps unreviewed content gated while recording complete provenance and learner structure', () => {
     expect(catalog.chapters.every((chapter) => ['review-required', 'source-reviewed-editorial-pass'].includes(chapter.reviewStatus) && chapter.legacySource)).toBe(true);
-    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'source-reviewed-editorial-pass').map((chapter) => chapter.id)).toEqual(['ch-1', 'ch-2', 'ch-3', 'ch-4', 'ch-5', 'ch-6', 'ch-7', 'ch-8', 'ch-9', 'ch-10', 'ch-11', 'ch-12', 'ch-13', 'ch-14', 'ch-15', 'ch-16', 'ch-17', 'ch-18', 'ch-19', 'ch-20', 'ch-21', 'ch-22', 'ch-23', 'ch-24', 'ch-25', 'ch-26', 'ch-27', 'ch-28', 'ch-29', 'ch-30', 'ch-31', 'ch-47', 'ch-49']);
-    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'review-required')).toHaveLength(16);
+    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'source-reviewed-editorial-pass').map((chapter) => chapter.id)).toEqual(['ch-1', 'ch-2', 'ch-3', 'ch-4', 'ch-5', 'ch-6', 'ch-7', 'ch-8', 'ch-9', 'ch-10', 'ch-11', 'ch-12', 'ch-13', 'ch-14', 'ch-15', 'ch-16', 'ch-17', 'ch-18', 'ch-19', 'ch-20', 'ch-21', 'ch-22', 'ch-23', 'ch-24', 'ch-25', 'ch-26', 'ch-27', 'ch-28', 'ch-29', 'ch-30', 'ch-31', 'ch-32', 'ch-33', 'ch-34', 'ch-35', 'ch-36', 'ch-37', 'ch-38', 'ch-39', 'ch-47', 'ch-49']);
+    expect(catalog.chapters.filter((chapter) => chapter.reviewStatus === 'review-required')).toHaveLength(8);
     expect(catalog.chapters.find((chapter) => chapter.id === 'ch-12')).toMatchObject({ diagramCount: 1, checks: { 'expert-review': 'pending-independent-review' } });
     const psychometrics = catalog.chapters.find((chapter) => chapter.id === 'ch-1');
     expect(psychometrics).toMatchObject({
@@ -40,7 +40,7 @@ describe('EPPP native learning-library catalog', () => {
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'review-required')).toHaveLength(245);
     expect(catalog.diagrams.every((diagram) => diagram.hasSvg && diagram.description)).toBe(true);
     expect(qa.status).toBe('review-in-progress');
-    expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 33, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
+    expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 41, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
   });
 
   it('keeps Chapter 1 psychometric claims qualified and interaction metadata intact', () => {
@@ -204,6 +204,58 @@ describe('EPPP native learning-library catalog', () => {
     expect(chapter).not.toContain('More bystanders = <em>less</em> individual help');
     expect(chapter).not.toContain('Guards became abusive; prisoners became passive');
     expect(chapter).not.toContain('power of the SITUATION, not disposition');
+  });
+
+  it('keeps Chapters 32-34 social and cultural claims bounded, current, and interactive', () => {
+    const attitudesText = readText('test_prep/eppp_legacy/js/textbook_ch32.js');
+    const aggressionText = readText('test_prep/eppp_legacy/js/textbook_ch33.js');
+    const cultureText = readText('test_prep/eppp_legacy/js/textbook_ch34.js');
+    const attitudes = catalog.chapters.find((item) => item.id === 'ch-32');
+    const aggression = catalog.chapters.find((item) => item.id === 'ch-33');
+    const culture = catalog.chapters.find((item) => item.id === 'ch-34');
+
+    expect(attitudes).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 4, diagramCount: 1, knowledgeCheckCount: 3, referenceCount: 12, checks: { 'expert-review': 'pending-independent-social-cognition-attitudes-and-measurement-review' } });
+    expect(aggression).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 4, diagramCount: 1, knowledgeCheckCount: 3, referenceCount: 11, checks: { 'expert-review': 'pending-independent-prosocial-aggression-and-relationship-science-review' } });
+    expect(culture).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 5, diagramCount: 1, knowledgeCheckCount: 4, referenceCount: 12, checks: { 'expert-review': 'pending-independent-multicultural-cultural-formulation-and-identity-review' } });
+    expect(attitudesText).toContain('Routes are not two fixed kinds of people');
+    expect(attitudesText).toContain('not a lie detector');
+    expect(attitudesText).toContain('Contextual hypothesis requiring assessment—not a diagnosis');
+    expect(attitudesText).not.toContain('Produces <strong>lasting</strong> attitude change');
+    expect(aggressionText).toContain('danger can attenuate or reverse it');
+    expect(aggressionText).toContain('Frustration is one possible input, not a necessary or sufficient cause');
+    expect(aggressionText).toContain('Never turn a classroom model into advice to enter an unsafe scene');
+    expect(aggressionText).not.toContain('Frustration always leads to aggression');
+    expect(cultureText).toContain('group result can guide a respectful question');
+    expect(cultureText).toContain('multidimensional attitudinal model');
+    expect(cultureText).toContain('assessment measures should not be the sole basis for diagnosis');
+    expect(cultureText).not.toContain('Integration = best outcomes; Marginalization = worst');
+    for (const id of ['ch-32', 'ch-33', 'ch-34']) expect(reviewOverrides.chapters[id].references.length).toBeGreaterThanOrEqual(11);
+  });
+
+  it('keeps Chapters 35-39 lifespan claims bounded, current, and interactive', () => {
+    const texts = Object.fromEntries([35, 36, 37, 38, 39].map((number) => [number, readText(`test_prep/eppp_legacy/js/textbook_ch${number}.js`)]));
+    const chapters = Object.fromEntries([35, 36, 37, 38, 39].map((number) => [number, catalog.chapters.find((item) => item.id === `ch-${number}`)]));
+
+    expect(chapters[35]).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 5, diagramCount: 1, knowledgeCheckCount: 4, referenceCount: 9, checks: { 'expert-review': 'pending-independent-prenatal-infant-and-developmental-assessment-review' } });
+    expect(chapters[36]).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 4, diagramCount: 1, knowledgeCheckCount: 3, referenceCount: 9, checks: { 'expert-review': 'pending-independent-attachment-development-and-family-systems-review' } });
+    expect(chapters[37]).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 4, diagramCount: 1, knowledgeCheckCount: 3, referenceCount: 8, checks: { 'expert-review': 'pending-independent-developmental-cognition-and-neurodiversity-review' } });
+    expect(chapters[38]).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 5, diagramCount: 3, knowledgeCheckCount: 4, referenceCount: 9, checks: { 'expert-review': 'pending-independent-adolescent-development-identity-and-moral-reasoning-review' } });
+    expect(chapters[39]).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 4, diagramCount: 1, knowledgeCheckCount: 3, referenceCount: 10, checks: { 'expert-review': 'pending-independent-aging-neuropsychology-and-bereavement-review' } });
+    expect(texts[35]).toContain('Apgar alone does <strong>not</strong> diagnose asphyxia');
+    expect(texts[35]).toContain('surveillance tools, not diagnostic or screening instruments');
+    expect(texts[36]).toContain('not proof of abuse');
+    expect(texts[36]).toContain('no absolute age-2 cutoff');
+    expect(texts[37]).toContain('Performance is evidence');
+    expect(texts[37]).toContain('the task is not diagnostic or autism-specific');
+    expect(texts[38]).toContain('not a two-part brain diagnosis');
+    expect(texts[38]).toContain('not a birthday switch');
+    expect(texts[39]).toContain('not synonymous with Pick disease');
+    expect(texts[39]).toContain('does not support prescribing them as a universal sequence');
+    for (const number of [35, 36, 37, 38, 39]) {
+      expect(texts[number]).toContain('<strong>A:</strong>');
+      expect(texts[number]).toContain('<strong>D:</strong>');
+      expect(reviewOverrides.chapters[`ch-${number}`].references).toHaveLength(chapters[number].referenceCount);
+    }
   });
 
   it('keeps native catalog and QA deployment copies synchronized', () => {

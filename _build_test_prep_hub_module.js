@@ -8,6 +8,9 @@ const SOURCE = path.join(ROOT, 'test_prep_hub_source.jsx');
 const BANK_SOURCE = path.join(ROOT, 'test_prep', 'eppp_native_items.json');
 const PARAPRO_PACK_SOURCE = path.join(ROOT, 'test_prep', 'parapro_pack.json');
 const SPECIAL_EDUCATION_5355_PACK_SOURCE = path.join(ROOT, 'test_prep', 'special_education_5355_pack.json');
+const SCHOOL_COUNSELOR_5422_PACK_SOURCE = path.join(ROOT, 'test_prep', 'school_counselor_5422_pack.json');
+const SCHOOL_PSYCHOLOGIST_5403_PACK_SOURCE = path.join(ROOT, 'test_prep', 'school_psychologist_5403_pack.json');
+const SPEECH_LANGUAGE_PATHOLOGY_5331_PACK_SOURCE = path.join(ROOT, 'test_prep', 'speech_language_pathology_5331_pack.json');
 const OUTPUT = path.join(ROOT, 'test_prep_hub_module.js');
 const DEPLOY_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
@@ -28,6 +31,18 @@ const SPECIAL_EDUCATION_5355_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_
 const SPECIAL_EDUCATION_5355_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_5355_learning_library.cjs');
 const SPECIAL_EDUCATION_5355_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_special_education_5355_learning_library.cjs');
 const SPECIAL_EDUCATION_5355_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_special_education_5355_pack.cjs');
+const SCHOOL_COUNSELOR_5422_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_school_counselor_5422_pack.cjs');
+const SCHOOL_COUNSELOR_5422_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_school_counselor_5422_learning_library.cjs');
+const SCHOOL_COUNSELOR_5422_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_school_counselor_5422_learning_library.cjs');
+const SCHOOL_COUNSELOR_5422_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_school_counselor_5422_pack.cjs');
+const SCHOOL_PSYCHOLOGIST_5403_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_school_psychologist_5403_pack.cjs');
+const SCHOOL_PSYCHOLOGIST_5403_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_school_psychologist_5403_learning_library.cjs');
+const SCHOOL_PSYCHOLOGIST_5403_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_school_psychologist_5403_learning_library.cjs');
+const SCHOOL_PSYCHOLOGIST_5403_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_school_psychologist_5403_pack.cjs');
+const SPEECH_LANGUAGE_PATHOLOGY_5331_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_speech_language_pathology_5331_pack.cjs');
+const SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_speech_language_pathology_5331_learning_library.cjs');
+const SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_speech_language_pathology_5331_learning_library.cjs');
+const SPEECH_LANGUAGE_PATHOLOGY_5331_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_speech_language_pathology_5331_pack.cjs');
 const skipEpppRefresh = process.argv.includes('--skip-eppp-refresh');
 
 if (!fs.existsSync(SOURCE)) {
@@ -44,6 +59,18 @@ execSync(`node "${SPECIAL_EDUCATION_5355_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, s
 execSync(`node "${SPECIAL_EDUCATION_5355_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${SPECIAL_EDUCATION_5355_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 const source = fs.readFileSync(SOURCE, 'utf8');
+execSync(`node "${SCHOOL_COUNSELOR_5422_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SCHOOL_COUNSELOR_5422_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SCHOOL_COUNSELOR_5422_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SCHOOL_COUNSELOR_5422_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SCHOOL_PSYCHOLOGIST_5403_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SCHOOL_PSYCHOLOGIST_5403_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SCHOOL_PSYCHOLOGIST_5403_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SCHOOL_PSYCHOLOGIST_5403_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 const bank = JSON.parse(fs.readFileSync(BANK_SOURCE, 'utf8'));
 if (!Array.isArray(bank) || !bank.length) throw new Error('EPPP native item bank is empty or invalid.');
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
@@ -54,9 +81,24 @@ const specialEducation5355Pack = JSON.parse(fs.readFileSync(SPECIAL_EDUCATION_53
 if (!specialEducation5355Pack || specialEducation5355Pack.id !== 'praxis-special-education-5355' || specialEducation5355Pack.batchSize !== 100 || !Array.isArray(specialEducation5355Pack.items) || specialEducation5355Pack.items.length !== 200) {
   throw new Error('Praxis Special Education 5355 release pack is empty or invalid.');
 }
+const schoolCounselor5422Pack = JSON.parse(fs.readFileSync(SCHOOL_COUNSELOR_5422_PACK_SOURCE, 'utf8'));
+if (!schoolCounselor5422Pack || schoolCounselor5422Pack.id !== 'praxis-school-counselor-5422' || schoolCounselor5422Pack.batchSize !== 100 || !Array.isArray(schoolCounselor5422Pack.items) || schoolCounselor5422Pack.items.length !== 200) {
+  throw new Error('Praxis School Counselor 5422 release pack is empty or invalid.');
+}
+const schoolPsychologist5403Pack = JSON.parse(fs.readFileSync(SCHOOL_PSYCHOLOGIST_5403_PACK_SOURCE, 'utf8'));
+if (!schoolPsychologist5403Pack || schoolPsychologist5403Pack.id !== 'praxis-school-psychologist-5403' || schoolPsychologist5403Pack.batchSize !== 100 || !Array.isArray(schoolPsychologist5403Pack.items) || schoolPsychologist5403Pack.items.length !== 200) {
+  throw new Error('Praxis School Psychologist 5403 release pack is empty or invalid.');
+}
+const speechLanguagePathology5331Pack = JSON.parse(fs.readFileSync(SPEECH_LANGUAGE_PATHOLOGY_5331_PACK_SOURCE, 'utf8'));
+if (!speechLanguagePathology5331Pack || speechLanguagePathology5331Pack.id !== 'praxis-speech-language-pathology-5331' || speechLanguagePathology5331Pack.batchSize !== 100 || !Array.isArray(speechLanguagePathology5331Pack.items) || speechLanguagePathology5331Pack.items.length !== 200) {
+  throw new Error('Praxis Speech-Language Pathology 5331 release pack is empty or invalid.');
+}
 const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n';
+  + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
+  + 'const SCHOOL_COUNSELOR_5422_PRACTICE_PACK = ' + JSON.stringify(schoolCounselor5422Pack) + ';\n\n'
+  + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + JSON.stringify(schoolPsychologist5403Pack) + ';\n\n'
+  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n';
 fs.writeFileSync(TMP, '/* global React */\n\n' + bankPrelude + source + '\n', 'utf8');
 
 try {

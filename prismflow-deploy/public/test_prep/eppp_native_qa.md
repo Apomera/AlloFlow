@@ -1,6 +1,6 @@
 # EPPP native pack editorial QA report
 
-Generated: 2026-07-14T02:14:08.386Z
+Generated: 2026-07-14T13:00:17.060Z
 
 Pack: EPPP Part 1 — Source-Reviewed Practice Bank v2.0.0
 

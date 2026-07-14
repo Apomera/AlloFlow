@@ -441,7 +441,9 @@
     if (!audioUrl || typeof audioUrl !== 'string') return null;
     try {
       const resp = await fetch(audioUrl);
-      return await resp.blob();
+      if (!resp.ok) return null;
+      const blob = await resp.blob();
+      return blob && blob.size > 0 ? blob : null;
     } catch (e) { return null; }
   };
   const _alloCallExportTTS = async (callTTS, text, voice, language) => {
@@ -460,7 +462,18 @@
     const isWav = first.length > 12 &&
       first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46 &&
       first[8] === 0x57 && first[9] === 0x41 && first[10] === 0x56 && first[11] === 0x45;
-    if (!isWav) return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
+    const formatFlags = [isWav];
+    for (let i = 1; i < blobs.length; i++) {
+      const head = new Uint8Array(await blobs[i].slice(0, 12).arrayBuffer());
+      formatFlags.push(head.length > 11 && head[0] === 0x52 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x46 && head[8] === 0x57 && head[9] === 0x41 && head[10] === 0x56 && head[11] === 0x45);
+    }
+    if (formatFlags.some((flag) => flag !== isWav)) return null;
+    if (!isWav) {
+      const family = (blob) => /mpeg|mp3/i.test(blob.type || '') ? 'mpeg' : ((blob.type || '').toLowerCase() || 'unknown');
+      const firstFamily = family(blobs[0]);
+      if (blobs.some((blob) => family(blob) !== firstFamily)) return null;
+      return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
+    }
     const parsePcm = (buf) => {
       if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return null;
       let dataStart = 44, rate = 0;
@@ -549,7 +562,7 @@
       }
       // Honesty (export-format review R2 #12): a failed TTS chunk is simply
       // absent from `blobs`, so the concatenated file silently drops those
-      // sections. Track how many are missing so the caller and the on-page
+      // audio portions. Track how many are missing so the caller and the on-page
       // download card can say so instead of reporting a clean success.
       const _total = plan.chunks.length;
       const _missing = _total - blobs.length;
@@ -610,12 +623,12 @@
       desc.style.cssText = 'font-size:0.84rem;color:#475569;line-height:1.35;';
       row.appendChild(link);
       row.appendChild(desc);
-      // #12: if some sections could not be voiced, say so on the card itself so a
+      // #12: if some generated audio portions could not be voiced, say so on the card itself so a
       // teacher does not hand out audio that silently skips part of the document.
       if (item.missing > 0 && item.total) {
         const warn = doc.createElement('span');
         warn.setAttribute('role', 'note');
-        warn.textContent = '⚠ ' + item.missing + ' of ' + item.total + ' sections are missing from this file (audio could not be generated for them).';
+        warn.textContent = '⚠ ' + item.missing + ' of ' + item.total + ' audio portions are missing from this file (audio could not be generated for them).';
         warn.style.cssText = 'flex-basis:100%;font-size:0.82rem;color:#b45309;font-weight:700;line-height:1.35;';
         row.appendChild(warn);
       }
@@ -790,7 +803,7 @@
     if (result.downloads.length) _alloInsertAudioDownloads(root, result.downloads);
     // #12: never report a clean success when the downloadable audio is incomplete.
     if (addToast && built.failedVariants && built.failedVariants.length) addToast('Some audio versions could not be generated (' + built.failedVariants.join(', ') + ') and were skipped. The exported document still opens normally.', 'error');
-    if (addToast && built.anyPartial) addToast('Heads up: the downloadable audio is missing the sections that could not be voiced (the download card shows how many).', 'info');
+    if (addToast && built.anyPartial) addToast('Heads up: the downloadable audio is missing the audio portions that could not be voiced (the download card shows how many).', 'info');
     if (progress) progress.done('Audio ready. Starting download...');
     return result;
   };

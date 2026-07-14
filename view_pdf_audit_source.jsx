@@ -488,6 +488,52 @@ function _normTokenForDiffShared(s) {
 // docx-library types so it stays unit-testable headlessly —
 // tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
 // (anti-drift pattern); keep the "// end _htmlToDocxSpec" marker intact.
+function _htmlToStructuredText(html, markdown) {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const lines = [];
+  const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+  const inline = (node) => {
+    if (!node) return '';
+    if (node.nodeType === 3) return node.textContent || '';
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+    if (tag === 'br') return '\n';
+    if (tag === 'img') {
+      const alt = clean(node.getAttribute('alt'));
+      return markdown ? (alt ? '![' + alt.replace(/]/g, '\\]') + '](image)' : '') : (alt ? '[Image: ' + alt + ']' : '');
+    }
+    let text = Array.from(node.childNodes || []).map(inline).join('');
+    if (markdown && tag === 'a' && node.getAttribute('href')) text = '[' + text + '](' + node.getAttribute('href') + ')';
+    if (markdown && (tag === 'strong' || tag === 'b')) text = '**' + text + '**';
+    if (markdown && (tag === 'em' || tag === 'i')) text = '*' + text + '*';
+    return text;
+  };
+  const walk = (node, depth) => {
+    for (const child of Array.from(node.children || [])) {
+      const tag = child.tagName.toLowerCase();
+      if (/^h[1-6]$/.test(tag)) lines.push((markdown ? '#'.repeat(Number(tag[1])) + ' ' : '') + clean(inline(child)), '');
+      else if (tag === 'p' || tag === 'blockquote' || tag === 'figcaption' || tag === 'dt' || tag === 'dd') lines.push(clean(inline(child)), '');
+      else if (tag === 'ul' || tag === 'ol') {
+        Array.from(child.children).filter((li) => li.tagName === 'LI').forEach((li, i) => lines.push('  '.repeat(depth || 0) + (tag === 'ol' ? (i + 1) + '. ' : '- ') + clean(inline(li))));
+        lines.push('');
+      } else if (tag === 'table') {
+        const rows = Array.from(child.querySelectorAll('tr')).filter((tr) => tr.closest('table') === child).map((tr) => Array.from(tr.children).filter((c) => /^(TH|TD)$/.test(c.tagName)).map((c) => clean(inline(c))));
+        if (rows.length && markdown) {
+          lines.push('| ' + rows[0].join(' | ') + ' |', '| ' + rows[0].map(() => '---').join(' | ') + ' |');
+          rows.slice(1).forEach((row) => lines.push('| ' + row.join(' | ') + ' |'));
+        } else rows.forEach((row) => lines.push(row.join('\t')));
+        lines.push('');
+        Array.from(child.querySelectorAll('table')).filter((table) => table !== child && table.parentElement.closest('table') === child).forEach((table) => walk({ children: [table] }, depth));
+      } else if (tag === 'img') { const value = clean(inline(child)); if (value) lines.push(value, ''); }
+      else walk(child, depth || 0);
+    }
+  };
+  walk(doc.body || doc.documentElement, 0);
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function _htmlToPlainTextExport(html) { return _htmlToStructuredText(html, false); }
+function _htmlToMarkdownExport(html) { return _htmlToStructuredText(html, true); }
+
 function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const title = (((doc.querySelector('title') || {}).textContent) || ((doc.querySelector('h1') || {}).textContent) || 'Accessible document').trim().slice(0, 200) || 'Accessible document';
@@ -564,6 +610,18 @@ function _htmlToDocxSpec(html) {
   };
   const _runsText = (runs) => runs.map((r) => r.text || '').join('').trim();
   const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}), ...(opts && opts.centered ? { centered: true } : {}) }); counts.paragraphs++; } };
+  const pushMixedParagraph = (el, opts) => {
+    let pending = [];
+    const flush = () => { if (pending.length) { pushParagraph(inlineRuns({ childNodes: pending }, {}), opts); pending = []; } };
+    const visit = (parent) => {
+      for (const child of Array.from(parent.childNodes || [])) {
+        if (child.nodeType === 1 && child.tagName === 'IMG') { flush(); pushImage(child, ''); }
+        else if (child.nodeType === 1 && child.querySelector && child.querySelector('img')) { flush(); visit(child); flush(); }
+        else pending.push(child);
+      }
+    };
+    visit(el); flush();
+  };
   const pushImage = (img, fallbackAlt) => {
     const src = img.getAttribute('src') || '';
     const alt = (img.getAttribute('alt') || fallbackAlt || '').trim();
@@ -621,13 +679,14 @@ function _htmlToDocxSpec(html) {
         // title-page lines (title/author/affiliation/course) are centered in any
         // mode — a title page is inherently centered.
         const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references'));
-        pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
+        if (tag === 'P' && n.querySelector && n.querySelector('img')) pushMixedParagraph(n, { hanging: !!isRef, centered: !!_inTitlePage });
+        else pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
         continue;
       }
       if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
       if (tag === 'TABLE') {
         const rows = [];
-        const trs = n.querySelectorAll('tr');
+        const trs = Array.from(n.querySelectorAll('tr')).filter((tr) => tr.closest('table') === n);
         for (let r = 0; r < trs.length; r++) {
           const tr = trs[r];
           const cells = [];
@@ -639,15 +698,18 @@ function _htmlToDocxSpec(html) {
             // Merged cells (builder-review A5, 2026-07-01): carry colspan/rowspan into the
             // spec so the DOCX builder can emit real merges. HTML omits cells covered by a
             // rowspan, which is exactly the shape the docx lib's rowSpan expects.
-            cells.push({ runs: inlineRuns(cell, {}), header: cell.tagName === 'TH',
+            const cellCopy = cell.cloneNode(true);
+            Array.from(cellCopy.querySelectorAll('table')).forEach((nested) => nested.remove());
+            cells.push({ runs: inlineRuns(cellCopy, {}), header: cell.tagName === 'TH',
               colSpan: Math.max(1, parseInt(cell.getAttribute('colspan') || '1', 10) || 1),
               rowSpan: Math.max(1, parseInt(cell.getAttribute('rowspan') || '1', 10) || 1) });
           }
           if (cells.length) rows.push({ header: allTh || (tr.parentNode && tr.parentNode.tagName === 'THEAD'), cells });
         }
         if (rows.length) { blocks.push({ type: 'table', rows }); counts.tables++; }
-        const cap = n.querySelector('caption');
+        const cap = Array.from(n.children || []).find((child) => child.tagName === 'CAPTION');
         if (cap) pushParagraph(inlineRuns(cap, { italic: true }));
+        Array.from(n.querySelectorAll('table')).filter((nested) => nested !== n && nested.parentElement.closest('table') === n).forEach((nested) => walk({ childNodes: [nested] }));
         continue;
       }
       if (tag === 'IMG') { pushImage(n, ''); continue; }
@@ -884,7 +946,7 @@ function _expDtbookRuns(runs) {
     return t;
   }).join('');
 }
-function _htmlToDtbookXml(html, lang) {
+function _htmlToDtbookXml(html, lang, uid) {
   const spec = _htmlToDocxSpec(html);
   const L = lang || spec.lang || 'en';
   const title = _expXmlEsc(spec.title || 'Document');
@@ -941,44 +1003,56 @@ function _htmlToDtbookXml(html, lang) {
     '<meta name="dc:Language" content="' + _expXmlEsc(L) + '"/>' +
     '<meta name="dc:Publisher" content="AlloFlow"/>' +
     '<meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/>' +
-    '<meta name="dtb:uid" content="alloflow-daisy-' + Date.now() + '"/>' +
+    '<meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/>' +
     '</head>\n' +
     '<book><bodymatter>' + bodyInner + '</bodymatter></book>\n' +
     '</dtbook>';
 }
 // Navigation Control file (NCX) + OPF package for the DAISY book — navPoints
 // from the document headings so DAISY players get a real navigable TOC.
-function _htmlToDaisyNcx(html, title) {
+function _htmlToDaisyNcx(html, title, uid) {
   const spec = _htmlToDocxSpec(html);
   const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
   let i = 0;
   const navPoints = heads.map((h) => {
     i++;
     const label = _expXmlEsc((h.runs || []).map((r) => r.text || '').join('') || ('Section ' + i));
-    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="dtbook.xml#h' + i + '"/></navPoint>';
+    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="book.smil#par' + i + '"/></navPoint>';
   }).join('\n');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n' +
     '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n' +
-    '<head><meta name="dtb:uid" content="alloflow-daisy"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
+    '<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
     '<docTitle><text>' + _expXmlEsc(title || spec.title || 'Document') + '</text></docTitle>\n' +
-    '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="dtbook.xml"/></navPoint>') + '</navMap>\n' +
+    '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="book.smil#par1"/></navPoint>') + '</navMap>\n' +
     '</ncx>';
 }
-const _DAISY_OPF_XML = (title, lang) => '<?xml version="1.0" encoding="utf-8"?>\n' +
+function _htmlToDaisySmil(html, uid) {
+  const spec = _htmlToDocxSpec(html);
+  const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
+  const pars = heads.length
+    ? heads.map((_, i) => '<par id="par' + (i + 1) + '"><text src="dtbook.xml#h' + (i + 1) + '"/></par>').join('\n')
+    : '<par id="par1"><text src="dtbook.xml"/></par>';
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<!DOCTYPE smil PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">\n' +
+    '<smil xmlns="http://www.w3.org/2001/SMIL20/"><head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') +
+    '"/><meta name="dtb:totalElapsedTime" content="0:00:00"/></head><body><seq dur="0:00:00">' + pars + '</seq></body></smil>';
+}
+const _DAISY_OPF_XML = (title, lang, uid) => '<?xml version="1.0" encoding="utf-8"?>\n' +
   '<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="uid">\n' +
   '<metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
   '<dc:Title>' + _expXmlEsc(title) + '</dc:Title>' +
   '<dc:Language>' + _expXmlEsc(lang || 'en') + '</dc:Language>' +
   '<dc:Format>ANSI/NISO Z39.86-2005</dc:Format>' +
-  '<dc:Identifier id="uid">alloflow-daisy</dc:Identifier>' +
+  '<dc:Identifier id="uid">' + _expXmlEsc(uid || 'alloflow-daisy') + '</dc:Identifier>' +
   '<dc:Publisher>AlloFlow</dc:Publisher>' +
   '</dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n' +
   '<manifest>' +
   '<item id="opf" href="package.opf" media-type="text/xml"/>' +
   '<item id="dtbook" href="dtbook.xml" media-type="application/x-dtbook+xml"/>' +
   '<item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/>' +
-  '</manifest>\n<spine><itemref idref="dtbook"/></spine>\n</package>';
+  '<item id="smil" href="book.smil" media-type="application/smil"/>' +
+  '</manifest>\n<spine><itemref idref="smil"/></spine>\n</package>';
 
 // ── EPUB3 Media Overlays (read-along) — pure helpers (2026-06-14) ────────────
 // True read-along: each spoken text block gets a stable id, one TTS clip, and a
@@ -1047,11 +1121,11 @@ function _collectMoSegments(html) {
   // be well-formed. innerHTML leaves void elements unclosed (<input data-allo-field>, <col>, <source>,
   // …) and named entities (&mdash; &copy;) that are undefined in XML, so epubcheck / Apple Books /
   // Thorium reject the WHOLE EPUB with a parse error — while the toast claims success. XMLSerializer
-  // self-closes void elements and emits literal chars; strip the per-child redundant xhtml xmlns. (#1)
+  // self-closes void elements and emits literal chars while preserving foreign-content namespace re-entry. (#1)
   let bodyHtml;
   try {
     const _xs = new XMLSerializer();
-    bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+    bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
   } catch (_) { bodyHtml = root.innerHTML; }
   return { segments, bodyHtml, lang: (doc.documentElement.getAttribute('lang') || 'en') };
 }
@@ -1082,9 +1156,11 @@ function _buildMoSmil(segments, durations, ext, hasAudio) {
 }
 // OPF for the media-overlay ePub: content references its overlay; manifest lists
 // the SMIL + every audio clip; media:duration (global + per-overlay) is required.
-function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio) {
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio, contentProperties) {
   const _ext = ext || 'mp3';
   const _mime = mime || 'audio/mpeg';
+  const _contentProps = Array.isArray(contentProperties) ? contentProperties.filter((p) => p === 'svg' || p === 'mathml') : [];
+  const _contentPropAttr = _contentProps.length ? ' properties="' + Array.from(new Set(_contentProps)).join(' ') + '"' : '';
   // Only manifest the audio clips that actually exist in the zip (a declared item
   // with no file = invalid EPUB). 2026-06-15 review P0 fix.
   const _has = (i) => !hasAudio || hasAudio[i];
@@ -1110,7 +1186,7 @@ function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, ha
     '<meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta>' +
     '</metadata>\n' +
     '<manifest>\n' +
-    '<item id="content" href="content.xhtml" media-type="application/xhtml+xml" media-overlay="smil"/>\n' +
+    '<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + _contentPropAttr + ' media-overlay="smil"/>\n' +
     '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n' +
     '<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' +
     audioItems + '\n' +
@@ -1456,50 +1532,89 @@ function _ensurePptxLib() {
 function _docxSpecToSlides(spec) {
   const slides = [];
   let cur = null;
-  const newSlide = (title) => { cur = { title: (title || '').trim().slice(0, 120) || null, items: [], lineEst: 0 }; slides.push(cur); };
+  const MAX_LINES = 13;
   const runsText = (runs) => (runs || []).map((r) => (r.br ? ' ' : (r.text || ''))).join('').replace(/\s+/g, ' ').trim();
-  const pushItem = (item, lines) => {
-    if (!cur) newSlide(spec.title || 'Document');
-    if (cur.lineEst + lines > 14 && cur.items.length) {
-      const t = cur.title;
-      newSlide(t ? (t.replace(/ \(cont\.\)$/, '') + ' (cont.)') : null);
-    }
-    cur.items.push(item);
-    cur.lineEst += lines;
+  const cleanTitle = (title) => String(title || '').replace(/ \(cont\.\)$/i, '').trim();
+  const newSlide = (title, continuation) => {
+    const base = cleanTitle(title || spec.title || 'Document').slice(0, 120) || 'Document';
+    cur = { title: continuation ? base + ' (cont.)' : base, items: [], lineEst: 0 };
+    slides.push(cur);
   };
+  const estimateLines = (text, width) => {
+    const chars = Math.max(28, width || 78);
+    return Math.max(1, String(text || '').split(/\n/).reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / chars)), 0));
+  };
+  const splitText = (text, maxChars) => {
+    const value = String(text || '').trim();
+    if (!value) return [];
+    const chunks = [];
+    let remaining = value;
+    const limit = Math.max(120, maxChars || 650);
+    while (remaining.length > limit) {
+      let at = remaining.lastIndexOf(' ', limit);
+      if (at < Math.floor(limit * 0.55)) at = remaining.indexOf(' ', limit);
+      if (at < 1) at = limit;
+      chunks.push(remaining.slice(0, at).trim());
+      remaining = remaining.slice(at).trim();
+    }
+    if (remaining) chunks.push(remaining);
+    return chunks;
+  };
+  const pushItem = (item, lines) => {
+    const needed = Math.max(1, Math.min(MAX_LINES, lines || 1));
+    if (!cur) newSlide(spec.title || 'Document', false);
+    if (cur.items.length && cur.lineEst + needed > MAX_LINES) newSlide(cur.title, true);
+    cur.items.push(item);
+    cur.lineEst += needed;
+  };
+  let logicalImages = 0, logicalTables = 0, logicalBullets = 0;
   for (const b of (spec.blocks || [])) {
     if (b.type === 'heading') {
-      const t = runsText(b.runs);
-      if (!t) continue;
-      if (b.level <= 2) newSlide(t);
-      else pushItem({ kind: 'subhead', text: t }, 2);
+      const text = runsText(b.runs);
+      if (!text) continue;
+      if (b.level <= 2) newSlide(text, false);
+      else splitText(text, 420).forEach((part) => pushItem({ kind: 'subhead', text: part }, Math.min(3, estimateLines(part, 70) + 1)));
     } else if (b.type === 'paragraph') {
-      const t = runsText(b.runs);
-      if (t) pushItem({ kind: 'text', text: t }, Math.max(1, Math.ceil(t.length / 90)));
+      const text = runsText(b.runs);
+      splitText(text, 650).forEach((part) => pushItem({ kind: 'text', text: part }, estimateLines(part, 76)));
     } else if (b.type === 'list') {
-      for (const it of (b.items || [])) {
-        const t = runsText(it.runs);
-        if (t) pushItem({ kind: 'bullet', text: t, level: Math.min(it.level || 0, 4) }, 1);
+      for (const item of (b.items || [])) {
+        const text = runsText(item.runs);
+        const parts = splitText(text, 480);
+        parts.forEach((part) => {
+          pushItem({ kind: 'bullet', text: part, level: Math.min(item.level || 0, 4) }, estimateLines(part, 68 - Math.min(item.level || 0, 4) * 6));
+          logicalBullets++;
+        });
       }
     } else if (b.type === 'table') {
-      // Merge parity (#10): carry the spec's colSpan/rowSpan so the PPTX table
-      // can emit real merges instead of flattening to a rectangular grid.
       const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => ({ text: runsText(c.runs), colSpan: c.colSpan || 1, rowSpan: c.rowSpan || 1 })) }));
-      if (rows.length) pushItem({ kind: 'table', rows }, rows.length + 1);
+      if (!rows.length) continue;
+      logicalTables++;
+      const tableColumns = Math.max(1, ...rows.map((row) => row.cells.length));
+      const tableCharsPerLine = Math.max(22, Math.floor(120 / tableColumns));
+      const headerRows = [];
+      while (headerRows.length < rows.length && rows[headerRows.length].header) headerRows.push(rows[headerRows.length]);
+      const bodyRows = rows.slice(headerRows.length);
+      const pages = [];
+      let page = headerRows.slice(), lineCount = headerRows.reduce((sum, row) => sum + Math.max(1, ...row.cells.map((c) => estimateLines(c.text, tableCharsPerLine))), 0);
+      for (const row of bodyRows.length ? bodyRows : (headerRows.length ? [] : rows)) {
+        const rowLines = Math.min(5, Math.max(1, ...row.cells.map((c) => estimateLines(c.text, tableCharsPerLine))));
+        if (page.length > headerRows.length && lineCount + rowLines > 11) {
+          pages.push(page); page = headerRows.slice(); lineCount = headerRows.length;
+        }
+        page.push(row); lineCount += rowLines;
+      }
+      if (page.length) pages.push(page);
+      pages.forEach((pageRows) => pushItem({ kind: 'table', rows: pageRows, repeatHeader: headerRows.length }, Math.min(10, pageRows.reduce((sum, row) => sum + Math.max(1, ...row.cells.map((c) => estimateLines(c.text, tableCharsPerLine))), 0) + 1)));
     } else if (b.type === 'image') {
+      logicalImages++;
       pushItem({ kind: 'image', src: b.src || null, alt: b.alt || '', width: b.width, height: b.height }, 8);
+    } else if (b.type === 'pagebreak') {
+      if (cur && cur.items.length) newSlide(cur.title, true);
     }
   }
-  const counts = { slides: slides.length, images: 0, tables: 0, bullets: 0, titled: 0 };
-  for (const s of slides) {
-    if (s.title) counts.titled++;
-    for (const it of s.items) {
-      if (it.kind === 'image') counts.images++;
-      else if (it.kind === 'table') counts.tables++;
-      else if (it.kind === 'bullet') counts.bullets++;
-    }
-  }
-  return { title: spec.title, lang: spec.lang, slides, counts };
+  const counts = { slides: slides.length, images: logicalImages, tables: logicalTables, bullets: logicalBullets, titled: slides.filter((slide) => !!slide.title).length };
+  return { title: spec.title, lang: spec.lang, rtl: !!spec.rtl, slides, counts };
 }
 // end _docxSpecToSlides
 
@@ -1549,52 +1664,89 @@ function _sanitizePptxTheme(raw) {
 async function _buildPptxBlobFromSlides(deck, P, theme) {
   const th = _sanitizePptxTheme(theme);
   const p = new P();
-  try { p.title = deck.title || 'Accessible deck'; } catch (_) {}
+  try {
+    p.title = deck.title || 'Accessible deck';
+    p.subject = 'Accessible slide deck generated by AlloFlow';
+    p.author = 'AlloFlow';
+    p.company = 'AlloFlow';
+  } catch (_) {}
   try { p.layout = 'LAYOUT_16x9'; } catch (_) {}
+  try { p.lang = deck.lang || 'en'; p.rtlMode = !!deck.rtl; } catch (_) {}
+  let hasTitleMaster = false;
+  try {
+    if (typeof p.defineSlideMaster === 'function') {
+      p.defineSlideMaster({
+        title: 'ALLOFLOW_CONTENT',
+        background: { color: th.bg },
+        margin: [0.25, 0.5, 0.35, 0.5],
+        objects: [
+          { placeholder: { options: { name: 'slideTitle', type: 'title', x: 0.5, y: 0.22, w: 8.65, h: 0.72, fontSize: 27, bold: true, color: th.title, fontFace: th.font, fit: 'shrink', margin: 0.02, valign: 'mid', align: deck.rtl ? 'right' : 'left' }, text: '' } },
+          { line: { x: 0.5, y: 1.02, w: 9, h: 0, line: { color: th.tableBorder, pt: 1 } } },
+          { text: { text: deck.title || 'Accessible deck', options: { x: 0.5, y: 5.28, w: 7.7, h: 0.18, fontSize: 8, color: th.body, transparency: 28, margin: 0, fit: 'shrink' } } },
+          { slideNumber: { x: 9.0, y: 5.25, w: 0.45, h: 0.2, fontSize: 9, color: th.body, align: 'right' } },
+        ],
+      });
+      hasTitleMaster = true;
+    }
+  } catch (_) {}
   for (const s of deck.slides) {
-    const slide = p.addSlide();
+    const slide = hasTitleMaster ? p.addSlide('ALLOFLOW_CONTENT') : p.addSlide();
     try { slide.background = { color: th.bg }; } catch (_) {}
-    let y = 0.35;
+    let y = s.title ? 1.16 : 0.35;
     if (s.title) {
-      slide.addText(s.title, { x: 0.5, y, w: 9, h: 0.8, fontSize: 28, bold: true, color: th.title, fontFace: th.font });
-      y = 1.3;
+      slide.addText(s.title, hasTitleMaster ? { placeholder: 'slideTitle' } : { x: 0.5, y: 0.22, w: 9, h: 0.72, fontSize: 27, bold: true, color: th.title, fontFace: th.font, fit: 'shrink', margin: 0.02, align: deck.rtl ? 'right' : 'left' });
     }
     let runs = [];
+    const estimateRunLines = (run) => {
+      const width = 78 - (run.kind === 'bullet' ? Math.min(run.level || 0, 4) * 7 : 0);
+      return Math.max(1, Math.ceil(String(run.text || '').length / Math.max(32, width))) + (run.kind === 'subhead' ? 1 : 0);
+    };
     const flushText = () => {
       if (!runs.length) return;
-      const h = Math.min(0.3 * runs.length + 0.2, Math.max(5.2 - y, 0.5));
+      const lineCount = runs.reduce((sum, run) => sum + estimateRunLines(run), 0);
+      const available = Math.max(0.45, 5.12 - y);
+      const h = Math.min(available, Math.max(0.55, lineCount * 0.27 + 0.12));
       slide.addText(
-        runs.map((r) => ({ text: r.text, options: { bullet: r.kind === 'bullet' ? true : undefined, indentLevel: r.kind === 'bullet' ? (r.level || 0) : undefined, bold: r.kind === 'subhead', fontSize: r.kind === 'subhead' ? 20 : 16, breakLine: true } })),
-        { x: 0.5, y, w: 9, h, valign: 'top', color: th.body, fontFace: th.font }
+        runs.map((r) => ({ text: r.text, options: { bullet: r.kind === 'bullet' ? { indent: 16 + Math.min(r.level || 0, 4) * 14 } : undefined, hanging: r.kind === 'bullet' ? 4 : undefined, bold: r.kind === 'subhead', fontSize: r.kind === 'subhead' ? 19 : 15.5, breakLine: true, paraSpaceAfterPt: r.kind === 'subhead' ? 5 : 3 } })),
+        { x: 0.55, y, w: 8.9, h, valign: 'top', color: th.body, fontFace: th.font, fit: 'shrink', margin: 0.04, breakLine: false, align: deck.rtl ? 'right' : 'left', rtlMode: !!deck.rtl }
       );
-      y += h + 0.1;
+      y += h + 0.08;
       runs = [];
     };
     for (const it of s.items) {
       if (it.kind === 'text' || it.kind === 'bullet' || it.kind === 'subhead') { runs.push(it); continue; }
       flushText();
       if (it.kind === 'table' && it.rows.length) {
-        // Merge parity (#10): pptxgenjs cell options take lowercase colspan/rowspan.
-        // Cells may be legacy strings (older saved items) or {text, colSpan, rowSpan}.
         const tableRows = it.rows.map((r) => r.cells.map((c) => {
-          const _txt = (typeof c === 'string') ? c : (c && c.text) || '';
-          const _cs = (c && c.colSpan) || 1, _rs = (c && c.rowSpan) || 1;
-          return { text: _txt, options: { ...(r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {}), ...(_cs > 1 ? { colspan: _cs } : {}), ...(_rs > 1 ? { rowspan: _rs } : {}) } };
+          const text = (typeof c === 'string') ? c : (c && c.text) || '';
+          const colSpan = (c && c.colSpan) || 1, rowSpan = (c && c.rowSpan) || 1;
+          return { text, options: { ...(r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {}), ...(colSpan > 1 ? { colspan: colSpan } : {}), ...(rowSpan > 1 ? { rowspan: rowSpan } : {}), margin: 0.035, valign: 'mid', align: deck.rtl ? 'right' : 'left' } };
         }));
-        slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: 'solid', color: th.tableBorder, pt: 0.5 }, color: th.body, fontFace: th.font });
-        y += 0.35 * it.rows.length + 0.25;
+        const columnCount = Math.max(1, ...it.rows.map((row) => row.cells.length));
+        const fontSize = Math.max(9, Math.min(12, 13 - Math.max(0, columnCount - 3) * 0.6));
+        slide.addTable(tableRows, {
+          x: 0.55, y, w: 8.9, fontSize,
+          border: { type: 'solid', color: th.tableBorder, pt: 0.6 },
+          color: th.body, fontFace: th.font, margin: 0.035,
+          autoPage: false, autoPageRepeatHeader: !!it.repeatHeader,
+          rtlMode: !!deck.rtl,
+        });
+        const rowLines = it.rows.reduce((sum, row) => sum + Math.max(1, ...row.cells.map((cell) => Math.ceil(String((cell && cell.text) || cell || '').length / Math.max(16, Math.floor(68 / columnCount))))), 0);
+        y += Math.min(3.9, Math.max(0.55, rowLines * 0.28)) + 0.15;
       } else if (it.kind === 'image') {
         let placed = false;
+        const boxH = Math.max(1.2, Math.min(3.75, 5.1 - y));
         if (it.src && /^data:image\//.test(it.src)) {
           try {
-            slide.addImage({ data: it.src.replace(/^data:/, ''), x: 0.5, y, w: 3.2, h: 2.4, altText: it.alt || 'Image' });
-            y += 2.55;
+            const data = it.src.replace(/^data:/, '');
+            slide.addImage({ data, x: 0.6, y, w: 8.8, h: boxH, sizing: { type: 'contain', x: 0.6, y, w: 8.8, h: boxH }, altText: it.alt || 'Image' });
+            y += boxH + 0.12;
             placed = true;
           } catch (_) { /* degrade below */ }
         }
         if (!placed) {
-          slide.addText('[Image: ' + (it.alt || 'no description available') + ']', { x: 0.5, y, w: 9, h: 0.4, italic: true, fontSize: 14, color: th.body });
-          y += 0.5;
+          slide.addText('[Image: ' + (it.alt || 'no description available') + ']', { x: 0.55, y, w: 8.9, h: 0.55, italic: true, fontSize: 13.5, color: th.body, fit: 'shrink', margin: 0.04, align: deck.rtl ? 'right' : 'left' });
+          y += 0.62;
         }
       }
     }
@@ -1941,6 +2093,34 @@ function _srStyleTextFromHtml(html) {
   return out.join('\n\n');
 }
 
+async function _epubCoreAudioBlob(blob) {
+  if (!blob || !blob.size) return null;
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x41 && bytes[10] === 0x56 && bytes[11] === 0x45;
+  if (!isWav) {
+    const isMp3 = /mpeg|mp3/i.test(blob.type || '') || (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0);
+    return isMp3 ? new Blob([bytes], { type: 'audio/mpeg' }) : null;
+  }
+  let fmt = null, dataStart = 0, dataLen = 0;
+  for (let pos = 12; pos + 8 <= bytes.length;) {
+    const size = bytes[pos + 4] | (bytes[pos + 5] << 8) | (bytes[pos + 6] << 16) | (bytes[pos + 7] << 24);
+    if (bytes[pos] === 0x66 && bytes[pos + 1] === 0x6d && bytes[pos + 2] === 0x74 && bytes[pos + 3] === 0x20 && size >= 16) {
+      fmt = { format: bytes[pos + 8] | (bytes[pos + 9] << 8), channels: bytes[pos + 10] | (bytes[pos + 11] << 8),
+        sampleRate: bytes[pos + 12] | (bytes[pos + 13] << 8) | (bytes[pos + 14] << 16) | (bytes[pos + 15] << 24),
+        bits: bytes[pos + 22] | (bytes[pos + 23] << 8) };
+    }
+    if (bytes[pos] === 0x64 && bytes[pos + 1] === 0x61 && bytes[pos + 2] === 0x74 && bytes[pos + 3] === 0x61) { dataStart = pos + 8; dataLen = Math.min(size, bytes.length - dataStart); break; }
+    pos += 8 + size + (size % 2);
+  }
+  const encoder = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AudioHelpers && window.AlloModules.AudioHelpers.pcmToMp3;
+  if (!fmt || fmt.format !== 1 || fmt.channels !== 1 || fmt.bits !== 16 || !dataStart || !dataLen || typeof encoder !== 'function') return null;
+  const pcmBytes = bytes.slice(dataStart, dataStart + dataLen);
+  const pcm = new Int16Array(pcmBytes.buffer, pcmBytes.byteOffset, Math.floor(pcmBytes.byteLength / 2));
+  const mp3 = await encoder(pcm, fmt.sampleRate, 64);
+  return mp3 && mp3.size ? new Blob([mp3], { type: 'audio/mpeg' }) : null;
+}
+
 async function _concatAudioBlobs(blobs) {
   if (!blobs || blobs.length === 0) return null;
   if (blobs.length === 1) return blobs[0];
@@ -1948,8 +2128,18 @@ async function _concatAudioBlobs(blobs) {
   const isWav = first.length > 12 &&
     first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46 &&   // 'RIFF'
     first[8] === 0x57 && first[9] === 0x41 && first[10] === 0x56 && first[11] === 0x45;   // 'WAVE'
+  // Never concatenate different containers: a RIFF payload inside an MP3 (or vice versa)
+  // produces a download that decoders truncate or reject.
+  const formatFlags = [isWav];
+  for (let i = 1; i < blobs.length; i++) {
+    const head = new Uint8Array(await blobs[i].slice(0, 12).arrayBuffer());
+    formatFlags.push(head.length > 11 && head[0] === 0x52 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x46 && head[8] === 0x57 && head[9] === 0x41 && head[10] === 0x56 && head[11] === 0x45);
+  }
+  if (formatFlags.some((flag) => flag !== isWav)) return null;
   if (!isWav) {
-    // Non-WAV (e.g. MP3 fallback): frame concatenation is valid; keep prior behavior.
+    const family = (blob) => /mpeg|mp3/i.test(blob.type || '') ? 'mpeg' : ((blob.type || '').toLowerCase() || 'unknown');
+    const firstFamily = family(blobs[0]);
+    if (blobs.some((blob) => family(blob) !== firstFamily)) return null;
     return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
   }
   // WAV: two-pass single-allocation stitch (perf-audio-concat) — parse each segment's PCM
@@ -1985,6 +2175,7 @@ async function _concatAudioBlobs(blobs) {
   const sampleRate = rates[0] || 24000, numCh = 1, bps = 16;
   if (rates.length > 1 && rates.some(function (r) { return r !== rates[0]; })) {
     try { (typeof warnLog === 'function' ? warnLog : console.warn)('[Audio] mixed WAV sample rates ' + JSON.stringify(rates) + ' — using ' + sampleRate + 'Hz; off-rate segments may play at the wrong speed.'); } catch (_) {}
+
   }
   const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
   const outBuf = new ArrayBuffer(44 + total);
@@ -2508,7 +2699,7 @@ function PdfAuditView(props) {
       addToast(_sanitized
         ? ('🧼 ' + (t('toasts.typeset_sanitized') || 'Rebuilding a clean, tagged PDF from the remediated content — drops any embedded scripts, actions, or attachments from the original…'))
         : (t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)'), 'info');
-      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: 'en', subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
       const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
       if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
       const _typesetSourceHtml = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
@@ -2903,7 +3094,7 @@ function PdfAuditView(props) {
   // earlier sections live in the part-files the teacher already downloaded.
   const _saveAudioMeta = (j, complete) => {
     try {
-      setPdfFixResult((prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, savedAt: Date.now() } } : prev);
+      setPdfFixResult((prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, variant: j.variant || 'main', langSuffix: j.langSuffix || '', companionAt: j.companionAt || null, savedAt: Date.now() } } : prev);
     } catch (_) {}
   };
 
@@ -2950,9 +3141,11 @@ function PdfAuditView(props) {
       const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
       const lang = (html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en';
       const zip = new window.JSZip();
-      zip.file('dtbook.xml', _htmlToDtbookXml(html, lang));
-      zip.file('navigation.ncx', _htmlToDaisyNcx(html, title));
-      zip.file('package.opf', _DAISY_OPF_XML(title, lang));
+      const uid = 'urn:uuid:' + ((globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') ? globalThis.crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+      zip.file('dtbook.xml', _htmlToDtbookXml(html, lang, uid));
+      zip.file('navigation.ncx', _htmlToDaisyNcx(html, title, uid));
+      zip.file('book.smil', _htmlToDaisySmil(html, uid));
+      zip.file('package.opf', _DAISY_OPF_XML(title, lang, uid));
       const blob = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-daisy.zip';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
@@ -2984,7 +3177,10 @@ function PdfAuditView(props) {
           const url = await callTTS(segments[i].text, selectedVoice || 'Puck', 1, 2);
           if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
             dur = await measure(url);
-            blob = await (await _withTimeout(fetch(url), 20000, 'TTS audio fetch')).blob();
+            const response = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
+            if (!response.ok) throw new Error('TTS audio fetch failed (' + response.status + ')');
+            const rawBlob = await response.blob();
+            blob = await _epubCoreAudioBlob(rawBlob);
             // Recover duration from WAV header bytes when measure() gave 0/Infinity, so the
             // clip's clipEnd isn't 0s (block would speak nothing / never highlight). (exp-clip-duration)
             if (!(typeof dur === 'number' && isFinite(dur) && dur > 0) && blob) { try { dur = _wavDurationFromBytes(new Uint8Array(await blob.arrayBuffer())); } catch (_) {} }
@@ -2994,10 +3190,8 @@ function PdfAuditView(props) {
         audioBlobs.push(blob); durations.push(dur);
         setMoExport({ total: segments.length, done: i + 1, status: 'running' });
       }
-      const firstBlob = audioBlobs.find(Boolean);
-      const isWav = !!(firstBlob && /wav/i.test(firstBlob.type || ''));
-      const ext = isWav ? 'wav' : 'mp3';
-      const mime = isWav ? 'audio/wav' : 'audio/mpeg';
+      const ext = 'mp3';
+      const mime = 'audio/mpeg';
       const totalSec = durations.reduce((a, b) => a + (b || 0), 0);
       const withAudio = audioBlobs.filter(Boolean).length;
       const _hasAudio = audioBlobs.map(Boolean); // which segments actually got a clip
@@ -3006,7 +3200,10 @@ function PdfAuditView(props) {
       let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + '</title></head><body>' + bodyHtml + '</body></html>';
       xhtml = xhtml.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
       const _smilXml = _buildMoSmil(segments, durations, ext, _hasAudio);
-      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio);
+      const _moContentProperties = [];
+      if (/<svg\b/i.test(bodyHtml)) _moContentProperties.push('svg');
+      if (/<math\b/i.test(bodyHtml)) _moContentProperties.push('mathml');
+      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio, _moContentProperties);
       const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + '</a></li></ol></nav></body></html>';
       zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
       zip.file('META-INF/container.xml', _containerXml);
@@ -3034,7 +3231,7 @@ function PdfAuditView(props) {
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
       setMoExport({ total: segments.length, done: segments.length, status: 'done' });
       if (withAudio === 0) addToast((t('toasts.mo_no_audio') || '⚠ Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.') + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'error');
-      else addToast('📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' sections narrated.' + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'success');
+      else addToast('📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' audio portions narrated.' + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'success');
       setTimeout(() => setMoExport(null), 4000);
     } catch (e) { setMoExport(null); addToast('Read-along export failed: ' + (e?.message || 'unknown error'), 'error'); }
   };
@@ -3051,7 +3248,10 @@ function PdfAuditView(props) {
         const url = await callTTS(j.segments[j.nextIdx], selectedVoice || 'Puck', 1, 2);
         if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
           const resp = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
-          j.blobs.push(await resp.blob());
+          if (!resp.ok) throw new Error('TTS audio fetch failed (' + resp.status + ')');
+          const audioBlob = await resp.blob();
+          if (!audioBlob.size) throw new Error('TTS audio fetch returned an empty payload');
+          j.blobs.push(audioBlob);
           try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
           j.nextIdx++;
           consecutiveNull = 0;
@@ -3090,9 +3290,17 @@ function PdfAuditView(props) {
     // preamble). Re-deriving from raw textContent produced a different segment count,
     // so the "document changed — starting fresh" path fired almost every time,
     // defeating cross-session resume (2026-06-15 review fix).
-    const srcText = meta.srMode
-      ? _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim()
-      : _audioReadyText(pdfFixResult.accessibleHtml).trim();
+    let sourceHtml = pdfFixResult.accessibleHtml;
+    if (meta.variant === 'translation') {
+      const companion = pdfFixResult._translation;
+      if (!companion || (meta.companionAt && companion.at !== meta.companionAt)) { addToast('The saved translation audio source is no longer available. Start a new audio export.', 'error'); return; }
+      sourceHtml = companion.html;
+    } else if (meta.variant === 'plain') {
+      const companion = pdfFixResult._plainLanguage;
+      if (!companion || (meta.companionAt && companion.at !== meta.companionAt)) { addToast('The saved plain-language audio source is no longer available. Start a new audio export.', 'error'); return; }
+      sourceHtml = companion.html;
+    }
+    const srcText = meta.srMode ? _srStyleTextFromHtml(sourceHtml).trim() : _audioReadyText(sourceHtml).trim();
     const segments = [];
     let remaining = srcText;
     while (remaining.length > 0) {
@@ -3105,9 +3313,9 @@ function PdfAuditView(props) {
     }
     if (segments.length !== meta.total) {
       addToast(t('toasts.audio_resume_mismatch') || '⚠ The document changed since that audio job (section count differs) — starting fresh instead so nothing mismatches.', 'info');
-      audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: !!meta.srMode };
+      audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: !!meta.srMode, variant: meta.variant || 'main', langSuffix: meta.langSuffix || '', companionAt: meta.companionAt || null };
     } else {
-      audioJobRef.current = { segments, blobs: [], nextIdx: meta.nextIdx, failed: 0, pauseRequested: false, srMode: !!meta.srMode, partOffset: meta.nextIdx };
+      audioJobRef.current = { segments, blobs: [], nextIdx: meta.nextIdx, failed: 0, pauseRequested: false, srMode: !!meta.srMode, variant: meta.variant || 'main', langSuffix: meta.langSuffix || '', companionAt: meta.companionAt || null, partOffset: meta.nextIdx };
       addToast((t('toasts.audio_resuming_saved') || 'Resuming audio from section ') + (meta.nextIdx + 1) + '/' + meta.total + (t('toasts.audio_resuming_saved2') || ' — this session’s sections will download as the next part file (your earlier part file has sections 1–' + meta.nextIdx + ').'), 'info');
     }
     _runAudioJob();
@@ -11705,6 +11913,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
                             zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
                             const epubLang = ((typeof html === 'string' && html.match(/<html[^>]*lang=["']([^"']+)["']/i)) || [])[1] || 'en';
+                            const _epubContentProps = [];
+                            if (/<svg\b/i.test(html)) _epubContentProps.push('svg');
+                            if (/<math\b/i.test(html)) _epubContentProps.push('mathml');
+                            const _epubContentPropAttr = _epubContentProps.length ? ' properties="' + _epubContentProps.join(' ') + '"' : '';
                             const opf = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -11725,7 +11937,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
     <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>
   </metadata>
   <manifest>
-    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>
+    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_epubContentPropAttr}/>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
   </manifest>
   <spine><itemref idref="content"/></spine>
@@ -11738,7 +11950,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             let xhtml;
                             try {
                               const _d = new DOMParser().parseFromString(html, 'text/html');
-                              xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+                              xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
                             } catch (_) { xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;'); }
                             // #8: ALWAYS restore the XHTML namespace on the ROOT html element. The old
                             // `!includes('xmlns')` check was defeated by any child xmlns (a MathML/SVG
@@ -11780,7 +11992,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             let text = '';
                             try {
                               const _d = new DOMParser().parseFromString(html, 'text/html');
-                              _d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source, details.allo-chart-data').forEach(el => { try { el.remove(); } catch (_) {} });
+                              _d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source').forEach(el => { try { el.remove(); } catch (_) {} });
+                              _d.querySelectorAll('details.allo-chart-data > summary').forEach(el => { try { el.remove(); } catch (_) {} });
                               _d.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(_d.createTextNode('\n')); } catch (_) {} });
                               _d.querySelectorAll('p,li,tr,figcaption,blockquote,div,br').forEach(el => { try { el.appendChild(_d.createTextNode('\n')); } catch (_) {} });
                               text = ((_d.body && _d.body.textContent) || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -11797,31 +12010,71 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             // sign (#) before a 1-0→A-J digit run; standard BRF punctuation;
                             // 40-cell line wrap.
                             const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
-                            const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
-                            const _toBRF = (src) => {
-                              let _norm = src;
-                              try { _norm = src.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (_) {}
-                              const lines = _norm.replace(/\r\n?/g, '\n').split('\n');
-                              const out = [];
-                              for (const line of lines) {
-                                let bl = ''; let numMode = false;
-                                for (let i = 0; i < line.length; i++) {
-                                  const ch = line[i];
+                            const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/', '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>' };
+                            const _brfSmart = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
+                            const _brfOpenQuote = '\ue000', _brfCloseQuote = '\ue001';
+                            const _brfPrefix = /[#,;@_^".]$/;
+                            const _brfHardSplit = (word, into, cells) => {
+                              if (/^#[A-J14]+$/.test(word)) {
+                                while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
+                                if (word) into.push(word);
+                                return;
+                              }
+                              while (word.length > cells) {
+                                let cut = cells;
+                                while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
+                                into.push(word.slice(0, cut)); word = word.slice(cut);
+                              }
+                              if (word) into.push(word);
+                            };
+                            const _brfWrap = (line, into, cells) => {
+                              if (line.length <= cells) { into.push(line); return; }
+                              const words = line.split(' '); let cur = '';
+                              for (let word of words) {
+                                if (word.length > cells) { if (cur) { into.push(cur); cur = ''; } _brfHardSplit(word, into, cells); continue; }
+                                if (!cur) cur = word;
+                                else if (cur.length + 1 + word.length <= cells) cur += ' ' + word;
+                                else { into.push(cur); cur = word; }
+                              }
+                              if (cur) into.push(cur);
+                            };
+                            const _toBRF = (src, opts) => {
+                              const cells = (opts && opts.cellsPerLine) || 40;
+                              let norm = String(src == null ? '' : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
+                              norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || '');
+                              try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+                              const out = []; let dropped = 0;
+                              for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
+                                const chars = Array.from(line); let bl = ''; let numMode = false;
+                                for (let i = 0; i < chars.length; i++) {
+                                  const ch = chars[i];
                                   if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
-                                  // Letter sign after a number so "1a" is read as "1"+"a", not "11".
-                                  if (numMode && ((ch >= 'a' && ch <= 'j') || (ch >= 'A' && ch <= 'J'))) bl += ';';
+                                  if (numMode && (ch === ',' || ch === '.')) { bl += _brfPunct[ch]; continue; }
+                                  if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
                                   numMode = false;
                                   if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
-                                  if (ch >= 'A' && ch <= 'Z') { bl += ',' + ch; continue; }
+                                  if (ch >= 'A' && ch <= 'Z') {
+                                    let end = i;
+                                    while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
+                                    const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+                                    const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+                                    if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
+                                    else bl += ',' + ch;
+                                    continue;
+                                  }
                                   if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
-                                  bl += (_brfPunct[ch] !== undefined ? _brfPunct[ch] : (ch.charCodeAt(0) >= 0x20 && ch.charCodeAt(0) <= 0x7e ? ch.toUpperCase() : ''));
+                                  if (ch === _brfOpenQuote) { bl += '8'; continue; }
+                                  if (ch === _brfCloseQuote) { bl += '0'; continue; }
+                                  if (ch === '"') { const prev = i > 0 ? chars[i - 1] : ''; bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0'; continue; }
+                                  if (_brfPunct[ch] !== undefined) { bl += _brfPunct[ch]; continue; }
+                                  dropped++;
                                 }
-                                out.push(bl.slice(0, 40));
-                                if (bl.length > 40) { let rest = bl.slice(40); while (rest.length) { out.push(rest.slice(0, 40)); rest = rest.slice(40); } }
+                                _brfWrap(bl, out, cells);
                               }
-                              return out.join('\r\n');
+                              const brf = out.join('\r\n');
+                              return (opts && opts.withMeta) ? { brf, dropped } : brf;
                             };
-                            const _downloadBRF = (brf) => {
+const _downloadBRF = (brf) => {
                               const blob = new Blob([brf], { type: 'application/x-brf' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url;
@@ -11839,7 +12092,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === 'function') {
                                 const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
                                 _grade1 = _r.brf; _g1Dropped = _r.dropped;
-                              } else { _grade1 = _toBRF(text); }
+                              } else { const _r = _toBRF(text, { withMeta: true }); _grade1 = _r.brf; _g1Dropped = _r.dropped; }
                               const _warnDrop = () => { if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + ' character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.', 'info'); };
                               if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
                                 addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
@@ -11882,11 +12135,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
-                            const text = html.replace(/<h([1-6])[^>]*>/gi, (m, l) => '\n' + '#'.repeat(parseInt(l)) + ' ')
-                              .replace(/<\/h[1-6]>/gi, '\n').replace(/<li[^>]*>/gi, '  • ').replace(/<\/li>/gi, '\n')
-                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]*>/g, '')
-                              .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
-                              .replace(/&#160;/g, ' ').replace(/\n{4,}/g, '\n\n\n').trim();
+                            const text = _htmlToPlainTextExport(html);
                             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url;
@@ -11901,20 +12150,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
-                            let md = html.replace(/<h1[^>]*>/gi, '# ').replace(/<\/h1>/gi, '\n\n')
-                              .replace(/<h2[^>]*>/gi, '## ').replace(/<\/h2>/gi, '\n\n')
-                              .replace(/<h3[^>]*>/gi, '### ').replace(/<\/h3>/gi, '\n\n')
-                              .replace(/<h4[^>]*>/gi, '#### ').replace(/<\/h4>/gi, '\n\n')
-                              .replace(/<strong[^>]*>/gi, '**').replace(/<\/strong>/gi, '**')
-                              .replace(/<em[^>]*>/gi, '*').replace(/<\/em>/gi, '*')
-                              // Single-pass link rewrite: the old two-step chain rewrote the opening
-                              // <a> to a bare "[" (discarding the href) BEFORE the </a> replacer
-                              // back-scanned for it, so every link came out "[text]()" with an empty URL.
-                              .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
-                              .replace(/<li[^>]*>/gi, '- ').replace(/<\/li>/gi, '\n')
-                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n')
-                              .replace(/<img[^>]*alt="([^"]*)"[^>]*>/gi, '![$1](image)')
-                              .replace(/<[^>]*>/g, '').replace(/\n{4,}/g, '\n\n\n').trim();
+                            let md = _htmlToMarkdownExport(html);
                             const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url;
@@ -12551,7 +12787,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   segments.push(remaining.substring(0, splitAt));
                                   remaining = remaining.substring(splitAt).trim();
                                 }
-                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, langSuffix: '-' + (pdfFixResult._translation.langCode || 'translated') };
+                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, variant: 'translation', companionAt: pdfFixResult._translation.at || null, langSuffix: '-' + (pdfFixResult._translation.langCode || 'translated') };
                                 addToast('🎧 ' + (t('toasts.translated_audio_start') || 'Generating audio in ') + pdfFixResult._translation.lang + ' — ' + segments.length + ' ' + (t('toasts.translated_audio_start2') || 'sections. The voices are multilingual; preview a section before sharing.'), 'info');
                                 _runAudioJob();
                               }} className="px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200" title={t('pdf_audit.translate.audio_title') || 'Spoken audio of the TRANSLATION — the same resumable job (pause, rate-limit survival, partial download). Gemini voices are multilingual; preview before sharing.'}>
@@ -12613,7 +12849,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 try {
                                   addToast(t('toasts.typeset_plain') || '📄 Typesetting the plain-language version — same tagger, same gates…', 'info');
-                                  const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (plain language)', lang: 'en' });
+                                  const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (plain language)', lang: _deriveDocMeta(pdfFixResult._plainLanguage.html, pendingPdfFile?.name).lang });
                                   const _bytes = _result && _result.bytes ? _result.bytes : _result;
                                   if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
                                   const _rt = _result && _result.roundTrip;
@@ -12639,7 +12875,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   segments.push(remaining.substring(0, splitAt));
                                   remaining = remaining.substring(splitAt).trim();
                                 }
-                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, langSuffix: '-plain' };
+                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, variant: 'plain', companionAt: pdfFixResult._plainLanguage.at || null, langSuffix: '-plain' };
                                 addToast('🎧 ' + (t('toasts.plain_audio_start') || 'Generating plain-language audio — ') + segments.length + ' ' + (t('toasts.plain_audio_start2') || 'sections.'), 'info');
                                 _runAudioJob();
                               }} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" title={t('pdf_audit.plain.audio_title') || 'Spoken audio of the plain-language version — simpler wording often serves struggling readers better as audio too.'}>
@@ -15533,7 +15769,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     try {
                       const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
                       if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
-                        const r = await _withTimeout(fetch(url), 20000, 'TTS audio fetch'); blobs.push(await r.blob());
+                        const r = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
+                        if (!r.ok) throw new Error('TTS audio fetch failed (' + r.status + ')');
+                        const audioBlob = await r.blob();
+                        if (!audioBlob.size) throw new Error('TTS audio fetch returned an empty payload');
+                        blobs.push(audioBlob);
                         try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
                         consecutiveNull = 0;
                       } else { failed++; consecutiveNull++; }
@@ -15845,7 +16085,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           const b64 = await ensurePdfBase64();
                           const fielded = await overlayPdfFormFields(b64, pdfFieldCandidates, pdfFieldAccepted);
                           addToast('📝 ' + fielded.created + ' ' + (t('toasts.fillable_pdf_placed') || 'fields placed on the original layout — tagging for screen readers…'), 'info');
-                          const _dm = { title: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, ''), lang: 'en' };
+                          const _dm = { title: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, ''), lang: _deriveDocMeta(pdfFixResult?.accessibleHtml, pendingPdfFile?.name).lang };
                           let outBytes = fielded.bytes, tagNote = '';
                           try {
                             const tagged = await createTaggedPdf(fielded.bytes, pdfFixResult, _dm);

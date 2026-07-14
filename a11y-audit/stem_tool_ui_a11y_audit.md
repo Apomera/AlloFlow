@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-14T03:07:01.606Z
+Generated: 2026-07-14T12:56:22.830Z
 
 ## Scope
 
@@ -13,9 +13,9 @@ Generated: 2026-07-14T03:07:01.606Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 38 |
+| Total findings | 37 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 16 |
+| Tool-level warnings | 15 |
 | Review notices | 22 |
 | Tools with any finding | 33 |
 | Tools with high-confidence errors | 0 |
@@ -28,7 +28,6 @@ Generated: 2026-07-14T03:07:01.606Z
 | warning | `tiny-text` | 12 | 12 | base10, calculus, coordinate, geologyExplorer, inequality, multtable, particleLab3d, plateTectonics, protractor, unitConvert, universe, volume | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `canvas-focus` | 2 | 2 | particleLab3d, skatelab | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `inline-contrast` | 1 | 1 | appLab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
-| warning | `svg-name` | 1 | 1 | birdLab | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 19 | 19 | accessLens, archStudio, birdLab, circuitShelf, codingPlayground, cyberDefense, dataLab, dinoLab, evoLab, geologyExplorer, geometryWorld, moleculeShelf | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 3 | 3 | birdLab, plateTectonics, playlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 
@@ -66,7 +65,7 @@ Generated: 2026-07-14T03:07:01.606Z
 | `beehive` Beehive Simulator | science | standard | 74 | 5 | 1 | 0 | 0 | 0 |  |
 | `behaviorLab` Behavior Lab | science | standard | 24 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
-| `birdLab` BirdLab — I-Spy Ornithology | general | standard | 127 | 1 | 0 | 0 | 1 | 2 | horizontal-overflow-risk x1, metadata x1, svg-name x1 |
+| `birdLab` BirdLab — I-Spy Ornithology | general | standard | 127 | 1 | 0 | 0 | 0 | 2 | horizontal-overflow-risk x1, metadata x1 |
 | `brainAtlas` Brain Atlas Explorer | science | standard | 46 | 1 | 1 | 0 | 0 | 0 |  |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 24 | 8 | 0 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 29 | 9 | 0 | 0 | 1 | 0 | tiny-text x1 |

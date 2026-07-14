@@ -1736,6 +1736,60 @@ function checkReadingOrderPreserved(beforeHtml, afterHtml) {
   return _r;
 }
 
+// Walk the ACTUAL PDF structure tree in /K order and return only the tracked
+// StructElem references. This is deliberately independent of pdf.js text
+// extraction: assistive technology follows StructTreeRoot -> K depth-first, so
+// preserving this exact reference sequence is the serialization-level reading-
+// order invariant. The helper is duck-typed for pdf-lib and kept pure so its
+// array/dict/ref behavior can be pinned without constructing a full PDF.
+function collectTaggedTreeReferenceOrder(pdfContext, rootValue, PDFNameCtor, trackedReferenceIds) {
+  if (!pdfContext || typeof pdfContext.lookup !== 'function'
+      || !PDFNameCtor || typeof PDFNameCtor.of !== 'function') return [];
+  var tracked = trackedReferenceIds instanceof Set
+    ? trackedReferenceIds
+    : new Set(Array.isArray(trackedReferenceIds) ? trackedReferenceIds : []);
+  var out = [];
+  var activeRefs = Object.create(null);
+  var typeName = PDFNameCtor.of('Type');
+  var kidsName = PDFNameCtor.of('K');
+  var refKey = function (value) {
+    if (!value) return null;
+    var text = '';
+    try { text = String(value).trim(); } catch (_) { return null; }
+    return /^\d+\s+\d+\s+R$/.test(text) ? text : null;
+  };
+  var walk = function (raw, depth) {
+    if (!raw || depth > 10000) return;
+    var key = refKey(raw);
+    if (key && activeRefs[key]) return; // malformed cyclic K tree: stop that branch
+    if (key) activeRefs[key] = true;
+    var obj = raw;
+    if (key) {
+      try { obj = pdfContext.lookup(raw) || raw; } catch (_) { obj = raw; }
+    }
+    try {
+      // PDFArray has numeric get(index) + size(); handle it before PDFDict.
+      if (obj && typeof obj.size === 'function' && typeof obj.get === 'function') {
+        var size = Number(obj.size()) || 0;
+        for (var i = 0; i < size; i++) walk(obj.get(i), depth + 1);
+      } else if (obj && typeof obj.get === 'function') {
+        var type = '';
+        try { type = String(obj.get(typeName) || ''); } catch (_) {}
+        if (type === '/StructTreeRoot' || type === '/StructElem') {
+          if (type === '/StructElem' && key && tracked.has(key)) out.push(key);
+          var kids = null;
+          try { kids = obj.get(kidsName); } catch (_) {}
+          walk(kids, depth + 1);
+        }
+      }
+    } finally {
+      if (key) delete activeRefs[key];
+    }
+  };
+  walk(rootValue, 0);
+  return out;
+}
+
 // Order-SENSITIVE round-trip signal (H-5, audit 2026-06-23). The shipped tagged-PDF round-trip check compares
 // token SETS (membership) — order-insensitive by construction — so a tagged PDF whose tag-tree reading order
 // is SCRAMBLED (multi-column content streams drawing the right column before the left) passes at ~100%
@@ -4959,7 +5013,7 @@ var createDocPipeline = function(deps) {
     // transposition, and no remediation transform legitimately swaps cell contents
     // between positions. A silently transposed score table is this tool's worst-case
     // failure (psych-report subtest tables), so the chunk ships as ORIGINAL instead.
-    if (original.indexOf('<table') !== -1 && fixed.indexOf('<table') !== -1) {
+    if (/<table\b/i.test(original) && /<table\b/i.test(fixed)) {
       try {
         var _cellDrift = _alloTableCellDrift(original, fixed);
         if (_cellDrift && _cellDrift.moved && _cellDrift.moved.length > 0) {
@@ -11161,6 +11215,7 @@ var createDocPipeline = function(deps) {
       const legacyResultKeys = new Set((statusInfo.legacy && statusInfo.record && statusInfo.record.statuses || [])
         .map(s => s && s.resultKey)
         .filter(key => typeof key === 'string' && key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX)));
+      const ownedResultKeys = new Set();
       if (typeof window.idbKeyval.keys === 'function') {
         const keys = await window.idbKeyval.keys();
         const scopedPrefix = activeId ? _batchResultPrefixFor(activeId) : null;
@@ -11168,9 +11223,25 @@ var createDocPipeline = function(deps) {
           const owned = typeof key === 'string' && (scopedPrefix
             ? key.startsWith(scopedPrefix)
             : legacyResultKeys.has(key));
-          if (owned) await _deleteBatchStorageKey(key);
+          if (owned) ownedResultKeys.add(key);
         }
       }
+
+      // The active root is the authoritative commit record. Tombstone it BEFORE
+      // deleting status/results so a quota/storage failure cannot leave a live
+      // resume banner pointing at a half-deleted checkpoint. The exclusive root
+      // lock serializes normal writers; the compare-and-set re-read protects the
+      // lockless fallback from clearing a replacement root.
+      const currentFiles = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!_sameBatchFilesRecord(currentFiles, filesRec)) return false;
+      const rootClearOk = await storageDB.set(_ACTIVE_BATCH_FILES_KEY, null);
+      if (rootClearOk === false) return false;
+      const rootAfterClear = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (_sameBatchFilesRecord(rootAfterClear, filesRec)) return false;
+
+      // Once the root is gone, secondary cleanup is best-effort and restart-safe:
+      // orphaned scoped artifacts are inert and the next batch sweep removes them.
+      for (const key of ownedResultKeys) await _deleteBatchStorageKey(key);
       if (statusInfo.record) {
         if (statusInfo.legacy) {
           const currentStatus = await storageDB.get(statusInfo.key);
@@ -11188,11 +11259,6 @@ var createDocPipeline = function(deps) {
         if (_statusRecordMatchesBatch(legacyStatus, activeId)) await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
       }
 
-      // Shared status writers cannot recreate artifacts between this cleanup and
-      // the active-root clear because this entire lifecycle mutation is exclusive.
-      const currentFiles = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      if (!_sameBatchFilesRecord(currentFiles, filesRec)) return false;
-      await storageDB.set(_ACTIVE_BATCH_FILES_KEY, null);
       return true;
       }));
     } catch (_) { return false; }
@@ -12169,14 +12235,16 @@ Return ONLY valid JSON:
     const _run = _makeRunCtx();
     const _sourceQueue = _resumeQueue || _run.batchQueue;
     if (!_sourceQueue || _sourceQueue.length === 0) return;
+    // Ignore sparse/null slots from malformed or stale resume records.
+    const queue = _sourceQueue.filter(Boolean);
+    if (queue.length === 0) return;
     // If caller passed a resumeQueue, sync it into React state so the UI
     // reflects what the loop is actually processing.
     if (_resumeQueue) {
-      setPdfBatchQueue(_resumeQueue);
+      setPdfBatchQueue(queue);
     }
     setPdfBatchProcessing(true);
     setPdfBatchSummary(null);
-    const queue = [..._sourceQueue];
     const startTime = Date.now();
     const _batchId = _resumeBatchId || _newBatchCheckpointId();
     // Fresh batch, fresh checkpoint-health slate (the flags are factory-scoped).
@@ -17870,7 +17938,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   // filenames) but are blind to plausible-but-WRONG ones: the text auditor
   // scores alt text from HTML where image bytes are stripped, so "Bar chart of
   // rainfall by month" passes even when the image is a photo of a cat. This
-  // samples a few images (heuristic-flagged first, then figures, then document
+  // samples a few images (plausible/unflagged first, then figures, then document
   // order) and asks Vision ONE question per image: does this alt match what the
   // image shows? Disagreements surface through the existing altQuality fidelity
   // note (panel + verdict + expert-review plumbing). Fail-soft by design: any
@@ -17879,17 +17947,24 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   const _visionAltSpotCheck = async (html, opts) => {
     try {
       if (!callGeminiVision || typeof DOMParser === 'undefined') return null;
+      const deferredImages = (opts && opts.deferredImages && typeof opts.deferredImages === 'object') ? opts.deferredImages : null;
       const sample = Math.max(1, (opts && opts.sample) || 2);
       const maxImageBytes = (opts && opts.maxImageBytes) || (1.5 * 1024 * 1024);
       const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
-      const imgs = Array.prototype.slice.call(doc.querySelectorAll('img[src^="data:image/"]'));
+      const imgs = Array.prototype.slice.call(doc.querySelectorAll('img[src]'));
       if (!imgs.length) return null;
       const candidates = [];
       for (let i = 0; i < imgs.length; i++) {
         const el = imgs[i];
         const alt = String(el.getAttribute('alt') || '').trim();
         if (!alt) continue; // empty alt = decorative or the heuristics' failure class, not ours
-        const m = String(el.getAttribute('src') || '').match(/^data:(image\/(?:png|jpe?g|webp|gif));base64,([\s\S]+)$/i);
+        let src = String(el.getAttribute('src') || '');
+        if (deferredImages && !/^data:image\//i.test(src)) {
+          const compactToken = src.replace(/\s+/g, '').toUpperCase();
+          const tokenMatch = compactToken.match(/^__ALLOFLOW_DATAURL_FINAL_(\d+)__$/);
+          if (tokenMatch) src = deferredImages['__ALLOFLOW_DATAURL_FINAL_' + tokenMatch[1] + '__'] || src;
+        }
+        const m = src.match(/^data:(image\/(?:png|jpe?g|webp|gif));base64,([\s\S]+)$/i);
         if (!m) continue;
         if (m[2].length * 0.75 > maxImageBytes) continue;
         let flagged = false;
@@ -17898,7 +17973,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         candidates.push({ index: i, alt, mime: m[1], b64: m[2], flagged, inFigure });
       }
       if (!candidates.length) return null;
-      candidates.sort((a, b) => ((b.flagged ? 1 : 0) - (a.flagged ? 1 : 0)) || ((b.inFigure ? 1 : 0) - (a.inFigure ? 1 : 0)) || (a.index - b.index));
+      candidates.sort((a, b) => ((a.flagged ? 1 : 0) - (b.flagged ? 1 : 0)) || ((b.inFigure ? 1 : 0) - (a.inFigure ? 1 : 0)) || (a.index - b.index));
       const picked = candidates.slice(0, sample);
       const out = { checked: 0, sampled: picked.length, total: candidates.length, disagreements: [] };
       for (const c of picked) {
@@ -21177,7 +21252,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // batch mode, 2 single-file; disagreements ride the SAME altQuality note
       // plumbing so the panel/verdict/expert-review wiring needs no new reader.
       try {
-        const _altSpot = await _visionAltSpotCheck(accessibleHtml, { sample: _isBatch ? 1 : 2 });
+        const _altSpot = await _visionAltSpotCheck(accessibleHtml, {
+          sample: _isBatch ? 1 : 2,
+          deferredImages: _deferredImageMap,
+        });
         if (_altSpot && _altSpot.disagreements.length > 0) {
           const _top = _altSpot.disagreements.slice(0, 2).map(d => '"' + d.alt.slice(0, 40) + '" (' + (d.reason || 'does not match the image') + (d.suggestion ? '; suggestion: "' + d.suggestion + '"' : '') + ')').join('; ');
           warnLog('[AltSpotCheck] ' + _altSpot.disagreements.length + '/' + _altSpot.checked + ' sampled image description(s) do NOT match their image: ' + _top);
@@ -25732,6 +25810,29 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // ── Return tagged bytes + summary + PDF/UA-1 self-check ──
     // useObjectStreams=false produces slightly larger PDFs but more
     // compatible with older readers and validators.
+    // Capture the intended semantic-leaf order from the HTML-derived ledger,
+    // filtered to leaves actually reachable through the in-memory StructTreeRoot.
+    // Object reference numbers survive pdf-lib serialization and therefore form
+    // an exact, text-independent fingerprint for the shipped /K traversal.
+    let _tagTreeExpectedLeafOrder = [];
+    let _tagTreeBuildOrderOk = null;
+    try {
+      const _ledgerOrder = [];
+      const _ledgerSeen = new Set();
+      for (const _lf of (_unifiableLeafRefs || [])) {
+        const _id = _lf && _lf.ref ? String(_lf.ref) : '';
+        if (_id && !_ledgerSeen.has(_id)) { _ledgerSeen.add(_id); _ledgerOrder.push(_id); }
+      }
+      const _builtOrder = collectTaggedTreeReferenceOrder(context, structRootRef, PDFName, new Set(_ledgerOrder));
+      const _reachable = new Set(_builtOrder);
+      _tagTreeExpectedLeafOrder = _ledgerOrder.filter((_id) => _reachable.has(_id));
+      if (_tagTreeExpectedLeafOrder.length > 0) {
+        _tagTreeBuildOrderOk = _builtOrder.length === _tagTreeExpectedLeafOrder.length;
+        for (let _i = 0; _tagTreeBuildOrderOk && _i < _builtOrder.length; _i++) {
+          if (_builtOrder[_i] !== _tagTreeExpectedLeafOrder[_i]) _tagTreeBuildOrderOk = false;
+        }
+      }
+    } catch (_) {}
     const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false });
     // ── Round-trip self-check (Tier A) ──
     // _pdfUa1Checks above walk the IN-MEMORY structures (before save). This RE-PARSES
@@ -25740,6 +25841,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // registered fine but vanished at save, the Approach-1 failure mode that a
     // before-save check can't see). Advisory: it reports, never blocks the download.
     let _roundTrip = { ok: null, checks: [], warnings: [] };
+    let _tagTreeOrderReport = null;
     try {
       const _rt = await PDFDocument.load(_bytes, { updateMetadata: false });
       const _rtCat = _rt.catalog;
@@ -25761,6 +25863,33 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       } catch (_) {}
       _rtChecks.push({ rule: 'StructTreeRoot survived save', status: _rtHasStruct ? 'pass' : 'fail' });
       _rtChecks.push({ rule: 'Structure tree has content', status: _rtKLen > 0 ? 'pass' : 'fail', detail: _rtKLen + ' top-level element(s)' });
+      // Exact saved-tree reading-order check. Unlike the pdf.js sequence signal
+      // below, this walks the serialized StructTreeRoot /K hierarchy that AT uses.
+      try {
+        const _savedRootRef = _rtCat.get(PDFName.of('StructTreeRoot'));
+        const _trackedOrder = new Set(_tagTreeExpectedLeafOrder);
+        const _savedOrder = collectTaggedTreeReferenceOrder(_rt.context, _savedRootRef, PDFName, _trackedOrder);
+        let _orderExact = _tagTreeExpectedLeafOrder.length > 0
+          && _tagTreeBuildOrderOk === true
+          && _savedOrder.length === _tagTreeExpectedLeafOrder.length;
+        let _mismatchIndex = -1;
+        const _compareLen = Math.min(_savedOrder.length, _tagTreeExpectedLeafOrder.length);
+        for (let _oi = 0; _oi < _compareLen; _oi++) {
+          if (_savedOrder[_oi] !== _tagTreeExpectedLeafOrder[_oi]) {
+            _orderExact = false;
+            _mismatchIndex = _oi;
+            break;
+          }
+        }
+        if (_mismatchIndex < 0 && _savedOrder.length !== _tagTreeExpectedLeafOrder.length) _mismatchIndex = _compareLen;
+        const _orderStatus = _tagTreeExpectedLeafOrder.length === 0 ? 'warn' : (_orderExact ? 'pass' : 'fail');
+        _tagTreeOrderReport = { exact: _orderExact, expectedLeafCount: _tagTreeExpectedLeafOrder.length, savedLeafCount: _savedOrder.length, mismatchIndex: _mismatchIndex, buildOrderExact: _tagTreeBuildOrderOk };
+        _rtChecks.push({ rule: 'Logical reading order follows saved StructTreeRoot /K', status: _orderStatus, detail: _tagTreeExpectedLeafOrder.length === 0 ? 'No semantic leaves were available for an order fingerprint' : (_savedOrder.length + '/' + _tagTreeExpectedLeafOrder.length + ' semantic leaves in exact HTML-derived order') });
+        if (_orderStatus === 'fail') _rtWarn.push('The saved structure tree does not preserve the HTML-derived semantic leaf order (first mismatch at leaf ' + (_mismatchIndex + 1) + '). Verified delivery is withheld because assistive technology follows StructTreeRoot /K, not content-stream extraction order.');
+      } catch (_treeOrderErr) {
+        _tagTreeOrderReport = { exact: null, error: (_treeOrderErr && _treeOrderErr.message) || 'tree walk failed' };
+        _rtChecks.push({ rule: 'Logical reading order follows saved StructTreeRoot /K', status: 'warn', detail: 'Could not walk the saved structure tree' });
+      }
       let _rtMarked = false;
       try { const _mi = _rtCat.lookup(PDFName.of('MarkInfo')); const _mk = _mi && _mi.lookup ? _mi.lookup(PDFName.of('Marked')) : null; _rtMarked = !!_mk && String(_mk) === 'true'; } catch (_) {}
       _rtChecks.push({ rule: 'MarkInfo/Marked survived', status: _rtMarked ? 'pass' : 'fail' });
@@ -25927,7 +26056,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         }
       } catch (_) {}
       const _rtFailed = _rtChecks.some(c => c.status === 'fail') || _divergences.length > 0;
-      _roundTrip = { ok: !_rtFailed, validatedAgainst: 'reparsed-bytes', checks: _rtChecks, warnings: _rtWarn, divergences: _divergences, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount };
+      _roundTrip = { ok: !_rtFailed, validatedAgainst: 'reparsed-bytes', checks: _rtChecks, warnings: _rtWarn, divergences: _divergences, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount, tagTreeOrder: _tagTreeOrderReport };
       if (_rtFailed) { try { warnLog('[createTaggedPdf] post-save verification FAILED: ' + JSON.stringify({ fails: _rtChecks.filter(c => c.status === 'fail'), divergences: _divergences })); } catch (_) {} }
     } catch (_rtErr) {
       _roundTrip = { ok: null, checks: [], warnings: ['Round-trip re-parse threw: ' + (_rtErr && _rtErr.message)] };
@@ -26054,8 +26183,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // warn/info pending real multi-column Canvas calibration; tightening = raising one constant.
           if (_orderRatio < 0.90) {
             const _roStatus = _orderRatio < 0.50 ? 'fail' : (_orderRatio < 0.80 ? 'warn' : 'info');
-            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Reading order preserved in the tagged tree (sequence match)', status: _roStatus, detail: Math.round(_orderRatio * 100) + '% of text is in source order — a low value suggests the tagged-PDF reading order was scrambled (common with multi-column layouts). ' + (_roStatus === 'fail' ? 'This is far below any legitimate reflow; the export is withheld from the verified-delivery gates.' : 'The PDF/UA-1 claim is NOT order-verified; confirm with a PDF/UA validator.') });
-            (_roundTrip.warnings = _roundTrip.warnings || []).push('Reading-order signal: ' + Math.round(_orderRatio * 100) + '% of the text is in the same order as the source. A low value can mean the tagged-PDF reading order is scrambled (multi-column streams) — verify with a PDF/UA validator before relying on the PDF/UA-1 declaration.');
+
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Extracted text sequence remains in source order (content-stream signal)', status: _roStatus, detail: Math.round(_orderRatio * 100) + '% of re-extracted text is in source order; a low value suggests content streams were scrambled (common with multi-column layouts). ' + (_roStatus === 'fail' ? 'This is far below any legitimate reflow; the export is withheld from the verified-delivery gates.' : 'The independent StructTreeRoot /K check reports the actual assistive-technology order.') });
+            (_roundTrip.warnings = _roundTrip.warnings || []).push('Content-stream order signal: ' + Math.round(_orderRatio * 100) + '% of re-extracted text is in the same order as the source. This supplements, but does not replace, the saved StructTreeRoot /K order check.');
             if (_roStatus === 'fail') _roundTrip.ok = false;
           }
           if (_coverage < 0.99) {
@@ -34035,6 +34165,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proposeRestyles: proposeRestyles,
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
+    collectTaggedTreeReferenceOrder: collectTaggedTreeReferenceOrder,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
     // aiFixChunked is already exported below via _wrapAsync (state-binding) — Item C
     // mistakenly added a raw duplicate here (last-wins made it harmless, but esbuild

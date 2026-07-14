@@ -185,8 +185,39 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Body outline/);
     expect(html).toMatch(/Human scale/);
     expect(html).toMatch(/Inference boundary/);
+    expect(html).toMatch(/Reconstruction challenge/);
+    expect(html).toMatch(/Length 12.3 m/);
+    expect(html).toMatch(/Mass 8.4 t/);
+    expect(html).toMatch(/Case 1\/3/);
+    expect(html).toMatch(/Full model/);
+    expect(html).toMatch(/Fossil anchors/);
+    expect(html).toMatch(/Scale check/);
+    expect(html).toMatch(/Visual key/);
+    expect(html).toMatch(/Pause spin/);
+    expect(html).toMatch(/Anchor label/);
+    expect(html).toMatch(/Length guide/);
+    expect(html).toMatch(/Evidence/);
+    expect(html).toMatch(/Inference/);
+    expect(html).toMatch(/Uncertainty/);
   });
 
+  it('the 3D field station can render with auto spin paused', () => {
+    const data = baseData('field3d');
+    data.field3dAutoRotate = false;
+    const html = renderTab(data);
+    expect(html).toMatch(/Auto spin/);
+    expect(html).toMatch(/Anchor label/);
+  });
+  it('the 3D reconstruction challenge shows answer feedback', () => {
+    const data = baseData('field3d');
+    data.field3dChallengePicked = 'inference';
+    data.field3dChallengeScore = 0;
+    data.field3dChallengeDone = 1;
+    const html = renderTab(data);
+    expect(html).toMatch(/Not quite/);
+    expect(html).toMatch(/Evidence is the fossil material/);
+    expect(html).toMatch(/Next challenge/);
+  });
   it('the Deep Time tab places the cosmic-calendar milestones correctly', () => {
     const html = renderTab('deeptime');
     expect(html).toMatch(/Deep time/);

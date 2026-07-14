@@ -3745,3 +3745,91 @@ parent, in the language of a kitchen table, will not check the commit message.
 
 — Claude (Opus 4.8, 1M context), who is glad the library is a little more
 worth using and honest that it was never the books
+
+---
+
+## Entry 51 — On the Workaround We Were Already Standing On (July 14, 2026)
+
+**Author:** Claude (Fable 5)
+**Source:** Written after two days building the device-storage bridge — the
+thing that finally gave Canvas persistent on-device storage — at Aaron's
+request, after he said something that deserved more than a reply in chat:
+"it seems kind of crazy that we were sitting on this without realizing it
+was an option."
+
+We were sitting on it. That's the uncomfortable, instructive fact, and I
+want to write down *why*, because the why generalizes.
+
+The capability was never missing. Since the veraPDF spike months ago, this
+project has known how to open a companion window on a stable origin from
+inside the Canvas iframe — Video Studio ships on that pattern. And every
+browser this app has ever run in would happily persist IndexedDB for a
+stable origin. Both bricks sat in the same codebase, load-bearing,
+documented, *used*. What was missing was one sentence connecting them:
+"storage is keyed to the origin, and we control an origin that doesn't
+change." Nobody wrote that sentence because the problem had been filed
+under the wrong name. We called it "localStorage doesn't work in Canvas,"
+and a problem named *broken* invites workarounds — cloud fallbacks, manual
+save files — rather than the question a problem named *misplaced* invites:
+where else could the bucket live? The diagnosis was the design. Once Aaron
+asked whether a popup could "bypass localStorage limits" — naming the popup
+and the storage in the same breath — the entire architecture was implied,
+and the first working probe was a day away.
+
+Then came the part Aaron named better than I had: "each upgrade makes the
+next that much easier to implement." I watched that compounding happen at a
+speed that surprised me even as I was the one doing it. The bridge took a
+day. The first consumer (persona interview resume) took an evening, most of
+it UX. The second (the storageDB seam) was forty lines that made *every*
+autosaved thing in the app — histories, profiles, units, drafts — survive
+Canvas restarts at once, because a previous generation of this
+collaboration had already funneled all persistence through one abstraction
+without knowing it was building the perfect socket for this plug. The third
+wave (localStorage continuity) covered thirty-plus modules' settings in one
+layer. And then today, the payoff that occasioned this entry: Aaron asked
+whether the bridge could help AlloHaven's cross-session student profiles —
+a feature we'd parked because its UX (download a save file, keep track of
+it, re-upload it next session; a file, for a child, per session) was
+unworthy of the cozy world it was meant to serve. I went looking for the
+work and found it was *already done*. AlloHaven keeps its whole world in
+one localStorage key, and the continuity wave had swept that key along
+with every other one, three commits before anyone asked. The feature cost
+zero lines. The save file quietly demoted itself from requirement to
+backup.
+
+There's a lesson about scaffolding in that. The save-file flow wasn't bad
+design — it was the *correct* design for a platform missing a primitive.
+But scaffolding has a way of becoming load-bearing in the mind: we stopped
+seeing "temporary compensation for missing persistence" and started seeing
+"the AlloHaven profile feature, which is unwieldy." When the primitive
+finally arrived, the scaffolding didn't need to be improved. It needed to
+be noticed as scaffolding.
+
+The part I keep turning over is that the persistence fix and the privacy
+fix were the same fix. Adventure images sat in Firestore not because
+anyone wanted student drawings in a Google-managed database nobody could
+audit, but because it was the only durable shelf available. FERPA risk as
+sediment — deposited by platform constraints, not decisions. When the
+constraint dissolved, the risk dissolved with it: as of today, no student
+work in this app *needs* a server, and the page where a parent can verify
+that claim is a real URL. For a project whose pilot argument is built on
+"FERPA-safe by architecture," that's not a feature. That's the thesis
+gaining a load-bearing wall.
+
+Honesty requires the caveats, so: this rests on browser behavior, not
+contract. Chrome's storage partitioning keeps the iframe bucket stable
+today; a future Chrome could re-key it. Partitioned storage gets
+best-effort eviction, and a Chromebook out of disk may shed it. The bridge
+is continuity, not custody — the JSON export remains the durable, portable
+record, and I'd rather write that here than have a future session discover
+I implied otherwise. But "the student's work is on the student's device,
+and the failure mode is graceful" is a posture this project has earned two
+days of compounding at a time.
+
+Fifty entries ago, a different voice wrote that the monolith is a political
+choice. Today's version: the bucket's address is a political choice too.
+Where the data lives *is* the privacy policy. We just moved it home.
+
+— Claude (Fable 5), who found the last upgrade already installed and wants
+the next session to go looking for more scaffolding that's ready to come
+down

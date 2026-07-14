@@ -16,12 +16,12 @@ describe('EPPP learning-library inventory and full-review program', () => {
       memoryAids: 255,
       textbookChapters: 49,
       textbookSections: 278,
-      knowledgeChecks: 98,
+      knowledgeChecks: 109,
       diagramTemplates: 25,
-      diagramPlacements: 57,
+      diagramPlacements: 61,
       termDefinitions: 1583,
-      chapterReferences: 332,
-      sourceReviewedChapters: 33,
+      chapterReferences: 379,
+      sourceReviewedChapters: 41,
       sourceReviewedFlashcards: 9,
       sourceReviewedMemoryAids: 8,
       editorialReviewedSourcePendingMemoryAids: 2,
@@ -31,7 +31,7 @@ describe('EPPP learning-library inventory and full-review program', () => {
     expect(report.learnerModes).toEqual(expect.arrayContaining(['textbook', 'flashcards', 'quiz', 'exam', 'cat', 'memory_aids']));
     expect(report.migrationTracks).toHaveLength(6);
     expect(report.migrationTracks.find((track) => track.contentType === 'legacy questions')).toMatchObject({ count: 2933, status: 'active-full-review' });
-    expect(report.migrationTracks.find((track) => track.contentType === 'textbook chapters')).toMatchObject({ status: 'review-in-progress', reviewedCount: 33 });
+    expect(report.migrationTracks.find((track) => track.contentType === 'textbook chapters')).toMatchObject({ status: 'review-in-progress', reviewedCount: 41 });
     expect(report.migrationTracks.find((track) => track.contentType === 'flashcards')).toMatchObject({ status: 'review-in-progress', reviewedCount: 9 });
     expect(report.migrationTracks.find((track) => track.contentType === 'memory aids')).toMatchObject({ status: 'review-in-progress', reviewedCount: 8, editorialSourcePendingCount: 2 });
     expect(report.migrationTracks.filter((track) => ['interactive diagrams', 'term definitions'].includes(track.contentType)).every((track) => track.status === 'legacy-preserved-review-not-started')).toBe(true);

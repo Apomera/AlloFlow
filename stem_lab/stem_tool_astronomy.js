@@ -765,6 +765,7 @@
             id: sliderId, type: 'range',
             min: opts.min, max: opts.max, step: opts.step || 1, value: opts.value,
             onChange: function(e) { opts.onChange(parseFloat(e.target.value)); },
+            'aria-valuetext': opts.valueText || undefined,
             'aria-describedby': opts.ariaDescribedBy || undefined,
             className: 'astr-focus',
             style: { width: '100%', accentColor: accent, cursor: 'pointer' }
@@ -3477,21 +3478,26 @@
             { name: __alloT('stem.astronomy.eta_carinae', 'Eta Carinae'), desig: 'η Car', con: 'Carina', spec: 'LBV', mag: 'Var 4-7', dist: 7500, notes: 'Luminous blue variable. Underwent the "Great Eruption" of 1843, briefly becoming the 2nd-brightest star in the night sky. Will eventually go supernova (or hypernova).' }
           ];
 
-          var search = d.starsSearch || '';
-          var conFilter = d.starsConstellation || '';
-          var maxDist = d.starsMaxDist != null ? d.starsMaxDist : 5000;
+          var constellations = STARS.map(function(s) { return s.con; }).filter(function(c, i, arr) { return arr.indexOf(c) === i; }).sort();
+          var search = typeof d.starsSearch === 'string' ? d.starsSearch.slice(0, 100) : '';
+          var query = search.trim().toLowerCase();
+          var restoredConstellation = typeof d.starsConstellation === 'string' ? d.starsConstellation : '';
+          var conFilter = constellations.indexOf(restoredConstellation) >= 0 ? restoredConstellation : '';
+          var restoredMaxDist = Number(d.starsMaxDist);
+          var maxDist = Number.isFinite(restoredMaxDist) ? Math.min(10000, Math.max(5, Math.round(restoredMaxDist / 5) * 5)) : 10000;
 
           var filtered = STARS.filter(function(s) {
-            if (search) {
-              var q = search.toLowerCase();
-              if (s.name.toLowerCase().indexOf(q) === -1 && s.desig.toLowerCase().indexOf(q) === -1 && s.notes.toLowerCase().indexOf(q) === -1) return false;
+            if (query) {
+              var searchableText = [s.name, s.desig, s.con, s.spec, s.notes].join(' ').toLowerCase();
+              if (searchableText.indexOf(query) === -1) return false;
             }
             if (conFilter && s.con !== conFilter) return false;
             if (typeof s.dist === 'number' && s.dist > maxDist) return false;
             return true;
           });
-
-          var constellations = STARS.map(function(s) { return s.con; }).filter(function(c, i, arr) { return arr.indexOf(c) === i; }).sort();
+          var filtersActive = !!query || !!conFilter || maxDist < 10000;
+          var resultSummary = 'Showing ' + filtered.length + ' of ' + STARS.length + (STARS.length === 1 ? ' star' : ' stars');
+          function clearStarFilters() { upd({ starsSearch: '', starsConstellation: '', starsMaxDist: 10000 }); }
 
           return sectionCard('⭐ Named stars database',
             h('div', null,
@@ -3502,15 +3508,17 @@
                   type: 'text',
                   placeholder: __alloT('stem.astronomy.search_stars_sirius_vega', 'Search stars (Sirius, Vega…)'),
                   value: search,
-                  onChange: function(e) { upd({ starsSearch: e.target.value }); },
-                  'aria-label': __alloT('stem.astronomy.search_stars', 'Search stars'),
+                  onChange: function(e) { upd({ starsSearch: e.target.value.slice(0, 100) }); },
+                  onKeyDown: function(e) { if (e.key === 'Escape' && search) { e.preventDefault(); upd({ starsSearch: '' }); } },
+                  maxLength: 100, autoComplete: 'off',
+                  'aria-label': __alloT('stem.astronomy.search_stars', 'Search stars'), 'aria-controls': 'astronomy-star-results',
                   className: 'astr-focus',
                   style: { flex: 1, minWidth: 140, padding: '5px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
                 }),
                 h('select', {
                   value: conFilter,
                   onChange: function(e) { upd({ starsConstellation: e.target.value }); },
-                  'aria-label': __alloT('stem.astronomy.filter_by_constellation', 'Filter by constellation'),
+                  'aria-label': __alloT('stem.astronomy.filter_by_constellation', 'Filter by constellation'), 'aria-controls': 'astronomy-star-results',
                   className: 'astr-focus',
                   style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
                 },
@@ -3524,30 +3532,46 @@
                   id: 'astr-stars-dist',
                   label: __alloT('stem.astronomy.max_distance', 'Max distance'),
                   value: maxDist, min: 5, max: 10000, step: 5,
-                  valueText: maxDist + ' ly' + (maxDist <= 50 ? ' (nearest only)' : (maxDist >= 5000 ? ' (all)' : '')),
+                  valueText: maxDist + ' ly' + (maxDist <= 50 ? ' (nearest only)' : (maxDist >= 10000 ? ' (all)' : '')),
+                  ariaDescribedBy: 'astronomy-star-result-count',
                   onChange: function(v) { upd({ starsMaxDist: v }); },
                   accent: '#eab308'
                 })
               ),
 
-              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' stars'),
-
-              h('div', { style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
-                filtered.map(function(s, idx) {
-                  return h('div', {
-                    key: 'star-' + idx,
-                    style: { padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid #eab308' }
-                  },
-                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 4, marginBottom: 4 } },
-                      h('h4', { style: { margin: 0, color: '#fde047', fontSize: 13 } }, s.name + ' ' + (s.desig ? '(' + s.desig + ')' : '')),
-                      h('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' } }, 'mag ' + s.mag + ' · ' + (typeof s.dist === 'number' ? s.dist + ' ly' : s.dist) + ' · ' + s.spec)
-                    ),
-                    h('div', { style: { fontSize: 10, color: '#a5b4fc', marginBottom: 4 } }, s.con),
-                    h('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, s.notes)
-                  );
-                })
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+                h('div', { id: 'astronomy-star-result-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11, color: '#94a3b8' } }, resultSummary),
+                filtersActive ? a11yButton({
+                  type: 'button', onClick: clearStarFilters, 'aria-controls': 'astronomy-star-results',
+                  style: { padding: '5px 9px', borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontSize: 11, cursor: 'pointer' }
+                }, 'Clear filters') : null
               ),
 
+              h('div', { id: 'astronomy-star-results', role: 'region', 'aria-label': 'Star catalog results', 'aria-describedby': 'astronomy-star-result-count', tabIndex: 0, style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
+                filtered.length > 0 ? h('div', { role: 'list' },
+                  filtered.map(function(s, idx) {
+                    var headingId = 'astronomy-star-result-' + idx;
+                    return h('div', {
+                      key: s.name, role: 'listitem', 'aria-labelledby': headingId,
+                      style: { padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid #eab308' }
+                    },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 4, marginBottom: 4 } },
+                        h('h4', { id: headingId, style: { margin: 0, color: '#fde047', fontSize: 13 } }, s.name + ' ' + (s.desig ? '(' + s.desig + ')' : '')),
+                        h('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' } }, 'mag ' + s.mag + ' · ' + (typeof s.dist === 'number' ? s.dist + ' ly' : s.dist) + ' · ' + s.spec)
+                      ),
+                      h('div', { style: { fontSize: 10, color: '#a5b4fc', marginBottom: 4 } }, s.con),
+                      h('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, s.notes)
+                    );
+                  })
+                ) : h('div', { role: 'status', style: { padding: 18, textAlign: 'center', borderRadius: 8, border: '1px dashed #475569', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } },
+                  h('strong', { style: { display: 'block', color: '#fde68a', marginBottom: 5 } }, 'No stars match these filters.'),
+                  h('span', null, 'Try a broader search, another constellation, or a larger distance.'),
+                  h('div', { style: { marginTop: 10 } }, a11yButton({
+                    type: 'button', onClick: clearStarFilters, 'aria-controls': 'astronomy-star-results',
+                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #eab308', background: 'rgba(234,179,8,0.12)', color: '#fde68a', fontSize: 11, cursor: 'pointer' }
+                  }, 'Show all stars'))
+                )
+              ),
               h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.astronomy.about_stellar_nomenclature', '📚 About stellar nomenclature: ')),
                 __alloT('stem.astronomy.stars_have_multiple_naming_schemes_1_p', 'Stars have multiple naming schemes. (1) PROPER NAMES — Arabic, Greek, Latin, occasionally Mayan or Chinese origin (Sirius, Vega, Betelgeuse). The IAU formally approved a list of 313 traditional names in 2016. (2) BAYER designation — Greek letter + constellation (α Centauri, β Persei). Roughly orders stars by brightness within the constellation. (3) FLAMSTEED numbers — sequential numbers within a constellation by right ascension (61 Cygni). (4) HIPPARCOS/Gaia catalogs — modern systematic catalog numbers (HIP, HD, TYC, Gaia DR-X). For amateur observers, the proper-name + Bayer system is what you\'ll encounter; for professional astronomy, the systematic catalog numbers dominate.')
@@ -3599,8 +3623,22 @@
 
           sectionCard('🔭 Gravitational lensing — Einstein\'s curve-light prediction',
             (function() {
-              var mass = d.lensMass != null ? d.lensMass : 50;  // arbitrary units
-              var offset = d.lensOffset != null ? d.lensOffset : 0;  // 0 = perfect alignment (Einstein ring)
+              function normalizedLensValue(value, min, max, step, fallback) {
+                var numeric = Number(value);
+                if (!Number.isFinite(numeric)) return fallback;
+                var clamped = Math.min(max, Math.max(min, numeric));
+                return Math.min(max, Math.max(min, min + Math.round((clamped - min) / step) * step));
+              }
+              var mass = normalizedLensValue(d.lensMass, 10, 200, 5, 50);
+              var offset = normalizedLensValue(d.lensOffset, -80, 80, 2, 0);
+              var absoluteOffset = Math.abs(offset);
+              var lensAppearance = absoluteOffset < 5 ? 'Einstein ring' : absoluteOffset < 25 ? 'distorted arcs' : 'two separated images';
+              var lensAppearanceSentence = lensAppearance === 'Einstein ring'
+                ? 'Perfect alignment produces a complete Einstein ring.'
+                : lensAppearance === 'distorted arcs'
+                  ? 'Near alignment produces two distorted arcs.'
+                  : 'Wide misalignment produces two separated images.';
+              var lensStatus = 'Lens mass ' + mass + ' times 10 to the 14th solar masses; source offset ' + offset + '. ' + lensAppearanceSentence;
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
                   __alloT('stem.astronomy.light_follows_curves_in_spacetime_eins', 'Light follows curves in spacetime. Einstein\'s 1915 general relativity predicted that mass would bend the path of light passing nearby — so a massive object can act like a lens, distorting the appearance of objects behind it. Confirmed in 1919 by Eddington during a solar eclipse: stars near the Sun\'s edge appeared shifted by the predicted amount. The discovery made Einstein a global celebrity.')
@@ -3610,14 +3648,17 @@
                 (function() {
                   var svgW = 600, svgH = 220;
                   var cx = svgW / 2, cy = svgH / 2;
-                  var lensSize = 8 + mass / 4;
+                  // Keep this schematic legible and inside its viewBox across the full mass range.
+                  var massRatio = (mass - 10) / 190;
+                  var lensSize = 10 + massRatio * 28;
                   // When perfectly aligned (offset=0), bg source appears as a ring (Einstein ring)
                   // When slightly offset, splits into two arcs
                   // When very offset, two separated images
-                  var ringR = lensSize * 2 + mass / 6;
-                  return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'lensTitle lensDesc' },
+                  var ringR = 30 + massRatio * 45;
+                  var imageSpread = ringR + absoluteOffset * 0.35;
+                  return h('svg', { id: 'astronomy-lens-diagram', viewBox: '0 0 ' + svgW + ' ' + svgH, role: 'img', 'aria-labelledby': 'lensTitle lensDesc', 'aria-describedby': 'astronomy-lens-status astronomy-lens-help', style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, overflow: 'hidden' } },
                     h('title', { id: 'lensTitle' }, __alloT('stem.astronomy.gravitational_lensing_diagram', 'Gravitational lensing diagram')),
-                    h('desc', { id: 'lensDesc' }, 'A massive object (galaxy cluster) lies between us and a distant background galaxy. Its gravity bends the light, producing ' + (Math.abs(offset) < 5 ? 'a complete Einstein ring' : Math.abs(offset) < 25 ? 'distorted arcs' : 'two separated images') + '.'),
+                    h('desc', { id: 'lensDesc' }, 'A massive galaxy cluster lies between us and a distant background galaxy. Its gravity bends the light, producing ' + (lensAppearance === 'Einstein ring' ? 'a complete Einstein ring' : lensAppearance) + '.'),
                     // Background starfield
                     h('rect', { x: 0, y: 0, width: svgW, height: svgH, fill: '#000' }),
                     [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550].map(function(x, i) {
@@ -3626,13 +3667,13 @@
                     }),
                     // Lensed images (depending on offset)
                     (function() {
-                      if (Math.abs(offset) < 5) {
+                      if (lensAppearance === 'Einstein ring') {
                         // Einstein ring
                         return h('g', null,
                           h('circle', { cx: cx, cy: cy, r: ringR, fill: 'none', stroke: '#7dd3fc', strokeWidth: 4, opacity: 0.85 }),
                           h('text', { x: cx, y: cy + ringR + 18, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 11, fontWeight: 700 }, __alloT('stem.astronomy.einstein_ring', 'Einstein ring'))
                         );
-                      } else if (Math.abs(offset) < 25) {
+                      } else if (lensAppearance === 'distorted arcs') {
                         // Arcs
                         var arcOffset = offset / 4;
                         return h('g', null,
@@ -3643,8 +3684,8 @@
                       } else {
                         // Two separated images
                         return h('g', null,
-                          h('ellipse', { cx: cx - ringR + offset / 2, cy: cy, rx: 8, ry: 12, fill: '#7dd3fc', opacity: 0.9 }),
-                          h('ellipse', { cx: cx + ringR - offset / 2, cy: cy, rx: 8, ry: 12, fill: '#7dd3fc', opacity: 0.9 }),
+                          h('ellipse', { cx: cx - imageSpread, cy: cy, rx: 8, ry: 12, fill: '#7dd3fc', opacity: 0.9 }),
+                          h('ellipse', { cx: cx + imageSpread, cy: cy, rx: 8, ry: 12, fill: '#7dd3fc', opacity: 0.9 }),
                           h('text', { x: cx - 100, y: cy + 25, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.astronomy.image_1', 'Image 1')),
                           h('text', { x: cx + 100, y: cy + 25, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.astronomy.image_2', 'Image 2'))
                         );
@@ -3653,9 +3694,9 @@
                     // The lens (massive object — galaxy cluster as orange blob)
                     h('circle', { cx: cx, cy: cy, r: lensSize, fill: '#f97316', opacity: 0.9, stroke: '#fbbf24', strokeWidth: 1 }),
                     // Spacetime distortion grid
-                    [-3, -2, -1, 1, 2, 3].map(function(r, i) {
-                      var rad = lensSize + r * 20 + mass / 5;
-                      return h('circle', { key: 'g' + i, cx: cx, cy: cy, r: rad, fill: 'none', stroke: '#fbbf24', strokeWidth: 0.5, strokeDasharray: '2 4', opacity: 0.4 });
+                    [1, 2, 3].map(function(level) {
+                      var rad = lensSize + level * 18;
+                      return h('circle', { key: 'g' + level, cx: cx, cy: cy, r: rad, fill: 'none', stroke: '#fbbf24', strokeWidth: 0.5, strokeDasharray: '2 4', opacity: 0.4 });
                     }),
                     h('text', { x: cx, y: cy + lensSize + 22, textAnchor: 'middle', fill: '#fbbf24', fontSize: 11, fontWeight: 700 }, __alloT('stem.astronomy.lens_massive_galaxy_cluster', 'Lens (massive galaxy cluster)')),
                     // True position of background source (shown as dim cross)
@@ -3667,25 +3708,39 @@
                   );
                 })(),
 
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
-                  [
-                    { label: __alloT('stem.astronomy.lens_mass_10_m', 'Lens mass (×10¹⁴ M☉)'), value: mass, min: 10, max: 200, step: 5, key: 'lensMass' },
-                    { label: __alloT('stem.astronomy.source_offset_alignment', 'Source offset (alignment)'), value: offset, min: -80, max: 80, step: 2, key: 'lensOffset' }
-                  ].map(function(s, i) {
-                    return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
-                      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                        h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
-                        h('span', { style: { fontSize: 13, color: '#fbbf24', fontWeight: 800 } }, s.value)
-                      ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
-                        onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
-                        'aria-label': s.label,
-                        style: { width: '100%', accentColor: '#fbbf24' }
-                      })
-                    );
-                  })
-                ),
+                h('div', { id: 'astronomy-lens-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(56,189,248,0.30)', color: '#bae6fd', fontSize: 12, lineHeight: 1.5 } }, lensStatus),
 
+                h('div', { role: 'group', 'aria-label': 'Gravitational lens controls', style: { marginTop: 12, marginBottom: 12 } },
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 } },
+                    h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155' } },
+                      a11ySlider({
+                        id: 'astronomy-lens-mass',
+                        label: __alloT('stem.astronomy.lens_mass_10_m', 'Lens mass (×10¹⁴ M☉)'),
+                        value: mass, min: 10, max: 200, step: 5,
+                        valueText: mass + ' times 10^14 solar masses',
+                        ariaDescribedBy: 'astronomy-lens-status astronomy-lens-help',
+                        onChange: function(v) { upd({ lensMass: v }); },
+                        accent: '#fbbf24'
+                      })
+                    ),
+                    h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155' } },
+                      a11ySlider({
+                        id: 'astronomy-lens-offset',
+                        label: __alloT('stem.astronomy.source_offset_alignment', 'Source offset (alignment)'),
+                        value: offset, min: -80, max: 80, step: 2,
+                        valueText: offset === 0 ? '0, perfect alignment' : Math.abs(offset) + ', source ' + (offset < 0 ? 'left' : 'right') + ' of lens',
+                        ariaDescribedBy: 'astronomy-lens-status astronomy-lens-help',
+                        onChange: function(v) { upd({ lensOffset: v }); },
+                        accent: '#38bdf8'
+                      })
+                    )
+                  ),
+                  h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 } },
+                    a11yButton({ type: 'button', onClick: function() { upd({ lensOffset: 0 }); }, 'aria-label': 'Show perfect gravitational lens alignment', 'aria-controls': 'astronomy-lens-diagram astronomy-lens-status', style: { padding: '7px 10px', borderRadius: 7, border: '1px solid #0ea5e9', background: '#0c4a6e', color: '#e0f2fe', fontWeight: 700, cursor: 'pointer' } }, '◎ Perfect alignment'),
+                    a11yButton({ type: 'button', onClick: function() { upd({ lensMass: 50, lensOffset: 0 }); }, 'aria-label': 'Reset gravitational lens simulation', 'aria-controls': 'astronomy-lens-diagram astronomy-lens-status', style: { padding: '7px 10px', borderRadius: 7, border: '1px solid #475569', background: '#1e293b', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' } }, '↺ Reset lens')
+                  ),
+                  h('div', { id: 'astronomy-lens-help', style: { marginTop: 8, color: '#94a3b8', fontSize: 11.5, lineHeight: 1.55 } }, 'Schematic, not to scale. Mass changes the lens and ring size; alignment changes whether the source appears as a ring, arcs, or separated images.')
+                ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.astronomy.what_we_do_with_lensing', 'What we DO with lensing: ')),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
@@ -3838,24 +3893,68 @@
                   caveat: 'Cosmology over the past 25 years has gotten extraordinarily precise (Planck mission, supernova surveys, galaxy redshift surveys, gravitational waves). And the more precise we get, the clearer it becomes that ~95% of the universe is something we do not understand. This is genuinely humbling.'
                 }
               ];
-              var sel = d.selectedDM || 'rotation';
-              var topic = DM_TOPICS.find(function(t) { return t.id === sel; }) || DM_TOPICS[0];
+              var requestedDM = typeof d.selectedDM === 'string' ? d.selectedDM : 'rotation';
+              var topicIndex = DM_TOPICS.findIndex(function(t) { return t.id === requestedDM; });
+              if (topicIndex < 0) topicIndex = 0;
+              var topic = DM_TOPICS[topicIndex];
+              var sel = topic.id;
+              function selectDMTopic(index, moveFocus) {
+                var normalizedIndex = (index + DM_TOPICS.length) % DM_TOPICS.length;
+                var nextTopic = DM_TOPICS[normalizedIndex];
+                upd({ selectedDM: nextTopic.id });
+                if (moveFocus && typeof document !== 'undefined') {
+                  setTimeout(function() {
+                    var target = document.getElementById('astronomy-dm-tab-' + nextTopic.id);
+                    if (target) target.focus();
+                  }, 0);
+                }
+              }
+              function onDMTopicKeyDown(e, index) {
+                var nextIndex = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = DM_TOPICS.length - 1;
+                if (nextIndex == null) return;
+                e.preventDefault();
+                selectDMTopic(nextIndex, true);
+              }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.about_5_of_the_universe_is_ordinary_ma', 'About 5% of the universe is ordinary matter (atoms, including everything we have ever directly studied — stars, planets, you). About 27% is "dark matter," some unknown particle that gravitates but does not emit, absorb, or scatter light at any wavelength we can detect. About 68% is "dark energy," whatever is causing space itself to expand faster + faster. The names are placeholders for our ignorance.')
                 ),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                  DM_TOPICS.map(function(t) {
+                h('div', { id: 'astronomy-energy-budget', role: 'img', 'aria-label': 'Cosmic energy budget: 5 percent ordinary matter, 27 percent dark matter, and 68 percent dark energy.', style: { marginBottom: 14 } },
+                  h('div', { style: { display: 'flex', height: 24, borderRadius: 999, overflow: 'hidden', border: '1px solid #475569', background: '#0f172a' } },
+                    h('div', { title: 'Ordinary matter: 5%', style: { width: '5%', minWidth: 10, background: '#38bdf8' } }),
+                    h('div', { title: 'Dark matter: 27%', style: { width: '27%', background: '#a855f7' } }),
+                    h('div', { title: 'Dark energy: 68%', style: { width: '68%', background: '#f59e0b' } })
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 6, marginTop: 8, fontSize: 11.5 } },
+                    h('div', { style: { color: '#bae6fd' } }, h('span', { 'aria-hidden': 'true' }, '● '), h('strong', null, '5%'), ' ordinary matter'),
+                    h('div', { style: { color: '#e9d5ff' } }, h('span', { 'aria-hidden': 'true' }, '● '), h('strong', null, '27%'), ' dark matter'),
+                    h('div', { style: { color: '#fde68a' } }, h('span', { 'aria-hidden': 'true' }, '● '), h('strong', null, '68%'), ' dark energy')
+                  )
+                ),
+                h('div', { role: 'tablist', 'aria-label': 'Dark matter and dark energy topics', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  DM_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
                     return h('button', {
+                      id: 'astronomy-dm-tab-' + t.id,
                       key: t.id,
-                      onClick: function() { upd({ selectedDM: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#a855f7' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #a855f7' : '1px solid #334155' }
+                      type: 'button',
+                      role: 'tab',
+                      'aria-selected': on ? 'true' : 'false',
+                      'aria-controls': 'astronomy-dm-panel',
+                      tabIndex: on ? 0 : -1,
+                      onClick: function() { selectDMTopic(index, false); },
+                      onKeyDown: function(e) { onDMTopicKeyDown(e, index); },
+                      className: 'astr-focus',
+                      style: { padding: '7px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#a855f7' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #c084fc' : '1px solid #475569' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#e9d5ff', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                h('div', { id: 'astronomy-dm-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-dm-tab-' + sel, tabIndex: 0, 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.35)' } },
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 13.5, fontWeight: 700, color: '#e9d5ff' } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.astronomy.what_we_should_not_overstate', 'What we should not overstate: ')), topic.caveat
@@ -3903,24 +4002,81 @@
                   caveat: 'In every era of physics, some questions seemed permanently unanswerable until they weren\'t. Some never moved at all. We do not know in advance which category a question is in. The honest answer to "did inflation really happen?" is: probably, mostly, in some form. The honest answer to "are there other universes?" is: we genuinely don\'t know, and may never know.'
                 }
               ];
-              var sel = d.selectedInf || 'whyneed';
-              var topic = INF_TOPICS.find(function(t) { return t.id === sel; }) || INF_TOPICS[0];
+              var requestedInf = typeof d.selectedInf === 'string' ? d.selectedInf : 'whyneed';
+              var topicIndex = INF_TOPICS.findIndex(function(t) { return t.id === requestedInf; });
+              if (topicIndex < 0) topicIndex = 0;
+              var topic = INF_TOPICS[topicIndex];
+              var sel = topic.id;
+              function selectInfTopic(index, moveFocus) {
+                var normalizedIndex = (index + INF_TOPICS.length) % INF_TOPICS.length;
+                var nextTopic = INF_TOPICS[normalizedIndex];
+                upd({ selectedInf: nextTopic.id });
+                if (moveFocus && typeof document !== 'undefined') {
+                  setTimeout(function() {
+                    var target = document.getElementById('astronomy-inf-tab-' + nextTopic.id);
+                    if (target) target.focus();
+                  }, 0);
+                }
+              }
+              function onInfTopicKeyDown(e, index) {
+                var nextIndex = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = INF_TOPICS.length - 1;
+                if (nextIndex == null) return;
+                e.preventDefault();
+                selectInfTopic(nextIndex, true);
+              }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.the_big_bang_theory_describes_the_univ', 'The Big Bang theory describes the universe from about 1 second after t=0 onward. What about the first second — or rather, the first 10⁻³⁰ of a second? That is where cosmic inflation lives, and where modern cosmology meets quantum field theory, string theory, and the genuinely open question of whether other universes exist.')
                 ),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                  INF_TOPICS.map(function(t) {
+                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #164e63' } },
+                  h('svg', { id: 'astronomy-inflation-diagram', viewBox: '0 0 600 180', role: 'img', 'aria-labelledby': 'astronomy-inflation-title astronomy-inflation-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                    h('title', { id: 'astronomy-inflation-title' }, 'Schematic of cosmic inflation'),
+                    h('desc', { id: 'astronomy-inflation-desc' }, 'A tiny causally connected patch expands exponentially by at least 10 to the 26th power, stretching small quantum fluctuations across a vastly larger region.'),
+                    h('defs', null,
+                      h('marker', { id: 'astronomy-inflation-arrow', markerWidth: 10, markerHeight: 10, refX: 8, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' },
+                        h('path', { d: 'M0,0 L0,6 L9,3 z', fill: '#22d3ee' })
+                      )
+                    ),
+                    h('circle', { cx: 92, cy: 82, r: 24, fill: 'rgba(34,211,238,0.18)', stroke: '#67e8f9', strokeWidth: 2 }),
+                    [[84, 75], [98, 88], [91, 94], [101, 70]].map(function(point, i) {
+                      return h('circle', { key: 'before-' + i, cx: point[0], cy: point[1], r: 2.5, fill: '#fef08a' });
+                    }),
+                    h('text', { x: 92, y: 126, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 12, fontWeight: 700 }, 'Connected patch'),
+                    h('line', { x1: 145, y1: 82, x2: 315, y2: 82, stroke: '#22d3ee', strokeWidth: 3, markerEnd: 'url(#astronomy-inflation-arrow)' }),
+                    h('text', { x: 230, y: 61, textAnchor: 'middle', fill: '#67e8f9', fontSize: 12, fontWeight: 700 }, 'exponential expansion'),
+                    h('text', { x: 230, y: 108, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11 }, 'at least 10²⁶×'),
+                    h('ellipse', { cx: 450, cy: 82, rx: 105, ry: 64, fill: 'rgba(99,102,241,0.16)', stroke: '#818cf8', strokeWidth: 2 }),
+                    [[386, 57], [420, 95], [451, 44], [482, 106], [515, 66], [457, 82], [398, 111], [502, 92]].map(function(point, i) {
+                      return h('circle', { key: 'after-' + i, cx: point[0], cy: point[1], r: 3, fill: '#fef08a' });
+                    }),
+                    h('text', { x: 450, y: 166, textAnchor: 'middle', fill: '#c7d2fe', fontSize: 12, fontWeight: 700 }, 'Fluctuations stretched to cosmic scales')
+                  ),
+                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual diagram — size and time are not to scale.')
+                ),
+                h('div', { role: 'tablist', 'aria-label': 'Cosmic inflation topics', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  INF_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
                     return h('button', {
+                      id: 'astronomy-inf-tab-' + t.id,
                       key: t.id,
-                      onClick: function() { upd({ selectedInf: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#06b6d4' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #06b6d4' : '1px solid #334155' }
+                      type: 'button',
+                      role: 'tab',
+                      'aria-selected': on ? 'true' : 'false',
+                      'aria-controls': 'astronomy-inf-panel',
+                      tabIndex: on ? 0 : -1,
+                      onClick: function() { selectInfTopic(index, false); },
+                      onKeyDown: function(e) { onInfTopicKeyDown(e, index); },
+                      className: 'astr-focus',
+                      style: { padding: '7px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#06b6d4' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #67e8f9' : '1px solid #475569' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                h('div', { id: 'astronomy-inf-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-inf-tab-' + sel, tabIndex: 0, 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 13.5, fontWeight: 700, color: '#67e8f9' } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.astronomy.what_we_should_not_overstate_2', 'What we should not overstate: ')), topic.caveat
@@ -4695,45 +4851,48 @@
 
         // ── Eclipse simulator (Sun-Earth-Moon geometry) ──────────
         function eclipseSimulatorSection() {
-          // Eclipse phase 0-100 (0 = Moon east of Sun, 50 = exact alignment, 100 = Moon west of Sun)
-          var phase = d.eclipsePhase != null ? d.eclipsePhase : 50;
-          // Eclipse type: solar / lunar
-          var eclipseType = d.eclipseType || 'solar';
-          // Geometry type: total / annular / partial / penumbral
-          var geometryType = d.eclipseGeometry || 'total';
-          var playing = d.eclipsePlaying || false;
+          // Eclipse phase 0-100 (0 = before alignment, 50 = exact alignment, 100 = after alignment)
+          var restoredEclipsePhase = Number(d.eclipsePhase);
+          var phase = Number.isFinite(restoredEclipsePhase) ? Math.round(Math.min(100, Math.max(0, restoredEclipsePhase))) : 50;
+          // Validate mutually exclusive modes restored from saved tool state.
+          var eclipseType = d.eclipseType === 'lunar' ? 'lunar' : 'solar';
+          var geometryType = ['total', 'annular', 'partial'].indexOf(d.eclipseGeometry) >= 0 ? d.eclipseGeometry : 'total';
+          var playing = d.eclipsePlaying === true;
 
           // Auto-advance frame if playing
-          if (playing && typeof window !== 'undefined' && !window._astrEclipseTimer) {
-            window._astrEclipseTimer = setTimeout(function() {
-              window._astrEclipseTimer = null;
+          if (playing && typeof window !== 'undefined' && !window.__alloAstronomyEclipseTimer) {
+            window.__alloAstronomyEclipseTimer = setTimeout(function() {
+              window.__alloAstronomyEclipseTimer = null;
               var nextPhase = phase + (_prefersReducedMotion ? 5 : 2);
               if (nextPhase > 100) nextPhase = 0;
               upd({ eclipsePhase: nextPhase });
             }, _prefersReducedMotion ? 800 : 100);
           }
-          if (!playing && typeof window !== 'undefined' && window._astrEclipseTimer) {
-            clearTimeout(window._astrEclipseTimer);
-            window._astrEclipseTimer = null;
+          if (!playing && typeof window !== 'undefined' && window.__alloAstronomyEclipseTimer) {
+            clearTimeout(window.__alloAstronomyEclipseTimer);
+            window.__alloAstronomyEclipseTimer = null;
           }
 
           // Geometry: Moon moves across Sun (solar) or Earth's shadow (lunar)
           // For SOLAR: Moon disk crosses Sun disk
           // For LUNAR: Moon enters Earth's shadow (umbra)
 
-          // Moon offset based on phase (0 = far right, 50 = aligned, 100 = far left)
+          // Moon offset based on phase (0 = before center, 50 = aligned, 100 = after center)
           var moonOffset = (phase - 50) / 50 * 200; // -200 to +200 px
+          var moonYOffset = geometryType === 'partial' ? 70 : 0; // a partial eclipse is an off-center crossing
+          var alignmentLabel = phase === 50 ? 'maximum alignment' : (phase < 50 ? 'approaching maximum alignment' : 'moving past maximum alignment');
 
           // Sun + Moon apparent size depends on geometry
           var sunR = 80;
           var moonR = geometryType === 'annular' ? 70 : (geometryType === 'partial' ? 75 : 82);
+          var centerDistance = Math.sqrt(moonOffset * moonOffset + moonYOffset * moonYOffset);
 
-          // For total/annular: alignment matters
-          var aligned = Math.abs(moonOffset) < (sunR + moonR);
+          // For total/annular/partial: alignment matters
+          var aligned = centerDistance < (sunR + moonR);
           var coverage = 0;
           if (aligned) {
-            // Approximate area coverage
-            var d_centers = Math.abs(moonOffset);
+            // Approximate area coverage using the two-dimensional center separation.
+            var d_centers = centerDistance;
             if (d_centers + moonR <= sunR) {
               // Moon entirely inside Sun (annular if moonR < sunR)
               coverage = (moonR * moonR) / (sunR * sunR);
@@ -4746,6 +4905,21 @@
           }
 
           var coveragePct = Math.round(Math.min(1, coverage) * 100);
+          var geometryLabel = geometryType.charAt(0).toUpperCase() + geometryType.slice(1);
+          var solarStatus = geometryLabel + ' solar eclipse: ' + coveragePct + '% coverage at ' + alignmentLabel + '.';
+          var lunarMoonX = (phase / 100) * 500 + 50;
+          var PENUMBRA_R = 100, UMBRA_R = 60, LUNAR_MOON_R = 30;
+          var lunarShadowDistance = Math.abs(lunarMoonX - 300);
+          var lunarMoonTotal = lunarShadowDistance <= UMBRA_R - LUNAR_MOON_R;
+          var lunarMoonInUmbra = lunarShadowDistance < UMBRA_R + LUNAR_MOON_R;
+          var lunarMoonInShadow = lunarShadowDistance < PENUMBRA_R + LUNAR_MOON_R;
+          var lunarStatus = lunarMoonTotal
+            ? "Moon is fully inside Earth's umbra: total lunar eclipse."
+            : lunarMoonInUmbra
+              ? "Moon overlaps Earth's umbra: partial lunar eclipse."
+              : lunarMoonInShadow
+                ? "Moon overlaps Earth's penumbra: penumbral lunar eclipse."
+                : "Moon is outside Earth's shadow: no lunar eclipse.";
 
           // Solar eclipse SVG
           function solarEclipseSvg() {
@@ -4753,7 +4927,7 @@
             return h('svg', {
               viewBox: '0 0 600 350',
               role: 'img',
-              'aria-label': 'Solar eclipse animation. ' + geometryType + ' eclipse type. Coverage: ' + coveragePct + ' percent.',
+              'aria-label': 'Solar eclipse diagram. ' + solarStatus,
               style: { width: '100%', height: 'auto', display: 'block', maxHeight: 400 }
             },
               // Black sky background
@@ -4785,8 +4959,8 @@
               h('circle', { cx: cx, cy: cy, r: sunR, fill: 'url(#sun-grad)' }),
               // Moon (occulting disk) — fill lightened + rim strengthened so it stays visible against the
               // black sky during ingress/egress (was #1c1917 on #000 with a 0.5px rim → invisible off-Sun)
-              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: '#2b2b33' }),
-              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: 'none', stroke: '#64748b', strokeWidth: 1.5 }),
+              h('circle', { cx: cx + moonOffset, cy: cy + moonYOffset, r: moonR, fill: '#2b2b33' }),
+              h('circle', { cx: cx + moonOffset, cy: cy + moonYOffset, r: moonR, fill: 'none', stroke: '#64748b', strokeWidth: 1.5 }),
               // Phase markers
               h('text', { x: 20, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, 'Coverage: ' + coveragePct + '%'),
               h('text', { x: 580, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace', textAnchor: 'end' }, geometryType.toUpperCase()),
@@ -4798,20 +4972,17 @@
 
           // Lunar eclipse SVG
           function lunarEclipseSvg() {
-            // Earth at center, casts shadow to the right; Moon traverses through it
+            // Earth at center, casts shadow to the right; Moon traverses through it.
             var cx = 300, cy = 175;
-            // Moon position (left-to-right traversal through Earth's shadow)
-            var moonX = (phase / 100) * 500 + 50;
-            // Thresholds now MATCH the drawn shadow radii below (penumbra r=100, umbra r=60) — they used
-            // to be 80/30, so the Moon read "PENUMBRAL"/"Not in eclipse" while sitting inside the drawn umbra.
-            var PENUMBRA_R = 100, UMBRA_R = 60;
-            var moonInShadow = Math.abs(moonX - cx) < PENUMBRA_R;
-            var moonInUmbra = Math.abs(moonX - cx) < UMBRA_R;
+            var moonX = lunarMoonX;
+            var moonInShadow = lunarMoonInShadow;
+            var moonInUmbra = lunarMoonInUmbra;
+            var moonTotal = lunarMoonTotal;
 
             return h('svg', {
               viewBox: '0 0 600 350',
               role: 'img',
-              'aria-label': __alloT('stem.astronomy.lunar_eclipse_animation_the_moon_trave', 'Lunar eclipse animation. The Moon traverses Earth\'s shadow.'),
+              'aria-label': 'Lunar eclipse diagram. Phase ' + phase + '%. ' + lunarStatus,
               style: { width: '100%', height: 'auto', display: 'block', maxHeight: 400 }
             },
               h('rect', { x: 0, y: 0, width: 600, height: 350, fill: '#000' }),
@@ -4846,8 +5017,8 @@
               // Trajectory line
               h('line', { x1: 50, y1: cy, x2: 550, y2: cy, stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '4 8', opacity: 0.4 }),
               // Labels
-              h('text', { x: 20, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, moonInUmbra ? 'TOTAL ECLIPSE' : (moonInShadow ? 'PENUMBRAL' : 'Not in eclipse')),
-              moonInUmbra ? h('text', { x: cx, y: 50, fill: '#dc2626', fontSize: 14, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.astronomy.blood_moon', '🌑 BLOOD MOON 🌑')) : null
+              h('text', { x: 20, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, moonTotal ? 'TOTAL ECLIPSE' : (moonInUmbra ? 'PARTIAL ECLIPSE' : (moonInShadow ? 'PENUMBRAL' : 'Not in eclipse'))),
+              moonTotal ? h('text', { x: cx, y: 50, fill: '#dc2626', fontSize: 14, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.astronomy.blood_moon', '🌑 BLOOD MOON 🌑')) : null
             );
           }
 
@@ -4856,24 +5027,24 @@
               h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, __alloT('stem.astronomy.eclipses_happen_because_the_moon_s_app', 'Eclipses happen because the Moon\'s apparent size in the sky is almost exactly the same as the Sun\'s — about 0.5° both. This is a cosmic coincidence (the Sun is 400× larger than the Moon, but ~ 400× farther). Adjust the alignment + watch how solar + lunar eclipses appear.')),
 
               // Type selector
-              h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.eclipse_type', 'Eclipse type'), style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.eclipse_type', 'Eclipse type'), style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
                 ['solar', 'lunar'].map(function(t) {
                   var on = eclipseType === t;
                   return a11yButton({
-                    key: t, role: 'tab', 'aria-selected': on,
-                    onClick: function() { upd({ eclipseType: t, eclipsePhase: 50 }); },
+                    key: t, type: 'button', 'aria-pressed': on,
+                    onClick: function() { upd({ eclipseType: t, eclipsePhase: 50, eclipsePlaying: false }); },
                     style: { padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#cbd5e1', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                   }, t === 'solar' ? '☀️ Solar eclipse' : '🌕 Lunar eclipse');
                 })
               ),
 
               // For solar: select geometry type
-              eclipseType === 'solar' ? h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+              eclipseType === 'solar' ? h('div', { role: 'group', 'aria-label': 'Solar eclipse geometry', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
                 ['total', 'annular', 'partial'].map(function(t) {
                   var on = geometryType === t;
                   return a11yButton({
                     key: t,
-                    onClick: function() { upd({ eclipseGeometry: t }); },
+                    type: 'button', onClick: function() { upd({ eclipseGeometry: t, eclipsePlaying: false }); },
                     'aria-pressed': on,
                     style: { padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: on ? '#6366f1' : '#1e293b', color: on ? '#0f172a' : '#cbd5e1', border: on ? '2px solid #6366f1' : '1px solid #334155' }
                   }, t.charAt(0).toUpperCase() + t.slice(1));
@@ -4881,23 +5052,30 @@
               ) : null,
 
               // Animation viewport
-              h('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid #334155', background: '#000', marginBottom: 10 } },
+              h('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid #334155', background: '#000', marginBottom: 6 } },
                 eclipseType === 'solar' ? solarEclipseSvg() : lunarEclipseSvg()
               ),
+              h('div', { id: 'astronomy-eclipse-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', color: '#fde68a', fontSize: 11.5, lineHeight: 1.5, marginBottom: 10 } }, eclipseType === 'solar' ? solarStatus : lunarStatus),
 
               // Phase slider + controls
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' } },
                 a11yButton({
-                  onClick: function() { upd({ eclipsePlaying: !playing }); },
-                  'aria-label': playing ? 'Pause animation' : 'Play animation',
+                  type: 'button', onClick: function() { upd({ eclipsePlaying: !playing }); },
+                  'aria-label': playing ? 'Pause animation' : 'Play animation', 'aria-pressed': playing,
                   style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: playing ? '#fbbf24' : '#0f172a', color: playing ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 }
                 }, playing ? '⏸ Pause' : '▶ Play'),
+                a11yButton({
+                  type: 'button', onClick: function() { upd({ eclipsePhase: 50, eclipsePlaying: false }); },
+                  'aria-label': 'Show maximum eclipse alignment',
+                  style: { padding: '8px 12px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontWeight: 700, cursor: 'pointer', fontSize: 12 }
+                }, '◎ Maximum'),
                 h('div', { style: { flex: 1, minWidth: 200 } },
                   a11ySlider({
                     id: 'astr-eclipse-phase',
                     label: __alloT('stem.astronomy.eclipse_phase', 'Eclipse phase'),
                     value: phase, min: 0, max: 100, step: 1,
-                    valueText: phase + '%',
+                    valueText: phase + '%, ' + alignmentLabel,
+                    ariaDescribedBy: 'astronomy-eclipse-status',
                     onChange: function(v) { upd({ eclipsePhase: v, eclipsePlaying: false }); },
                     accent: '#fbbf24'
                   })
@@ -4973,15 +5151,21 @@
             }
           ];
 
-          var selectedId = d.selectedShower || 'perseids';
-          var selected = SHOWERS.find(function(s) { return s.id === selectedId; }) || SHOWERS[0];
+          var selected = SHOWERS.find(function(s) { return s.id === d.selectedShower; }) || SHOWERS.find(function(s) { return s.id === 'perseids'; });
+          var selectedId = selected.id;
 
-          // Simulator state
-          var simRate = d.simZhr != null ? d.simZhr : selected.zhr;
-          var simBortle = d.simBortleSim != null ? d.simBortleSim : 4;
-          var simAlt = d.simRadiantAlt != null ? d.simRadiantAlt : 60; // radiant altitude degrees
-          var animFrame = d.simMeteorFrame || 0;
-          var animPlaying = d.simMeteorPlaying || false;
+          // Normalize all restored simulator controls before they affect rate math or SVG geometry.
+          function boundedMeteorValue(value, min, max, fallback) {
+            var numeric = Number(value);
+            return Number.isFinite(numeric) ? Math.min(max, Math.max(min, numeric)) : fallback;
+          }
+          var simRate = Math.round(boundedMeteorValue(d.simZhr, 5, 300, selected.zhr));
+          var simBortle = Math.round(boundedMeteorValue(d.simBortleSim, 1, 9, 4));
+          var restoredSimAlt = boundedMeteorValue(d.simRadiantAlt, 5, 90, 60);
+          var simAlt = Math.min(90, Math.max(5, Math.round(restoredSimAlt / 5) * 5));
+          var restoredMeteorFrame = Number(d.simMeteorFrame);
+          var animFrame = Number.isFinite(restoredMeteorFrame) ? ((Math.floor(restoredMeteorFrame) % 1000) + 1000) % 1000 : 0;
+          var animPlaying = d.simMeteorPlaying === true;
 
           // Calculate effective rate (visible meteors per hour at observer's location)
           // ZHR is at radiant in zenith + Bortle 1; corrections apply:
@@ -4995,10 +5179,9 @@
           var rateCorrection = Math.pow(r, 6.5 - lm);
           var effectiveRate = Math.round(simRate * altFactor / rateCorrection);
 
-          // Build the SVG meteor view + radiant
-          // SVG is a 600x400 sky with radiant at center
-          var seed = animFrame; // deterministic pseudo-random
-          function prand(idx, mod) { var x = Math.sin(seed * 91 + idx * 37 + 11) * 10000; return Math.abs(x - Math.floor(x)) * mod; }
+          // Build the SVG meteor view. A fixed horizon and moving radiant make altitude spatially meaningful.
+          var radiantX = 300, horizonY = 350;
+          var radiantY = horizonY - (simAlt / 90 * 280);
 
           // Generate "stars" (static background) — 60 random points
           var stars = [];
@@ -5010,52 +5193,51 @@
               op: 0.3 + ((si * 17) % 100) / 200
             });
           }
-          // Generate "meteors" — count proportional to effective rate
-          var meteorCount = Math.min(15, Math.max(1, Math.round(effectiveRate / 8)));
+          // Generate an illustrative 10-minute sample; zero effective rate now produces zero streaks.
+          var meteorCount = Math.min(15, Math.max(0, Math.round(effectiveRate / 6)));
           var meteors = [];
           for (var mi = 0; mi < meteorCount; mi++) {
-            // Radiant at (300, 200). Each meteor starts near radiant, streaks outward.
+            // Each meteor starts near the selected shower's radiant and streaks outward.
             var angle = (mi * 0.7 + animFrame * 0.05) % (Math.PI * 2);
             var distFromRadiant = ((mi * 47 + animFrame * 8) % 280) + 20;
-            var startX = 300 + Math.cos(angle) * (distFromRadiant * 0.3);
-            var startY = 200 + Math.sin(angle) * (distFromRadiant * 0.3);
-            var endX = 300 + Math.cos(angle) * distFromRadiant;
-            var endY = 200 + Math.sin(angle) * distFromRadiant;
+            var startX = radiantX + Math.cos(angle) * (distFromRadiant * 0.3);
+            var startY = radiantY + Math.sin(angle) * (distFromRadiant * 0.3);
+            var endX = radiantX + Math.cos(angle) * distFromRadiant;
+            var endY = radiantY + Math.sin(angle) * distFromRadiant;
             var brightness = 0.4 + ((mi * 23) % 100) / 200;
             meteors.push({ x1: startX, y1: startY, x2: endX, y2: endY, brightness: brightness });
           }
 
           // Animation tick handler (manual frame advance via setTimeout if playing)
-          // Note: using upd() to bump frame each second; React.useEffect would be cleaner but tool uses class-free approach
-          if (animPlaying && typeof window !== 'undefined' && !window._astrMeteorTimer) {
-            window._astrMeteorTimer = setTimeout(function() {
-              window._astrMeteorTimer = null;
+          // Note: using upd() to advance each illustrative sample; React.useEffect would be cleaner but this tool uses a class-free approach
+          if (animPlaying && typeof window !== 'undefined' && !window.__alloAstronomyMeteorTimer) {
+            window.__alloAstronomyMeteorTimer = setTimeout(function() {
+              window.__alloAstronomyMeteorTimer = null;
               upd({ simMeteorFrame: (animFrame + 1) % 1000 });
             }, _prefersReducedMotion ? 2000 : 800);
           }
-          if (!animPlaying && typeof window !== 'undefined' && window._astrMeteorTimer) {
-            clearTimeout(window._astrMeteorTimer);
-            window._astrMeteorTimer = null;
+          if (!animPlaying && typeof window !== 'undefined' && window.__alloAstronomyMeteorTimer) {
+            clearTimeout(window.__alloAstronomyMeteorTimer);
+            window.__alloAstronomyMeteorTimer = null;
           }
 
           return sectionCard('🌠 Meteor shower simulator + observation guide',
             h('div', null,
               // Picker for shower selection
-              h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.meteor_showers', 'Meteor showers'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.meteor_showers', 'Meteor showers'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                 SHOWERS.map(function(s) {
                   var on = s.id === selectedId;
                   return a11yButton({
-                    key: s.id,
-                    role: 'tab',
-                    'aria-selected': on,
-                    onClick: function() { upd({ selectedShower: s.id, simZhr: s.zhr }); },
+                    key: s.id, type: 'button',
+                    'aria-pressed': on,
+                    onClick: function() { upd({ selectedShower: s.id, simZhr: s.zhr, simMeteorFrame: 0, simMeteorPlaying: false }); },
                     style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                   }, '🌠 ' + s.name);
                 })
               ),
 
               // Shower summary card
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12 } },
+              h('div', { id: 'astronomy-meteor-shower-summary', role: 'region', 'aria-live': 'polite', 'aria-label': selected.name + ' shower summary', style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12 } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
                   h('h4', { style: { margin: 0, color: '#fbbf24', fontSize: 17 } }, selected.name),
                   h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Peak: '),
@@ -5090,41 +5272,41 @@
               // Interactive simulator panel
               h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.astronomy.live_meteor_sky_simulator', '🎬 Live meteor sky simulator')),
-                h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.55 } }, __alloT('stem.astronomy.each_frame_shows_1_second_of_sky_meteo', 'Each frame shows ~ 1 second of sky. Meteor streaks point AWAY from the radiant (the shower\'s named constellation). Adjust your sky conditions + radiant altitude to see how many meteors you would realistically observe.')),
+                h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: '#94a3b8', lineHeight: 1.55 } }, 'Each frame is an illustrative 10-minute sample, compressed so the radiant pattern stays visible. Meteor streaks point away from the radiant. Adjust sky conditions and radiant altitude to compare realistic hourly estimates.'),
 
                 // Sliders
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 10 } },
                   a11ySlider({
                     id: 'astr-sim-zhr',
                     label: __alloT('stem.astronomy.shower_activity_zhr', 'Shower activity (ZHR)'),
-                    value: simRate, min: 5, max: 300, step: 5,
-                    valueText: simRate + ' /hr',
-                    onChange: function(v) { upd({ simZhr: v }); },
+                    value: simRate, min: 5, max: 300, step: 1,
+                    valueText: simRate + ' /hr', ariaDescribedBy: 'astronomy-meteor-rate-status',
+                    onChange: function(v) { upd({ simZhr: v, simMeteorPlaying: false }); },
                     accent: '#fbbf24'
                   }),
                   a11ySlider({
                     id: 'astr-sim-bortle',
                     label: __alloT('stem.astronomy.sky_quality_bortle', 'Sky quality (Bortle)'),
                     value: simBortle, min: 1, max: 9, step: 1,
-                    valueText: 'Bortle ' + simBortle,
-                    onChange: function(v) { upd({ simBortleSim: v }); },
+                    valueText: 'Bortle ' + simBortle, ariaDescribedBy: 'astronomy-meteor-rate-status',
+                    onChange: function(v) { upd({ simBortleSim: v, simMeteorPlaying: false }); },
                     accent: '#fbbf24'
                   }),
                   a11ySlider({
                     id: 'astr-sim-alt',
                     label: __alloT('stem.astronomy.radiant_altitude', 'Radiant altitude'),
                     value: simAlt, min: 5, max: 90, step: 5,
-                    valueText: simAlt + '°',
-                    onChange: function(v) { upd({ simRadiantAlt: v }); },
+                    valueText: simAlt + '°', ariaDescribedBy: 'astronomy-meteor-rate-status',
+                    onChange: function(v) { upd({ simRadiantAlt: v, simMeteorPlaying: false }); },
                     accent: '#fbbf24'
                   })
                 ),
 
                 // Effective rate live display
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 10, flexWrap: 'wrap' } },
+                h('div', { id: 'astronomy-meteor-rate-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 10, flexWrap: 'wrap' } },
                   h('div', null,
                     h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.astronomy.effective_rate_at_your_site', 'Effective rate at your site')),
-                    h('div', { style: { fontSize: 20, color: '#fbbf24', fontWeight: 900, lineHeight: 1, marginTop: 2 }, 'aria-live': 'polite' }, effectiveRate + ' /hr')
+                    h('div', { style: { fontSize: 20, color: '#fbbf24', fontWeight: 900, lineHeight: 1, marginTop: 2 } }, effectiveRate + ' /hr')
                   ),
                   h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, flex: 1, minWidth: 200 } },
                     h('strong', null, 'Why: '),
@@ -5133,18 +5315,23 @@
                 ),
 
                 // Play/pause button
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                   a11yButton({
-                    onClick: function() { upd({ simMeteorPlaying: !animPlaying }); },
-                    'aria-label': animPlaying ? 'Pause meteor simulation' : 'Play meteor simulation',
+                    type: 'button', onClick: function() { upd({ simMeteorPlaying: !animPlaying }); },
+                    'aria-label': animPlaying ? 'Pause meteor simulation' : 'Play meteor simulation', 'aria-pressed': animPlaying,
                     style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: animPlaying ? '#fbbf24' : '#0f172a', color: animPlaying ? '#0f172a' : '#fbbf24', fontWeight: 700, cursor: 'pointer', fontSize: 12 }
                   }, animPlaying ? '⏸ Pause' : '▶ Play sim'),
                   _prefersReducedMotion ? h('span', { style: { fontSize: 11, color: '#a5b4fc', fontStyle: 'italic' } }, __alloT('stem.astronomy.reduced_motion_sim_runs_at_slow_refres', '(Reduced motion: sim runs at slow refresh)')) : null,
                   a11yButton({
-                    onClick: function() { upd({ simMeteorFrame: animFrame + 1 }); },
+                    type: 'button', onClick: function() { upd({ simMeteorFrame: (animFrame + 1) % 1000, simMeteorPlaying: false }); },
                     'aria-label': __alloT('stem.astronomy.advance_one_frame', 'Advance one frame'),
                     style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#cbd5e1', cursor: 'pointer', fontSize: 12 }
-                  }, '⏭ Step')
+                  }, '⏭ Step'),
+                  a11yButton({
+                    type: 'button', onClick: function() { upd({ simZhr: selected.zhr, simBortleSim: 4, simRadiantAlt: 60, simMeteorFrame: 0, simMeteorPlaying: false }); },
+                    'aria-label': 'Reset meteor simulation conditions',
+                    style: { padding: '8px 12px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 12 }
+                  }, '↺ Reset conditions')
                 ),
 
                 // SVG sky view — animated when playing
@@ -5153,7 +5340,8 @@
                     viewBox: '0 0 600 400',
                     style: { width: '100%', height: 'auto', display: 'block' },
                     role: 'img',
-                    'aria-label': 'Animated meteor shower sky view. Radiant at center. Currently showing ' + meteorCount + ' meteors radiating outward.'
+                    'aria-label': selected.name + ' meteor shower diagram. Radiant in ' + selected.radiantConst + ' at ' + simAlt + ' degrees altitude. Illustrative 10-minute sample shows ' + meteorCount + (meteorCount === 1 ? ' meteor' : ' meteors') + ', based on an estimated rate of ' + effectiveRate + ' per hour under Bortle ' + simBortle + ' skies.',
+                    'aria-describedby': 'astronomy-meteor-rate-status astronomy-meteor-diagram-help'
                   },
                     // Sky gradient background
                     h('defs', null,
@@ -5163,6 +5351,7 @@
                         h('stop', { offset: '100%', stopColor: '#000000' })
                       )
                     ),
+                    h('defs', null, h('clipPath', { id: 'meteor-sky-clip' }, h('rect', { x: 0, y: 0, width: 600, height: horizonY }))),
                     h('rect', { x: 0, y: 0, width: 600, height: 400, fill: 'url(#sky-grad-meteor)' }),
                     // Atmospheric glow from light pollution (varies with Bortle)
                     simBortle > 4 ? h('rect', {
@@ -5180,16 +5369,16 @@
                     stars.map(function(s, i) {
                       return h('circle', { key: 'star-' + i, cx: s.x, cy: s.y, r: s.size, fill: '#ffffff', opacity: s.op });
                     }),
-                    // Horizon line (radiant altitude relative)
-                    h('line', { x1: 0, y1: 400 - (simAlt / 90 * 200) - 30, x2: 600, y2: 400 - (simAlt / 90 * 200) - 30, stroke: '#1e293b', strokeWidth: 1, strokeDasharray: '4 6', opacity: 0.7 }),
-                    h('text', { x: 10, y: 400 - (simAlt / 90 * 200) - 36, fill: '#64748b', fontSize: 9 }, __alloT('stem.astronomy.horizon', 'Horizon')),
-                    // Radiant marker
-                    h('circle', { cx: 300, cy: 200, r: 18, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }),
-                    h('circle', { cx: 300, cy: 200, r: 3, fill: '#fbbf24' }),
-                    h('text', { x: 320, y: 197, fill: '#fbbf24', fontSize: 11, fontWeight: 600 }, __alloT('stem.astronomy.radiant', 'Radiant')),
-                    h('text', { x: 320, y: 211, fill: '#fbbf24', fontSize: 9, opacity: 0.7 }, '(' + selected.radiantConst + ')'),
+                    h('rect', { x: 0, y: horizonY, width: 600, height: 400 - horizonY, fill: '#05070d' }),
+                    // Fixed horizon + radiant marker positioned by the altitude control.
+                    h('line', { x1: 0, y1: horizonY, x2: 600, y2: horizonY, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 6', opacity: 0.8 }),
+                    h('text', { x: 10, y: horizonY - 6, fill: '#94a3b8', fontSize: 9 }, __alloT('stem.astronomy.horizon', 'Horizon')),
+                    h('circle', { cx: radiantX, cy: radiantY, r: 18, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }),
+                    h('circle', { cx: radiantX, cy: radiantY, r: 3, fill: '#fbbf24' }),
+                    h('text', { x: radiantX + 20, y: radiantY - 3, fill: '#fbbf24', fontSize: 11, fontWeight: 600 }, __alloT('stem.astronomy.radiant', 'Radiant')),
+                    h('text', { x: radiantX + 20, y: radiantY + 11, fill: '#fbbf24', fontSize: 9, opacity: 0.7 }, '(' + selected.radiantConst + ', ' + simAlt + '°)'),
                     // Meteor streaks — translucent gradient lines from radiant outward
-                    meteors.map(function(m, i) {
+                    h('g', { clipPath: 'url(#meteor-sky-clip)' }, meteors.map(function(m, i) {
                       return h('g', { key: 'meteor-' + i },
                         h('line', {
                           x1: m.x1, y1: m.y1, x2: m.x2, y2: m.y2,
@@ -5198,14 +5387,14 @@
                         }),
                         h('circle', { cx: m.x2, cy: m.y2, r: 1.5 + m.brightness, fill: '#fff', opacity: m.brightness * 1.2 })
                       );
-                    }),
+                    })),
                     // Frame counter
                     h('text', { x: 595, y: 395, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, 'frame ' + animFrame)
                   )
                 ),
-                h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
+                h('p', { id: 'astronomy-meteor-diagram-help', style: { margin: '8px 0 0', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },
                   h('strong', null, __alloT('stem.astronomy.how_to_read_this_view', 'How to read this view: ')),
-                  __alloT('stem.astronomy.the_yellow_dot_at_center_is_the_radian', 'The yellow dot at center is the radiant — the perspective point where meteors APPEAR to come from. Each yellow-white streak is a meteor entering the atmosphere. Earth\'s motion through the comet/asteroid debris stream gives all meteors the same parallel motion through space, but viewed from Earth they appear to RADIATE outward from a single point (the same way parallel railroad tracks appear to converge in the distance).')
+                  __alloT('stem.astronomy.the_yellow_dot_at_center_is_the_radian', 'The yellow dot marks the radiant — the perspective point where meteors APPEAR to come from. Each yellow-white streak is a meteor entering the atmosphere. Earth\'s motion through the comet/asteroid debris stream gives all meteors the same parallel motion through space, but viewed from Earth they appear to RADIATE outward from a single point (the same way parallel railroad tracks appear to converge in the distance).')
                 )
               ),
 

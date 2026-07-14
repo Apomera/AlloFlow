@@ -12,6 +12,9 @@ const phaseOPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy
 const sessionModalSource = readFileSync(resolve(process.cwd(), 'view_session_modal_source.jsx'), 'utf8');
 const sessionModalModule = readFileSync(resolve(process.cwd(), 'view_session_modal_module.js'), 'utf8');
 const sessionModalPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_session_modal_module.js'), 'utf8');
+const headerSource = readFileSync(resolve(process.cwd(), 'view_header_source.jsx'), 'utf8');
+const headerModule = readFileSync(resolve(process.cwd(), 'view_header_module.js'), 'utf8');
+const headerPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_header_module.js'), 'utf8');
 
 function sliceBetween(source, startMarker, endMarker) {
   const start = source.indexOf(startMarker);
@@ -259,7 +262,7 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(sessionModalSource).toContain('if (mailboxJoinUrl) return mailboxJoinUrl;');
     expect(sessionModalSource).toContain("isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'");
     expect(sessionModalSource).toContain("typeof onRequestEndSession === 'function'");
-    expect(sessionModalSource).toContain('{!isMailboxSession && (');
+    expect(sessionModalSource).toContain('{!isProjectionMode && !isMailboxSession && (');
     expect(sessionModalSource).toContain('aria-labelledby="alloflow-session-modal-title"');
     expect(sessionModalSource).toContain('<button');
     expect(sessionModalSource).toContain('text-5xl sm:text-7xl');
@@ -432,7 +435,26 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain('Revoke homework link');
     expect(rootSource).toContain("throw new Error('Assignment expired')");
     expect(rootSource).toContain('function _alloAssignmentIsExpired(packet)');
-    expect(rootSource).toContain('expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),');
+    expect(rootSource).toContain('expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000),');
     expect(rootSource).toContain('ref={homeworkQrDialogRef} tabIndex={-1}');
+    expect(rootSource).toContain('const printQrSheet = useCallback');
+    expect(rootSource).toContain("printQrSheet(qrShareSvg, 'AlloFlow homework assignment'");
+    expect(rootSource).toContain("openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')");
+    expect(rootSource).toContain('Ready to scan · AI tools off · Active until you end the session');
+    expect(rootSource).toContain('This homework link was revoked or is no longer available.');
+    expect(rootSource).toContain('This homework link has expired.');
+    expect(rootSource).toContain('It may be damaged or truncated');    expect(rootSource).toContain("safeGetItem('allo_recent_qr_shares')");
+    expect(rootSource).toContain('showRecentQrShares &&');
+    expect(rootSource).toContain('homeworkExpiryDays * 24 * 60 * 60 * 1000');
+    expect(rootSource).toContain('Selectable homework link');
+    expect(rootSource).toContain('Homework ready ·');
+    expect(sessionModalSource).toContain('isProjectionMode');
+    expect(sessionModalSource).toContain('Live session readiness');
+    expect(sessionModalSource).toContain('Selectable student join link');
+    expect(headerSource).toContain('Homework link length');
+    expect(headerSource).toContain('Recent homework links');
+    expect(headerSource).toContain('<option value={1}>1 day</option>');
+    expect(headerSource).toContain('<option value={30}>30 days</option>');
+    expect(headerPublicModule).toBe(headerModule);
   });
 });

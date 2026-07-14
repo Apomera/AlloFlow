@@ -35,14 +35,40 @@
 //   - a dropped-character count (opts.withMeta) so a caller can warn honestly
 //     when a script has no Grade-1 English braille equivalent (CJK, Arabic...).
 var _G1_DIGIT = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
-var _G1_PUNCT = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
-var _G1_SMART = { '‘': "'", '’': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...', ' ': ' ', '«': '"', '»': '"', '•': '*' };
+// Supported UEB symbols expressed as North-American Braille ASCII. Anything
+// outside this explicit set is counted and omitted instead of passing raw ASCII
+// through as an unrelated braille cell.
+var _G1_PUNCT = {
+  ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8',
+  '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/',
+  '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>'
+};
+var _G1_SMART = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
+var _G1_OPEN_QUOTE = '\ue000';
+var _G1_CLOSE_QUOTE = '\ue001';
+var _G1_PREFIX = /[#,;@_^".]$/;
+function _g1HardSplit(word, into, cells) {
+  // Numeric continuation indicator (dot 5 = ") keeps a divided numeric item
+  // in numeric mode on the next braille line.
+  if (/^#[A-J14]+$/.test(word)) {
+    while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
+    if (word) into.push(word);
+    return;
+  }
+  while (word.length > cells) {
+    var cut = cells;
+    while (cut > 1 && _G1_PREFIX.test(word.slice(0, cut))) cut--;
+    into.push(word.slice(0, cut));
+    word = word.slice(cut);
+  }
+  if (word) into.push(word);
+}
 function _g1Wrap(line, into, cells) {
   if (line.length <= cells) { into.push(line); return; }
   var words = line.split(' '), cur = '';
   for (var i = 0; i < words.length; i++) {
     var w = words[i];
-    while (w.length > cells) { if (cur) { into.push(cur); cur = ''; } into.push(w.slice(0, cells)); w = w.slice(cells); }
+    if (w.length > cells) { if (cur) { into.push(cur); cur = ''; } _g1HardSplit(w, into, cells); continue; }
     if (!cur) cur = w;
     else if (cur.length + 1 + w.length <= cells) cur += ' ' + w;
     else { into.push(cur); cur = w; }
@@ -52,23 +78,38 @@ function _g1Wrap(line, into, cells) {
 function toGrade1BRF(text, opts) {
   var src = String(text == null ? '' : text);
   var cells = (opts && opts.cellsPerLine) || 40;
-  src = src.replace(/[‘’“”–—… «»•]/g, function (c) { return _G1_SMART[c] || ''; });
-  try { src = src.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (_) {}
+  src = src.replace(/[\u201c\u00ab]/g, _G1_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _G1_CLOSE_QUOTE);
+  src = src.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, function (c) { return _G1_SMART[c] || ''; });
+  try { src = src.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
   var lines = src.replace(/\r\n?/g, '\n').split('\n');
   var out = [], dropped = 0;
   for (var li = 0; li < lines.length; li++) {
-    var line = lines[li], bl = '', numMode = false;
-    for (var i = 0; i < line.length; i++) {
-      var ch = line[i];
+    var chars = Array.from(lines[li]), bl = '', numMode = false;
+    for (var i = 0; i < chars.length; i++) {
+      var ch = chars[i];
       if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _G1_DIGIT[ch]; continue; }
-      if (numMode && ((ch >= 'a' && ch <= 'j') || (ch >= 'A' && ch <= 'J'))) bl += ';';
+      if (numMode && (ch === ',' || ch === '.')) { bl += _G1_PUNCT[ch]; continue; }
+      if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
       numMode = false;
       if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
-      if (ch >= 'A' && ch <= 'Z') { bl += ',' + ch; continue; }
+      if (ch >= 'A' && ch <= 'Z') {
+        var end = i;
+        while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
+        var prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+        var nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+        if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
+        else bl += ',' + ch;
+        continue;
+      }
       if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+      if (ch === _G1_OPEN_QUOTE) { bl += '8'; continue; }
+      if (ch === _G1_CLOSE_QUOTE) { bl += '0'; continue; }
+      if (ch === '"') {
+        var prev = i > 0 ? chars[i - 1] : '';
+        bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0';
+        continue;
+      }
       if (_G1_PUNCT[ch] !== undefined) { bl += _G1_PUNCT[ch]; continue; }
-      var cc = ch.charCodeAt(0);
-      if (cc >= 0x20 && cc <= 0x7e) { bl += ch.toUpperCase(); continue; }
       dropped++;
     }
     _g1Wrap(bl, out, cells);

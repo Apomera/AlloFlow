@@ -329,6 +329,8 @@
     var caCause = caCellCause(caRows, caInspectRow, caInspectCol, caWrap);
     var caInfluence = caCounterfactualInfluence(bits, caCause);
     var caCone = caCausalCone(caRows, caInspectRow, caInspectCol, caWrap, 6);
+    var caTemporalChange = caTemporalChangeCells(caRows, caInspectRow);
+    var caSelectedTransition = caCellTransition(caRows, caInspectRow, caInspectCol);
     var caSvgRef = useRef(null), seedSvgRef = useRef(null);
 
     var paintingRef = useRef(false);
@@ -513,6 +515,7 @@
     var forecastPreview = forecastSeries[forecastHorizon - 1] || null;
     var forecastComparison = forecastPreview ? compareLifeStates(grid, forecastPreview.grid) : null;
     var forecastResidency = forecastSeries.length ? analyzeLifeForecastResidency(forecastSeries, forecastHorizon) : null;
+    var forecastMotion = forecastSeries.length ? analyzeLifeForecastMotion(grid, forecastSeries, forecastHorizon, wrap) : null;
 
     // ── elementary CA ops ──
     function setRuleSafe(n) { var v = clampRule(n); setRule(v); markQuest('exploredRule'); if (v === 110) markQuest('saw110'); }
@@ -619,7 +622,26 @@
           rects.push(h('text', { key: 'd' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: parseLifeRule(birthRule, '3')[n] ? '#86efac' : 'rgba(148,163,184,0.34)', style: { fontSize: Math.max(5, PX * 0.5) + 'px', fontWeight: 800, pointerEvents: 'none' } }, String(n)));
         }
       }
-      if (vizMode === 'field' && scan) {
+      if (vizMode === 'forecast' && forecastMotion && forecastMotion.points.length) {
+        var motionPath = '', motionPrevious = null;
+        forecastMotion.points.forEach(function (point) {
+          var motionX = (point.centerC + 0.5) * PX, motionY = (point.centerR + 0.5) * PX;
+          var motionJump = motionPrevious && wrap && (Math.abs(point.centerR - motionPrevious.centerR) > ROWS / 3 || Math.abs(point.centerC - motionPrevious.centerC) > COLS / 3);
+          motionPath += (!motionPrevious || motionJump ? 'M' : 'L') + motionX.toFixed(2) + ' ' + motionY.toFixed(2);
+          motionPrevious = point;
+        });
+        if (forecastMotion.points.length > 1) rects.push(h('path', { key: 'forecastMotionTrail', 'data-life-forecast-motion': String(forecastHorizon), d: motionPath, fill: 'none', stroke: '#fde047', strokeWidth: Math.max(1.1, PX / 6), strokeDasharray: Math.max(2, PX / 2) + ' ' + Math.max(1.5, PX / 3), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.82))', pointerEvents: 'none' } }));
+        if (forecastMotion.selectedBounds) {
+          var futureBounds = forecastMotion.selectedBounds, futureBoxX = futureBounds.minC * PX + 0.4, futureBoxY = futureBounds.minR * PX + 0.4, futureBoxW = futureBounds.width * PX - 0.8, futureBoxH = futureBounds.height * PX - 0.8;
+          rects.push(h('rect', { key: 'forecastFootprint', 'data-life-forecast-footprint': String(forecastHorizon), 'data-width': String(futureBounds.width), 'data-height': String(futureBounds.height), 'data-density': futureBounds.density.toFixed(4), x: futureBoxX, y: futureBoxY, width: futureBoxW, height: futureBoxH, rx: Math.max(2, PX / 2), fill: 'rgba(253,224,71,0.025)', stroke: '#fde047', strokeWidth: Math.max(1, PX / 8), strokeDasharray: Math.max(3, PX / 1.6) + ' ' + Math.max(2, PX / 2.4), vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.62))', pointerEvents: 'none' } }));
+          if (PX >= 7) rects.push(h('text', { key: 'forecastFootprintLabel', x: Math.min(W - 4, futureBoxX + 3), y: Math.max(8, futureBoxY - 3), fill: '#fef08a', style: { fontSize: Math.max(6, PX * 0.55) + 'px', fontWeight: 900, pointerEvents: 'none', filter: 'drop-shadow(0 1px 2px #020617)' } }, '+' + forecastHorizon + ' | ' + futureBounds.width + 'x' + futureBounds.height));
+        }
+        forecastMotion.points.forEach(function (point) {
+          if (!point.step) return;
+          var selectedMotion = point.step === forecastHorizon, motionX = (point.centerC + 0.5) * PX, motionY = (point.centerR + 0.5) * PX;
+          rects.push(h('circle', { key: 'forecastMotion' + point.step, 'data-life-forecast-motion-point': String(point.step), 'data-selected': selectedMotion ? 'true' : 'false', 'aria-hidden': 'true', cx: motionX, cy: motionY, r: selectedMotion ? Math.max(2.8, PX * 0.42) : Math.max(1.2, PX * 0.2), fill: selectedMotion ? '#fde047' : 'rgba(253,224,71,0.58)', stroke: selectedMotion ? '#ffffff' : '#fde047', strokeWidth: selectedMotion ? 1.15 : 0.55, vectorEffect: 'non-scaling-stroke', onMouseDown: function (e) { if (e.stopPropagation) e.stopPropagation(); }, onTouchStart: function (e) { if (e.stopPropagation) e.stopPropagation(); setForecastHorizon(point.step); }, onClick: function (e) { if (e.stopPropagation) e.stopPropagation(); setForecastHorizon(point.step); }, style: { filter: selectedMotion ? 'drop-shadow(0 0 5px rgba(253,224,71,0.95))' : 'none', pointerEvents: 'auto', cursor: 'pointer' } }));
+        });
+      }      if (vizMode === 'field' && scan) {
         var bx = scan.minC * PX + 0.45, by = scan.minR * PX + 0.45, bw = scan.width * PX - 0.9, bh = scan.height * PX - 0.9, cx = (scan.centerC + 0.5) * PX, cy = (scan.centerR + 0.5) * PX, arm = Math.max(4, PX * 0.8);
         rects.push(h('rect', { key: 'scanBounds', x: bx, y: by, width: bw, height: bh, rx: Math.max(2, PX / 2), fill: 'rgba(34,211,238,0.04)', stroke: '#22d3ee', strokeWidth: Math.max(1.1, PX / 7), strokeDasharray: Math.max(3, PX / 2) + ' ' + Math.max(2, PX / 3), vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 5px rgba(34,211,238,0.75))', pointerEvents: 'none' } }));
         rects.push(h('circle', { key: 'scanCenterOuter', cx: cx, cy: cy, r: Math.max(3.5, PX * 0.55), fill: 'rgba(251,191,36,0.12)', stroke: '#fbbf24', strokeWidth: Math.max(1, PX / 8), vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 5px rgba(251,191,36,0.9))', pointerEvents: 'none' } }));
@@ -628,7 +650,7 @@
       }
       if (pop === 0) rects.push(h('text', { key: 'empty', x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: Math.max(9, Math.min(14, W / 30)) + 'px', fontStyle: 'italic' } }, 'Draw cells, choose a pattern, or make a random soup'));
       rects.push(h('rect', { key: 'cursor', x: cursor[1] * PX, y: cursor[0] * PX, width: PX, height: PX, fill: 'none', stroke: C.cursor, strokeWidth: Math.max(1.4, PX / 7), rx: 2, style: { pointerEvents: 'none', filter: 'drop-shadow(0 0 4px ' + C.cursor + ')' } }));
-      return h('svg', { ref: gridSvgRef, className: 'cellularlab-svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-roledescription': 'editable cellular automaton grid', 'aria-label': 'Cellular automaton grid, ' + ROWS + ' by ' + COLS + ', ' + pop + ' alive, generation ' + gen + ', rule B' + birthRule + ' slash S' + survivalRule + ', dynamics ' + dynamicsScan.label + ', ' + dynamicsScan.detail + (vizMode === 'forecast' && forecastPreview && forecastComparison ? ', future telescope at plus ' + forecastHorizon + ' generations, ' + forecastComparison.appeared + ' cells appear, ' + forecastComparison.retained + ' current cells remain, ' + forecastComparison.gone + ' current cells are gone, projected population ' + forecastComparison.population + ', ' + forecastResidency.activeCells + ' cells appear somewhere along the future path and ' + forecastResidency.persistentCells + ' persist throughout the inspected horizon' : '') + (vizMode === 'field' && scan ? ', colony footprint ' + scan.width + ' by ' + scan.height + ', density ' + Math.round(scan.density * 100) + ' percent, center row ' + (scan.centerR + 1).toFixed(1) + ', column ' + (scan.centerC + 1).toFixed(1) : '') + (vizMode === 'change' && gen > 0 ? ', last transition ' + transitionRef.current.born + ' births, ' + transitionRef.current.survived + ' survivors, ' + transitionRef.current.died + ' deaths' : '') + '. Arrow keys move the cursor and space toggles a cell.', tabIndex: 0, onKeyDown: onGridKeyDown, onMouseDown: onGridPointerDown, onMouseMove: onGridPointerMove, onMouseUp: onGridPointerUp, onMouseLeave: onGridPointerUp, onTouchStart: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerDown(e); }, onTouchMove: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerMove(e); }, onTouchEnd: onGridPointerUp, style: { maxWidth: '620px', width: '100%', height: 'auto', borderRadius: '14px', border: '1px solid rgba(52,211,153,0.35)', touchAction: 'none', display: 'block', background: '#020617', cursor: 'crosshair', boxShadow: '0 22px 60px rgba(2,6,23,0.42), inset 0 0 42px rgba(16,185,129,0.08)' } }, rects);
+      return h('svg', { ref: gridSvgRef, className: 'cellularlab-svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-roledescription': 'editable cellular automaton grid', 'aria-label': 'Cellular automaton grid, ' + ROWS + ' by ' + COLS + ', ' + pop + ' alive, generation ' + gen + ', rule B' + birthRule + ' slash S' + survivalRule + ', dynamics ' + dynamicsScan.label + ', ' + dynamicsScan.detail + (vizMode === 'forecast' && forecastPreview && forecastComparison ? ', future telescope at plus ' + forecastHorizon + ' generations, ' + forecastComparison.appeared + ' cells appear, ' + forecastComparison.retained + ' current cells remain, ' + forecastComparison.gone + ' current cells are gone, projected population ' + forecastComparison.population + ', ' + forecastResidency.activeCells + ' cells appear somewhere along the future path and ' + forecastResidency.persistentCells + ' persist throughout the inspected horizon' + (forecastMotion.distance == null ? ', no center of mass exists at the inspected horizon' : ', projected center-of-mass drift ' + forecastMotion.distance.toFixed(2) + ' cells, row shift ' + forecastMotion.deltaRow.toFixed(2) + ', column shift ' + forecastMotion.deltaCol.toFixed(2) + (forecastMotion.selectedBounds ? ', future footprint ' + forecastMotion.selectedBounds.width + ' by ' + forecastMotion.selectedBounds.height + ', density ' + Math.round(forecastMotion.selectedBounds.density * 100) + ' percent' : '')) : '') + (vizMode === 'field' && scan ? ', colony footprint ' + scan.width + ' by ' + scan.height + ', density ' + Math.round(scan.density * 100) + ' percent, center row ' + (scan.centerR + 1).toFixed(1) + ', column ' + (scan.centerC + 1).toFixed(1) : '') + (vizMode === 'change' && gen > 0 ? ', last transition ' + transitionRef.current.born + ' births, ' + transitionRef.current.survived + ' survivors, ' + transitionRef.current.died + ' deaths' : '') + '. Arrow keys move the cursor and space toggles a cell.', tabIndex: 0, onKeyDown: onGridKeyDown, onMouseDown: onGridPointerDown, onMouseMove: onGridPointerMove, onMouseUp: onGridPointerUp, onMouseLeave: onGridPointerUp, onTouchStart: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerDown(e); }, onTouchMove: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerMove(e); }, onTouchEnd: onGridPointerUp, style: { maxWidth: '620px', width: '100%', height: 'auto', borderRadius: '14px', border: '1px solid rgba(52,211,153,0.35)', touchAction: 'none', display: 'block', background: '#020617', cursor: 'crosshair', boxShadow: '0 22px 60px rgba(2,6,23,0.42), inset 0 0 42px rgba(16,185,129,0.08)' } }, rects);
     }
 
     function statChip(label, value, accent) {
@@ -742,7 +764,7 @@
           h('section', { style: { background: C.panel, border: '1px solid ' + C.border, borderRadius: '13px', padding: '11px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, 'Scientific lens'),
             h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } }, [{ id:'normal',label:'Normal' },{ id:'forecast',label:'Next forecast' },{ id:'field',label:'Colony scan' },{ id:'change',label:'Change map' },{ id:'age',label:'Age map' },{ id:'xray',label:'Neighbor X-ray' }].map(function (v) { return btn(v.label, function () { setVizMode(v.id); }, { pressed: vizMode === v.id }); })),
-            h('p', { style: { margin: '7px 0', fontSize: '10px', color: C.sub, lineHeight: 1.4 } }, vizMode === 'forecast' ? 'Look up to eight generations ahead without changing the experiment. Green cells appear by the inspected horizon; cyan cells remain; rose cells are gone. Gold residency glow strengthens where cells recur across the future path.' : vizMode === 'field' ? 'Measure the colony footprint and center of mass. The gold trail tracks movement across generations.' : vizMode === 'change' ? 'See exactly what the last rule application changed. Rewind to compare earlier transitions.' : vizMode === 'age' ? 'Yellow cells are newborn; violet cells have survived many generations.' : vizMode === 'xray' ? 'Numbers are live-neighbor counts. Green outcomes satisfy the current B/S rule.' : 'Cell brightness responds to local neighborhood density.'),
+            h('p', { style: { margin: '7px 0', fontSize: '10px', color: C.sub, lineHeight: 1.4 } }, vizMode === 'forecast' ? 'Look up to eight generations ahead without changing the experiment. Green cells appear by the inspected horizon; cyan cells remain; rose cells are gone. Gold residency glow strengthens where cells recur, while the dashed comet trail follows the projected center of mass and the ghost frame measures its future footprint.' : vizMode === 'field' ? 'Measure the colony footprint and center of mass. The gold trail tracks movement across generations.' : vizMode === 'change' ? 'See exactly what the last rule application changed. Rewind to compare earlier transitions.' : vizMode === 'age' ? 'Yellow cells are newborn; violet cells have survived many generations.' : vizMode === 'xray' ? 'Numbers are live-neighbor counts. Green outcomes satisfy the current B/S rule.' : 'Cell brightness responds to local neighborhood density.'),
             vizMode === 'forecast' && h('label', { style: { display: 'block', marginBottom: '7px', fontSize: '10px', color: C.text, fontWeight: 900 } },
               h('span', { 'data-life-forecast-horizon-label': String(forecastHorizon) }, 'Future telescope: +' + forecastHorizon + ' generation' + (forecastHorizon === 1 ? '' : 's')),
               h('input', { type: 'range', min: 1, max: 8, step: 1, value: forecastHorizon, onChange: function (e) { setForecastHorizon(Math.max(1, Math.min(8, parseInt(e.target.value, 10) || 1))); }, 'aria-label': 'Forecast horizon in generations', 'data-life-forecast-horizon': String(forecastHorizon), style: { width: '100%', marginTop: '5px', accentColor: '#eab308' } })
@@ -753,7 +775,9 @@
               h('span', { style: { color: dark ? '#fda4af' : '#be123c' } }, '-' + forecastComparison.gone + ' gone'),
               h('span', null, 'Projected pop ' + forecastComparison.population),
               h('span', null, 'Step +' + forecastHorizon + ' turnover ' + forecastPreview.turnover),
-              h('span', { 'data-life-forecast-residency-summary': String(forecastResidency.activeCells) }, forecastResidency.activeCells + ' path cells | ' + forecastResidency.persistentCells + ' persist throughout')
+              h('span', { 'data-life-forecast-residency-summary': String(forecastResidency.activeCells) }, forecastResidency.activeCells + ' path cells | ' + forecastResidency.persistentCells + ' persist throughout'),
+              h('span', { 'data-life-forecast-motion-summary': forecastMotion.distance == null ? 'extinct' : forecastMotion.distance.toFixed(2) }, forecastMotion.distance == null ? 'No center at +' + forecastHorizon : 'Center drift ' + forecastMotion.distance.toFixed(2) + ' cells | r' + (forecastMotion.deltaRow >= 0 ? '+' : '') + forecastMotion.deltaRow.toFixed(2) + ' c' + (forecastMotion.deltaCol >= 0 ? '+' : '') + forecastMotion.deltaCol.toFixed(2)),
+              forecastMotion.selectedBounds && h('span', { 'data-life-forecast-footprint-summary': String(forecastHorizon) }, 'Future footprint ' + forecastMotion.selectedBounds.width + 'x' + forecastMotion.selectedBounds.height + ' | ' + Math.round(forecastMotion.selectedBounds.density * 100) + '% dense')
             ),
             vizMode === 'field' && h('div', { role: 'status', style: { display: 'flex', gap: '9px', flexWrap: 'wrap', marginBottom: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } }, spatialScan ? [h('span', { key:'footprint' }, 'Footprint ' + spatialScan.width + ' x ' + spatialScan.height), h('span', { key:'density' }, 'Density ' + Math.round(spatialScan.density * 100) + '%'), h('span', { key:'center' }, 'Center r' + (spatialScan.centerR + 1).toFixed(1) + ', c' + (spatialScan.centerC + 1).toFixed(1)), h('span', { key:'trail' }, Math.min(60, transitionHistoryRef.current.length) + ' trail points')] : h('span', null, 'No live cells to scan.')),
             vizMode === 'change' && h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '5px' } }, [{ label:'Born', color:'#4ade80' },{ label:'Survived', color:'#22d3ee' },{ label:'Died', color:'#fb7185' }].map(function (item) { return h('span', { key: item.label, style: { display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: '10px', height: '10px', borderRadius: '3px', background: item.color, boxShadow: '0 0 8px ' + item.color } }), item.label); })),
@@ -822,7 +846,7 @@
     function renderCaDiagram() {
       var W = CA_COLS * CA_PX, H = CA_ROWS * CA_PX, selectedX = (caInspectCol + 0.5) * CA_PX, selectedY = (caInspectRow + 0.5) * CA_PX;
       var sensitivityText = caInfluence.parents.length ? ' Counterfactual test: ' + caInfluence.decisiveCount + ' of 3 parents are decisive; flipping a decisive parent changes the result.' : ' No parent counterfactual exists on the seed row.';
-      var causeText = (caCause && caCause.pattern ? 'Generation ' + caInspectRow + ', column ' + (caInspectCol + 1) + ': parents ' + caCause.pattern + ' produced ' + caCause.output + '.' : 'Generation zero seed cell at column ' + (caInspectCol + 1) + ' has no parent neighborhood.') + sensitivityText + ' The ancestry cone traces ' + caCone.upstreamCount + ' upstream cells across ' + caCone.depth + ' generations.';
+      var causeText = (caCause && caCause.pattern ? 'Generation ' + caInspectRow + ', column ' + (caInspectCol + 1) + ': parents ' + caCause.pattern + ' produced ' + caCause.output + '.' : 'Generation zero seed cell at column ' + (caInspectCol + 1) + ' has no parent neighborhood.') + sensitivityText + ' The ancestry cone traces ' + caCone.upstreamCount + ' upstream cells across ' + caCone.depth + ' generations.' + (caInspectRow > 0 ? ' ' + caTemporalChange.count + ' of ' + CA_COLS + ' cells changed from the prior generation.' : ' This is the seed row, so no prior-generation comparison exists.') + ' Selected cell transition: ' + caSelectedTransition.label + '.';
       var rects = [h('desc', { key: 'desc', id: 'ca-diagram-desc' }, causeText + ' Use arrow keys to inspect adjacent cells, Page Up and Page Down to jump ten generations, and Home or End to move through time.'), h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead })];
       for (var r = 0; r < caRows.length; r++) {
         if (r > 0 && r % 10 === 0) rects.push(h('line', { key: 'guide' + r, x1: 0, x2: W, y1: r * CA_PX, y2: r * CA_PX, stroke: dark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }));
@@ -832,6 +856,10 @@
       if (caWrap) rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.5, strokeDasharray: '5 3', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(196,181,253,0.75))', pointerEvents: 'none' } }));
       else rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#fb7185', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', opacity: 0.75, style: { pointerEvents: 'none' } }));
       rects.push(h('rect', { key: 'inspectRow', x: 0.7, y: caInspectRow * CA_PX + 0.7, width: W - 1.4, height: CA_PX - 1.4, fill: 'rgba(253,224,71,0.055)', stroke: 'none', style: { pointerEvents: 'none' } }));
+      if (caInspectRow > 0 && caTemporalChange.count) {
+        rects.push(h('rect', { key: 'temporalChangeBand', 'data-ca-temporal-change-band': String(caTemporalChange.count), x: 0, y: caInspectRow * CA_PX, width: W, height: CA_PX, fill: 'rgba(251,113,133,' + (0.035 + caTemporalChange.rate * 0.11).toFixed(3) + ')', stroke: '#fb7185', strokeWidth: 0.65, vectorEffect: 'non-scaling-stroke', opacity: 0.82, style: { pointerEvents: 'none' } }));
+        caTemporalChange.cells.forEach(function (col) { rects.push(h('rect', { key: 'temporalChange' + col, 'data-ca-temporal-change-cell': String(col), x: col * CA_PX + 0.55, y: caInspectRow * CA_PX + 0.55, width: CA_PX - 1.1, height: CA_PX - 1.1, rx: 1, fill: 'none', stroke: '#fb7185', strokeWidth: 1.05, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 2px rgba(251,113,133,0.8))', pointerEvents: 'none' } })); });
+      }
       if (caCone.depth > 1) {
         var topLayer = caCone.layers[caCone.layers.length - 1], topCols = topLayer.nodes.map(function (node) { return node.col; });
         var minTop = Math.min.apply(Math, topCols), maxTop = Math.max.apply(Math, topCols);
@@ -856,7 +884,14 @@
       rects.push(h('g', { key: 'selectedCellRow', role: 'row' },
         h('g', { id: 'ca-diagram-cell-' + caInspectRow + '-' + caInspectCol, role: 'gridcell', 'aria-selected': 'true', 'aria-label': causeText, 'data-ca-selected-row': String(caInspectRow), 'data-ca-selected-col': String(caInspectCol) },
           h('circle', { cx: selectedX, cy: selectedY, r: CA_PX * 1.18, fill: 'rgba(253,224,71,0.12)', stroke: '#fde047', strokeWidth: 1.7, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 6px rgba(253,224,71,0.95))', pointerEvents: 'none' } }),
-          h('rect', { x: caInspectCol * CA_PX + 0.55, y: caInspectRow * CA_PX + 0.55, width: CA_PX - 1.1, height: CA_PX - 1.1, rx: 1, fill: caCause && caCause.output ? 'rgba(253,224,71,0.38)' : 'rgba(253,224,71,0.08)', stroke: '#fde047', strokeWidth: 1.6, vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } })
+          h('rect', { x: caInspectCol * CA_PX + 0.55, y: caInspectRow * CA_PX + 0.55, width: CA_PX - 1.1, height: CA_PX - 1.1, rx: 1, fill: caCause && caCause.output ? 'rgba(253,224,71,0.38)' : 'rgba(253,224,71,0.08)', stroke: '#fde047', strokeWidth: 1.6, vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }),
+          h('g', { 'data-ca-selected-transition': caSelectedTransition.kind, 'data-from': caSelectedTransition.previous == null ? 'seed' : String(caSelectedTransition.previous), 'data-to': String(caSelectedTransition.current), 'aria-hidden': 'true', style: { pointerEvents: 'none' } },
+            caSelectedTransition.kind === 'birth' ? h('path', { d: 'M' + (selectedX - 2) + ' ' + selectedY + 'H' + (selectedX + 2) + 'M' + selectedX + ' ' + (selectedY - 2) + 'V' + (selectedY + 2), stroke: '#4ade80', strokeWidth: 1.5, strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke' }) :
+            caSelectedTransition.kind === 'death' ? h('path', { d: 'M' + (selectedX - 1.8) + ' ' + (selectedY - 1.8) + 'L' + (selectedX + 1.8) + ' ' + (selectedY + 1.8) + 'M' + (selectedX + 1.8) + ' ' + (selectedY - 1.8) + 'L' + (selectedX - 1.8) + ' ' + (selectedY + 1.8), stroke: '#fb7185', strokeWidth: 1.45, strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke' }) :
+            caSelectedTransition.kind === 'stable-live' ? h('circle', { cx: selectedX, cy: selectedY, r: 1.55, fill: '#67e8f9', stroke: '#ecfeff', strokeWidth: 0.55, vectorEffect: 'non-scaling-stroke' }) :
+            caSelectedTransition.kind === 'stable-empty' ? h('circle', { cx: selectedX, cy: selectedY, r: 1.7, fill: 'none', stroke: '#67e8f9', strokeWidth: 1.05, vectorEffect: 'non-scaling-stroke' }) :
+            h('rect', { x: selectedX - 1.6, y: selectedY - 1.6, width: 3.2, height: 3.2, transform: 'rotate(45 ' + selectedX + ' ' + selectedY + ')', fill: '#c4b5fd', stroke: '#f5f3ff', strokeWidth: 0.55, vectorEffect: 'non-scaling-stroke' })
+          )
         )
       ));
       return h('svg', { ref: caSvgRef, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'grid', tabIndex: 0,
@@ -870,8 +905,8 @@
       var x = function (i) { return px + i / Math.max(1, n - 1) * (W - px * 2); }, y = function (v) { return top + (1 - v) * (H - top - bottom); };
       var points = function (values) { return values.map(function (v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' '); };
       var selectedDensity = caAnalysis.densities[caInspectRow] || 0, selectedEntropy = caAnalysis.entropies[caInspectRow] || 0, selectedActivity = caAnalysis.activities[caInspectRow] || 0, selectedTemporalChange = caAnalysis.temporalChanges[caInspectRow] || 0, selectedLive = Math.round(selectedDensity * CA_COLS);
-      var legend = [{ key:'density', label:'Density', value:Math.round(selectedDensity * 100) + '%', color:'#22d3ee' }, { key:'entropy', label:'Entropy', value:selectedEntropy.toFixed(2) + ' bits', color:'#a78bfa' }, { key:'activity', label:'Edge rate', value:Math.round(selectedActivity * 100) + '%', color:'#fbbf24' }, { key:'temporal', label:'Row change', value:Math.round(selectedTemporalChange * 100) + '%', color:'#fb7185' }];
-      var causeSummary = (caCause && caCause.pattern ? 'Cell ' + (caInspectCol + 1) + ': ' + caCause.pattern + ' -> ' + caCause.output + ' via rule mapping ' + caCause.index : 'Cell ' + (caInspectCol + 1) + ': seed value ' + (caCause ? caCause.output : 0) + ' (no parents)') + ' | decisive ' + caInfluence.decisiveCount + '/3 | ' + caCone.depth + '-gen cone: ' + caCone.upstreamCount + ' upstream cells';
+      var legend = [{ key:'density', label:'Density', value:Math.round(selectedDensity * 100) + '%', color:'#22d3ee' }, { key:'entropy', label:'Entropy', value:selectedEntropy.toFixed(2) + ' bits', color:'#a78bfa' }, { key:'activity', label:'Edge rate', value:Math.round(selectedActivity * 100) + '%', color:'#fbbf24' }, { key:'temporal', label:'Row change', value:Math.round(selectedTemporalChange * 100) + '% (' + caTemporalChange.count + ' cells)', color:'#fb7185' }];
+      var causeSummary = (caCause && caCause.pattern ? 'Cell ' + (caInspectCol + 1) + ': ' + caCause.pattern + ' -> ' + caCause.output + ' via rule mapping ' + caCause.index : 'Cell ' + (caInspectCol + 1) + ': seed value ' + (caCause ? caCause.output : 0) + ' (no parents)') + ' | decisive ' + caInfluence.decisiveCount + '/3 | ' + caCone.depth + '-gen cone: ' + caCone.upstreamCount + ' upstream cells | transition ' + caSelectedTransition.label;
       function inspectSignalFromEvent(e) {
         var bounds = e.currentTarget && e.currentTarget.getBoundingClientRect ? e.currentTarget.getBoundingClientRect() : null;
         if (!bounds || !bounds.width) return;
@@ -942,34 +977,67 @@
     }
 
     // ── patterns gallery ──
-    function patternThumb(key) {
-      var pat = LIFE_PATTERNS[key];
-      var size = 7, px = 9; // thumbnail grid
-      var maxR = 0, maxC = 0; pat.cells.forEach(function (rc) { maxR = Math.max(maxR, rc[0]); maxC = Math.max(maxC, rc[1]); });
-      var sc = Math.min(1, (size - 1) / Math.max(1, Math.max(maxR, maxC)));
-      var rects = [h('rect', { key: 'bg', x: 0, y: 0, width: size * px, height: size * px, fill: C.dead, rx: 4 })];
-      pat.cells.forEach(function (rc, i) {
-        var r = Math.round(rc[0] * sc), c = Math.round(rc[1] * sc);
-        rects.push(h('rect', { key: i, x: c * px + 1, y: r * px + 1, width: px - 2, height: px - 2, rx: 1, fill: C.live }));
+    function patternThumb(key, preview) {
+      preview = preview || analyzePatternEvolution(LIFE_PATTERNS[key], 4);
+      var W = 64, H = 56, pad = 4, bounds = preview.bounds;
+      var scale = Math.min((W - pad * 2) / Math.max(1, bounds.width), (H - pad * 2) / Math.max(1, bounds.height));
+      var cellSize = Math.max(1.25, Math.min(6.5, scale * 0.72)), offsetX = (W - bounds.width * scale) / 2, offsetY = (H - bounds.height * scale) / 2;
+      var futureSet = {}, marks = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead, rx: 5 })];
+      preview.futureCells.forEach(function (cell) { futureSet[cell[0] + '_' + cell[1]] = true; });
+      preview.initialCells.forEach(function (cell, index) {
+        var overlap = !!futureSet[cell[0] + '_' + cell[1]], x = offsetX + (cell[1] - bounds.minC + 0.5) * scale - cellSize / 2, y = offsetY + (cell[0] - bounds.minR + 0.5) * scale - cellSize / 2;
+        marks.push(h('rect', { key: 'initial' + index, x: x, y: y, width: cellSize, height: cellSize, rx: Math.min(1.3, cellSize / 4), fill: overlap ? '#f8fafc' : '#22d3ee', opacity: overlap ? 0.96 : 0.72, style: { filter: overlap ? 'drop-shadow(0 0 3px rgba(248,250,252,0.72))' : 'none' } }));
       });
-      return h('svg', { viewBox: '0 0 ' + (size * px) + ' ' + (size * px), width: 56, height: 56, 'aria-hidden': 'true', style: { display: 'block' } }, rects);
+      preview.futureCells.forEach(function (cell, index) {
+        if (preview.initialSet[cell[0] + '_' + cell[1]]) return;
+        var x = offsetX + (cell[1] - bounds.minC + 0.5) * scale - cellSize / 2, y = offsetY + (cell[0] - bounds.minR + 0.5) * scale - cellSize / 2;
+        marks.push(h('rect', { key: 'future' + index, x: x, y: y, width: cellSize, height: cellSize, rx: Math.min(1.3, cellSize / 4), fill: '#fde047', opacity: 0.82, style: { filter: 'drop-shadow(0 0 3px rgba(253,224,71,0.58))' } }));
+      });
+      marks.push(h('text', { key: 'step', x: W - 3, y: 8, textAnchor: 'end', fill: '#fef08a', style: { fontSize: '7px', fontWeight: 900 } }, '+4'));
+      return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: 64, height: 56, 'aria-hidden': 'true', 'data-pattern-evolution-preview': key, 'data-now': String(preview.initialCells.length), 'data-future': String(preview.futureCells.length), style: { display: 'block', flex: '0 0 auto' } }, marks);
+    }
+    function patternPulse(key, journey) {
+      var W = 124, H = 30, left = 2, right = 2, top = 3, bottom = 4, plotW = W - left - right, plotH = H - top - bottom;
+      var maxPop = Math.max(1, journey.maxPopulation), maxTurnover = Math.max(1, journey.maxTurnover), count = Math.max(1, journey.points.length - 1);
+      function x(index) { return left + index / count * plotW; }
+      function yPop(value) { return top + plotH - value / maxPop * plotH; }
+      var populationPoints = journey.points.map(function (point, index) { return x(index).toFixed(1) + ',' + yPop(point.population).toFixed(1); }).join(' ');
+      var areaPoints = left + ',' + (top + plotH) + ' ' + populationPoints + ' ' + (left + plotW) + ',' + (top + plotH);
+      var marks = [
+        h('path', { key: 'area', d: 'M' + areaPoints.replace(/ /g, 'L'), fill: 'rgba(34,211,238,0.11)', stroke: 'none' }),
+        h('line', { key: 'axis', x1: left, y1: top + plotH, x2: left + plotW, y2: top + plotH, stroke: 'rgba(148,163,184,0.22)', strokeWidth: 0.7 }),
+        h('polyline', { key: 'population', points: populationPoints, fill: 'none', stroke: '#22d3ee', strokeWidth: 1.65, strokeLinejoin: 'round', strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 2px rgba(34,211,238,0.65))' } })
+      ];
+      journey.points.forEach(function (point, index) {
+        if (!point.turnover) return;
+        var barHeight = point.turnover / maxTurnover * Math.min(8, plotH * 0.38);
+        marks.push(h('line', { key: 'turnover' + index, x1: x(index), y1: top + plotH, x2: x(index), y2: top + plotH - barHeight, stroke: '#fde047', strokeWidth: Math.max(0.75, plotW / journey.points.length * 0.38), opacity: 0.66, vectorEffect: 'non-scaling-stroke' }));
+      });
+      marks.push(h('circle', { key: 'end', cx: x(journey.points.length - 1), cy: yPop(journey.points[journey.points.length - 1].population), r: 1.8, fill: '#f8fafc', stroke: '#22d3ee', strokeWidth: 0.8, style: { filter: 'drop-shadow(0 0 3px rgba(248,250,252,0.8))' } }));
+      return h('div', { style: { width: '100%', marginTop: '7px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '7px', marginBottom: '2px', color: C.sub, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+          h('span', null, 'Evolution pulse · 16g'),
+          h('span', { 'data-pattern-dynamics': key, style: { color: journey.kind === 'evolving' ? C.sub : C.accent } }, journey.shortLabel)),
+        h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: 30, role: 'img', 'data-pattern-pulse': key, 'data-pattern-status': journey.kind, 'data-pattern-period': journey.period == null ? '' : String(journey.period), 'aria-label': journey.summary, style: { display: 'block', overflow: 'visible' } }, marks));
     }
     function renderPatternsTab() {
       return h('div', null,
         h('p', { style: { margin: '0 0 12px', fontSize: '12px', color: C.sub, lineHeight: 1.5 } },
-          'Classic Life forms. Tap one to drop it on the grid and press Play.'),
+          'Classic Life forms shown as a four-generation double exposure. Tap one to load it into Life.'),
+        h('div', { 'aria-label': 'Thumbnail legend: cyan is the starting pattern, gold is generation four, and white cells overlap.', style: { display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', margin: '0 0 10px', color: C.sub, fontSize: '10px', fontWeight: 800 } }, [{ label:'Now', color:'#22d3ee' },{ label:'+4', color:'#fde047' },{ label:'Overlap', color:'#f8fafc' }].map(function (item) { return h('span', { key: item.label, style: { display: 'inline-flex', alignItems: 'center', gap: '5px' } }, h('span', { 'aria-hidden': 'true', style: { width: '9px', height: '9px', borderRadius: '2px', background: item.color, boxShadow: '0 0 5px ' + item.color } }), item.label); })),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px' } },
           PATTERN_ORDER.map(function (key) {
-            var pat = LIFE_PATTERNS[key];
-            return h('button', Object.assign({ key: key, type: 'button', onClick: function () { loadPattern(key); } }, {
+            var pat = LIFE_PATTERNS[key], evolution = analyzePatternEvolution(pat, 4), journey = analyzePatternJourney(pat, 16);
+            return h('button', Object.assign({ key: key, type: 'button', 'data-pattern-key': key, 'aria-label': pat.name + ', ' + pat.kind + '. ' + evolution.initialCells.length + ' cells now, ' + evolution.futureCells.length + ' at generation four; ' + evolution.comparison.appeared + ' appear and ' + evolution.comparison.gone + ' disappear. ' + journey.summary + ' Load pattern.', onClick: function () { loadPattern(key); } }, {
               style: { display: 'flex', gap: '10px', alignItems: 'center', textAlign: 'left', cursor: 'pointer',
-                background: C.panel, border: '1px solid ' + C.border, borderRadius: '12px', padding: '10px' }
+                flexWrap: 'wrap', alignContent: 'flex-start', background: C.panel, border: '1px solid ' + C.border, borderRadius: '12px', padding: '10px' }
             }),
-              patternThumb(key),
-              h('div', { style: { minWidth: 0 } },
+              patternThumb(key, evolution),
+              h('div', { style: { minWidth: 0, flex: '1 1 64px' } },
                 h('div', { style: { fontSize: '13px', fontWeight: 800, color: C.text } }, pat.name),
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.4px' } }, pat.kind),
-                h('div', { style: { fontSize: '11px', color: C.sub, lineHeight: 1.4, marginTop: '2px' } }, pat.blurb)));
+                h('div', { style: { fontSize: '11px', color: C.sub, lineHeight: 1.4, marginTop: '2px' } }, pat.blurb)),
+              patternPulse(key, journey));
           })
         )
       );
@@ -1161,7 +1229,20 @@
     }
     return { layers: layers, depth: layers.length - 1, upstreamCount: upstreamCount };
   }
-  function analyzeCaRows(rows, wrap) {
+  function caCellTransition(rows, rowIndex, colIndex) {
+    if (!rows || rowIndex < 0 || rowIndex >= rows.length || !rows[rowIndex] || colIndex < 0 || colIndex >= rows[rowIndex].length) return { previous: null, current: 0, changed: false, kind: 'invalid', label: 'invalid cell' };
+    var current = rows[rowIndex][colIndex] ? 1 : 0;
+    if (rowIndex === 0) return { previous: null, current: current, changed: false, kind: 'seed', label: 'seed ' + current };
+    var previous = rows[rowIndex - 1][colIndex] ? 1 : 0, changed = previous !== current;
+    var kind = changed ? (current ? 'birth' : 'death') : (current ? 'stable-live' : 'stable-empty');
+    var label = kind === 'birth' ? 'birth 0->1' : kind === 'death' ? 'death 1->0' : kind === 'stable-live' ? 'stable live 1->1' : 'stable empty 0->0';
+    return { previous: previous, current: current, changed: changed, kind: kind, label: label };
+  }  function caTemporalChangeCells(rows, rowIndex) {
+    if (!rows || rowIndex <= 0 || rowIndex >= rows.length || !rows[rowIndex]) return { cells: [], count: 0, rate: 0 };
+    var current = rows[rowIndex], previous = rows[rowIndex - 1], cells = [];
+    for (var col = 0; col < current.length; col++) if (current[col] !== previous[col]) cells.push(col);
+    return { cells: cells, count: cells.length, rate: current.length ? cells.length / current.length : 0 };
+  }  function analyzeCaRows(rows, wrap) {
     var densities = [], entropies = [], activities = [], temporalChanges = [], neighborhoodCounts = [0,0,0,0,0,0,0,0];
     (rows || []).forEach(function (row, rowIndex) {
       var live = 0, changes = 0; for (var i = 0; i < row.length; i++) { live += row[i]; if (i > 0 && row[i] !== row[i - 1]) changes++; }
@@ -1192,7 +1273,62 @@
     points.forEach(function (point) { maxPopulation = Math.max(maxPopulation, point.population); maxTurnover = Math.max(maxTurnover, point.turnover); });
     return { points: points, maxPopulation: maxPopulation, maxTurnover: maxTurnover, latest: points.length ? points[points.length - 1] : null };
   }
-  function analyzeLifeForecastResidency(series, horizon) {
+  function analyzePatternEvolution(pattern, steps) {
+    var pad = Math.max(4, steps + 2), rows = Math.max(1, (pattern && pattern.h || 1) + pad * 2), cols = Math.max(1, (pattern && pattern.w || 1) + pad * 2);
+    var initial = emptyGrid(rows, cols), initialCells = [], initialSet = {};
+    (pattern && pattern.cells || []).forEach(function (cell) { var r = cell[0] + pad, c = cell[1] + pad; if (r >= 0 && r < rows && c >= 0 && c < cols) { initial[r][c] = 1; initialCells.push([r,c]); initialSet[r + '_' + c] = true; } });
+    var series = projectLifeFuture(initial, null, Math.max(0, steps || 0), false, '3', '23'), future = series.length ? series[series.length - 1].grid : initial;
+    var futureCells = [], minR = rows, minC = cols, maxR = -1, maxC = -1;
+    function include(r, c) { minR = Math.min(minR, r); minC = Math.min(minC, c); maxR = Math.max(maxR, r); maxC = Math.max(maxC, c); }
+    initialCells.forEach(function (cell) { include(cell[0], cell[1]); });
+    for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) if (future[r][c]) { futureCells.push([r,c]); include(r,c); }
+    if (maxR < 0) { minR = minC = 0; maxR = maxC = 0; }
+    return { steps: Math.max(0, steps || 0), initialCells: initialCells, initialSet: initialSet, futureCells: futureCells, comparison: compareLifeStates(initial, future), bounds: { minR: minR, minC: minC, maxR: maxR, maxC: maxC, width: maxC - minC + 1, height: maxR - minR + 1 } };
+  }
+  function analyzePatternJourney(pattern, steps) {
+    var limit = Math.max(1, steps || 16), pad = limit + 3, rows = Math.max(1, (pattern && pattern.h || 1) + pad * 2), cols = Math.max(1, (pattern && pattern.w || 1) + pad * 2);
+    var grid = emptyGrid(rows, cols);
+    (pattern && pattern.cells || []).forEach(function (cell) { var r = cell[0] + pad, c = cell[1] + pad; if (r >= 0 && r < rows && c >= 0 && c < cols) grid[r][c] = 1; });
+    var startBounds = populationBounds(grid), startShape = shapeFingerprint(grid), seenExact = {}, seenShape = {}, points = [{ step: 0, population: countPop(grid), turnover: 0, births: 0, deaths: 0 }], classification = null;
+    seenExact[gridSignature(grid)] = { step: 0, bounds: startBounds };
+    seenShape[startShape.signature] = { step: 0, bounds: startBounds };
+    for (var step = 1; step <= limit; step++) {
+      var next = stepLifeDetailed(grid, null, false, '3', '23'), bounds = populationBounds(next.grid), exact = gridSignature(next.grid), shape = shapeFingerprint(next.grid);
+      points.push({ step: step, population: countPop(next.grid), turnover: next.born + next.died, births: next.born, deaths: next.died });
+      if (!classification && !bounds) classification = { kind: 'extinct', step: step };
+      if (!classification && seenExact[exact]) classification = { kind: step - seenExact[exact].step === 1 ? 'still' : 'oscillator', period: step - seenExact[exact].step, step: step };
+      if (!classification && shape.signature && seenShape[shape.signature]) {
+        var previous = seenShape[shape.signature], dr = bounds.minR - previous.bounds.minR, dc = bounds.minC - previous.bounds.minC;
+        if (dr || dc) classification = { kind: 'spaceship', period: step - previous.step, dr: dr, dc: dc, step: step };
+      }
+      if (seenExact[exact] == null) seenExact[exact] = { step: step, bounds: bounds };
+      if (shape.signature && seenShape[shape.signature] == null) seenShape[shape.signature] = { step: step, bounds: bounds };
+      grid = next.grid;
+    }
+    classification = classification || { kind: 'evolving' };
+    var shortLabel = classification.kind === 'still' ? 'Still · P1' : classification.kind === 'oscillator' ? 'Oscillator · P' + classification.period : classification.kind === 'spaceship' ? 'Moves · P' + classification.period : classification.kind === 'extinct' ? 'Extinct · G' + classification.step : 'Still evolving';
+    var summary = classification.kind === 'still' ? 'Evolution pulse for 16 generations: population remains ' + points[0].population + '; detected still life with period 1.' : classification.kind === 'oscillator' ? 'Evolution pulse for 16 generations: detected oscillator with period ' + classification.period + '.' : classification.kind === 'spaceship' ? 'Evolution pulse for 16 generations: detected spaceship moving ' + classification.dr + ' rows and ' + classification.dc + ' columns every ' + classification.period + ' generations.' : classification.kind === 'extinct' ? 'Evolution pulse for 16 generations: population reaches zero at generation ' + classification.step + '.' : 'Evolution pulse for 16 generations: no repeated state or translated shape detected; population changes from ' + points[0].population + ' to ' + points[points.length - 1].population + '.';
+    var maxPopulation = 1, maxTurnover = 1;
+    points.forEach(function (point) { maxPopulation = Math.max(maxPopulation, point.population); maxTurnover = Math.max(maxTurnover, point.turnover); });
+    return { points: points, kind: classification.kind, period: classification.period == null ? null : classification.period, dr: classification.dr == null ? null : classification.dr, dc: classification.dc == null ? null : classification.dc, detectedAt: classification.step == null ? null : classification.step, maxPopulation: maxPopulation, maxTurnover: maxTurnover, shortLabel: shortLabel, summary: summary };
+  }
+  function analyzeLifeForecastMotion(currentGrid, series, horizon, wrap) {
+    var limit = Math.max(0, Math.min((series || []).length, horizon || 0)), points = [], origin = currentGrid && currentGrid.length && currentGrid[0] ? populationBounds(currentGrid) : null;
+    if (origin) points.push({ step: 0, centerR: origin.centerR, centerC: origin.centerC, population: origin.pop });
+    for (var index = 0; index < limit; index++) {
+      var scan = series[index] && series[index].grid ? populationBounds(series[index].grid) : null;
+      if (scan) points.push({ step: index + 1, centerR: scan.centerR, centerC: scan.centerC, population: scan.pop });
+    }
+    var selectedScan = limit && series[limit - 1] && series[limit - 1].grid ? populationBounds(series[limit - 1].grid) : null;
+    if (!origin || !selectedScan) return { points: points, horizon: limit, deltaRow: null, deltaCol: null, distance: null, extinct: !selectedScan, selectedBounds: selectedScan };
+    var deltaRow = selectedScan.centerR - origin.centerR, deltaCol = selectedScan.centerC - origin.centerC;
+    if (wrap) {
+      var rowCount = currentGrid.length, colCount = rowCount ? currentGrid[0].length : 0;
+      if (rowCount && Math.abs(deltaRow) > rowCount / 2) deltaRow += deltaRow > 0 ? -rowCount : rowCount;
+      if (colCount && Math.abs(deltaCol) > colCount / 2) deltaCol += deltaCol > 0 ? -colCount : colCount;
+    }
+    return { points: points, horizon: limit, deltaRow: deltaRow, deltaCol: deltaCol, distance: Math.sqrt(deltaRow * deltaRow + deltaCol * deltaCol), extinct: false, selectedBounds: selectedScan };
+  }  function analyzeLifeForecastResidency(series, horizon) {
     var limit = Math.max(0, Math.min((series || []).length, horizon || 0));
     var sample = limit && series[0] && series[0].grid, counts = sample ? emptyGrid(sample.length, sample[0].length) : [];
     for (var step = 0; step < limit; step++) for (var r = 0; r < series[step].grid.length; r++) for (var c = 0; c < series[step].grid[r].length; c++) if (series[step].grid[r][c]) counts[r][c]++;
@@ -1218,7 +1354,7 @@
     }
     return out;
   }
-  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, caCounterfactualInfluence: caCounterfactualInfluence, caRuleSensitivityProfile: caRuleSensitivityProfile, caCausalCone: caCausalCone, analyzeCaRows: analyzeCaRows, analyzeLifePhase: analyzeLifePhase, analyzeLifeForecastResidency: analyzeLifeForecastResidency, compareLifeStates: compareLifeStates, projectLifeFuture: projectLifeFuture, patterns: LIFE_PATTERNS };
+  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, caCounterfactualInfluence: caCounterfactualInfluence, caRuleSensitivityProfile: caRuleSensitivityProfile, caCausalCone: caCausalCone, caCellTransition: caCellTransition, caTemporalChangeCells: caTemporalChangeCells, analyzeCaRows: analyzeCaRows, analyzeLifePhase: analyzeLifePhase, analyzePatternEvolution: analyzePatternEvolution, analyzePatternJourney: analyzePatternJourney, analyzeLifeForecastMotion: analyzeLifeForecastMotion, analyzeLifeForecastResidency: analyzeLifeForecastResidency, compareLifeStates: compareLifeStates, projectLifeFuture: projectLifeFuture, patterns: LIFE_PATTERNS };
 
   window.StemLab.registerTool('cellularLab', {
     icon: '🧫',
