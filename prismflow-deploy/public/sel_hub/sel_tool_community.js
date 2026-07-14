@@ -956,8 +956,8 @@ window.SelHub = window.SelHub || {
         if (showBadgePopup) {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
           if (popBadge) {
-            badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badge-earned-title', 'aria-describedby': 'community-badge-earned-desc', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: closeCommunityBadgeDialogs },
-              h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: _comBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
+            badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badge-earned-title', 'aria-describedby': 'community-badge-earned-desc', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) closeCommunityBadgeDialogs(); } },
+              h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
                 h('button', { 'aria-label': 'Close badge announcement', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
                 h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
                 h('h3', { id: 'community-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _comFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
@@ -967,8 +967,8 @@ window.SelHub = window.SelHub || {
           }
         }
         if (showBadgesPanel) {
-          badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: closeCommunityBadgeDialogs },
-            h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: _comBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+          badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeCommunityBadgeDialogs(); } },
+            h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
               h('button', { 'aria-label': 'Close badges panel', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
               h('h3', { id: 'community-badges-panel-title', style: { textAlign: 'center', color: _comFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
@@ -1725,6 +1725,11 @@ window.SelHub = window.SelHub || {
                     } else {
                       var ta = document.createElement('textarea');
                       ta.value = text;
+                      ta.setAttribute('aria-label', 'Cultural heritage project text for copying');
+                      ta.setAttribute('readonly', '');
+                      ta.tabIndex = -1;
+                      ta.style.position = 'fixed';
+                      ta.style.left = '-9999px';
                       document.body.appendChild(ta);
                       ta.select();
                       document.execCommand('copy');

@@ -35,6 +35,19 @@ describe('Community Builder badge dialog accessibility', () => {
   it('does not impose a three-second reading limit on earned-badge content', () => {
     const text = source();
     expect(text).not.toContain("setTimeout(function() { upd({ showBadgePopup: null }); }, 3000)");
-    expect((text.match(/onClick: closeCommunityBadgeDialogs/g) || []).length).toBeGreaterThanOrEqual(4);
+    expect((text.match(/onClick: closeCommunityBadgeDialogs/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('dismisses only from a direct backdrop click without clickable content divs', () => {
+    const text = source();
+    expect((text.match(/e.target === e.currentTarget/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(text).not.toContain("onClick: function(e) { e.stopPropagation(); }");
+  });
+
+  it('keeps the clipboard fallback labeled and out of the tab order', () => {
+    const text = source();
+    expect(text).toContain("ta.setAttribute('aria-label', 'Cultural heritage project text for copying');");
+    expect(text).toContain("ta.setAttribute('readonly', '');");
+    expect(text).toContain('ta.tabIndex = -1;');
   });
 });
