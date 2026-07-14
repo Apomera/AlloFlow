@@ -16,6 +16,17 @@ const loaderRoot = R('liblouis_braille_loader.js');
 const loaderMirror = R('prismflow-deploy/public/liblouis_braille_loader.js');
 const exportHandlers = R('export_handlers_module.js');
 
+// Runtime-extract the shared office/DAISY block model (_htmlToDocxSpec + the
+// DTBook serializer) the way tests/export_odt_daisy.test.js does, so the
+// details-fusion fix can be exercised end-to-end, not just grepped.
+const _specSlice = viewAudit.slice(
+  viewAudit.indexOf('function _htmlToDocxSpec(html) {'),
+  viewAudit.indexOf('\n// _buildDocxBlobFromSpec:')
+);
+const { _htmlToDtbookXml: dtbook } = new Function('DOMParser', 'XMLSerializer',
+  _specSlice + '; return { _htmlToDtbookXml };')(globalThis.DOMParser, globalThis.XMLSerializer);
+const wrapDoc = (body) => `<html lang="en"><head><title>T</title></head><body>${body}</body></html>`;
+
 describe('plain-language summary popup — XSS + language hardening (R2 #1/#2)', () => {
   it('escapes the model summary before it enters the same-origin popup document', () => {
     // A local escaper is defined and the summary is run through it BEFORE the
@@ -149,5 +160,32 @@ describe('audio export — partial-failure is disclosed, never a silent gap (R2 
 
   it('the module and its public mirror stay in sync', () => {
     expect(exportHandlers).toBe(R('prismflow-deploy/public/export_handlers_module.js'));
+  });
+});
+
+describe('office/DAISY exports — AI panels no longer fuse, ODT declares a language (R2 #9 + ODT lang)', () => {
+  it('a chart-data details table survives as a real table (cell values are not fused)', () => {
+    const out = dtbook(wrapDoc('<p>Intro</p><details class="allo-chart-data"><summary>Show chart data</summary><table><tr><td>10</td><td>15.2</td><td>20</td></tr></table></details>'), 'en');
+    expect(out).toContain('<td>10</td><td>15.2</td><td>20</td>'); // separate cells
+    expect(out).not.toContain('1015.220');                        // not glued together
+    expect(out).not.toContain('Show chart data');                 // toggle label dropped
+  });
+
+  it('a math-source panel is dropped entirely (no linearized MathML paragraph)', () => {
+    const out = dtbook(wrapDoc('<p>Body</p><details class="allo-math-source"><summary>Show math source</summary><math><mi>x</mi></math><pre>frac</pre></details>'), 'en');
+    expect(out).not.toContain('Show math source');
+    expect(out).not.toMatch(/<p>\s*x\s*<\/p>/); // the raw MathML did not leak as text
+    expect(out).toContain('<p>Body</p>');       // surrounding content intact
+  });
+
+  it('source carries the DETAILS handler (drift lock for both compiled lanes)', () => {
+    expect(viewAudit).toMatch(/if \(tag === 'DETAILS'\)/);
+    expect(viewAudit).toMatch(/classList\.contains\('allo-math-source'\)/);
+    expect(viewAuditMod).toMatch(/tag === "DETAILS"/);
+  });
+
+  it('ODT export tags the default text style with fo:language and records dc:language', () => {
+    expect(viewAudit).toMatch(/fo:language="' \+ _odtLg \+ '" fo:country="' \+ _odtCt \+ '"/);
+    expect(viewAudit).toMatch(/<dc:language>' \+ _expXmlEsc\(_odtLang\)/);
   });
 });

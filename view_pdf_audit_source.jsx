@@ -664,6 +664,28 @@ function _htmlToDocxSpec(html) {
         else pushParagraph(inlineRuns(n, {}));
         continue;
       }
+      if (tag === 'DETAILS') {
+        // AI companion panels (export-format review R2 #9). The old catch-all below
+        // fused every text leaf of a <details> into ONE run, gluing adjacent chart
+        // cell values together digit-to-digit ("Q1Q2...101520"). allo-math-source is
+        // a redundant "show source" panel (the equation is already rendered in the
+        // body), so drop it entirely like the audio lane does; other panels keep
+        // their CONTENT, walked as real blocks (the data table stays a table). The
+        // toggle <summary> label and raw <math> (MathML is a foreign element, so its
+        // tagName is lowercase — normalize) are skipped.
+        if (n.classList && n.classList.contains('allo-math-source')) continue;
+        _flushInline();
+        const _dk = [];
+        const _dkids = n.childNodes || [];
+        for (let _di = 0; _di < _dkids.length; _di++) {
+          const _dn = _dkids[_di];
+          const _tn = (_dn.tagName || '').toUpperCase();
+          if (_dn.nodeType === 1 && (_tn === 'SUMMARY' || _tn === 'MATH')) continue;
+          _dk.push(_dn);
+        }
+        walk({ childNodes: _dk });
+        continue;
+      }
       pushParagraph(inlineRuns(n, {}));
     }
     _flushInline(); // trailing inline (container ending with loose text/inline)
@@ -2897,13 +2919,21 @@ function PdfAuditView(props) {
       zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' });
       zip.file('META-INF/manifest.xml', _ODT_MANIFEST_XML);
       zip.file('content.xml', _htmlToOdtContentXml(html));
+      // Document language (export-format review R2): the ODT declared NO language,
+      // so a Spanish handout opened as the reader's locale — wrong screen-reader
+      // pronunciation and spell-check. Tag the default text style with fo:language
+      // (WCAG 3.1.1) and record dc:language in the metadata.
+      const _odtLang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en').trim();
+      const _odtLangParts = _odtLang.split(/[-_]/);
+      const _odtLg = (_odtLangParts[0] || 'en').toLowerCase();
+      const _odtCt = _odtLangParts[1] ? _odtLangParts[1].toUpperCase() : 'none';
       // RTL (#2): ODF document direction lives in the default paragraph style —
       // style:writing-mode="rl-tb" flips paragraphs, tables, and lists document-wide.
       const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
-      zip.file('styles.xml', _odtRtl
-        ? _ODT_STYLES_XML.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>')
-        : _ODT_STYLES_XML);
-      zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title></office:meta></office:document-meta>');
+      let _odtStyles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + _odtLg + '" fo:country="' + _odtCt + '"/>');
+      if (_odtRtl) _odtStyles = _odtStyles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
+      zip.file('styles.xml', _odtStyles);
+      zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title><dc:language>' + _expXmlEsc(_odtLang) + '</dc:language></office:meta></office:document-meta>');
       const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.oasis.opendocument.text' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.odt';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);

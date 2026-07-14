@@ -760,6 +760,20 @@ function _htmlToDocxSpec(html) {
         else pushParagraph(inlineRuns(n, {}));
         continue;
       }
+      if (tag === "DETAILS") {
+        if (n.classList && n.classList.contains("allo-math-source")) continue;
+        _flushInline();
+        const _dk = [];
+        const _dkids = n.childNodes || [];
+        for (let _di = 0; _di < _dkids.length; _di++) {
+          const _dn = _dkids[_di];
+          const _tn = (_dn.tagName || "").toUpperCase();
+          if (_dn.nodeType === 1 && (_tn === "SUMMARY" || _tn === "MATH")) continue;
+          _dk.push(_dn);
+        }
+        walk({ childNodes: _dk });
+        continue;
+      }
       pushParagraph(inlineRuns(n, {}));
     }
     _flushInline();
@@ -3086,9 +3100,15 @@ function PdfAuditView(props) {
       zip.file("mimetype", "application/vnd.oasis.opendocument.text", { compression: "STORE" });
       zip.file("META-INF/manifest.xml", _ODT_MANIFEST_XML);
       zip.file("content.xml", _htmlToOdtContentXml(html));
+      const _odtLang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || "en").trim();
+      const _odtLangParts = _odtLang.split(/[-_]/);
+      const _odtLg = (_odtLangParts[0] || "en").toLowerCase();
+      const _odtCt = _odtLangParts[1] ? _odtLangParts[1].toUpperCase() : "none";
       const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
-      zip.file("styles.xml", _odtRtl ? _ODT_STYLES_XML.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>') : _ODT_STYLES_XML);
-      zip.file("meta.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + "</dc:title></office:meta></office:document-meta>");
+      let _odtStyles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + _odtLg + '" fo:country="' + _odtCt + '"/>');
+      if (_odtRtl) _odtStyles = _odtStyles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
+      zip.file("styles.xml", _odtStyles);
+      zip.file("meta.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(_odtLang) + "</dc:language></office:meta></office:document-meta>");
       const blob = await zip.generateAsync({ type: "blob", mimeType: "application/vnd.oasis.opendocument.text" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
