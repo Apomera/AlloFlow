@@ -1072,7 +1072,6 @@ window.SelHub = window.SelHub || {
           addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
           if (announceToSR) announceToSR('Badge earned: ' + badge.name);
           awardXP(25);
-          setTimeout(function() { upd('showBadgePopup', null); }, 3000);
         }
       }
 
@@ -1254,8 +1253,8 @@ window.SelHub = window.SelHub || {
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
         if (popBadge) {
-          badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badge-earned-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: closeBadgeDialogs },
-            h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: _cflBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
+          badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badge-earned-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) closeBadgeDialogs(); } },
+            h('div', { style: { position: 'relative', background: _cflBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
               h('button', { 'aria-label': 'Close badge announcement', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
               h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
               h('h3', { id: 'conflict-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _cflFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
@@ -1265,8 +1264,8 @@ window.SelHub = window.SelHub || {
         }
       }
       if (showBadgesPanel) {
-        badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: closeBadgeDialogs },
-          h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+        badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeBadgeDialogs(); } },
+          h('div', { style: { position: 'relative', background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
             h('button', { 'aria-label': 'Close badges panel', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
             h('h3', { id: 'conflict-badges-panel-title', style: { textAlign: 'center', color: _cflFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },

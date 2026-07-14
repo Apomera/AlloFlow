@@ -35,6 +35,17 @@ describe('Conflict Coach badge dialog accessibility', () => {
     expect(text).toContain('function closeBadgeDialogs()');
     expect(text).toContain("upd('showBadgePopup', null)");
     expect(text).toContain("upd('showBadgesPanel', false)");
-    expect((text.match(/onClick: closeBadgeDialogs/g) || []).length).toBeGreaterThanOrEqual(4);
+    expect((text.match(/onClick: closeBadgeDialogs/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('leaves earned-badge content available until the user dismisses it', () => {
+    const text = source();
+    expect(text).not.toContain("setTimeout(function() { upd('showBadgePopup', null); }, 3000)");
+  });
+
+  it('dismisses only from direct backdrop clicks', () => {
+    const text = source();
+    expect((text.match(/e.target === e.currentTarget/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(text).not.toContain("onClick: function(e) { e.stopPropagation(); }");
   });
 });
