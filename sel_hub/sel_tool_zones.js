@@ -35813,12 +35813,12 @@ window.SelHub = window.SelHub || {
             ),
             // Note field
             h('textarea', {
+              'aria-label': 'Check-in notes',
               placeholder: band === 'elementary' ? 'Want to say more about how you feel? (optional)' :
                            band === 'middle' ? 'What\'s contributing to this zone? (optional)' :
                            'Reflect on the factors influencing your current state (optional)',
               value: checkInNote,
               onChange: function(e) { upd('checkInNote', e.target.value); },
-              'aria-label': 'Check-in notes',
               rows: 3,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _zoBg('#1e293b'), color: _zoFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             }),
@@ -36967,7 +36967,7 @@ if (activeTab === 'wheel') {
       )
     ),
     h('div', { style: { background: _zoBg('#0f172a'), borderRadius: 12, padding: 16, textAlign: 'center' } },
-      h('svg', { width: 400, height: 400, viewBox: '0 0 400 400', style: { maxWidth: '100%', height: 'auto', margin: '0 auto', display: 'block' } },
+      h('svg', { role: 'group', 'aria-label': 'Interactive four-zone wheel. Use Tab to move among Blue, Green, Yellow, and Red zone buttons, then press Enter or Space to select.', width: 400, height: 400, viewBox: '0 0 400 400', style: { maxWidth: '100%', height: 'auto', margin: '0 auto', display: 'block' } },
         ZONE_INFO.map(function(z, i) {
           var isSel = zwSelected === z.id;
           return h('path', { key: z.id, d: _quadrantPath(i), fill: z.color, opacity: isSel ? 1 : 0.7,
@@ -37215,7 +37215,11 @@ if (activeTab === 'body_mapper') {
     hands: { name: 'Hands', blue: 'cold, listless', green: 'warm, soft', yellow: 'clenched, cold, sweaty', red: 'trembling, fists' },
     legs: { name: 'Legs', blue: 'heavy, don\'t want to move', green: 'grounded', yellow: 'restless, jiggling', red: 'want to flee, shaking' }
   };
-  var bodySvg = h('svg', { width: 240, height: 380, viewBox: '0 0 200 360', style: { display: 'block', margin: '0 auto' } },
+  var bodyMapSummary = Object.keys(profile).map(function(regionId) {
+    var info = REGION_INFO[regionId];
+    return info ? info.name + ': ' + info[bmZone] : regionId;
+  }).join('; ');
+  var bodySvg = h('svg', { role: 'img', 'aria-label': 'Body map for the ' + bmZone + ' zone at intensity ' + bmIntensity + ' of 10. Common sensations: ' + bodyMapSummary, focusable: 'false', width: 240, height: 380, viewBox: '0 0 200 360', style: { display: 'block', margin: '0 auto' } },
     // outline
     h('path', { d: 'M 100 30 Q 80 30 80 50 Q 80 70 95 80 L 95 90 L 70 95 Q 50 100 45 130 L 50 200 Q 55 230 65 235 L 60 320 Q 60 340 75 345 L 90 345 Q 95 345 95 340 L 95 250 Q 100 245 105 250 L 105 340 Q 105 345 110 345 L 125 345 Q 140 340 140 320 L 135 235 Q 145 230 150 200 L 155 130 Q 150 100 130 95 L 105 90 L 105 80 Q 120 70 120 50 Q 120 30 100 30 Z',
       fill: _zoBg('#1e293b'), stroke: '#475569', strokeWidth: 1.5 }),
@@ -37782,6 +37786,9 @@ if (activeTab === 'compass') {
     var x2o = cx + outerR * Math.cos(eRad), y2o = cy + outerR * Math.sin(eRad);
     return 'M ' + x1i + ' ' + y1i + ' L ' + x1o + ' ' + y1o + ' A ' + outerR + ' ' + outerR + ' 0 0 1 ' + x2o + ' ' + y2o + ' L ' + x2i + ' ' + y2i + ' A ' + innerR + ' ' + innerR + ' 0 0 0 ' + x1i + ' ' + y1i + ' Z';
   }
+  var compassSummary = Object.keys(compassToday).sort(function(a, b) { return Number(a) - Number(b); }).map(function(hour) {
+    return hour + ':00 ' + compassToday[hour] + ' zone';
+  }).join('; ');
   compassContent = h('div', { style: { padding: '0 12px 24px' } },
     h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
       h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
@@ -37790,7 +37797,7 @@ if (activeTab === 'compass') {
       )
     ),
     h('div', { style: { textAlign: 'center', background: _zoBg('#0f172a'), borderRadius: 12, padding: 16 } },
-      h('svg', { width: 320, height: 320, viewBox: '0 0 320 320', style: { maxWidth: '100%', display: 'block', margin: '0 auto' } },
+      h('svg', { role: 'group', 'aria-label': 'Interactive daily zone compass. Logged hours: ' + (compassSummary || 'none yet') + '. Use Tab to move among hour buttons, then press Enter or Space to choose an hour.', width: 320, height: 320, viewBox: '0 0 320 320', style: { maxWidth: '100%', display: 'block', margin: '0 auto' } },
         // 24 segments
         Array.from({ length: 24 }, function(_, hour) {
           var zone = compassToday[hour];
@@ -37946,7 +37953,7 @@ if (activeTab === 'descriptors') {
           }, i === 0 ? 'all intensities' : 'intensity ' + i);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search descriptor...', value: d.dlSearch || '',
+      h('input', { 'aria-label': 'Search zone descriptors', type: 'search', placeholder: '🔎 Search descriptor...', value: d.dlSearch || '',
         onChange: function(e) { upd({ dlSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _zoBg('#0f172a'), color: _zoFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
@@ -38092,7 +38099,7 @@ if (activeTab === 'plans') {
           }, 'From ' + z);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search scenarios...', value: d.plSearch || '',
+      h('input', { 'aria-label': 'Search prevention plan scenarios', type: 'search', placeholder: '🔎 Search scenarios...', value: d.plSearch || '',
         onChange: function(e) { upd({ plSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _zoBg('#0f172a'), color: _zoFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
