@@ -249,6 +249,10 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
     }
     _finishPrefsHydration(applied);
   }).catch(() => _finishPrefsHydration(0));
+  // Dirty-check before sending: whole-store payloads can be MBs (AlloHaven
+  // keeps its entire world in alloflow_allohaven_v1), so only cross the
+  // bridge when something actually changed since the last snapshot.
+  let _lsLastSnapshotSig = null;
   const _lsSnapshot = () => {
     try {
       const dump = {};
@@ -256,7 +260,11 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
         const k = localStorage.key(i);
         if (k) dump[k] = localStorage.getItem(k);
       }
-      _dsBridge().then((ds) => ds.set('ls_prefs', 'all', dump)).catch(() => {});
+      const sig = JSON.stringify(dump);
+      if (sig === _lsLastSnapshotSig) return;
+      _dsBridge().then((ds) => ds.set('ls_prefs', 'all', dump))
+        .then(() => { _lsLastSnapshotSig = sig; })
+        .catch(() => {});
     } catch (_) {}
   };
   setInterval(_lsSnapshot, 30000);
