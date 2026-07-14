@@ -91,6 +91,16 @@ describe('device storage bridge — file contracts', () => {
     expect(anti).toContain('setTimeout(_alloGo, 1500)');
   });
 
+  it('bridges adventure scene images on Canvas (replaces the cloud archive need)', () => {
+    const ehModule = readFileSync(resolve(process.cwd(), 'export_handlers_module.js'), 'utf8');
+    expect(ehModule).toContain('_advBridgeWanted');
+    expect(ehModule).toContain("'adventure_images'");
+    expect(ehModule).toContain("clearNamespace('adventure_images')");
+    // 30-day expiry mirrors the cloud archive convention
+    expect(ehModule).toContain('30 * 24 * 60 * 60 * 1000');
+    expect(ehModule).toContain('allo_device_storage_module.js?v=');
+  });
+
   it('ships the on-screen probe panel and its keyboard bootstrap', () => {
     expect(moduleSrc).toContain('__openProbePanel');
     const tuSource = readFileSync(resolve(process.cwd(), 'text_utility_helpers_source.jsx'), 'utf8');

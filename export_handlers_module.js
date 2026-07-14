@@ -1395,6 +1395,54 @@
   // Without the singleton, the App-side useMemo wrapper (or repeated
   // calls) would each get a fresh object with its own dbPromise — the
   // cache would fragment and the IDB connection would re-open.
+  // ── Adventure images: device-storage bridge mirror (2026-07-14) ────
+  // The local 'allo_adventure_images' IndexedDB is keyed to the app origin,
+  // which on Canvas is a new throwaway every session — scene art silently
+  // died between sessions unless the teacher opted into the Firestore
+  // archive (a FERPA exposure). Canvas surfaces now write scene images
+  // through to the device-storage bridge (ns adventure_images, stable
+  // alloflow-cdn origin, on-device only) and fall back to it on read
+  // misses, backfilling the fast local store. Entries older than 30 days
+  // are pruned once per session, mirroring the cloud archive's expiry.
+  const _advBridgeWanted = (() => {
+    try {
+      const host = window.location.hostname || '';
+      if ((window.location.href || '').startsWith('blob:')) return true;
+      return host.includes('googleusercontent') || host.includes('scf.usercontent') ||
+             host.includes('code-server') || host.includes('idx.google') || host.includes('run.app');
+    } catch (e) { return false; }
+  })();
+  let _advBridgePruned = false;
+  const _advBridge = () => {
+    if (!window.__alloDeviceStoragePromise) {
+      window.__alloDeviceStoragePromise = window.alloDeviceStorage
+        ? Promise.resolve(window.alloDeviceStorage)
+        : new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+            s.onload = () => {
+              if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
+              else reject(new Error('device storage module missing after load'));
+            };
+            s.onerror = () => reject(new Error('device storage module failed to load'));
+            document.head.appendChild(s);
+          });
+    }
+    return window.__alloDeviceStoragePromise.then((ds) => ds.ready().then(() => {
+      if (!_advBridgePruned) {
+        _advBridgePruned = true;
+        const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        ds.getAll('adventure_images').then((rows) => {
+          (rows || []).forEach((r) => {
+            if (r && r.value && typeof r.value.timestamp === 'number' && r.value.timestamp < cutoff) {
+              ds.remove('adventure_images', r.key).catch(() => {});
+            }
+          });
+        }).catch(() => {});
+      }
+      return ds;
+    }));
+  };
   let _adventureImageDBInstance = null;
   const getAdventureImageDB = (deps) => {
     const { warnLog } = deps || {};
@@ -1419,6 +1467,10 @@
         return this.dbPromise;
       },
       async storeImage(turnNumber, base64Image) {
+        if (_advBridgeWanted) {
+          _advBridge().then((ds) => ds.set('adventure_images', String(turnNumber), { image: base64Image, timestamp: Date.now() }))
+            .catch((e) => _warn('adventure image bridge mirror failed', e && (e.code || e.message)));
+        }
         const db = await this.getDB(); if (!db) return false;
         return new Promise(function(resolve) {
           try {
@@ -1430,8 +1482,8 @@
         });
       },
       async getImage(turnNumber) {
-        const db = await this.getDB(); if (!db) return null;
-        return new Promise(function(resolve) {
+        const db = await this.getDB();
+        const local = !db ? null : await new Promise(function(resolve) {
           try {
             const tx = db.transaction('images', 'readonly');
             const request = tx.objectStore('images').get(turnNumber);
@@ -1439,10 +1491,21 @@
             request.onerror = function() { resolve(null); };
           } catch (e) { resolve(null); }
         });
+        if (local || !_advBridgeWanted) return local;
+        // Fresh Canvas session: local store is empty but the bridge may hold
+        // the scene. Backfill local so later reads hit the fast path.
+        try {
+          const entry = await _advBridge().then((ds) => ds.get('adventure_images', String(turnNumber)));
+          if (entry && entry.image) {
+            this.storeImage(turnNumber, entry.image);
+            return entry.image;
+          }
+        } catch (e) { _warn('adventure image bridge read failed', e && (e.code || e.message)); }
+        return null;
       },
       async getAllImages() {
-        const db = await this.getDB(); if (!db) return [];
-        return new Promise(function(resolve) {
+        const db = await this.getDB();
+        const local = !db ? [] : await new Promise(function(resolve) {
           try {
             const tx = db.transaction('images', 'readonly');
             const request = tx.objectStore('images').getAll();
@@ -1450,8 +1513,22 @@
             request.onerror = function() { resolve([]); };
           } catch (e) { resolve([]); }
         });
+        if (!_advBridgeWanted) return local;
+        try {
+          const bridged = await _advBridge().then((ds) => ds.getAll('adventure_images'));
+          const seen = new Set(local.map(function(r) { return String(r.turn); }));
+          (bridged || []).forEach(function(r) {
+            if (r && r.value && r.value.image && !seen.has(String(r.key))) {
+              local.push({ turn: parseInt(r.key, 10), image: r.value.image, timestamp: r.value.timestamp });
+            }
+          });
+        } catch (e) { _warn('adventure image bridge list failed', e && (e.code || e.message)); }
+        return local;
       },
       async clearAll() {
+        if (_advBridgeWanted) {
+          _advBridge().then((ds) => ds.clearNamespace('adventure_images')).catch(() => {});
+        }
         const db = await this.getDB(); if (!db) return;
         try { db.transaction('images', 'readwrite').objectStore('images').clear(); }
         catch (e) { _warn('IDB clear failed', e); }
