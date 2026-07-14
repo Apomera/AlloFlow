@@ -14,6 +14,50 @@ var useContext = React.useContext; var useMemo = React.useMemo; var useCallback 
 // can never reach its fallback (a literal key is truthy). safeT detects that
 // case and returns the human-readable fallback instead.
 const safeT = (t, key, fb) => { const r = t(key); return (r && r !== key) ? r : fb; };
+
+const isInteractiveShortcutTarget = (target) => !!(target && target.closest && target.closest('button, input, select, textarea, a[href], [contenteditable="true"]'));
+
+const useOverlayDialogFocus = (isOpen) => {
+    const dialogRef = useRef(null);
+    const restoreFocusRef = useRef(null);
+    useEffect(() => {
+        if (!isOpen) return;
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+        restoreFocusRef.current = document.activeElement;
+        const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'));
+        const focusTimer = setTimeout(() => {
+            const focusable = getFocusable();
+            (focusable[0] || dialog).focus();
+        }, 0);
+        const containFocus = (e) => {
+            if (e.key !== 'Tab') return;
+            const focusable = getFocusable();
+            if (focusable.length === 0) {
+                e.preventDefault();
+                dialog.focus();
+                return;
+            }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
+        document.addEventListener('keydown', containFocus, true);
+        return () => {
+            clearTimeout(focusTimer);
+            document.removeEventListener('keydown', containFocus, true);
+            const previous = restoreFocusRef.current;
+            if (previous && typeof previous.focus === 'function' && document.contains(previous)) previous.focus();
+        };
+    }, [isOpen]);
+    return dialogRef;
+};
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
 var ArrowLeft = _lazyIcon('ArrowLeft');
 var ArrowRight = _lazyIcon('ArrowRight');
@@ -38,6 +82,7 @@ var Zap = _lazyIcon('Zap');
 // ============================================================================
 const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
+    const dialogRef = useOverlayDialogFocus(isOpen);
     const [words, setWords] = useState([]);
     const [chunkIdx, setChunkIdx] = useState(0);
     const [chunkSize, setChunkSize] = useState(1);
@@ -157,6 +202,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     useEffect(() => {
         const handler = (e) => {
             if (!isOpen) return;
+            if (e.key !== 'Escape' && isInteractiveShortcutTarget(e.target)) return;
             if (e.code === 'Space') { e.preventDefault(); handlePlayToggle(); }
             else if (e.code === 'ArrowLeft') setChunkIdx(p => Math.max(0, p - 1));
             else if (e.code === 'ArrowRight') setChunkIdx(p => Math.min(chunks.length - 1, p + 1));
@@ -194,14 +240,14 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg }}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="focus-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
+                    <button type="button" onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base" style={{ color: c.strong }}>{safeT(t, 'immersive.focus_mode', 'Focus Mode')}</span>
+                        <h2 id="focus-reader-dialog-title" className="font-bold text-base" style={{ color: c.strong }}>{safeT(t, 'immersive.focus_mode', 'Focus Mode')}</h2>
                         <span className="text-xs" style={{ color: c.light }}>
                             {chunkIdx + 1} / {chunks.length} · {rsvp ? 'single-word RSVP' : `${chunkSize}-word chunks · bold-assist`}
                         </span>
@@ -226,7 +272,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <option value="sepia">📜 Sepia</option>
                         </select>
                     </label>
-                    <button
+                    <button type="button"
                         onClick={() => setPunctPauses(v => !v)}
                         aria-pressed={punctPauses}
                         title={punctPauses ? 'Punctuation-aware pauses on (P to toggle) — commas slow slightly, sentence ends longer' : 'Punctuation pauses off — constant cadence (P to toggle)'}
@@ -240,7 +286,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <span style={{ color: c.light }}>FOCUS</span>
                             <div className="flex gap-1">
                                 {colorOptions.map(opt => (
-                                    <button
+                                    <button type="button"
                                         key={opt.value}
                                         onClick={() => setFocusColor(opt.value)}
                                         aria-label={`Focus color ${opt.name}`}
@@ -334,7 +380,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     toggleSetting('showSyllables');
   }, [onGenerateSyllables, onGeneratePOS, syllablesReady, posReady, isGeneratingSyllables, isGeneratingPOS, toggleSetting]);
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => (
-    <button
+    <button type="button"
       onClick={settingKey ? () => toggleSetting(settingKey) : onClick}
       title={title}
       className={`px-2.5 py-1 text-xs font-bold rounded-full transition-all disabled:opacity-60 disabled:cursor-wait ${
@@ -444,7 +490,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={safeT(t, 'immersive.tap_mode', 'Tap action')}>
             <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{safeT(t, 'immersive.tap_mode', 'Tap')}</span>
-            <button
+            <button type="button"
               onClick={() => setInteractionMode('read')}
               aria-pressed={interactionMode !== 'define' && interactionMode !== 'phonics'}
               title={safeT(t, 'immersive.tap_speak', 'Tap a word to hear it')}
@@ -452,7 +498,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             >
               <Volume2 size={12}/> {safeT(t, 'immersive.speak', 'Speak')}
             </button>
-            <button
+            <button type="button"
               onClick={() => setInteractionMode('define')}
               aria-pressed={interactionMode === 'define'}
               title={safeT(t, 'immersive.tap_define', 'Tap a word to see its definition and picture')}
@@ -467,11 +513,11 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex items-center gap-2 shrink-0">
-            <button onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14}/></button>
+            <button type="button" onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14}/></button>
             <span className="text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center">{chunkReaderIdx + 1} / {totalSentences}</span>
-            <button onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14}/></button>
+            <button type="button" onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14}/></button>
             <div className="h-4 w-px bg-slate-200"></div>
-            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={(chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')) + ' (Space) · Esc exits · Enter skips typewriter reveal'}>
+            <button type="button" onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={(chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')) + ' (Space) · Esc exits · Enter skips typewriter reveal'}>
               {chunkReaderAutoPlay ? <Pause size={12} className="inline"/> : <Play size={12} className="inline"/>}
             </button>
             <div className="flex items-center gap-1">
@@ -482,7 +528,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             {onToggleChunkReaderReadAlong && (
               <>
                 <div className="h-4 w-px bg-slate-200"></div>
-                <button
+                <button type="button"
                   onClick={onToggleChunkReaderReadAlong}
                   aria-pressed={!!chunkReaderReadAlong}
                   title={chunkReaderReadAlong ? 'Read-along OFF: return to timer-based advance' : 'Read-along ON: play each sentence with a colored gradient that sweeps across the text in sync with the audio'}
@@ -624,7 +670,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             </div>
         </div>
       </div>
-      <button aria-label={t('common.close_word_wall')}
+      <button type="button" aria-label={t('common.close_word_wall')}
         onClick={onClose}
         title={t('immersive.close')}
         className="ms-4 shrink-0 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 transition-colors"
@@ -647,6 +693,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // ============================================================================
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
+    const dialogRef = useOverlayDialogFocus(isOpen);
     // Persist user's preferred speed / palette / ambient across sessions so each
     // open doesn't reset to defaults. Direct localStorage with try/catch — same
     // lightweight pattern used elsewhere (no safeGetItem dep needed).
@@ -808,6 +855,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
+            if (e.key !== 'Escape' && isInteractiveShortcutTarget(e.target)) return;
             if (e.code === 'Space') { e.preventDefault(); setIsPlaying(pl => !pl); }
             else if (e.key === 'Escape') onClose();
             else if (e.key === 'r' || e.key === 'R') { resetCrawl(); setIsPlaying(true); }
@@ -827,13 +875,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     };
 
     return (
-        <div data-help-key="perspective_crawl_overlay_panel" className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="perspective-crawl-dialog-title" tabIndex={-1} data-help-key="perspective_crawl_overlay_panel" className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.55)' }}>
                 <div className="flex items-center gap-3">
-                    <button data-help-key="perspective_crawl_exit_btn" onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
+                    <button type="button" data-help-key="perspective_crawl_exit_btn" onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
                         <ArrowLeft size={22} />
                     </button>
-                    <span className="font-bold text-base">{safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl')}</span>
+                    <h2 id="perspective-crawl-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl')}</h2>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
                     <label className="flex items-center gap-2">
@@ -849,7 +897,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <option value="paper">Paper</option>
                         </select>
                     </label>
-                    <button
+                    <button type="button"
                         data-help-key="perspective_crawl_ambient_toggle"
                         onClick={() => setAmbientOn(a => !a)}
                         aria-pressed={ambientOn}
@@ -860,10 +908,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     >
                         {ambientOn ? '♪' : '♪̸'}
                     </button>
-                    <button data-help-key="perspective_crawl_play_pause_btn" onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
+                    <button type="button" data-help-key="perspective_crawl_play_pause_btn" onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button data-help-key="perspective_crawl_restart_btn" onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label={t("a11y.restart_crawl")} className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
+                    <button type="button" data-help-key="perspective_crawl_restart_btn" onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label={t("a11y.restart_crawl")} className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
                         ↺ Restart
                     </button>
                 </div>
@@ -966,6 +1014,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 // ============================================================================
 const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
     const { t } = useContext(LanguageContext);
+    const dialogRef = useOverlayDialogFocus(isOpen);
     const [sentences, setSentences] = useState([]);
     const [sentenceIdx, setSentenceIdx] = useState(0);
     // Teacher read-aloud vetting: regenerate the current sentence, or prepare
@@ -1510,6 +1559,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
+            if (e.key !== 'Escape' && isInteractiveShortcutTarget(e.target)) return;
             if (e.code === 'Space') { e.preventDefault(); setIsPlaying(p => !p); }
             else if (e.code === 'ArrowRight') { setSentenceIdx(i => Math.min(sentences.length - 1, i + 1)); setSweepPct(0); }
             else if (e.code === 'ArrowLeft')  { setSentenceIdx(i => Math.max(0, i - 1)); setSweepPct(0); }
@@ -1639,14 +1689,14 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
 
     const hasStudentTake = studentTakeTick >= 0 && (() => { try { const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent; return !!(st && st.has(sentences[sentenceIdx])); } catch (e) { return false; } })();
     return (
-        <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg, color: c.ink }}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="karaoke-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg, color: c.ink }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
+                    <button type="button" onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</span>
+                        <h2 id="karaoke-reader-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</h2>
                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{(() => { try { const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current; return _st && _st.sourceOf(sentences[sentenceIdx]) === 'human-teacher'; } catch (e) { return false; } })() ? ' · \uD83C\uDFA4 your voice' : ''}</span>
                         {isGeneratingAudio && (
                             <span className="text-xs font-semibold" role="status" aria-live="polite" style={{ color: c.sweep }}>Generating audio...</span>
@@ -1682,7 +1732,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                                     {captureRetrying ? '…' : '↻'} {safeT(t, 'immersive.retry_failed_saves', 'Retry failed saves')} · {captureSaveState.failed}
                                 </button>
                             )}
-                            <button
+                            <button type="button"
                                 onClick={regenerateCurrent}
                                 disabled={regenBusy}
                                 title={safeT(t, 'immersive.regenerate_sentence_tip', 'Re-generate the audio for this sentence if it sounds off. Students hear your vetted version.')}
@@ -1691,7 +1741,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                             >
                                 {regenBusy ? '…' : '🔄'} {safeT(t, 'immersive.regenerate_sentence', 'Regenerate this sentence')}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={recordCurrent}
                                 title={safeT(t, 'immersive.record_sentence_tip', 'Record your own voice for this sentence. Students hear your recording instead of the computer voice.')}
                                 className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
@@ -1699,7 +1749,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                             >
                                 {recording ? `⏹ ${safeT(t, 'immersive.stop_recording', 'Stop recording')}` : `🎤 ${safeT(t, 'immersive.record_sentence', 'Record my voice')}`}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => { if (prepState && prepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } prepareAll(); }}
                                 title={prepState && prepState.busy
                                     ? safeT(t, 'immersive.prepare_readaloud_stop', 'Stop after the current sentence (already-saved audio is kept).')
@@ -1719,7 +1769,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                     )}
                     {!isTeacher && (
                         <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.student_reading_tools', 'My reading')}>
-                            <button
+                            <button type="button"
                                 onClick={recordCurrent}
                                 title={safeT(t, 'immersive.record_reading_tip', 'Record yourself reading this sentence, then hear it back. The teacher\u2019s read-along stays your reference.')}
                                 className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
@@ -1727,7 +1777,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                             >
                                 {recording ? `⏹ ${safeT(t, 'immersive.stop_recording', 'Stop recording')}` : `🎤 ${safeT(t, 'immersive.record_reading', 'Record my reading')}`}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={playStudentTake}
                                 disabled={!hasStudentTake}
                                 title={safeT(t, 'immersive.hear_my_reading_tip', 'Play back your own recording of this sentence.')}
@@ -1749,7 +1799,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                     <div className="flex items-center gap-1" role="group" aria-label={t('immersive.playback_speed_aria') || 'Playback speed'}>
                         <span style={{ color: c.dim }}>SPEED</span>
                         {[0.75, 1, 1.25, 1.5].map(rate => (
-                            <button
+                            <button type="button"
                                 key={rate}
                                 onClick={() => setPlaybackSpeed(rate)}
                                 aria-pressed={playbackSpeed === rate}
@@ -1774,12 +1824,12 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                             <option value="sepia">📜 Sepia</option>
                         </select>
                     </label>
-                    <button onClick={() => { if (isPlaying) { hardStop(); setIsPlaying(false); } else { setIsPlaying(true); } }}
+                    <button type="button" onClick={() => { if (isPlaying) { hardStop(); setIsPlaying(false); } else { setIsPlaying(true); } }}
                         aria-label={isGeneratingAudio ? 'Stop generating audio' : isPlaying ? 'Pause' : 'Play'} aria-pressed={isPlaying} aria-busy={isGeneratingAudio}
                         className="px-3 py-1.5 rounded-full" style={{ background: c.accent, color: c.ink }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button onClick={() => { hardStop(); setSentenceIdx(0); setSweepPct(0); setIsPlaying(false); }}
+                    <button type="button" onClick={() => { hardStop(); setSentenceIdx(0); setSweepPct(0); setIsPlaying(false); }}
                         className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label={t("a11y.restart_first_sentence")}>
                         ↺ Restart
                     </button>
