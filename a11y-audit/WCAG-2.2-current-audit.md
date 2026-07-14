@@ -193,6 +193,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced Word Sounds Active Sources and advanced lesson-plan simulated buttons with full-row native checkboxes. The five source choices are contained in a programmatically named group, checked state is conveyed by the native control, assessment mode uses the checkbox's native disabled state, custom checkbox decoration is hidden from assistive technology, and each label provides at least a 44 CSS-pixel target with a strong focus-within indicator (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Remediated the Header Text, Voice, Join Session, and Documents popovers: disclosure triggers now expose expanded state and popup type; Text, Voice, and Join content is programmatically named and handles Escape from within the actual popover with trigger-focus restoration; Documents retains its menu-specific Escape and focus behavior; and all four invisible click-catcher backdrops are non-focusable and hidden from assistive technology instead of being announced as meaningless buttons (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

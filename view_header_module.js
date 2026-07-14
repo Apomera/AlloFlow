@@ -309,14 +309,20 @@ function HeaderBar(props) {
       "data-help-key": "header_settings_text",
       className: `flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "contrast" ? "bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold" : "hover:bg-white/10 text-white"}`,
       title: t("immersive.settings_label"),
-      "aria-label": t("immersive.settings_label")
+      "aria-label": t("immersive.settings_label"),
+      "aria-haspopup": "dialog",
+      "aria-expanded": showTextSettings
     },
     /* @__PURE__ */ React.createElement(Type, { size: 18, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_text")),
     showTextSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
-  ), showTextSettings && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-    if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { className: `fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === "light" ? "bg-white border-slate-200 text-slate-800" : "bg-slate-800 border-slate-600 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("button", { onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: "text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("common.reset"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
+  ), showTextSettings && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-label": t("settings.text.header"), onKeyDown: (e) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setShowTextSettings(false);
+      document.querySelector('[data-help-key="header_settings_text"]')?.focus();
+    }
+  }, className: `fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === "light" ? "bg-white border-slate-200 text-slate-800" : "bg-slate-800 border-slate-600 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("button", { onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: "text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("common.reset"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -419,14 +425,20 @@ function HeaderBar(props) {
       "data-help-key": "header_settings_voice",
       className: `flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "contrast" ? "bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold" : "hover:bg-white/10 text-white"}`,
       title: t("settings.voice.label"),
-      "aria-label": t("settings.voice.label")
+      "aria-label": t("settings.voice.label"),
+      "aria-haspopup": "dialog",
+      "aria-expanded": showVoiceSettings
     },
     /* @__PURE__ */ React.createElement(Headphones, { size: 18, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_voice")),
     showVoiceSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
-  ), showVoiceSettings && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-    if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { className: `fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === "light" ? "bg-white border-slate-200 text-slate-800" : "bg-slate-800 border-slate-600 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm" }, t("settings.voice.label"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+  ), showVoiceSettings && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-label": t("settings.voice.label"), onKeyDown: (e) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setShowVoiceSettings(false);
+      document.querySelector('[data-help-key="header_settings_voice"]')?.focus();
+    }
+  }, className: `fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === "light" ? "bg-white border-slate-200 text-slate-800" : "bg-slate-800 border-slate-600 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm" }, t("settings.voice.label"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -750,12 +762,20 @@ function HeaderBar(props) {
       onClick: handleToggleIsJoinPopoverOpen,
       className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30",
       "data-help-key": "header_session_join",
-      title: t("session.join_tooltip")
+      title: t("session.join_tooltip"),
+      "aria-haspopup": "dialog",
+      "aria-expanded": isJoinPopoverOpen
     },
     /* @__PURE__ */ React.createElement(WifiOff, { size: 14 }),
     " ",
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("session.join"))
-  ), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { className: "absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mb-1 uppercase" }, t("session.host_id_optional")), /* @__PURE__ */ React.createElement(
+  ), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-label": t("session.join"), onKeyDown: (e) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      handleSetIsJoinPopoverOpenToFalse();
+      document.querySelector('[data-help-key="header_session_join"]')?.focus();
+    }
+  }, className: "absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mb-1 uppercase" }, t("session.host_id_optional")), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.session_default_placeholder"),
@@ -786,9 +806,7 @@ function HeaderBar(props) {
       className: "bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors"
     },
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 })
-  ))))), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-    if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[90]", onClick: handleSetIsJoinPopoverOpenToFalse })))), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+  ))))), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetIsJoinPopoverOpenToFalse })))), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetIsTranslateModalOpenToTrue,
@@ -921,9 +939,7 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement(FolderDown, { size: 14 }),
     " ",
     t("export_menu.ims")
-  )), showExportMenu && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-    if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), isTeacherMode && /* @__PURE__ */ React.createElement(
+  )), showExportMenu && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setShowClassAnalytics(true),
