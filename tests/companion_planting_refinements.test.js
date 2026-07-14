@@ -69,6 +69,11 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('aria-label="Filter plant catalog"');
     expect(html).toContain('Food crops');
     expect(html).toContain('Garden helpers');
+    expect(html).toContain('data-community-visual-key="true"');
+    expect(html).toContain('How to read the garden map');
+    expect(html).toContain('Color + label for every status');
+    expect(html).toContain('Ready to harvest');
+    expect(html).toContain('Needs care or conflict');
     expect(html).toContain('data-community-plot-navigator="true"');
     expect(html).toContain('Garden plot navigator');
     expect(html).toContain('data-community-starter-plans="true"');
@@ -134,6 +139,8 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('Garden Pulse');
     expect(html).toContain('Soil is saturated');
     expect(html).toContain('1 harvest ready');
+    expect(html).toContain('aria-label="Radish growth"');
+    expect(html).toContain('aria-valuenow="100"');
     expect(html).toContain('Harvest 1');
     expect(html).toContain('Soil is already saturated');
     expect(html).not.toContain('+5 Days');

@@ -198,6 +198,21 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await studio.locator('#demoPlanResetBtn').click();
   await expect(studio.locator('#demoPlanList > div').first()).toContainText('First custom step');
 
+  await studio.locator('#demoPolishPanel summary').click();
+  await studio.locator('#demoOpeningTitle').fill('Fractions in AlloFlow');
+  await studio.locator('#demoClosingCardChk').check();
+  await studio.locator('#demoClosingText').fill('Try the workflow yourself');
+  await studio.locator('#demoTemplateName').fill('Fractions walkthrough');
+  await studio.locator('#demoTemplateSaveBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Saved reusable tutorial template');
+  await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(1);
+  await studio.locator('#demoDuplicateBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Duplicated as an independent tutorial');
+  await expect(studio.locator('#demoTemplateSelect option')).toHaveCount(3);
+  await expect(studio.locator('#demoOpeningTitle')).toHaveValue('Fractions in AlloFlow');
+  await expect(studio.locator('#demoClosingCardChk')).toBeChecked();
+  await expect(studio.locator('#demoClosingText')).toHaveValue('Try the workflow yourself');
+
   await studio.locator('#demoAudioMode').selectOption('captions');
   await studio.locator('#demoStartBtn').click();
   await expect(studio.locator('#demoContinueEditBtn')).toBeVisible({ timeout: 10000 });

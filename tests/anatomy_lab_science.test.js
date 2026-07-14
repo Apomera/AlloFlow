@@ -208,7 +208,7 @@ describe('Anatomy Lab saved-state recovery', () => {
     expect(() => renderAnatomy({ _activeTab: 'flashcards', _flashcardIdx: -1 })).not.toThrow();
     const html = renderAnatomy({ _activeTab: 'flashcards', _flashcardIdx: -1 });
     expect(html).toContain('Anatomy Flashcards');
-    expect(html).toContain('aria-label="Scaphoid Bone, tap to reveal its function"');
+    expect(html).toContain('role="group" aria-label="Flashcard 23 of 23: Scaphoid Bone"');
   });
 
   it('resets quiz attempts atomically and clears ended Spotter rounds', () => {
@@ -250,7 +250,7 @@ describe('Anatomy Lab quiz transition integrity', () => {
 
   it('resets quiz feedback atomically across system, orientation, and level changes', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('system: key, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null');
+    expect(source).toContain('return { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null');
     expect(source).toContain('view: v, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null');
     expect(source).toContain('complexity: lv.v, selectedStructure: null, quizIdx: 0, quizScore: 0, quizFeedback: null');
   });
@@ -290,7 +290,8 @@ describe('Anatomy Lab navigation recovery', () => {
   it('uses one navigation helper and atomic guided-tour transitions', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("activateAnatomyTab('connections')");
-    expect(source).toContain("updMulti({ _activeTab: tab, _tourActive: true, _tourStepIdx: 0 })");
+    expect(source).toContain('var tourPatch = { _activeTab: tab, _tourActive: true, _tourStepIdx: nextTourIndex };');
+    expect(source).toContain('updMulti(structureFocusPatch(tabTourStep.structureId, tourPatch));');
     expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore' })");
     expect(source).not.toContain("upd('_activeTab', 'tour'); if (!tourActive)");
   });
@@ -500,7 +501,7 @@ describe('Anatomy Lab layer and quiz-state resilience', () => {
     expect(source).toContain('function safeBooleanMap(value, allowedIds)');
     expect(source).toContain('countStoredTrueFlags(d.visibleLayers, ANATOMY_LAYER_IDS.slice(1))');
     expect(source).toContain('updMulti({ visibleLayers: newLayers, _layersToggled: newLayersToggled })');
-    expect(source).toContain('var searchPatch = { selectedStructure: firstMatch.id };');
+    expect(source).toContain('var searchPatch = selectionPatch(firstMatch.id);');
     expect(source).toContain('var quizPatch = {');
     expect(source).toContain('_totalCorrect = totalCorrect + 1');
     expect(source).not.toContain('(d._searchFinds || 0) + 1');
@@ -555,9 +556,140 @@ describe('Anatomy Lab guided diagram synchronization', () => {
     expect(source).not.toContain("upd('_flashcardIdx', ni); upd('_flashcardFlipped'");
   });
 
-  it('consolidates comparison-target progress into one update', () => {
+  it('records comparison progress only through unique pair tracking', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("updMulti({ _compareStructure: sel.id, _comparisons: comparisons + 1 })");
-    expect(source).not.toContain("upd('_comparisons', comparisons + 1)");
+    expect(source).toContain("return [firstId, secondId].sort().join('::')");
+    expect(source).toContain('patch._comparisonPairs = newComparisonPairs;');
+    expect(source).toContain('patch._comparisons = Math.max(comparisons + 1, newComparisonPairs.length);');
+    expect(source).toContain("else { upd('_compareStructure', sel.id); playSound('compareView'); }");
+    expect(source).not.toContain("_compareStructure: sel.id, _comparisons: comparisons + 1");
+  });
+});
+describe('Anatomy Lab comparison-pair integrity', () => {
+  it('deduplicates reversed restored pairs and confirms recorded comparisons', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'ribs',
+      _compareStructure: 'skull',
+      _comparisonPairs: ['skull::ribs', 'ribs::skull', 'forged::skull'],
+      _comparisons: 0
+    });
+    expect(html).toContain('Pair recorded');
+    expect(html).not.toContain('Record pair');
+  });
+
+  it('offers recovery for a restored comparison that was never recorded', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'ribs',
+      _compareStructure: 'skull', _comparisonPairs: { invalid: true }
+    });
+    expect(html).toContain('Record pair');
+    expect(html).not.toContain('Pair recorded');
+  });
+
+  it('routes all interactive structure selection through comparison tracking', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function selectionPatch(structureId, extraPatch)');
+    expect(source).toContain('updMulti(selectionPatch(closest.id))');
+    expect(source).toContain('updMulti(selectionPatch(navList[nextIdx].id))');
+    expect(source).toContain('var searchPatch = selectionPatch(firstMatch.id);');
+    expect(source).toContain('updMulti(selectionPatch(st.id))');
+    expect(source).toContain('return comparisonTrackingPatch(structureId, patch, context.systemId);');
+  });
+});
+describe('Anatomy Lab guided-mode continuity', () => {
+  it('offers live tour recovery when the restored diagram is not focused', () => {
+    const html = renderAnatomy({
+      _activeTab: 'tour', _tourActive: true, _tourStepIdx: 0,
+      system: 'skeletal', view: 'anterior', selectedStructure: null
+    });
+    expect(html).toContain('Diagram: Skeletal - Anterior');
+    expect(html).toContain('Focus diagram');
+    expect(html).toContain('role="status" aria-live="polite" aria-atomic="true"');
+  });
+
+  it('recognizes a tour diagram that already matches its current step', () => {
+    const html = renderAnatomy({
+      _activeTab: 'tour', _tourActive: true, _tourStepIdx: 0,
+      system: 'skeletal', view: 'anterior', selectedStructure: 'skull'
+    });
+    expect(html).toContain('Diagram: Skeletal - Anterior');
+    expect(html).not.toContain('Focus diagram');
+  });
+
+  it('focuses the current structure whenever a guided tab is entered or resumed', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('updMulti(structureFocusPatch(tabTourStep.structureId, tourPatch));');
+    expect(source).toContain("updMulti(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }))");
+    expect(source).toContain("updMulti(structureFocusPatch(tabFlashcard.id, { _activeTab: tab }))");
+    expect(source).toContain("_flashcardIdx: 0, _flashcardFlipped: false");
+  });
+
+  it('avoids returning the same random flashcard and announces guided completions', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('1 + Math.floor(Math.random() * (flashcardPool.length - 1))');
+    expect(source).toContain('var randIdx = (flashcardIdx + randomOffset) % flashcardPool.length;');
+    expect(source).toContain("announceToSR('Guided anatomy tour complete. Returning to Explore.')");
+    expect(source).toContain("announceToSR('Pathway complete: ' + pw.title + '.')");
+  });
+});
+describe('Anatomy Lab flashcard interaction semantics', () => {
+  it('uses a separate reveal control and live study content', () => {
+    const html = renderAnatomy({
+      _activeTab: 'flashcards', system: 'skeletal', complexity: 3,
+      _flashcardIdx: 0, _flashcardFlipped: false
+    });
+    expect(html).toContain('role="group" aria-label="Flashcard 1 of');
+    expect(html).toContain('id="anatomy-flashcard-content" role="status" aria-live="polite" aria-atomic="true"');
+    expect(html).toContain('aria-expanded="false" aria-controls="anatomy-flashcard-content"');
+    expect(html).toContain('Reveal function');
+    expect(html).toContain('role="toolbar" aria-label="Flashcard navigation"');
+  });
+
+  it('shows a dedicated hide control on the revealed face', () => {
+    const html = renderAnatomy({
+      _activeTab: 'flashcards', system: 'skeletal', complexity: 3,
+      _flashcardIdx: 0, _flashcardFlipped: true
+    });
+    expect(html).toContain('aria-expanded="true" aria-controls="anatomy-flashcard-content"');
+    expect(html).toContain('Show structure name');
+    expect(html).toContain('FUNCTION');
+  });
+
+  it('does not nest study content and text-to-speech inside the flip button', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("h('div', { role: 'group', 'aria-label': 'Flashcard '");
+    expect(source).toContain("role: 'toolbar', 'aria-label': 'Flashcard navigation'");
+    expect(source).not.toContain("h('button', { 'aria-label': (flashcardPool[flashcardIdx]");
+    expect(source).toContain("flashcardPool.length > 0 ? (flashcardIdx + 1) + '/' + flashcardPool.length : '0/0'");
+  });
+});
+describe('Anatomy Lab connection disclosure semantics', () => {
+  it('renders expanded connections as labeled regions with diagram actions', () => {
+    const html = renderAnatomy({
+      _activeTab: 'connections', system: 'circulatory',
+      _expandedConn: 'conn_1', _connectionsViewed: { conn_1: true }
+    });
+    expect(html).toContain('aria-label="Collapse Gas Exchange" aria-expanded="true" aria-controls="anatomy-connection-conn_1"');
+    expect(html).toContain('id="anatomy-connection-conn_1" role="region" aria-label="Gas Exchange details"');
+    expect(html).toContain('role="group" aria-label="Connected system diagrams"');
+    expect(html).toContain('aria-label="Show Circulatory diagram for Gas Exchange" aria-pressed="true"');
+    expect(html).toContain('aria-label="Show Respiratory diagram for Gas Exchange" aria-pressed="false"');
+  });
+
+  it('does not expose forged restored connection details', () => {
+    const html = renderAnatomy({ _activeTab: 'connections', _expandedConn: 'forged_connection' });
+    expect(html).not.toContain('forged_connection');
+    expect(html).not.toContain('role="region" aria-label="Gas Exchange details"');
+    expect(html).toContain('aria-label="Expand Gas Exchange" aria-expanded="false"');
+  });
+
+  it('uses shared system cleanup for the rail and connection diagram buttons', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function systemSelectionPatch(systemId)');
+    expect(source).toContain('function showAnatomySystem(systemId, contextLabel)');
+    expect(source).toContain('onClick: function() { showAnatomySystem(key); }');
+    expect(source).toContain('onClick: function() { showAnatomySystem(connectionSystemId, conn.title); }');
+    expect(source).toContain("announceToSR('Showing ' + SYSTEMS[systemId].name + ' diagram for ' + contextLabel + '.')");
+    expect(source).not.toContain("return h('button', { 'aria-label': conn.title");
   });
 });

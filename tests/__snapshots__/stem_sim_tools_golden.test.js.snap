@@ -21,7 +21,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for anato
   "lengthBucket": 171,
   "paths": 0,
   "selects": 0,
-  "sha": "f6626ad097242424",
+  "sha": "5590dc9aca8905f8",
   "svgs": 0,
 }
 `;
@@ -398,7 +398,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for water
   "lengthBucket": 107,
   "paths": 0,
   "selects": 0,
-  "sha": "4c0807b634c74e02",
+  "sha": "c16375fb3003472d",
   "svgs": 0,
 }
 `;

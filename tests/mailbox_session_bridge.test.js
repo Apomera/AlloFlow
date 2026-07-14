@@ -502,7 +502,7 @@ describe('three-copy sync pins (Phase C sections)', () => {
         anti,
         fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt'), 'utf8'),
         fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx'), 'utf8'),
-    ];
+    ].map(source => source.replace(/\r\n/g, '\n'));
     it('the bridge block and the unified wiring are identical in all three copies', () => {
         const sections = source => [
             sliceBetween(source, '// ── Class Mailbox session-document bridge (Phase C: single-pathway unification) ──', 'let WebSearchProvider = null;'),

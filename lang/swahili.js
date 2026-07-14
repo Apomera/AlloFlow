@@ -20930,7 +20930,8 @@
       "navigate": "Nenda",
       "pipeline": "Matokeo ya Pipeline",
       "tools": "Fungua zana",
-      "voice": "Sauti"
+      "voice": "Sauti",
+      "recent": "Recent"
     },
     "input_aria": "Tafuta amri",
     "list_aria": "Amri zinazolingana",

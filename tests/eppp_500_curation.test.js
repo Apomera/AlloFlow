@@ -27,8 +27,8 @@ describe('EPPP 500-question curation milestone', () => {
     const report = read('test_prep/eppp_legacy/curation_500.json');
     const bank = read('test_prep/eppp_native_items.json');
     const passedIds = new Set(report.slots.filter((slot) => slot.status === 'qa-passed').map((slot) => slot.nativeItemId));
-    expect(bank).toHaveLength(500);
-    expect(bank.every((item) => passedIds.has(item.id))).toBe(true);
+    expect(bank).toHaveLength(1000);
+    expect(bank.slice(0, 500).every((item) => passedIds.has(item.id))).toBe(true);
     const source = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/curation_500.json'), 'utf8');
     const deployed = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy/curation_500.json'), 'utf8');
     const markdown = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/curation_500.md'), 'utf8');

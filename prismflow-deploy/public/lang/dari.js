@@ -20615,7 +20615,8 @@
       "navigate": "پیمایش",
       "pipeline": "نتایج مسیر",
       "tools": "باز کردن یک ابزار",
-      "voice": "صدا"
+      "voice": "صدا",
+      "recent": "Recent"
     },
     "input_aria": "جستجوی فرمان‌ها",
     "list_aria": "فرمان‌های مطابق",

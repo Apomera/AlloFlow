@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import axe from 'axe-core';
 import { loadAlloModule } from './setup.js';
 
@@ -168,6 +168,9 @@ function auditFixture() {
             expectedSentences: 8,
             preparedSentenceCoveragePct: 50,
             runtimeFallbackAvailable: true,
+            runtimeFallbackArtifacts: 1,
+            unscopedAudioArtifacts: 1,
+            unscopedEmbeddedAudioArtifacts: 1,
             notes: 'Audio evidence levels are reported separately.'
           }
         }
@@ -215,6 +218,8 @@ describe('rendered curriculum audit report', () => {
     expect(textContent(tree)).toContain('1 of 2 readable resources (50%)');
     expect(textContent(tree)).toContain('4 of 8 readable sentences (50%)');
     expect(textContent(tree)).toContain('How scoring works');
+    expect(textContent(tree)).toContain('1 readable resource relies on on-demand speech');
+    expect(textContent(tree)).toContain('1 audio-bearing artifact was excluded');
 
     const recommendationLists = findAll(tree, (node) => node.type === 'ol');
     expect(recommendationLists).toHaveLength(1);
@@ -222,6 +227,11 @@ describe('rendered curriculum audit report', () => {
 
     const dimensionTargets = findAll(tree, (node) => node.props && /^audit-(?:standards|vocabulary|engagement|accessibility|udl|accuracy|differentiation|cognitiveLoad|culturalResponsiveness)$/.test(node.props.id || ''));
     expect(dimensionTargets).toHaveLength(9);
+    dimensionTargets.forEach((target) => {
+      expect(target.type).toBe('section');
+      expect(target.props['aria-labelledby']).toBe(`${target.props.id}-heading`);
+      expect(findById(tree, `${target.props.id}-heading`)?.type).toBe('h3');
+    });
   });
 
   it('keeps all dimension navigation available for older audits without dimensionScores', () => {
@@ -236,6 +246,26 @@ describe('rendered curriculum audit report', () => {
     dimensionLinks.forEach((link) => expect(findById(tree, link.props.href.slice(1))).toBeTruthy());
   });
 
+  it('keeps all dimension navigation available when no dimensions were evaluated', () => {
+    const fixture = auditFixture();
+    fixture.data.comprehensive.overall.score = null;
+    fixture.data.comprehensive.overall.provisionalScore = null;
+    fixture.data.comprehensive.overall.dimensionsEvaluated = 0;
+    fixture.data.comprehensive.overall.dimensionScores = {};
+    fixture.data.comprehensive.overall.perDimensionPercent = {};
+    fixture.data.comprehensive.overall.blockingIssues = [];
+    const tree = renderAuditTree(fixture);
+    const dimensionNav = findAll(tree, (node) => node.type === 'nav' && node.props['aria-label'] === 'Audit dimension results')[0];
+    const dimensionLinks = findAll(dimensionNav, (node) => node.type === 'a');
+
+    expect(textContent(tree)).toContain('Not enough artifacts to compute');
+    expect(dimensionLinks).toHaveLength(9);
+    dimensionLinks.forEach((link) => {
+      expect(link.props['aria-label']).toMatch(/: Not evaluated$/);
+      expect(findById(tree, link.props.href.slice(1))).toBeTruthy();
+    });
+  });
+
   it('renders a visible recovery message when comprehensive audit data is missing', () => {
     const tree = renderAuditTree({
       type: 'alignment-report',
@@ -248,6 +278,76 @@ describe('rendered curriculum audit report', () => {
     expect(findAll(tree, (node) => node.props && node.props.role === 'status')).toHaveLength(1);
     expect(textContent(tree)).toContain('Audit details are unavailable');
     expect(textContent(tree)).toContain('Regenerate the curriculum audit');
+  });
+
+  it('uses canonical language tags for new and legacy saved reports', () => {
+    const legacyFixture = auditFixture();
+    legacyFixture.data.comprehensive.auditLanguage = 'Spanish (Latin America)';
+    delete legacyFixture.data.comprehensive.auditLanguageTag;
+    expect(renderAuditTree(legacyFixture).props.lang).toBe('es');
+
+    const currentFixture = auditFixture();
+    currentFixture.data.comprehensive.auditLanguage = 'Portuguese';
+    currentFixture.data.comprehensive.auditLanguageTag = 'pt-BR';
+    expect(renderAuditTree(currentFixture).props.lang).toBe('pt-BR');
+
+    const unknownFixture = auditFixture();
+    unknownFixture.data.comprehensive.auditLanguage = 'All Selected Languages';
+    delete unknownFixture.data.comprehensive.auditLanguageTag;
+    expect(renderAuditTree(unknownFixture).props.lang).toBe('und');
+  });
+
+  it('bounds malformed saved scores and coverage values before rendering', () => {
+    const fixture = auditFixture();
+    const comprehensive = fixture.data.comprehensive;
+    comprehensive.overall.score = 130;
+    comprehensive.overall.dimensionsEvaluated = 99;
+    comprehensive.overall.dimensionsApplicable = 8;
+    comprehensive.overall.totalDimensions = 9;
+    comprehensive.overall.perDimensionPercent.accessibility = 150;
+    comprehensive.differentiation.audioCoverage.preparedSentences = 99;
+    comprehensive.differentiation.audioCoverage.expectedSentences = 8;
+    comprehensive.differentiation.audioCoverage.preparedSentenceCoveragePct = 999;
+    const tree = renderAuditTree(fixture);
+    const dimensionNav = findAll(tree, (node) => node.type === 'nav' && node.props['aria-label'] === 'Audit dimension results')[0];
+    const accessLink = findAll(dimensionNav, (node) => node.type === 'a' && node.props.href === '#audit-accessibility')[0];
+    const renderedText = textContent(tree);
+
+    expect(renderedText).toContain('Curriculum readiness score: 100 out of 100.');
+    expect(renderedText).toContain('8 of 8 applicable comprehensive dimensions evaluated');
+    expect(renderedText).toContain('8 of 8 readable sentences (100%)');
+    expect(accessLink.props['aria-label']).toBe('Access: Not Aligned, 100%');
+    expect(renderedText).not.toMatch(/(?:130|150|999|NaN|Infinity)/);
+  });
+
+  it('avoids animated scrolling and focus flashes when reduced motion is requested', () => {
+    const tree = renderAuditTree();
+    const jumpLink = findAll(tree, (node) => node.type === 'a' && node.props.href === '#audit-accessibility' && typeof node.props.onClick === 'function')[0];
+    const target = document.createElement('div');
+    target.id = 'audit-accessibility';
+    target.tabIndex = -1;
+    target.scrollIntoView = vi.fn();
+    const focus = vi.spyOn(target, 'focus');
+    const preventDefault = vi.fn();
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn(() => ({ matches: true }));
+    document.body.appendChild(target);
+
+    try {
+      jumpLink.props.onClick({ preventDefault });
+      expect(preventDefault).toHaveBeenCalledOnce();
+      expect(target.scrollIntoView).toHaveBeenCalledWith({
+        behavior: 'auto',
+        block: 'start'
+      });
+      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+      expect(target.style.transition).toBe('');
+      expect(target.style.boxShadow).toBe('');
+    } finally {
+      target.remove();
+      window.matchMedia = originalMatchMedia;
+      vi.restoreAllMocks();
+    }
   });
 
   it('passes axe-core WCAG A and AA structural rules when mounted in the DOM', async () => {

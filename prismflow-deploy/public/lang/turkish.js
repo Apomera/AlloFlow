@@ -20811,6 +20811,7 @@
       "navigate": "Gezin",
       "pipeline": "Pipeline sonuçları",
       "tools": "Bir araç aç",
+      "recent": "Recent",
       "voice": "Ses"
     },
     "input_aria": "Komutları ara",

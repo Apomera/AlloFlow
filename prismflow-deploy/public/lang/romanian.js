@@ -20969,7 +20969,8 @@
       "navigate": "Navighează",
       "pipeline": "Rezultate pipeline",
       "tools": "Deschide un instrument",
-      "voice": "Voce"
+      "voice": "Voce",
+      "recent": "Recent"
     },
     "input_aria": "Caută comenzi",
     "list_aria": "Comenzi care se potrivesc",

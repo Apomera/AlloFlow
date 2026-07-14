@@ -20237,7 +20237,8 @@
       "navigate": "Gendagenda",
       "pipeline": "Inyishu za Pipeline",
       "tools": "Fungura igikoresho",
-      "voice": "Ijwi"
+      "voice": "Ijwi",
+      "recent": "Recent"
     },
     "input_aria": "Rondera amategeko",
     "list_aria": "Amategeko ahuye",

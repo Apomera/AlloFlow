@@ -12334,7 +12334,8 @@
       "navigate": "Soco",
       "pipeline": "Natiijooyinka pipeline-ka",
       "tools": "Fur qalab",
-      "voice": "Cod"
+      "voice": "Cod",
+      "recent": "Recent"
     },
     "input_aria": "Raadi amarrada",
     "list_aria": "Amarrada u dhigma",

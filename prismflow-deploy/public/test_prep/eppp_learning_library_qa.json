@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-13T18:42:37.684Z",
+  "generatedAt": "2026-07-14T02:14:10.544Z",
   "libraryId": "eppp-learning-library",
   "standard": {
     "checks": [
@@ -18,12 +18,12 @@
     "chapters": 49,
     "sections": 278,
     "diagrams": 25,
-    "diagramPlacements": 54,
-    "knowledgeChecks": 93,
+    "diagramPlacements": 57,
+    "knowledgeChecks": 98,
     "flashcards": 415,
     "memoryAids": 255,
     "qaPassedChapters": 0,
-    "sourceReviewedChapters": 28,
+    "sourceReviewedChapters": 33,
     "qaPassedFlashcards": 0,
     "sourceReviewedFlashcards": 9,
     "qaPassedMemoryAids": 0,

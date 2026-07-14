@@ -20237,7 +20237,8 @@
       "navigate": "Yobora",
       "pipeline": "Ibyavuye muri Pipeline",
       "tools": "Fungura igikoresho",
-      "voice": "Ijwi"
+      "voice": "Ijwi",
+      "recent": "Recent"
     },
     "input_aria": "Shakisha amategeko",
     "list_aria": "Amategeko ahuye",

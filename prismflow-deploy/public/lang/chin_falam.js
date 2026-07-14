@@ -12333,7 +12333,8 @@
       "navigate": "Kalpi",
       "pipeline": "Pipeline result",
       "tools": "Hmanthlak hung",
-      "voice": "Aw"
+      "voice": "Aw",
+      "recent": "Recent"
     },
     "input_aria": "Command hawl",
     "list_aria": "A tlukmi command pawl",

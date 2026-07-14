@@ -33,10 +33,14 @@ beforeAll(() => {
   const auditFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_audit.json'), 'utf8'));
   const inventoryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_inventory.json'), 'utf8'));
   const libraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_learning_library.json'), 'utf8'));
+  const paraProLibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_learning_library.json'), 'utf8'));
+  const specialEducation5355LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/special_education_5355_learning_library.json'), 'utf8'));
   const reportFetch = async (url) => {
     if (String(url).includes('content_audit.json')) return { ok: true, json: async () => auditFixture };
     if (String(url).includes('content_inventory.json')) return { ok: true, json: async () => inventoryFixture };
     if (String(url).includes('eppp_learning_library.json')) return { ok: true, json: async () => libraryFixture };
+    if (String(url).includes('parapro_learning_library.json')) return { ok: true, json: async () => paraProLibraryFixture };
+    if (String(url).includes('special_education_5355_learning_library.json')) return { ok: true, json: async () => specialEducation5355LibraryFixture };
     return { ok: false, json: async () => ({}) };
   };
   global.fetch = window.fetch = reportFetch;
@@ -95,7 +99,7 @@ describe('Test Prep Hub render flow', () => {
 
     expect(host.textContent).toContain('Test Prep Hub');
     expect(host.textContent).toContain('Workplace Safety Foundations');
-    expect(host.textContent).toContain('EPPP Part 1 — Source-Reviewed Pilot');
+    expect(host.textContent).toContain('EPPP Part 1 — Source-Reviewed Practice Bank');
     expect(host.textContent).toContain('Vocational research lanes');
     await expectNoAxeViolations('catalog');
 
@@ -136,7 +140,7 @@ describe('Test Prep Hub render flow', () => {
     await clickButton('Learning library');
     await waitForText('Showing 49 of 49 chapters');
 
-    expect(host.textContent).toContain('EPPP learning library');
+    expect(host.textContent).toContain('Native learning catalog');
     expect(host.textContent).toContain('Showing 49 of 49 chapters');
     expect(host.textContent).toContain('415');
     expect(host.textContent).toContain('255');
@@ -164,7 +168,7 @@ describe('Test Prep Hub render flow', () => {
     await clickButton('Reveal answer');
     expect(host.textContent).toContain('Answer:');
     await clickButton('Know it');
-    const saved = JSON.parse(localStorage.getItem('alloflow_eppp_flashcard_progress_v1'));
+    const saved = JSON.parse(localStorage.getItem('alloflow_test_prep_flashcards_eppp-part-one_v1'));
     expect(Object.values(saved)).toContain('know');
     await expectNoAxeViolations('flashcard study mode');
 
@@ -175,17 +179,131 @@ describe('Test Prep Hub render flow', () => {
     expect(findButton('Hide aid')).toBeTruthy();
   }, 30_000);
 
+  it('uses ParaPro batch selection, timed simulation, and native chapter learning', async () => {
+    await mount();
+    const paraProCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('ParaPro Assessment'));
+    expect(paraProCard).toBeTruthy();
+    await act(async () => { paraProCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Batch 1');
+    expect(host.textContent).toContain('Start Batch 2');
+    expect(host.textContent).toContain('90 questions');
+    expect(host.textContent).toContain('150 minutes');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'parapro-1755-practice-1');
+    await clickButton('Start Batch 2');
+    expect(host.textContent).toContain('Diagnostic Batch 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('Optional timed simulation');
+    expect(host.textContent).toContain('Question 1 of 90');
+    expect(host.textContent).toContain('Time remaining 150:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('ParaPro learning library');
+    expect(host.textContent).toContain('12');
+    expect(host.textContent).toContain('60');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Main Ideas, Details, and Evidence'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Learning objectives');
+    expect(host.textContent).toContain('Chapter lessons');
+    expect(host.textContent).toContain('Knowledge checks');
+    expect(host.textContent).toContain('From topic to main idea');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('Which statement best distinguishes a topic from a main idea?'));
+    expect(firstCheck).toBeTruthy();
+    const firstChoice = firstCheck.querySelector('input[type="radio"]');
+    await act(async () => { firstChoice.click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('Topic and main idea operate at different levels');
+    await expectNoAxeViolations('ParaPro native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Main Ideas, Details, and Evidence');
+    expect(host.textContent).toContain('Question 1 of ' + Math.min(20, pack.items.filter((item) => item.skillIds.includes('reading-main-evidence')).length));
+  }, 30_000);
+
+  it('uses 5355 diagnostics, timed simulation, and native special-education learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Special Education: Foundational Knowledge'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Batch 1');
+    expect(host.textContent).toContain('Start Batch 2');
+    expect(host.textContent).toContain('120 questions');
+    expect(host.textContent).toContain('120 minutes');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-special-education-5355');
+    await clickButton('Start Batch 2');
+    expect(host.textContent).toContain('Diagnostic Batch 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('Optional timed simulation');
+    expect(host.textContent).toContain('Question 1 of 120');
+    expect(host.textContent).toContain('Time remaining 120:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis Special Education: Foundational Knowledge (5355) learning library');
+    expect(host.textContent).toContain('12');
+    expect(host.textContent).toContain('60');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Development, Context, and Learner Variability'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Learning objectives');
+    expect(host.textContent).toContain('Chapter lessons');
+    expect(host.textContent).toContain('Knowledge checks');
+    expect(host.textContent).toContain('Milestones are reference points, not verdicts');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('A kindergarten teacher notices'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('Milestones provide useful reference points');
+    await expectNoAxeViolations('5355 native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Development, Context, and Learner Variability');
+    expect(host.textContent).toContain('Question 1 of 18');
+  }, 30_000);
+
   it('opens the native EPPP pilot and the complete guarded legacy workspace', async () => {
+
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
-    expect(openButtons).toHaveLength(2);
-    await act(async () => { openButtons[1].click(); });
+    expect(openButtons.length).toBeGreaterThanOrEqual(3);
+    const epppButton = openButtons.find((button) => button.parentElement?.textContent.includes('EPPP Part 1'));
+    expect(epppButton).toBeTruthy();
+    await act(async () => { epppButton.click(); });
 
-    expect(host.textContent).toContain('Question 1 of 500');
-    expect(host.textContent).toContain('500/500 native items passed content QA');
-    expect(host.textContent).toContain('Legacy source item');
-    expect(host.textContent).toContain('QA passed');
-    expect(host.textContent).toContain('Expert validated');
+    expect(host.textContent).toContain('Question 1 of 1000');
+    expect(host.textContent).toContain('1,000 source-reviewed practice items');
+    expect(host.textContent).toContain('Legacy source lead');
+    expect(host.textContent).toContain('Source reviewed');
+    expect(host.textContent).toContain('Independent expert review pending');
     expect(host.querySelector('a[href*="eppp_native_qa.md"]')).toBeTruthy();
     expect(host.textContent).toContain('Open complete legacy workspace');
     await waitForText('2,933');
@@ -197,7 +315,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('415');
     expect(host.textContent).toContain('255');
     expect(host.textContent).toContain('1,583');
-    expect(host.textContent).toContain('492 / 2,933 legacy items');
+    expect(host.textContent).toContain('962 / 2,933 legacy items');
     expect(host.textContent).toContain('All 2,933 legacy questions are in the review universe');
     expect(host.querySelector('a[href*="content_inventory.md"]')).toBeTruthy();
     expect(host.querySelector('a[href*="review_ledger.md"]')).toBeTruthy();
@@ -218,16 +336,114 @@ describe('Test Prep Hub render flow', () => {
       const radios = Array.from(host.querySelectorAll('input[type="radio"]'));
       await act(async () => { radios[eppp.items[index].answerIndex].click(); });
       await clickButton('Check answer');
+      if (index === 0) {
+        expect(host.textContent).toContain('Why the other options do not fit');
+        expect(host.textContent).toContain('Schwann cells myelinate axons in the peripheral nervous system');
+        expect(host.textContent).toContain('Myelin in the Central Nervous System: Structure, Function, and Pathology');
+        expect(host.textContent).toContain('PubMed, U.S. National Library of Medicine');
+        expect(host.textContent).toContain('Why this source is credible:');
+        expect(host.textContent).not.toContain('Source 1');
+        expect(host.textContent).not.toContain('Content QA passed');
+      }
       await clickButton('Next question');
     }
-    expect(host.textContent).toContain('Question 9 of 500');
+    expect(host.textContent).toContain('Question 9 of 1000');
     const migratedRadios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { migratedRadios[eppp.items[8].answerIndex].click(); });
     await clickButton('Check answer');
     expect(host.textContent).toContain('Migration provenance');
     expect(host.textContent).toContain('legacy-313b8d365ea7d566');
-    expect(host.textContent).toContain('Content QA passed.');
+    expect(host.textContent).not.toContain('Content QA passed.');
+    expect(host.textContent).not.toContain('Why the other options do not fit');
     await expectNoAxeViolations('EPPP migrated item');
   }, 30_000);
+
+  it('pauses a multi-batch pack for accessible diagnostic feedback before continuing', async () => {
+    Hub.registerPack({
+      id: 'batch-checkpoint-render', title: 'Batch Checkpoint Render', shortTitle: 'Batch checkpoint', status: 'ready', batchSize: 2,
+      disclaimer: 'Independent practice result, not an official score.',
+      domains: [{ id: 'one', label: 'Domain one' }, { id: 'two', label: 'Domain two' }],
+      items: [
+        { id: 'render-q1', domainId: 'one', prompt: 'First checkpoint item?', choices: ['Correct', 'Other'], answerIndex: 0, rationale: 'First rationale.' },
+        { id: 'render-q2', domainId: 'two', prompt: 'Second checkpoint item?', choices: ['Incorrect', 'Correct'], answerIndex: 1, rationale: 'Second rationale.' },
+        { id: 'render-q3', domainId: 'one', prompt: 'Third checkpoint item?', choices: ['Correct', 'Other'], answerIndex: 0, rationale: 'Third rationale.' },
+        { id: 'render-q4', domainId: 'two', prompt: 'Fourth checkpoint item?', choices: ['Incorrect', 'Correct'], answerIndex: 1, rationale: 'Fourth rationale.' },
+      ],
+    });
+    await mount();
+    const card = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Batch Checkpoint Render'));
+    expect(card).toBeTruthy();
+    await act(async () => { card.querySelector('button').click(); });
+
+    expect(host.textContent).toContain('Batch 1 of 2 · Question 1 of 2');
+    let radios = Array.from(host.querySelectorAll('input[type="radio"]'));
+    await act(async () => { radios[0].click(); });
+    await clickButton('Check answer');
+    await clickButton('I knew it');
+    await clickButton('Next question');
+
+    expect(host.textContent).toContain('Batch 1 of 2 · Question 2 of 2');
+    radios = Array.from(host.querySelectorAll('input[type="radio"]'));
+    await act(async () => { radios[0].click(); });
+    await clickButton('Check answer');
+    await clickButton('I knew it');
+    await clickButton('View diagnostic feedback');
+
+    expect(host.textContent).toContain('Batch 1 of 2 checkpoint');
+    expect(host.textContent).toContain('Questions 1–2');
+    expect(host.textContent).toContain('1/2');
+    expect(host.textContent).toContain('50%');
+    expect(host.textContent).toContain('Domain diagnostic for this batch');
+    expect(host.textContent).toContain('Confidence calibration');
+    expect(host.textContent).toContain('Review confident misses first: question 2');
+    expect(host.textContent).toContain('not an official score');
+    await expectNoAxeViolations('batch checkpoint');
+
+    const saved = JSON.parse(localStorage.getItem('alloflow_test_prep_progress_v1'));
+    expect(saved.attempts[0]).toMatchObject({ packId: 'batch-checkpoint-render', batchNumber: 1, batchCount: 2, firstQuestion: 1, lastQuestion: 2, correct: 1, total: 2 });
+    await clickButton('Continue to batch 2');
+    expect(host.textContent).toContain('Question 3 of 4');
+    expect(host.textContent).toContain('Batch 2 of 2 · Question 1 of 2');
+  }, 30_000);
+
+  it('shows a checkpoint after a single complete batch before the overall summary', async () => {
+    Hub.registerPack({
+      id: 'single-batch-checkpoint-render', title: 'Single Batch Checkpoint', shortTitle: 'Single batch', status: 'ready', batchSize: 2,
+      disclaimer: 'Independent practice result, not an official score.',
+      domains: [{ id: 'one', label: 'Domain one' }, { id: 'two', label: 'Domain two' }],
+      items: [
+        { id: 'single-render-q1', domainId: 'one', prompt: 'First single-batch item?', choices: ['Correct', 'Other'], answerIndex: 0, rationale: 'First rationale.' },
+        { id: 'single-render-q2', domainId: 'two', prompt: 'Second single-batch item?', choices: ['Incorrect', 'Correct'], answerIndex: 1, rationale: 'Second rationale.' },
+      ],
+    });
+    await mount();
+    const card = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Single Batch Checkpoint'));
+    expect(card).toBeTruthy();
+    await act(async () => { card.querySelector('button').click(); });
+
+    let radios = Array.from(host.querySelectorAll('input[type="radio"]'));
+    await act(async () => { radios[0].click(); });
+    await clickButton('Check answer');
+    await clickButton('I knew it');
+    await clickButton('Next question');
+
+    radios = Array.from(host.querySelectorAll('input[type="radio"]'));
+    await act(async () => { radios[0].click(); });
+    await clickButton('Check answer');
+    await clickButton('I knew it');
+    await clickButton('View diagnostic feedback');
+
+    expect(host.textContent).toContain('Batch 1 of 1 checkpoint');
+    expect(host.textContent).toContain('1/2');
+    expect(host.textContent).toContain('Domain diagnostic for this batch');
+    expect(host.textContent).toContain('Review confident misses first: question 2');
+    const saved = JSON.parse(localStorage.getItem('alloflow_test_prep_progress_v1'));
+    expect(saved.attempts[0]).toMatchObject({ packId: 'single-batch-checkpoint-render', batchNumber: 1, batchCount: 1, correct: 1, total: 2 });
+    await clickButton('View overall summary');
+    expect(host.textContent).toContain('Practice complete');
+    expect(host.textContent).toContain('1/2');
+    await expectNoAxeViolations('single-batch summary');
+  }, 30_000);
+
 });
 

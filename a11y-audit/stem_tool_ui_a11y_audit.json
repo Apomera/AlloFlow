@@ -1,16 +1,11 @@
 {
-  "generatedAt": "2026-07-13T22:49:45.140Z",
+  "generatedAt": "2026-07-14T03:07:01.606Z",
   "source": {
     "stemToolFileCount": 119,
-    "registeredToolCount": 121
+    "registeredToolCount": 122
   },
-  "toolCount": 121,
-  "loadErrors": [
-    {
-      "file": "stem_tool_watercycle.js",
-      "error": "Invalid left-hand side in assignment"
-    }
-  ],
+  "toolCount": 122,
+  "loadErrors": [],
   "renderErrors": [],
   "summary": {
     "issueCount": 38,
@@ -20,9 +15,9 @@
     "toolsWithIssues": 33,
     "toolsWithErrors": 0,
     "toolsWithWarnings": 15,
-    "toolsWithCanvas": 35,
+    "toolsWithCanvas": 36,
     "shellCoverage": {
-      "standardShellTools": 121,
+      "standardShellTools": 122,
       "lightBackgroundTools": [],
       "toolsWithoutStandardShell": []
     },
@@ -52,7 +47,7 @@
         "noticeCount": 0
       },
       "science": {
-        "toolCount": 47,
+        "toolCount": 48,
         "errorCount": 0,
         "warningCount": 5,
         "noticeCount": 4
@@ -1830,7 +1825,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25914,
+      "renderedBytes": 25867,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2239,7 +2234,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1743,
+      "renderedBytes": 1735,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -2656,7 +2651,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13493,
+      "renderedBytes": 13480,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3030,7 +3025,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 18057,
+      "renderedBytes": 18059,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3673,7 +3668,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47807,
+      "renderedBytes": 47814,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3900,6 +3895,34 @@
           ]
         }
       ]
+    },
+    {
+      "id": "waterCycle",
+      "label": "Water Cycle",
+      "category": "science",
+      "ready": true,
+      "lightBackground": false,
+      "aliases": [],
+      "desc": "Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.",
+      "renderedBytes": 22002,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "noticeCount": 0,
+      "metrics": {
+        "buttons": 30,
+        "roleButtons": 0,
+        "fields": 6,
+        "canvases": 1,
+        "svgs": 0,
+        "images": 0,
+        "headings": 8,
+        "links": 0,
+        "tinyTextClassHits": 0,
+        "fixedWidthRiskCount": 0
+      },
+      "issues": []
     },
     {
       "id": "wave",

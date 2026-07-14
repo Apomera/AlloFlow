@@ -22,7 +22,7 @@ describe('remediation pipeline WCAG 2.2 upgrade', () => {
 
   it('runs IBM Equal Access under its supported WCAG_2_2 policy', () => {
     expect(pipeline).toContain("checker.check(doc, ['WCAG_2_2'])");
-    expect(pipeline).toContain("standard: 'WCAG 2.2'");
+    expect(pipeline).toContain("standard: 'WCAG 2.2 AA'");
     expect(pipeline).not.toContain("checker.check(doc, ['WCAG_2_1'])");
   });
 

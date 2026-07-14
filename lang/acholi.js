@@ -12335,7 +12335,8 @@
       "navigate": "Wot",
       "pipeline": "Adwogi me Pipeline",
       "tools": "Yab jami me tic",
-      "voice": "Dwan"
+      "voice": "Dwan",
+      "recent": "Recent"
     },
     "input_aria": "Yeny cik",
     "list_aria": "Cik ma rwatte",

@@ -20237,7 +20237,8 @@
       "navigate": "ዳስስ",
       "pipeline": "የቧንቧ ውጤቶች",
       "tools": "መሣሪያ ክፈት",
-      "voice": "ድምፅ"
+      "voice": "ድምፅ",
+      "recent": "Recent"
     },
     "input_aria": "ትዕዛዞችን ፈልግ",
     "list_aria": "የተዛመዱ ትዕዛዞች",

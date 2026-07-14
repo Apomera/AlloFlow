@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-14T03:08:32.482Z",
+  "libraryId": "parapro-1755-learning-library",
+  "standard": {
+    "label": "AlloFlow ParaPro learning-library source and editorial review v1",
+    "meaning": "A pass confirms release counts, stable identifiers, source allowlisting, substantive native sections, one-best-answer knowledge checks, and review metadata.",
+    "limitation": "This is an editorial and source-traceability gate, not ETS approval, psychometric validation, or independent educator validation."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  },
+  "chapters": [
+    {
+      "id": "parapro-ch-01",
+      "title": "Main Ideas, Details, and Evidence",
+      "domainId": "reading",
+      "skillId": "reading-main-evidence",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-02",
+      "title": "Inference and Vocabulary in Context",
+      "domainId": "reading",
+      "skillId": "reading-inference-vocabulary",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-03",
+      "title": "Text Structure, Features, and Sources",
+      "domainId": "reading",
+      "skillId": "reading-structure-sources",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-04",
+      "title": "Supporting Reading in the Classroom",
+      "domainId": "reading",
+      "skillId": "reading-classroom-support",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-05",
+      "title": "Numbers, Fractions, Decimals, and Percents",
+      "domainId": "mathematics",
+      "skillId": "mathematics-number-operations",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-06",
+      "title": "Ratios, Proportions, Expressions, and Equations",
+      "domainId": "mathematics",
+      "skillId": "mathematics-ratio-algebra",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-07",
+      "title": "Geometry and Measurement",
+      "domainId": "mathematics",
+      "skillId": "mathematics-geometry-measurement",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-08",
+      "title": "Data, Probability, and Supporting Mathematics",
+      "domainId": "mathematics",
+      "skillId": "mathematics-data-support",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-09",
+      "title": "Grammar, Usage, and Mechanics",
+      "domainId": "writing",
+      "skillId": "writing-grammar-mechanics",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 2,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-10",
+      "title": "Sentence Revision and Clarity",
+      "domainId": "writing",
+      "skillId": "writing-revision-clarity",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-11",
+      "title": "Organization, Argument, and Evidence",
+      "domainId": "writing",
+      "skillId": "writing-organization-evidence",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    },
+    {
+      "id": "parapro-ch-12",
+      "title": "Supporting Writing in the Classroom",
+      "domainId": "writing",
+      "skillId": "writing-classroom-support",
+      "sections": 4,
+      "knowledgeChecks": 5,
+      "references": 3,
+      "status": "source-reviewed-editorial-pass"
+    }
+  ]
+}

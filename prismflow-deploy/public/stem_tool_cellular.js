@@ -300,6 +300,8 @@
     var sViz = useState('normal'); var vizMode = sViz[0], setVizMode = sViz[1];
     var sHue = useState(150); var lifeHue = sHue[0], setLifeHue = sHue[1];
     var sMaxPop = useState(5); var maxPop = sMaxPop[0], setMaxPop = sMaxPop[1];
+    var sPhaseCursor = useState(null); var phaseCursor = sPhaseCursor[0], setPhaseCursor = sPhaseCursor[1];
+    var sForecastHorizon = useState(1); var forecastHorizon = sForecastHorizon[0], setForecastHorizon = sForecastHorizon[1];
     var maxPopRef = useRef(maxPop); maxPopRef.current = maxPop;
     var sChallenge = useState(null); var challenge = sChallenge[0], setChallenge = sChallenge[1];
     var sChallengeStatus = useState('idle'); var challengeStatus = sChallengeStatus[0], setChallengeStatus = sChallengeStatus[1];
@@ -323,7 +325,10 @@
     // fixed zero-padding is the textbook default; wrap joins both ends as a ring.
     var caRows = React.useMemo(function () { return buildCaRows(rule, caSeed === 'custom' ? customSeed : caSeed, CA_ROWS, CA_COLS, caWrap); }, [rule, caSeed, customSeed, caWrap]);
     var caAnalysis = React.useMemo(function () { return analyzeCaRows(caRows, caWrap); }, [caRows, caWrap]);
+    var caSensitivity = caRuleSensitivityProfile(bits, caAnalysis.neighborhoodCounts);
     var caCause = caCellCause(caRows, caInspectRow, caInspectCol, caWrap);
+    var caInfluence = caCounterfactualInfluence(bits, caCause);
+    var caCone = caCausalCone(caRows, caInspectRow, caInspectCol, caWrap, 6);
     var caSvgRef = useRef(null), seedSvgRef = useRef(null);
 
     var paintingRef = useRef(false);
@@ -446,7 +451,7 @@
     }
 
     function cloneGrid(g) { return g.map(function (row) { return row.slice(); }); }
-    function resetTimeline() { historyRef.current = []; previousGridRef.current = null; transitionRef.current = { born: 0, survived: 0, died: 0 }; transitionHistoryRef.current = []; }
+    function resetTimeline() { historyRef.current = []; previousGridRef.current = null; transitionRef.current = { born: 0, survived: 0, died: 0 }; transitionHistoryRef.current = []; setPhaseCursor(null); }
     function advanceOne(speakOnExtinction) {
       var current = gridRef.current, currentAges = agesRef.current, next = stepLifeDetailed(current, currentAges, wrap, birthRule, survivalRule);
       historyRef.current.push({ grid: cloneGrid(current), ages: cloneGrid(currentAges), gen: genRef.current, previousGrid: previousGridRef.current ? cloneGrid(previousGridRef.current) : null, transition: Object.assign({}, transitionRef.current), transitionHistory: transitionHistoryRef.current.slice(), popHist: popHistRef.current.slice(), maxPop: maxPopRef.current });
@@ -458,18 +463,29 @@
       var spatial = populationBounds(next.grid), beforeShape = shapeFingerprint(current), afterShape = shapeFingerprint(next.grid);
       transitionHistoryRef.current.push({ gen: nextGen, pop: countPop(next.grid), born: next.born, survived: next.survived, died: next.died, centerR: spatial ? spatial.centerR : null, centerC: spatial ? spatial.centerC : null, width: spatial ? spatial.width : 0, height: spatial ? spatial.height : 0, density: spatial ? spatial.density : 0, signature: gridSignature(next.grid), shapeSignature: afterShape.signature, minR: afterShape.minR, minC: afterShape.minC, previousSignature: gridSignature(current), previousShapeSignature: beforeShape.signature, previousMinR: beforeShape.minR, previousMinC: beforeShape.minC });
       if (transitionHistoryRef.current.length > 100) transitionHistoryRef.current.shift();
-      genRef.current = nextGen; setGrid(next.grid); setGen(nextGen);
+      genRef.current = nextGen; setPhaseCursor(null); setGrid(next.grid); setGen(nextGen);
       if (speakOnExtinction && countPop(next.grid) === 0) announce('All cells died.');
     }
     function captureChallengeStart() { if (challenge && challengeStatus === 'active' && !challengeInitialRef.current) challengeInitialRef.current = { signature: gridSignature(grid), population: countPop(grid) }; }
     function stepOnce() { captureChallengeStart(); advanceOne(true); }
-    function rewindOne() {
-      var snapshot = historyRef.current.pop(); if (!snapshot) return;
+    function restoreLifeSnapshot(snapshot, message) {
+      if (!snapshot) return;
       setRunning(false); rewindingRef.current = true; gridRef.current = snapshot.grid; agesRef.current = snapshot.ages; genRef.current = snapshot.gen;
       previousGridRef.current = snapshot.previousGrid; transitionRef.current = snapshot.transition; transitionHistoryRef.current = snapshot.transitionHistory;
       popHistRef.current = snapshot.popHist; maxPopRef.current = snapshot.maxPop;
       setGrid(snapshot.grid); setGen(snapshot.gen); setPopHist(snapshot.popHist); setMaxPop(snapshot.maxPop);
-      announce('Rewound to generation ' + snapshot.gen + '.');
+      setPhaseCursor(null); announce(message || ('Rewound to generation ' + snapshot.gen + '.'));
+    }
+    function rewindOne() {
+      var snapshot = historyRef.current.pop(); if (!snapshot) return;
+      restoreLifeSnapshot(snapshot);
+    }
+    function rewindToGeneration(targetGen) {
+      var target = parseInt(targetGen, 10); if (!isFinite(target) || target >= genRef.current) return;
+      var index = -1; for (var i = historyRef.current.length - 1; i >= 0; i--) if (historyRef.current[i].gen === target) { index = i; break; }
+      if (index < 0) { announce('Generation ' + target + ' is outside the retained rewind history.'); return; }
+      var snapshot = historyRef.current[index]; historyRef.current = historyRef.current.slice(0, index);
+      restoreLifeSnapshot(snapshot, 'Phase portrait rewound to generation ' + target + '.');
     }
     function clearGrid() { var empty = emptyGrid(ROWS, COLS); setRunning(false); resetTimeline(); gridRef.current = empty; setGrid(empty); agesRef.current = ageGridFor(empty); genRef.current = 0; setGen(0); setMaxPop(0); challengeInitialRef.current = null; announce('Grid cleared.'); }
     function randomize() {
@@ -493,7 +509,10 @@
     }
 
     var pop = countPop(grid);
-    var forecastPreview = vizMode === 'forecast' ? stepLifeDetailed(grid, agesRef.current, wrap, birthRule, survivalRule) : null;
+    var forecastSeries = vizMode === 'forecast' ? projectLifeFuture(grid, agesRef.current, 8, wrap, birthRule, survivalRule) : [];
+    var forecastPreview = forecastSeries[forecastHorizon - 1] || null;
+    var forecastComparison = forecastPreview ? compareLifeStates(grid, forecastPreview.grid) : null;
+    var forecastResidency = forecastSeries.length ? analyzeLifeForecastResidency(forecastSeries, forecastHorizon) : null;
 
     // ── elementary CA ops ──
     function setRuleSafe(n) { var v = clampRule(n); setRule(v); markQuest('exploredRule'); if (v === 110) markQuest('saw110'); }
@@ -581,7 +600,11 @@
         if (track.length > 1) rects.push(h('path', { key: 'centroidTrail', d: trail, fill: 'none', stroke: '#fbbf24', strokeWidth: Math.max(1.2, PX / 5), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', opacity: 0.8, style: { filter: 'drop-shadow(0 0 3px rgba(251,191,36,0.75))', pointerEvents: 'none' } }));
       }
       for (var r = 0; r < ROWS; r++) for (var c = 0; c < COLS; c++) {
-        var n = neighborCount(grid, r, c, wrap), alive = !!grid[r][c], futureAlive = !!(forecastPreview && forecastPreview.grid[r][c]);
+        var n = neighborCount(grid, r, c, wrap), alive = !!grid[r][c], futureAlive = !!(forecastPreview && forecastPreview.grid[r][c]), residency = forecastResidency ? forecastResidency.grid[r][c] : 0;
+        if (vizMode === 'forecast' && residency) {
+          var residencyRatio = residency / forecastHorizon;
+          rects.push(h('rect', { key: 'forecastResidency' + r + '_' + c, 'data-life-forecast-residency': String(residency), x: c * PX + 0.18, y: r * PX + 0.18, width: Math.max(1, PX - 0.36), height: Math.max(1, PX - 0.36), rx: PX > 7 ? 2.4 : 0.8, fill: 'rgba(253,224,71,' + (0.025 + residencyRatio * 0.095).toFixed(3) + ')', stroke: 'rgba(253,224,71,' + (0.16 + residencyRatio * 0.5).toFixed(3) + ')', strokeWidth: Math.max(0.45, PX / 15), style: { filter: residencyRatio > 0.7 ? 'drop-shadow(0 0 ' + Math.max(1, PX / 4) + 'px rgba(253,224,71,0.5))' : 'none', pointerEvents: 'none' } }));
+        }
         if (alive) {
           rects.push(h('rect', { key: 'l' + r + '_' + c, x: c * PX + 0.65, y: r * PX + 0.65, width: Math.max(1, PX - 1.3), height: Math.max(1, PX - 1.3), rx: PX > 7 ? 2 : 0.7, className: 'born', fill: vizMode === 'forecast' ? (futureAlive ? '#22d3ee' : '#fb7185') : lifeFill(n, agesRef.current[r] && agesRef.current[r][c], r, c), style: { filter: vizMode === 'forecast' ? 'drop-shadow(0 0 ' + Math.max(1, PX / 3) + 'px ' + (futureAlive ? 'rgba(34,211,238,0.9)' : 'rgba(251,113,133,0.9)') + ')' : vizMode === 'field' ? 'drop-shadow(0 0 ' + Math.max(1, PX / 3) + 'px rgba(103,232,249,0.9))' : vizMode === 'normal' && n >= 2 && n <= 3 ? 'drop-shadow(0 0 ' + Math.max(1, PX / 4) + 'px ' + C.live + ')' : 'none' } }));
           if (vizMode === 'forecast' && !futureAlive && PX >= 7) rects.push(h('path', { key: 'forecastDeath' + r + '_' + c, d: 'M' + (c * PX + PX * 0.25) + ' ' + (r * PX + PX * 0.25) + 'L' + (c * PX + PX * 0.75) + ' ' + (r * PX + PX * 0.75) + 'M' + (c * PX + PX * 0.75) + ' ' + (r * PX + PX * 0.25) + 'L' + (c * PX + PX * 0.25) + ' ' + (r * PX + PX * 0.75), stroke: '#ffe4e6', strokeWidth: Math.max(0.8, PX / 9), strokeLinecap: 'round', style: { pointerEvents: 'none' } }));
@@ -605,7 +628,7 @@
       }
       if (pop === 0) rects.push(h('text', { key: 'empty', x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: Math.max(9, Math.min(14, W / 30)) + 'px', fontStyle: 'italic' } }, 'Draw cells, choose a pattern, or make a random soup'));
       rects.push(h('rect', { key: 'cursor', x: cursor[1] * PX, y: cursor[0] * PX, width: PX, height: PX, fill: 'none', stroke: C.cursor, strokeWidth: Math.max(1.4, PX / 7), rx: 2, style: { pointerEvents: 'none', filter: 'drop-shadow(0 0 4px ' + C.cursor + ')' } }));
-      return h('svg', { ref: gridSvgRef, className: 'cellularlab-svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-roledescription': 'editable cellular automaton grid', 'aria-label': 'Cellular automaton grid, ' + ROWS + ' by ' + COLS + ', ' + pop + ' alive, generation ' + gen + ', rule B' + birthRule + ' slash S' + survivalRule + ', dynamics ' + dynamicsScan.label + ', ' + dynamicsScan.detail + (vizMode === 'forecast' && forecastPreview ? ', next-step forecast ' + forecastPreview.born + ' births, ' + forecastPreview.survived + ' survivors, ' + forecastPreview.died + ' deaths, projected population ' + (forecastPreview.born + forecastPreview.survived) : '') + (vizMode === 'field' && scan ? ', colony footprint ' + scan.width + ' by ' + scan.height + ', density ' + Math.round(scan.density * 100) + ' percent, center row ' + (scan.centerR + 1).toFixed(1) + ', column ' + (scan.centerC + 1).toFixed(1) : '') + (vizMode === 'change' && gen > 0 ? ', last transition ' + transitionRef.current.born + ' births, ' + transitionRef.current.survived + ' survivors, ' + transitionRef.current.died + ' deaths' : '') + '. Arrow keys move the cursor and space toggles a cell.', tabIndex: 0, onKeyDown: onGridKeyDown, onMouseDown: onGridPointerDown, onMouseMove: onGridPointerMove, onMouseUp: onGridPointerUp, onMouseLeave: onGridPointerUp, onTouchStart: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerDown(e); }, onTouchMove: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerMove(e); }, onTouchEnd: onGridPointerUp, style: { maxWidth: '620px', width: '100%', height: 'auto', borderRadius: '14px', border: '1px solid rgba(52,211,153,0.35)', touchAction: 'none', display: 'block', background: '#020617', cursor: 'crosshair', boxShadow: '0 22px 60px rgba(2,6,23,0.42), inset 0 0 42px rgba(16,185,129,0.08)' } }, rects);
+      return h('svg', { ref: gridSvgRef, className: 'cellularlab-svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-roledescription': 'editable cellular automaton grid', 'aria-label': 'Cellular automaton grid, ' + ROWS + ' by ' + COLS + ', ' + pop + ' alive, generation ' + gen + ', rule B' + birthRule + ' slash S' + survivalRule + ', dynamics ' + dynamicsScan.label + ', ' + dynamicsScan.detail + (vizMode === 'forecast' && forecastPreview && forecastComparison ? ', future telescope at plus ' + forecastHorizon + ' generations, ' + forecastComparison.appeared + ' cells appear, ' + forecastComparison.retained + ' current cells remain, ' + forecastComparison.gone + ' current cells are gone, projected population ' + forecastComparison.population + ', ' + forecastResidency.activeCells + ' cells appear somewhere along the future path and ' + forecastResidency.persistentCells + ' persist throughout the inspected horizon' : '') + (vizMode === 'field' && scan ? ', colony footprint ' + scan.width + ' by ' + scan.height + ', density ' + Math.round(scan.density * 100) + ' percent, center row ' + (scan.centerR + 1).toFixed(1) + ', column ' + (scan.centerC + 1).toFixed(1) : '') + (vizMode === 'change' && gen > 0 ? ', last transition ' + transitionRef.current.born + ' births, ' + transitionRef.current.survived + ' survivors, ' + transitionRef.current.died + ' deaths' : '') + '. Arrow keys move the cursor and space toggles a cell.', tabIndex: 0, onKeyDown: onGridKeyDown, onMouseDown: onGridPointerDown, onMouseMove: onGridPointerMove, onMouseUp: onGridPointerUp, onMouseLeave: onGridPointerUp, onTouchStart: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerDown(e); }, onTouchMove: function (e) { if (e.preventDefault) e.preventDefault(); onGridPointerMove(e); }, onTouchEnd: onGridPointerUp, style: { maxWidth: '620px', width: '100%', height: 'auto', borderRadius: '14px', border: '1px solid rgba(52,211,153,0.35)', touchAction: 'none', display: 'block', background: '#020617', cursor: 'crosshair', boxShadow: '0 22px 60px rgba(2,6,23,0.42), inset 0 0 42px rgba(16,185,129,0.08)' } }, rects);
     }
 
     function statChip(label, value, accent) {
@@ -643,7 +666,66 @@
         )
       );
     }
-    function renderLifeTab() {
+    function lifePhaseChart() {
+      var phase = analyzeLifePhase(transitionHistoryRef.current, 100), points = phase.points;
+      if (points.length < 2) return null;
+      var future = forecastSeries;
+      var maxPopulation = phase.maxPopulation, maxTurnover = phase.maxTurnover;
+      future.forEach(function (point) { maxPopulation = Math.max(maxPopulation, point.population); maxTurnover = Math.max(maxTurnover, point.turnover); });
+      var W = 240, H = 112, left = 27, right = 8, top = 8, bottom = 19;
+      var x = function (value) { return left + value / maxPopulation * (W - left - right); };
+      var y = function (value) { return top + (1 - value / maxTurnover) * (H - top - bottom); };
+      var trail = points.map(function (point) { return x(point.population).toFixed(1) + ',' + y(point.turnover).toFixed(1); }).join(' ');
+      var latest = phase.latest, futureTrail = future.length ? [latest].concat(future).map(function (point) { return x(point.population).toFixed(1) + ',' + y(point.turnover).toFixed(1); }).join(' ') : '';
+      var futureEnd = future.length ? future[future.length - 1] : null, futureSelected = future[forecastHorizon - 1] || null, selectedIndex = phaseCursor == null ? points.length - 1 : Math.max(0, Math.min(points.length - 1, phaseCursor)), selected = points[selectedIndex];
+      function onPhasePointer(e) {
+        var svg = e.currentTarget, rect = svg && svg.getBoundingClientRect ? svg.getBoundingClientRect() : null;
+        if (!rect || !rect.width || !rect.height) return;
+        var px = (e.clientX - rect.left) / rect.width * W, py = (e.clientY - rect.top) / rect.height * H;
+        var nearest = points.length - 1, best = Infinity;
+        for (var i = points.length - 1; i >= 0; i--) {
+          var dx = x(points[i].population) - px, dy = y(points[i].turnover) - py, distance = dx * dx + dy * dy;
+          if (distance < best) { best = distance; nearest = i; }
+        }
+        setPhaseCursor(nearest);
+        if (points[nearest].gen < genRef.current) rewindToGeneration(points[nearest].gen);
+        else announce('Generation ' + points[nearest].gen + ' is the current state.');
+      }
+      function onPhaseKeyDown(e) {
+        var next = selectedIndex, handled = true;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next--;
+        else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next++;
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = points.length - 1;
+        else if (e.key === 'Enter' || e.key === ' ') { if (e.preventDefault) e.preventDefault(); rewindToGeneration(selected.gen); return; }
+        else handled = false;
+        if (handled) { if (e.preventDefault) e.preventDefault(); setPhaseCursor(Math.max(0, Math.min(points.length - 1, next))); }
+      }
+      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', minWidth: 0, padding: '8px 10px', borderRadius: '13px', background: dark ? 'rgba(23,19,43,0.74)' : 'rgba(250,245,255,0.92)', border: '1px solid ' + (dark ? '#7c3aed' : '#a78bfa') } },
+        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+          h('span', { style: { fontSize: '9px', color: dark ? '#c4b5fd' : '#6d28d9', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Phase portrait'),
+          h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.text, fontWeight: 900 } }, 'Inspect gen ' + selected.gen + ' | Population ' + selected.population + ' | Turnover ' + selected.turnover),
+          futureSelected && h('span', { 'data-life-forecast-selection': String(futureSelected.step), style: { fontSize: '9px', color: dark ? '#fef08a' : '#854d0e', fontWeight: 900 } }, 'Inspect +' + futureSelected.step + ' -> P' + futureSelected.population + ' / T' + futureSelected.turnover),
+          futureEnd && h('span', { 'data-life-forecast-endpoint': String(futureEnd.step), style: { fontSize: '9px', color: dark ? '#fde68a' : '#92400e', fontWeight: 900 } }, 'Ghost +' + futureEnd.step + ' -> P' + futureEnd.population + ' / T' + futureEnd.turnover),
+          h('span', { style: { marginLeft: 'auto', fontSize: '9px', color: C.sub, fontWeight: 800 } }, points.length + ' observed' + (future.length ? ' | ' + future.length + ' projected' : ''))
+        ),
+        h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'slider', tabIndex: 0, 'data-life-phase-portrait': 'true', 'data-life-forecast-count': String(future.length), 'aria-label': 'Life phase-space time machine. Click a trajectory point to rewind. Use arrow keys to inspect retained generations and Enter to rewind.' + (futureEnd ? ' Dashed gold ghost orbit projects ' + future.length + ' uncommitted steps, ending at population ' + futureEnd.population + ' and turnover ' + futureEnd.turnover + '.' : '') + (futureSelected ? ' The future telescope is inspecting step ' + futureSelected.step + ', population ' + futureSelected.population + ', turnover ' + futureSelected.turnover + '.' : ''), 'aria-orientation': 'horizontal', 'aria-valuemin': 0, 'aria-valuemax': points.length - 1, 'aria-valuenow': selectedIndex, 'aria-valuetext': 'Generation ' + selected.gen + ', population ' + selected.population + ', turnover ' + selected.turnover + '. Latest generation ' + latest.gen + '.', onClick: onPhasePointer, onKeyDown: onPhaseKeyDown, style: { width: '100%', height: H + 'px', display: 'block', cursor: 'crosshair' } },
+          [0.25,0.5,0.75].map(function (level) { return h('g', { key: level }, h('line', { x1: x(maxPopulation * level), x2: x(maxPopulation * level), y1: top, y2: H - bottom, stroke: dark ? 'rgba(196,181,253,0.12)' : 'rgba(109,40,217,0.12)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }), h('line', { x1: left, x2: W - right, y1: y(maxTurnover * level), y2: y(maxTurnover * level), stroke: dark ? 'rgba(196,181,253,0.12)' : 'rgba(109,40,217,0.12)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' })); }),
+          h('line', { x1: left, x2: W - right, y1: H - bottom, y2: H - bottom, stroke: C.sub, strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }),
+          h('line', { x1: left, x2: left, y1: top, y2: H - bottom, stroke: C.sub, strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { points: trail, fill: 'none', stroke: '#a78bfa', strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 3px rgba(167,139,250,0.65))', pointerEvents: 'none' } }),
+          points.map(function (point, index) { var recency = (index + 1) / points.length; return h('circle', { key: point.gen + '_' + index, 'data-life-phase-point': String(point.gen), cx: x(point.population), cy: y(point.turnover), r: 1.2 + recency * 1.25, fill: '#a78bfa', opacity: 0.18 + recency * 0.62, style: { pointerEvents: 'none' } }); }),
+          futureTrail && h('polyline', { 'data-life-forecast-orbit': 'true', points: futureTrail, fill: 'none', stroke: '#fde047', strokeWidth: 1.8, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.75))', pointerEvents: 'none' } }),
+          future.map(function (point) { var inspected = point.step === forecastHorizon, size = inspected ? 3.5 : 2.1; return h('rect', { key: 'future' + point.step, 'data-life-forecast-step': String(point.step), 'data-population': String(point.population), 'data-turnover': String(point.turnover), 'data-selected': inspected ? 'true' : 'false', 'aria-hidden': 'true', x: x(point.population) - size, y: y(point.turnover) - size, width: size * 2, height: size * 2, transform: 'rotate(45 ' + x(point.population) + ' ' + y(point.turnover) + ')', fill: inspected || point.step === future.length ? '#fde047' : 'rgba(253,224,71,0.62)', stroke: inspected ? '#ffffff' : '#fde047', strokeWidth: inspected ? 1.25 : 0.7, vectorEffect: 'non-scaling-stroke', onClick: function (e) { if (e.stopPropagation) e.stopPropagation(); setForecastHorizon(point.step); }, style: { filter: inspected ? 'drop-shadow(0 0 5px rgba(253,224,71,0.95))' : 'none', pointerEvents: 'auto', cursor: 'pointer' } }); }),
+          h('circle', { cx: x(latest.population), cy: y(latest.turnover), r: 6.2, fill: 'rgba(253,224,71,0.1)', stroke: '#fde047', strokeWidth: 1.2, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 5px rgba(253,224,71,0.85))', pointerEvents: 'none' } }),
+          h('circle', { 'data-life-phase-latest': String(latest.gen), cx: x(latest.population), cy: y(latest.turnover), r: 2.5, fill: '#fde047', style: { pointerEvents: 'none' } }),
+          h('circle', { 'data-life-phase-cursor': String(selected.gen), cx: x(selected.population), cy: y(selected.turnover), r: 8.2, fill: 'none', stroke: C.text, strokeWidth: 1.25, strokeDasharray: selectedIndex === points.length - 1 ? undefined : '3 2', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(248,250,252,0.75))', pointerEvents: 'none' } }),
+          h('text', { x: W - right, y: H - 4, textAnchor: 'end', fill: C.sub, fontSize: 8, fontWeight: 800, style: { pointerEvents: 'none' } }, 'population'),
+          h('text', { x: 8, y: top, transform: 'rotate(-90 8 ' + top + ')', textAnchor: 'end', fill: C.sub, fontSize: 8, fontWeight: 800, style: { pointerEvents: 'none' } }, 'turnover')
+        ),
+        h('div', { style: { color: C.sub, fontSize: '9px', fontWeight: 800, textAlign: 'center' } }, future.length ? 'Violet = observed | click a gold diamond to inspect | Apply advances one step' : 'Click a point to rewind | arrows inspect time | Enter rewinds selected generation')
+      );
+    }    function renderLifeTab() {
       var spatialScan = populationBounds(grid), dynamics = detectDynamics(grid, gen, transitionHistoryRef.current);
       var dynamicsColor = dynamics.kind === 'stable' ? '#4ade80' : dynamics.kind === 'oscillator' ? '#c4b5fd' : dynamics.kind === 'spaceship' ? '#fbbf24' : dynamics.kind === 'extinct' ? '#fb7185' : '#67e8f9';
       var dynamicsIcon = dynamics.kind === 'stable' ? '◆' : dynamics.kind === 'oscillator' ? '↻' : dynamics.kind === 'spaceship' ? '↗' : dynamics.kind === 'extinct' ? '○' : dynamics.kind === 'ready' ? '◇' : '…';
@@ -651,13 +733,32 @@
       var challenges = [{ id: 'still', name: 'Still Life', note: 'Stay unchanged after one step.' }, { id: 'oscillator', name: 'Oscillator', note: 'Return to the starting pattern.' }, { id: 'extinction', name: 'Extinction', note: 'Design a pattern that dies out.' }, { id: 'methuselah', name: 'Methuselah', note: '<=5 cells survive 50 generations.' }, { id: 'maxpop', name: 'Population Boom', note: 'Exactly 5 cells; maximize the peak by gen 50.' }];
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } }, statChip('Generation', gen, '#10b981'), statChip('Population', pop, '#22d3ee'), statChip('Peak', maxPop, '#f59e0b'), statChip('Rule', 'B' + birthRule + '/S' + survivalRule, '#a78bfa'), h('div', { style: { flex: 1 } }), h('span', { role: 'status', style: { padding: '6px 10px', borderRadius: '999px', background: running ? '#064e3b' : C.bg, color: running ? '#a7f3d0' : C.sub, border: '1px solid ' + (running ? '#10b981' : C.border), fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, running ? 'Running' : 'Paused')),
-        populationChart(),
+        transitionHistoryRef.current.length >= 2 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '10px', alignItems: 'stretch' } }, populationChart(), lifePhaseChart()),
         gen > 0 && h('div', { role: 'status', 'aria-label': 'Last transition: ' + transitionRef.current.born + ' births, ' + transitionRef.current.survived + ' survivors, and ' + transitionRef.current.died + ' deaths.', style: { display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', padding: '8px 11px', borderRadius: '12px', background: dark ? 'linear-gradient(90deg, rgba(20,83,45,0.5), rgba(8,47,73,0.5), rgba(76,5,25,0.45))' : 'linear-gradient(90deg, #f0fdf4, #ecfeff, #fff1f2)', border: '1px solid ' + C.border, fontSize: '11px', fontWeight: 900 } }, h('span', { style: { color: C.sub, textTransform: 'uppercase', letterSpacing: '0.07em', fontSize: '9px' } }, 'Last transition'), h('span', { style: { color: dark ? '#86efac' : '#15803d' } }, '+' + transitionRef.current.born + ' births'), h('span', { style: { color: dark ? '#67e8f9' : '#0e7490' } }, transitionRef.current.survived + ' survivors'), h('span', { style: { color: dark ? '#fda4af' : '#be123c' } }, '-' + transitionRef.current.died + ' deaths'), h('span', { style: { color: transitionRef.current.born > transitionRef.current.died ? (dark ? '#86efac' : '#15803d') : transitionRef.current.born < transitionRef.current.died ? (dark ? '#fda4af' : '#be123c') : C.sub } }, 'Net ' + (transitionRef.current.born > transitionRef.current.died ? '+' : '') + (transitionRef.current.born - transitionRef.current.died)), h('span', { style: { marginLeft: 'auto', color: C.sub, fontSize: '9px' } }, historyRef.current.length + ' / 100 rewind frames')),
         h('div', { ref: stageRef, id: 'cellularlab-stage', style: { position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px', borderRadius: '18px', overflow: 'auto', background: 'radial-gradient(circle at 50% 42%, rgba(16,185,129,0.16), rgba(2,6,23,0.98) 68%)', border: '1px solid rgba(52,211,153,0.28)' } }, renderLifeGrid(), h('div', { 'aria-label': 'Dynamics detector: ' + dynamics.label + '. ' + dynamics.detail, style: { pointerEvents: 'none', position: 'absolute', zIndex: 2, top: '22px', right: '22px', maxWidth: '190px', padding: '7px 10px', borderRadius: '11px', textAlign: 'right', background: 'rgba(2,6,23,0.82)', border: '1px solid ' + dynamicsColor, color: '#f8fafc', boxShadow: '0 8px 28px rgba(2,6,23,0.38), 0 0 16px ' + dynamicsColor + '33', backdropFilter: 'blur(6px)' } }, h('div', { style: { color: dynamicsColor, fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, h('span', { 'aria-hidden': 'true' }, dynamicsIcon + ' '), dynamics.label), h('div', { style: { marginTop: '2px', color: '#cbd5e1', fontSize: '9px', fontWeight: 700, lineHeight: 1.3 } }, dynamics.detail)), h('div', { 'aria-hidden': 'true', style: { pointerEvents: 'none', position: 'absolute', inset: 0, boxShadow: 'inset 0 0 50px rgba(34,211,238,0.06)' } })),
-        h('div', { style: { display: 'flex', gap: '7px', flexWrap: 'wrap', alignItems: 'center' } }, btn(running ? 'Pause' : 'Run', toggleRun, { primary: true }), btn(vizMode === 'forecast' ? 'Apply forecast' : 'Step', stepOnce, { key: 'step', title: vizMode === 'forecast' ? 'Apply the predicted generation' : 'Advance one generation' }), btn('Rewind', rewindOne, { disabled: historyRef.current.length === 0, title: historyRef.current.length ? 'Rewind one generation' : 'Step or run to create rewind history' }), btn('Random', randomize), btn('Clear', clearGrid), btn('Fullscreen', toggleFullscreenLife), btn('Export PNG', exportLifePng)),
+        h('div', { style: { display: 'flex', gap: '7px', flexWrap: 'wrap', alignItems: 'center' } }, btn(running ? 'Pause' : 'Run', toggleRun, { primary: true }), btn(vizMode === 'forecast' ? 'Apply forecast' : 'Step', stepOnce, { key: 'step', title: vizMode === 'forecast' ? 'Advance exactly one generation; later telescope steps remain uncommitted' : 'Advance one generation' }), btn('Rewind', rewindOne, { disabled: historyRef.current.length === 0, title: historyRef.current.length ? 'Rewind one generation' : 'Step or run to create rewind history' }), btn('Random', randomize), btn('Clear', clearGrid), btn('Fullscreen', toggleFullscreenLife), btn('Export PNG', exportLifePng)),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '10px' } },
           h('section', { style: { background: C.panel, border: '1px solid ' + C.border, borderRadius: '13px', padding: '11px' } }, h('div', { style: { fontSize: '11px', fontWeight: 900, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, 'World controls'), h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '9px' } }, btn('Draw', function () { setBrush(1); }, { pressed: brush === 1 }), btn('Erase', function () { setBrush(0); }, { pressed: brush === 0 }), btn(wrap ? 'Wrap on' : 'Wrap off', function () { setWrap(function (w) { return !w; }); }, { pressed: wrap })), h('label', { style: { display: 'block', fontSize: '11px', color: C.sub, fontWeight: 800 } }, 'Speed: ' + Math.round(1000 / speed) + ' generations/sec', h('input', { type: 'range', min: 1, max: 25, value: Math.round(1000 / speed), onChange: function (e) { setSpeed(Math.round(1000 / parseInt(e.target.value, 10))); }, 'aria-label': 'Generations per second', style: { width: '100%', marginTop: '5px' } })), h('div', { style: { marginTop: '9px', fontSize: '11px', color: C.sub, fontWeight: 800 } }, 'Grid size'), h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '5px' } }, [40,60,80,120].map(function (n) { return btn(n + ' x ' + n, function () { resizeLife(n); }, { pressed: lifeSize === n }); }))),
-          h('section', { style: { background: C.panel, border: '1px solid ' + C.border, borderRadius: '13px', padding: '11px' } }, h('div', { style: { fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, 'Scientific lens'), h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } }, [{ id:'normal',label:'Normal' },{ id:'forecast',label:'Next forecast' },{ id:'field',label:'Colony scan' },{ id:'change',label:'Change map' },{ id:'age',label:'Age map' },{ id:'xray',label:'Neighbor X-ray' }].map(function (v) { return btn(v.label, function () { setVizMode(v.id); }, { pressed: vizMode === v.id }); })), h('p', { style: { margin: '7px 0', fontSize: '10px', color: C.sub, lineHeight: 1.4 } }, vizMode === 'forecast' ? 'Preview the next rule application before stepping. Green pluses are births; cyan cells survive; rose crosses die.' : vizMode === 'field' ? 'Measure the colony footprint and center of mass. The gold trail tracks movement across generations.' : vizMode === 'change' ? 'See exactly what the last rule application changed. Rewind to compare earlier transitions.' : vizMode === 'age' ? 'Yellow cells are newborn; violet cells have survived many generations.' : vizMode === 'xray' ? 'Numbers are live-neighbor counts. Green outcomes satisfy the current B/S rule.' : 'Cell brightness responds to local neighborhood density.'), vizMode === 'forecast' && forecastPreview && h('div', { role: 'status', 'aria-label': 'Forecast: ' + forecastPreview.born + ' births, ' + forecastPreview.survived + ' survivors, ' + forecastPreview.died + ' deaths, projected population ' + (forecastPreview.born + forecastPreview.survived) + '.', style: { display: 'flex', gap: '9px', flexWrap: 'wrap', marginBottom: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } }, h('span', { style: { color: dark ? '#86efac' : '#15803d' } }, '+' + forecastPreview.born + ' births'), h('span', { style: { color: dark ? '#67e8f9' : '#0e7490' } }, forecastPreview.survived + ' survive'), h('span', { style: { color: dark ? '#fda4af' : '#be123c' } }, '-' + forecastPreview.died + ' deaths'), h('span', null, 'Projected pop ' + (forecastPreview.born + forecastPreview.survived)), h('span', null, 'Net ' + (forecastPreview.born - forecastPreview.died >= 0 ? '+' : '') + (forecastPreview.born - forecastPreview.died))), vizMode === 'field' && h('div', { role: 'status', style: { display: 'flex', gap: '9px', flexWrap: 'wrap', marginBottom: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } }, spatialScan ? [h('span', { key:'footprint' }, 'Footprint ' + spatialScan.width + ' x ' + spatialScan.height), h('span', { key:'density' }, 'Density ' + Math.round(spatialScan.density * 100) + '%'), h('span', { key:'center' }, 'Center r' + (spatialScan.centerR + 1).toFixed(1) + ', c' + (spatialScan.centerC + 1).toFixed(1)), h('span', { key:'trail' }, Math.min(60, transitionHistoryRef.current.length) + ' trail points')] : h('span', null, 'No live cells to scan.')), vizMode === 'change' && h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '5px' } }, [{ label:'Born', color:'#4ade80' },{ label:'Survived', color:'#22d3ee' },{ label:'Died', color:'#fb7185' }].map(function (item) { return h('span', { key: item.label, style: { display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: '10px', height: '10px', borderRadius: '3px', background: item.color, boxShadow: '0 0 8px ' + item.color } }), item.label); })), vizMode === 'normal' && h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } }, [{h:150,c:'#10b981'},{h:190,c:'#06b6d4'},{h:45,c:'#f59e0b'},{h:320,c:'#ec4899'},{h:-1,c:'#e2e8f0'}].map(function (sw) { return h('button', { key: sw.h, type: 'button', onClick: function () { setLifeHue(sw.h); }, 'aria-label': 'Use ' + sw.c + ' cell palette', 'aria-pressed': lifeHue === sw.h, style: { width: '30px', height: '24px', borderRadius: '7px', border: '2px solid ' + (lifeHue === sw.h ? C.cursor : C.border), background: sw.c, cursor: 'pointer' } }); })))
+          h('section', { style: { background: C.panel, border: '1px solid ' + C.border, borderRadius: '13px', padding: '11px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, 'Scientific lens'),
+            h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } }, [{ id:'normal',label:'Normal' },{ id:'forecast',label:'Next forecast' },{ id:'field',label:'Colony scan' },{ id:'change',label:'Change map' },{ id:'age',label:'Age map' },{ id:'xray',label:'Neighbor X-ray' }].map(function (v) { return btn(v.label, function () { setVizMode(v.id); }, { pressed: vizMode === v.id }); })),
+            h('p', { style: { margin: '7px 0', fontSize: '10px', color: C.sub, lineHeight: 1.4 } }, vizMode === 'forecast' ? 'Look up to eight generations ahead without changing the experiment. Green cells appear by the inspected horizon; cyan cells remain; rose cells are gone. Gold residency glow strengthens where cells recur across the future path.' : vizMode === 'field' ? 'Measure the colony footprint and center of mass. The gold trail tracks movement across generations.' : vizMode === 'change' ? 'See exactly what the last rule application changed. Rewind to compare earlier transitions.' : vizMode === 'age' ? 'Yellow cells are newborn; violet cells have survived many generations.' : vizMode === 'xray' ? 'Numbers are live-neighbor counts. Green outcomes satisfy the current B/S rule.' : 'Cell brightness responds to local neighborhood density.'),
+            vizMode === 'forecast' && h('label', { style: { display: 'block', marginBottom: '7px', fontSize: '10px', color: C.text, fontWeight: 900 } },
+              h('span', { 'data-life-forecast-horizon-label': String(forecastHorizon) }, 'Future telescope: +' + forecastHorizon + ' generation' + (forecastHorizon === 1 ? '' : 's')),
+              h('input', { type: 'range', min: 1, max: 8, step: 1, value: forecastHorizon, onChange: function (e) { setForecastHorizon(Math.max(1, Math.min(8, parseInt(e.target.value, 10) || 1))); }, 'aria-label': 'Forecast horizon in generations', 'data-life-forecast-horizon': String(forecastHorizon), style: { width: '100%', marginTop: '5px', accentColor: '#eab308' } })
+            ),
+            vizMode === 'forecast' && forecastPreview && forecastComparison && h('div', { role: 'status', 'aria-label': 'Forecast plus ' + forecastHorizon + ': ' + forecastComparison.appeared + ' cells appear, ' + forecastComparison.retained + ' current cells remain, ' + forecastComparison.gone + ' current cells are gone, projected population ' + forecastComparison.population + '.', style: { display: 'flex', gap: '9px', flexWrap: 'wrap', marginBottom: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } },
+              h('span', { style: { color: dark ? '#86efac' : '#15803d' } }, '+' + forecastComparison.appeared + ' appear'),
+              h('span', { style: { color: dark ? '#67e8f9' : '#0e7490' } }, forecastComparison.retained + ' remain'),
+              h('span', { style: { color: dark ? '#fda4af' : '#be123c' } }, '-' + forecastComparison.gone + ' gone'),
+              h('span', null, 'Projected pop ' + forecastComparison.population),
+              h('span', null, 'Step +' + forecastHorizon + ' turnover ' + forecastPreview.turnover),
+              h('span', { 'data-life-forecast-residency-summary': String(forecastResidency.activeCells) }, forecastResidency.activeCells + ' path cells | ' + forecastResidency.persistentCells + ' persist throughout')
+            ),
+            vizMode === 'field' && h('div', { role: 'status', style: { display: 'flex', gap: '9px', flexWrap: 'wrap', marginBottom: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } }, spatialScan ? [h('span', { key:'footprint' }, 'Footprint ' + spatialScan.width + ' x ' + spatialScan.height), h('span', { key:'density' }, 'Density ' + Math.round(spatialScan.density * 100) + '%'), h('span', { key:'center' }, 'Center r' + (spatialScan.centerR + 1).toFixed(1) + ', c' + (spatialScan.centerC + 1).toFixed(1)), h('span', { key:'trail' }, Math.min(60, transitionHistoryRef.current.length) + ' trail points')] : h('span', null, 'No live cells to scan.')),
+            vizMode === 'change' && h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '5px' } }, [{ label:'Born', color:'#4ade80' },{ label:'Survived', color:'#22d3ee' },{ label:'Died', color:'#fb7185' }].map(function (item) { return h('span', { key: item.label, style: { display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: C.text, fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: '10px', height: '10px', borderRadius: '3px', background: item.color, boxShadow: '0 0 8px ' + item.color } }), item.label); })),
+            vizMode === 'normal' && h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } }, [{h:150,c:'#10b981'},{h:190,c:'#06b6d4'},{h:45,c:'#f59e0b'},{h:320,c:'#ec4899'},{h:-1,c:'#e2e8f0'}].map(function (sw) { return h('button', { key: sw.h, type: 'button', onClick: function () { setLifeHue(sw.h); }, 'aria-label': 'Use ' + sw.c + ' cell palette', 'aria-pressed': lifeHue === sw.h, style: { width: '30px', height: '24px', borderRadius: '7px', border: '2px solid ' + (lifeHue === sw.h ? C.cursor : C.border), background: sw.c, cursor: 'pointer' } }); }))
+          )
         ),
         h('section', { style: { background: dark ? '#17132b' : '#faf5ff', border: '1px solid #a78bfa', borderRadius: '13px', padding: '11px' } }, h('div', { style: { fontSize: '11px', fontWeight: 900, color: dark ? '#c4b5fd' : '#6d28d9', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Life-like rule editor'), h('p', { style: { margin: '5px 0 8px', fontSize: '11px', color: C.sub } }, 'B lists neighbor counts that create a cell. S lists counts that let a cell survive.'), h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, h('label', { style: { fontSize: '11px', fontWeight: 800, color: C.text } }, 'Birth B', h('input', { value: birthRule, onChange: function (e) { setBirthRule(sanitizeRule(e.target.value)); }, 'aria-label': 'Birth rule', style: { display: 'block', width: '94px', marginTop: '3px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #8b5cf6', background: C.panel, color: C.text, fontFamily: 'monospace' } })), h('label', { style: { fontSize: '11px', fontWeight: 800, color: C.text } }, 'Survival S', h('input', { value: survivalRule, onChange: function (e) { setSurvivalRule(sanitizeRule(e.target.value)); }, 'aria-label': 'Survival rule', style: { display: 'block', width: '94px', marginTop: '3px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #8b5cf6', background: C.panel, color: C.text, fontFamily: 'monospace' } })), h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'end' } }, rulePresets.map(function (rp) { return btn(rp.name, function () { setBirthRule(rp.b); setSurvivalRule(rp.s); announce(rp.name + ' rules loaded.'); }, { pressed: birthRule === rp.b && survivalRule === rp.s, title: 'B' + rp.b + '/S' + rp.s }); })))),
         h('section', { style: { background: dark ? '#261d0c' : '#fffbeb', border: '1px solid #f59e0b', borderRadius: '13px', padding: '11px' } }, h('div', { style: { fontSize: '11px', fontWeight: 900, color: dark ? '#fcd34d' : '#b45309', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Pattern challenges: +10 XP'), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '7px', marginTop: '8px' } }, challenges.map(function (ch) { var active = challenge === ch.id; return h('button', { key: ch.id, type: 'button', onClick: function () { beginChallenge(ch.id); }, 'aria-pressed': active, style: { textAlign: 'left', padding: '8px', borderRadius: '9px', cursor: 'pointer', border: '1px solid ' + (active ? '#d97706' : C.border), background: active ? (dark ? '#78350f' : '#fef3c7') : C.panel, color: C.text } }, h('div', { style: { fontSize: '11px', fontWeight: 900 } }, ch.name), h('div', { style: { marginTop: '2px', fontSize: '10px', color: active ? C.text : C.sub, lineHeight: 1.35 } }, ch.note)); })), challenge && h('div', { role: 'status', style: { marginTop: '8px', padding: '8px 10px', borderRadius: '9px', background: challengeStatus === 'success' ? '#d1fae5' : challengeStatus === 'fail' ? '#fee2e2' : (dark ? '#422006' : '#fff7ed'), color: challengeStatus === 'success' ? '#065f46' : challengeStatus === 'fail' ? '#991b1b' : (dark ? '#fde68a' : '#92400e'), fontSize: '11px', fontWeight: 800 } }, (challengeStatus === 'success' ? 'Success: ' : challengeStatus === 'fail' ? 'Try again: ' : 'Challenge: ') + challengeMsg)),
@@ -688,7 +789,8 @@
         var activeCause = !!(caCause && caCause.index === i), col = [];
         col.push(h('rect', { key: 'heat' + i, x: x + 3, y: 2, width: 58, height: 62, rx: 6, fill: C.live2, opacity: 0.04 + share * 0.38, stroke: activeCause ? '#fde047' : 'none', strokeWidth: activeCause ? 2.2 : 0, style: { pointerEvents: 'none', filter: activeCause ? 'drop-shadow(0 0 6px rgba(253,224,71,0.9))' : 'none' } }));
         [l, m, rt].forEach(function (v, j) {
-          col.push(h('rect', { key: 'n' + i + '_' + j, x: x + 8 + j * 16, y: 6, width: 14, height: 14, rx: 2, fill: v ? C.live : C.dead, stroke: activeCause ? '#fde047' : C.border, strokeWidth: activeCause ? 1.6 : 1 }));
+          var parentInfluence = activeCause ? caInfluence.parents[j] : null, decisive = !!(parentInfluence && parentInfluence.decisive);
+          col.push(h('rect', { key: 'n' + i + '_' + j, 'data-ca-rule-parent-influence': parentInfluence ? (decisive ? 'decisive' : 'contextual') : undefined, x: x + 8 + j * 16, y: 6, width: 14, height: 14, rx: 2, fill: v ? C.live : C.dead, stroke: decisive ? '#4ade80' : (parentInfluence ? '#67e8f9' : C.border), strokeWidth: decisive ? 2.3 : (parentInfluence ? 1.6 : 1), strokeDasharray: parentInfluence && !decisive ? '3 2' : undefined }));
         });
         col.push(h('rect', { key: 'o' + i, x: x + 24, y: 30, width: 14, height: 14, rx: 2, fill: out ? C.live2 : C.dead, stroke: activeCause ? '#fde047' : (out ? C.live2 : C.border), strokeWidth: activeCause ? 2.2 : (out ? 2 : 1) }));
         col.push(h('path', { key: 'a' + i, d: 'M' + (x + 31) + ' 22V28', stroke: activeCause ? '#fde047' : C.sub, strokeWidth: activeCause ? 2 : 1.5 }));
@@ -698,21 +800,29 @@
         cells.push(h('g', {
           key: 'col' + i, role: 'button', tabIndex: 0, 'data-active-cause': activeCause ? 'true' : undefined,
           'aria-current': activeCause ? 'true' : undefined,
-          'aria-label': 'Neighbourhood ' + l + m + rt + ' produces ' + out + '. Observed ' + usage + ' times, ' + (share * 100).toFixed(1) + ' percent of transitions.' + (activeCause ? ' This mapping produced the selected cell.' : '') + ' Activate to flip.',
+          'aria-label': 'Neighbourhood ' + l + m + rt + ' produces ' + out + '. Observed ' + usage + ' times, ' + (share * 100).toFixed(1) + ' percent of transitions.' + (activeCause ? ' This mapping produced the selected cell. Counterfactual test: ' + caInfluence.decisiveCount + ' of 3 parent bits are decisive.' : '') + ' Activate to flip.',
           onClick: (function (idx) { return function () { toggleRuleBit(idx); }; })(i),
           onKeyDown: (function (idx) { return function (e) { if (e.key === ' ' || e.key === 'Enter') { if (e.preventDefault) e.preventDefault(); toggleRuleBit(idx); } }; })(i),
           style: { cursor: 'pointer' }
         }, col));
       }
+      ['Left','Center','Right'].forEach(function (label, position) {
+        var profile = caSensitivity.positions[position], baseX = 5 + position * 169, trackWidth = 158;
+        cells.push(h('text', { key: 'channelLabel' + position, x: baseX, y: 75, fill: C.sub, fontSize: 8, fontWeight: 900, style: { pointerEvents: 'none' } }, label.toUpperCase()));
+        cells.push(h('text', { key: 'channelRate' + position, x: baseX + trackWidth, y: 75, textAnchor: 'end', fill: C.text, fontSize: 8, fontWeight: 900, style: { pointerEvents: 'none' } }, Math.round(profile.rate * 100) + '%'));
+        cells.push(h('rect', { key: 'channelTrack' + position, x: baseX, y: 80, width: trackWidth, height: 6, rx: 3, fill: C.border, opacity: 0.52, style: { pointerEvents: 'none' } }));
+        cells.push(h('rect', { key: 'channelBar' + position, 'data-ca-sensitivity-channel': label.toLowerCase(), 'data-rate': profile.rate.toFixed(6), 'data-decisive-observations': String(profile.decisiveObservations), x: baseX, y: 80, width: trackWidth * profile.rate, height: 6, rx: 3, fill: '#4ade80', opacity: 0.9, style: { filter: profile.rate ? 'drop-shadow(0 0 4px rgba(74,222,128,0.65))' : 'none', pointerEvents: 'none' } }));
+      });
       return h('div', { style: { maxWidth: '520px' } },
-        h('svg', { viewBox: '0 0 512 68', width: '100%', role: 'group', 'aria-label': 'Rule table for rule ' + rule + ' with ' + usageTotal + ' neighborhood observations. Each column maps a 3-cell neighbourhood to the next cell. Gold bars and percentages show observed frequency. A gold outline marks the mapping responsible for the selected cell. Click a column to flip its output.', style: { display: 'block' } }, cells),
-        h('div', { style: { marginTop: '2px', color: C.sub, fontSize: '10px', fontWeight: 800, textAlign: 'center' } }, 'Neighborhood evidence | ' + usageTotal.toLocaleString() + ' observations | gold outline = selected cell cause')
+        h('svg', { viewBox: '0 0 512 92', width: '100%', role: 'group', 'aria-label': 'Rule table for rule ' + rule + ' with ' + usageTotal + ' neighborhood observations. Each column maps a 3-cell neighbourhood to the next cell. Gold bars and percentages show observed frequency. A gold outline marks the mapping responsible for the selected cell. Observed flip sensitivity is left ' + Math.round(caSensitivity.positions[0].rate * 100) + ' percent, center ' + Math.round(caSensitivity.positions[1].rate * 100) + ' percent, and right ' + Math.round(caSensitivity.positions[2].rate * 100) + ' percent. Click a column to flip its output.', style: { display: 'block' } }, cells),
+        h('div', { style: { marginTop: '2px', color: C.sub, fontSize: '10px', fontWeight: 800, textAlign: 'center' } }, 'Neighborhood evidence | ' + usageTotal.toLocaleString() + ' observations | gold bars = frequency | gold frame = selected | lime channel bars = observed flip sensitivity')
       );
     }
 
     function renderCaDiagram() {
       var W = CA_COLS * CA_PX, H = CA_ROWS * CA_PX, selectedX = (caInspectCol + 0.5) * CA_PX, selectedY = (caInspectRow + 0.5) * CA_PX;
-      var causeText = caCause && caCause.pattern ? 'Generation ' + caInspectRow + ', column ' + (caInspectCol + 1) + ': parents ' + caCause.pattern + ' produced ' + caCause.output + '.' : 'Generation zero seed cell at column ' + (caInspectCol + 1) + ' has no parent neighborhood.';
+      var sensitivityText = caInfluence.parents.length ? ' Counterfactual test: ' + caInfluence.decisiveCount + ' of 3 parents are decisive; flipping a decisive parent changes the result.' : ' No parent counterfactual exists on the seed row.';
+      var causeText = (caCause && caCause.pattern ? 'Generation ' + caInspectRow + ', column ' + (caInspectCol + 1) + ': parents ' + caCause.pattern + ' produced ' + caCause.output + '.' : 'Generation zero seed cell at column ' + (caInspectCol + 1) + ' has no parent neighborhood.') + sensitivityText + ' The ancestry cone traces ' + caCone.upstreamCount + ' upstream cells across ' + caCone.depth + ' generations.';
       var rects = [h('desc', { key: 'desc', id: 'ca-diagram-desc' }, causeText + ' Use arrow keys to inspect adjacent cells, Page Up and Page Down to jump ten generations, and Home or End to move through time.'), h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead })];
       for (var r = 0; r < caRows.length; r++) {
         if (r > 0 && r % 10 === 0) rects.push(h('line', { key: 'guide' + r, x1: 0, x2: W, y1: r * CA_PX, y2: r * CA_PX, stroke: dark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }));
@@ -722,12 +832,25 @@
       if (caWrap) rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.5, strokeDasharray: '5 3', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(196,181,253,0.75))', pointerEvents: 'none' } }));
       else rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#fb7185', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', opacity: 0.75, style: { pointerEvents: 'none' } }));
       rects.push(h('rect', { key: 'inspectRow', x: 0.7, y: caInspectRow * CA_PX + 0.7, width: W - 1.4, height: CA_PX - 1.4, fill: 'rgba(253,224,71,0.055)', stroke: 'none', style: { pointerEvents: 'none' } }));
+      if (caCone.depth > 1) {
+        var topLayer = caCone.layers[caCone.layers.length - 1], topCols = topLayer.nodes.map(function (node) { return node.col; });
+        var minTop = Math.min.apply(Math, topCols), maxTop = Math.max.apply(Math, topCols);
+        if (!caWrap || maxTop - minTop <= caCone.depth * 2) rects.push(h('path', { key: 'coneField', 'data-ca-cone-field': 'true', d: 'M' + selectedX + ' ' + selectedY + ' L' + ((minTop + 0.15) * CA_PX) + ' ' + ((topLayer.row + 0.5) * CA_PX) + ' L' + ((maxTop + 0.85) * CA_PX) + ' ' + ((topLayer.row + 0.5) * CA_PX) + ' Z', fill: 'rgba(167,139,250,0.075)', stroke: '#a78bfa', strokeWidth: 0.8, strokeDasharray: '3 3', vectorEffect: 'non-scaling-stroke', opacity: 0.72, style: { pointerEvents: 'none' } }));
+        caCone.layers.slice(2).reverse().forEach(function (layer, reverseIndex) {
+          var distance = caCone.depth - reverseIndex, fade = 1 - distance / (caCone.depth + 2);
+          layer.nodes.forEach(function (node) { rects.push(h('rect', { key: 'ancestor' + distance + '_' + node.col, 'data-ca-ancestor-depth': String(distance), 'data-ca-ancestor-col': String(node.col), x: node.col * CA_PX + 0.75, y: layer.row * CA_PX + 0.75, width: CA_PX - 1.5, height: CA_PX - 1.5, rx: 1, fill: node.value ? 'rgba(167,139,250,' + (0.1 + fade * 0.18).toFixed(3) + ')' : 'rgba(103,232,249,0.025)', stroke: '#a78bfa', strokeWidth: 0.75, vectorEffect: 'non-scaling-stroke', opacity: 0.28 + fade * 0.5, style: { pointerEvents: 'none' } })); });
+        });
+      }
       if (caCause && caCause.parents.length) {
         caCause.parents.forEach(function (parent, parentIndex) {
+          var influence = caInfluence.parents[parentIndex], decisive = !!(influence && influence.decisive);
           var parentX = parent.col == null ? (parentIndex === 0 ? 0 : W) : (parent.col + 0.5) * CA_PX;
-          var parentY = (caInspectRow - 0.5) * CA_PX;
-          rects.push(h('path', { key: 'causeLine' + parentIndex, d: 'M' + parentX + ' ' + parentY + ' L' + selectedX + ' ' + selectedY, fill: 'none', stroke: parent.wrapped ? '#c4b5fd' : '#67e8f9', strokeWidth: parent.wrapped ? 1.8 : 1.35, strokeDasharray: parent.wrapped ? '4 3' : undefined, vectorEffect: 'non-scaling-stroke', opacity: 0.9, style: { filter: 'drop-shadow(0 0 3px rgba(103,232,249,0.75))', pointerEvents: 'none' } }));
-          if (parent.col != null) rects.push(h('rect', { key: 'causeParent' + parentIndex, 'data-ca-parent': String(parentIndex), x: parent.col * CA_PX + 0.45, y: (caInspectRow - 1) * CA_PX + 0.45, width: CA_PX - 0.9, height: CA_PX - 0.9, rx: 1, fill: parent.value ? 'rgba(103,232,249,0.28)' : 'rgba(103,232,249,0.08)', stroke: '#67e8f9', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))', pointerEvents: 'none' } }));
+          var parentY = (caInspectRow - 0.5) * CA_PX, pathColor = decisive ? '#4ade80' : (parent.wrapped ? '#c4b5fd' : '#67e8f9');
+          rects.push(h('path', { key: 'causeLine' + parentIndex, 'data-ca-influence-path': decisive ? 'decisive' : 'contextual', d: 'M' + parentX + ' ' + parentY + ' L' + selectedX + ' ' + selectedY, fill: 'none', stroke: pathColor, strokeWidth: decisive ? 2.25 : 1.25, strokeDasharray: decisive ? undefined : (parent.wrapped ? '4 3' : '3 2'), vectorEffect: 'non-scaling-stroke', opacity: decisive ? 1 : 0.78, style: { filter: decisive ? 'drop-shadow(0 0 4px rgba(74,222,128,0.95))' : 'drop-shadow(0 0 3px rgba(103,232,249,0.65))', pointerEvents: 'none' } }));
+          if (parent.col != null) {
+            rects.push(h('rect', { key: 'causeParent' + parentIndex, 'data-ca-parent': String(parentIndex), 'data-ca-parent-influence': decisive ? 'decisive' : 'contextual', x: parent.col * CA_PX + 0.45, y: (caInspectRow - 1) * CA_PX + 0.45, width: CA_PX - 0.9, height: CA_PX - 0.9, rx: 1, fill: decisive ? (parent.value ? 'rgba(74,222,128,0.34)' : 'rgba(74,222,128,0.09)') : (parent.value ? 'rgba(103,232,249,0.2)' : 'rgba(103,232,249,0.055)'), stroke: decisive ? '#4ade80' : '#67e8f9', strokeWidth: decisive ? 1.9 : 1.25, strokeDasharray: decisive ? undefined : '2 1.5', vectorEffect: 'non-scaling-stroke', style: { filter: decisive ? 'drop-shadow(0 0 5px rgba(74,222,128,0.95))' : 'drop-shadow(0 0 3px rgba(103,232,249,0.7))', pointerEvents: 'none' } }));
+            rects.push(decisive ? h('circle', { key: 'causeMarker' + parentIndex, cx: parentX, cy: parentY, r: 1.35, fill: '#4ade80', style: { pointerEvents: 'none' } }) : h('path', { key: 'causeMarker' + parentIndex, d: 'M' + (parentX - 1.5) + ' ' + parentY + 'H' + (parentX + 1.5), stroke: '#67e8f9', strokeWidth: 0.9, vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }));
+          }
         });
       }
       rects.push(h('g', { key: 'selectedCellRow', role: 'row' },
@@ -746,20 +869,28 @@
       var W = 520, H = 92, px = 10, top = 7, bottom = 17, n = caAnalysis.densities.length;
       var x = function (i) { return px + i / Math.max(1, n - 1) * (W - px * 2); }, y = function (v) { return top + (1 - v) * (H - top - bottom); };
       var points = function (values) { return values.map(function (v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' '); };
-      var selectedDensity = caAnalysis.densities[caInspectRow] || 0, selectedEntropy = caAnalysis.entropies[caInspectRow] || 0, selectedActivity = caAnalysis.activities[caInspectRow] || 0, selectedLive = Math.round(selectedDensity * CA_COLS);
-      var legend = [{ key:'density', label:'Density', value:Math.round(selectedDensity * 100) + '%', color:'#22d3ee' }, { key:'entropy', label:'Entropy', value:selectedEntropy.toFixed(2) + ' bits', color:'#a78bfa' }, { key:'activity', label:'Activity', value:Math.round(selectedActivity * 100) + '%', color:'#fbbf24' }];
-      var causeSummary = caCause && caCause.pattern ? 'Cell ' + (caInspectCol + 1) + ': ' + caCause.pattern + ' -> ' + caCause.output + ' via rule mapping ' + caCause.index : 'Cell ' + (caInspectCol + 1) + ': seed value ' + (caCause ? caCause.output : 0) + ' (no parents)';
+      var selectedDensity = caAnalysis.densities[caInspectRow] || 0, selectedEntropy = caAnalysis.entropies[caInspectRow] || 0, selectedActivity = caAnalysis.activities[caInspectRow] || 0, selectedTemporalChange = caAnalysis.temporalChanges[caInspectRow] || 0, selectedLive = Math.round(selectedDensity * CA_COLS);
+      var legend = [{ key:'density', label:'Density', value:Math.round(selectedDensity * 100) + '%', color:'#22d3ee' }, { key:'entropy', label:'Entropy', value:selectedEntropy.toFixed(2) + ' bits', color:'#a78bfa' }, { key:'activity', label:'Edge rate', value:Math.round(selectedActivity * 100) + '%', color:'#fbbf24' }, { key:'temporal', label:'Row change', value:Math.round(selectedTemporalChange * 100) + '%', color:'#fb7185' }];
+      var causeSummary = (caCause && caCause.pattern ? 'Cell ' + (caInspectCol + 1) + ': ' + caCause.pattern + ' -> ' + caCause.output + ' via rule mapping ' + caCause.index : 'Cell ' + (caInspectCol + 1) + ': seed value ' + (caCause ? caCause.output : 0) + ' (no parents)') + ' | decisive ' + caInfluence.decisiveCount + '/3 | ' + caCone.depth + '-gen cone: ' + caCone.upstreamCount + ' upstream cells';
+      function inspectSignalFromEvent(e) {
+        var bounds = e.currentTarget && e.currentTarget.getBoundingClientRect ? e.currentTarget.getBoundingClientRect() : null;
+        if (!bounds || !bounds.width) return;
+        var localX = Math.max(px, Math.min(W - px, (e.clientX - bounds.left) / bounds.width * W));
+        setCaInspectRow(Math.max(0, Math.min(n - 1, Math.round((localX - px) / (W - px * 2) * (n - 1)))));
+      }
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', maxWidth: '560px' } },
-        h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } }, h('span', { style: { color: C.sub, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Generation ' + caInspectRow + ' | ' + selectedLive + ' live'), h('span', { 'data-ca-cause-detail': 'true', style: { color: dark ? '#fde68a' : '#92400e', fontSize: '10px', fontWeight: 900 } }, causeSummary), legend.map(function (item) { return h('span', { key: item.key, style: { display: 'inline-flex', alignItems: 'center', gap: '4px', color: C.text, fontSize: '10px', fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: item.key === 'entropy' ? '7px' : '10px', height: item.key === 'activity' ? '7px' : '3px', transform: item.key === 'activity' ? 'rotate(45deg)' : 'none', borderRadius: item.key === 'density' ? '999px' : '1px', background: item.color } }), item.label + ' ' + item.value); })),
-        h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Rule ' + rule + ' signal profile with ' + (caWrap ? 'wrapped ring boundaries' : 'fixed empty boundaries') + ' across ' + n + ' generations. Selected generation ' + caInspectRow + ': density ' + Math.round(selectedDensity * 100) + ' percent, entropy ' + selectedEntropy.toFixed(2) + ' bits per cell, activity ' + Math.round(selectedActivity * 100) + ' percent. Mean entropy across all generations ' + caAnalysis.meanEntropy.toFixed(2) + ' bits.', style: { width: '100%', height: H + 'px', display: 'block' } },
+        h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } }, h('span', { style: { color: C.sub, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Generation ' + caInspectRow + ' | ' + selectedLive + ' live | click chart to inspect time'), h('span', { 'data-ca-cause-detail': 'true', style: { color: dark ? '#fde68a' : '#92400e', fontSize: '10px', fontWeight: 900 } }, causeSummary), legend.map(function (item) { return h('span', { key: item.key, style: { display: 'inline-flex', alignItems: 'center', gap: '4px', color: C.text, fontSize: '10px', fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: item.key === 'entropy' ? '7px' : '10px', height: item.key === 'activity' ? '7px' : '3px', transform: item.key === 'activity' ? 'rotate(45deg)' : 'none', borderRadius: item.key === 'density' ? '999px' : '1px', background: item.color } }), item.label + ' ' + item.value); })),
+        h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Rule ' + rule + ' signal profile with ' + (caWrap ? 'wrapped ring boundaries' : 'fixed empty boundaries') + ' across ' + n + ' generations. Selected generation ' + caInspectRow + ': density ' + Math.round(selectedDensity * 100) + ' percent, entropy ' + selectedEntropy.toFixed(2) + ' bits per cell, spatial edge rate ' + Math.round(selectedActivity * 100) + ' percent, row-to-row change ' + Math.round(selectedTemporalChange * 100) + ' percent. Mean entropy across all generations ' + caAnalysis.meanEntropy.toFixed(2) + ' bits and mean row-to-row change ' + Math.round(caAnalysis.meanTemporalChange * 100) + ' percent. Click the chart to inspect a generation.', onClick: inspectSignalFromEvent, 'data-ca-signal-profile': 'true', style: { width: '100%', height: H + 'px', display: 'block', cursor: 'crosshair' } },
           [0,0.5,1].map(function (level) { return h('line', { key: level, x1: px, x2: W - px, y1: y(level), y2: y(level), stroke: dark ? 'rgba(148,163,184,0.18)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
           h('line', { x1: x(caInspectRow), x2: x(caInspectRow), y1: top, y2: H - bottom, stroke: '#fde047', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 3px rgba(253,224,71,0.8))' } }),
-          h('polyline', { points: points(caAnalysis.densities), fill: 'none', stroke: '#22d3ee', strokeWidth: 2.1, vectorEffect: 'non-scaling-stroke' }),
-          h('polyline', { points: points(caAnalysis.entropies), fill: 'none', stroke: '#a78bfa', strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }),
-          h('polyline', { points: points(caAnalysis.activities), fill: 'none', stroke: '#fbbf24', strokeWidth: 1.7, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { 'data-ca-signal': 'density', points: points(caAnalysis.densities), fill: 'none', stroke: '#22d3ee', strokeWidth: 2.1, vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { 'data-ca-signal': 'entropy', points: points(caAnalysis.entropies), fill: 'none', stroke: '#a78bfa', strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { 'data-ca-signal': 'spatial-edge', points: points(caAnalysis.activities), fill: 'none', stroke: '#fbbf24', strokeWidth: 1.7, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { 'data-ca-signal': 'temporal-change', points: points(caAnalysis.temporalChanges), fill: 'none', stroke: '#fb7185', strokeWidth: 1.65, strokeDasharray: '2 2', vectorEffect: 'non-scaling-stroke' }),
           h('circle', { cx: x(caInspectRow), cy: y(selectedDensity), r: 3.1, fill: '#22d3ee' }),
           h('rect', { x: x(caInspectRow) - 2.7, y: y(selectedEntropy) - 2.7, width: 5.4, height: 5.4, rx: 1, fill: '#a78bfa' }),
           h('rect', { x: x(caInspectRow) - 2.4, y: y(selectedActivity) - 2.4, width: 4.8, height: 4.8, transform: 'rotate(45 ' + x(caInspectRow) + ' ' + y(selectedActivity) + ')', fill: '#fbbf24' }),
+          h('path', { 'data-ca-temporal-marker': String(caInspectRow), d: 'M' + (x(caInspectRow) - 3) + ' ' + (y(selectedTemporalChange) - 3) + 'L' + (x(caInspectRow) + 3) + ' ' + (y(selectedTemporalChange) + 3) + 'M' + (x(caInspectRow) + 3) + ' ' + (y(selectedTemporalChange) - 3) + 'L' + (x(caInspectRow) - 3) + ' ' + (y(selectedTemporalChange) + 3), stroke: '#fb7185', strokeWidth: 1.4, vectorEffect: 'non-scaling-stroke' }),
           h('text', { x: px, y: H - 3, fill: C.sub, style: { fontSize: '8px', fontWeight: 700 } }, 'gen 0'),
           h('text', { x: W - px, y: H - 3, textAnchor: 'end', fill: C.sub, style: { fontSize: '8px', fontWeight: 700 } }, 'gen ' + (n - 1))
         )
@@ -787,7 +918,7 @@
         renderCaDiagram(),
         renderCaAnalysis(),
         h('div', { style: { fontSize: '11px', color: C.sub, marginTop: '-4px', textAlign: 'center' } },
-          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · ' + (caWrap ? 'wrapped ring' : 'fixed edges') + ' · click any cell | arrow keys move | Page Up/Down jumps through time'),
+          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · ' + (caWrap ? 'wrapped ring' : 'fixed edges') + ' · solid lime = decisive | dashed cyan = contextual | violet = ancestry | arrows move'),
         h('div', null,
           h('div', { style: { fontSize: '12px', color: C.sub, fontWeight: 700, marginBottom: '6px' } }, 'Try a famous rule:'),
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
@@ -986,14 +1117,61 @@
     cause.pattern = '' + cause.parents[0].value + cause.parents[1].value + cause.parents[2].value;
     return cause;
   }
+  function caCounterfactualInfluence(bits, cause) {
+    if (!cause || cause.index == null || !bits || bits.length < 8) return { baseOutput: cause ? cause.output : 0, parents: [], decisiveCount: 0 };
+    var baseOutput = bits[cause.index] ? 1 : 0, parents = [], decisiveCount = 0;
+    for (var position = 0; position < 3; position++) {
+      var alternateIndex = cause.index ^ (1 << (2 - position)), alternateOutput = bits[alternateIndex] ? 1 : 0;
+      var decisive = alternateOutput !== baseOutput;
+      if (decisive) decisiveCount++;
+      parents.push({ position: position, decisive: decisive, alternateIndex: alternateIndex, alternateOutput: alternateOutput });
+    }
+    return { baseOutput: baseOutput, parents: parents, decisiveCount: decisiveCount };
+  }
+  function caRuleSensitivityProfile(bits, neighborhoodCounts) {
+    var counts = neighborhoodCounts || [0,0,0,0,0,0,0,0];
+    var total = counts.reduce(function (sum, count) { return sum + (count || 0); }, 0);
+    var positions = [0,1,2].map(function (position) {
+      var mask = 1 << (2 - position), decisiveObservations = 0;
+      for (var index = 0; index < 8; index++) if ((bits[index] ? 1 : 0) !== (bits[index ^ mask] ? 1 : 0)) decisiveObservations += counts[index] || 0;
+      return { position: position, decisiveObservations: decisiveObservations, rate: total ? decisiveObservations / total : 0 };
+    });
+    return { total: total, positions: positions };
+  }
+  function caCausalCone(rows, rowIndex, colIndex, wrap, depth) {
+    rows = rows || [];
+    if (!rows.length || rowIndex < 0 || rowIndex >= rows.length || colIndex < 0 || colIndex >= rows[rowIndex].length) return { layers: [], depth: 0, upstreamCount: 0 };
+    var cols = rows[rowIndex].length, layers = [{ row: rowIndex, nodes: [{ col: colIndex, value: rows[rowIndex][colIndex] ? 1 : 0 }] }], frontier = [colIndex], upstreamCount = 0;
+    var maxDepth = Math.min(Math.max(0, depth || 0), rowIndex);
+    for (var distance = 1; distance <= maxDepth; distance++) {
+      var seen = {}, next = [];
+      frontier.forEach(function (sourceCol) {
+        [-1,0,1].forEach(function (offset) {
+          var candidate = sourceCol + offset;
+          if (wrap) candidate = (candidate + cols) % cols;
+          else if (candidate < 0 || candidate >= cols) return;
+          if (!seen[candidate]) { seen[candidate] = true; next.push(candidate); }
+        });
+      });
+      next.sort(function (a, b) { return a - b; });
+      var sourceRow = rowIndex - distance;
+      layers.push({ row: sourceRow, nodes: next.map(function (nodeCol) { return { col: nodeCol, value: rows[sourceRow][nodeCol] ? 1 : 0 }; }) });
+      upstreamCount += next.length;
+      frontier = next;
+    }
+    return { layers: layers, depth: layers.length - 1, upstreamCount: upstreamCount };
+  }
   function analyzeCaRows(rows, wrap) {
-    var densities = [], entropies = [], activities = [], neighborhoodCounts = [0,0,0,0,0,0,0,0];
+    var densities = [], entropies = [], activities = [], temporalChanges = [], neighborhoodCounts = [0,0,0,0,0,0,0,0];
     (rows || []).forEach(function (row, rowIndex) {
       var live = 0, changes = 0; for (var i = 0; i < row.length; i++) { live += row[i]; if (i > 0 && row[i] !== row[i - 1]) changes++; }
       var p = row.length ? live / row.length : 0;
       densities.push(p);
       entropies.push(p <= 0 || p >= 1 ? 0 : -(p * Math.log(p) / Math.log(2) + (1 - p) * Math.log(1 - p) / Math.log(2)));
       activities.push(row.length > 1 ? changes / (row.length - 1) : 0);
+      var temporalChange = 0;
+      if (rowIndex > 0 && row.length) for (var priorCell = 0; priorCell < row.length; priorCell++) if (row[priorCell] !== rows[rowIndex - 1][priorCell]) temporalChange++;
+      temporalChanges.push(rowIndex > 0 && row.length ? temporalChange / row.length : 0);
       if (rowIndex < rows.length - 1) for (var c = 0; c < row.length; c++) {
         var left = wrap ? row[(c - 1 + row.length) % row.length] : (c > 0 ? row[c - 1] : 0);
         var right = wrap ? row[(c + 1) % row.length] : (c < row.length - 1 ? row[c + 1] : 0);
@@ -1001,13 +1179,46 @@
       }
     });
     var mean = function (values) { return values.length ? values.reduce(function (sum, value) { return sum + value; }, 0) / values.length : 0; };
-    return { densities: densities, entropies: entropies, activities: activities, neighborhoodCounts: neighborhoodCounts, neighborhoodTotal: neighborhoodCounts.reduce(function (sum, count) { return sum + count; }, 0), finalDensity: densities.length ? densities[densities.length - 1] : 0, meanDensity: mean(densities), meanEntropy: mean(entropies), meanActivity: mean(activities) };
+    return { densities: densities, entropies: entropies, activities: activities, temporalChanges: temporalChanges, neighborhoodCounts: neighborhoodCounts, neighborhoodTotal: neighborhoodCounts.reduce(function (sum, count) { return sum + count; }, 0), finalDensity: densities.length ? densities[densities.length - 1] : 0, meanDensity: mean(densities), meanEntropy: mean(entropies), meanActivity: mean(activities), meanTemporalChange: mean(temporalChanges) };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
   //  REGISTER
   // ═══════════════════════════════════════════════════════════════════════
-  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, analyzeCaRows: analyzeCaRows, patterns: LIFE_PATTERNS };
+  function analyzeLifePhase(samples, limit) {
+    var source = (samples || []).slice(-Math.max(1, limit || 100));
+    var points = source.map(function (sample) { return { gen: sample.gen, population: sample.pop || 0, turnover: (sample.born || 0) + (sample.died || 0), births: sample.born || 0, deaths: sample.died || 0 }; });
+    var maxPopulation = 1, maxTurnover = 1;
+    points.forEach(function (point) { maxPopulation = Math.max(maxPopulation, point.population); maxTurnover = Math.max(maxTurnover, point.turnover); });
+    return { points: points, maxPopulation: maxPopulation, maxTurnover: maxTurnover, latest: points.length ? points[points.length - 1] : null };
+  }
+  function analyzeLifeForecastResidency(series, horizon) {
+    var limit = Math.max(0, Math.min((series || []).length, horizon || 0));
+    var sample = limit && series[0] && series[0].grid, counts = sample ? emptyGrid(sample.length, sample[0].length) : [];
+    for (var step = 0; step < limit; step++) for (var r = 0; r < series[step].grid.length; r++) for (var c = 0; c < series[step].grid[r].length; c++) if (series[step].grid[r][c]) counts[r][c]++;
+    var activeCells = 0, persistentCells = 0;
+    for (var row = 0; row < counts.length; row++) for (var col = 0; col < counts[row].length; col++) if (counts[row][col]) { activeCells++; if (counts[row][col] === limit) persistentCells++; }
+    return { grid: counts, horizon: limit, activeCells: activeCells, persistentCells: persistentCells };
+  }  function compareLifeStates(current, projected) {
+    var retained = 0, appeared = 0, gone = 0;
+    for (var r = 0; r < (current || []).length; r++) for (var c = 0; c < current[r].length; c++) {
+      if (current[r][c] && projected[r][c]) retained++;
+      else if (!current[r][c] && projected[r][c]) appeared++;
+      else if (current[r][c] && !projected[r][c]) gone++;
+    }
+    return { retained: retained, appeared: appeared, gone: gone, population: retained + appeared };
+  }
+  function projectLifeFuture(grid, ages, steps, wrap, birthRule, survivalRule) {
+    var current = (grid || []).map(function (row) { return row.slice(); });
+    var currentAges = ages ? ages.map(function (row) { return row.slice(); }) : null, out = [];
+    for (var step = 1; step <= Math.max(0, steps || 0); step++) {
+      var next = stepLifeDetailed(current, currentAges, wrap, birthRule, survivalRule);
+      out.push({ step: step, population: countPop(next.grid), turnover: next.born + next.died, births: next.born, survived: next.survived, deaths: next.died, grid: next.grid, ages: next.ages });
+      current = next.grid; currentAges = next.ages;
+    }
+    return out;
+  }
+  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, caCounterfactualInfluence: caCounterfactualInfluence, caRuleSensitivityProfile: caRuleSensitivityProfile, caCausalCone: caCausalCone, analyzeCaRows: analyzeCaRows, analyzeLifePhase: analyzeLifePhase, analyzeLifeForecastResidency: analyzeLifeForecastResidency, compareLifeStates: compareLifeStates, projectLifeFuture: projectLifeFuture, patterns: LIFE_PATTERNS };
 
   window.StemLab.registerTool('cellularLab', {
     icon: '🧫',

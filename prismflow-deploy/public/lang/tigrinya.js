@@ -20237,7 +20237,8 @@
       "navigate": "ምልሳስ",
       "pipeline": "ናይ ፓይፕላይን ውጽኢታት",
       "tools": "መሳርሒ ክፈት",
-      "voice": "ድምጺ"
+      "voice": "ድምጺ",
+      "recent": "Recent"
     },
     "input_aria": "ትእዛዛት ድለ",
     "list_aria": "ዝሰማምዑ ትእዛዛት",

@@ -1,24 +1,25 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-13T18:42:38.070Z",
+  "generatedAt": "2026-07-14T02:14:11.020Z",
   "summary": {
     "legacyQuestions": 2933,
-    "nativeQaQuestions": 500,
+    "nativeQaQuestions": 1000,
     "nativeOriginalQaQuestions": 8,
-    "legacyReviewPassedQuestions": 492,
+    "sourceAuthoredQaQuestions": 30,
+    "legacyReviewPassedQuestions": 962,
     "nativeTargetQuestions": 2933,
-    "nativeRemainingToTarget": 2441,
+    "nativeRemainingToTarget": 1971,
     "flashcards": 415,
     "memoryAids": 255,
     "textbookChapters": 49,
     "textbookSections": 278,
-    "knowledgeChecks": 93,
+    "knowledgeChecks": 98,
     "diagramTemplates": 25,
-    "diagramPlacements": 54,
+    "diagramPlacements": 57,
     "termDefinitions": 1583,
-    "chapterReferences": 297,
+    "chapterReferences": 332,
     "aiReflectiveCodas": 49,
-    "sourceReviewedChapters": 28,
+    "sourceReviewedChapters": 33,
     "sourceReviewedFlashcards": 9,
     "sourceReviewedMemoryAids": 8,
     "editorialReviewedSourcePendingMemoryAids": 2,
@@ -123,8 +124,8 @@
       "contentType": "textbook chapters",
       "count": 49,
       "status": "review-in-progress",
-      "reviewedCount": 28,
-      "nextGate": "21 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review"
+      "reviewedCount": 33,
+      "nextGate": "16 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review"
     },
     {
       "contentType": "interactive diagrams",
@@ -187,8 +188,8 @@
         "weightPercent": 10,
         "legacySharePercent": 17,
         "target": 500,
-        "currentQaPassed": 49,
-        "remaining": 451
+        "currentQaPassed": 99,
+        "remaining": 401
       },
       {
         "domainId": 2,
@@ -197,8 +198,8 @@
         "weightPercent": 13,
         "legacySharePercent": 11.7,
         "target": 344,
-        "currentQaPassed": 64,
-        "remaining": 280
+        "currentQaPassed": 129,
+        "remaining": 215
       },
       {
         "domainId": 3,
@@ -207,8 +208,8 @@
         "weightPercent": 11,
         "legacySharePercent": 11.4,
         "target": 335,
-        "currentQaPassed": 54,
-        "remaining": 281
+        "currentQaPassed": 104,
+        "remaining": 231
       },
       {
         "domainId": 4,
@@ -217,8 +218,8 @@
         "weightPercent": 12,
         "legacySharePercent": 12.4,
         "target": 364,
-        "currentQaPassed": 59,
-        "remaining": 305
+        "currentQaPassed": 119,
+        "remaining": 245
       },
       {
         "domainId": 5,
@@ -227,8 +228,8 @@
         "weightPercent": 16,
         "legacySharePercent": 11.6,
         "target": 341,
-        "currentQaPassed": 79,
-        "remaining": 262
+        "currentQaPassed": 152,
+        "remaining": 189
       },
       {
         "domainId": 6,
@@ -237,8 +238,8 @@
         "weightPercent": 15,
         "legacySharePercent": 12.9,
         "target": 378,
-        "currentQaPassed": 74,
-        "remaining": 304
+        "currentQaPassed": 149,
+        "remaining": 229
       },
       {
         "domainId": 7,
@@ -247,8 +248,8 @@
         "weightPercent": 7,
         "legacySharePercent": 11.7,
         "target": 343,
-        "currentQaPassed": 34,
-        "remaining": 309
+        "currentQaPassed": 59,
+        "remaining": 284
       },
       {
         "domainId": 8,
@@ -257,8 +258,8 @@
         "weightPercent": 16,
         "legacySharePercent": 11.2,
         "target": 328,
-        "currentQaPassed": 79,
-        "remaining": 249
+        "currentQaPassed": 151,
+        "remaining": 177
       }
     ],
     "practiceSampling": "Build practice sets using blueprint weights even though the reviewed source pool is not distributed in those proportions."

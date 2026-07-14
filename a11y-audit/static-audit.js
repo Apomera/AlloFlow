@@ -257,16 +257,16 @@ const CHECKS = [
     name: 'Modal overlay without dialog semantics',
     wcag: '4.1.2 Name/Role/Value, 2.4.3 Focus Order',
     severity: 'major',
-    description: 'Fixed overlay div lacks role="dialog", aria-modal, and focus trap',
+    description: 'Fixed overlay div lacks role="dialog" or role="alertdialog", aria-modal, and focus trap',
     test(line, lineNum, lines) {
       const isOverlay = /fixed\s+inset-0|position\s*:\s*['"]?fixed/.test(line) &&
                         /z-?\[?\d{3,}|z-50|z-\[999/.test(line);
       if (!isOverlay) return false;
-      const context = lines.slice(lineNum - 1, lineNum + 5).join(' ');
-      if (/role\s*[:=]\s*['"]dialog['"]/.test(context)) return false;
+      const context = lines.slice(lineNum - 1, lineNum + 12).join(' ');
+      if (/role\s*[:=]\s*['"](?:alert)?dialog['"]/.test(context)) return false;
       return true;
     },
-    fix: 'Add role="dialog", aria-modal="true", aria-labelledby, focus trap, and Escape key handler.',
+    fix: 'Add role="dialog" or role="alertdialog", aria-modal="true", aria-labelledby, focus trap, and Escape key handler.',
   },
   {
     id: 'DRAGDROP-001',
@@ -379,7 +379,7 @@ function scanFile(filePath) {
 
 // ── Report Generation ──────────────────────────────────────────────────────
 
-function generateReport(allFindings, outputJson) {
+function generateReport(allFindings, outputJson, filesScanned) {
   const bySeverity = { critical: [], major: [], minor: [] };
   const byCheck = {};
   const byFile = {};
@@ -400,7 +400,7 @@ function generateReport(allFindings, outputJson) {
         critical: bySeverity.critical.length,
         major: bySeverity.major.length,
         minor: bySeverity.minor.length,
-        filesScanned: Object.keys(byFile).length,
+        filesScanned,
         checksRun: CHECKS.length,
       },
       byCheck: Object.entries(byCheck).map(([id, findings]) => ({
@@ -425,7 +425,7 @@ function generateReport(allFindings, outputJson) {
   console.log('  ' + new Date().toISOString());
   console.log('='.repeat(72));
 
-  console.log(`\n  Files scanned:  ${Object.keys(byFile).length}`);
+  console.log(`\n  Files scanned:  ${filesScanned}`);
   console.log(`  Checks run:     ${CHECKS.length}`);
   console.log(`  Total findings: ${allFindings.length}`);
   console.log(`    Critical:     ${bySeverity.critical.length}`);
@@ -484,7 +484,8 @@ function generateReport(allFindings, outputJson) {
   const score = Math.max(0, Math.round(maxScore - penalty));
   console.log('\n' + '-'.repeat(72));
   console.log(`  ESTIMATED COMPLIANCE SCORE: ${score}/100`);
-  if (score >= 90) console.log('  Status: NEAR COMPLIANT -- minor issues remain');
+  if (allFindings.length === 0) console.log('  Status: NO AUTOMATED FINDINGS -- manual verification still required');
+  else if (score >= 90) console.log('  Status: NEAR COMPLIANT -- minor issues remain');
   else if (score >= 70) console.log('  Status: PARTIAL COMPLIANCE -- major gaps exist');
   else if (score >= 50) console.log('  Status: NON-COMPLIANT -- significant remediation needed');
   else console.log('  Status: NON-COMPLIANT -- critical barriers present');
@@ -516,7 +517,7 @@ function main() {
     console.log(label);
   }
 
-  generateReport(allFindings, outputJson);
+  generateReport(allFindings, outputJson, files.length);
 }
 
 main();

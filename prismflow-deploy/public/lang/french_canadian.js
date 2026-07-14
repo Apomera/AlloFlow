@@ -20642,7 +20642,8 @@
       "navigate": "Naviguer",
       "pipeline": "Résultats du pipeline",
       "tools": "Ouvrir un outil",
-      "voice": "Voix"
+      "voice": "Voix",
+      "recent": "Recent"
     },
     "input_aria": "Rechercher des commandes",
     "list_aria": "Commandes correspondantes",

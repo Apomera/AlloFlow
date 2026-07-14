@@ -20931,7 +20931,8 @@
       "navigate": "Mus taug",
       "pipeline": "Cov tshwm sim Pipeline",
       "tools": "Qhib ib lub cuab yeej",
-      "voice": "Suab"
+      "voice": "Suab",
+      "recent": "Recent"
     },
     "input_aria": "Tshawb cov lus haujlwm",
     "list_aria": "Cov lus haujlwm phim",

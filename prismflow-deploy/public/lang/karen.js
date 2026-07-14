@@ -12327,7 +12327,8 @@
       "navigate": "လဲၤထွဲ",
       "pipeline": "Pipeline အစၢ",
       "tools": "အိးထီၣ်စုကဝဲၤ",
-      "voice": "ကလုၢ်"
+      "voice": "ကလုၢ်",
+      "recent": "Recent"
     },
     "input_aria": "ဃုတၢ်ပၢ",
     "list_aria": "တၢ်ပၢလၢအဘၣ်လိာ်",

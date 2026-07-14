@@ -12334,7 +12334,8 @@
       "navigate": "Etetal",
       "pipeline": "Tōprak in Pipeline",
       "tools": "Kapeḷḷọk juon kein jerbal",
-      "voice": "Ainikien"
+      "voice": "Ainikien",
+      "recent": "Recent"
     },
     "input_aria": "Pukot command ko",
     "list_aria": "Command ko rejjet",

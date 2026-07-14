@@ -20811,6 +20811,7 @@
       "navigate": "नेव्हिगेट करा",
       "pipeline": "पाइपलाइन निकाल",
       "tools": "एक साधन उघडा",
+      "recent": "Recent",
       "voice": "आवाज"
     },
     "input_aria": "आज्ञा शोधा",

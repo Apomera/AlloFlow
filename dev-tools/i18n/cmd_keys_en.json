@@ -281,6 +281,7 @@
   "palette.group.help": "Help",
   "palette.group.navigate": "Navigate",
   "palette.group.pipeline": "Pipeline results",
+  "palette.group.recent": "Recent",
   "palette.group.tools": "Open a tool",
   "palette.group.voice": "Voice",
   "palette.input_aria": "Search commands",

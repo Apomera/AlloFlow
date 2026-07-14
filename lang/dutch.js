@@ -20811,6 +20811,7 @@
       "navigate": "Navigeren",
       "pipeline": "Pijplijnresultaten",
       "tools": "Een tool openen",
+      "recent": "Recent",
       "voice": "Spraak"
     },
     "input_aria": "Opdrachten zoeken",

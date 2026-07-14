@@ -36,4 +36,13 @@ describe('WCAG 2.2 audit harness', () => {
     expect(source).toContain('2.5.7 Dragging Movements');
     expect(source).toContain("const STANDARD = 'WCAG 2.2 AA'");
   });
+
+  it('accepts alertdialog semantics and reports zero-finding scans honestly', () => {
+    const source = read('a11y-audit/static-audit.js');
+    expect(source).toContain("(?:alert)?dialog");
+    expect(source).toContain('lineNum + 12');
+    expect(source).toContain('generateReport(allFindings, outputJson, files.length)');
+    expect(source).toContain('NO AUTOMATED FINDINGS -- manual verification still required');
+  });
+
 });

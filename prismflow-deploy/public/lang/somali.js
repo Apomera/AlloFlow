@@ -20111,7 +20111,8 @@
       "navigate": "U soco",
       "pipeline": "Natiijooyinka Pipeline",
       "tools": "Fur qalab",
-      "voice": "Cod"
+      "voice": "Cod",
+      "recent": "Recent"
     },
     "input_aria": "Raadi amarro",
     "list_aria": "Amarrada u dhigma",

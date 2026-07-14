@@ -20938,7 +20938,8 @@
       "navigate": "Kewayawa",
       "pipeline": "Sakamakon Pipeline",
       "tools": "Buɗe kayan aiki",
-      "voice": "Murya"
+      "voice": "Murya",
+      "recent": "Recent"
     },
     "input_aria": "Bincika umarni",
     "list_aria": "Umarni masu dacewa",

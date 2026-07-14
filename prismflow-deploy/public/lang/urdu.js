@@ -20816,7 +20816,8 @@
       "navigate": "نیویگیٹ",
       "pipeline": "Pipeline کے نتائج",
       "tools": "ایک اوزار کھولیں",
-      "voice": "آواز"
+      "voice": "آواز",
+      "recent": "Recent"
     },
     "input_aria": "کمانڈز تلاش کریں",
     "list_aria": "مماثل کمانڈز",

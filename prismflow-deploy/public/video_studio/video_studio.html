@@ -350,6 +350,35 @@
         <button class="action" id="demoStartBtn" disabled>3 · Record the demo</button>
         <button class="danger" id="demoStopBtn" hidden>🛑 Stop demo</button>
       </div>
+      <details id="demoPolishPanel" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px">
+        <summary style="cursor:pointer;font-weight:700">Tutorial polish</summary>
+        <div class="row" style="margin-top:9px">
+          <label><input type="checkbox" id="demoOpeningCardChk" checked> Opening title</label>
+          <input type="text" id="demoOpeningTitle" maxlength="120" size="28" placeholder="Uses the tutorial goal when blank" aria-label="Opening title text">
+          <label for="demoTransitionStyle">Step transitions</label>
+          <select id="demoTransitionStyle" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+            <option value="smooth" selected>Smooth fade</option>
+            <option value="none">None</option>
+          </select>
+          <label><input type="checkbox" id="demoCursorEmphasisChk" checked> Emphasize cursor targets</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label><input type="checkbox" id="demoClosingCardChk"> Closing card</label>
+          <input type="text" id="demoClosingText" maxlength="120" size="28" value="Thanks for watching" aria-label="Closing card text">
+          <span class="status" style="margin-top:0">Cards and smooth fades are applied during export. Cursor emphasis is captured live around tutorial targets.</span>
+        </div>
+      </details>
+      <div class="row" style="margin:0 0 8px" aria-label="Reusable tutorial templates">
+        <label for="demoTemplateSelect">Tutorial template</label>
+        <select id="demoTemplateSelect" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px;min-width:190px">
+          <option value="">Saved templates...</option>
+        </select>
+        <input type="text" id="demoTemplateName" maxlength="80" size="22" placeholder="Template name" aria-label="Tutorial template name">
+        <button class="quiet" id="demoTemplateSaveBtn" disabled>Save as template</button>
+        <button class="quiet" id="demoTemplateLoadBtn" disabled>Load template</button>
+        <button class="quiet" id="demoDuplicateBtn" disabled>Duplicate tutorial</button>
+        <button class="quiet" id="demoTemplateDeleteBtn" disabled>Delete template</button>
+      </div>
       <div class="row" style="margin:0 0 8px">
         <button class="quiet" id="demoOfficialTextBtn">Use official Text Adaptation tutorial</button>
         <button class="quiet" id="demoNarrCancelBtn" hidden>Cancel narration</button>
@@ -1007,6 +1036,14 @@
             <option value="bold-contrast">bold contrast</option>
             <option value="calm-family">calm family</option>
             <option value="tutorial-step">tutorial step</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="closingCardChk"> 2.5s closing card</label>
+        <input type="text" id="closingCardText" data-export-pref maxlength="120" size="20" value="Thanks for watching" aria-label="Closing card text">
+        <label>Step transitions:
+          <select id="demoStepTransition" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+            <option value="none">none</option>
+            <option value="smooth">smooth fade</option>
           </select>
         </label>
         <label>Captions:
@@ -5024,7 +5061,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         take.isDemo = true;
         take.demoExpectedNarrationCount = autoNarrationVoice ? demoCues.length : 0;
         take.demoAudioMode = autoNarrationVoice ? 'automatic' : ($('demoAudioMode').value || 'captions');
-        demoState.active = false; demoState.events = []; demoState.activeSteps = [];
+        take.demoPolish = cleanDemoPolish(demoState.activePolish);
+        demoState.active = false; demoState.activePolish = null; demoState.events = []; demoState.activeSteps = [];
         cleanupOfficialTutorial();
         restoreDemoMicPreference();
         setStatus($('demoStatus'), demoCues.length ? 'Demo take saved with ' + demoCues.length + ' instructional captions — review them in Edit & Captions before exporting.' : 'Demo take saved (no step captions were recorded).', demoCues.length ? 'ok' : 'warn');
@@ -5436,7 +5474,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), transcriptCleanupQueue: Array.isArray(r.transcriptCleanupQueue) ? r.transcriptCleanupQueue.slice(0, 240) : [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, zooms: r.zooms || [], audio: cleanAudioState(r.audio, r.duration || 0), musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), transcriptCleanupQueue: Array.isArray(r.transcriptCleanupQueue) ? r.transcriptCleanupQueue.slice(0, 240) : [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, isDemo: !!r.isDemo, demoPolish: r.demoPolish ? cleanDemoPolish(r.demoPolish) : null, demoAudioMode: r.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(r.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(r.demoQualityScore) || 0), zooms: r.zooms || [], audio: cleanAudioState(r.audio, r.duration || 0), musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -8285,6 +8323,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     selectedTakeId = id;
     var t = currentTake();
     if (!t) return;
+    if (t.demoPolish) {
+      var demoPolish = cleanDemoPolish(t.demoPolish);
+      if (demoPolish.openingTitle) $('titleInput').value = demoPolish.openingTitle;
+      $('titleCardChk').checked = demoPolish.openingEnabled;
+      $('titleCardStyle').value = 'tutorial-step';
+      $('closingCardChk').checked = demoPolish.closingEnabled;
+      $('closingCardText').value = demoPolish.closingText;
+      $('demoStepTransition').value = demoPolish.transition;
+    }
     $('editVideo').src = t.url;
     $('trimStart').value = '0';
     $('trimEnd').value = '0';
@@ -10439,7 +10486,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var DEMO_DRAFT_MAX_AGE = 12 * 60 * 60 * 1000;
   var DEMO_CONTINUATION_KEY = 'vs_demo_continuation_v1';
   var DEMO_CONTINUATION_MAX_AGE = 12 * 60 * 60 * 1000;
-  var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
+  var DEMO_TEMPLATE_KEY = 'vs_demo_templates_v1';
+  var demoTemplates = [];
+  var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, activePolish: null, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
   function cleanDemoResultHold(value) {
     if (value == null || value === '') return 2.2;
     var seconds = Number(value);
@@ -10500,8 +10549,139 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       paramNames: (Array.isArray(s.paramNames) ? s.paramNames : []).slice(0, 8).map(function (name) { return String(name).slice(0, 40); }).filter(Boolean),
       script: script,
       pauseAfter: cleanDemoResultHold(s.pauseAfter),
-      _included: s._included !== false
+      _included: s._included !== false,
+      id: String(s.id || s.commandId || '').slice(0, 60),
+      anchorId: String(s.anchorId || '').slice(0, 90),
+      beats: (Array.isArray(s.beats) ? s.beats : []).slice(0, 4).map(function (beat) {
+        return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').trim().slice(0, 220) };
+      }).filter(function (beat) { return beat.text; })
     };
+  }
+  function cleanDemoPolish(value) {
+    var p = value && typeof value === 'object' ? value : {};
+    return {
+      openingEnabled: p.openingEnabled !== false,
+      openingTitle: String(p.openingTitle || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 120),
+      transition: p.transition === 'none' ? 'none' : 'smooth',
+      cursorEmphasis: p.cursorEmphasis !== false,
+      closingEnabled: !!p.closingEnabled,
+      closingText: (String(p.closingText || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 120) || 'Thanks for watching')
+    };
+  }
+  function currentDemoPolish() {
+    return cleanDemoPolish({
+      openingEnabled: $('demoOpeningCardChk').checked,
+      openingTitle: $('demoOpeningTitle').value || $('demoGoal').value,
+      transition: $('demoTransitionStyle').value,
+      cursorEmphasis: $('demoCursorEmphasisChk').checked,
+      closingEnabled: $('demoClosingCardChk').checked,
+      closingText: $('demoClosingText').value
+    });
+  }
+  function applyDemoPolish(value) {
+    var p = cleanDemoPolish(value);
+    $('demoOpeningCardChk').checked = p.openingEnabled;
+    $('demoOpeningTitle').value = p.openingTitle;
+    $('demoTransitionStyle').value = p.transition;
+    $('demoCursorEmphasisChk').checked = p.cursorEmphasis;
+    $('demoClosingCardChk').checked = p.closingEnabled;
+    $('demoClosingText').value = p.closingText;
+    return p;
+  }
+  function cleanDemoTemplate(value) {
+    var t = value && typeof value === 'object' ? value : {};
+    var steps = (Array.isArray(t.steps) ? t.steps : []).slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
+    if (!steps.length) return null;
+    return {
+      id: String(t.id || ('tpl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6))).replace(/[^a-z0-9_-]/gi, '').slice(0, 60),
+      name: (String(t.name || 'Tutorial template').trim().replace(/[\r\n]+/g, ' ').slice(0, 80) || 'Tutorial template'),
+      goal: String(t.goal || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 300),
+      audioMode: String(t.audioMode || 'auto-Kore').slice(0, 40),
+      officialId: String(t.officialId || '').slice(0, 60) || null,
+      polish: cleanDemoPolish(t.polish),
+      steps: steps,
+      savedAt: Math.max(0, Number(t.savedAt) || Date.now())
+    };
+  }
+  function readDemoTemplates() {
+    var rows = [];
+    try { rows = JSON.parse(localStorage.getItem(DEMO_TEMPLATE_KEY) || '[]'); } catch (_) {}
+    demoTemplates = (Array.isArray(rows) ? rows : []).map(cleanDemoTemplate).filter(Boolean).slice(0, 24);
+    return demoTemplates;
+  }
+  function writeDemoTemplates() {
+    try { localStorage.setItem(DEMO_TEMPLATE_KEY, JSON.stringify(demoTemplates.slice(0, 24))); return true; } catch (_) { return false; }
+  }
+  function uniqueDemoTemplateName(base) {
+    var root = (String(base || 'Tutorial template').trim().slice(0, 70) || 'Tutorial template');
+    var names = demoTemplates.map(function (item) { return item.name.toLowerCase(); });
+    if (names.indexOf(root.toLowerCase()) < 0) return root;
+    for (var i = 2; i < 100; i++) {
+      var candidate = (root + ' ' + i).slice(0, 80);
+      if (names.indexOf(candidate.toLowerCase()) < 0) return candidate;
+    }
+    return (root + ' ' + Date.now().toString(36)).slice(0, 80);
+  }
+  function currentDemoTemplate(name) {
+    return cleanDemoTemplate({
+      name: name,
+      goal: $('demoGoal').value,
+      audioMode: $('demoAudioMode').value,
+      officialId: demoState.officialId,
+      polish: currentDemoPolish(),
+      steps: demoState.steps
+    });
+  }
+  function renderDemoTemplateControls(selectedId) {
+    var select = $('demoTemplateSelect');
+    var keep = selectedId != null ? selectedId : select.value;
+    select.innerHTML = '<option value="">Saved templates...</option>';
+    demoTemplates.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (item) {
+      var option = document.createElement('option');
+      option.value = item.id; option.textContent = item.name;
+      select.appendChild(option);
+    });
+    if (keep && demoTemplates.some(function (item) { return item.id === keep; })) select.value = keep;
+    var selected = demoTemplates.find(function (item) { return item.id === select.value; });
+    var hasPlan = !!(demoState.steps && demoState.steps.length);
+    $('demoTemplateSaveBtn').disabled = !hasPlan;
+    $('demoDuplicateBtn').disabled = !hasPlan && !selected;
+    $('demoTemplateLoadBtn').disabled = !selected;
+    $('demoTemplateDeleteBtn').disabled = !selected;
+  }
+  function loadDemoTemplate(item) {
+    var template = cleanDemoTemplate(item);
+    if (!template || demoState.running) return false;
+    cleanupOfficialTutorial();
+    clearDemoContinuation();
+    demoState.restoringDraft = true;
+    demoState.officialId = template.officialId;
+    demoState.steps = template.steps.map(prepareDemoStep);
+    demoState.originalSteps = template.steps.map(cleanDemoDraftStep);
+    $('demoGoal').value = template.goal;
+    if (Array.prototype.some.call($('demoAudioMode').options, function (option) { return option.value === template.audioMode; })) $('demoAudioMode').value = template.audioMode;
+    applyDemoPolish(template.polish);
+    $('demoTemplateName').value = template.name;
+    renderDemoPlan();
+    demoState.restoringDraft = false;
+    renderDemoTemplateControls(template.id);
+    setStatus($('demoStatus'), 'Loaded tutorial template: ' + template.name + '. Readiness is being checked again before recording.', 'ok');
+    announce('Tutorial template loaded');
+    return true;
+  }
+  function saveCurrentDemoTemplate(name, copyPrefix) {
+    if (!demoState.steps || !demoState.steps.length) return null;
+    var fallback = $('demoGoal').value.trim().replace(/^Official tutorial:s*/i, '').slice(0, 60) || 'Tutorial template';
+    var desired = String(name || fallback).trim();
+    if (copyPrefix) desired = 'Copy of ' + desired.replace(/^Copy ofs+/i, '');
+    var item = currentDemoTemplate(uniqueDemoTemplateName(desired));
+    if (!item) return null;
+    demoTemplates.unshift(item);
+    demoTemplates = demoTemplates.slice(0, 24);
+    if (!writeDemoTemplates()) { demoTemplates.shift(); setStatus($('demoStatus'), 'The browser could not save that tutorial template.', 'warn'); return null; }
+    $('demoTemplateName').value = item.name;
+    renderDemoTemplateControls(item.id);
+    return item;
   }
   function saveDemoDraft() {
     if (demoState.restoringDraft || demoState.officialId || !demoState.steps || !demoState.steps.length) return false;
@@ -10511,6 +10691,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         savedAt: Date.now(),
         goal: String($('demoGoal').value || '').trim().slice(0, 300),
         audioMode: String($('demoAudioMode').value || 'auto-Kore').slice(0, 40),
+        polish: currentDemoPolish(),
         steps: demoState.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; })
       };
       if (!payload.steps.length) return false;
@@ -10627,6 +10808,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     demoState.restoringDraft = true;
     $('demoGoal').value = String(data.goal || '').slice(0, 300);
     if (Array.prototype.some.call($('demoAudioMode').options, function (option) { return option.value === data.audioMode; })) $('demoAudioMode').value = data.audioMode;
+    applyDemoPolish(data.polish);
     demoState.officialId = null;
     demoState.steps = steps.map(prepareDemoStep);
     demoState.originalSteps = steps.map(cleanDemoDraftStep);
@@ -11039,6 +11221,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('demoPreflightBtn').disabled = !hasApproved;
     $('demoPlanResetBtn').hidden = !hasPlan || !!demoState.officialId;
     $('demoDraftClearBtn').hidden = !hasPlan || !!demoState.officialId;
+    renderDemoTemplateControls();
     demoState.preflightOk = false;
     refreshDemoPlanSummary();
     updateDemoStepReadinessUI();
@@ -11107,6 +11290,53 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   ['demoContinueBtn', 'demoContinueEditBtn'].forEach(function (id) { $(id).addEventListener('click', loadDemoContinuation); });
   ['demoContinuationDismissBtn', 'demoContinuationDismissEditBtn'].forEach(function (id) { $(id).addEventListener('click', dismissDemoContinuation); });
   $('demoGoal').addEventListener('change', saveDemoDraft);
+  ['demoOpeningCardChk', 'demoOpeningTitle', 'demoTransitionStyle', 'demoCursorEmphasisChk', 'demoClosingCardChk', 'demoClosingText'].forEach(function (id) {
+    $(id).addEventListener('change', saveDemoDraft);
+  });
+  $('demoTemplateSelect').addEventListener('change', function () {
+    var item = demoTemplates.find(function (row) { return row.id === $('demoTemplateSelect').value; });
+    if (item) $('demoTemplateName').value = item.name;
+    renderDemoTemplateControls();
+  });
+  $('demoTemplateSaveBtn').addEventListener('click', function () {
+    var item = saveCurrentDemoTemplate($('demoTemplateName').value, false);
+    if (!item) return;
+    setStatus($('demoStatus'), 'Saved reusable tutorial template: ' + item.name + '.', 'ok');
+    announce('Tutorial template saved');
+  });
+  $('demoTemplateLoadBtn').addEventListener('click', function () {
+    var item = demoTemplates.find(function (row) { return row.id === $('demoTemplateSelect').value; });
+    if (item) loadDemoTemplate(item);
+  });
+  $('demoDuplicateBtn').addEventListener('click', function () {
+    var selected = demoTemplates.find(function (row) { return row.id === $('demoTemplateSelect').value; });
+    var source = selected || currentDemoTemplate($('demoTemplateName').value || $('demoGoal').value);
+    if (!source) return;
+    var priorSteps = demoState.steps, priorOfficial = demoState.officialId, priorGoal = $('demoGoal').value, priorAudio = $('demoAudioMode').value, priorPolish = currentDemoPolish();
+    if (selected) {
+      demoState.steps = selected.steps.map(prepareDemoStep); demoState.officialId = selected.officialId;
+      $('demoGoal').value = selected.goal; $('demoAudioMode').value = selected.audioMode; applyDemoPolish(selected.polish);
+    }
+    var item = saveCurrentDemoTemplate(source.name, true);
+    if (selected) {
+      demoState.steps = priorSteps; demoState.officialId = priorOfficial;
+      $('demoGoal').value = priorGoal; $('demoAudioMode').value = priorAudio; applyDemoPolish(priorPolish);
+    }
+    if (!item) return;
+    loadDemoTemplate(item);
+    setStatus($('demoStatus'), 'Duplicated as an independent tutorial: ' + item.name + '.', 'ok');
+    announce('Tutorial duplicated');
+  });
+  $('demoTemplateDeleteBtn').addEventListener('click', function () {
+    var id = $('demoTemplateSelect').value;
+    var item = demoTemplates.find(function (row) { return row.id === id; });
+    if (!item) return;
+    demoTemplates = demoTemplates.filter(function (row) { return row.id !== id; });
+    writeDemoTemplates();
+    $('demoTemplateName').value = '';
+    renderDemoTemplateControls('');
+    setStatus($('demoStatus'), 'Deleted tutorial template: ' + item.name + '. The current plan is unchanged.', 'ok');
+  });
   $('demoGoal').addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey) || e.shiftKey || e.altKey) return;
     e.preventDefault();
@@ -11180,6 +11410,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   });
   $('demoPreflightBtn').addEventListener('click', runDemoPreflight);
   $('demoAudioMode').addEventListener('change', function () { demoState.preflightOk = false; saveDemoDraft(); if (demoState.steps) runDemoPreflight(); });
+  readDemoTemplates();
+  renderDemoTemplateControls();
   restoreDemoDraft();
   restoreDemoContinuation();
   $('demoRehearseBtn').addEventListener('click', async function () {
@@ -11204,6 +11436,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setMicEnabled(audioMode === 'mic');
     setStatus($('demoStatus'), 'Pick the AlloFlow TAB in the share dialog, then switch to that tab — the demo starts on its own.', 'ok');
     setDemoPrivacyIndicator('waiting for your browser-tab choice. Automatic actions remain paused until the AlloFlow tab is verified.', 'warn');
+    demoState.activePolish = currentDemoPolish();
     demoState.active = true; demoState.events = []; demoState.activeSteps = steps.map(cleanDemoDraftStep); demoState.running = true;
     $('demoStartBtn').disabled = true;
     try {
@@ -11242,7 +11475,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         }
       }, 1500);
       var runRequestType = demoState.officialId ? 'allostudio-official-tutorial-run-request' : 'allostudio-demorun-request';
-      var resp = await bridgeRequest(runRequestType, { steps: steps, tutorialId: demoState.officialId || null }, 1800000);
+      var resp = await bridgeRequest(runRequestType, { steps: steps, tutorialId: demoState.officialId || null, polish: demoState.activePolish }, 1800000);
       clearInterval(aliveTimer);
       if (demoState.abandoned) { demoState.abandoned = false; return; }
       if (resp.error) {
@@ -11324,7 +11557,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // pref can never select something that no longer exists.
   var VS_EXPORT_PREFS_KEY = 'vs_export_prefs_v1';
   function exportPrefControls() {
-    return Array.prototype.slice.call($('panelExport').querySelectorAll('select[id], input[type="checkbox"][id]'));
+    return Array.prototype.slice.call($('panelExport').querySelectorAll('select[id], input[type="checkbox"][id], input[type="text"][data-export-pref]'));
   }
   function saveExportPrefs() {
     try {
@@ -11344,8 +11577,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (el.type === 'checkbox') {
         if (typeof prefs[el.id] === 'boolean') el.checked = prefs[el.id];
       } else if (typeof prefs[el.id] === 'string') {
-        var ok = Array.prototype.some.call(el.options || [], function (o) { return o.value === prefs[el.id]; });
-        if (ok) el.value = prefs[el.id];
+        if (el.tagName === 'SELECT') {
+          var ok = Array.prototype.some.call(el.options || [], function (o) { return o.value === prefs[el.id]; });
+          if (ok) el.value = prefs[el.id];
+        } else {
+          el.value = prefs[el.id].slice(0, Number(el.maxLength) > 0 ? Number(el.maxLength) : 120);
+        }
       }
     });
     try { refreshExportFormatStatus(); } catch (_) {}
@@ -11368,6 +11605,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var exportFraming = currentExportFraming();
     var exportContainer = currentExportContainer();
     var wantTitleCard = $('titleCardChk').checked;
+    var wantClosingCard = $('closingCardChk').checked;
+    var closingCardText = String($('closingCardText').value || '').trim().slice(0, 120) || 'Thanks for watching';
+    var demoTransition = $('demoStepTransition').value === 'smooth' ? 'smooth' : 'none';
     var trimS = Number($('trimStart').value) || 0;
     var trimE = Number($('trimEnd').value) || 0;
     var seg = vsComputeSegments(t.duration, trimS, trimE);
@@ -11378,7 +11618,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var audioCfg = t.audio || null;
     var musicBed = t.musicBed ? vsSanitizeMusicBed(t.musicBed, t.duration || 0) : null;
     var hasMixins = !!(t.narration && t.narration.blob) || !!(t.audioClips && t.audioClips.length) || !!(musicBed && musicBed.blob);
-    var needReencode = exportFormatKey !== 'original' || shouldReencodeForContainer(exportContainer, t.blob) || wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || inserts.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
+    var needReencode = exportFormatKey !== 'original' || shouldReencodeForContainer(exportContainer, t.blob) || wantTitleCard || wantClosingCard || demoTransition === 'smooth' || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || inserts.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
     $('exportBtn').disabled = true;
     try {
       var outBlob, outDur, outputFormat = null, outputContainer = null;
@@ -11399,16 +11639,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       } else {
         setStatus($('exportStatus'), 'Re-encoding for ' + (VIDEO_EXPORT_FORMATS[exportFormatKey] || VIDEO_EXPORT_FORMATS.original).label + '... keep this window visible.', 'warn');
         var res = null;
+        var renderOptions = { format: exportFormatKey, framing: exportFraming, container: exportContainer, closingCard: wantClosingCard ? closingCardText : null, demoTransition: demoTransition };
         if (fastExportSupported && $('fastExportChk') && $('fastExportChk').checked) {
           try {
-            res = await reencodeFast(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, { format: exportFormatKey, framing: exportFraming, container: exportContainer });
+            res = await reencodeFast(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, renderOptions);
           } catch (fastErr) {
             if (fastErr && fastErr.name === 'AbortError') throw fastErr;
             setStatus($('exportStatus'), 'Fast export hit a snag (' + String((fastErr && fastErr.message) || fastErr).slice(0, 120) + ') — using the standard real-time encoder instead.', 'warn');
             res = null;
           }
         }
-        if (!res) res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, { format: exportFormatKey, framing: exportFraming, container: exportContainer });
+        if (!res) res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, renderOptions);
         outBlob = res.blob; outDur = res.duration; outputFormat = res.outputFormat || exportCanvasSizeFor(exportFormatKey, 1280, 720); exportFraming = res.outputFraming || exportFraming; outputContainer = res.outputContainer || outputContainerInfoForBlob(outBlob, exportContainer);
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ', ' + exportFormatLabel(outputFormat) + ', ' + exportContainerLabel(outputContainer) + ').', outputContainer.fallback ? 'warn' : 'ok');
       }
@@ -11417,7 +11658,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         outBlob = strictResult.blob;
         outputContainer = strictResult.containerInfo || outputContainerInfoForBlob(outBlob, exportContainer);
       }
-      var vtt = (capMode !== 'none' && cues.length) ? vsBuildVtt(cues) : null;
+      var vttOffset = wantTitleCard ? 2.5 : 0;
+      var vttCues = cues.map(function (cue) { return { start: cue.start + vttOffset, end: cue.end + vttOffset, text: cue.text }; });
+      var vtt = (capMode !== 'none' && vttCues.length) ? vsBuildVtt(vttCues) : null;
       if (lastExport && lastExport.url) { try { URL.revokeObjectURL(lastExport.url); } catch (_) {} }
       lastExport = { blob: outBlob, vtt: vtt, title: title, duration: outDur, url: URL.createObjectURL(outBlob), ext: extFor(outBlob.type), takeId: t.id, outputFormat: outputFormat, outputFraming: exportFraming, outputContainer: outputContainer, captionStyle: captionStyleKey, captionCustom: captionCustom, titleCardStyle: titleCardStyleKey, thumb: null };
       $('resultCard').hidden = false;
@@ -11506,6 +11749,33 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     ctx.font = '600 ' + Math.round(hgt * 0.032) + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
     ctx.fillStyle = st.muted;
     wrapCanvasText(ctx, st.footer, st.align === 'left' ? cardX + cardW * 0.08 : cardX + cardW / 2, cardY + cardH * 0.75, cardW * 0.84, Math.round(hgt * 0.042), 1);
+    ctx.restore();
+  }
+  function drawDemoStepTransition(ctx, w, hgt, cues, tSec, key) {
+    if (key !== 'smooth') return;
+    var t = Math.max(0, Number(tSec) || 0);
+    var alpha = t < 0.34 ? (1 - t / 0.34) * 0.16 : 0;
+    (Array.isArray(cues) ? cues : []).slice(1).forEach(function (cue) {
+      var delta = Math.abs(t - Math.max(0, Number(cue && cue.start) || 0));
+      if (delta < 0.28) alpha = Math.max(alpha, (1 - delta / 0.28) * 0.13);
+    });
+    if (alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = Math.min(0.18, alpha);
+    var gradient = ctx.createLinearGradient(0, 0, w, hgt);
+    gradient.addColorStop(0, '#eef2ff');
+    gradient.addColorStop(0.5, '#ffffff');
+    gradient.addColorStop(1, '#dbeafe');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, hgt);
+    ctx.restore();
+  }
+  function drawDemoClosingFade(ctx, w, hgt, remaining, enabled) {
+    if (!enabled || remaining >= 0.3 || remaining < 0) return;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(0.22, (0.3 - remaining) / 0.3 * 0.22));
+    ctx.fillStyle = '#eef2ff';
+    ctx.fillRect(0, 0, w, hgt);
     ctx.restore();
   }
   function drawThumbnailTitleOverlay(ctx, w, hgt, title, styleKey) {
@@ -11749,6 +12019,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       v.addEventListener('loadedmetadata', function () {
         if (settled) return;
         var opts = outputOptions || {};
+        var closingCard = String(opts.closingCard || '').trim().slice(0, 120);
+        var demoTransitionKey = opts.demoTransition === 'smooth' ? 'smooth' : 'none';
         var outputFormat = exportCanvasSizeFor(opts.format || 'original', v.videoWidth || 1280, v.videoHeight || 720);
         var outputFraming = sanitizeExportFraming(opts.framing || 'fit');
         var outputContainerChoice = sanitizeExportContainer(opts.container || 'auto');
@@ -11820,7 +12092,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           });
         }));
         var cardDur = titleCard ? 2.5 : 0;
-        var totalDur = cardDur + (seg.end - seg.start);
+        var closingDur = closingCard ? 2.5 : 0;
+        var totalDur = cardDur + (seg.end - seg.start) + closingDur;
         mr.onstop = function () {
           if (settled || canceled) return;
           var raw = new Blob(chunks, { type: mr.mimeType || outputMimeInfo.mime || 'video/webm' });
@@ -11835,7 +12108,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }, fail);
         };
         var captionStyle = vsResolveCaptionStyle(captionStyleKey, captionCustom);
-        var startedAt = 0, raf = 0, phase = titleCard ? 'card' : 'video';
+        var startedAt = 0, closingStartedAt = 0, raf = 0, phase = titleCard ? 'card' : 'video';
         function drawCaption(tSec) {
           if (!burnCaptions) return;
           drawBurnCaption(ctx, w, hgt, cues, tSec, captionStyle);
@@ -11849,6 +12122,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               phase = 'video';
               v.currentTime = seg.start;
               v.play().catch(function () { fail(new Error('playback blocked')); });
+            }
+          } else if (phase === 'closing') {
+            var closingElapsed = (now - closingStartedAt) / 1000;
+            drawStyledTitleCard(ctx, w, hgt, closingCard, titleCardStyleKey, closingDur ? closingElapsed / closingDur : 1);
+            if (closingElapsed >= closingDur) {
+              cancelAnimationFrame(raf);
+              setTimeout(function () { try { mr.stop(); } catch (_) {} }, 100);
+              return;
             }
           } else {
             // Audio edits track the playhead: mute spans + master volume via
@@ -11885,13 +12166,20 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             var zs = vsZoomState(zooms || [], v.currentTime);
             drawVideoIntoFrame(ctx, v, w, hgt, outputFraming, zs);
             drawTeachingInserts(ctx, w, hgt, insertList, v.currentTime);
+            drawDemoStepTransition(ctx, w, hgt, cues, v.currentTime - seg.start, demoTransitionKey);
+            drawDemoClosingFade(ctx, w, hgt, seg.end - v.currentTime, !!closingCard);
             drawCaption(v.currentTime - seg.start);
             if (v.currentTime >= seg.end || v.ended) {
-              cancelAnimationFrame(raf);
               try { v.pause(); } catch (_) {}
               mixItems.forEach(function (m3) { try { if (m3._el) m3._el.pause(); } catch (_) {} });
-              setTimeout(function () { try { mr.stop(); } catch (_) {} }, 150);
-              return;
+              if (closingCard) {
+                phase = 'closing';
+                closingStartedAt = now;
+              } else {
+                cancelAnimationFrame(raf);
+                setTimeout(function () { try { mr.stop(); } catch (_) {} }, 150);
+                return;
+              }
             }
           }
           raf = requestAnimationFrame(frame);
@@ -12071,6 +12359,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         };
         try {
           var opts = outputOptions || {};
+          var closingCard = String(opts.closingCard || '').trim().slice(0, 120);
+          var demoTransitionKey = opts.demoTransition === 'smooth' ? 'smooth' : 'none';
           await new Promise(function (res, rej) {
             v.addEventListener('loadedmetadata', res, { once: true });
             v.addEventListener('error', function () { rej(new Error('could not decode the take')); }, { once: true });
@@ -12094,8 +12384,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             });
           }));
           var cardDur = titleCard ? 2.5 : 0;
+          var closingDur = closingCard ? 2.5 : 0;
           var segLen = seg.end - seg.start;
-          var totalDur = cardDur + segLen;
+          var totalDur = cardDur + segLen + closingDur;
           var fps = 30;
           var videoChunks = [];
           var vErr = null;
@@ -12145,6 +12436,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                 var zs = vsZoomState(zooms || [], mt);
                 drawVideoIntoFrame(ctx, v, w, hgt, outputFraming, zs);
                 drawTeachingInserts(ctx, w, hgt, insertList, mt);
+                drawDemoStepTransition(ctx, w, hgt, cues, mt - seg.start, demoTransitionKey);
+                drawDemoClosingFade(ctx, w, hgt, seg.end - mt, !!closingCard);
                 if (burnCaptions) drawBurnCaption(ctx, w, hgt, cues, mt - seg.start, captionStyle);
                 var tsUs = Math.round((cardDur + (mt - seg.start)) * 1e6);
                 if (tsUs > lastTsUs) {
@@ -12177,6 +12470,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           });
           if (canceled) throw exportAbortError('Export canceled');
           setReencodeUi(true, 'Fast export: finishing the file…');
+          if (closingDur) {
+            var closingFrames = Math.round(closingDur * fps);
+            for (var cc = 0; cc < closingFrames; cc++) {
+              if (canceled) throw exportAbortError('Export canceled');
+              drawStyledTitleCard(ctx, w, hgt, closingCard, titleCardStyleKey, closingFrames > 1 ? cc / (closingFrames - 1) : 1);
+              encodeCanvasFrame(cardDur + segLen + cc / fps, cc === 0);
+            }
+          }
           await venc.flush();
           venc.close(); venc = null;
           if (vErr) throw vErr;
@@ -12595,7 +12896,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, isDemo: !!take.isDemo, demoPolish: take.demoPolish ? cleanDemoPolish(take.demoPolish) : null, demoAudioMode: take.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(take.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(take.demoQualityScore) || 0), zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });

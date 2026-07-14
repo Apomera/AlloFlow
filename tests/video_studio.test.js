@@ -2208,6 +2208,20 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain("setEditorFocusMode('narrate', false)");
     expect(html).toContain('demoNarrationJob.cancelRequested = true');
     expect(html).toContain('demoNarrationFailed = failedCues.concat(remainingCues)');
+    expect(html).toContain('id="demoOpeningCardChk"');
+    expect(html).toContain('id="demoClosingCardChk"');
+    expect(html).toContain('id="demoTransitionStyle"');
+    expect(html).toContain('id="demoCursorEmphasisChk"');
+    expect(html).toContain('id="demoTemplateSelect"');
+    expect(html).toContain('id="demoDuplicateBtn"');
+    expect(html).toContain("var DEMO_TEMPLATE_KEY = 'vs_demo_templates_v1'");
+    expect(html).toContain('function cleanDemoPolish(value)');
+    expect(html).toContain('function loadDemoTemplate(item)');
+    expect(html).toContain('function saveCurrentDemoTemplate(name, copyPrefix)');
+    expect(html).toContain('function drawDemoStepTransition(ctx, w, hgt, cues, tSec, key)');
+    expect(html).toContain('var closingDur = closingCard ? 2.5 : 0');
+    expect(html).toContain('var vttOffset = wantTitleCard ? 2.5 : 0');
+    expect(html).toContain('take.demoPolish = cleanDemoPolish(demoState.activePolish)');
     expect(html).toContain('function regenerateDemoNarrationClip(take, clip)');
     expect(html).toContain('demoNarrationCue: { start: Number(cue.start)');
     const m = moduleText();
@@ -2219,7 +2233,7 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).toContain('demoRunRef.current.stop = true');
     expect(m).toContain("demoRunRef.current.kind === 'official'");
     expect(m).toContain('cleanupAfterStop = true');
-    expect(m).toContain('{ rehearsal: !!drReq.rehearsal }');
+    expect(m).toContain('{ rehearsal: !!drReq.rehearsal, cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false) }');
     expect(m).toContain('timedOut: !!(result && result.timedOut)');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
     expect(m).toContain('pauseAfter: Math.round(Math.max(0.5, Math.min(8');
@@ -2231,6 +2245,8 @@ describe('take persistence + export hardening wiring', () => {
     expect(anti).toContain('setGeneratedContent(snapshot.generatedContent)');
     expect(anti).toContain('onRunDemoPlan: async (steps, hooks, options) => {');
     expect(anti).toContain('const rehearsal = !!(options && options.rehearsal)');
+    expect(anti).toContain('const emphasizeCursorTarget = (cmd, label) => {');
+    expect(anti).toContain("cursorMarker.setAttribute('aria-hidden', 'true')");
     expect(anti).toContain('return { ok: true, completed: previewCompleted, rehearsal: true }');
     expect(anti).toContain('timedOut: !!(r && r.timedOut)');
     expect(anti).toContain('Number(step.pauseAfter) || 2.2');

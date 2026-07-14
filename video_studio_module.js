@@ -3461,6 +3461,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           Promise.resolve().then(function () {
             return officialRunFn(String(otrReq.tutorialId || '').slice(0, 60), officialSteps, {
               shouldStop: function () { return demoRunRef.current.stop; },
+              cursorEmphasis: !(otrReq.polish && otrReq.polish.cursorEmphasis === false),
               onStep: function (i, phase, label, narration) {
                 postToStudio(otrReplyTo, { type: 'allostudio-demostep', id: otrReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 220) });
               }
@@ -3504,10 +3505,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           Promise.resolve().then(function () {
             return runFn(drSteps, {
               shouldStop: function () { return demoRunRef.current.stop; },
+              cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false),
               onStep: function (i, phase, label, narration) {
                 postToStudio(drReplyTo, { type: 'allostudio-demostep', id: drReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 160) });
               }
-            }, { rehearsal: !!drReq.rehearsal });
+            }, { rehearsal: !!drReq.rehearsal, cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false) });
           }).then(function (result) {
             demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
             drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), timedOut: !!(result && result.timedOut), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });

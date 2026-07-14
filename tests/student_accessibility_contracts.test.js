@@ -101,9 +101,10 @@ describe('student-facing accessibility contracts', () => {
     });
   });
 
-  it('AlloFlow loader cache tags match the current generated student module hashes', () => {
+  it('canonical loaders use content hashes while deploy loaders use local student modules', () => {
     const host = read('AlloFlowANTI.txt');
     const deployHost = read('prismflow-deploy/src/AlloFlowANTI.txt');
+    const deployApp = read('prismflow-deploy/src/App.jsx');
     [
       'student_interaction_module.js',
       'view_student_join_panel_module.js',
@@ -112,7 +113,8 @@ describe('student-facing accessibility contracts', () => {
     ].forEach((file) => {
       const tag = `${file}?v=${hash8(file)}`;
       expect(host).toContain(tag);
-      expect(deployHost).toContain(tag);
+      expect(deployHost).toContain(`./${file}`);
+      expect(deployApp).toContain(`./${file}`);
     });
   });
 });

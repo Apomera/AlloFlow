@@ -344,8 +344,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var anatomyTabOrder = ['explore', 'tour', 'connections', 'aiTutor', 'spotter', 'pathways', 'flashcards', 'homeoHunt'];
         var activeTab = anatomyTabOrder.indexOf(d._activeTab) !== -1 ? d._activeTab : 'explore';
         function activateAnatomyTab(tab) {
-          if (tab === 'tour' && !tourActive) updMulti({ _activeTab: tab, _tourActive: true, _tourStepIdx: 0 });
-          else upd('_activeTab', tab);
+          if (tab === 'tour') {
+            var nextTourIndex = tourActive ? tourStepIdx : 0;
+            var tabTourStep = tourSteps && tourSteps[nextTourIndex];
+            var tourPatch = { _activeTab: tab, _tourActive: true, _tourStepIdx: nextTourIndex };
+            if (tabTourStep) {
+              updMulti(structureFocusPatch(tabTourStep.structureId, tourPatch));
+              announceStructure(tabTourStep.structureId);
+            } else updMulti(tourPatch);
+            return;
+          }
+          if (tab === 'pathways' && activePathway && activePathway.steps[pathwayStepIdx]) {
+            var tabPathwayStep = activePathway.steps[pathwayStepIdx];
+            updMulti(structureFocusPatch(tabPathwayStep.structure, { _activeTab: tab, _pathwayStep: pathwayStepIdx }));
+            announceStructure(tabPathwayStep.structure);
+            return;
+          }
+          if (tab === 'flashcards' && flashcardPool && flashcardPool.length > 0) {
+            var tabFlashcard = flashcardPool[flashcardIdx];
+            updMulti(structureFocusPatch(tabFlashcard.id, { _activeTab: tab }));
+            announceStructure(tabFlashcard.id);
+            return;
+          }
+          upd('_activeTab', tab);
         }
         function handleAnatomyTabKey(event) {
           if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) === -1) return;
@@ -1052,14 +1073,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function structureFocusPatch(structureId, extraPatch) {
           var patch = Object.assign({}, extraPatch || {}, { selectedStructure: structureId, search: '' });
           var context = findStructureContext(structureId, sysKey);
-          if (!context) return patch;
+          if (!context) return comparisonTrackingPatch(structureId, patch, null);
           patch.system = context.systemId;
           if (context.structure.v === 'a') patch.view = 'anterior';
           else if (context.structure.v === 'p') patch.view = 'posterior';
           if (patch.system !== sysKey || (patch.view && patch.view !== view)) {
             patch.quizMode = false; patch.quizIdx = 0; patch.quizScore = 0; patch.quizFeedback = null; patch._quizAttempts = 0;
           }
-          return patch;
+          return comparisonTrackingPatch(structureId, patch, context.systemId);
         }
 
         // ── Fun fact state ──
@@ -1077,6 +1098,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var tourActive = d._tourActive === true;
         var tourCompleted = d._tourCompleted === true;
         var currentTourStep = tourActive && tourSteps.length > 0 ? tourSteps[tourStepIdx] : null;
+        var tourStepContext = currentTourStep ? findStructureContext(currentTourStep.structureId, sysKey) : null;
+        var tourStepViewMatches = !tourStepContext || tourStepContext.structure.v === 'b' || (tourStepContext.structure.v === 'a' ? view === 'anterior' : view === 'posterior');
+        var diagramMatchesTourStep = !!currentTourStep && !!tourStepContext && tourStepContext.systemId === sysKey && tourStepViewMatches && selectedStructureId === currentTourStep.structureId;
+
+        function systemSelectionPatch(systemId) {
+          return { system: systemId, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, search: '', _flashcardIdx: 0, _flashcardFlipped: false };
+        }
+        function showAnatomySystem(systemId, contextLabel) {
+          if (!SYSTEMS[systemId]) return;
+          updMulti(systemSelectionPatch(systemId));
+          playSound('systemSelect');
+          if (contextLabel && typeof announceToSR === 'function') announceToSR('Showing ' + SYSTEMS[systemId].name + ' diagram for ' + contextLabel + '.');
+        }
 
         // ── Connections state ──
         var connectionIds = CONNECTIONS.map(function(connection) { return connection.id; });
@@ -1169,7 +1203,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ── Compare mode state ──
         var compareStructureId = typeof d._compareStructure === 'string' ? d._compareStructure : null;
         var compareSel = compareStructureId ? allStructures.find(function(s) { return s.id === compareStructureId; }) : null;
-        var comparisons = safeNonNegativeNumber(d._comparisons, 0, true);
+        function comparisonPairKey(firstId, secondId) {
+          return [firstId, secondId].sort().join('::');
+        }
+        var comparisonPairs = Array.isArray(d._comparisonPairs) ? d._comparisonPairs.reduce(function(validPairs, rawPair) {
+          if (typeof rawPair !== 'string') return validPairs;
+          var pairParts = rawPair.split('::');
+          if (pairParts.length !== 2 || pairParts[0] === pairParts[1]) return validPairs;
+          if (!findStructureContext(pairParts[0], sysKey) || !findStructureContext(pairParts[1], sysKey)) return validPairs;
+          var canonicalPair = comparisonPairKey(pairParts[0], pairParts[1]);
+          if (validPairs.indexOf(canonicalPair) === -1) validPairs.push(canonicalPair);
+          return validPairs;
+        }, []) : [];
+        var comparisons = Math.max(safeNonNegativeNumber(d._comparisons, 0, true), comparisonPairs.length);
+        function comparisonTrackingPatch(structureId, basePatch, contextSystemId) {
+          var patch = Object.assign({}, basePatch || {});
+          if (!compareSel || compareSel.id === structureId || contextSystemId !== sysKey) return patch;
+          if (!allStructures.some(function(structure) { return structure.id === structureId; })) return patch;
+          var pairKey = comparisonPairKey(compareSel.id, structureId);
+          if (comparisonPairs.indexOf(pairKey) !== -1) return patch;
+          var newComparisonPairs = comparisonPairs.concat([pairKey]);
+          patch._comparisonPairs = newComparisonPairs;
+          patch._comparisons = Math.max(comparisons + 1, newComparisonPairs.length);
+          return patch;
+        }
+        function selectionPatch(structureId, extraPatch) {
+          return comparisonTrackingPatch(structureId, Object.assign({}, extraPatch || {}, { selectedStructure: structureId }), sysKey);
+        }
+        var activeComparisonPairKey = compareSel && sel && compareSel.id !== sel.id ? comparisonPairKey(compareSel.id, sel.id) : null;
+        var activeComparisonRecorded = !!activeComparisonPairKey && comparisonPairs.indexOf(activeComparisonPairKey) !== -1;
 
         // ── Pathway state ──
         var activePathwayId = typeof d._activePathway === 'string' ? d._activePathway : null;
@@ -4480,7 +4542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               return;
             } else {
               // Standard explore mode click
-              upd('selectedStructure', closest.id); announceStructure(closest.id);
+              updMulti(selectionPatch(closest.id)); announceStructure(closest.id);
               playSound('structureClick');
             }
           }
@@ -4619,12 +4681,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
             e.preventDefault();
             var nextIdx = curIdx < navList.length - 1 ? curIdx + 1 : 0;
-            upd('selectedStructure', navList[nextIdx].id); announceStructure(navList[nextIdx].id);
+            updMulti(selectionPatch(navList[nextIdx].id)); announceStructure(navList[nextIdx].id);
             playSound('structureClick');
           } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
             e.preventDefault();
             var prevIdx = curIdx > 0 ? curIdx - 1 : navList.length - 1;
-            upd('selectedStructure', navList[prevIdx].id); announceStructure(navList[prevIdx].id);
+            updMulti(selectionPatch(navList[prevIdx].id)); announceStructure(navList[prevIdx].id);
             playSound('structureClick');
           } else if (e.key === 'Escape') {
             upd('selectedStructure', null);
@@ -4831,10 +4893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             Object.keys(SYSTEMS).map(function(key) {
               var s = SYSTEMS[key];
               return h('button', { key: key, 'aria-pressed': sysKey === key,
-                onClick: function() {
-                  updMulti({ system: key, selectedStructure: null, quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0, search: '' });
-                  playSound('systemSelect');
-                },
+                onClick: function() { showAnatomySystem(key); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ' + (sysKey === key ? 'text-white shadow-sm' : 'transition-colors bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-400 active:scale-[0.97]'),
                 style: sysKey === key ? { background: s.accent, boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.3), 0 2px 6px ' + s.accent + '30' } : {}
               }, s.icon + ' ' + s.name);
@@ -4951,7 +5010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 });
                 if (!query || !firstMatch) return;
                 e.preventDefault();
-                var searchPatch = { selectedStructure: firstMatch.id };
+                var searchPatch = selectionPatch(firstMatch.id);
                 if (lastSearchFind !== query) {
                   searchPatch._lastSearchFind = query;
                   searchPatch._searchFinds = searchFinds + 1;
@@ -5145,9 +5204,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('button', { 'aria-label': compareStructureId === sel.id ? 'Remove ' + sel.name + ' as comparison target' : 'Use ' + sel.name + ' as comparison target',
                             'aria-pressed': compareStructureId === sel.id, onClick: function() {
                               if (compareStructureId === sel.id) { upd('_compareStructure', null); }
-                              else { updMulti({ _compareStructure: sel.id, _comparisons: comparisons + 1 }); playSound('compareView'); setTimeout(checkAnatomyChallenges, 50); }
+                              else { upd('_compareStructure', sel.id); playSound('compareView'); }
                             },
-                            title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target (B)',
+                            title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target',
                             className: 'p-1 rounded text-[11px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'transition-colors hover:bg-violet-50 text-violet-400 active:scale-[0.97]')
                           }, '\u2696'),
                           h('button', { 'aria-label': 'Back to structures from ' + sel.name, onClick: function() { upd('selectedStructure', null); },
@@ -5228,12 +5287,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       ),
                       // ── Compare Panel ──
                       compareSel && compareSel.id !== sel.id ? h('div', { className: 'mt-3 pt-3 border-t-2 border-violet-200' },
-                        h('div', { className: 'flex items-center justify-between mb-2' },
+                        h('div', { className: 'flex items-center justify-between gap-2 mb-2 flex-wrap' },
                           h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, t('stem.anatomy.comparing_with', '\u2696 Comparing with:')),
-                          h('button', { 'aria-label': t('stem.anatomy.clear', 'Clear'),
-                            onClick: function() { upd('_compareStructure', null); },
-                            className: 'transition-colors text-[11px] font-bold text-slate-600 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100 active:scale-[0.97]'
-                          }, t('stem.anatomy.clear_2', '\u2715 Clear'))
+                          h('div', { className: 'flex items-center gap-1.5' },
+                            activeComparisonRecorded ? h('span', { role: 'status', className: 'text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5' }, '\u2713 Pair recorded') : h('button', {
+                              onClick: function() { updMulti(comparisonTrackingPatch(sel.id, {}, sysKey)); setTimeout(checkAnatomyChallenges, 50); },
+                              className: 'text-[11px] font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded px-2 py-0.5 hover:bg-violet-100 active:scale-[0.97]'
+                            }, 'Record pair'),
+                            h('button', { 'aria-label': t('stem.anatomy.clear', 'Clear'),
+                              onClick: function() { upd('_compareStructure', null); },
+                              className: 'transition-colors text-[11px] font-bold text-slate-600 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100 active:scale-[0.97]'
+                            }, t('stem.anatomy.clear_2', '\u2715 Clear'))
+                          )
                         ),
                         h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
                           h('h5', { className: 'text-sm font-black text-violet-800 mb-1' }, compareSel.name),
@@ -5301,7 +5366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         ),
                         filtered.map(function(st) {
                           return h('button', { key: st.id, 'aria-pressed': selectedStructureId === st.id,
-                            onClick: function() { upd('selectedStructure', st.id); announceStructure(st.id); playSound('structureClick'); },
+                            onClick: function() { updMulti(selectionPatch(st.id)); announceStructure(st.id); playSound('structureClick'); },
                             className: 'w-full text-left px-3 py-2 text-xs transition-all hover:shadow-sm ' +
                               (selectedStructureId === st.id ? 'font-bold border-2' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]'),
                             style: selectedStructureId === st.id ? { borderColor: sys.accent, background: sys.color } : {}
@@ -5377,8 +5442,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('div', { className: 'h-full rounded-full bg-emerald-500 transition-all', style: { width: (((tourStepIdx + 1) / tourSteps.length) * 100) + '%' } })
                       )
                     ),
-                    currentTourStep ? h('div', { className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200' },
+                    currentTourStep ? h('div', { className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
                       h('h5', { className: 'font-bold text-emerald-900 text-sm mb-2' }, currentTourStep.title),
+                      h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
+                        h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-emerald-200 text-slate-600' }, 'Diagram: ' + sys.name + ' - ' + (view === 'anterior' ? 'Anterior' : 'Posterior')),
+                        !diagramMatchesTourStep ? h('button', {
+                          onClick: function() { updMulti(structureFocusPatch(currentTourStep.structureId, { _tourStepIdx: tourStepIdx })); announceStructure(currentTourStep.structureId); },
+                          className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-300 hover:bg-emerald-200 active:scale-[0.97]'
+                        }, 'Focus diagram') : null
+                      ),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, currentTourStep.narration),
                       ttsBtn(currentTourStep.narration)
                     ) : null,
@@ -5398,7 +5470,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         },
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.next_4', 'Next \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_tour', 'Complete Tour!'),
-                        onClick: function() { updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore' }); playSound('badge'); },
+                        onClick: function() {
+                          updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore' });
+                          playSound('badge');
+                          if (typeof announceToSR === 'function') announceToSR('Guided anatomy tour complete. Returning to Explore.');
+                          if (addToast) addToast('\uD83C\uDFC6 Guided tour complete!');
+                        },
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.complete_tour_2', '\uD83C\uDFC6 Complete Tour!'))
                     )
@@ -5603,6 +5680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             updMulti({ _pathwaysCompleted: newPC, _activePathway: null, _pathwayStep: 0 });
                             playSound('badge');
                             if (addToast) addToast('\uD83D\uDEE4 Pathway complete: ' + pw.title + '!');
+                            if (typeof announceToSR === 'function') announceToSR('Pathway complete: ' + pw.title + '.');
                             setTimeout(checkAnatomyChallenges, 50);
                           },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all active:scale-[0.97]'
@@ -5621,32 +5699,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
                     CONNECTIONS.map(function(conn) {
                       var isViewed = connectionsViewed[conn.id];
-                      return h('button', { 'aria-label': conn.title,
-                        'aria-expanded': expandedConnectionId === conn.id,
+                      var isExpanded = expandedConnectionId === conn.id;
+                      var detailsId = 'anatomy-connection-' + conn.id;
+                      return h('div', {
                         key: conn.id,
-                        onClick: function() {
-                          playSound('connectionView');
-                          var connectionPatch = { _expandedConn: expandedConnectionId === conn.id ? null : conn.id };
-                          if (!connectionsViewed[conn.id]) {
-                            var newCV = Object.assign({}, connectionsViewed);
-                            newCV[conn.id] = true;
-                            connectionPatch._connectionsViewed = newCV;
-                          }
-                          updMulti(connectionPatch);
-                        },
-                        className: 'w-full text-left rounded-xl p-3 border-2 transition-all ' + (isViewed ? 'border-sky-600 bg-sky-50' : 'transition-colors border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/50 active:scale-[0.97]')
+                        className: 'w-full rounded-xl border-2 overflow-hidden transition-all ' + (isViewed ? 'border-sky-600 bg-sky-50' : 'border-slate-200 bg-white hover:border-sky-200')
                       },
-                        h('div', { className: 'flex items-center gap-2 mb-1' },
-                          h('span', { className: 'text-base' }, conn.icon),
-                          h('span', { className: 'text-xs font-black text-sky-800' }, conn.title),
-                          h('span', { className: 'ml-auto text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600' },
-                            SYSTEMS[conn.systems[0]].icon + ' + ' + SYSTEMS[conn.systems[1]].icon
-                          ),
-                          isViewed ? h('span', { className: 'text-[11px] text-emerald-500 font-bold' }, '\u2713') : null
+                        h('button', {
+                          'aria-label': (isExpanded ? 'Collapse ' : 'Expand ') + conn.title,
+                          'aria-expanded': isExpanded,
+                          'aria-controls': detailsId,
+                          onClick: function() {
+                            playSound('connectionView');
+                            var connectionPatch = { _expandedConn: isExpanded ? null : conn.id };
+                            if (!connectionsViewed[conn.id]) {
+                              var newCV = Object.assign({}, connectionsViewed);
+                              newCV[conn.id] = true;
+                              connectionPatch._connectionsViewed = newCV;
+                            }
+                            updMulti(connectionPatch);
+                          },
+                          className: 'w-full text-left px-3 pt-3 pb-2 transition-colors hover:bg-sky-50 active:bg-sky-100'
+                        },
+                          h('span', { className: 'flex items-center gap-2' },
+                            h('span', { className: 'text-base', 'aria-hidden': 'true' }, conn.icon),
+                            h('span', { className: 'text-xs font-black text-sky-800' }, conn.title),
+                            h('span', { className: 'ml-auto text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600', 'aria-hidden': 'true' },
+                              SYSTEMS[conn.systems[0]].icon + ' + ' + SYSTEMS[conn.systems[1]].icon
+                            ),
+                            isViewed ? h('span', { className: 'text-[11px] text-emerald-600 font-bold', 'aria-label': 'Explored' }, '\u2713') : null,
+                            h('span', { className: 'text-sky-600 text-xs', 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
+                          )
                         ),
-                        h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, conn.desc),
-                        expandedConnectionId === conn.id ? h('div', { className: 'mt-2 pt-2 border-t border-sky-200' },
-                          h('p', { className: 'text-[11px] text-sky-700 italic leading-relaxed' }, '\uD83D\uDCA1 Example: ' + conn.example)
+                        h('p', { className: 'px-3 pb-3 text-[11px] text-slate-600 leading-relaxed' }, conn.desc),
+                        isExpanded ? h('div', {
+                          id: detailsId,
+                          role: 'region',
+                          'aria-label': conn.title + ' details',
+                          className: 'mx-3 mb-3 pt-3 border-t border-sky-200 space-y-2'
+                        },
+                          h('p', { className: 'text-[11px] text-sky-700 italic leading-relaxed' }, '\uD83D\uDCA1 Example: ' + conn.example),
+                          h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Connected system diagrams' },
+                            conn.systems.map(function(connectionSystemId) {
+                              var connectionSystem = SYSTEMS[connectionSystemId];
+                              if (!connectionSystem) return null;
+                              return h('button', {
+                                key: connectionSystemId,
+                                'aria-label': 'Show ' + connectionSystem.name + ' diagram for ' + conn.title,
+                                'aria-pressed': sysKey === connectionSystemId,
+                                onClick: function() { showAnatomySystem(connectionSystemId, conn.title); },
+                                className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-[0.97] ' + (sysKey === connectionSystemId ? 'bg-sky-700 text-white border-sky-700' : 'bg-white text-sky-700 border-sky-300 hover:bg-sky-100')
+                              }, connectionSystem.icon + ' View ' + connectionSystem.name)
+                            })
+                          )
                         ) : null
                       );
                     })
@@ -5657,45 +5762,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
                     h('h4', { className: 'font-bold text-teal-800 text-sm' }, t('stem.anatomy.anatomy_flashcards', '\uD83C\uDCCF Anatomy Flashcards')),
-                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
+                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700', 'aria-label': 'Flashcard progress' }, flashcardPool.length > 0 ? (flashcardIdx + 1) + '/' + flashcardPool.length : '0/0')
                   ),
-                  h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
+                  h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Recall the function, then use Reveal function to check your answer. Study ' + sys.name + ' structures.'),
                   flashcardPool.length > 0 ? h('div', { className: 'space-y-3' },
-                    h('button', { 'aria-label': (flashcardPool[flashcardIdx] ? flashcardPool[flashcardIdx].name : 'Flashcard') + (flashcardFlipped ? ', function shown, tap to flip back' : ', tap to reveal its function'),
-                      'aria-pressed': flashcardFlipped,
-                      onClick: function() { var nowFlipped = !flashcardFlipped; upd('_flashcardFlipped', nowFlipped); if (nowFlipped && flashcardPool[flashcardIdx]) announceStructure(flashcardPool[flashcardIdx].id); },
-                      className: 'w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left cursor-pointer hover:shadow-md ' +
+                    h('div', { role: 'group', 'aria-label': 'Flashcard ' + (flashcardIdx + 1) + ' of ' + flashcardPool.length + ': ' + flashcardPool[flashcardIdx].name,
+                      className: 'w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left ' +
                         (flashcardFlipped ? 'border-teal-400 bg-teal-50' : 'border-slate-300 bg-gradient-to-br from-white to-slate-50')
                     },
-                      !flashcardFlipped ? h('div', null,
-                        h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-3' }, t('stem.anatomy.structure_name', 'STRUCTURE NAME')),
-                        h('h3', { className: 'text-xl font-black text-slate-800 mb-2 tracking-tight' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
-                        PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
-                        h('p', { className: 'text-[11px] text-slate-600 mt-4' }, t('stem.anatomy.tap_to_reveal_function', 'Tap to reveal function \u2192'))
-                      ) : h('div', null,
-                        h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
-                        h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
-                        flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
-                          h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, t('stem.anatomy.clinical_2', '\u26A0 Clinical')),
-                          h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
-                        ) : null,
-                        ttsBtn(flashcardPool[flashcardIdx % flashcardPool.length].fn)
+                      h('div', { id: 'anatomy-flashcard-content', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                        !flashcardFlipped ? h('div', null,
+                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-3' }, t('stem.anatomy.structure_name', 'STRUCTURE NAME')),
+                          h('h3', { className: 'text-xl font-black text-slate-800 mb-2 tracking-tight' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
+                          PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
+                          h('p', { className: 'text-[11px] text-slate-600 mt-4' }, 'Answer hidden')
+                        ) : h('div', null,
+                          h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
+                          h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
+                          flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
+                            h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, t('stem.anatomy.clinical_2', '\u26A0 Clinical')),
+                            h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
+                          ) : null
+                        )
+                      ),
+                      h('div', { className: 'mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2 flex-wrap' },
+                        flashcardFlipped ? ttsBtn(flashcardPool[flashcardIdx % flashcardPool.length].fn) : h('span', { className: 'text-[11px] text-slate-500' }, 'Say the function before revealing it.'),
+                        h('button', {
+                          'aria-expanded': flashcardFlipped,
+                          'aria-controls': 'anatomy-flashcard-content',
+                          onClick: function() { upd('_flashcardFlipped', !flashcardFlipped); },
+                          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-[0.97] ' + (flashcardFlipped ? 'bg-white text-teal-700 border border-teal-400 hover:bg-teal-50' : 'bg-teal-700 text-white hover:bg-teal-800')
+                        }, flashcardFlipped ? 'Show structure name' : 'Reveal function')
                       )
                     ),
-                    h('div', { className: 'flex gap-2 justify-between' },
+                    h('div', { className: 'flex gap-2 justify-between', role: 'toolbar', 'aria-label': 'Flashcard navigation' },
                       h('button', { 'aria-label': t('stem.anatomy.previous_5', 'Previous'),
-                        onClick: function() { var pi = flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1; updMulti(structureFocusPatch(flashcardPool[pi].id, { _flashcardIdx: pi, _flashcardFlipped: false })); announceStructure(flashcardPool[pi].id); },
+                        onClick: function() { var pi = flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1; updMulti(structureFocusPatch(flashcardPool[pi].id, { _flashcardIdx: pi, _flashcardFlipped: false })); announceStructure(flashcardPool[pi].id); playSound('guidedStep'); },
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-100 text-teal-700 hover:bg-teal-200 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.previous_6', '\u2190 Previous')),
                       h('button', { 'aria-label': t('stem.anatomy.random', 'Random'),
                         onClick: function() {
-                          var randIdx = Math.floor(Math.random() * flashcardPool.length);
-                          updMulti(structureFocusPatch(flashcardPool[randIdx].id, { _flashcardIdx: randIdx, _flashcardFlipped: false })); announceStructure(flashcardPool[randIdx].id);
+                          var randomOffset = flashcardPool.length > 1 ? 1 + Math.floor(Math.random() * (flashcardPool.length - 1)) : 0;
+                          var randIdx = (flashcardIdx + randomOffset) % flashcardPool.length;
+                          updMulti(structureFocusPatch(flashcardPool[randIdx].id, { _flashcardIdx: randIdx, _flashcardFlipped: false })); announceStructure(flashcardPool[randIdx].id); playSound('guidedStep');
                         },
                         className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.random_2', '\uD83C\uDFB2 Random')),
                       h('button', { 'aria-label': t('stem.anatomy.next_7', 'Next'),
-                        onClick: function() { var ni = (flashcardIdx + 1) % flashcardPool.length; updMulti(structureFocusPatch(flashcardPool[ni].id, { _flashcardIdx: ni, _flashcardFlipped: false })); announceStructure(flashcardPool[ni].id); },
+                        onClick: function() { var ni = (flashcardIdx + 1) % flashcardPool.length; updMulti(structureFocusPatch(flashcardPool[ni].id, { _flashcardIdx: ni, _flashcardFlipped: false })); announceStructure(flashcardPool[ni].id); playSound('guidedStep'); },
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-700 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.next_8', 'Next \u2192'))
                     )

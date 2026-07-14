@@ -20811,6 +20811,7 @@
       "navigate": "ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ",
       "pipeline": "Pipeline ಫಲಿತಾಂಶಗಳು",
       "tools": "ಒಂದು ಸಾಧನವನ್ನು ತೆರೆಯಿರಿ",
+      "recent": "Recent",
       "voice": "ಧ್ವನಿ"
     },
     "input_aria": "ಆದೇಶಗಳನ್ನು ಹುಡುಕಿ",

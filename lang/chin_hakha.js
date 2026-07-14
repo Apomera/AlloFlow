@@ -12327,7 +12327,8 @@
       "navigate": "Kalpi",
       "pipeline": "Pipeline achuak hna",
       "tools": "Hmanthlak hawng",
-      "voice": "Aw"
+      "voice": "Aw",
+      "recent": "Recent"
     },
     "input_aria": "Command kawl",
     "list_aria": "Aa tlukmi command hna",

@@ -20938,7 +20938,8 @@
       "navigate": "Chọgharịa",
       "pipeline": "Nsonaazụ Pipeline",
       "tools": "Mepee ngwaọrụ",
-      "voice": "Olu"
+      "voice": "Olu",
+      "recent": "Recent"
     },
     "input_aria": "Chọọ iwu",
     "list_aria": "Iwu dabara adaba",

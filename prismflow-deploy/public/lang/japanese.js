@@ -20794,7 +20794,8 @@
       "navigate": "移動",
       "pipeline": "パイプラインの結果",
       "tools": "ツールを開く",
-      "voice": "音声"
+      "voice": "音声",
+      "recent": "Recent"
     },
     "input_aria": "コマンドを検索",
     "list_aria": "一致するコマンド",

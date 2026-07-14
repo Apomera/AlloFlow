@@ -110,7 +110,8 @@ const report = {
   summary: {
     legacyQuestions: legacyAudit.summary.totalItems,
     nativeQaQuestions: nativeQa ? nativeQa.summary.passedItems : 0,
-    nativeOriginalQaQuestions: nativeQa ? nativeQa.items.filter((item) => !item.legacySourceId).length : 0,
+    nativeOriginalQaQuestions: nativeQa ? nativeQa.items.filter((item) => !item.legacySourceId && !item.authoredSourceId).length : 0,
+    sourceAuthoredQaQuestions: nativeQa ? nativeQa.items.filter((item) => item.authoredSourceId).length : 0,
     legacyReviewPassedQuestions: nativeCurrentQuestions,
     nativeTargetQuestions,
     nativeRemainingToTarget: Math.max(0, nativeTargetQuestions - nativeCurrentQuestions),

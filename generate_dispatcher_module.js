@@ -67,6 +67,51 @@ function applyAuditReviewStatus(dimension, review) {
   return dimension;
 }
 
+const AUDIT_LANGUAGE_NAME_TAGS = {
+  english: 'en', spanish: 'es', french: 'fr', german: 'de', italian: 'it', portuguese: 'pt', dutch: 'nl',
+  arabic: 'ar', chinese: 'zh', mandarin: 'zh', cantonese: 'yue', japanese: 'ja', korean: 'ko',
+  hindi: 'hi', bengali: 'bn', urdu: 'ur', punjabi: 'pa', gujarati: 'gu', tamil: 'ta', telugu: 'te',
+  marathi: 'mr', nepali: 'ne', russian: 'ru', ukrainian: 'uk', polish: 'pl', turkish: 'tr',
+  vietnamese: 'vi', thai: 'th', indonesian: 'id', malay: 'ms', swahili: 'sw', somali: 'so',
+  'haitian creole': 'ht', tagalog: 'tl', filipino: 'fil', greek: 'el', hebrew: 'he', persian: 'fa',
+  farsi: 'fa', burmese: 'my', myanmar: 'my', khmer: 'km', lao: 'lo', amharic: 'am', yoruba: 'yo',
+  zulu: 'zu', xhosa: 'xh', afrikaans: 'af', swedish: 'sv', norwegian: 'no', danish: 'da', finnish: 'fi',
+  czech: 'cs', slovak: 'sk', hungarian: 'hu', romanian: 'ro', bulgarian: 'bg', croatian: 'hr',
+  serbian: 'sr', bosnian: 'bs', slovenian: 'sl', albanian: 'sq', lithuanian: 'lt', latvian: 'lv',
+  estonian: 'et', irish: 'ga', welsh: 'cy', 'scottish gaelic': 'gd', 'maay maay': 'ymm',
+  'chin falam': 'cfm', marshallese: 'mh'
+};
+
+function normalizeAuditLanguageTag(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 'und';
+  const name = raw.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/brazil.*portuguese|portuguese.*brazil/.test(name)) return 'pt-BR';
+  if (/european.*portuguese|portuguese.*portugal/.test(name)) return 'pt-PT';
+  if (/traditional.*chinese|chinese.*traditional/.test(name)) return 'zh-Hant';
+  if (/simplified.*chinese|chinese.*simplified/.test(name)) return 'zh-Hans';
+  if (AUDIT_LANGUAGE_NAME_TAGS[name]) return AUDIT_LANGUAGE_NAME_TAGS[name];
+  const languageNames = Object.keys(AUDIT_LANGUAGE_NAME_TAGS).sort(function (a, b) { return b.length - a.length; });
+  for (let i = 0; i < languageNames.length; i++) {
+    const languageName = languageNames[i];
+    if (new RegExp('(?:^|\\b)' + languageName.replace(/ /g, '\\s+') + '(?:\\b|$)', 'i').test(name)) {
+      return AUDIT_LANGUAGE_NAME_TAGS[languageName];
+    }
+  }
+  // Accept compact language tags, but do not mistake arbitrary display names
+  // such as "English" for valid tags merely because they are alphabetic.
+  if (/^(?:[a-z]{2,3})(?:[-_][a-z0-9]{2,8})*$/i.test(raw) || /^und$/i.test(raw)) {
+    const candidate = raw.replace(/_/g, '-');
+    try {
+      if (typeof Intl !== 'undefined' && Intl.getCanonicalLocales) {
+        return Intl.getCanonicalLocales(candidate)[0] || 'und';
+      }
+    } catch (e) { return 'und'; }
+    return candidate;
+  }
+  return 'und';
+}
+
 function _collectAuditStrings(value, out, seen, depth) {
   if (value === null || value === undefined || depth > 7) return;
   if (typeof value === 'string') {
@@ -82,7 +127,7 @@ function _collectAuditStrings(value, out, seen, depth) {
     return;
   }
   Object.keys(value).forEach(function (key) {
-    if (/^(?:audio|image|thumbnail|blob|base64|url|path|src|id|createdAt|updatedAt)$/i.test(key)) return;
+    if (/^(?:audio|audioUrl|audioPath|ttsAudio|karaokeAudio|karaokeStudentAudio|image|imageUrl|thumbnail|thumbnailUrl|blob|base64|bytes|url|path|src|id|mimes|sources|metadata|createdAt|updatedAt)$/i.test(key)) return;
     _collectAuditStrings(value[key], out, seen, depth + 1);
   });
 }
@@ -110,14 +155,67 @@ function _splitAuditSentences(text, language) {
   return clean.split(/(?<=[.!?\u3002\uff01\uff1f])\s+|[\r\n]+/u).map(function (s) { return s.trim(); }).filter(Boolean);
 }
 
+function _normalizeAuditSentenceKey(sentence) {
+  return String(sentence == null ? '' : sentence).toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/([a-z0-9À-ÿ])\s*'\s*([a-z0-9À-ÿ])/g, "$1'$2")
+    .replace(/([0-9])\s*\.\s*([0-9])/g, '$1.$2')
+    .replace(/\s+([.,!?;:%)\]}…])/g, '$1')
+    .replace(/([([{])\s+/g, '$1')
+    .replace(/\s*"\s*/g, '"')
+    .replace(/([a-z0-9À-ÿ])\s*-\s*([a-z0-9À-ÿ])/g, '$1-$2')
+    .replace(/\s*—\s*/g, '—')
+    .replace(/\s+/g, ' ').trim();
+}
+
+function _preparedAuditSentenceEvidence(manifest, expectedSentences) {
+  const container = manifest && manifest.sentences;
+  const preparedKeys = new Set();
+  let anonymousEntries = 0;
+  let totalEntries = 0;
+  if (Array.isArray(container)) {
+    container.forEach(function (entry) {
+      if (!entry) return;
+      if (typeof entry === 'string') {
+        totalEntries++;
+        anonymousEntries++;
+        return;
+      }
+      if (typeof entry !== 'object') return;
+      const playable = entry.audioUrl || entry.url || entry.audioPath || entry.b64 || entry.base64 || entry.bytes || entry.data;
+      if (!playable) return;
+      totalEntries++;
+      const sentence = entry.sentence || entry.text || entry.key;
+      const key = sentence ? _normalizeAuditSentenceKey(sentence) : '';
+      if (key) preparedKeys.add(key);
+      else anonymousEntries++;
+    });
+  } else if (container && typeof container === 'object') {
+    Object.keys(container).forEach(function (sentenceKey) {
+      if (!container[sentenceKey]) return;
+      totalEntries++;
+      const key = _normalizeAuditSentenceKey(sentenceKey);
+      if (key) preparedKeys.add(key);
+    });
+  }
+  const expectedKeys = (Array.isArray(expectedSentences) ? expectedSentences : []).map(_normalizeAuditSentenceKey).filter(Boolean);
+  let matchedEntries = expectedKeys.filter(function (key) { return preparedKeys.has(key); }).length;
+  // Older array manifests sometimes omit their sentence text. Credit those
+  // entries conservatively, never beyond the remaining readable denominator.
+  matchedEntries += Math.min(anonymousEntries, Math.max(0, expectedKeys.length - matchedEntries));
+  return { totalEntries: totalEntries, matchedEntries: matchedEntries };
+}
+
 function _artifactAudioEvidence(artifact, language) {
   const d = artifact && artifact.data && typeof artifact.data === 'object' ? artifact.data : {};
   const manifestCandidate = artifact && (artifact.karaokeAudio || d.karaokeAudio);
   const manifest = manifestCandidate && typeof manifestCandidate === 'object' ? manifestCandidate : null;
   const embedded = !!(d.audioUrl || d.ttsAudio || d.audioPath || (d.audio && (d.audio.url || d.audio.path)) || (artifact && (artifact.audioUrl || artifact.audioPath)));
-  const preparedSentences = manifest && Array.isArray(manifest.sentences) ? manifest.sentences.filter(Boolean).length : 0;
   const readableText = extractAuditArtifactText(artifact);
-  const expectedSentences = _splitAuditSentences(readableText, language).length;
+  const sentenceList = _splitAuditSentences(readableText, language);
+  const preparedEvidence = _preparedAuditSentenceEvidence(manifest, sentenceList);
+  const expectedSentences = sentenceList.length;
   return {
     readable: !!readableText,
     // The app-wide Read This Page reader can synthesize any readable resource.
@@ -127,9 +225,10 @@ function _artifactAudioEvidence(artifact, language) {
     pageReaderEligible: !!readableText,
     dedicatedReadAloudCapable: !!(artifact && DEDICATED_READ_ALOUD_TYPES.has(artifact.type) && readableText),
     embedded: embedded,
-    preparedSentences: preparedSentences,
+    preparedSentences: preparedEvidence.matchedEntries,
+    preparedSentenceEntries: preparedEvidence.totalEntries,
     expectedSentences: expectedSentences,
-    preparedCoveragePct: expectedSentences > 0 ? Math.min(100, Math.round((preparedSentences / expectedSentences) * 100)) : null,
+    preparedCoveragePct: expectedSentences > 0 ? Math.round((preparedEvidence.matchedEntries / expectedSentences) * 100) : null,
   };
 }
 
@@ -138,6 +237,7 @@ function computeAudioCoverage(artifacts, language) {
   let readableArtifacts = 0, readAloudCapableArtifacts = 0, dedicatedReadAloudArtifacts = 0;
   let pageReaderEligibleArtifacts = 0, embeddedAudioArtifacts = 0, totalEmbeddedAudioArtifacts = 0;
   let preparedAudioArtifacts = 0, expectedSentences = 0, preparedSentences = 0;
+  let totalPreparedSentenceEntries = 0, runtimeFallbackArtifacts = 0, unscopedAudioArtifacts = 0;
   let unscopedEmbeddedAudioArtifacts = 0, unscopedPreparedAudioArtifacts = 0, unscopedPreparedSentences = 0;
   safe.forEach(function (artifact) {
     const evidence = _artifactAudioEvidence(artifact, language);
@@ -150,14 +250,17 @@ function computeAudioCoverage(artifacts, language) {
       if (evidence.readable) embeddedAudioArtifacts++;
       else unscopedEmbeddedAudioArtifacts++;
     }
+    totalPreparedSentenceEntries += evidence.preparedSentenceEntries;
     if (evidence.readable) {
       if (evidence.preparedSentences > 0) preparedAudioArtifacts++;
       expectedSentences += evidence.expectedSentences;
       preparedSentences += evidence.preparedSentences;
-    } else if (evidence.preparedSentences > 0) {
+      if (evidence.readAloudCapable && evidence.preparedSentences < evidence.expectedSentences) runtimeFallbackArtifacts++;
+    } else if (evidence.preparedSentenceEntries > 0) {
       unscopedPreparedAudioArtifacts++;
-      unscopedPreparedSentences += evidence.preparedSentences;
+      unscopedPreparedSentences += evidence.preparedSentenceEntries;
     }
+    if (!evidence.readable && (evidence.embedded || evidence.preparedSentenceEntries > 0)) unscopedAudioArtifacts++;
   });
   return {
     totalArtifacts: safe.length,
@@ -172,12 +275,15 @@ function computeAudioCoverage(artifacts, language) {
     totalEmbeddedAudioArtifacts: totalEmbeddedAudioArtifacts,
     unscopedEmbeddedAudioArtifacts: unscopedEmbeddedAudioArtifacts,
     preparedAudioArtifacts: preparedAudioArtifacts,
+    totalPreparedSentenceEntries: totalPreparedSentenceEntries,
     preparedSentences: preparedSentences,
     expectedSentences: expectedSentences,
-    preparedSentenceCoveragePct: expectedSentences ? Math.min(100, Math.round((preparedSentences / expectedSentences) * 100)) : null,
+    preparedSentenceCoveragePct: expectedSentences ? Math.round((preparedSentences / expectedSentences) * 100) : null,
+    unscopedAudioArtifacts: unscopedAudioArtifacts,
     unscopedPreparedAudioArtifacts: unscopedPreparedAudioArtifacts,
     unscopedPreparedSentences: unscopedPreparedSentences,
-    runtimeFallbackAvailable: readAloudCapableArtifacts > preparedAudioArtifacts,
+    runtimeFallbackArtifacts: runtimeFallbackArtifacts,
+    runtimeFallbackAvailable: runtimeFallbackArtifacts > 0,
     notes: 'Read-aloud capability includes the app-wide Read This Page TTS reader for every readable resource. Dedicated in-resource controls, embedded audio files, and prepared synchronized sentence audio are reported separately and are not treated as equivalent evidence.',
   };
 }
@@ -3341,9 +3447,11 @@ ${_itemsBlock}`;
          auditScopeSelection.metadata.contextTruncated = contextOverflowed;
          auditScopeSelection.metadata.serializationFailures = Array.from(new Set(failedTypes));
          content.comprehensive.auditScope = auditScopeSelection.metadata;
-         content.comprehensive.auditLanguage = String(effectiveLanguage || currentUiLanguage || 'en');
+         const auditLanguage = String(effectiveLanguage || currentUiLanguage || 'en');
+         content.comprehensive.auditLanguage = auditLanguage;
+         content.comprehensive.auditLanguageTag = normalizeAuditLanguageTag(auditLanguage);
          content.comprehensive.auditMetadata = {
-             schemaVersion: 3,
+             schemaVersion: 4,
              generatedAt: new Date().toISOString(),
              gradeLevel: String(effectiveGrade || gradeLevel || ''),
          };

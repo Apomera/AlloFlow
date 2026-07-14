@@ -20938,7 +20938,8 @@
       "navigate": "Navigasi",
       "pipeline": "Hasil pipeline",
       "tools": "Buka alat",
-      "voice": "Suara"
+      "voice": "Suara",
+      "recent": "Recent"
     },
     "input_aria": "Cari perintah",
     "list_aria": "Perintah yang cocok",

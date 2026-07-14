@@ -20871,7 +20871,8 @@
       "navigate": "Navegar",
       "pipeline": "Resultados de la canalización",
       "tools": "Abrir una herramienta",
-      "voice": "Voz"
+      "voice": "Voz",
+      "recent": "Recent"
     },
     "input_aria": "Buscar comandos",
     "list_aria": "Comandos coincidentes",

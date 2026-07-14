@@ -15,7 +15,8 @@ const helpers = new Function(helperPrefix + `
     computeVocabularyFit,
     computeReadinessScore,
     normalizeStandardsDimension,
-    selectCurriculumArtifacts
+    selectCurriculumArtifacts,
+    normalizeAuditLanguageTag
   };
 `)();
 
@@ -107,6 +108,60 @@ describe('curriculum audit audio, language, scope, and standards', () => {
     expect(harvest.multimodal.audio).toBe(true);
   });
 
+  it('matches production keyed karaoke audio and keeps partial preparation on runtime fallback', () => {
+    const result = helpers.computeAudioCoverage([{
+      id: 'keyed-audio',
+      type: 'simplified',
+      data: { text: 'First sentence. Second sentence.' },
+      karaokeAudio: {
+        format: 'per-entry',
+        version: 3,
+        sentences: {
+          'first sentence.': 'base64-audio',
+          'unrelated sentence.': 'base64-other'
+        }
+      }
+    }], 'en');
+
+    expect(result.totalPreparedSentenceEntries).toBe(2);
+    expect(result.expectedSentences).toBe(2);
+    expect(result.preparedSentences).toBe(1);
+    expect(result.preparedSentenceCoveragePct).toBe(50);
+    expect(result.preparedAudioArtifacts).toBe(1);
+    expect(result.runtimeFallbackArtifacts).toBe(1);
+    expect(result.runtimeFallbackAvailable).toBe(true);
+  });
+
+  it('counts an unscoped artifact once when it has embedded and prepared audio', () => {
+    const result = helpers.computeAudioCoverage([{
+      id: 'audio-only-combined',
+      type: 'audio',
+      data: { audioUrl: 'blob:standalone' },
+      karaokeAudio: { sentences: { 'saved sentence.': 'base64-audio' } }
+    }], 'en');
+
+    expect(result.unscopedEmbeddedAudioArtifacts).toBe(1);
+    expect(result.unscopedPreparedAudioArtifacts).toBe(1);
+    expect(result.unscopedPreparedSentences).toBe(1);
+    expect(result.unscopedAudioArtifacts).toBe(1);
+  });
+
+  it('does not mistake nested persisted audio bytes for readable curriculum text', () => {
+    const result = helpers.computeAudioCoverage([{
+      id: 'nested-audio-only',
+      type: 'audio',
+      data: {
+        karaokeAudio: {
+          format: 'per-entry',
+          sentences: { 'saved sentence.': 'A'.repeat(512) }
+        }
+      }
+    }], 'en');
+
+    expect(result.readableArtifacts).toBe(0);
+    expect(result.unscopedPreparedAudioArtifacts).toBe(1);
+  });
+
   it('credits the global page reader without letting audio-only artifacts inflate readable coverage', () => {
     const artifacts = [{
       id: 'lesson-1',
@@ -171,6 +226,15 @@ describe('curriculum audit audio, language, scope, and standards', () => {
     expect(normalized.dimension.status).toBe('Not evaluated');
     expect(normalized.dimension.notEvaluated).toBe(true);
   });
+
+  it('stores valid BCP 47 language tags without treating display names as tags', () => {
+    expect(helpers.normalizeAuditLanguageTag('English')).toBe('en');
+    expect(helpers.normalizeAuditLanguageTag('Spanish (Latin America)')).toBe('es');
+    expect(helpers.normalizeAuditLanguageTag('Brazilian Portuguese')).toBe('pt-BR');
+    expect(helpers.normalizeAuditLanguageTag('Chinese (Traditional)')).toBe('zh-Hant');
+    expect(helpers.normalizeAuditLanguageTag('fr-CA')).toBe('fr-CA');
+    expect(helpers.normalizeAuditLanguageTag('All Selected Languages')).toBe('und');
+  });
 });
 
 describe('curriculum audit report WCAG regressions', () => {
@@ -189,7 +253,8 @@ describe('curriculum audit report WCAG regressions', () => {
     expect(reportSource).toContain('Selection: ');
     expect(reportSource).toContain('print:h-auto');
     expect(reportSource).toContain('var seenRecommendations = new Set()');
-    expect(dispatcherSource).toContain('schemaVersion: 3');
+    expect(dispatcherSource).toContain('schemaVersion: 4');
+    expect(dispatcherSource).toContain('auditLanguageTag = normalizeAuditLanguageTag');
     expect(reportSource).toContain('function NotEvaluatedCard');
     expect(reportSource).toContain('function MissingDimensionCard');
     expect(reportSource).toContain('saved audit. Regenerate the audit');
@@ -201,7 +266,8 @@ describe('curriculum audit report WCAG regressions', () => {
 
   it('keeps source and generated report localization plumbing aligned', () => {
     expect(reportSource).toContain('<ExecutiveSummary t={t}');
-    expect(reportSource).toContain('lang={comprehensive && comprehensive.auditLanguage');
+    expect(reportSource).toContain('lang={resolveAuditLanguageTag(comprehensive)}');
+    expect(reportSource).toContain('comprehensive.auditLanguageTag || comprehensive.auditLanguage');
     expect(reportSource).toContain('role="region" aria-labelledby="curriculum-audit-report-heading"');
     expect(reportSource).toContain('<h1 id="curriculum-audit-report-heading"');
     expect(reportSource).toContain('<time dateTime={generatedAt}>');

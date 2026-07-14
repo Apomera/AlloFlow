@@ -20929,7 +20929,8 @@
       "navigate": "Mag-navigate",
       "pipeline": "Mga resulta ng Pipeline",
       "tools": "Buksan ang isang kasangkapan",
-      "voice": "Boses"
+      "voice": "Boses",
+      "recent": "Recent"
     },
     "input_aria": "Maghanap ng mga utos",
     "list_aria": "Mga tugmang utos",

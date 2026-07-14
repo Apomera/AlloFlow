@@ -1,0 +1,3079 @@
+[
+  {
+    "id": "parapro-reading-skills-024",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. Neighbors transformed an unused lot into a small park. They removed litter, planted native shrubs, and installed two benches. By autumn, families were using the space for reading and conversation. Which statement best expresses the main idea?",
+    "choices": [
+      "Neighbors improved an unused lot and created a useful community space.",
+      "Native shrubs grow best when planted during autumn.",
+      "Families asked the city to build a large playground.",
+      "The lot remained unused after the cleanup was completed."
+    ],
+    "answerIndex": 0,
+    "rationale": "The passage focuses on people improving an unused lot and the community then using it. The correct main idea includes the central action and result rather than one minor detail.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "It includes both the neighbors actions and the useful result without adding unsupported details. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the passage does not compare planting seasons. The stated information or governing rule points to a different result.",
+      "This option does not fit because no playground request appears in the passage. The stated information or governing rule points to a different result.",
+      "This option does not fit because families began using the space after the work. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-025",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. A city added an express bus on weekday mornings. During the next month, average travel time on that route fell from 48 minutes to 35 minutes, while ridership increased. Which conclusion is best supported?",
+    "choices": [
+      "Every rider reached work exactly thirteen minutes earlier.",
+      "The express service was associated with shorter trips and higher ridership.",
+      "The city removed all other buses from the weekday route.",
+      "Weekend ridership increased by the same amount as weekday ridership."
+    ],
+    "answerIndex": 1,
+    "rationale": "Travel time decreased and ridership increased after the express bus was added. The cautious phrase was associated with matches the evidence and avoids unsupported claims about every rider or weekends.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because an average does not describe every individual trip. The stated information or governing rule points to a different result.",
+      "It accurately summarizes both reported changes without claiming that the new service alone proved causation.",
+      "This option does not fit because the passage says nothing about removing other buses. The stated information or governing rule points to a different result.",
+      "This option does not fit because only weekday morning information is provided. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-026",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student claims that the school science fair attracted participants from many grade levels. Which detail would best support the claim?",
+    "choices": [
+      "The science fair was held in the school gymnasium.",
+      "Several projects used colorful presentation boards.",
+      "The participant list included students from grades four through eight.",
+      "The judges announced awards at the end of the evening."
+    ],
+    "answerIndex": 2,
+    "rationale": "A supporting detail must address the range of grade levels represented. A participant list naming grades four through eight directly supports that claim; the other facts concern setting or procedures.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the location does not identify participant grade levels. The stated information or governing rule points to a different result.",
+      "This option does not fit because board appearance does not show who participated. The stated information or governing rule points to a different result.",
+      "The stated range directly shows that participants came from five different grade levels. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the award schedule does not establish grade-level range. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-027",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the text. Rinse the empty jar. Remove the paper label. Place the jar in the glass-recycling bin, and keep the metal lid separate. What is the primary purpose of the text?",
+    "choices": [
+      "To persuade readers to purchase glass jars",
+      "To compare glass containers with metal containers",
+      "To describe how glass is manufactured in a factory",
+      "To explain how to prepare a jar for recycling"
+    ],
+    "answerIndex": 3,
+    "rationale": "The imperative verbs rinse, remove, place, and keep show that the text provides directions. All details concern preparing a glass jar for recycling, not buying, comparing, or manufacturing containers.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the text gives directions rather than a purchasing argument. The stated information or governing rule points to a different result.",
+      "This option does not fit because the separate lid is an instruction rather than a comparison. The stated information or governing rule points to a different result.",
+      "This option does not fit because no manufacturing process is described. The stated information or governing rule points to a different result.",
+      "Each sentence is an action step for preparing and sorting one jar before recycling. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-028",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. First, the class measured the shadow of a flagpole at 9:00 a.m. They repeated the measurement at noon and again at 3:00 p.m. Finally, they compared the three lengths. How is the passage mainly organized?",
+    "choices": [
+      "As a sequence of steps in an investigation",
+      "As a comparison of two competing theories",
+      "As a problem followed by several possible solutions",
+      "As a description of the flagpole from top to bottom"
+    ],
+    "answerIndex": 0,
+    "rationale": "First, repeated, again, and finally establish chronological sequence. The passage lists the measurement and comparison steps of an investigation rather than theories, solutions, or spatial details.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The time markers and action verbs present the investigation in the order it was conducted. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because no theories are presented or evaluated. The stated information or governing rule points to a different result.",
+      "This option does not fit because the class follows a procedure rather than solving a stated problem.",
+      "This option does not fit because the details are ordered by time rather than physical location. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-029",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the sentence. Nia was reluctant to lead the presentation, but after practicing with her group she agreed to introduce the project. What does reluctant most nearly mean?",
+    "choices": [
+      "Completely prepared",
+      "Unwilling at first",
+      "Eager to begin",
+      "Unable to speak"
+    ],
+    "answerIndex": 1,
+    "rationale": "Context shows that Nia did not initially want to lead but changed her mind after practice. Reluctant therefore means hesitant or unwilling at first, not eager, prepared, or unable.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because practice occurred later and does not mean she began fully prepared.",
+      "The word but contrasts her initial hesitation with her later agreement to take the role. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the contrast with later agreement shows initial hesitation. The stated information or governing rule points to a different result.",
+      "This option does not fit because she ultimately introduces the project, so inability is unsupported."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-030",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Account 1 says the new trail is easy because it is level and clearly marked. Account 2 says the trail can be difficult after rain because several low areas become muddy. What is the main difference between the accounts?",
+    "choices": [
+      "They disagree about where the trail begins.",
+      "They describe two trails in different cities.",
+      "They emphasize different conditions that affect trail difficulty.",
+      "They give different dates for when the trail opened."
+    ],
+    "answerIndex": 2,
+    "rationale": "The accounts differ in the conditions they highlight: a level marked surface versus muddy low areas after rain. Nothing in the statements supports differences in location, identity, or opening date.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because neither account discusses the starting point. The stated information or governing rule points to a different result.",
+      "This option does not fit because both accounts can refer to the same new trail. The stated information or governing rule points to a different result.",
+      "One account emphasizes normal level conditions, while the other emphasizes wet conditions after rain.",
+      "This option does not fit because no opening date appears in either account. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-031",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A reading log shows these minutes for four days: Monday 20, Tuesday 35, Wednesday 25, Thursday 40. Which statement is supported by the log?",
+    "choices": [
+      "The student read 120 minutes every day.",
+      "Tuesday and Wednesday had equal reading times.",
+      "Monday had more reading time than Thursday.",
+      "The student read the most minutes on Thursday."
+    ],
+    "answerIndex": 3,
+    "rationale": "Comparing the four entries shows that 40 is the greatest daily value, so Thursday had the most reading time. The other options confuse a total or reverse the listed comparisons.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because 120 is the four-day total rather than a daily amount. The stated information or governing rule points to a different result.",
+      "This option does not fit because the log reports 35 minutes and 25 minutes. The stated information or governing rule points to a different result.",
+      "This option does not fit because 20 minutes is less than 40 minutes. The stated information or governing rule points to a different result.",
+      "Thursday has 40 minutes, which is greater than each of the other daily values. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-032",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Which sentence is an opinion?",
+    "choices": [
+      "The renovated cafeteria is extremely welcoming.",
+      "The cafeteria opens for breakfast at 7:30 a.m.",
+      "The renovation added twelve round tables.",
+      "The north wall contains three large windows."
+    ],
+    "answerIndex": 0,
+    "rationale": "An opinion expresses a judgment rather than a verifiable condition. Calling a room the most welcoming is subjective, while times, quantities, and observable features can be checked.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Most welcoming expresses a personal judgment that can differ among observers. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the opening time can be checked against a schedule. The stated information or governing rule points to a different result.",
+      "This option does not fit because the number of tables can be counted. The stated information or governing rule points to a different result.",
+      "This option does not fit because the number and location of windows can be observed. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-033",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. Heavy rain washed soil into the pond. The cloudier water blocked sunlight, and fewer underwater plants grew that month. Which relationship does the passage emphasize?",
+    "choices": [
+      "A comparison of two unrelated ponds",
+      "A chain of causes and effects",
+      "A list of steps for planting vegetation",
+      "A debate about the value of rainfall"
+    ],
+    "answerIndex": 1,
+    "rationale": "Each event leads to the next: rain moves soil, cloudy water reduces sunlight, and reduced sunlight limits underwater plant growth. This is a clear cause-and-effect chain.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because only one pond and connected events are described. The stated information or governing rule points to a different result.",
+      "Rain causes soil runoff, which clouds the water and contributes to reduced plant growth. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the passage reports events rather than planting directions. The stated information or governing rule points to a different result.",
+      "This option does not fit because no opposing viewpoints or debate appear. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-034",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. The art club needed display stands but had little money. Members collected clean cardboard, tested several folding designs, and built sturdy stands at almost no cost. Which is the best summary?",
+    "choices": [
+      "The club purchased expensive wooden stands for every project.",
+      "Cardboard is the only material that artists should use.",
+      "The club solved its display problem with low-cost recycled stands.",
+      "Several members decided to stop displaying their artwork."
+    ],
+    "answerIndex": 2,
+    "rationale": "A strong summary captures the need for stands, the use and testing of recycled cardboard, and the inexpensive solution. The alternatives contradict the passage or overgeneralize.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the stands were built from collected cardboard at little cost. The stated information or governing rule points to a different result.",
+      "This option does not fit because the passage describes one solution without making a universal claim.",
+      "It includes the problem, the club response, and the low-cost result without unnecessary detail. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because members solved the display problem rather than abandoning displays."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-035",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the sentence. At last, the tiny shoots pushed through the soil, and Marco hurried to call everyone to the garden. Which word best describes the tone?",
+    "choices": [
+      "Bitter",
+      "Indifferent",
+      "Suspicious",
+      "Excited"
+    ],
+    "answerIndex": 3,
+    "rationale": "The wording shows eagerness and pleasure when the shoots appear. Marco immediately calls others, supporting an excited tone rather than bitterness, indifference, or suspicion.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because nothing suggests anger or resentment. The stated information or governing rule points to a different result.",
+      "This option does not fit because hurrying to tell others shows strong interest. The stated information or governing rule points to a different result.",
+      "This option does not fit because the sentence contains no doubt or mistrust. The stated information or governing rule points to a different result.",
+      "At last and hurried to call everyone convey anticipation and enthusiasm about the new growth. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-036",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the sentence. Lena placed the model beside the poster before carrying it into the auditorium. What does the pronoun it most logically refer to?",
+    "choices": [
+      "The model",
+      "Lena",
+      "The auditorium",
+      "The act of placing"
+    ],
+    "answerIndex": 0,
+    "rationale": "Grammar and meaning point to the model as the antecedent of it. Lena performs the action, the auditorium is the destination, and the act of placing is not a carried object.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The model is the singular object that can logically be carried into the auditorium. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because Lena is the person doing the carrying rather than the object carried.",
+      "This option does not fit because the auditorium is the destination and cannot be carried into itself.",
+      "This option does not fit because an action is not the concrete object described as carried. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-037",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "The computer lab schedule lists: Grade 5, 9:00-9:40; Grade 6, 9:45-10:25; maintenance, 10:30-11:00; Grade 7, 11:05-11:45. Which conclusion is supported?",
+    "choices": [
+      "Grade 7 uses the lab before Grade 5.",
+      "The lab is unavailable to classes from 10:30 until 11:00.",
+      "Maintenance lasts longer than every class session.",
+      "Grade 6 and Grade 7 begin at the same time."
+    ],
+    "answerIndex": 1,
+    "rationale": "The maintenance block occupies 10:30 through 11:00, so no class is scheduled then. The other statements directly conflict with the listed order, durations, or times.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because Grade 7 is scheduled after Grade 5. The stated information or governing rule points to a different result.",
+      "The schedule reserves the lab for maintenance during that exact thirty-minute interval. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because maintenance is 30 minutes while each class period is 40 minutes. The stated information or governing rule points to a different result.",
+      "This option does not fit because their listed starting times are 9:45 and 11:05. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-038",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the sentence. After the final rehearsal, the cast was a well-oiled machine. What does the figurative language suggest?",
+    "choices": [
+      "The actors repaired machinery behind the stage.",
+      "The cast performed without practicing any lines.",
+      "The cast worked together smoothly and efficiently.",
+      "The theater replaced its equipment with newer models."
+    ],
+    "answerIndex": 2,
+    "rationale": "The phrase compares the rehearsed cast to a machine whose parts work smoothly together. It describes coordination and efficiency, not literal machinery, lack of practice, or new equipment.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because well-oiled machine is a comparison rather than literal repair work.",
+      "This option does not fit because the sentence follows a final rehearsal, so practice did occur. The stated information or governing rule points to a different result.",
+      "A well-oiled machine metaphorically describes coordinated parts functioning with little friction. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the comparison describes teamwork rather than equipment purchases. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-039",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "An article has sections titled Materials, Assembly, Testing, and Troubleshooting. Which heading would most likely help a reader find what to do when the device does not work?",
+    "choices": [
+      "Materials",
+      "Assembly",
+      "Testing",
+      "Troubleshooting"
+    ],
+    "answerIndex": 3,
+    "rationale": "A reader seeking help with a device that does not work should use the troubleshooting section. The other headings cover supplies, construction, or initial checks rather than corrective guidance.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because materials identifies needed supplies rather than solutions to problems.",
+      "This option does not fit because assembly explains construction rather than diagnosing failure. The stated information or governing rule points to a different result.",
+      "This option does not fit because testing checks operation but troubleshooting addresses what to do after a problem appears.",
+      "Troubleshooting sections are specifically organized around identifying and correcting operating problems."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-040",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. I steadied the canoe while my sister stepped in, then pushed us away from the dock. Which point of view is used?",
+    "choices": [
+      "First person",
+      "Second person",
+      "Third-person limited",
+      "Third-person omniscient"
+    ],
+    "answerIndex": 0,
+    "rationale": "The pronouns I and us show that a participant narrates the event from a first-person perspective. Second and third person would use different pronouns and narrative positions.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The narrator participates in the action and uses the first-person pronouns I and us. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the passage does not address the reader as you. The stated information or governing rule points to a different result.",
+      "This option does not fit because the narrator uses I rather than referring to a character as he or she.",
+      "This option does not fit because the passage does not reveal the thoughts of multiple characters. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-041",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "The word preview contains the prefix pre-. What does preview most likely mean?",
+    "choices": [
+      "To view something again after it ends",
+      "To view something before its main presentation",
+      "To refuse to view something at any time",
+      "To divide a presentation into equal parts"
+    ],
+    "answerIndex": 1,
+    "rationale": "Recognizing that pre- means before allows the reader to infer that a preview is an advance viewing. The alternatives attach meanings that the prefix does not carry.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because again is associated with re- rather than pre-. The stated information or governing rule points to a different result.",
+      "The prefix pre- means before, so a preview occurs before the full or main presentation. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the prefix does not indicate refusal. The stated information or governing rule points to a different result.",
+      "This option does not fit because the prefix does not refer to division or equal parts. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-042",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A writer claims that the new water fountains reduce plastic waste. Which evidence is most relevant?",
+    "choices": [
+      "The fountains are painted the same blue as the lockers.",
+      "Students voted on where the fountains should be placed.",
+      "Disposable-bottle waste fell by 600 bottles after installation.",
+      "The installation crew arrived before the school day began."
+    ],
+    "answerIndex": 2,
+    "rationale": "Relevant evidence must connect the fountains to plastic waste. A measured decrease in disposable bottles after installation directly supports the claim; appearance and logistics do not.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because paint color does not measure plastic waste. The stated information or governing rule points to a different result.",
+      "This option does not fit because a placement vote does not show waste reduction. The stated information or governing rule points to a different result.",
+      "The before-and-after reduction in collected disposable bottles directly measures the claimed outcome.",
+      "This option does not fit because crew arrival time is unrelated to discarded bottles. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-043",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Directions say: save the document, close the program, connect the printer, and then reopen the document. What should be done immediately before connecting the printer?",
+    "choices": [
+      "Save the document",
+      "Reopen the document",
+      "Print the document",
+      "Close the program"
+    ],
+    "answerIndex": 3,
+    "rationale": "Following the listed order, the program is closed immediately before the printer is connected. Saving comes earlier, reopening comes later, and printing is not included.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because saving occurs two steps before the connection. The stated information or governing rule points to a different result.",
+      "This option does not fit because reopening occurs after the printer is connected. The stated information or governing rule points to a different result.",
+      "This option does not fit because printing is not listed as a step in the directions. The stated information or governing rule points to a different result.",
+      "The stated sequence places closing the program directly before connecting the printer. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-044",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A table lists seedlings grown under three light conditions: full light, 18 cm; partial light, 12 cm; no light, 4 cm. Which statement best describes the pattern?",
+    "choices": [
+      "Seedling height decreased as available light decreased.",
+      "All seedlings grew to approximately the same height.",
+      "Seedlings without light grew taller than those in full light.",
+      "Partial light produced twice the height of full light."
+    ],
+    "answerIndex": 0,
+    "rationale": "The table shows a consistent downward pattern between available light and height. Each alternative either ignores the differences or reverses or miscalculates the listed values.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The ordered values fall from 18 to 12 to 4 centimeters as light availability falls. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the heights differ substantially across conditions. The stated information or governing rule points to a different result.",
+      "This option does not fit because 4 centimeters is less than 18 centimeters. The stated information or governing rule points to a different result.",
+      "This option does not fit because 12 centimeters is not twice 18 centimeters. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-045",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. Priya practiced the difficult piano section slowly each day. At the recital she missed one note, paused, and continued without losing the rhythm. Which theme is best supported?",
+    "choices": [
+      "A performance has value only when it is completely perfect.",
+      "Preparation and persistence help people recover from mistakes.",
+      "Musicians should avoid performing difficult pieces in public.",
+      "Natural ability makes daily practice unnecessary."
+    ],
+    "answerIndex": 1,
+    "rationale": "The passage links steady practice with Priya's ability to recover during the recital. The theme concerns preparation and persistence, while the alternatives contradict those events.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because Priya succeeds despite one mistake, so perfection is not required. The stated information or governing rule points to a different result.",
+      "Priya prepares consistently and persists after an error, allowing the performance to continue. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the passage presents recovery rather than avoidance. The stated information or governing rule points to a different result.",
+      "This option does not fit because daily practice is emphasized as useful preparation. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-046",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Which source would be a primary source for a report about the opening of a neighborhood school in 1952?",
+    "choices": [
+      "A recent textbook chapter summarizing local education history",
+      "A modern encyclopedia entry about school architecture",
+      "A diary entry written by a student who attended opening day",
+      "A documentary produced decades later using several historians"
+    ],
+    "answerIndex": 2,
+    "rationale": "A primary source comes from the period or a firsthand participant. A student diary from opening day provides direct contemporary evidence, unlike later summaries and interpretations.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the textbook is a later synthesis rather than firsthand evidence. The stated information or governing rule points to a different result.",
+      "This option does not fit because the encyclopedia is secondary and not focused on the event. The stated information or governing rule points to a different result.",
+      "The diary was created by a direct participant at the time of the event being studied. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the later documentary interprets earlier evidence rather than witnessing the opening."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-012",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student selects a minor detail as the main idea of each paragraph. Which support would best develop main-idea understanding?",
+    "choices": [
+      "Have the student copy the longest sentence from every paragraph.",
+      "Tell the student that the first sentence is always the main idea.",
+      "Skip the paragraphs and practice spelling unrelated vocabulary words.",
+      "Identify the shared topic, then select a statement covering the key details."
+    ],
+    "answerIndex": 3,
+    "rationale": "Main-idea instruction should help the student identify the shared topic and determine which statement encompasses the important details. Copying or relying on a fixed position rule does not build that reasoning.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because sentence length does not determine central importance. The stated information or governing rule points to a different result.",
+      "This option does not fit because main ideas may be stated elsewhere or implied. The stated information or governing rule points to a different result.",
+      "This option does not fit because unrelated spelling does not address comprehension. The stated information or governing rule points to a different result.",
+      "The process connects repeated details to a broader statement that represents the paragraph as a whole."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-013",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student does not know the word arid in the sentence, The arid region receives very little rain, so few large plants grow there. What prompt would best support use of context?",
+    "choices": [
+      "Which nearby clues describe the region and help you infer the word meaning?",
+      "How many letters and syllables are in the unfamiliar word?",
+      "Can you ignore the sentence and choose the first dictionary meaning?",
+      "Would you like me to replace the word without discussing it?"
+    ],
+    "answerIndex": 0,
+    "rationale": "Effective context-clue support draws attention to meaningful nearby information and asks the learner to connect it to the unfamiliar word. The sentence clues indicate that arid means very dry.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "It directs the student to little rain and few large plants as evidence for dry conditions. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because word length does not reveal the contextual meaning. The stated information or governing rule points to a different result.",
+      "This option does not fit because ignoring context can select an inappropriate definition. The stated information or governing rule points to a different result.",
+      "This option does not fit because replacement removes the opportunity to infer meaning. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-014",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student reads accurately but in a choppy word-by-word manner. Which activity is most appropriate for building fluency?",
+    "choices": [
+      "Assign a much harder passage and require silent reading only.",
+      "Model a short passage, then use repeated oral reading with phrasing feedback.",
+      "Correct every pause by supplying the next word immediately.",
+      "Replace connected text with isolated spelling lists for the week."
+    ],
+    "answerIndex": 1,
+    "rationale": "Because accuracy is already adequate, instruction should focus on phrasing and smoothness in connected text. Modeled and repeated oral reading offers targeted practice and actionable feedback.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because excessive difficulty and silent reading do not target oral phrasing.",
+      "Modeling and supported repetition provide practice with rate, accuracy, expression, and meaningful phrase boundaries.",
+      "This option does not fit because immediate supplying can prevent independent phrasing practice. The stated information or governing rule points to a different result.",
+      "This option does not fit because isolated lists do not develop fluent reading of connected text. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-015",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student answers an inference question correctly but cannot explain the answer. What should the paraeducator ask next?",
+    "choices": [
+      "Can you repeat the answer more loudly without using the text?",
+      "Would you like a different answer that needs no explanation?",
+      "Which words or events in the passage led you to that conclusion?",
+      "How quickly can you copy the question into your notebook?"
+    ],
+    "answerIndex": 2,
+    "rationale": "An evidence-based inference requires both a conclusion and the clues that support it. Asking what in the passage led to the answer makes the reasoning visible and open to feedback.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because volume does not provide evidence or reasoning. The stated information or governing rule points to a different result.",
+      "This option does not fit because changing answers avoids explaining the inference. The stated information or governing rule points to a different result.",
+      "The prompt asks the student to connect the inference to specific textual evidence. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because copying speed is unrelated to evidence use. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-016",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Students are comparing two articles about the same local event. Which organizer would best support the task?",
+    "choices": [
+      "A list containing only the number of words in each article",
+      "A calendar showing unrelated events from the previous month",
+      "A spelling worksheet using words not found in either article",
+      "A chart of shared facts, unique details, and viewpoint differences"
+    ],
+    "answerIndex": 3,
+    "rationale": "Comparing sources requires attending to shared information, unique details, and how viewpoints differ. A structured chart externalizes those relationships and supports evidence-based discussion.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because word counts do not capture content or perspective. The stated information or governing rule points to a different result.",
+      "This option does not fit because unrelated calendar events do not compare the texts. The stated information or governing rule points to a different result.",
+      "This option does not fit because unrelated spelling does not analyze shared or differing ideas. The stated information or governing rule points to a different result.",
+      "The organizer makes similarities, differences, and perspective explicit for direct comparison. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-017",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "During independent reading, a student reaches the end of a page and realizes the meaning is unclear. Which strategy should be encouraged first?",
+    "choices": [
+      "Pause, reread the confusing section, and summarize it in the student's own words.",
+      "Continue reading quickly and assume the meaning will never matter.",
+      "Copy every word on the page without checking understanding.",
+      "Choose a summary before looking back at the confusing section."
+    ],
+    "answerIndex": 0,
+    "rationale": "Recognizing confusion is the first step in comprehension monitoring. Pausing, rereading, and summarizing helps the learner repair understanding instead of ignoring or mechanically copying the text.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Rereading and self-explanation are direct comprehension-monitoring responses to detected confusion. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because continuing without monitoring leaves the misunderstanding unresolved.",
+      "This option does not fit because copying text does not necessarily produce comprehension. The stated information or governing rule points to a different result.",
+      "This option does not fit because selecting a summary first bypasses rereading and reasoning. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-018",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student repeatedly performs steps in a classroom procedure out of order. Which support is most appropriate?",
+    "choices": [
+      "Give all directions orally one time while the student is across the room.",
+      "Provide a numbered visual checklist and have the student mark each completed step.",
+      "Remove step numbers so the student must guess the sequence.",
+      "Correct only the final result without discussing the procedure."
+    ],
+    "answerIndex": 1,
+    "rationale": "The difficulty involves remembering and ordering steps, so a visible numbered checklist directly addresses the barrier. Marking each step also promotes independence and self-monitoring.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because one distant oral presentation adds memory demands. The stated information or governing rule points to a different result.",
+      "A numbered visual externalizes the sequence and supports monitoring without completing the work for the student.",
+      "This option does not fit because removing order cues makes sequencing more difficult. The stated information or governing rule points to a different result.",
+      "This option does not fit because final-result feedback does not identify where the process broke down."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-019",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student encounters the term photosynthesis in a science chapter and needs a quick definition. Which text feature should the student use first?",
+    "choices": [
+      "The copyright page",
+      "The page-number footer",
+      "The glossary",
+      "The authors biography"
+    ],
+    "answerIndex": 2,
+    "rationale": "When the immediate need is a definition of a subject-specific word, the glossary is the most efficient text feature. The other features serve publication, navigation, or author-information purposes.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because copyright information does not define content terms. The stated information or governing rule points to a different result.",
+      "This option does not fit because a footer helps locate pages but does not explain vocabulary. The stated information or governing rule points to a different result.",
+      "A glossary is designed to provide concise definitions of important terms used in a text. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because an author biography describes the writer rather than scientific terms."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-020",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student labels every sentence containing a number as a fact. Which response best addresses the misconception?",
+    "choices": [
+      "Tell the student that any sentence without a number must be false.",
+      "Ask the student to underline all digits without reading the sentences.",
+      "Avoid discussing how claims can be checked against reliable evidence.",
+      "Contrast verifiable claims with numerical opinions, then discuss supporting evidence."
+    ],
+    "answerIndex": 3,
+    "rationale": "Numbers can appear in factual or opinion statements, so instruction should focus on whether evidence can verify the claim. Contrasting examples helps the student revise the overgeneralized rule.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because absence of a number does not make a statement false. The stated information or governing rule points to a different result.",
+      "This option does not fit because underlining digits repeats the surface feature causing confusion. The stated information or governing rule points to a different result.",
+      "This option does not fit because verification is central to distinguishing fact from opinion. The stated information or governing rule points to a different result.",
+      "The comparison teaches that verifiability, not the presence of numerals, distinguishes factual claims."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-021",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A multilingual learner understands a passage when it is discussed orally but struggles to follow dense written directions. Which initial support best preserves the learning goal?",
+    "choices": [
+      "Chunk the directions, add a visual to each step, and check each part.",
+      "Complete the entire assignment for the student without explanation.",
+      "Remove the academic task and provide unrelated coloring pages.",
+      "Repeat the full directions more quickly without adding supports."
+    ],
+    "answerIndex": 0,
+    "rationale": "The learner can engage with the content but needs accessible written directions. Smaller units, visuals, and brief checks support comprehension without changing or completing the target task.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Chunking and visuals reduce language-processing load while keeping the same academic task and promoting independence.",
+      "This option does not fit because doing the work removes the learner's opportunity to participate. The stated information or governing rule points to a different result.",
+      "This option does not fit because an unrelated substitute abandons the intended learning goal. The stated information or governing rule points to a different result.",
+      "This option does not fit because greater speed increases processing demands and does not clarify sequence."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-022",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student concludes that a character is angry only because the illustration uses the color red. The text says the character smiled and thanked everyone. What feedback is best?",
+    "choices": [
+      "Accept the color alone and ignore the character's stated actions.",
+      "Compare the illustration with textual clues and prioritize direct behavioral evidence.",
+      "Tell the student that illustrations can never provide useful evidence.",
+      "Provide a new conclusion without asking the student to revisit any clues."
+    ],
+    "answerIndex": 1,
+    "rationale": "Inference requires evaluating all relevant evidence. Here, explicit smiling and thanking are more direct indicators of emotion than color alone, though the illustration can still be considered.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the direct behavioral details conflict with the color-only inference.",
+      "The response teaches the student to integrate sources and judge which clues most directly support an inference.",
+      "This option does not fit because illustrations can contribute evidence when interpreted with the text.",
+      "This option does not fit because supplying an answer does not teach evidence evaluation. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-023",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "What is 3/4 + 2/3?",
+    "choices": [
+      "5/7",
+      "5/12",
+      "17/12, or 1 5/12",
+      "13/12, or 1 1/12"
+    ],
+    "answerIndex": 2,
+    "rationale": "The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because adding numerators and denominators directly is not valid. The stated information or governing rule points to a different result.",
+      "This option does not fit because the numerators were added after using only one denominator. The stated information or governing rule points to a different result.",
+      "Using twelfths gives 9/12 plus 8/12, which equals 17/12 or 1 5/12. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the converted numerators should total 17 rather than 13. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-024",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A backpack costs $48 and is discounted by 25%. What is the sale price before tax?",
+    "choices": [
+      "$12",
+      "$23",
+      "$42",
+      "$36"
+    ],
+    "answerIndex": 3,
+    "rationale": "Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because 12 dollars is the discount amount, not the remaining price. The stated information or governing rule points to a different result.",
+      "This option does not fit because 23 dollars does not represent either 25 percent or 75 percent of 48.",
+      "This option does not fit because 42 dollars reflects a 6-dollar discount rather than a 25-percent discount.",
+      "Twenty-five percent of 48 is 12, and subtracting 12 from 48 gives a sale price of 36 dollars. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-025",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A paint mixture uses 2 cups of blue paint for every 5 cups of white paint. How many cups of blue paint are needed with 20 cups of white paint?",
+    "choices": [
+      "8 cups",
+      "4 cups",
+      "10 cups",
+      "17 cups"
+    ],
+    "answerIndex": 0,
+    "rationale": "The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Twenty is four times five, so the blue amount must be four times two, or eight cups. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because four is the scale factor, not the blue-paint amount. The stated information or governing rule points to a different result.",
+      "This option does not fit because ten uses half the white amount without preserving the ratio. The stated information or governing rule points to a different result.",
+      "This option does not fit because seventeen is the difference between the scaled quantities. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-026",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "What is -7 + 12 - 5?",
+    "choices": [
+      "-24",
+      "0",
+      "-10",
+      "10"
+    ],
+    "answerIndex": 1,
+    "rationale": "Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because this treats all terms as negative magnitudes. The stated information or governing rule points to a different result.",
+      "Adding 12 to negative 7 gives 5, and subtracting 5 gives zero. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because this subtracts 12 rather than adding it. The stated information or governing rule points to a different result.",
+      "This option does not fit because the intermediate value 5 must still be reduced by 5. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-027",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "Solve 4x - 7 = 21.",
+    "choices": [
+      "x = 3.5",
+      "x = 5",
+      "x = 7",
+      "x = 28"
+    ],
+    "answerIndex": 2,
+    "rationale": "Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because this divides before undoing the subtraction correctly. The stated information or governing rule points to a different result.",
+      "This option does not fit because substituting 5 gives 13 rather than 21. The stated information or governing rule points to a different result.",
+      "Adding 7 gives 4x equals 28, and dividing both sides by 4 gives x equals 7. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because 28 is the value of 4x after adding 7, not the value of x. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-028",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "Which expression is equivalent to 5(2n - 3)?",
+    "choices": [
+      "10n - 3",
+      "7n - 8",
+      "25n - 15",
+      "10n - 15"
+    ],
+    "answerIndex": 3,
+    "rationale": "Apply the factor 5 to both terms inside the parentheses. Five times 2n is 10n, and five times negative 3 is negative 15, yielding 10n - 15.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the factor 5 must multiply negative 3 as well as 2n. The stated information or governing rule points to a different result.",
+      "This option does not fit because the terms were added or subtracted instead of distributed. The stated information or governing rule points to a different result.",
+      "This option does not fit because five times 2n is 10n, not 25n. The stated information or governing rule points to a different result.",
+      "The distributive property gives 5 times 2n and 5 times negative 3, or 10n minus 15. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-029",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A rectangular bulletin board is 9 feet long and 4 feet wide. What is its perimeter?",
+    "choices": [
+      "26 feet",
+      "13 feet",
+      "36 feet",
+      "72 feet"
+    ],
+    "answerIndex": 0,
+    "rationale": "Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The perimeter is 9 + 4 + 9 + 4, or two times the sum of 9 and 4, which equals 26 feet. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because 13 adds one length and one width but does not include all four sides.",
+      "This option does not fit because 36 is the area rather than the perimeter. The stated information or governing rule points to a different result.",
+      "This option does not fit because 72 doubles the area and does not represent boundary length. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-030",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A triangle has a base of 10 centimeters and a height of 6 centimeters. What is its area?",
+    "choices": [
+      "16 square centimeters",
+      "30 square centimeters",
+      "60 square centimeters",
+      "120 square centimeters"
+    ],
+    "answerIndex": 1,
+    "rationale": "The area of a triangle is one-half times base times height. Substituting 10 and 6 gives one-half of 60, which is 30 square centimeters.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because adding base and height does not calculate area. The stated information or governing rule points to a different result.",
+      "One-half times the base 10 times the height 6 equals 30 square centimeters. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because this omits the one-half factor in the triangle area formula. The stated information or governing rule points to a different result.",
+      "This option does not fit because this doubles the base-height product instead of halving it. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-031",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "Two angles form a straight line. One angle measures 128 degrees. What is the measure of the other angle?",
+    "choices": [
+      "38 degrees",
+      "62 degrees",
+      "52 degrees",
+      "128 degrees"
+    ],
+    "answerIndex": 2,
+    "rationale": "A straight angle measures 180 degrees. Subtract the known 128-degree angle from 180 to find the adjacent angle, giving 52 degrees.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because 38 results from subtracting from 166 rather than 180. The stated information or governing rule points to a different result.",
+      "This option does not fit because 62 does not complete the straight angle total. The stated information or governing rule points to a different result.",
+      "Angles on a straight line sum to 180 degrees, and 180 minus 128 equals 52 degrees. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because equal angles would total 256 degrees rather than 180. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-032",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "On a coordinate grid, point A is at (2, -1) and point B is at (2, 5). What is the distance between the points?",
+    "choices": [
+      "3 units",
+      "4 units",
+      "7 units",
+      "6 units"
+    ],
+    "answerIndex": 3,
+    "rationale": "Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because three is half the vertical difference. The stated information or governing rule points to a different result.",
+      "This option does not fit because four results from combining coordinates incorrectly. The stated information or governing rule points to a different result.",
+      "This option does not fit because seven adds absolute coordinate values instead of finding their difference.",
+      "The x-coordinates match, so the vertical distance is the absolute difference between 5 and negative 1, which is 6."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-033",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "What is the mean of 6, 8, 9, 12, and 15?",
+    "choices": [
+      "10",
+      "9",
+      "11",
+      "12"
+    ],
+    "answerIndex": 0,
+    "rationale": "Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The numbers total 50, and dividing 50 by the five values gives a mean of 10. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because nine is the middle value and therefore the median. The stated information or governing rule points to a different result.",
+      "This option does not fit because the total of 50 divided by 5 is not 11. The stated information or governing rule points to a different result.",
+      "This option does not fit because twelve is one listed value but not the average. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-034",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "What is the median of 4, 7, 7, 10, 13, and 19?",
+    "choices": [
+      "7",
+      "8.5",
+      "10",
+      "11"
+    ],
+    "answerIndex": 1,
+    "rationale": "An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because seven is the lower of the two middle values and also the mode. The stated information or governing rule points to a different result.",
+      "With six ordered values, average the third and fourth values: 7 plus 10 divided by 2 equals 8.5. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because ten is the upper middle value, but both middle values must be averaged.",
+      "This option does not fit because eleven does not equal the average of 7 and 10. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-035",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A bag contains 3 red, 5 blue, and 2 green tiles. What is the probability of selecting a green tile at random?",
+    "choices": [
+      "1/10",
+      "1/2",
+      "1/5",
+      "2/3"
+    ],
+    "answerIndex": 2,
+    "rationale": "Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because there are two favorable tiles rather than one out of ten. The stated information or governing rule points to a different result.",
+      "This option does not fit because green tiles are not half of the ten total tiles. The stated information or governing rule points to a different result.",
+      "There are 2 green tiles out of 10 total tiles, and 2/10 simplifies to 1/5. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because this compares green tiles only with red tiles rather than all tiles."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-036",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A table shows notebooks sold: Monday 18, Tuesday 24, Wednesday 21, Thursday 27. How many more notebooks were sold Thursday than Monday?",
+    "choices": [
+      "3 notebooks",
+      "6 notebooks",
+      "45 notebooks",
+      "9 notebooks"
+    ],
+    "answerIndex": 3,
+    "rationale": "The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because three is the difference between Wednesday and Tuesday. The stated information or governing rule points to a different result.",
+      "This option does not fit because six is the difference between Thursday and Wednesday plus an incorrect step.",
+      "This option does not fit because 45 is the sum of Thursday and Monday rather than the difference. The stated information or governing rule points to a different result.",
+      "Subtracting Monday sales from Thursday sales gives 27 minus 18, which equals 9. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-037",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "What is 2.4 multiplied by 0.35?",
+    "choices": [
+      "0.84",
+      "0.084",
+      "8.4",
+      "84"
+    ],
+    "answerIndex": 0,
+    "rationale": "Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Twenty-four times 35 is 840, and the factors have three decimal places total, giving 0.840 or 0.84. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the decimal point is placed one position too far left. The stated information or governing rule points to a different result.",
+      "This option does not fit because the decimal point is placed one position too far right. The stated information or governing rule points to a different result.",
+      "This option does not fit because this ignores all three decimal places in the factors. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-038",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "How many centimeters are in 2.75 meters?",
+    "choices": [
+      "27.5 centimeters",
+      "275 centimeters",
+      "2,750 centimeters",
+      "0.0275 centimeters"
+    ],
+    "answerIndex": 1,
+    "rationale": "Converting meters to centimeters requires multiplying by 100. Moving the decimal two places right changes 2.75 meters to 275 centimeters.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because this multiplies by 10 instead of 100. The stated information or governing rule points to a different result.",
+      "Each meter contains 100 centimeters, so 2.75 times 100 equals 275 centimeters. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because this multiplies by 1000 instead of 100. The stated information or governing rule points to a different result.",
+      "This option does not fit because this divides rather than converting to the smaller unit. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-039",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "What is 3 squared multiplied by 3 cubed?",
+    "choices": [
+      "27",
+      "81",
+      "243",
+      "729"
+    ],
+    "answerIndex": 2,
+    "rationale": "Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because 27 equals 3 cubed and omits the other factor. The stated information or governing rule points to a different result.",
+      "This option does not fit because 81 equals 3 to the fourth power rather than the fifth. The stated information or governing rule points to a different result.",
+      "With the same base, add exponents: 3 squared times 3 cubed equals 3 to the fifth, or 243. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because 729 equals 3 to the sixth power and adds an extra exponent. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-040",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "Evaluate 2a squared - 3b when a = 4 and b = 5.",
+    "choices": [
+      "1",
+      "49",
+      "145",
+      "17"
+    ],
+    "answerIndex": 3,
+    "rationale": "Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because this treats 2a squared as 2 times 4 rather than 2 times 16. The stated information or governing rule points to a different result.",
+      "This option does not fit because this squares the full product 2a or handles subtraction incorrectly.",
+      "This option does not fit because this combines exponentiation and multiplication without following order of operations.",
+      "Substitution gives 2(4 squared) - 3(5) = 2(16) - 15 = 17. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-041",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "If 6 notebooks cost $15, what is the cost of 14 notebooks at the same rate?",
+    "choices": [
+      "$35",
+      "$21",
+      "$29",
+      "$90"
+    ],
+    "answerIndex": 0,
+    "rationale": "Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The unit price is 15 divided by 6, or $2.50, and 14 times $2.50 equals $35. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because this adds the difference in item counts directly to the cost. The stated information or governing rule points to a different result.",
+      "This option does not fit because this combines 14 and 15 without finding a unit rate. The stated information or governing rule points to a different result.",
+      "This option does not fit because this multiplies 6 by 15 rather than scaling the rate. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-042",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A rectangular prism measures 7 centimeters by 4 centimeters by 6 centimeters. What is its volume?",
+    "choices": [
+      "17 cubic centimeters",
+      "168 cubic centimeters",
+      "68 cubic centimeters",
+      "336 cubic centimeters"
+    ],
+    "answerIndex": 1,
+    "rationale": "A rectangular prism volume is the product of its three dimensions. Multiplying 7 by 4 by 6 gives 168, and the unit is cubic centimeters.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because seventeen is the sum of the dimensions rather than their product. The stated information or governing rule points to a different result.",
+      "Volume equals length times width times height: 7 times 4 times 6 equals 168 cubic centimeters. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because sixty-eight does not equal the product of the three dimensions. The stated information or governing rule points to a different result.",
+      "This option does not fit because three hundred thirty-six doubles the correct product. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-043",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "Enrollment increased from 240 students to 276 students. What was the percent increase?",
+    "choices": [
+      "13%",
+      "36%",
+      "15%",
+      "85%"
+    ],
+    "answerIndex": 2,
+    "rationale": "Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because 36 divided by the new value is about 13 percent, but percent increase uses the original value.",
+      "This option does not fit because 36 is the numerical increase rather than a percentage. The stated information or governing rule points to a different result.",
+      "The increase is 36, and 36 divided by the original 240 equals 0.15 or 15 percent. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because 85 percent is the portion represented by the original amount after an incorrect comparison."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-044",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student has $50 and buys 3 identical notebooks. After the purchase, $32 remains. Which equation can be used to find the price n of one notebook?",
+    "choices": [
+      "50 + 3n = 32",
+      "3(50 - n) = 32",
+      "50 - n = 96",
+      "50 - 3n = 32"
+    ],
+    "answerIndex": 3,
+    "rationale": "The original amount is 50 dollars, the total purchase is three times the single price n, and the remainder is 32. That relationship is 50 - 3n = 32.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because a purchase reduces the original amount rather than increasing it. The stated information or governing rule points to a different result.",
+      "This option does not fit because the original 50 dollars is not repeated three times. The stated information or governing rule points to a different result.",
+      "This option does not fit because three notebook prices must be subtracted, and 96 is not the stated remainder.",
+      "Three notebook prices are subtracted from the original 50 dollars to leave the stated 32 dollars. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-012",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student says 1/3 + 1/4 = 2/7. Which response best addresses the error?",
+    "choices": [
+      "Use fraction strips to show twelfths, then connect 4/12 + 3/12 to 7/12.",
+      "Ask the student to memorize 7/12 without representing why it works.",
+      "Tell the student to add every numerator and denominator in all fraction problems.",
+      "Change the problem to whole-number addition and do not return to fractions."
+    ],
+    "answerIndex": 0,
+    "rationale": "The student is treating unlike fractional units as if they were the same size. Fraction strips partitioned into twelfths show why equivalent fractions are needed before adding.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The model makes common-sized parts visible and links them to the symbolic common-denominator procedure.",
+      "This option does not fit because memorization alone does not repair the denominator misconception. The stated information or governing rule points to a different result.",
+      "This option does not fit because this repeats the exact invalid rule that caused the error. The stated information or governing rule points to a different result.",
+      "This option does not fit because avoiding the concept does not build fraction understanding. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-013",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student writes 4.07 as 4.7. Which support would best clarify the value of the zero?",
+    "choices": [
+      "State that zeros never affect the value of a decimal number.",
+      "Build both numbers on a place-value chart and compare tenths with hundredths.",
+      "Have the student remove all decimal points before comparing values.",
+      "Ask the student to round both numbers to the nearest whole number only."
+    ],
+    "answerIndex": 1,
+    "rationale": "The misconception concerns positional value. Modeling the two decimals by place makes the placeholder function of zero visible and supports an exact comparison.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because a zero can hold a place and distinguish 4.07 from 4.7. The stated information or governing rule points to a different result.",
+      "A place-value representation shows that 4.07 has zero tenths and seven hundredths, while 4.7 has seven tenths.",
+      "This option does not fit because removing decimal points changes the quantities and obscures place value.",
+      "This option does not fit because rounding both to 4 hides the exact difference being taught. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-014",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "Students need to compare category totals across four months. Which graph is generally the clearest choice?",
+    "choices": [
+      "A circle graph for each individual data point",
+      "An unlabeled line with months placed in random order",
+      "A grouped bar graph with consistent category colors",
+      "A pictograph that changes the symbol value each month"
+    ],
+    "answerIndex": 2,
+    "rationale": "The goal is to compare several categories repeatedly across months. Grouped bars support direct comparisons within and across months when labels, colors, and scale remain consistent.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because separate circles make cross-month category comparisons difficult. The stated information or governing rule points to a different result.",
+      "This option does not fit because random order and missing labels obscure the time structure. The stated information or governing rule points to a different result.",
+      "Grouped bars place categories side by side for each month and preserve a consistent visual scale. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because changing symbol values prevents consistent visual comparison. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-015",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student finds rectangle area by adding length and width. Which activity best develops the area concept?",
+    "choices": [
+      "Trace the outside edge and call the resulting distance area.",
+      "Memorize length plus width as the rule for every rectangle.",
+      "Count only the corner squares and ignore the interior units.",
+      "Tile rectangles with unit squares, then connect equal rows to multiplication."
+    ],
+    "answerIndex": 3,
+    "rationale": "The student is confusing a linear operation with surface coverage. Unit-square tiling makes the two-dimensional quantity visible and connects equal rows to length times width.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because tracing the boundary represents perimeter rather than area. The stated information or governing rule points to a different result.",
+      "This option does not fit because length plus width does not count square units. The stated information or governing rule points to a different result.",
+      "This option does not fit because corners alone do not measure the covered surface. The stated information or governing rule points to a different result.",
+      "Tiling shows area as the number of square units covering a surface and explains the multiplication formula."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-016",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A learner can solve a single ratio but struggles to scale it. Which representation is most helpful for 3 tickets cost $12 and 8 tickets cost how much?",
+    "choices": [
+      "A ratio table showing 1 ticket costs $4 and scaling to 8 tickets",
+      "A table that adds 3 tickets and $12 in the same column",
+      "A number line with no labels, units, or equal intervals",
+      "A rule that always subtracts the two values in a ratio"
+    ],
+    "answerIndex": 0,
+    "rationale": "A ratio table organizes corresponding quantities and supports multiplicative scaling. Finding the one-ticket rate of four dollars makes the eight-ticket cost of 32 dollars transparent.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The table exposes the unit rate and then uses the same multiplicative relationship to reach eight tickets.",
+      "This option does not fit because tickets and dollars must remain in corresponding quantities rather than be combined.",
+      "This option does not fit because missing labels and scale do not represent the relationship. The stated information or governing rule points to a different result.",
+      "This option does not fit because subtraction does not preserve proportional equivalence. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-017",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student solves 2x + 5 = 17 by subtracting 5 from only the left side. What feedback is best?",
+    "choices": [
+      "Tell the student to change 17 to 12 without explaining equality.",
+      "Use a balance model to show that the same operation must be applied to both sides.",
+      "Ask the student to divide the left side by 2 and leave the right side unchanged.",
+      "Replace the equation with an unrelated multiplication fact."
+    ],
+    "answerIndex": 1,
+    "rationale": "An equation states that two expressions are equal, so any inverse operation used to isolate the variable must be performed on both sides. A balance model directly illustrates that invariant.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because changing one side alone does not preserve or explain equality. The stated information or governing rule points to a different result.",
+      "The balance representation makes preservation of equality visible when equal changes occur on both sides.",
+      "This option does not fit because operating on only one side repeats the balance error. The stated information or governing rule points to a different result.",
+      "This option does not fit because an unrelated fact does not address equation equivalence. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-018",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "Before calculating 49 times 21, which estimate would best help a student judge whether the exact answer is reasonable?",
+    "choices": [
+      "50 plus 20 is about 70",
+      "49 minus 21 is about 30",
+      "50 times 20 is about 1,000",
+      "500 times 200 is about 100,000"
+    ],
+    "answerIndex": 2,
+    "rationale": "Forty-nine is close to 50 and 21 is close to 20, so their product should be near 1,000. This estimate can flag decimal or place-value errors in the exact computation.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because addition does not estimate a multiplication problem. The stated information or governing rule points to a different result.",
+      "This option does not fit because subtraction does not preserve the required operation. The stated information or governing rule points to a different result.",
+      "Rounding each factor to a nearby friendly number preserves the operation and gives a close benchmark.",
+      "This option does not fit because rounding each factor to a much larger place produces an unhelpful scale."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-019",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "Students flip a coin ten times and get eight heads. One student says the probability of heads must now be 8/10 for every future flip. What response is best?",
+    "choices": [
+      "Agree that ten trials permanently change the coin's theoretical probability.",
+      "Remove the eight heads from the record so the results look balanced.",
+      "State that experiments can never provide useful probability information.",
+      "Distinguish experimental results from theoretical probability and repeat many more trials."
+    ],
+    "answerIndex": 3,
+    "rationale": "The observed proportion in ten flips is experimental probability, not a permanent change in the fair coin's theoretical probability. Repetition helps students see sampling variation and long-run stabilization.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because a fair coin's theoretical probability remains one-half. The stated information or governing rule points to a different result.",
+      "This option does not fit because altering observations is not valid data analysis. The stated information or governing rule points to a different result.",
+      "This option does not fit because experiments estimate probability and reveal variation across samples.",
+      "More trials demonstrate long-run behavior while clarifying that one small sample can vary from one-half."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-020",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student becomes lost in a two-step word problem involving total cost and change. Which scaffold best preserves the problem-solving work?",
+    "choices": [
+      "Identify the unknown, represent each step, and label the units.",
+      "Give the final numerical answer and ask the student to copy it.",
+      "Remove all quantities and replace the task with a one-digit fact.",
+      "Direct the student to perform every operation shown in the chapter."
+    ],
+    "answerIndex": 0,
+    "rationale": "Multistep problems become more manageable when the learner names the goal, represents intermediate relationships, and tracks units. This reduces organizational load without completing the task.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The prompts organize the information and operations while leaving the reasoning and computation to the learner.",
+      "This option does not fit because copying an answer does not develop a solution process. The stated information or governing rule points to a different result.",
+      "This option does not fit because replacing the task removes the intended multistep reasoning. The stated information or governing rule points to a different result.",
+      "This option does not fit because using every operation ignores the relationships in the problem. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-021",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student says -6 is greater than -2 because 6 is greater than 2. Which support best corrects the comparison?",
+    "choices": [
+      "Remove both negative signs whenever negative numbers are compared.",
+      "Place both values on a number line and compare which point lies farther to the right.",
+      "Tell the student that the number with more symbols is always smaller.",
+      "Use only positive-number examples and avoid returning to the comparison."
+    ],
+    "answerIndex": 1,
+    "rationale": "The student is comparing absolute values instead of signed values. A number line provides a spatial model in which greater numbers are farther right, making -2 greater than -6.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because removing signs changes the quantities and causes the misconception.",
+      "The number line shows that negative 2 lies to the right of negative 6 and is therefore greater. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because symbol count is not a mathematical comparison rule. The stated information or governing rule points to a different result.",
+      "This option does not fit because avoiding negative values does not repair the idea. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-022",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student reports that the class reading time was usually 60 minutes because one student read for 60 minutes; all other times were between 18 and 25 minutes. What should be examined?",
+    "choices": [
+      "Use 60 as the typical value because it is the largest observation.",
+      "Delete every value except the outlier before describing the data.",
+      "Compare the mean and median and discuss how the 60-minute outlier affects each measure.",
+      "Add the times without dividing or ordering any of the values."
+    ],
+    "answerIndex": 2,
+    "rationale": "The student's claim treats an outlier as typical. Computing and comparing mean and median shows how the extreme 60-minute observation influences measures of center differently.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the maximum is not automatically representative of the distribution.",
+      "This option does not fit because retaining only the outlier destroys the data set. The stated information or governing rule points to a different result.",
+      "The comparison reveals that an extreme value pulls the mean upward while the median remains more resistant.",
+      "This option does not fit because a total alone does not provide a measure of center. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-023",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which sentence has correct subject-verb agreement?",
+    "choices": [
+      "The box of donated books are beside the office door.",
+      "The students in the reading group meets every Tuesday.",
+      "The list of new volunteers include three family members.",
+      "The box of donated books is beside the office door."
+    ],
+    "answerIndex": 3,
+    "rationale": "The phrase of donated books does not change the number of the subject box. Because box is singular, the correct verb is is; the other sentences mismatch their subjects and verbs.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the singular subject box requires is rather than are. The stated information or governing rule points to a different result.",
+      "This option does not fit because the plural subject students requires meet rather than meets. The stated information or governing rule points to a different result.",
+      "This option does not fit because the singular subject list requires includes rather than include. The stated information or governing rule points to a different result.",
+      "The subject is the singular noun box, so the singular verb is agrees with it. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-024",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which sentence uses pronouns correctly?",
+    "choices": [
+      "Each volunteer placed a name tag beside their own materials.",
+      "Each volunteer placed their name tags beside his materials.",
+      "The volunteers placed her name tag beside their materials.",
+      "Every volunteers placed its name tag beside the materials."
+    ],
+    "answerIndex": 0,
+    "rationale": "Clear pronoun use requires consistent number and an unmistakable antecedent. The correct sentence avoids conflicting pronouns and identifies whose materials belong to each volunteer.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Singular their clearly refers to each volunteer and remains consistent throughout the sentence. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the sentence shifts unnecessarily between plural and singular references.",
+      "This option does not fit because her does not clearly agree with or refer to the plural volunteers. The stated information or governing rule points to a different result.",
+      "This option does not fit because every volunteers is ungrammatical and its is inappropriate for people."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-025",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which revision corrects the misplaced modifier? Covered in bright paint, the students displayed the mural in the hallway.",
+    "choices": [
+      "Covered in bright paint, the hallway displayed the students mural.",
+      "The students displayed the mural, which was covered in bright paint, in the hallway.",
+      "The bright students displayed the painted mural in the hallway.",
+      "Displaying in the hallway, bright paint covered the students mural."
+    ],
+    "answerIndex": 1,
+    "rationale": "The original opening phrase appears to modify students, creating an unintended meaning. Placing the description beside mural makes the painted object explicit and removes the dangling relationship.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the revision illogically makes the hallway the painted object and actor.",
+      "The relative clause which was covered in bright paint clearly and logically modifies mural. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because bright now incorrectly describes the students rather than the paint.",
+      "This option does not fit because the opening phrase illogically suggests that paint performed the displaying."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-026",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which option is a complete sentence?",
+    "choices": [
+      "Because the rain ended before the outdoor concert.",
+      "The musicians near the covered stage and the audience.",
+      "Because the rain ended, the outdoor concert began on time.",
+      "While waiting for the final weather announcement."
+    ],
+    "answerIndex": 2,
+    "rationale": "A complete sentence expresses a full thought with an independent clause. The correct option combines a dependent reason clause with a complete main clause; the others remain fragments.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because because introduces a dependent clause without an independent clause.",
+      "This option does not fit because the words form a noun group without a complete predicate. The stated information or governing rule points to a different result.",
+      "The dependent because clause is followed by the independent clause the outdoor concert began on time.",
+      "This option does not fit because while introduces a dependent fragment with no main clause. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-027",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Select the correctly punctuated sentence with an introductory clause.",
+    "choices": [
+      "After the meeting ended the committee, posted its decision.",
+      "After, the meeting ended the committee posted its decision.",
+      "After the meeting, ended the committee posted its decision.",
+      "After the meeting ended, the committee posted its decision."
+    ],
+    "answerIndex": 3,
+    "rationale": "The introductory clause After the meeting ended should be separated from the main clause with a comma. The other options place commas inside grammatical units where no break belongs.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the comma is misplaced between subject and verb rather than after the introductory clause.",
+      "This option does not fit because a comma should not separate after from the rest of its phrase. The stated information or governing rule points to a different result.",
+      "This option does not fit because the comma incorrectly separates meeting from its verb ended. The stated information or governing rule points to a different result.",
+      "A comma correctly follows the introductory dependent clause before the independent clause begins. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-028",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which sentence uses the apostrophe correctly?",
+    "choices": [
+      "The teachers' lounge is next to the principal's office.",
+      "The teacher's lounge is next to the principals' office.",
+      "The teachers lounge is next to the principals office.",
+      "The teacher's lounge is next to the principal office."
+    ],
+    "answerIndex": 0,
+    "rationale": "Plural teachers possess the lounge, so the apostrophe follows the plural ending; one principal possesses the office, so apostrophe-s follows principal. Both relationships require clear possessive forms.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option should show plural possession with teachers' and singular possession with principal's. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the sentence needs possessive apostrophes for both plural teachers and singular principal.",
+      "This option does not fit because the plural teachers' possession and singular principal's possession are not both shown.",
+      "This option does not fit because apostrophe placement must distinguish plural possession from singular possession."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-029",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which title is capitalized correctly?",
+    "choices": [
+      "A journey through the great lakes",
+      "A Journey Through the Great Lakes",
+      "A Journey through The Great lakes",
+      "a Journey Through the great Lakes"
+    ],
+    "answerIndex": 1,
+    "rationale": "Standard title capitalization uses capitals for the first and last words, important content words, and proper names. Short articles and prepositions such as the remain lowercase when internal.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because major words and the proper name Great Lakes require capitalization.",
+      "The first and last words, major words, and both parts of the proper name Great Lakes are capitalized.",
+      "This option does not fit because the short article the should be lowercase while Lakes should be uppercase.",
+      "This option does not fit because the first word and the proper adjective Great are incorrectly lowercase."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-030",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Choose the word that correctly completes the sentence. The students placed ___ finished projects on the display tables.",
+    "choices": [
+      "there",
+      "theyre",
+      "their",
+      "theirs"
+    ],
+    "answerIndex": 2,
+    "rationale": "The blank comes before the noun projects and must show possession, so their is required. There indicates location, theyre means they are, and theirs cannot directly modify a noun.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because there refers to a place or introduces a clause. The stated information or governing rule points to a different result.",
+      "This option does not fit because theyre is a contraction of they are and does not modify projects. The stated information or governing rule points to a different result.",
+      "Their is the possessive determiner that correctly shows the projects belong to the students. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because theirs is a possessive pronoun that is not used directly before a noun."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-031",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which revision presents all three workshop goals in parallel form?",
+    "choices": [
+      "The workshop teaches planning lessons, to organize materials, and assessment.",
+      "The workshop teaches participants to plan lessons, organizing materials, and assessments.",
+      "The workshop teaches lesson planning, to organize, and how learning is assessed.",
+      "The workshop teaches participants to plan lessons, organize materials, and assess learning."
+    ],
+    "answerIndex": 3,
+    "rationale": "Parallel structure presents coordinated ideas in matching grammatical form. The correct sentence uses three base-form verbs after to, while the alternatives mix nouns, gerunds, and clauses.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the series mixes a gerund, an infinitive, and a noun. The stated information or governing rule points to a different result.",
+      "This option does not fit because the series shifts from an infinitive to a gerund and then a noun. The stated information or governing rule points to a different result.",
+      "This option does not fit because the series uses three different grammatical constructions. The stated information or governing rule points to a different result.",
+      "Each element in the series uses the same verb form: plan, organize, and assess. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-032",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which transition best completes the sentence? The first seed tray received full sunlight. ___, the second tray was kept in a shaded cabinet.",
+    "choices": [
+      "In contrast",
+      "For example",
+      "As a result",
+      "In addition"
+    ],
+    "answerIndex": 0,
+    "rationale": "The two sentences describe opposing experimental conditions. In contrast accurately signals that difference; the other transitions indicate example, cause and effect, or addition.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The transition signals the clear difference between full-sunlight and shaded conditions. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the second condition is not an example of full sunlight. The stated information or governing rule points to a different result.",
+      "This option does not fit because the shaded placement is a planned comparison rather than a stated result.",
+      "This option does not fit because the relationship is opposition rather than simple addition. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-033",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which sentence combines the ideas most effectively? The library extended its hours. More students began using the study rooms in the evening.",
+    "choices": [
+      "The library extended its hours, more students used study rooms in the evening.",
+      "After the library extended its hours, more students used the study rooms in the evening.",
+      "Extending hours and more students began using the evening study rooms.",
+      "More students, the library extended hours, used evening study rooms."
+    ],
+    "answerIndex": 1,
+    "rationale": "The correct revision creates a grammatical relationship between the timing of the extended hours and increased evening use. The other options contain a comma splice or incomplete structure.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because a comma alone incorrectly joins two independent clauses. The stated information or governing rule points to a different result.",
+      "The introductory dependent clause clearly connects the change in hours with the later increase in evening use.",
+      "This option does not fit because the construction lacks a complete and logically balanced main clause.",
+      "This option does not fit because the inserted clause creates an incoherent sentence structure. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-034",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which sentence is written in active voice?",
+    "choices": [
+      "The winter clothing drive was organized by the student council.",
+      "The clothing was collected by volunteers near the entrance.",
+      "The student council organized the winter clothing drive.",
+      "The final boxes were delivered by the community center staff."
+    ],
+    "answerIndex": 2,
+    "rationale": "In active voice, the grammatical subject performs the verb action. The student council acts directly in the correct sentence, while the other subjects receive actions in passive constructions.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the subject receives the action in a passive construction. The stated information or governing rule points to a different result.",
+      "This option does not fit because the subject clothing receives the action rather than performing it.",
+      "The subject student council directly performs the action organized. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the boxes receive the action and the actor appears in a by-phrase. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-035",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which revision is most concise without changing the meaning? At this point in time, the committee is currently reviewing the proposal.",
+    "choices": [
+      "At this current point in time, the committee reviews the proposal currently.",
+      "The committee, at a point that is now, is in the process of reviewing.",
+      "Currently now, the proposal is under a review process by the committee.",
+      "The committee is reviewing the proposal now."
+    ],
+    "answerIndex": 3,
+    "rationale": "At this point in time and currently repeat the same idea. The concise revision retains the committee, action, proposal, and present timing without redundancy or unnecessary passive phrasing.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the revision keeps multiple redundant time expressions. The stated information or governing rule points to a different result.",
+      "This option does not fit because the wording is longer and omits the object proposal. The stated information or governing rule points to a different result.",
+      "This option does not fit because currently and now remain redundant and passive wording adds clutter.",
+      "Now expresses the time once, and the remaining words state the complete action directly. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-036",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which sentence keeps both classroom actions in the past tense?",
+    "choices": [
+      "Yesterday, the class measured the plants and recorded the results.",
+      "Yesterday, the class measures the plants and recorded the results.",
+      "Yesterday, the class measured the plants and records the results.",
+      "Yesterday, the class will measure the plants and recorded the results."
+    ],
+    "answerIndex": 0,
+    "rationale": "The adverb yesterday establishes past time, so both coordinated actions should use past tense. The correct sentence keeps measured and recorded consistent; the alternatives shift tense.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Both measured and recorded are past tense, matching the time marker yesterday. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because measures shifts to present while recorded is past. The stated information or governing rule points to a different result.",
+      "This option does not fit because records shifts to present after the past-tense measured. The stated information or governing rule points to a different result.",
+      "This option does not fit because will measure is future while recorded is past. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-037",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which sentence uses a semicolon correctly?",
+    "choices": [
+      "The forecast; predicted heavy rain and the field trip was postponed.",
+      "The forecast predicted heavy rain; the field trip was postponed.",
+      "The forecast predicted; heavy rain, the field trip was postponed.",
+      "Because the forecast predicted heavy rain; postponing the field trip."
+    ],
+    "answerIndex": 1,
+    "rationale": "A semicolon may connect independent clauses that could stand as separate sentences. Both parts of the correct option are complete; the alternatives break grammatical units or contain fragments.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because a semicolon cannot separate a subject from its predicate. The stated information or governing rule points to a different result.",
+      "The semicolon correctly joins two closely related independent clauses. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because the mark splits the verb from its object and leaves a comma splice.",
+      "This option does not fit because neither side forms a complete independent clause. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-038",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which sentence punctuates the quotation correctly?",
+    "choices": [
+      "Mira said \"The rehearsal begins at four o'clock\".",
+      "Mira said, \"The rehearsal begins at four o'clock\".",
+      "Mira said, \"The rehearsal begins at four o'clock.\"",
+      "Mira said \"The rehearsal begins at four o'clock.\""
+    ],
+    "answerIndex": 2,
+    "rationale": "A reporting clause such as Mira said is followed by a comma before a direct quotation. In standard American punctuation, the final period appears inside the closing quotation mark.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because a comma is needed before the direct quotation and final punctuation belongs inside.",
+      "This option does not fit because the period should appear inside the closing quotation mark. The stated information or governing rule points to a different result.",
+      "A comma introduces the quotation, and the sentence-ending period is placed inside the closing quotation mark.",
+      "This option does not fit because a comma is needed between the reporting clause and quotation. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-039",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which word best completes the sentence? The directions were so ___ that every group assembled the model correctly on the first attempt.",
+    "choices": [
+      "vague",
+      "random",
+      "ordinary",
+      "precise"
+    ],
+    "answerIndex": 3,
+    "rationale": "The result that every group assembled the model correctly suggests highly exact and clear instructions. Precise carries that meaning, while the alternatives do not explain the outcome.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because vague directions would be unclear rather than consistently successful.",
+      "This option does not fit because random directions would not support accurate assembly. The stated information or governing rule points to a different result.",
+      "This option does not fit because ordinary does not explain why every group succeeded immediately. The stated information or governing rule points to a different result.",
+      "Precise means exact and clear, which explains the consistent correct assembly. It is the only option that satisfies every part of the prompt."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-040",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A paragraph explains how sleep supports attention, memory, and mood in students. Which topic sentence is best?",
+    "choices": [
+      "Adequate sleep supports several important parts of student learning and well-being.",
+      "Many bedrooms contain beds, lamps, and alarm clocks.",
+      "Students attend different classes throughout the school day.",
+      "Some people prefer blue blankets while others prefer green ones."
+    ],
+    "answerIndex": 0,
+    "rationale": "A topic sentence should state the controlling idea that the paragraph develops. Attention, memory, and mood are all learning or well-being benefits of adequate sleep.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "It introduces the shared subject of sleep and the broad benefits developed by the paragraph details.",
+      "This option does not fit because bedroom objects do not introduce the effects of sleep. The stated information or governing rule points to a different result.",
+      "This option does not fit because class schedules are unrelated to the three benefits. The stated information or governing rule points to a different result.",
+      "This option does not fit because blanket color is an unrelated preference. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-041",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "A process paragraph includes these steps: gather materials, construct the frame, test its strength, revise weak joints. Which order is most logical?",
+    "choices": [
+      "Revise, gather materials, test, then construct",
+      "Gather materials, construct, test, then revise",
+      "Test, revise, gather materials, then construct",
+      "Construct, revise, gather materials, then test"
+    ],
+    "answerIndex": 1,
+    "rationale": "A coherent process sequence begins with preparation, moves through construction, checks the completed work, and then uses findings to revise. The alternatives violate those dependencies.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because revision cannot precede construction and testing. The stated information or governing rule points to a different result.",
+      "The order follows prerequisites and uses test results to guide the final revision step. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because testing cannot occur before materials are gathered and the frame is built.",
+      "This option does not fit because materials must be gathered before construction, and revision should follow testing."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-042",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which concluding sentence best completes a paragraph explaining the benefits of a school composting program?",
+    "choices": [
+      "The cafeteria walls were painted during summer vacation.",
+      "Some students bring lunch from home in reusable containers.",
+      "Composting reduces waste and creates useful soil for school gardens.",
+      "The next paragraph will list every school club alphabetically."
+    ],
+    "answerIndex": 2,
+    "rationale": "An effective conclusion reinforces the paragraph's main idea without introducing an unrelated topic. The correct sentence brings together waste reduction and useful compost for gardens.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because wall painting is unrelated to composting benefits. The stated information or governing rule points to a different result.",
+      "This option does not fit because reusable containers may reduce waste but do not conclude the developed composting idea.",
+      "It synthesizes the two central benefits and provides a clear sense of closure. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because a club list neither summarizes nor reinforces the paragraph. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-043",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which sentence integrates source information most clearly?",
+    "choices": [
+      "Water use fell by 8 percent, which somebody reported somewhere.",
+      "The report says things changed, and this proves every campaign works.",
+      "Household water use is important, according to information about water.",
+      "The city's 2025 report says household water use fell 8 percent after the campaign."
+    ],
+    "answerIndex": 3,
+    "rationale": "Clear source integration identifies where information came from and accurately presents the specific finding. The correct sentence supplies attribution and avoids vague or overgeneralized claims.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because the wording does not identify a traceable source. The stated information or governing rule points to a different result.",
+      "This option does not fit because the vague summary and universal claim exceed the stated evidence. The stated information or governing rule points to a different result.",
+      "This option does not fit because the statement lacks a specific finding and identifiable source. The stated information or governing rule points to a different result.",
+      "It names the source, date, measure, amount of change, and relevant context in one attributable sentence."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-044",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which revision removes ambiguity? When Jordan met Alex after practice, they said the schedule had changed.",
+    "choices": [
+      "When Jordan met Alex after practice, Jordan said the schedule had changed.",
+      "When Jordan met Alex after practice, they said it had changed.",
+      "After practice, Jordan met Alex, and they discussed that thing.",
+      "When they met after it, the schedule had changed according to them."
+    ],
+    "answerIndex": 0,
+    "rationale": "Because two people are named, they does not show who spoke. Naming Jordan as the speaker removes the ambiguity without changing the time, meeting, or statement about the schedule.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Repeating Jordan explicitly identifies the speaker while preserving the rest of the original meaning.",
+      "This option does not fit because both they and it remain unclear. The stated information or governing rule points to a different result.",
+      "This option does not fit because they and that thing do not identify the speaker or subject. The stated information or governing rule points to a different result.",
+      "This option does not fit because multiple pronouns lack clear antecedents and obscure the event. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-012",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A student's report contains strong facts but moves back and forth between three topics. Which feedback is most useful?",
+    "choices": [
+      "Correct only the spelling of one word in the final paragraph.",
+      "Group related evidence under clear topic sentences, then order the groups logically.",
+      "Add more facts in random locations without changing organization.",
+      "Rewrite the entire report for the student and provide no explanation."
+    ],
+    "answerIndex": 1,
+    "rationale": "The primary weakness is organization, not evidence quantity. Grouping related information and arranging those groups around topic sentences creates a coherent structure the student can apply independently.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because one spelling correction does not address the organizational problem.",
+      "The feedback directly addresses grouping and sequence while giving the student an actionable revision process.",
+      "This option does not fit because additional randomly placed facts would increase the lack of coherence.",
+      "This option does not fit because doing the revision removes the student's opportunity to learn the strategy."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-013",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A student argues that the school should create a quiet study room but provides only personal preference. Which revision prompt is best?",
+    "choices": [
+      "Can you repeat that you personally prefer quiet rooms three more times?",
+      "Which unrelated school tradition could be described in the next paragraph?",
+      "What survey, usage, or achievement evidence could show a broader student need?",
+      "Would removing the claim eliminate the need to find any evidence?"
+    ],
+    "answerIndex": 2,
+    "rationale": "An argument about a schoolwide program needs evidence of broader need or likely benefit. Survey, use, or outcome data could support the claim more convincingly than repeated personal opinion.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because repetition does not strengthen the evidence base. The stated information or governing rule points to a different result.",
+      "This option does not fit because an unrelated tradition does not support the proposal. The stated information or governing rule points to a different result.",
+      "The prompt directs the writer toward relevant evidence that extends beyond one individuals preference.",
+      "This option does not fit because removing the argument avoids rather than improves the reasoning task."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-014",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A student is writing safety directions for younger children. Which revision principle should be emphasized?",
+    "choices": [
+      "Use long technical sentences to make the directions sound advanced.",
+      "Hide the most important warning in a final background paragraph.",
+      "Assume readers already understand every specialized abbreviation.",
+      "Use short direct steps, familiar words, and clear warnings at the point of need."
+    ],
+    "answerIndex": 3,
+    "rationale": "Effective writing considers audience and purpose. Younger readers need concise steps, accessible vocabulary, and warnings next to the action where the information must be used.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because complex technical language creates barriers for the intended audience.",
+      "This option does not fit because delayed warnings may not be seen before the relevant action. The stated information or governing rule points to a different result.",
+      "This option does not fit because unexplained abbreviations reduce clarity and safety. The stated information or governing rule points to a different result.",
+      "The language, sequence, and warning placement are matched to young readers and the practical safety purpose."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-015",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "During peer review, a student says only, This essay is good. What guidance would improve the feedback?",
+    "choices": [
+      "Identify one effective passage and one specific revision, explaining the reason for each.",
+      "Replace the comment with a score but no evidence or explanation.",
+      "List personal preferences that are unrelated to the assignment criteria.",
+      "Rewrite every sentence so the original writer makes no decisions."
+    ],
+    "answerIndex": 0,
+    "rationale": "Useful peer feedback points to concrete text and connects observations to a purpose or criterion. A balanced specific comment helps the writer recognize a strength and make an informed revision.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Specific evidence and a reason make both praise and revision advice understandable and actionable. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because a score alone is not actionable feedback. The stated information or governing rule points to a different result.",
+      "This option does not fit because unrelated preferences do not help meet the writing goals. The stated information or governing rule points to a different result.",
+      "This option does not fit because taking over the writing prevents the author from practicing revision."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-016",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A learner writes several short repetitive sentences: The robot moved. The robot stopped. The robot turned. Which support is best?",
+    "choices": [
+      "Require every sentence to remain the same length and pattern.",
+      "Model sentence combining, then let the learner revise selected sentences.",
+      "Delete all action words so the paragraph has fewer repetitions.",
+      "Combine the entire paragraph into one sentence without punctuation."
+    ],
+    "answerIndex": 1,
+    "rationale": "The issue is repetitive sentence structure, so guided sentence combining can create variety and show relationships among actions. Practice should preserve clarity and proper punctuation.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because preserving the repeated pattern does not improve fluency. The stated information or governing rule points to a different result.",
+      "The model teaches a transferable sentence-combining strategy while leaving revision decisions to the learner.",
+      "This option does not fit because verbs carry essential meaning and should not simply be removed. The stated information or governing rule points to a different result.",
+      "This option does not fit because one unpunctuated sentence creates a run-on rather than controlled variety."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-017",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A draft has a clear argument but weak paragraph order and several comma errors. What should the student generally do first?",
+    "choices": [
+      "Correct one comma and submit without reviewing the argument.",
+      "Alphabetize the paragraphs instead of considering logical order.",
+      "Revise the organization and reasoning before editing sentence-level punctuation.",
+      "Delete the claim so punctuation becomes the only remaining concern."
+    ],
+    "answerIndex": 2,
+    "rationale": "Writers generally revise ideas, evidence, and organization before polishing punctuation. Structural changes may alter many sentences, making early line editing inefficient or temporary.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because one local edit leaves the larger structural weakness unresolved. The stated information or governing rule points to a different result.",
+      "This option does not fit because alphabetical order does not reflect argumentative relationships. The stated information or governing rule points to a different result.",
+      "Large-scale revision can change or remove sentences, so it is more efficient to address structure before final editing.",
+      "This option does not fit because removing the claim abandons the purpose of the draft. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-018",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A student copies two sentences from a website into a report without quotation marks or attribution. Which response is appropriate?",
+    "choices": [
+      "Leave the sentences unchanged because online text never needs attribution.",
+      "Change two words and present the passage as entirely original work.",
+      "Remove the website title but keep the copied wording without citation.",
+      "Teach the student to quote or paraphrase accurately and cite the source before using the material."
+    ],
+    "answerIndex": 3,
+    "rationale": "Copied language must be marked as a quotation or transformed into a genuine paraphrase, and the source must be cited. Instruction should correct the draft and build responsible research practice.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because online sources still require appropriate attribution. The stated information or governing rule points to a different result.",
+      "This option does not fit because minor word substitutions do not create an honest paraphrase. The stated information or governing rule points to a different result.",
+      "This option does not fit because hiding source information increases rather than resolves the problem.",
+      "The response addresses both accurate source use and transparent attribution while preserving the opportunity to learn."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-019",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Two paragraphs shift from the benefits of walking to school to concerns about unsafe intersections. Which transition best supports the shift?",
+    "choices": [
+      "Despite these benefits, several route-safety concerns must also be addressed.",
+      "For the same reason, walking has no connection to intersections.",
+      "In conclusion, the essay will now begin an unrelated first topic.",
+      "For example, every benefit proves that no safety problem exists."
+    ],
+    "answerIndex": 0,
+    "rationale": "A strong transition connects ideas across paragraphs. The correct sentence refers back to the benefits while preparing readers for a related limitation, creating cohesion and contrast.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Despite these benefits acknowledges the first paragraph and clearly signals the contrasting safety concern.",
+      "This option does not fit because the relationship is a contrast rather than sameness or disconnection.",
+      "This option does not fit because the second paragraph is not an unrelated conclusion. The stated information or governing rule points to a different result.",
+      "This option does not fit because an example transition cannot erase the stated counterconcern. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-020",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A narrative says, The room was messy, but gives no details. Which prompt best encourages elaboration?",
+    "choices": [
+      "Can you repeat the word messy at the end of every sentence?",
+      "Which objects, sounds, or actions would help readers picture the mess?",
+      "Would removing the setting make the room easier to describe?",
+      "Can you add a fact about an unrelated building across town?"
+    ],
+    "answerIndex": 1,
+    "rationale": "Elaboration helps readers construct a specific mental image. Asking about observable objects, sounds, and actions guides the writer to replace a general label with relevant descriptive evidence.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because repetition labels the condition without showing it. The stated information or governing rule points to a different result.",
+      "The prompt elicits concrete sensory and action details that show rather than merely label the condition.",
+      "This option does not fit because removing the setting avoids rather than develops the narrative. The stated information or governing rule points to a different result.",
+      "This option does not fit because an unrelated location does not elaborate the room. The stated information or governing rule points to a different result."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-021",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A rubric requires a clear claim, relevant evidence, and explanation. A student has a claim and two facts but no connection between them. What feedback best matches the rubric?",
+    "choices": [
+      "Add a third fact without explaining any relationship to the claim.",
+      "Replace the claim with a title and keep the facts unchanged.",
+      "After each fact, explain how that evidence supports the claim.",
+      "Correct handwriting only and ignore the missing reasoning."
+    ],
+    "answerIndex": 2,
+    "rationale": "The student already has a claim and evidence, so the unmet rubric element is reasoning. Explaining how each fact supports the claim completes the argumentative chain.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because more unexplained evidence does not meet the explanation criterion. The stated information or governing rule points to a different result.",
+      "This option does not fit because a title does not perform the function of an arguable claim. The stated information or governing rule points to a different result.",
+      "The feedback targets the missing explanation and makes the expected evidence-to-claim connection explicit.",
+      "This option does not fit because presentation does not address the rubric requirement for reasoning."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-022",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A family notice uses long paragraphs and unexplained school acronyms. Which revision would improve accessibility?",
+    "choices": [
+      "Add more acronyms so the notice sounds more official.",
+      "Move required actions into a dense footnote in smaller print.",
+      "Remove headings and combine all information into one paragraph.",
+      "Use headings, define acronyms, and state actions in plain language."
+    ],
+    "answerIndex": 3,
+    "rationale": "Accessible notices make key information easy to locate and understand. Headings, lists, defined terms, and plain action statements reduce unnecessary language and navigation demands.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "This option does not fit because additional unexplained abbreviations increase barriers. The stated information or governing rule points to a different result.",
+      "This option does not fit because small dense footnotes make essential actions harder to find. The stated information or governing rule points to a different result.",
+      "This option does not fit because one continuous paragraph reduces scanning and information hierarchy.",
+      "The revision improves navigation, comprehension, and action clarity for readers with varied familiarity and literacy needs."
+    ]
+  }
+]

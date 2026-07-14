@@ -20938,7 +20938,8 @@
       "navigate": "រុករក",
       "pipeline": "លទ្ធផល Pipeline",
       "tools": "បើកឧបករណ៍",
-      "voice": "សំឡេង"
+      "voice": "សំឡេង",
+      "recent": "Recent"
     },
     "input_aria": "ស្វែងរកពាក្យបញ្ជា",
     "list_aria": "ពាក្យបញ្ជាដែលត្រូវគ្នា",

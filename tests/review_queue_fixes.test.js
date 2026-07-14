@@ -67,7 +67,8 @@ describe('anti-drift: critic #3 — veraPDF verdict cannot survive a re-tag', ()
     expect(view).toMatch(/const _restoredArtifact = _selectTaggedArtifact\(_reBytes\);\s*\n\s*setLastTaggedValidation\(null\);\s*\n\s*setVeraPdfResult\(null\);/);
     expect(view).toMatch(/pdfUa1Checks: _re\.pdfUa1Checks \|\| null/);
     expect(view).toMatch(/veraPdf: null,[\s\S]{0,80}veraPdfAt: null,[\s\S]{0,80}veraPdfBytesHash: null/);
-    expect(view).toMatch(/if \(!_taggedArtifactTicketIsCurrent\(_restoredArtifact\)[\s\S]{0,220}String\(html \|\| ''\)\) return;/);
+    expect(view).toMatch(/if \(!_taggedArtifactTicketIsCurrent\(_restoredArtifact\)\) return;/);
+    expect(view).toMatch(/if \(String\(\(pdfFixResultRef\.current[\s\S]{0,180}!== String\(html \|\| ''\)\) \{/);
     expect(view).toMatch(/_viewAttachTaggedArtifactProof\(_restoredValidation, _restoredArtifact\)/);
   });
   it('the report only claims green ISO-verified when there IS a current tagged PDF (hasChecks) AND the self-check agrees (no "Mostly")', () => {

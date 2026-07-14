@@ -1,0 +1,3921 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-14T03:08:31.719Z",
+  "libraryId": "parapro-1755-learning-library",
+  "packId": "parapro-1755-practice-1",
+  "title": "ParaPro learning library",
+  "description": "Twelve concise, independently authored chapters connected to the Reading, Mathematics, and Writing skills practiced in the ParaPro diagnostic bank.",
+  "reviewStandard": "AlloFlow ParaPro learning-library source and editorial review v1",
+  "simulation": {
+    "questionCount": 90,
+    "timeMinutes": 150,
+    "note": "Independent timed simulation using original AlloFlow items; not an official ETS form or score."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "editorialReviewedSourcePendingMemoryAids": 0
+  },
+  "skills": [
+    {
+      "id": "reading-main-evidence",
+      "label": "Main Ideas, Details, and Evidence",
+      "domainId": "reading",
+      "domain": "Reading",
+      "chapterId": "parapro-ch-01",
+      "description": "Identify central ideas, distinguish important support from minor detail, summarize accurately, and connect claims to textual evidence."
+    },
+    {
+      "id": "reading-inference-vocabulary",
+      "label": "Inference and Vocabulary in Context",
+      "domainId": "reading",
+      "domain": "Reading",
+      "chapterId": "parapro-ch-02",
+      "description": "Combine textual clues with reasoning, evaluate competing inferences, and determine word meanings from context and word parts."
+    },
+    {
+      "id": "reading-structure-sources",
+      "label": "Text Structure, Features, and Sources",
+      "domainId": "reading",
+      "domain": "Reading",
+      "chapterId": "parapro-ch-03",
+      "description": "Recognize organizational patterns, use text features and data displays, compare sources, and distinguish firsthand evidence from later interpretation."
+    },
+    {
+      "id": "reading-classroom-support",
+      "label": "Supporting Reading in the Classroom",
+      "domainId": "reading",
+      "domain": "Reading",
+      "chapterId": "parapro-ch-04",
+      "description": "Use explicit, appropriately scaffolded supports for decoding, fluency, vocabulary, comprehension, and independent reading without completing the work for students."
+    },
+    {
+      "id": "mathematics-number-operations",
+      "label": "Numbers, Fractions, Decimals, and Percents",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "chapterId": "parapro-ch-05",
+      "description": "Compute accurately with rational numbers, interpret place value and percent, estimate results, and verify signs, magnitude, and units."
+    },
+    {
+      "id": "mathematics-ratio-algebra",
+      "label": "Ratios, Proportions, Expressions, and Equations",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "chapterId": "parapro-ch-06",
+      "description": "Represent multiplicative relationships, use unit rates, simplify expressions, and solve equations while preserving equality."
+    },
+    {
+      "id": "mathematics-geometry-measurement",
+      "label": "Geometry and Measurement",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "chapterId": "parapro-ch-07",
+      "description": "Select and apply formulas for perimeter, area, volume, angles, coordinates, and unit conversion while interpreting diagrams accurately."
+    },
+    {
+      "id": "mathematics-data-support",
+      "label": "Data, Probability, and Supporting Mathematics",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "chapterId": "parapro-ch-08",
+      "description": "Interpret tables and graphs, calculate measures of center and probability, analyze errors, and select representations that build student understanding."
+    },
+    {
+      "id": "writing-grammar-mechanics",
+      "label": "Grammar, Usage, and Mechanics",
+      "domainId": "writing",
+      "domain": "Writing",
+      "chapterId": "parapro-ch-09",
+      "description": "Recognize complete sentences and apply agreement, pronoun, modifier, punctuation, capitalization, spelling, and usage conventions."
+    },
+    {
+      "id": "writing-revision-clarity",
+      "label": "Sentence Revision and Clarity",
+      "domainId": "writing",
+      "domain": "Writing",
+      "chapterId": "parapro-ch-10",
+      "description": "Revise sentences for clarity, concision, logical relationships, consistent tense, effective transitions, and appropriate voice."
+    },
+    {
+      "id": "writing-organization-evidence",
+      "label": "Organization, Argument, and Evidence",
+      "domainId": "writing",
+      "domain": "Writing",
+      "chapterId": "parapro-ch-11",
+      "description": "Develop coherent paragraphs and arguments with focused claims, relevant evidence, explanation, source attribution, and logical sequencing."
+    },
+    {
+      "id": "writing-classroom-support",
+      "label": "Supporting Writing in the Classroom",
+      "domainId": "writing",
+      "domain": "Writing",
+      "chapterId": "parapro-ch-12",
+      "description": "Use audience-aware models, prompts, feedback, organizers, and accessibility supports to help students plan, draft, revise, edit, and retain ownership of their writing."
+    }
+  ],
+  "chapters": [
+    {
+      "id": "parapro-ch-01",
+      "title": "Main Ideas, Details, and Evidence",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-main-evidence",
+      "summary": "Identify central ideas, distinguish important support from minor detail, summarize accurately, and connect claims to textual evidence.",
+      "objectives": [
+        "State a main idea at the right level of generality.",
+        "Select details that directly support a claim.",
+        "Summarize without adding opinions or minor examples."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-01-section-1",
+          "heading": "From topic to main idea",
+          "preview": "The topic names what a passage is about; the main idea states the most important point the author communicates about that topic. Begin by noticing ideas that recur across sentences. Then test a possible main idea against the passage: it should cover the important details without ",
+          "content": "The topic names what a passage is about; the main idea states the most important point the author communicates about that topic. Begin by noticing ideas that recur across sentences. Then test a possible main idea against the passage: it should cover the important details without becoming so broad that it could fit many unrelated texts. A sentence copied from the passage may be the main idea, but position alone is not reliable because central ideas may appear at the beginning, end, or be implied.",
+          "keyTerms": [
+            "topic",
+            "main idea",
+            "controlling idea"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-01-section-2",
+          "heading": "Supporting evidence",
+          "preview": "Evidence is relevant when it directly helps establish the claim being evaluated. Names, dates, measurements, examples, and quotations may serve as evidence, but their presence alone does not make them useful. Ask what claim the detail supports and whether the passage actually sta",
+          "content": "Evidence is relevant when it directly helps establish the claim being evaluated. Names, dates, measurements, examples, and quotations may serve as evidence, but their presence alone does not make them useful. Ask what claim the detail supports and whether the passage actually states or permits that relationship. Strong readers distinguish evidence from background information and avoid treating an interesting detail as automatically central.",
+          "keyTerms": [
+            "evidence",
+            "relevance",
+            "claim"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-01-section-3",
+          "heading": "Accurate summaries",
+          "preview": "A summary preserves the passage central idea and essential supporting points in a much shorter form. It normally omits repetition, decorative examples, and the readers personal reaction. A good check is to compare the summary with every paragraph: each major part should be repres",
+          "content": "A summary preserves the passage central idea and essential supporting points in a much shorter form. It normally omits repetition, decorative examples, and the readers personal reaction. A good check is to compare the summary with every paragraph: each major part should be represented, and no statement should contradict or extend beyond the source. When two options are plausible, prefer the one that covers the whole text with the fewest unsupported additions.",
+          "keyTerms": [
+            "summary",
+            "essential detail",
+            "paraphrase"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-01-section-4",
+          "heading": "Classroom connection",
+          "preview": "When supporting a student, ask the learner to group details by what they explain, propose a main-idea statement, and point to evidence for that statement. Use prompts rather than supplying the answer: What do most sentences have in common? Which detail would be hardest to remove?",
+          "content": "When supporting a student, ask the learner to group details by what they explain, propose a main-idea statement, and point to evidence for that statement. Use prompts rather than supplying the answer: What do most sentences have in common? Which detail would be hardest to remove? Which option covers all important parts? Gradually remove organizers as the student becomes more independent.",
+          "keyTerms": [
+            "scaffold",
+            "evidence prompt",
+            "gradual release"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-01-check-1",
+          "skillId": "reading-main-evidence",
+          "prompt": "Which statement best distinguishes a topic from a main idea?",
+          "choices": [
+            "A topic names the subject; a main idea states the central point about it.",
+            "A topic is always a sentence; a main idea is always one word.",
+            "A topic gives evidence; a main idea lists every minor detail.",
+            "A topic is an opinion; a main idea must contain a number."
+          ],
+          "answerIndex": 0,
+          "rationale": "Topic and main idea operate at different levels: one identifies the subject and the other communicates the authors central point about that subject.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-01-check-2",
+          "skillId": "reading-main-evidence",
+          "prompt": "Which detail is most relevant to a claim that library use increased after Saturday hours were added?",
+          "choices": [
+            "The library walls were painted cream.",
+            "Average Saturday visits rose from 18 to 31 after the schedule changed.",
+            "The building contains two staircases.",
+            "Several books have blue covers."
+          ],
+          "answerIndex": 1,
+          "rationale": "The before-and-after visit counts directly measure the outcome named in the claim; the other details have no meaningful connection to library use.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-01-check-3",
+          "skillId": "reading-main-evidence",
+          "prompt": "What should an accurate summary avoid?",
+          "choices": [
+            "The central idea of the passage",
+            "An essential cause-and-effect relationship",
+            "A conclusion or opinion not supported by the passage",
+            "A concise paraphrase of major points"
+          ],
+          "answerIndex": 2,
+          "rationale": "A summary represents the source rather than adding a readers new judgment. Central ideas and essential relationships belong when they are supported.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-01-check-4",
+          "skillId": "reading-main-evidence",
+          "prompt": "A possible main idea fits only one sentence in a five-paragraph passage. What is the best next step?",
+          "choices": [
+            "Assume the longest sentence must be central.",
+            "Delete every paragraph that does not match.",
+            "Treat the statement as correct because it appears first.",
+            "Reconsider whether the statement is only a minor detail."
+          ],
+          "answerIndex": 3,
+          "rationale": "A main idea must account for the important content across the passage. A statement matching one sentence is more likely a detail unless the rest develops it.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-01-check-5",
+          "skillId": "reading-main-evidence",
+          "prompt": "Which prompt best supports a student without giving away the main idea?",
+          "choices": [
+            "What do the important details collectively show about the topic?",
+            "Copy the first sentence and stop.",
+            "Use the longest word as the answer.",
+            "I will tell you the answer before you reread."
+          ],
+          "answerIndex": 0,
+          "rationale": "The prompt directs the learner to synthesize evidence while preserving the reasoning task, which supports independence and transfer.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-02",
+      "title": "Inference and Vocabulary in Context",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-inference-vocabulary",
+      "summary": "Combine textual clues with reasoning, evaluate competing inferences, and determine word meanings from context and word parts.",
+      "objectives": [
+        "Support an inference with specific clues.",
+        "Use context types to determine meaning.",
+        "Apply prefixes, suffixes, and roots without ignoring sentence context."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-02-section-1",
+          "heading": "Evidence-based inference",
+          "preview": "An inference is a conclusion the text supports without stating it directly. Build it by identifying concrete clues, connecting them with relevant background knowledge, and choosing the conclusion requiring the fewest assumptions. An inference is not a free prediction: another rea",
+          "content": "An inference is a conclusion the text supports without stating it directly. Build it by identifying concrete clues, connecting them with relevant background knowledge, and choosing the conclusion requiring the fewest assumptions. An inference is not a free prediction: another reader should be able to follow the evidence-to-conclusion bridge. If a choice depends on information absent from the passage, it is probably too strong.",
+          "keyTerms": [
+            "inference",
+            "textual clue",
+            "assumption"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-02-section-2",
+          "heading": "Evaluating competing conclusions",
+          "preview": "Two inferences may sound reasonable, but the stronger one accounts for more evidence and conflicts with none. Watch absolute words such as always, never, and only; they often exceed the available evidence. Separate what is possible from what is supported. When illustrations, tabl",
+          "content": "Two inferences may sound reasonable, but the stronger one accounts for more evidence and conflicts with none. Watch absolute words such as always, never, and only; they often exceed the available evidence. Separate what is possible from what is supported. When illustrations, tables, and prose all provide clues, consider them together and give greater weight to evidence that directly represents the behavior or relationship in question.",
+          "keyTerms": [
+            "supported conclusion",
+            "overstatement",
+            "multimodal evidence"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-02-section-3",
+          "heading": "Context and word parts",
+          "preview": "Context clues may define, restate, contrast, exemplify, or show the cause or effect of an unfamiliar word. Read the complete sentence and nearby sentences, propose a meaning, substitute it, and check whether the passage remains coherent. Prefixes, suffixes, and roots narrow possi",
+          "content": "Context clues may define, restate, contrast, exemplify, or show the cause or effect of an unfamiliar word. Read the complete sentence and nearby sentences, propose a meaning, substitute it, and check whether the passage remains coherent. Prefixes, suffixes, and roots narrow possibilities, but they do not replace context because word histories and multiple meanings can make a purely mechanical interpretation unreliable.",
+          "keyTerms": [
+            "context clue",
+            "prefix",
+            "root",
+            "suffix"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-02-section-4",
+          "heading": "Instructional support",
+          "preview": "Ask students to mark the exact clue, state what it suggests, and explain the connecting reasoning. For vocabulary, name the clue type and reread with the proposed definition. Think-aloud modeling can make the process visible, but the learner should then perform the same steps on ",
+          "content": "Ask students to mark the exact clue, state what it suggests, and explain the connecting reasoning. For vocabulary, name the clue type and reread with the proposed definition. Think-aloud modeling can make the process visible, but the learner should then perform the same steps on a new example. Feedback should distinguish an unsupported guess from a reasonable inference that merely needs clearer evidence.",
+          "keyTerms": [
+            "think-aloud",
+            "clue type",
+            "reasoning"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-02-check-1",
+          "skillId": "reading-inference-vocabulary",
+          "prompt": "What makes an inference evidence based?",
+          "choices": [
+            "The conclusion is the most dramatic possibility.",
+            "The reader can identify clues and explain how they support the conclusion.",
+            "The reader has believed it for a long time.",
+            "The conclusion uses a word from the question."
+          ],
+          "answerIndex": 1,
+          "rationale": "An inference becomes defensible when its textual clues and reasoning can be made explicit; familiarity or dramatic wording does not supply evidence.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-02-check-2",
+          "skillId": "reading-inference-vocabulary",
+          "prompt": "Which word most often signals that an answer may overstate the evidence?",
+          "choices": [
+            "Sometimes",
+            "May",
+            "Always",
+            "Often"
+          ],
+          "answerIndex": 2,
+          "rationale": "Always makes an exceptionless claim. Unless the passage establishes that level of certainty, a qualified option is generally better supported.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-02-check-3",
+          "skillId": "reading-inference-vocabulary",
+          "prompt": "In The arid plain received almost no rain, which phrase is the strongest context clue for arid?",
+          "choices": [
+            "The word plain",
+            "The capital letter at the start",
+            "The number of words in the sentence",
+            "Received almost no rain"
+          ],
+          "answerIndex": 3,
+          "rationale": "Almost no rain describes the condition directly and supports the meaning very dry; the other features do not define the word.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-02-check-4",
+          "skillId": "reading-inference-vocabulary",
+          "prompt": "What does the prefix pre- usually contribute to preview?",
+          "choices": [
+            "The meaning before",
+            "The meaning against",
+            "The meaning again",
+            "The meaning without"
+          ],
+          "answerIndex": 0,
+          "rationale": "Pre- commonly means before, so a preview occurs before the complete or main presentation.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-02-check-5",
+          "skillId": "reading-inference-vocabulary",
+          "prompt": "Which student prompt best develops inference reasoning?",
+          "choices": [
+            "Can you say the answer more loudly?",
+            "Which clues led you to that conclusion, and how do they connect?",
+            "Which option has the most words?",
+            "Would you like me to choose for you?"
+          ],
+          "answerIndex": 1,
+          "rationale": "The prompt elicits both evidence and the reasoning bridge instead of shifting attention to irrelevant surface features.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-03",
+      "title": "Text Structure, Features, and Sources",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-structure-sources",
+      "summary": "Recognize organizational patterns, use text features and data displays, compare sources, and distinguish firsthand evidence from later interpretation.",
+      "objectives": [
+        "Identify sequence, cause-effect, comparison, and problem-solution structures.",
+        "Use headings, tables, and glossaries efficiently.",
+        "Compare source content and perspective."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-03-section-1",
+          "heading": "Organizational patterns",
+          "preview": "Authors arrange information to reveal relationships. Sequence emphasizes order in time or procedure; cause and effect explains why something happened and what followed; comparison highlights similarities and differences; problem and solution presents a need and response. Signal w",
+          "content": "Authors arrange information to reveal relationships. Sequence emphasizes order in time or procedure; cause and effect explains why something happened and what followed; comparison highlights similarities and differences; problem and solution presents a need and response. Signal words can help, but meaning is decisive. For example, next may indicate sequence, while however often marks contrast.",
+          "keyTerms": [
+            "sequence",
+            "cause and effect",
+            "comparison",
+            "problem and solution"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-03-section-2",
+          "heading": "Text features and data displays",
+          "preview": "Headings preview a section purpose, glossaries define key terms, captions explain images, and tables organize values for comparison. Use the feature that matches the information need. When reading a table or graph, identify labels, units, categories, and scale before drawing a co",
+          "content": "Headings preview a section purpose, glossaries define key terms, captions explain images, and tables organize values for comparison. Use the feature that matches the information need. When reading a table or graph, identify labels, units, categories, and scale before drawing a conclusion. Data support only the relationships actually displayed; a graph does not explain an unmeasured cause by itself.",
+          "keyTerms": [
+            "heading",
+            "glossary",
+            "caption",
+            "scale"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-03-section-3",
+          "heading": "Comparing sources",
+          "preview": "Sources about the same event may share facts but differ in included details, purpose, audience, or viewpoint. Record agreements before disagreements, then determine whether a difference is factual, interpretive, or merely an emphasis. A primary source comes from a direct particip",
+          "content": "Sources about the same event may share facts but differ in included details, purpose, audience, or viewpoint. Record agreements before disagreements, then determine whether a difference is factual, interpretive, or merely an emphasis. A primary source comes from a direct participant or the period under study; a secondary source analyzes or summarizes primary and other evidence. Source type does not guarantee accuracy, so relevance and credibility still matter.",
+          "keyTerms": [
+            "viewpoint",
+            "primary source",
+            "secondary source",
+            "credibility"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-03-section-4",
+          "heading": "Classroom application",
+          "preview": "Graphic organizers can externalize structure: timelines for sequence, arrows for cause and effect, matrices for comparison, and problem-solution charts for response planning. Teach students to justify why an organizer fits. For source comparison, include columns for shared facts,",
+          "content": "Graphic organizers can externalize structure: timelines for sequence, arrows for cause and effect, matrices for comparison, and problem-solution charts for response planning. Teach students to justify why an organizer fits. For source comparison, include columns for shared facts, unique details, viewpoint, and evidence. The organizer should support analysis rather than become a copying exercise.",
+          "keyTerms": [
+            "graphic organizer",
+            "source matrix",
+            "analysis"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-03-check-1",
+          "skillId": "reading-structure-sources",
+          "prompt": "Which structure is signaled by first, next, and finally?",
+          "choices": [
+            "Comparison",
+            "Cause without effect",
+            "Sequence",
+            "Description by location"
+          ],
+          "answerIndex": 2,
+          "rationale": "The signal words order events or actions over time, which is the defining relationship in a sequence structure.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-03-check-2",
+          "skillId": "reading-structure-sources",
+          "prompt": "Which feature should a reader use first for a quick definition of a bold term?",
+          "choices": [
+            "Copyright page",
+            "Page footer",
+            "Author photograph",
+            "Glossary"
+          ],
+          "answerIndex": 3,
+          "rationale": "A glossary is designed to define important terms, whereas the other features serve publication, navigation, or biographical purposes.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-03-check-3",
+          "skillId": "reading-structure-sources",
+          "prompt": "Before interpreting a graph, what should a reader check?",
+          "choices": [
+            "Labels, units, categories, and scale",
+            "Only the brightest color",
+            "The length of the title alone",
+            "Whether every bar has the same shape"
+          ],
+          "answerIndex": 0,
+          "rationale": "Labels and scale determine what the values represent. Visual appearance without those elements can lead to an invalid comparison.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-03-check-4",
+          "skillId": "reading-structure-sources",
+          "prompt": "Which is most clearly a primary source for a 1952 school opening?",
+          "choices": [
+            "A textbook published in 2025",
+            "A diary entry written by a student on opening day",
+            "A modern encyclopedia summary",
+            "A recent documentary narration"
+          ],
+          "answerIndex": 1,
+          "rationale": "The diary is contemporaneous firsthand evidence. The later sources interpret or synthesize earlier material.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-03-check-5",
+          "skillId": "reading-structure-sources",
+          "prompt": "Two sources share facts but emphasize different consequences. What should a reader conclude first?",
+          "choices": [
+            "One source must be entirely false.",
+            "The event occurred twice.",
+            "Their perspectives differ even if the shared facts do not.",
+            "All differences are spelling errors."
+          ],
+          "answerIndex": 2,
+          "rationale": "Differences in selection and emphasis can reflect perspective without creating a factual contradiction.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-04",
+      "title": "Supporting Reading in the Classroom",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-classroom-support",
+      "summary": "Use explicit, appropriately scaffolded supports for decoding, fluency, vocabulary, comprehension, and independent reading without completing the work for students.",
+      "objectives": [
+        "Match support to the observed reading need.",
+        "Use modeling, guided practice, and feedback.",
+        "Preserve access, dignity, and learner independence."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-04-section-1",
+          "heading": "Identify the actual barrier",
+          "preview": "Effective support begins with observation. A student who reads words inaccurately needs different assistance from a student who reads accurately but without phrasing, and both differ from a student who reads fluently but does not monitor meaning. Describe what the learner does, e",
+          "content": "Effective support begins with observation. A student who reads words inaccurately needs different assistance from a student who reads accurately but without phrasing, and both differ from a student who reads fluently but does not monitor meaning. Describe what the learner does, examine task demands, and avoid assigning a broad label from one response. Use teacher direction and the instructional plan when selecting support.",
+          "keyTerms": [
+            "decoding",
+            "fluency",
+            "comprehension",
+            "observation"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-04-section-2",
+          "heading": "Model, guide, release",
+          "preview": "Explicit support often follows a short cycle: explain the strategy, model it while thinking aloud, guide the learner through an example, provide feedback, and then ask for independent use. Prompts should focus attention without replacing thought. For fluency, modeled and repeated",
+          "content": "Explicit support often follows a short cycle: explain the strategy, model it while thinking aloud, guide the learner through an example, provide feedback, and then ask for independent use. Prompts should focus attention without replacing thought. For fluency, modeled and repeated oral reading can develop phrasing. For comprehension, stop-reread-restate routines make monitoring visible.",
+          "keyTerms": [
+            "modeling",
+            "guided practice",
+            "independent practice"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-04-section-3",
+          "heading": "Vocabulary and evidence talk",
+          "preview": "Teach learners to use morphology, context, and reference tools together. Ask them to identify the clue and explain the proposed meaning. During discussion, request specific evidence and allow adequate processing time. Visuals, chunked directions, and accessible language can reduc",
+          "content": "Teach learners to use morphology, context, and reference tools together. Ask them to identify the clue and explain the proposed meaning. During discussion, request specific evidence and allow adequate processing time. Visuals, chunked directions, and accessible language can reduce unnecessary barriers while preserving the grade-level idea or assigned task.",
+          "keyTerms": [
+            "morphology",
+            "processing time",
+            "accessible language"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-04-section-4",
+          "heading": "Feedback and independence",
+          "preview": "Feedback is most useful when it names the goal, points to observable work, and offers a strategy the learner can use again. Avoid doing the task, guessing about motivation, or praising speed when accuracy and understanding matter. Fade supports when data show the student can perf",
+          "content": "Feedback is most useful when it names the goal, points to observable work, and offers a strategy the learner can use again. Avoid doing the task, guessing about motivation, or praising speed when accuracy and understanding matter. Fade supports when data show the student can perform the step. Communicate observations to the supervising educator and follow established plans.",
+          "keyTerms": [
+            "feedback",
+            "fade support",
+            "supervision"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-04-check-1",
+          "skillId": "reading-classroom-support",
+          "prompt": "A student reads accurately but word by word. Which support best matches the need?",
+          "choices": [
+            "A harder silent passage with no feedback",
+            "Unrelated spelling lists only",
+            "Supplying every next word immediately",
+            "Modeled and repeated oral reading with phrasing feedback"
+          ],
+          "answerIndex": 3,
+          "rationale": "Accuracy is present, so support should target phrasing and smooth connected reading rather than increase difficulty or remove practice.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-04-check-2",
+          "skillId": "reading-classroom-support",
+          "prompt": "What is the best first step before selecting a reading scaffold?",
+          "choices": [
+            "Describe the observed difficulty and task demand",
+            "Assume the learner lacks motivation",
+            "Choose the most intensive support automatically",
+            "Complete the assignment for the learner"
+          ],
+          "answerIndex": 0,
+          "rationale": "Support should respond to a specific observed barrier. Assumptions and task completion do not identify or remediate the reading need.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-04-check-3",
+          "skillId": "reading-classroom-support",
+          "prompt": "Which sequence reflects gradual release?",
+          "choices": [
+            "Test, label, and permanently provide the answer",
+            "Explain and model, guide practice, then support independent use",
+            "Assign independent work before instruction",
+            "Model forever without student practice"
+          ],
+          "answerIndex": 1,
+          "rationale": "Gradual release moves responsibility from explicit modeling through guided practice to increasingly independent performance.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-04-check-4",
+          "skillId": "reading-classroom-support",
+          "prompt": "Which response best supports a multilingual learner with dense directions?",
+          "choices": [
+            "Replace the task with unrelated coloring",
+            "Repeat the full directions faster",
+            "Chunk the same task, add relevant visuals, and check each step",
+            "Finish the work without explanation"
+          ],
+          "answerIndex": 2,
+          "rationale": "Chunking and visuals increase access while preserving the intended task and the learners active role.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        },
+        {
+          "id": "parapro-ch-04-check-5",
+          "skillId": "reading-classroom-support",
+          "prompt": "When should a scaffold be faded?",
+          "choices": [
+            "Never, once it has been introduced",
+            "Immediately after one incorrect response",
+            "Only when the entire class finishes",
+            "When evidence shows the learner can perform the supported step more independently"
+          ],
+          "answerIndex": 3,
+          "rationale": "Scaffolds are temporary supports. Performance evidence should guide gradual removal so assistance does not become unnecessary dependence.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-05",
+      "title": "Numbers, Fractions, Decimals, and Percents",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-number-operations",
+      "summary": "Compute accurately with rational numbers, interpret place value and percent, estimate results, and verify signs, magnitude, and units.",
+      "objectives": [
+        "Operate with fractions and decimals.",
+        "Solve percent and integer problems.",
+        "Estimate and check reasonableness."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-05-section-1",
+          "heading": "Place value and signed numbers",
+          "preview": "Place determines value: 4.07 has zero tenths and seven hundredths, while 4.7 has seven tenths. On a number line, values increase to the right, so -2 is greater than -6 even though 6 has the larger absolute value. For signed operations, connect rules to movement, gains and losses,",
+          "content": "Place determines value: 4.07 has zero tenths and seven hundredths, while 4.7 has seven tenths. On a number line, values increase to the right, so -2 is greater than -6 even though 6 has the larger absolute value. For signed operations, connect rules to movement, gains and losses, or zero pairs instead of relying only on memorized phrases.",
+          "keyTerms": [
+            "place value",
+            "integer",
+            "absolute value"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-05-section-2",
+          "heading": "Fraction meaning and operations",
+          "preview": "A fraction names equal-sized parts of a whole or quantity. Addition and subtraction require common-sized parts, so use a common denominator. Multiplication scales one quantity by another fraction. Division asks how many groups of the divisor fit and can be computed by multiplying",
+          "content": "A fraction names equal-sized parts of a whole or quantity. Addition and subtraction require common-sized parts, so use a common denominator. Multiplication scales one quantity by another fraction. Division asks how many groups of the divisor fit and can be computed by multiplying by its reciprocal. Simplify when useful and check whether the result should be larger or smaller than the starting value.",
+          "keyTerms": [
+            "equivalent fraction",
+            "common denominator",
+            "reciprocal"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-05-section-3",
+          "heading": "Decimals and percents",
+          "preview": "Decimals extend the base-ten system, so operations must preserve place value. Percent means per hundred. Use PART = RATE x WHOLE, with the rate written as a decimal. Percent increase or decrease uses the original amount as the denominator. Distinguish a discount amount from the f",
+          "content": "Decimals extend the base-ten system, so operations must preserve place value. Percent means per hundred. Use PART = RATE x WHOLE, with the rate written as a decimal. Percent increase or decrease uses the original amount as the denominator. Distinguish a discount amount from the final sale price and label money, length, or count units throughout the work.",
+          "keyTerms": [
+            "decimal",
+            "percent",
+            "original amount"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-05-section-4",
+          "heading": "Estimation and verification",
+          "preview": "Estimate before or after computing to judge magnitude. Round to nearby compatible numbers while keeping the original operation. Use inverse operations, substitution, and unit analysis for additional checks. A calculator can execute arithmetic but cannot decide whether the entered",
+          "content": "Estimate before or after computing to judge magnitude. Round to nearby compatible numbers while keeping the original operation. Use inverse operations, substitution, and unit analysis for additional checks. A calculator can execute arithmetic but cannot decide whether the entered expression represents the problem, so mathematical interpretation remains essential.",
+          "keyTerms": [
+            "estimate",
+            "inverse operation",
+            "unit analysis"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-05-check-1",
+          "skillId": "mathematics-number-operations",
+          "prompt": "Why is a common denominator needed for fraction addition?",
+          "choices": [
+            "The fractions must name parts of the same size.",
+            "The numerators must become zero.",
+            "Every fraction must become greater than one.",
+            "Denominators are always added first."
+          ],
+          "answerIndex": 0,
+          "rationale": "Addition combines like units. Equivalent fractions with a common denominator express the quantities using the same-sized fractional parts.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-05-check-2",
+          "skillId": "mathematics-number-operations",
+          "prompt": "Which value is greater?",
+          "choices": [
+            "-6",
+            "-2",
+            "They are always equal.",
+            "The comparison is impossible."
+          ],
+          "answerIndex": 1,
+          "rationale": "Negative 2 lies to the right of negative 6 on the number line, so it is the greater number.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-05-check-3",
+          "skillId": "mathematics-number-operations",
+          "prompt": "What is 25 percent of 48?",
+          "choices": [
+            "19.2",
+            "23",
+            "12",
+            "36"
+          ],
+          "answerIndex": 2,
+          "rationale": "Twenty-five percent is 0.25 or one fourth. One fourth of 48 is 12; 36 is the amount remaining after a 25-percent discount.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-05-check-4",
+          "skillId": "mathematics-number-operations",
+          "prompt": "What denominator is used for percent increase?",
+          "choices": [
+            "The new amount in every case",
+            "The numerical change alone",
+            "One hundred regardless of units",
+            "The original amount"
+          ],
+          "answerIndex": 3,
+          "rationale": "Percent change compares the change with the starting baseline, so divide the change by the original amount and convert to percent.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-05-check-5",
+          "skillId": "mathematics-number-operations",
+          "prompt": "Which estimate best checks 49 times 21?",
+          "choices": [
+            "50 times 20 is about 1,000.",
+            "50 plus 20 is about 70.",
+            "49 minus 21 is about 30.",
+            "500 times 200 is about 100,000."
+          ],
+          "answerIndex": 0,
+          "rationale": "Rounding each factor to a nearby compatible number preserves multiplication and gives a close benchmark for the exact product.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-06",
+      "title": "Ratios, Proportions, Expressions, and Equations",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-ratio-algebra",
+      "summary": "Represent multiplicative relationships, use unit rates, simplify expressions, and solve equations while preserving equality.",
+      "objectives": [
+        "Scale ratios and proportions.",
+        "Apply order and distributive properties.",
+        "Solve and verify linear equations."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-06-section-1",
+          "heading": "Ratios and unit rates",
+          "preview": "A ratio compares quantities multiplicatively. Keep corresponding units aligned and distinguish a ratio from a difference. A unit rate states the amount per one unit and often makes scaling easier. Tables, double number lines, and equations can all represent the same proportional ",
+          "content": "A ratio compares quantities multiplicatively. Keep corresponding units aligned and distinguish a ratio from a difference. A unit rate states the amount per one unit and often makes scaling easier. Tables, double number lines, and equations can all represent the same proportional relationship. Equivalent ratios multiply or divide both quantities by the same nonzero factor.",
+          "keyTerms": [
+            "ratio",
+            "unit rate",
+            "equivalent ratio"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-06-section-2",
+          "heading": "Expressions and properties",
+          "preview": "An expression represents a quantity but does not state equality. Evaluate using substitution and the order of operations. The distributive property multiplies a factor by every term inside parentheses. Combine only like terms, whose variable parts match. Keep the distinction betw",
+          "content": "An expression represents a quantity but does not state equality. Evaluate using substitution and the order of operations. The distributive property multiplies a factor by every term inside parentheses. Combine only like terms, whose variable parts match. Keep the distinction between 2a squared and the square of 2a clear by attending to notation and grouping.",
+          "keyTerms": [
+            "expression",
+            "distributive property",
+            "like terms"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-06-section-3",
+          "heading": "Equations as balance",
+          "preview": "An equation states that two expressions are equal. Preserve that equality by applying the same valid operation to both sides. Use inverse operations to isolate the variable, then substitute the solution into the original equation. In word problems, define the variable, translate ",
+          "content": "An equation states that two expressions are equal. Preserve that equality by applying the same valid operation to both sides. Use inverse operations to isolate the variable, then substitute the solution into the original equation. In word problems, define the variable, translate relationships rather than isolated words, and retain units.",
+          "keyTerms": [
+            "equation",
+            "inverse operation",
+            "solution"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-06-section-4",
+          "heading": "Common errors and support",
+          "preview": "Additive thinking often causes ratio errors, while one-sided operations cause equation errors. Use ratio tables or diagrams to reveal multiplicative structure and balance models to reveal equality. Ask students to explain each symbol and compare their representation with the stor",
+          "content": "Additive thinking often causes ratio errors, while one-sided operations cause equation errors. Use ratio tables or diagrams to reveal multiplicative structure and balance models to reveal equality. Ask students to explain each symbol and compare their representation with the story context. A worked answer is less useful than identifying the first step where the relationship changed.",
+          "keyTerms": [
+            "multiplicative reasoning",
+            "balance model",
+            "error analysis"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-06-check-1",
+          "skillId": "mathematics-ratio-algebra",
+          "prompt": "If 3 tickets cost $12, what is the unit rate?",
+          "choices": [
+            "$9 per ticket",
+            "$4 per ticket",
+            "$12 per ticket",
+            "$36 per ticket"
+          ],
+          "answerIndex": 1,
+          "rationale": "Divide the total cost by the number of tickets: 12 divided by 3 equals 4 dollars for each ticket.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-06-check-2",
+          "skillId": "mathematics-ratio-algebra",
+          "prompt": "What must remain true in equivalent ratios?",
+          "choices": [
+            "Both quantities increase by one.",
+            "The difference is always zero.",
+            "Both quantities are scaled by the same factor.",
+            "The units may be exchanged randomly."
+          ],
+          "answerIndex": 2,
+          "rationale": "Equivalent ratios preserve a multiplicative relationship by applying the same nonzero scale factor to corresponding quantities.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-06-check-3",
+          "skillId": "mathematics-ratio-algebra",
+          "prompt": "Which expression is equivalent to 3(x + 4)?",
+          "choices": [
+            "3x + 4",
+            "7x",
+            "12x",
+            "3x + 12"
+          ],
+          "answerIndex": 3,
+          "rationale": "The distributive property requires multiplying 3 by both x and 4, producing 3x plus 12.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-06-check-4",
+          "skillId": "mathematics-ratio-algebra",
+          "prompt": "Why apply the same operation to both sides of an equation?",
+          "choices": [
+            "To preserve equality",
+            "To make every number positive",
+            "To change an expression into a ratio",
+            "To remove all variables immediately"
+          ],
+          "answerIndex": 0,
+          "rationale": "An equation functions as a balance. Equal changes to both sides preserve the set of values that make the statement true.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-06-check-5",
+          "skillId": "mathematics-ratio-algebra",
+          "prompt": "What is the strongest check of an equation solution?",
+          "choices": [
+            "Choose the largest answer.",
+            "Substitute it into the original equation.",
+            "Count the symbols in the equation.",
+            "Round the solution without checking."
+          ],
+          "answerIndex": 1,
+          "rationale": "Substitution directly verifies whether the proposed value makes the original equality true.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-07",
+      "title": "Geometry and Measurement",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-geometry-measurement",
+      "summary": "Select and apply formulas for perimeter, area, volume, angles, coordinates, and unit conversion while interpreting diagrams accurately.",
+      "objectives": [
+        "Distinguish linear, square, and cubic measures.",
+        "Solve angle and coordinate problems.",
+        "Convert units using multiplicative relationships."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-07-section-1",
+          "heading": "What is being measured?",
+          "preview": "Perimeter measures distance around a figure and uses linear units. Area measures surface coverage and uses square units. Volume measures three-dimensional space and uses cubic units. Before choosing a formula, identify the target quantity and label the dimensions. A diagram may n",
+          "content": "Perimeter measures distance around a figure and uses linear units. Area measures surface coverage and uses square units. Volume measures three-dimensional space and uses cubic units. Before choosing a formula, identify the target quantity and label the dimensions. A diagram may not be drawn to scale, so rely on stated measures and geometric relationships rather than appearance.",
+          "keyTerms": [
+            "perimeter",
+            "area",
+            "volume"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-07-section-2",
+          "heading": "Formulas with meaning",
+          "preview": "Rectangle area equals rows times units per row, which is length times width. Triangle area is half the area of a related rectangle or parallelogram: one-half base times perpendicular height. Rectangular-prism volume is the number of unit cubes in layers: length times width times ",
+          "content": "Rectangle area equals rows times units per row, which is length times width. Triangle area is half the area of a related rectangle or parallelogram: one-half base times perpendicular height. Rectangular-prism volume is the number of unit cubes in layers: length times width times height. Connecting formulas to tiled or layered models reduces formula confusion.",
+          "keyTerms": [
+            "base",
+            "height",
+            "square unit",
+            "cubic unit"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-07-section-3",
+          "heading": "Angles and coordinates",
+          "preview": "Angles on a straight line total 180 degrees, angles around a point total 360 degrees, and right angles measure 90 degrees. On a coordinate plane, ordered pairs locate horizontal x and vertical y positions. When two points share one coordinate, their horizontal or vertical distanc",
+          "content": "Angles on a straight line total 180 degrees, angles around a point total 360 degrees, and right angles measure 90 degrees. On a coordinate plane, ordered pairs locate horizontal x and vertical y positions. When two points share one coordinate, their horizontal or vertical distance is the absolute difference of the other coordinates.",
+          "keyTerms": [
+            "straight angle",
+            "coordinate plane",
+            "ordered pair"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-07-section-4",
+          "heading": "Units and conversions",
+          "preview": "Conversion factors express equivalent quantities, such as 1 meter = 100 centimeters. Multiply when converting to a smaller unit because more small units represent the same length; divide when converting to a larger unit. Write units at every step so cancellation and the expected ",
+          "content": "Conversion factors express equivalent quantities, such as 1 meter = 100 centimeters. Multiply when converting to a smaller unit because more small units represent the same length; divide when converting to a larger unit. Write units at every step so cancellation and the expected final unit remain visible. Estimate whether the converted number should increase or decrease.",
+          "keyTerms": [
+            "conversion factor",
+            "unit",
+            "dimension"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-07-check-1",
+          "skillId": "mathematics-geometry-measurement",
+          "prompt": "Which quantity uses square units?",
+          "choices": [
+            "Perimeter",
+            "Length",
+            "Area",
+            "Angle measure"
+          ],
+          "answerIndex": 2,
+          "rationale": "Area counts the two-dimensional units covering a surface, so it is expressed in square units.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-07-check-2",
+          "skillId": "mathematics-geometry-measurement",
+          "prompt": "What is the area of a triangle with base 10 and height 6?",
+          "choices": [
+            "16 square units",
+            "60 square units",
+            "120 square units",
+            "30 square units"
+          ],
+          "answerIndex": 3,
+          "rationale": "Use one-half times base times height: one-half of 10 times 6 equals 30 square units.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-07-check-3",
+          "skillId": "mathematics-geometry-measurement",
+          "prompt": "Two angles form a straight line. One is 128 degrees. What is the other?",
+          "choices": [
+            "52 degrees",
+            "38 degrees",
+            "62 degrees",
+            "128 degrees"
+          ],
+          "answerIndex": 0,
+          "rationale": "A straight angle totals 180 degrees. Subtracting the known 128-degree angle from 180 leaves the adjacent angle measure of 52 degrees.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-07-check-4",
+          "skillId": "mathematics-geometry-measurement",
+          "prompt": "Points (2, -1) and (2, 5) are how far apart?",
+          "choices": [
+            "3 units",
+            "6 units",
+            "4 units",
+            "7 units"
+          ],
+          "answerIndex": 1,
+          "rationale": "The x-coordinates match, so find the vertical distance: the absolute difference between 5 and -1 is 6.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-07-check-5",
+          "skillId": "mathematics-geometry-measurement",
+          "prompt": "How many centimeters are in 2.75 meters?",
+          "choices": [
+            "27.5 centimeters",
+            "2,750 centimeters",
+            "275 centimeters",
+            "0.0275 centimeters"
+          ],
+          "answerIndex": 2,
+          "rationale": "Each meter contains 100 centimeters, so multiply 2.75 by 100 to obtain 275 centimeters.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-08",
+      "title": "Data, Probability, and Supporting Mathematics",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-data-support",
+      "summary": "Interpret tables and graphs, calculate measures of center and probability, analyze errors, and select representations that build student understanding.",
+      "objectives": [
+        "Interpret displays and measures of center.",
+        "Distinguish theoretical and experimental probability.",
+        "Respond to student strategies with targeted representations."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-08-section-1",
+          "heading": "Reading data displays",
+          "preview": "Identify the question, variables, categories, units, and scale before comparing values. Bar graphs support category comparisons, line graphs show change across an ordered variable such as time, and tables preserve exact values. A visual pattern can describe association but does n",
+          "content": "Identify the question, variables, categories, units, and scale before comparing values. Bar graphs support category comparisons, line graphs show change across an ordered variable such as time, and tables preserve exact values. A visual pattern can describe association but does not automatically establish causation. Check for truncated axes or inconsistent symbol values that may distort impressions.",
+          "keyTerms": [
+            "bar graph",
+            "line graph",
+            "scale",
+            "association"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-08-section-2",
+          "heading": "Center and variability",
+          "preview": "Mean is the sum divided by the number of values and uses every observation. Median is the middle of ordered data and is less affected by extreme values. Mode is the most frequent value. Select a measure based on the distribution and question rather than automatically choosing the",
+          "content": "Mean is the sum divided by the number of values and uses every observation. Median is the middle of ordered data and is less affected by extreme values. Mode is the most frequent value. Select a measure based on the distribution and question rather than automatically choosing the mean. An outlier can make the mean unrepresentative of a typical observation.",
+          "keyTerms": [
+            "mean",
+            "median",
+            "mode",
+            "outlier"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-08-section-3",
+          "heading": "Probability",
+          "preview": "Theoretical probability compares favorable equally likely outcomes with all possible outcomes. Experimental probability is the observed proportion in trials. A small sample may differ substantially from theoretical probability; more trials generally make the long-run proportion m",
+          "content": "Theoretical probability compares favorable equally likely outcomes with all possible outcomes. Experimental probability is the observed proportion in trials. A small sample may differ substantially from theoretical probability; more trials generally make the long-run proportion more stable. Independent events are not corrected by previous outcomes, so a run of heads does not make tails due on the next fair flip.",
+          "keyTerms": [
+            "theoretical probability",
+            "experimental probability",
+            "independent event"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-08-section-4",
+          "heading": "Instruction through representations",
+          "preview": "Begin by eliciting the students strategy and identifying the first point where the reasoning changes. Use number lines, arrays, fraction models, area models, ratio tables, or balance models to expose the relevant structure. Connect the representation to symbols, then ask the lear",
+          "content": "Begin by eliciting the students strategy and identifying the first point where the reasoning changes. Use number lines, arrays, fraction models, area models, ratio tables, or balance models to expose the relevant structure. Connect the representation to symbols, then ask the learner to apply the idea to a new problem. Avoid replacing conceptual work with a rule the student cannot explain.",
+          "keyTerms": [
+            "representation",
+            "error analysis",
+            "transfer"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-08-check-1",
+          "skillId": "mathematics-data-support",
+          "prompt": "Which graph usually best compares several categories?",
+          "choices": [
+            "Unlabeled line",
+            "Circle for every data point",
+            "Randomly scaled pictograph",
+            "Bar graph"
+          ],
+          "answerIndex": 3,
+          "rationale": "Bars on a consistent scale support direct category comparisons; changing or missing scales undermine interpretation.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-08-check-2",
+          "skillId": "mathematics-data-support",
+          "prompt": "Which measure of center is generally most resistant to an outlier?",
+          "choices": [
+            "Median",
+            "Mean",
+            "Range",
+            "Total"
+          ],
+          "answerIndex": 0,
+          "rationale": "Median depends on order and middle position, so a single extreme value usually affects it less than the mean.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-08-check-3",
+          "skillId": "mathematics-data-support",
+          "prompt": "A fair coin lands heads eight times in ten flips. What remains its theoretical probability of heads?",
+          "choices": [
+            "8/10 forever",
+            "1/2",
+            "1/10",
+            "0"
+          ],
+          "answerIndex": 1,
+          "rationale": "The experimental proportion is 8/10 for that sample, but the theoretical probability for each fair independent flip remains one-half.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-08-check-4",
+          "skillId": "mathematics-data-support",
+          "prompt": "What should happen first in mathematical error analysis?",
+          "choices": [
+            "Give the final answer immediately.",
+            "Assume the student guessed.",
+            "Elicit the students strategy and locate the first incorrect step.",
+            "Assign unrelated computation."
+          ],
+          "answerIndex": 2,
+          "rationale": "Understanding the learners reasoning identifies the specific misconception and supports a targeted representation or prompt.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        },
+        {
+          "id": "parapro-ch-08-check-5",
+          "skillId": "mathematics-data-support",
+          "prompt": "Why use a balance model for equations?",
+          "choices": [
+            "It converts every equation into geometry.",
+            "It removes the need to calculate.",
+            "It proves the variable is always positive.",
+            "It shows that equal operations preserve equality."
+          ],
+          "answerIndex": 3,
+          "rationale": "The balance model represents the defining relationship in an equation and makes one-sided operations visibly invalid.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/details/books/prealgebra-2e/"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-09",
+      "title": "Grammar, Usage, and Mechanics",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-grammar-mechanics",
+      "summary": "Recognize complete sentences and apply agreement, pronoun, modifier, punctuation, capitalization, spelling, and usage conventions.",
+      "objectives": [
+        "Identify complete and correctly structured sentences.",
+        "Apply agreement and pronoun rules.",
+        "Use punctuation and mechanics to clarify meaning."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-09-section-1",
+          "heading": "Sentence foundations",
+          "preview": "A complete sentence contains an independent clause with a subject and a complete predicate and expresses a complete thought. Dependent-clause starters such as because, although, when, and while create fragments unless they are connected to a main clause. A run-on joins independen",
+          "content": "A complete sentence contains an independent clause with a subject and a complete predicate and expresses a complete thought. Dependent-clause starters such as because, although, when, and while create fragments unless they are connected to a main clause. A run-on joins independent clauses without suitable punctuation or coordination. Read for grammatical structure rather than judging by sentence length.",
+          "keyTerms": [
+            "independent clause",
+            "fragment",
+            "run-on"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-09-section-2",
+          "heading": "Agreement and reference",
+          "preview": "Subject-verb agreement depends on the true subject, not a nearby noun inside a prepositional phrase. Pronouns should agree with their antecedents and refer clearly. Singular they is widely used for a person whose gender is unknown or irrelevant, but writers must still keep number",
+          "content": "Subject-verb agreement depends on the true subject, not a nearby noun inside a prepositional phrase. Pronouns should agree with their antecedents and refer clearly. Singular they is widely used for a person whose gender is unknown or irrelevant, but writers must still keep number and reference consistent. Repeat a noun when a pronoun could refer to more than one person or object.",
+          "keyTerms": [
+            "subject-verb agreement",
+            "antecedent",
+            "pronoun reference"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-09-section-3",
+          "heading": "Modifiers and usage",
+          "preview": "Place descriptive phrases near the word they modify. An introductory modifier should logically describe the subject that follows it. Choose words according to meaning and grammatical function: their shows possession, there refers to place or introduces a clause, and they are cont",
+          "content": "Place descriptive phrases near the word they modify. An introductory modifier should logically describe the subject that follows it. Choose words according to meaning and grammatical function: their shows possession, there refers to place or introduces a clause, and they are contracts to theyre. Parallel items should use matching grammatical forms.",
+          "keyTerms": [
+            "modifier",
+            "usage",
+            "parallel structure"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-09-section-4",
+          "heading": "Punctuation and mechanics",
+          "preview": "Commas separate introductory elements, items in a series, and appropriate clause structures, but they do not belong between a subject and verb. A semicolon can join closely related independent clauses. Apostrophes mark possession or omitted letters, not ordinary plurals. Capitali",
+          "content": "Commas separate introductory elements, items in a series, and appropriate clause structures, but they do not belong between a subject and verb. A semicolon can join closely related independent clauses. Apostrophes mark possession or omitted letters, not ordinary plurals. Capitalization, spelling, and quotation punctuation help readers interpret boundaries and names accurately.",
+          "keyTerms": [
+            "comma",
+            "semicolon",
+            "apostrophe",
+            "capitalization"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-09-check-1",
+          "skillId": "writing-grammar-mechanics",
+          "prompt": "Which element must a complete sentence contain?",
+          "choices": [
+            "An independent clause",
+            "A comma in every case",
+            "At least twelve words",
+            "A quotation"
+          ],
+          "answerIndex": 0,
+          "rationale": "An independent clause contains a subject and complete predicate and can express a complete thought; length and particular punctuation are not defining requirements.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-09-check-2",
+          "skillId": "writing-grammar-mechanics",
+          "prompt": "In The box of books is heavy, why is is singular?",
+          "choices": [
+            "Books is always ignored in writing.",
+            "The subject box is singular.",
+            "Every prepositional phrase requires is.",
+            "Heavy is a singular verb."
+          ],
+          "answerIndex": 1,
+          "rationale": "The prepositional phrase of books modifies box. The singular headword box controls agreement with is.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-09-check-3",
+          "skillId": "writing-grammar-mechanics",
+          "prompt": "What is wrong with When the meeting ended?",
+          "choices": [
+            "It contains too many subjects.",
+            "It must use a semicolon after when.",
+            "It is a dependent fragment without a main clause.",
+            "Ended can never be a verb."
+          ],
+          "answerIndex": 2,
+          "rationale": "When introduces a dependent clause. The words need an independent clause, such as the committee left, to form a complete sentence.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-09-check-4",
+          "skillId": "writing-grammar-mechanics",
+          "prompt": "Which mark can join two closely related independent clauses?",
+          "choices": [
+            "Apostrophe",
+            "Hyphen alone",
+            "Quotation mark",
+            "Semicolon"
+          ],
+          "answerIndex": 3,
+          "rationale": "A semicolon may connect two complete, closely related clauses when no coordinating conjunction is used.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-09-check-5",
+          "skillId": "writing-grammar-mechanics",
+          "prompt": "Why can a misplaced modifier be confusing?",
+          "choices": [
+            "It appears to describe the wrong word or actor.",
+            "It always changes a noun to a verb.",
+            "It removes every punctuation mark.",
+            "It makes the sentence a direct quotation."
+          ],
+          "answerIndex": 0,
+          "rationale": "Modifier placement creates a grammatical attachment. When that attachment is illogical, the sentence can assign an action or quality to the wrong subject.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-10",
+      "title": "Sentence Revision and Clarity",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-revision-clarity",
+      "summary": "Revise sentences for clarity, concision, logical relationships, consistent tense, effective transitions, and appropriate voice.",
+      "objectives": [
+        "Combine and vary sentences without creating errors.",
+        "Remove ambiguity and redundancy.",
+        "Use transitions and tense consistently."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-10-section-1",
+          "heading": "Revision versus correction",
+          "preview": "Sentence revision asks whether wording communicates the intended relationship clearly and efficiently. Correction fixes an error; revision may improve a sentence that is already grammatical. Begin with meaning: identify the essential ideas and their relationship, such as cause, c",
+          "content": "Sentence revision asks whether wording communicates the intended relationship clearly and efficiently. Correction fixes an error; revision may improve a sentence that is already grammatical. Begin with meaning: identify the essential ideas and their relationship, such as cause, contrast, time, or condition. Then choose a structure that expresses that relationship without creating a fragment, run-on, or misplaced modifier.",
+          "keyTerms": [
+            "revision",
+            "relationship",
+            "sentence combining"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-10-section-2",
+          "heading": "Clarity and concision",
+          "preview": "Clear writing identifies actors and actions, uses specific words, and provides pronouns with unmistakable antecedents. Concision removes repetition and empty phrases while preserving necessary meaning. Shortest is not always best: a slightly longer sentence may be clearer when it",
+          "content": "Clear writing identifies actors and actions, uses specific words, and provides pronouns with unmistakable antecedents. Concision removes repetition and empty phrases while preserving necessary meaning. Shortest is not always best: a slightly longer sentence may be clearer when it names a source or defines a term. Prefer direct constructions unless passive voice appropriately emphasizes the receiver or unknown actor.",
+          "keyTerms": [
+            "clarity",
+            "concision",
+            "active voice"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-10-section-3",
+          "heading": "Transitions and consistency",
+          "preview": "Transitions state relationships: however signals contrast, therefore signals result, for example introduces illustration, and meanwhile signals simultaneous time. Choose the relationship before choosing the word. Maintain verb tense unless the timeline changes, and keep list item",
+          "content": "Transitions state relationships: however signals contrast, therefore signals result, for example introduces illustration, and meanwhile signals simultaneous time. Choose the relationship before choosing the word. Maintain verb tense unless the timeline changes, and keep list items parallel. Consistent perspective and terminology reduce the effort readers spend interpreting shifts.",
+          "keyTerms": [
+            "transition",
+            "verb tense",
+            "consistency"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-10-section-4",
+          "heading": "A practical revision sequence",
+          "preview": "Read the sentence in context, state its intended meaning, identify the unclear or inefficient part, revise, and reread. Compare alternatives by asking what each version implies, not by selecting the most formal wording. When supporting a student, model one example and then prompt",
+          "content": "Read the sentence in context, state its intended meaning, identify the unclear or inefficient part, revise, and reread. Compare alternatives by asking what each version implies, not by selecting the most formal wording. When supporting a student, model one example and then prompt the learner to explain the effect of the revision on meaning and audience.",
+          "keyTerms": [
+            "reread",
+            "audience",
+            "meaning"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-10-check-1",
+          "skillId": "writing-revision-clarity",
+          "prompt": "What should guide sentence combining?",
+          "choices": [
+            "The goal of making one sentence as long as possible",
+            "The logical relationship between the ideas",
+            "A rule that every sentence must begin with although",
+            "The number of letters in each clause"
+          ],
+          "answerIndex": 1,
+          "rationale": "Combining should clarify relationships such as cause, contrast, or sequence while preserving grammatical completeness.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+          ]
+        },
+        {
+          "id": "parapro-ch-10-check-2",
+          "skillId": "writing-revision-clarity",
+          "prompt": "Which revision is most concise? At this point in time, we are currently ready.",
+          "choices": [
+            "At this current point in time, we are ready currently.",
+            "We are, at a point, in readiness currently now.",
+            "We are ready now.",
+            "Currently now we are at this time ready."
+          ],
+          "answerIndex": 2,
+          "rationale": "Now expresses the timing once. The other versions preserve or add redundant expressions.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+          ]
+        },
+        {
+          "id": "parapro-ch-10-check-3",
+          "skillId": "writing-revision-clarity",
+          "prompt": "How can a writer remove an ambiguous pronoun?",
+          "choices": [
+            "Add another unclear pronoun.",
+            "Delete every noun in the sentence.",
+            "Change all verbs to future tense.",
+            "Repeat or replace it with the intended noun."
+          ],
+          "answerIndex": 3,
+          "rationale": "Naming the intended person or object makes the reference explicit; adding pronouns or changing tense does not identify the antecedent.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+          ]
+        },
+        {
+          "id": "parapro-ch-10-check-4",
+          "skillId": "writing-revision-clarity",
+          "prompt": "Which transition signals contrast?",
+          "choices": [
+            "However",
+            "Therefore",
+            "For example",
+            "Similarly"
+          ],
+          "answerIndex": 0,
+          "rationale": "However introduces an opposing or qualifying idea. Therefore signals result, for example introduces illustration, and similarly signals likeness.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+          ]
+        },
+        {
+          "id": "parapro-ch-10-check-5",
+          "skillId": "writing-revision-clarity",
+          "prompt": "What does active voice usually place in subject position?",
+          "choices": [
+            "The punctuation mark",
+            "The actor performing the action",
+            "An unrelated observer",
+            "The final word alphabetically"
+          ],
+          "answerIndex": 1,
+          "rationale": "In active voice the subject performs the verb action, often making responsibility and sequence direct.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/handbook",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-11",
+      "title": "Organization, Argument, and Evidence",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-organization-evidence",
+      "summary": "Develop coherent paragraphs and arguments with focused claims, relevant evidence, explanation, source attribution, and logical sequencing.",
+      "objectives": [
+        "Organize paragraphs around controlling ideas.",
+        "Connect claims, evidence, and reasoning.",
+        "Use and attribute source material responsibly."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-11-section-1",
+          "heading": "Paragraph coherence",
+          "preview": "A paragraph develops one controlling idea. A topic sentence can state that idea, supporting sentences provide evidence or explanation, and a concluding or transitional sentence can reinforce the point and connect forward. Coherence depends on logical relationships, not merely rep",
+          "content": "A paragraph develops one controlling idea. A topic sentence can state that idea, supporting sentences provide evidence or explanation, and a concluding or transitional sentence can reinforce the point and connect forward. Coherence depends on logical relationships, not merely repeating a keyword. Group related evidence before deciding the order: chronological, spatial, general-to-specific, cause-effect, or another structure should match the purpose.",
+          "keyTerms": [
+            "topic sentence",
+            "coherence",
+            "organization"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-11-section-2",
+          "heading": "Claim, evidence, reasoning",
+          "preview": "A claim states what the writer wants readers to accept. Evidence supplies relevant observations, examples, data, or source information. Reasoning explains why the evidence makes the claim more credible. A pile of facts without explanation leaves the connection implicit. Strong ev",
+          "content": "A claim states what the writer wants readers to accept. Evidence supplies relevant observations, examples, data, or source information. Reasoning explains why the evidence makes the claim more credible. A pile of facts without explanation leaves the connection implicit. Strong evidence is relevant, sufficiently specific, and credible for the purpose; personal preference alone rarely supports a schoolwide proposal.",
+          "keyTerms": [
+            "claim",
+            "evidence",
+            "reasoning"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-11-section-3",
+          "heading": "Sources and attribution",
+          "preview": "Identify the source and represent its finding accurately. Quote exact language with quotation marks and citation, or paraphrase genuinely in new wording and structure while still citing the source. Changing a few words is not an adequate paraphrase. Avoid universal conclusions wh",
+          "content": "Identify the source and represent its finding accurately. Quote exact language with quotation marks and citation, or paraphrase genuinely in new wording and structure while still citing the source. Changing a few words is not an adequate paraphrase. Avoid universal conclusions when a source reports a limited sample or association. Attribution allows readers to trace and evaluate evidence.",
+          "keyTerms": [
+            "quotation",
+            "paraphrase",
+            "attribution",
+            "citation"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-11-section-4",
+          "heading": "Revision at the document level",
+          "preview": "Before editing individual sentences, examine whether the claim is focused, evidence is grouped, reasoning is explicit, and paragraph order guides the reader. Move, combine, or remove material as needed. Use headings and transitions when they improve navigation. After the structur",
+          "content": "Before editing individual sentences, examine whether the claim is focused, evidence is grouped, reasoning is explicit, and paragraph order guides the reader. Move, combine, or remove material as needed. Use headings and transitions when they improve navigation. After the structure is stable, edit grammar and mechanics. This sequence avoids polishing sentences that later disappear.",
+          "keyTerms": [
+            "document revision",
+            "sequence",
+            "transition"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-11-check-1",
+          "skillId": "writing-organization-evidence",
+          "prompt": "What is the main function of a topic sentence?",
+          "choices": [
+            "List every source in the paper",
+            "Correct all punctuation errors",
+            "State or frame the paragraph controlling idea",
+            "Provide an unrelated example"
+          ],
+          "answerIndex": 2,
+          "rationale": "A topic sentence orients readers to the idea the paragraph will develop; sources and details then support that focus.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-11-check-2",
+          "skillId": "writing-organization-evidence",
+          "prompt": "What is missing when a paragraph gives facts but never connects them to its claim?",
+          "choices": [
+            "A title font",
+            "A page number",
+            "An additional unrelated fact",
+            "Reasoning"
+          ],
+          "answerIndex": 3,
+          "rationale": "Reasoning explains why the evidence supports the claim. More facts do not automatically make that relationship explicit.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-11-check-3",
+          "skillId": "writing-organization-evidence",
+          "prompt": "Which evidence best supports a proposed morning tutoring program?",
+          "choices": [
+            "Attendance and completion data from a comparable program",
+            "The color of hallway paint",
+            "A list of unrelated clubs",
+            "One writers favorite time of day"
+          ],
+          "answerIndex": 0,
+          "rationale": "Comparable program data directly address use and academic outcomes, whereas the other details are unrelated or merely personal.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-11-check-4",
+          "skillId": "writing-organization-evidence",
+          "prompt": "What is required when a source is paraphrased?",
+          "choices": [
+            "Changing two words with no citation",
+            "Accurate restatement and source attribution",
+            "Keeping exact wording without quotation marks",
+            "Removing the source name"
+          ],
+          "answerIndex": 1,
+          "rationale": "A paraphrase uses genuinely new wording and structure but still credits the source because the underlying idea or information is borrowed.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-11-check-5",
+          "skillId": "writing-organization-evidence",
+          "prompt": "Why revise organization before final proofreading?",
+          "choices": [
+            "Proofreading is never useful.",
+            "Organization affects only handwriting.",
+            "Structural changes may move or remove sentences.",
+            "Every paragraph must be alphabetized."
+          ],
+          "answerIndex": 2,
+          "rationale": "Document-level revision can substantially alter text, so polishing sentence mechanics first may waste effort.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parapro-ch-12",
+      "title": "Supporting Writing in the Classroom",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-classroom-support",
+      "summary": "Use audience-aware models, prompts, feedback, organizers, and accessibility supports to help students plan, draft, revise, edit, and retain ownership of their writing.",
+      "objectives": [
+        "Match support to the current writing stage and goal.",
+        "Give specific transferable feedback.",
+        "Preserve student authorship and accessible participation."
+      ],
+      "sectionCount": 4,
+      "diagramCount": 0,
+      "knowledgeCheckCount": 5,
+      "referenceCount": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored for AlloFlow and reviewed against the cited ParaPro blueprint and instructional references; independent educator validation remains pending.",
+      "reviewReferences": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "sections": [
+        {
+          "id": "parapro-ch-12-section-1",
+          "heading": "Match support to the writing stage",
+          "preview": "Planning support may include audience questions, idea lists, or organizers. Drafting support may focus on turning notes into sentences and paragraphs. Revision addresses ideas, evidence, organization, and clarity; editing addresses grammar, usage, mechanics, and format. Identify ",
+          "content": "Planning support may include audience questions, idea lists, or organizers. Drafting support may focus on turning notes into sentences and paragraphs. Revision addresses ideas, evidence, organization, and clarity; editing addresses grammar, usage, mechanics, and format. Identify the current goal before responding so a minor punctuation correction does not distract from a missing claim or incoherent structure.",
+          "keyTerms": [
+            "planning",
+            "drafting",
+            "revision",
+            "editing"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-12-section-2",
+          "heading": "Model and prompt",
+          "preview": "Models reveal a process when the educator explains decisions rather than simply displaying a finished product. Think aloud while choosing a topic sentence, combining sentences, or connecting evidence to a claim. Then use prompts that return the work to the student: What should re",
+          "content": "Models reveal a process when the educator explains decisions rather than simply displaying a finished product. Think aloud while choosing a topic sentence, combining sentences, or connecting evidence to a claim. Then use prompts that return the work to the student: What should readers understand here? Which detail supports that point? How could these ideas be grouped? Provide choices or sentence frames when needed, then fade them.",
+          "keyTerms": [
+            "model",
+            "think aloud",
+            "prompt",
+            "sentence frame"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-12-section-3",
+          "heading": "Specific feedback and authorship",
+          "preview": "Effective feedback names the goal, points to exact text, explains the effect, and suggests a strategy. It does not rewrite the paper or substitute the adults preferences for the students meaning. Peer feedback should also cite specific text and use assignment criteria. When sourc",
+          "content": "Effective feedback names the goal, points to exact text, explains the effect, and suggests a strategy. It does not rewrite the paper or substitute the adults preferences for the students meaning. Peer feedback should also cite specific text and use assignment criteria. When source use is inappropriate, teach accurate quotation, paraphrase, and attribution rather than merely deleting the passage.",
+          "keyTerms": [
+            "feedback",
+            "authorship",
+            "peer review"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        },
+        {
+          "id": "parapro-ch-12-section-4",
+          "heading": "Audience and accessibility",
+          "preview": "Writers adjust vocabulary, detail, tone, organization, headings, and examples for readers and purpose. Accessible classroom materials use clear language, visible structure, defined acronyms, and required actions at the point of need. These supports can improve access without lowe",
+          "content": "Writers adjust vocabulary, detail, tone, organization, headings, and examples for readers and purpose. Accessible classroom materials use clear language, visible structure, defined acronyms, and required actions at the point of need. These supports can improve access without lowering the intellectual goal. Follow accommodations and educator plans, and avoid assuming that language difference or disability determines the students ideas.",
+          "keyTerms": [
+            "audience",
+            "purpose",
+            "plain language",
+            "accessibility"
+          ],
+          "hasDiagram": false,
+          "diagramDescription": "",
+          "hasKnowledgeCheck": true,
+          "hasExpandableCase": false,
+          "reviewStatus": "source-reviewed-editorial-pass"
+        }
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "parapro-ch-12-check-1",
+          "skillId": "writing-classroom-support",
+          "prompt": "A draft has weak organization and several comma errors. What should generally be addressed first?",
+          "choices": [
+            "One comma only",
+            "Handwriting color",
+            "Alphabetical paragraph order",
+            "Organization and reasoning"
+          ],
+          "answerIndex": 3,
+          "rationale": "Higher-level revision should precede final editing because changes to organization may move, combine, or remove sentences.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-12-check-2",
+          "skillId": "writing-classroom-support",
+          "prompt": "What makes feedback transferable?",
+          "choices": [
+            "It identifies a goal, exact text, effect, and reusable strategy.",
+            "It rewrites every sentence.",
+            "It gives only a score.",
+            "It focuses on personal preference."
+          ],
+          "answerIndex": 0,
+          "rationale": "Specific strategy-based feedback helps the student make the current change and apply the same reasoning in future writing.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-12-check-3",
+          "skillId": "writing-classroom-support",
+          "prompt": "Which prompt supports elaboration?",
+          "choices": [
+            "Can you repeat messy five times?",
+            "What objects, sounds, or actions would help readers picture the scene?",
+            "Should we delete the setting?",
+            "Can you add an unrelated building?"
+          ],
+          "answerIndex": 1,
+          "rationale": "The prompt requests concrete relevant detail that allows the writer to show the condition rather than merely label it.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-12-check-4",
+          "skillId": "writing-classroom-support",
+          "prompt": "How should support preserve student authorship?",
+          "choices": [
+            "Write the final response for the student.",
+            "Require the adults preferred opinion.",
+            "Use models and prompts while leaving decisions and wording to the student.",
+            "Replace the assignment with unrelated work."
+          ],
+          "answerIndex": 2,
+          "rationale": "Scaffolding supports the process but keeps the learner responsible for meaning, evidence, and final expression.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        },
+        {
+          "id": "parapro-ch-12-check-5",
+          "skillId": "writing-classroom-support",
+          "prompt": "Which change most improves an acronym-heavy family notice?",
+          "choices": [
+            "Add more abbreviations.",
+            "Hide actions in a footnote.",
+            "Combine everything into one paragraph.",
+            "Define terms, use headings, and state actions plainly."
+          ],
+          "answerIndex": 3,
+          "rationale": "Defined terms, clear hierarchy, and direct action language improve navigation and comprehension for a varied audience.",
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "references": [
+            "https://www.ets.org/pdfs/parapro/1755.pdf",
+            "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+            "https://openstax.org/books/writing-guide/pages/handbook"
+          ]
+        }
+      ]
+    }
+  ],
+  "diagrams": [],
+  "flashcards": [
+    {
+      "id": "parapro-card-reading-main-evidence-01",
+      "skillId": "reading-main-evidence",
+      "chapterId": "parapro-ch-01",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is a topic?",
+      "back": "The general subject a passage discusses.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-main-evidence-02",
+      "skillId": "reading-main-evidence",
+      "chapterId": "parapro-ch-01",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is a main idea?",
+      "back": "The central point the author communicates about the topic.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-main-evidence-03",
+      "skillId": "reading-main-evidence",
+      "chapterId": "parapro-ch-01",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What makes evidence relevant?",
+      "back": "It directly supports or challenges the claim being considered.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-main-evidence-04",
+      "skillId": "reading-main-evidence",
+      "chapterId": "parapro-ch-01",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What belongs in a summary?",
+      "back": "The central idea and essential supporting points, stated concisely.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-main-evidence-05",
+      "skillId": "reading-main-evidence",
+      "chapterId": "parapro-ch-01",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is a minor detail?",
+      "back": "A specific example or fact that can be removed without losing the passage central meaning.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-main-evidence-06",
+      "skillId": "reading-main-evidence",
+      "chapterId": "parapro-ch-01",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "How can you test a possible main idea?",
+      "back": "Check whether it accounts for the important details across the whole passage.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-inference-vocabulary-01",
+      "skillId": "reading-inference-vocabulary",
+      "chapterId": "parapro-ch-02",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is an inference?",
+      "back": "A conclusion supported by clues and reasoning but not stated directly.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-inference-vocabulary-02",
+      "skillId": "reading-inference-vocabulary",
+      "chapterId": "parapro-ch-02",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is an overinference?",
+      "back": "A conclusion that requires assumptions beyond the available evidence.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-inference-vocabulary-03",
+      "skillId": "reading-inference-vocabulary",
+      "chapterId": "parapro-ch-02",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What are common context-clue types?",
+      "back": "Definition, restatement, example, contrast, and cause or effect.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-inference-vocabulary-04",
+      "skillId": "reading-inference-vocabulary",
+      "chapterId": "parapro-ch-02",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "Why substitute a proposed word meaning?",
+      "back": "To check whether it makes sense in the sentence and passage.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-inference-vocabulary-05",
+      "skillId": "reading-inference-vocabulary",
+      "chapterId": "parapro-ch-02",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What does a prefix do?",
+      "back": "It adds meaning to the beginning of a base or root.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-inference-vocabulary-06",
+      "skillId": "reading-inference-vocabulary",
+      "chapterId": "parapro-ch-02",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is the inference bridge?",
+      "back": "Text clue plus relevant knowledge and reasoning leads to a supported conclusion.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-structure-sources-01",
+      "skillId": "reading-structure-sources",
+      "chapterId": "parapro-ch-03",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What does sequence structure show?",
+      "back": "The order of events, stages, or procedural steps.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-structure-sources-02",
+      "skillId": "reading-structure-sources",
+      "chapterId": "parapro-ch-03",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What does cause-effect structure show?",
+      "back": "Why an event occurs and the results that follow.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-structure-sources-03",
+      "skillId": "reading-structure-sources",
+      "chapterId": "parapro-ch-03",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is a primary source?",
+      "back": "Firsthand or contemporaneous evidence from a participant or the period studied.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-structure-sources-04",
+      "skillId": "reading-structure-sources",
+      "chapterId": "parapro-ch-03",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is a secondary source?",
+      "back": "A later analysis, interpretation, or synthesis of evidence.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-structure-sources-05",
+      "skillId": "reading-structure-sources",
+      "chapterId": "parapro-ch-03",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What should you check on a graph?",
+      "back": "Title, labels, units, categories, scale, and source.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-structure-sources-06",
+      "skillId": "reading-structure-sources",
+      "chapterId": "parapro-ch-03",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What can viewpoint affect?",
+      "back": "Which facts are selected, how they are framed, and which consequences are emphasized.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-classroom-support-01",
+      "skillId": "reading-classroom-support",
+      "chapterId": "parapro-ch-04",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "How do decoding and fluency differ?",
+      "back": "Decoding identifies written words; fluency adds accurate, appropriately paced, expressive connected reading.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-classroom-support-02",
+      "skillId": "reading-classroom-support",
+      "chapterId": "parapro-ch-04",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is a comprehension-repair routine?",
+      "back": "Notice confusion, reread, restate, and verify.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-classroom-support-03",
+      "skillId": "reading-classroom-support",
+      "chapterId": "parapro-ch-04",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What is gradual release?",
+      "back": "A shift from teacher modeling to guided practice and independent learner use.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-classroom-support-04",
+      "skillId": "reading-classroom-support",
+      "chapterId": "parapro-ch-04",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What makes a prompt a scaffold?",
+      "back": "It directs attention or strategy without completing the thinking for the learner.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-classroom-support-05",
+      "skillId": "reading-classroom-support",
+      "chapterId": "parapro-ch-04",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "Why fade support?",
+      "back": "To promote independence once evidence shows the learner can perform the step.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-reading-classroom-support-06",
+      "skillId": "reading-classroom-support",
+      "chapterId": "parapro-ch-04",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What should paraeducator feedback emphasize?",
+      "back": "Observable work, the learning goal, and a reusable strategy.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-number-operations-01",
+      "skillId": "mathematics-number-operations",
+      "chapterId": "parapro-ch-05",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "Why align decimal points in addition?",
+      "back": "To combine digits representing the same place values.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-number-operations-02",
+      "skillId": "mathematics-number-operations",
+      "chapterId": "parapro-ch-05",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is an equivalent fraction?",
+      "back": "A fraction with the same value written using different numerator and denominator.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-number-operations-03",
+      "skillId": "mathematics-number-operations",
+      "chapterId": "parapro-ch-05",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What does percent mean?",
+      "back": "A rate per one hundred.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-number-operations-04",
+      "skillId": "mathematics-number-operations",
+      "chapterId": "parapro-ch-05",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is percent change?",
+      "back": "Change divided by the original amount, expressed as a percent.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-number-operations-05",
+      "skillId": "mathematics-number-operations",
+      "chapterId": "parapro-ch-05",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is absolute value?",
+      "back": "A numbers distance from zero, without regard to direction.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-number-operations-06",
+      "skillId": "mathematics-number-operations",
+      "chapterId": "parapro-ch-05",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "Why estimate?",
+      "back": "To check whether an exact result has a reasonable magnitude.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-ratio-algebra-01",
+      "skillId": "mathematics-ratio-algebra",
+      "chapterId": "parapro-ch-06",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is a ratio?",
+      "back": "A multiplicative comparison of two quantities.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-ratio-algebra-02",
+      "skillId": "mathematics-ratio-algebra",
+      "chapterId": "parapro-ch-06",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is a unit rate?",
+      "back": "A ratio expressed per one unit of the second quantity.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-ratio-algebra-03",
+      "skillId": "mathematics-ratio-algebra",
+      "chapterId": "parapro-ch-06",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What does the distributive property require?",
+      "back": "Multiply the outside factor by every term inside the grouping symbols.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-ratio-algebra-04",
+      "skillId": "mathematics-ratio-algebra",
+      "chapterId": "parapro-ch-06",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What are like terms?",
+      "back": "Terms with matching variable parts and exponents.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-ratio-algebra-05",
+      "skillId": "mathematics-ratio-algebra",
+      "chapterId": "parapro-ch-06",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is an equation solution?",
+      "back": "A value that makes the equation true.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-ratio-algebra-06",
+      "skillId": "mathematics-ratio-algebra",
+      "chapterId": "parapro-ch-06",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "How do you verify a solution?",
+      "back": "Substitute it into the original equation and check equality.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-geometry-measurement-01",
+      "skillId": "mathematics-geometry-measurement",
+      "chapterId": "parapro-ch-07",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What does perimeter measure?",
+      "back": "The linear distance around a two-dimensional figure.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-geometry-measurement-02",
+      "skillId": "mathematics-geometry-measurement",
+      "chapterId": "parapro-ch-07",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What does area measure?",
+      "back": "The amount of surface covered, in square units.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-geometry-measurement-03",
+      "skillId": "mathematics-geometry-measurement",
+      "chapterId": "parapro-ch-07",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What does volume measure?",
+      "back": "Three-dimensional space, in cubic units.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-geometry-measurement-04",
+      "skillId": "mathematics-geometry-measurement",
+      "chapterId": "parapro-ch-07",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is triangle area?",
+      "back": "One-half times base times perpendicular height.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-geometry-measurement-05",
+      "skillId": "mathematics-geometry-measurement",
+      "chapterId": "parapro-ch-07",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "How many degrees form a straight angle?",
+      "back": "180 degrees.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-geometry-measurement-06",
+      "skillId": "mathematics-geometry-measurement",
+      "chapterId": "parapro-ch-07",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What does an ordered pair show?",
+      "back": "An x-coordinate followed by a y-coordinate.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-data-support-01",
+      "skillId": "mathematics-data-support",
+      "chapterId": "parapro-ch-08",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "How is mean calculated?",
+      "back": "Add all values and divide by the number of values.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-data-support-02",
+      "skillId": "mathematics-data-support",
+      "chapterId": "parapro-ch-08",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is the median?",
+      "back": "The middle value, or mean of two middle values, in ordered data.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-data-support-03",
+      "skillId": "mathematics-data-support",
+      "chapterId": "parapro-ch-08",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is an outlier?",
+      "back": "A value unusually far from the rest of the distribution.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-data-support-04",
+      "skillId": "mathematics-data-support",
+      "chapterId": "parapro-ch-08",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is theoretical probability?",
+      "back": "The expected favorable outcomes divided by all equally likely outcomes.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-data-support-05",
+      "skillId": "mathematics-data-support",
+      "chapterId": "parapro-ch-08",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is experimental probability?",
+      "back": "The observed favorable outcomes divided by the number of trials.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-mathematics-data-support-06",
+      "skillId": "mathematics-data-support",
+      "chapterId": "parapro-ch-08",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What is the first step in error analysis?",
+      "back": "Elicit the learners strategy and locate the first incorrect step.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-grammar-mechanics-01",
+      "skillId": "writing-grammar-mechanics",
+      "chapterId": "parapro-ch-09",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is an independent clause?",
+      "back": "A group of words with a subject and predicate that expresses a complete thought.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-grammar-mechanics-02",
+      "skillId": "writing-grammar-mechanics",
+      "chapterId": "parapro-ch-09",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is a fragment?",
+      "back": "An incomplete sentence lacking an independent clause or complete thought.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-grammar-mechanics-03",
+      "skillId": "writing-grammar-mechanics",
+      "chapterId": "parapro-ch-09",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What controls subject-verb agreement?",
+      "back": "The grammatical subject or headword, not a nearby modifier noun.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-grammar-mechanics-04",
+      "skillId": "writing-grammar-mechanics",
+      "chapterId": "parapro-ch-09",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is an antecedent?",
+      "back": "The noun or noun phrase to which a pronoun refers.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-grammar-mechanics-05",
+      "skillId": "writing-grammar-mechanics",
+      "chapterId": "parapro-ch-09",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What can a semicolon join?",
+      "back": "Two closely related independent clauses.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-grammar-mechanics-06",
+      "skillId": "writing-grammar-mechanics",
+      "chapterId": "parapro-ch-09",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What are two main apostrophe uses?",
+      "back": "Showing possession and marking omitted letters in contractions.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-revision-clarity-01",
+      "skillId": "writing-revision-clarity",
+      "chapterId": "parapro-ch-10",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "How does revision differ from editing?",
+      "back": "Revision improves meaning and structure; editing corrects sentence-level conventions.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-revision-clarity-02",
+      "skillId": "writing-revision-clarity",
+      "chapterId": "parapro-ch-10",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is concision?",
+      "back": "Expressing the necessary meaning without avoidable repetition or clutter.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-revision-clarity-03",
+      "skillId": "writing-revision-clarity",
+      "chapterId": "parapro-ch-10",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What does however signal?",
+      "back": "Contrast or qualification.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-revision-clarity-04",
+      "skillId": "writing-revision-clarity",
+      "chapterId": "parapro-ch-10",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What does therefore signal?",
+      "back": "A result or conclusion.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-revision-clarity-05",
+      "skillId": "writing-revision-clarity",
+      "chapterId": "parapro-ch-10",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is active voice?",
+      "back": "A structure in which the subject performs the action.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-revision-clarity-06",
+      "skillId": "writing-revision-clarity",
+      "chapterId": "parapro-ch-10",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "How do you test a revision?",
+      "back": "Reread it in context and check meaning, clarity, grammar, and audience effect.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-organization-evidence-01",
+      "skillId": "writing-organization-evidence",
+      "chapterId": "parapro-ch-11",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is a controlling idea?",
+      "back": "The focused point a paragraph or section develops.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-organization-evidence-02",
+      "skillId": "writing-organization-evidence",
+      "chapterId": "parapro-ch-11",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is a claim?",
+      "back": "An assertion the writer asks readers to accept.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-organization-evidence-03",
+      "skillId": "writing-organization-evidence",
+      "chapterId": "parapro-ch-11",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is evidence?",
+      "back": "Relevant information used to support or challenge a claim.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-organization-evidence-04",
+      "skillId": "writing-organization-evidence",
+      "chapterId": "parapro-ch-11",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is reasoning?",
+      "back": "The explanation connecting evidence to the claim.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-organization-evidence-05",
+      "skillId": "writing-organization-evidence",
+      "chapterId": "parapro-ch-11",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is a paraphrase?",
+      "back": "A genuine restatement in new wording and structure that still cites the source.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-organization-evidence-06",
+      "skillId": "writing-organization-evidence",
+      "chapterId": "parapro-ch-11",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "Why attribute sources?",
+      "back": "To credit ideas and let readers trace and evaluate the evidence.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-classroom-support-01",
+      "skillId": "writing-classroom-support",
+      "chapterId": "parapro-ch-12",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What support fits planning?",
+      "back": "Audience and purpose questions, idea generation, and organizers.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-classroom-support-02",
+      "skillId": "writing-classroom-support",
+      "chapterId": "parapro-ch-12",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What support fits revision?",
+      "back": "Prompts about ideas, evidence, organization, and clarity.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-classroom-support-03",
+      "skillId": "writing-classroom-support",
+      "chapterId": "parapro-ch-12",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What support fits editing?",
+      "back": "Checks for grammar, usage, mechanics, spelling, and format.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-classroom-support-04",
+      "skillId": "writing-classroom-support",
+      "chapterId": "parapro-ch-12",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What makes feedback specific?",
+      "back": "It points to exact text and explains its effect relative to a goal.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-classroom-support-05",
+      "skillId": "writing-classroom-support",
+      "chapterId": "parapro-ch-12",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "How can a model support writing?",
+      "back": "By making the writers decisions and reasoning visible.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-writing-classroom-support-06",
+      "skillId": "writing-classroom-support",
+      "chapterId": "parapro-ch-12",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "What is plain language?",
+      "back": "Clear, organized wording that helps the intended audience find and use information.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-general-01",
+      "skillId": "reading-main-evidence",
+      "chapterId": "parapro-ch-01",
+      "domainId": "reading",
+      "domain": "Reading",
+      "front": "What makes a ParaPro practice result diagnostic rather than official?",
+      "back": "It describes performance on independent practice items; it is not an ETS scaled score, pass prediction, or credential decision.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-general-02",
+      "skillId": "mathematics-number-operations",
+      "chapterId": "parapro-ch-05",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "front": "What should you do before accepting a numerical answer?",
+      "back": "Estimate or use an inverse operation to check whether the magnitude and units are reasonable.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    },
+    {
+      "id": "parapro-card-general-03",
+      "skillId": "writing-revision-clarity",
+      "chapterId": "parapro-ch-10",
+      "domainId": "writing",
+      "domain": "Writing",
+      "front": "How are revising and editing different?",
+      "back": "Revising improves ideas, organization, evidence, and clarity; editing corrects sentence-level grammar, usage, mechanics, and format.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+      ],
+      "reviewNote": "Source-reviewed independent study card; not official ETS content."
+    }
+  ],
+  "memoryAids": [
+    {
+      "id": "parapro-memory-01",
+      "title": "Main idea: Topic + Point",
+      "type": "retrieval cue",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-main-evidence",
+      "content": "Name the topic, then ask what the author says about it across the important details. A main idea is broader than one example but narrower than an unrelated general statement.",
+      "tags": [
+        "main idea",
+        "details",
+        "summary"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-02",
+      "title": "Inference bridge",
+      "type": "three-step cue",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-inference-vocabulary",
+      "content": "TEXT CLUE + RELEVANT KNOWLEDGE = SUPPORTED INFERENCE. State the clue before stating the conclusion; do not treat a guess as evidence.",
+      "tags": [
+        "inference",
+        "evidence",
+        "reasoning"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-03",
+      "title": "Context clue scan",
+      "type": "strategy",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-inference-vocabulary",
+      "content": "Read before and after the word. Look for definition, example, contrast, cause, or restatement clues. Substitute the possible meaning and reread.",
+      "tags": [
+        "vocabulary",
+        "context"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-04",
+      "title": "Source comparison grid",
+      "type": "organizer",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-structure-sources",
+      "content": "Record SHARED FACTS, SOURCE-ONLY DETAILS, VIEWPOINT, and EVIDENCE QUALITY. A difference in emphasis is not automatically a factual contradiction.",
+      "tags": [
+        "sources",
+        "comparison",
+        "viewpoint"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-05",
+      "title": "Comprehension repair",
+      "type": "self-monitoring cue",
+      "domainId": "reading",
+      "domain": "Reading",
+      "skillId": "reading-classroom-support",
+      "content": "STOP: notice confusion. REREAD: return to the smallest confusing section. RESTATE: explain it in your own words. VERIFY: check the next sentence or text feature.",
+      "tags": [
+        "monitoring",
+        "reread",
+        "support"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-06",
+      "title": "Fraction operations checkpoint",
+      "type": "decision cue",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-number-operations",
+      "content": "Add or subtract: use common-sized parts, so find a common denominator. Multiply: multiply across and simplify. Divide: multiply by the reciprocal, then verify reasonableness.",
+      "tags": [
+        "fractions",
+        "operations"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-07",
+      "title": "Percent triangle",
+      "type": "relationship cue",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-number-operations",
+      "content": "PART = PERCENT x WHOLE. Convert the percent to a decimal before multiplying. For percent change, divide the change by the ORIGINAL amount.",
+      "tags": [
+        "percent",
+        "part",
+        "whole"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-08",
+      "title": "Proportion check",
+      "type": "strategy",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-ratio-algebra",
+      "content": "Keep corresponding units aligned. Find a unit rate or scale both quantities by the same factor. Check that the new ratio is equivalent.",
+      "tags": [
+        "ratio",
+        "proportion",
+        "unit rate"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-09",
+      "title": "Equation balance",
+      "type": "visual cue",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-ratio-algebra",
+      "content": "Treat an equation like a balanced scale. Apply the same valid operation to both sides, simplify, and substitute the result into the original equation.",
+      "tags": [
+        "equation",
+        "inverse operations"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-10",
+      "title": "Perimeter, area, volume",
+      "type": "unit cue",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-geometry-measurement",
+      "content": "PERIMETER travels around: linear units. AREA covers a surface: square units. VOLUME fills space: cubic units. Match the formula and units to the question.",
+      "tags": [
+        "geometry",
+        "measurement",
+        "units"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-11",
+      "title": "Data center decision",
+      "type": "comparison cue",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-data-support",
+      "content": "MEAN uses every value and is pulled by outliers. MEDIAN is the middle and resists outliers. MODE is most frequent. Choose the measure that answers the actual question.",
+      "tags": [
+        "mean",
+        "median",
+        "mode",
+        "outlier"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-12",
+      "title": "Math error-analysis loop",
+      "type": "instructional cue",
+      "domainId": "mathematics",
+      "domain": "Mathematics",
+      "skillId": "mathematics-data-support",
+      "content": "ELICIT the student strategy. LOCATE the first incorrect step. REPRESENT the concept. CONNECT the representation to symbols. RECHECK with a new example.",
+      "tags": [
+        "instruction",
+        "error analysis"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-13",
+      "title": "Sentence completeness test",
+      "type": "editing cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-grammar-mechanics",
+      "content": "Find the subject and complete predicate. Read dependent-clause starters such as because, although, when, and while carefully; they need a main clause.",
+      "tags": [
+        "fragment",
+        "sentence"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-14",
+      "title": "Agreement headword",
+      "type": "grammar cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-grammar-mechanics",
+      "content": "Ignore interrupting prepositional phrases and identify the true subject. Match the verb to that headword, not to a nearby noun.",
+      "tags": [
+        "agreement",
+        "subject",
+        "verb"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-15",
+      "title": "Comma purpose check",
+      "type": "mechanics cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-grammar-mechanics",
+      "content": "Use commas for introductory elements, items in a series, and appropriate clause boundaries. Do not place a comma between a subject and its verb.",
+      "tags": [
+        "comma",
+        "punctuation"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-16",
+      "title": "Revision before editing",
+      "type": "process cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-revision-clarity",
+      "content": "REVISION changes meaning, evidence, organization, and clarity. EDITING corrects grammar, usage, punctuation, spelling, and formatting. Revise large structures first.",
+      "tags": [
+        "revision",
+        "editing"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-17",
+      "title": "Paragraph spine",
+      "type": "organization cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-organization-evidence",
+      "content": "TOPIC SENTENCE states the controlling idea. EVIDENCE develops it. EXPLANATION connects evidence to the point. TRANSITION shows the relationship to what comes next.",
+      "tags": [
+        "paragraph",
+        "organization",
+        "evidence"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-18",
+      "title": "Claim-evidence-reasoning",
+      "type": "argument cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-organization-evidence",
+      "content": "CLAIM: what you assert. EVIDENCE: relevant and credible support. REASONING: why that evidence makes the claim more convincing. More facts do not replace explanation.",
+      "tags": [
+        "argument",
+        "evidence",
+        "reasoning"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-19",
+      "title": "Audience lens",
+      "type": "planning cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-classroom-support",
+      "content": "Ask what readers already know, what they need to do, and what could confuse them. Adjust vocabulary, detail, organization, headings, examples, and tone.",
+      "tags": [
+        "audience",
+        "purpose",
+        "clarity"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    },
+    {
+      "id": "parapro-memory-20",
+      "title": "Feedback that transfers",
+      "type": "instructional cue",
+      "domainId": "writing",
+      "domain": "Writing",
+      "skillId": "writing-classroom-support",
+      "content": "NAME the goal. POINT to exact text. EXPLAIN the effect. OFFER one strategy. RETURN the decision to the writer. Specific feedback builds independence better than rewriting.",
+      "tags": [
+        "feedback",
+        "instruction",
+        "independence"
+      ],
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/books/writing-guide/pages/handbook"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "A retrieval cue, not a replacement for understanding or current official guidance."
+    }
+  ]
+}

@@ -20932,7 +20932,8 @@
       "navigate": "Navige",
       "pipeline": "Rezilta Pipeline",
       "tools": "Louvri yon zouti",
-      "voice": "Vwa"
+      "voice": "Vwa",
+      "recent": "Recent"
     },
     "input_aria": "Chèche kòmand",
     "list_aria": "Kòmand ki koresponn",

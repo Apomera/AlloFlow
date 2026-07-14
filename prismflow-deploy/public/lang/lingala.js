@@ -20149,7 +20149,8 @@
       "navigate": "Tambola",
       "pipeline": "Ba résultat ya Pipeline",
       "tools": "Fungola esaleli",
-      "voice": "Mongongo"
+      "voice": "Mongongo",
+      "recent": "Recent"
     },
     "input_aria": "Luka mitindo",
     "list_aria": "Mitindo oyo ekokani",

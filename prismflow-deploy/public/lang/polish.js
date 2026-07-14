@@ -20952,7 +20952,8 @@
       "navigate": "Nawigacja",
       "pipeline": "Wyniki Pipeline",
       "tools": "Otwórz narzędzie",
-      "voice": "Głos"
+      "voice": "Głos",
+      "recent": "Recent"
     },
     "input_aria": "Szukaj poleceń",
     "list_aria": "Pasujące polecenia",

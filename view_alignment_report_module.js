@@ -43,14 +43,136 @@ function statusBadgeClass(status) {
   // 'Partially Aligned', 'Pass with notes', or anything unknown
   return 'bg-orange-100 text-orange-700';
 }
+var REPORT_LANGUAGE_NAME_TAGS = {
+  english: 'en',
+  spanish: 'es',
+  french: 'fr',
+  german: 'de',
+  italian: 'it',
+  portuguese: 'pt',
+  dutch: 'nl',
+  arabic: 'ar',
+  chinese: 'zh',
+  mandarin: 'zh',
+  cantonese: 'yue',
+  japanese: 'ja',
+  korean: 'ko',
+  hindi: 'hi',
+  bengali: 'bn',
+  urdu: 'ur',
+  punjabi: 'pa',
+  gujarati: 'gu',
+  tamil: 'ta',
+  telugu: 'te',
+  marathi: 'mr',
+  nepali: 'ne',
+  russian: 'ru',
+  ukrainian: 'uk',
+  polish: 'pl',
+  turkish: 'tr',
+  vietnamese: 'vi',
+  thai: 'th',
+  indonesian: 'id',
+  malay: 'ms',
+  swahili: 'sw',
+  somali: 'so',
+  'haitian creole': 'ht',
+  tagalog: 'tl',
+  filipino: 'fil',
+  greek: 'el',
+  hebrew: 'he',
+  persian: 'fa',
+  farsi: 'fa',
+  burmese: 'my',
+  myanmar: 'my',
+  khmer: 'km',
+  lao: 'lo',
+  amharic: 'am',
+  yoruba: 'yo',
+  zulu: 'zu',
+  xhosa: 'xh',
+  afrikaans: 'af',
+  swedish: 'sv',
+  norwegian: 'no',
+  danish: 'da',
+  finnish: 'fi',
+  czech: 'cs',
+  slovak: 'sk',
+  hungarian: 'hu',
+  romanian: 'ro',
+  bulgarian: 'bg',
+  croatian: 'hr',
+  serbian: 'sr',
+  bosnian: 'bs',
+  slovenian: 'sl',
+  albanian: 'sq',
+  lithuanian: 'lt',
+  latvian: 'lv',
+  estonian: 'et',
+  irish: 'ga',
+  welsh: 'cy',
+  'scottish gaelic': 'gd',
+  'maay maay': 'ymm',
+  'chin falam': 'cfm',
+  marshallese: 'mh'
+};
+function normalizeReportLanguageTag(value) {
+  var raw = String(value || '').trim();
+  if (!raw) return 'und';
+  var name = raw.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/brazil.*portuguese|portuguese.*brazil/.test(name)) return 'pt-BR';
+  if (/european.*portuguese|portuguese.*portugal/.test(name)) return 'pt-PT';
+  if (/traditional.*chinese|chinese.*traditional/.test(name)) return 'zh-Hant';
+  if (/simplified.*chinese|chinese.*simplified/.test(name)) return 'zh-Hans';
+  if (REPORT_LANGUAGE_NAME_TAGS[name]) return REPORT_LANGUAGE_NAME_TAGS[name];
+  var names = Object.keys(REPORT_LANGUAGE_NAME_TAGS).sort(function (a, b) {
+    return b.length - a.length;
+  });
+  for (var i = 0; i < names.length; i++) {
+    var languageName = names[i];
+    if (new RegExp('(?:^|\\b)' + languageName.replace(/ /g, '\\s+') + '(?:\\b|$)', 'i').test(name)) return REPORT_LANGUAGE_NAME_TAGS[languageName];
+  }
+  if (/^(?:[a-z]{2,3})(?:[-_][a-z0-9]{2,8})*$/i.test(raw) || /^und$/i.test(raw)) {
+    var candidate = raw.replace(/_/g, '-');
+    try {
+      if (typeof Intl !== 'undefined' && Intl.getCanonicalLocales) return Intl.getCanonicalLocales(candidate)[0] || 'und';
+    } catch (e) {
+      return 'und';
+    }
+    return candidate;
+  }
+  return 'und';
+}
+function resolveAuditLanguageTag(comprehensive) {
+  if (!comprehensive) return 'und';
+  return normalizeReportLanguageTag(comprehensive.auditLanguageTag || comprehensive.auditLanguage);
+}
+function finiteReportNumber(value) {
+  return typeof value === 'number' && isFinite(value) ? value : null;
+}
+function boundedReportPercent(value) {
+  var number = finiteReportNumber(value);
+  return number === null ? null : Math.max(0, Math.min(100, Math.round(number)));
+}
+function boundedReportCount(value, fallback, max) {
+  var number = finiteReportNumber(value);
+  if (number === null) return fallback;
+  number = Math.max(0, Math.floor(number));
+  var upperBound = finiteReportNumber(max);
+  if (upperBound !== null) number = Math.min(number, Math.max(0, Math.floor(upperBound)));
+  return number;
+}
 function ComprehensiveSection(p) {
-  return /*#__PURE__*/React.createElement("div", {
+  var headingId = p.id ? p.id + '-heading' : undefined;
+  return /*#__PURE__*/React.createElement("section", {
     id: p.id || undefined,
+    "aria-labelledby": headingId,
     tabIndex: -1,
     className: "bg-white p-6 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-4 pb-3 border-b border-slate-200"
   }, /*#__PURE__*/React.createElement("h3", {
+    id: headingId,
     className: "font-bold text-slate-800 flex items-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
@@ -995,12 +1117,56 @@ function CulturalResponsivenessSection(p) {
     className: "text-[11px] text-slate-500 italic mt-2"
   }, c.notes || ''));
 }
+var READINESS_DIMENSION_LABELS = {
+  standards: 'Standards',
+  vocabulary: 'Vocab',
+  engagement: 'Engagement',
+  accessibility: 'Access',
+  udl: 'UDL',
+  accuracy: 'Accuracy',
+  differentiation: 'Differentiation',
+  cognitiveLoad: 'Pacing',
+  culturalResponsiveness: 'Representation'
+};
+function ReadinessDimensionNav(p) {
+  var o = p.overall || {};
+  var dimScores = o.perDimensionPercent || {};
+  return /*#__PURE__*/React.createElement("nav", {
+    "aria-label": "Audit dimension results"
+  }, /*#__PURE__*/React.createElement("ul", {
+    className: "flex flex-wrap gap-2 list-none p-0 m-0"
+  }, ALL_DIMENSIONS_FOR_RENDER.map(function (dim) {
+    var dimData = (o.dimensionScores || {})[dim] || {};
+    var pctValue = boundedReportPercent(dimScores[dim]);
+    var pct = pctValue !== null ? pctValue + '%' : null;
+    // Older saved audits may not include dimensionScores. Preserve all nine
+    // navigation targets and infer only what their recorded percentage proves.
+    var status = dimData.status || (dimData.computeFailed ? 'Compute failed' : dimData.notApplicable ? 'Not applicable' : dimData.notEvaluated ? 'Not evaluated' : pctValue === 100 ? 'Aligned' : pctValue === 0 ? 'Not Aligned' : pctValue !== null ? 'Partially Aligned' : 'Not evaluated');
+    var label = READINESS_DIMENSION_LABELS[dim] || dim;
+    var chipColor = status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : status === 'Partially Aligned' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300';
+    return /*#__PURE__*/React.createElement("li", {
+      key: dim
+    }, /*#__PURE__*/React.createElement("a", {
+      href: '#audit-' + dim,
+      "aria-label": label + ': ' + status + (pct ? ', ' + pct : ''),
+      className: 'flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + chipColor
+    }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "·"), /*#__PURE__*/React.createElement("span", null, status), pct && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "·"), /*#__PURE__*/React.createElement("span", {
+      className: "font-bold"
+    }, pct))));
+  })));
+}
 function ReadinessScoreCard(p) {
   var o = p.overall;
   if (!o) return null;
-  var score = typeof o.score === 'number' ? o.score : typeof o.provisionalScore === 'number' ? o.provisionalScore : 0;
-  var isIncomplete = !!o.incomplete;
-  var dimEvaluated = typeof o.dimensionsEvaluated === 'number' ? o.dimensionsEvaluated : 0;
+  var scoreValue = boundedReportPercent(o.score);
+  if (scoreValue === null) scoreValue = boundedReportPercent(o.provisionalScore);
+  var score = scoreValue === null ? 0 : scoreValue;
+  var isIncomplete = !!o.incomplete || scoreValue === null;
+  var dimEvaluated = boundedReportCount(o.dimensionsEvaluated, 0);
 
   // Empty-state: no comprehensive dimensions ran, render an informative
   // fallback rather than a misleading 0 / 100 score.
@@ -1010,13 +1176,17 @@ function ReadinessScoreCard(p) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-4xl mb-2",
       "aria-hidden": "true"
-    }, "📊"), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs font-bold uppercase tracking-wider text-slate-500 mb-1"
+    }, "📊"), /*#__PURE__*/React.createElement("h3", {
+      className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
     }, "Curriculum Readiness Score"), /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-slate-700 mb-2"
     }, "Not enough artifacts to compute"), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-600 max-w-md mx-auto"
-    }, "Generate a few artifacts (analysis, glossary, quiz, sentence frames, etc.) before running the audit to get a meaningful readiness score."));
+    }, "Generate a few artifacts (analysis, glossary, quiz, sentence frames, etc.) before running the audit to get a meaningful readiness score."), /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 text-left"
+    }, /*#__PURE__*/React.createElement(ReadinessDimensionNav, {
+      overall: o
+    })));
   }
 
   // Color band by score
@@ -1052,18 +1222,6 @@ function ReadinessScoreCard(p) {
     bgColor = '#fef2f2';
     textColor = '#991b1b';
   }
-  var dimScores = o.perDimensionPercent || {};
-  var dimLabels = {
-    standards: 'Standards',
-    vocabulary: 'Vocab',
-    engagement: 'Engagement',
-    accessibility: 'Access',
-    udl: 'UDL',
-    accuracy: 'Accuracy',
-    differentiation: 'Differentiation',
-    cognitiveLoad: 'Pacing',
-    culturalResponsiveness: 'Representation'
-  };
   return /*#__PURE__*/React.createElement("div", {
     className: "p-5 rounded-2xl border-2 mb-8 shadow-sm",
     style: {
@@ -1077,33 +1235,9 @@ function ReadinessScoreCard(p) {
     style: {
       color: textColor
     }
-  }, "Per-Dimension Breakdown"), " // Per-dimension status links", /*#__PURE__*/React.createElement("nav", {
-    "aria-label": "Audit dimension results"
-  }, /*#__PURE__*/React.createElement("ul", {
-    className: "flex flex-wrap gap-2 list-none p-0 m-0"
-  }, ALL_DIMENSIONS_FOR_RENDER.map(function (dim) {
-    var dimData = (o.dimensionScores || {})[dim] || {};
-    var pctValue = typeof dimScores[dim] === 'number' ? dimScores[dim] : null;
-    var pct = pctValue !== null ? pctValue + '%' : null;
-    // Older saved audits may not include dimensionScores. Preserve all nine
-    // navigation targets and infer only what their recorded percentage proves.
-    var status = dimData.status || (dimData.computeFailed ? 'Compute failed' : dimData.notApplicable ? 'Not applicable' : dimData.notEvaluated ? 'Not evaluated' : pctValue === 100 ? 'Aligned' : pctValue === 0 ? 'Not Aligned' : pctValue !== null ? 'Partially Aligned' : 'Not evaluated');
-    var label = dimLabels[dim] || dim;
-    var chipColor = status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : status === 'Partially Aligned' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300';
-    return /*#__PURE__*/React.createElement("li", {
-      key: dim
-    }, /*#__PURE__*/React.createElement("a", {
-      href: '#audit-' + dim,
-      "aria-label": label + ': ' + status + (pct ? ', ' + pct : ''),
-      className: 'flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + chipColor
-    }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("span", {
-      "aria-hidden": "true"
-    }, "·"), /*#__PURE__*/React.createElement("span", null, status), pct && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
-      "aria-hidden": "true"
-    }, "·"), /*#__PURE__*/React.createElement("span", {
-      className: "font-bold"
-    }, pct))));
-  }))), o.blockingIssues && o.blockingIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "Per-Dimension Breakdown"), " // Per-dimension status links", /*#__PURE__*/React.createElement(ReadinessDimensionNav, {
+    overall: o
+  }), o.blockingIssues && o.blockingIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-2 bg-white border border-rose-300 rounded text-xs"
   }, /*#__PURE__*/React.createElement("div", {
     className: "font-bold text-rose-900 mb-1"
@@ -1295,12 +1429,12 @@ function ExecutiveSummary(p) {
   }
   if (!c) return null;
   var overall = c.overall || {};
-  var certifiedScore = typeof overall.score === 'number' ? overall.score : null;
-  var score = certifiedScore !== null ? certifiedScore : typeof overall.provisionalScore === 'number' ? overall.provisionalScore : null;
+  var certifiedScore = boundedReportPercent(overall.score);
+  var score = certifiedScore !== null ? certifiedScore : boundedReportPercent(overall.provisionalScore);
   var scoreIsProvisional = certifiedScore === null && score !== null;
-  var dimEvaluated = typeof overall.dimensionsEvaluated === 'number' ? overall.dimensionsEvaluated : 0;
-  var dimTotal = typeof overall.totalDimensions === 'number' ? overall.totalDimensions : ALL_DIMENSIONS_FOR_RENDER.length;
-  var dimApplicable = typeof overall.dimensionsApplicable === 'number' ? overall.dimensionsApplicable : dimTotal;
+  var dimTotal = boundedReportCount(overall.totalDimensions, ALL_DIMENSIONS_FOR_RENDER.length);
+  var dimApplicable = boundedReportCount(overall.dimensionsApplicable, dimTotal, dimTotal);
+  var dimEvaluated = boundedReportCount(overall.dimensionsEvaluated, 0, dimApplicable);
   var failedDims = ALL_DIMENSIONS_FOR_RENDER.filter(function (d) {
     return c[d] && c[d].computeFailed;
   });
@@ -1484,12 +1618,14 @@ function ExecutiveSummary(p) {
           el.focus({
             preventScroll: true
           });
-          // Brief flash to visually anchor the user's eye.
-          el.style.transition = 'box-shadow 800ms ease-out';
-          el.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.4)';
-          setTimeout(function () {
-            el.style.boxShadow = '';
-          }, 1200);
+          if (!reduceMotion) {
+            // Brief flash to visually anchor the user's eye.
+            el.style.transition = 'box-shadow 800ms ease-out';
+            el.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.4)';
+            setTimeout(function () {
+              el.style.boxShadow = '';
+            }, 1200);
+          }
         }
       }
     }, chipChildren) : /*#__PURE__*/React.createElement("span", {
@@ -1511,10 +1647,13 @@ function ExecutiveSummary(p) {
   }))));
 }
 function formatCoverageMetric(numerator, denominator, percent, unitLabel) {
-  if (typeof denominator !== 'number' || denominator <= 0) return 'N/A — no eligible ' + unitLabel;
-  if (typeof numerator !== 'number') return 'Not recorded in this saved audit';
-  var resolvedPercent = typeof percent === 'number' ? percent : Math.round(numerator / denominator * 100);
-  return numerator + ' of ' + denominator + ' ' + unitLabel + ' (' + resolvedPercent + '%)';
+  var safeDenominator = boundedReportCount(denominator, null);
+  if (safeDenominator === null || safeDenominator <= 0) return 'N/A — no eligible ' + unitLabel;
+  var safeNumerator = boundedReportCount(numerator, null, safeDenominator);
+  if (safeNumerator === null) return 'Not recorded in this saved audit';
+  var resolvedPercent = boundedReportPercent(percent);
+  if (resolvedPercent === null) resolvedPercent = boundedReportPercent(safeNumerator / safeDenominator * 100);
+  return safeNumerator + ' of ' + safeDenominator + ' ' + unitLabel + ' (' + resolvedPercent + '%)';
 }
 function AudioMetric(p) {
   return /*#__PURE__*/React.createElement("div", {
@@ -1530,7 +1669,12 @@ function AudioMetric(p) {
 function AudioCoverageSummary(p) {
   var a = p.audio;
   if (!a) return null;
-  var unscopedCount = (a.unscopedEmbeddedAudioArtifacts || 0) + (a.unscopedPreparedAudioArtifacts || 0);
+  var exactUnscopedCount = boundedReportCount(a.unscopedAudioArtifacts, null);
+  var hasExactUnscopedCount = exactUnscopedCount !== null;
+  var legacyEmbeddedCount = boundedReportCount(a.unscopedEmbeddedAudioArtifacts, 0);
+  var legacyPreparedCount = boundedReportCount(a.unscopedPreparedAudioArtifacts, 0);
+  var unscopedCount = hasExactUnscopedCount ? exactUnscopedCount : Math.max(legacyEmbeddedCount, legacyPreparedCount);
+  var runtimeFallbackCount = boundedReportCount(a.runtimeFallbackArtifacts, null);
   return /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "audit-audio-coverage-heading",
     className: "mb-4 p-4 rounded-xl border border-indigo-300 bg-indigo-50 text-indigo-950"
@@ -1556,12 +1700,12 @@ function AudioCoverageSummary(p) {
   }), /*#__PURE__*/React.createElement(AudioMetric, {
     label: "Prepared synchronized audio",
     value: formatCoverageMetric(a.preparedSentences, a.expectedSentences, a.preparedSentenceCoveragePct, 'readable sentences'),
-    detail: "Counts sentence-level audio prepared in advance for synchronized playback."
+    detail: "Counts saved sentence clips that match readable sentences in the audited resources."
   })), a.runtimeFallbackAvailable && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-xs text-indigo-950"
-  }, /*#__PURE__*/React.createElement("strong", null, "Runtime fallback:"), " At least one readable resource can be spoken on demand but does not have complete prepared synchronized audio."), unscopedCount > 0 && /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("strong", null, "Runtime fallback:"), runtimeFallbackCount !== null ? ' ' + runtimeFallbackCount + ' readable resource' + (runtimeFallbackCount === 1 ? ' relies' : 's rely') + ' on on-demand speech for one or more sentences because prepared synchronized audio is incomplete.' : ' At least one readable resource can be spoken on demand but does not have complete prepared synchronized audio.'), unscopedCount > 0 && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-xs text-amber-950 bg-amber-50 border border-amber-300 rounded p-2"
-  }, /*#__PURE__*/React.createElement("strong", null, "Unscoped audio:"), ' ' + unscopedCount + ' audio-bearing artifact' + (unscopedCount === 1 ? ' was' : 's were') + ' excluded from coverage percentages because no readable source text could be matched to the audio.'), a.notes && /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("strong", null, "Unscoped audio:"), (hasExactUnscopedCount ? ' ' : ' At least ') + unscopedCount + ' audio-bearing artifact' + (unscopedCount === 1 ? ' was' : 's were') + ' excluded from coverage percentages because no readable source text could be matched to the audio.'), a.notes && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-xs text-slate-700 italic"
   }, a.notes));
 }
@@ -1569,8 +1713,10 @@ function FailedDimensionCard(p) {
   var d = p.data;
   var label = p.label;
   if (!d || !d.computeFailed) return null;
-  return /*#__PURE__*/React.createElement("div", {
+  var headingId = p.id ? p.id + '-heading' : undefined;
+  return /*#__PURE__*/React.createElement("section", {
     id: p.id || undefined,
+    "aria-labelledby": headingId,
     tabIndex: -1,
     className: "bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1579,6 +1725,7 @@ function FailedDimensionCard(p) {
     "aria-hidden": "true",
     className: "text-lg"
   }, "⚠"), /*#__PURE__*/React.createElement("h3", {
+    id: headingId,
     className: "font-bold text-amber-900"
   }, label + ' — could not be computed'), /*#__PURE__*/React.createElement("span", {
     className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900"
@@ -1597,8 +1744,10 @@ function NotEvaluatedCard(p) {
   var label = p.label;
   if (!d || !d.notEvaluated) return null;
   var reason = d.reason || Array.isArray(d.recommendations) && d.recommendations[0] || d.notes || 'Required evidence was not available for this dimension.';
-  return /*#__PURE__*/React.createElement("div", {
+  var headingId = p.id ? p.id + '-heading' : undefined;
+  return /*#__PURE__*/React.createElement("section", {
     id: p.id || undefined,
+    "aria-labelledby": headingId,
     tabIndex: -1,
     className: "bg-slate-50 p-4 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1607,6 +1756,7 @@ function NotEvaluatedCard(p) {
     "aria-hidden": "true",
     className: "text-lg"
   }, "◌"), /*#__PURE__*/React.createElement("h3", {
+    id: headingId,
     className: "font-bold text-slate-800"
   }, label), /*#__PURE__*/React.createElement("span", {
     className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800"
@@ -1639,8 +1789,10 @@ function NotApplicableCard(p) {
   var d = p.data;
   var label = p.label;
   if (!d || !d.notApplicable) return null;
-  return /*#__PURE__*/React.createElement("div", {
+  var headingId = p.id ? p.id + '-heading' : undefined;
+  return /*#__PURE__*/React.createElement("section", {
     id: p.id || undefined,
+    "aria-labelledby": headingId,
     tabIndex: -1,
     className: "bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1649,6 +1801,7 @@ function NotApplicableCard(p) {
     "aria-hidden": "true",
     className: "text-lg"
   }, "➖"), /*#__PURE__*/React.createElement("h3", {
+    id: headingId,
     className: "font-bold text-slate-700"
   }, label), /*#__PURE__*/React.createElement("span", {
     className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700"
@@ -1841,7 +1994,7 @@ function AlignmentReportView(props) {
     role: "region",
     "aria-labelledby": "curriculum-audit-report-heading",
     tabIndex: 0,
-    lang: comprehensive && comprehensive.auditLanguage || 'en'
+    lang: resolveAuditLanguageTag(comprehensive)
   }, /*#__PURE__*/React.createElement("h1", {
     id: "curriculum-audit-report-heading",
     className: "sr-only"

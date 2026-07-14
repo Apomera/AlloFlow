@@ -20596,7 +20596,8 @@
       "navigate": "导航",
       "pipeline": "流水线结果",
       "tools": "打开工具",
-      "voice": "语音"
+      "voice": "语音",
+      "recent": "Recent"
     },
     "input_aria": "搜索命令",
     "list_aria": "匹配的命令",

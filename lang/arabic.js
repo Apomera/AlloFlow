@@ -20596,7 +20596,8 @@
       "navigate": "التنقل",
       "pipeline": "نتائج المسار",
       "tools": "فتح أداة",
-      "voice": "الصوت"
+      "voice": "الصوت",
+      "recent": "Recent"
     },
     "input_aria": "البحث في الأوامر",
     "list_aria": "الأوامر المطابقة",

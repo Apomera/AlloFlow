@@ -20727,7 +20727,8 @@
       "navigate": "Navigieren",
       "pipeline": "Pipeline-Ergebnisse",
       "tools": "Ein Werkzeug öffnen",
-      "voice": "Sprache"
+      "voice": "Sprache",
+      "recent": "Recent"
     },
     "input_aria": "Befehle suchen",
     "list_aria": "Passende Befehle",

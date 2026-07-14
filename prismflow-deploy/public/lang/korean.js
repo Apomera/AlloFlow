@@ -20721,7 +20721,8 @@
       "navigate": "이동",
       "pipeline": "파이프라인 결과",
       "tools": "도구 열기",
-      "voice": "음성"
+      "voice": "음성",
+      "recent": "Recent"
     },
     "input_aria": "명령 검색",
     "list_aria": "일치하는 명령",

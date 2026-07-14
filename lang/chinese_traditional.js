@@ -20596,7 +20596,8 @@
       "navigate": "導覽",
       "pipeline": "流程結果",
       "tools": "開啟工具",
-      "voice": "語音"
+      "voice": "語音",
+      "recent": "Recent"
     },
     "input_aria": "搜尋指令",
     "list_aria": "符合的指令",

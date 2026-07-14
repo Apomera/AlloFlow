@@ -6,6 +6,8 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'test_prep_hub_source.jsx');
 const BANK_SOURCE = path.join(ROOT, 'test_prep', 'eppp_native_items.json');
+const PARAPRO_PACK_SOURCE = path.join(ROOT, 'test_prep', 'parapro_pack.json');
+const SPECIAL_EDUCATION_5355_PACK_SOURCE = path.join(ROOT, 'test_prep', 'special_education_5355_pack.json');
 const OUTPUT = path.join(ROOT, 'test_prep_hub_module.js');
 const DEPLOY_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
@@ -15,16 +17,46 @@ const INVENTORY_SCRIPT = path.join(ROOT, 'dev-tools', 'inventory_eppp_learning_c
 const LEARNING_LIBRARY_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_learning_library.cjs');
 const REVIEW_LEDGER_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_review_ledger.cjs');
 const CURATION_500_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_500_curation_manifest.cjs');
+const CURATION_1000_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_1000_curation_manifest.cjs');
+const EXPANSION_AUDIT_SOURCE = path.join(ROOT, 'test_prep', 'eppp_native_expansion_1000_audit.json');
+const EXPANSION_AUDIT_DEPLOY = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_expansion_1000_audit.json');
+const PARAPRO_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_parapro_pack_release.cjs');
+const PARAPRO_BATCH2_SCRIPT = path.join(ROOT, 'dev-tools', 'build_parapro_batch_2.cjs');
+const PARAPRO_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_parapro_learning_library.cjs');
+const PARAPRO_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_parapro_learning_library.cjs');
+const SPECIAL_EDUCATION_5355_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_5355_pack.cjs');
+const SPECIAL_EDUCATION_5355_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_5355_learning_library.cjs');
+const SPECIAL_EDUCATION_5355_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_special_education_5355_learning_library.cjs');
+const SPECIAL_EDUCATION_5355_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_special_education_5355_pack.cjs');
+const skipEpppRefresh = process.argv.includes('--skip-eppp-refresh');
 
 if (!fs.existsSync(SOURCE)) {
   console.error('Source not found:', SOURCE);
   process.exit(1);
 }
+execSync(`node "${PARAPRO_BATCH2_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PARAPRO_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PARAPRO_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PARAPRO_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 
+execSync(`node "${SPECIAL_EDUCATION_5355_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_5355_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_5355_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_5355_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 const source = fs.readFileSync(SOURCE, 'utf8');
 const bank = JSON.parse(fs.readFileSync(BANK_SOURCE, 'utf8'));
 if (!Array.isArray(bank) || !bank.length) throw new Error('EPPP native item bank is empty or invalid.');
-const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n';
+const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
+if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
+  throw new Error('ParaPro release pack is empty or invalid.');
+}
+const specialEducation5355Pack = JSON.parse(fs.readFileSync(SPECIAL_EDUCATION_5355_PACK_SOURCE, 'utf8'));
+if (!specialEducation5355Pack || specialEducation5355Pack.id !== 'praxis-special-education-5355' || specialEducation5355Pack.batchSize !== 100 || !Array.isArray(specialEducation5355Pack.items) || specialEducation5355Pack.items.length !== 200) {
+  throw new Error('Praxis Special Education 5355 release pack is empty or invalid.');
+}
+const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n'
+  + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n';
 fs.writeFileSync(TMP, '/* global React */\n\n' + bankPrelude + source + '\n', 'utf8');
 
 try {
@@ -64,6 +96,11 @@ ${compiled}
     normalizeProgress: normalizeTestPrepProgress,
     scoreAttempt: scoreTestPrepAttempt,
     recordAttempt: recordTestPrepAttempt,
+    arrangeBalancedBatches: testPrepArrangeBalancedBatches,
+    batchMeta: testPrepBatchMeta,
+    buildBatchDiagnostic: testPrepBuildBatchDiagnostic,
+    recordBatchAttempt: recordTestPrepBatchAttempt,
+    buildProgressAnalytics: testPrepBuildProgressAnalytics,
     researchLanes: TEST_PREP_RESEARCH_LANES.slice()
   });
   console.log('[CDN] TestPrepHub loaded');
@@ -74,9 +111,13 @@ fs.writeFileSync(OUTPUT, output, 'utf8');
 fs.mkdirSync(path.dirname(DEPLOY_OUTPUT), { recursive: true });
 fs.writeFileSync(DEPLOY_OUTPUT, output, 'utf8');
 console.log('Built test_prep_hub_module.js (' + output.split('\n').length + ' lines)');
-execSync(`node "${QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-execSync(`node "${LEARNING_LIBRARY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-execSync(`node "${INVENTORY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-execSync(`node "${REVIEW_LEDGER_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-execSync(`node "${CURATION_500_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+if (!skipEpppRefresh) {
+  execSync(`node "${QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${LEARNING_LIBRARY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${INVENTORY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${REVIEW_LEDGER_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+
+  execSync(`node "${CURATION_1000_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  fs.copyFileSync(EXPANSION_AUDIT_SOURCE, EXPANSION_AUDIT_DEPLOY);
+}
 

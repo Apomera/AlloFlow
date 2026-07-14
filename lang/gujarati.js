@@ -20811,6 +20811,7 @@
       "navigate": "નેવિગેટ કરો",
       "pipeline": "Pipeline પરિણામો",
       "tools": "એક સાધન ખોલો",
+      "recent": "Recent",
       "voice": "વૉઇસ"
     },
     "input_aria": "આદેશો શોધો",

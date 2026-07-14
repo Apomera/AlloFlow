@@ -1853,7 +1853,7 @@
                     if (!applied.has('freudIceberg')) { sec.interactiveDiagram = window._epppDiagrams.freudIceberg; applied.add('freudIceberg'); }
                 }
                 // Reliability vs Validity
-                if ((heading.includes('reliability') || heading.includes('validity') || heading.includes('psychometrics') || heading.includes('measure') || heading.includes('construct')) && !heading.includes('threats') && !sec.interactiveDiagram) {
+                if ((heading.includes('reliability') || heading.includes('validity') || heading.includes('psychometrics') || heading.includes('measure') || heading.includes('construct')) && !heading.includes('threats') && !heading.includes('validity scales') && !heading.includes('performance validity') && !sec.interactiveDiagram) {
                     if (!applied.has('reliabilityValidity')) { sec.interactiveDiagram = window._epppDiagrams.reliabilityValidity; applied.add('reliabilityValidity'); }
                 }
                 // Memory Model

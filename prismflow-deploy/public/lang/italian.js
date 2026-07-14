@@ -20760,7 +20760,8 @@
       "navigate": "Naviga",
       "pipeline": "Risultati della pipeline",
       "tools": "Apri uno strumento",
-      "voice": "Voce"
+      "voice": "Voce",
+      "recent": "Recent"
     },
     "input_aria": "Cerca comandi",
     "list_aria": "Comandi corrispondenti",

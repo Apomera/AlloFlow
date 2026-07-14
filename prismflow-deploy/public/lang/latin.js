@@ -20740,7 +20740,8 @@
       "navigate": "Naviga",
       "pipeline": "Exitus Cursus",
       "tools": "Instrumentum aperi",
-      "voice": "Vox"
+      "voice": "Vox",
+      "recent": "Recent"
     },
     "input_aria": "Mandata quaere",
     "list_aria": "Mandata congruentia",

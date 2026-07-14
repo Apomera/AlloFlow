@@ -202,6 +202,7 @@
       '.wc-viewport-state{min-width:0}.wc-viewport-state span{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}.wc-viewport-state strong{display:block;max-width:260px;margin-top:1px;font-size:12px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.wc-viewport-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.wc-viewport-btn{min-width:44px;min-height:44px;padding:6px 10px;border:1px solid rgba(125,211,252,.36);border-radius:8px;background:#075985;color:#fff;font-size:11px;font-weight:900}.wc-viewport-btn[aria-pressed="true"]{background:#0ea5e9;color:#082f49}.wc-viewport-btn:disabled{opacity:.48;cursor:not-allowed}.wc-viewport-start{min-height:44px;padding:8px 14px;border-radius:9px;background:linear-gradient(135deg,#06b6d4,#2563eb);color:#fff;font-size:12px;font-weight:900;box-shadow:0 8px 20px rgba(14,165,233,.3)}',
       '.wc-viewport-choice{position:absolute;z-index:7;left:50%;bottom:76px;width:min(620px,calc(100% - 20px));transform:translateX(-50%);padding:12px;border:1px solid rgba(186,230,253,.5);border-radius:14px;background:rgba(4,26,43,.94);box-shadow:0 18px 42px rgba(2,6,23,.5);backdrop-filter:blur(12px);color:#e0f2fe}.wc-viewport-choice h5{margin:0;font-size:14px;font-weight:900}.wc-viewport-choice p{margin:3px 0 9px;font-size:10px;color:#bae6fd}.wc-viewport-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.wc-viewport-choice-grid button{min-height:52px;padding:7px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(8,47,73,.9);color:#fff;text-align:left}.wc-viewport-choice-grid strong,.wc-viewport-choice-grid span{display:block}.wc-viewport-choice-grid strong{font-size:11px}.wc-viewport-choice-grid span{margin-top:2px;font-size:9px;color:#bae6fd}',
+      '.wc-viewport-choice-grid button[data-route-choice="runoff"]{border-left:3px solid #3b82f6}.wc-viewport-choice-grid button[data-route-choice="infiltrate"]{border-left:3px solid #22d3ee}.wc-viewport-choice-grid button[data-route-choice="plant"]{border-left:3px solid #4ade80}',
       '.wc-journey-lens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:-2px 0 10px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.16)}',
       '.wc-journey-lens div{padding:8px 10px;background:rgba(255,255,255,.88)}',
       '.wc-journey-lens span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
@@ -4200,23 +4201,50 @@ const d = labToolData.waterCycle || {};
             );
             world3d.add(foam3d);
 
+            var landMat3d = new THREE.MeshStandardMaterial({ color: 0x6b482d, roughness: 0.95, transparent: true, opacity: 1 });
             var land3d = new THREE.Mesh(
               new THREE.BoxGeometry(9, 1.5, 7),
-              new THREE.MeshStandardMaterial({ color: 0x6b482d, roughness: 0.95 })
+              landMat3d
             );
             land3d.position.set(4.8, -1.8, -0.6);
             land3d.castShadow = true;
             land3d.receiveShadow = true;
             world3d.add(land3d);
 
+            var groundCoverMat3d = new THREE.MeshStandardMaterial({ color: 0x39734b, roughness: 0.9, transparent: true, opacity: 1 });
             var grass3d = new THREE.Mesh(
               new THREE.PlaneGeometry(9, 7),
-              new THREE.MeshStandardMaterial({ color: 0x39734b, roughness: 0.9 })
+              groundCoverMat3d
             );
             grass3d.rotation.x = -Math.PI / 2;
             grass3d.position.set(4.8, -1.02, -0.6);
             grass3d.receiveShadow = true;
             world3d.add(grass3d);
+
+            var snowCoverMat3d = new THREE.MeshStandardMaterial({ color: 0xeaf7ff, roughness: 0.78, transparent: true, opacity: 0, depthWrite: false });
+            var snowCover3d = new THREE.Mesh(new THREE.PlaneGeometry(9, 7), snowCoverMat3d);
+            snowCover3d.rotation.x = -Math.PI / 2;
+            snowCover3d.position.set(4.8, -0.995, -0.6);
+            snowCover3d.receiveShadow = true;
+            snowCover3d.visible = false;
+            world3d.add(snowCover3d);
+
+            var urbanPonding3d = new THREE.Group();
+            var pondingMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0x38bdf8, emissive: 0x075985, emissiveIntensity: 0.12,
+              roughness: 0.08, clearcoat: 1, transparent: true, opacity: 0,
+              depthWrite: false
+            });
+            [[2.15,-1.25,0.72],[3.85,-0.2,0.9],[5.45,-1.65,0.66],[6.45,0.35,0.78],[3.05,1.15,0.6]].forEach(function(pondingSpec3d) {
+              var pondingMesh3d = new THREE.Mesh(new THREE.CircleGeometry(0.42, 28), pondingMat3d);
+              pondingMesh3d.rotation.x = -Math.PI / 2;
+              pondingMesh3d.position.set(pondingSpec3d[0], -0.982, pondingSpec3d[1]);
+              pondingMesh3d.scale.set(pondingSpec3d[2], pondingSpec3d[2] * 0.72, 1);
+              pondingMesh3d.userData.baseScale = pondingSpec3d[2];
+              urbanPonding3d.add(pondingMesh3d);
+            });
+            urbanPonding3d.visible = false;
+            world3d.add(urbanPonding3d);
 
             var aquifer3d = new THREE.Mesh(
               new THREE.BoxGeometry(8.6, 0.38, 6.6),
@@ -4225,12 +4253,77 @@ const d = labToolData.waterCycle || {};
             aquifer3d.position.set(4.8, -2.22, -0.6);
             world3d.add(aquifer3d);
 
+            var soilIntakeMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0x0e7490, emissive: 0x155e75, emissiveIntensity: 0.2,
+              roughness: 0.22, clearcoat: 0.7, transparent: true, opacity: 0,
+              depthWrite: false
+            });
+            var soilIntakePatch3d = new THREE.Mesh(new THREE.CircleGeometry(0.72, 40), soilIntakeMat3d);
+            soilIntakePatch3d.rotation.x = -Math.PI / 2;
+            soilIntakePatch3d.position.set(4.5, -0.972, -0.4);
+            soilIntakePatch3d.visible = false;
+            world3d.add(soilIntakePatch3d);
+
+            var soilMoistureFrontMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0x22d3ee, emissive: 0x0891b2, emissiveIntensity: 0.42,
+              roughness: 0.18, transparent: true, opacity: 0,
+              depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+            });
+            var soilMoistureFrontGroup3d = new THREE.Group();
+            [[-0.56,0.86,-0.08],[0,1.04,0.08],[0.56,0.8,-0.02]].forEach(function(frontLobeSpec3d) {
+              var frontLobe3d = new THREE.Mesh(new THREE.ConeGeometry(0.48, 1.4, 20, 1, true), soilMoistureFrontMat3d);
+              frontLobe3d.position.set(frontLobeSpec3d[0], 0, frontLobeSpec3d[2]);
+              frontLobe3d.userData.baseScale = frontLobeSpec3d[1];
+              soilMoistureFrontGroup3d.add(frontLobe3d);
+            });
+            soilMoistureFrontGroup3d.position.set(4.5, -1.12, -0.4);
+            soilMoistureFrontGroup3d.visible = false;
+            world3d.add(soilMoistureFrontGroup3d);
+
+            var wettingFrontRingMat3d = new THREE.MeshBasicMaterial({
+              color: 0x67e8f9, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var wettingFrontRing3d = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.034, 6, 52), wettingFrontRingMat3d);
+            wettingFrontRing3d.rotation.x = Math.PI / 2;
+            wettingFrontRing3d.visible = false;
+            world3d.add(wettingFrontRing3d);
+
+            var waterTableRechargeMat3d = new THREE.MeshBasicMaterial({
+              color: 0xa5f3fc, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var waterTableRecharge3d = new THREE.Mesh(new THREE.CircleGeometry(1.25, 44), waterTableRechargeMat3d);
+            waterTableRecharge3d.rotation.x = -Math.PI / 2;
+            waterTableRecharge3d.position.set(4.5, -2.015, -0.4);
+            waterTableRecharge3d.scale.set(1.45, 0.82, 1);
+            waterTableRecharge3d.visible = false;
+            world3d.add(waterTableRecharge3d);
+
+            var aquiferCurrentCurve3d = new THREE.CatmullRomCurve3([
+              new THREE.Vector3(7.25, -2.16, -1.45),
+              new THREE.Vector3(5.75, -2.12, -0.95),
+              new THREE.Vector3(4.1, -2.06, -0.2),
+              new THREE.Vector3(2.35, -1.92, 0.48),
+              new THREE.Vector3(0.65, -1.62, 1.08),
+              new THREE.Vector3(-0.55, -1.28, 1.48)
+            ], false, 'catmullrom', 0.3);
+            var aquiferMarkerCount3d = 18;
+            var aquiferMarkerGeometry3d = new THREE.BufferGeometry();
+            aquiferMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(aquiferMarkerCount3d * 3), 3));
+            var aquiferFlow3d = new THREE.Points(aquiferMarkerGeometry3d, new THREE.PointsMaterial({
+              color: 0x67e8f9, size: 0.105, transparent: true, opacity: 0.72,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            aquiferFlow3d.visible = false;
+            world3d.add(aquiferFlow3d);
+
             var strataGroup3d = new THREE.Group();
             var strataColors3d = [0x8a5a36, 0x6f4932, 0x574137];
             for (var stratumIndex3d = 0; stratumIndex3d < strataColors3d.length; stratumIndex3d++) {
               var stratum3d = new THREE.Mesh(
                 new THREE.BoxGeometry(9.08, 0.16, 7.08),
-                new THREE.MeshStandardMaterial({ color: strataColors3d[stratumIndex3d], roughness: 1 })
+                new THREE.MeshStandardMaterial({ color: strataColors3d[stratumIndex3d], roughness: 1, transparent: true, opacity: 1 })
               );
               stratum3d.position.set(4.8, -1.32 - stratumIndex3d * 0.36, -0.6);
               strataGroup3d.add(stratum3d);
@@ -4249,6 +4342,170 @@ const d = labToolData.waterCycle || {};
               new THREE.MeshPhysicalMaterial({ color: 0x22b8e6, emissive: 0x075985, emissiveIntensity: 0.16, roughness: 0.16, clearcoat: 0.75, transparent: true, opacity: 0.7 })
             );
             world3d.add(river3d);
+
+            var riverMarkerCount3d = 16;
+            var riverMarkerGeometry3d = new THREE.BufferGeometry();
+            riverMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(riverMarkerCount3d * 3), 3));
+            var riverFlow3d = new THREE.Points(riverMarkerGeometry3d, new THREE.PointsMaterial({
+              color: 0xcffafe, size: 0.095, transparent: true, opacity: 0.64,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            world3d.add(riverFlow3d);
+
+            var oceanCurrentGroup3d = new THREE.Group();
+            var oceanCurrentCurves3d = [
+              makeJourneyCurve3d([[-0.25,-1.12,1.6],[-1.3,-1.11,2.45],[-3.15,-1.13,2.35],[-4.5,-1.12,1.15],[-3.25,-1.13,-0.2],[-1.25,-1.12,0.15]], true),
+              makeJourneyCurve3d([[-1.1,-1.15,3.25],[-3.1,-1.16,3.8],[-5.4,-1.14,2.65],[-6.1,-1.16,0.55],[-4.1,-1.15,-1.15],[-1.75,-1.14,-0.55]], true)
+            ];
+            var oceanCurrentMat3d = new THREE.MeshBasicMaterial({
+              color: 0x67e8f9, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            oceanCurrentCurves3d.forEach(function(oceanCurrentCurve3d, oceanCurrentIndex3d) {
+              var oceanCurrentTube3d = new THREE.Mesh(
+                new THREE.TubeGeometry(oceanCurrentCurve3d, 72, 0.018 + oceanCurrentIndex3d * 0.006, 6, true),
+                oceanCurrentMat3d
+              );
+              oceanCurrentGroup3d.add(oceanCurrentTube3d);
+            });
+            var oceanCurrentMarkerCount3d = 30;
+            var oceanCurrentMarkerGeometry3d = new THREE.BufferGeometry();
+            oceanCurrentMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(oceanCurrentMarkerCount3d * 3), 3));
+            var oceanCurrentMarkers3d = new THREE.Points(oceanCurrentMarkerGeometry3d, new THREE.PointsMaterial({
+              color: 0xcffafe, size: 0.072, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            oceanCurrentGroup3d.add(oceanCurrentMarkers3d);
+            oceanCurrentGroup3d.visible = false;
+            world3d.add(oceanCurrentGroup3d);
+
+            var estuaryMixingCount3d = 36;
+            var estuaryMixingSeeds3d = new Float32Array(estuaryMixingCount3d * 3);
+            var estuaryMixingGeometry3d = new THREE.BufferGeometry();
+            estuaryMixingGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(estuaryMixingCount3d * 3), 3));
+            estuaryMixingGeometry3d.setAttribute('color', new THREE.BufferAttribute(new Float32Array(estuaryMixingCount3d * 3), 3));
+            function setEstuarySalinityColor3d(colorAttribute3d, colorIndex3d, salinityMix3d) {
+              var colorMix3d = Math.max(0, Math.min(1, salinityMix3d));
+              var colorPhase3d = colorMix3d < 0.5 ? colorMix3d * 2 : (colorMix3d - 0.5) * 2;
+              var colorStart3d = colorMix3d < 0.5 ? [0.49, 0.83, 1] : [0.18, 0.83, 0.74];
+              var colorEnd3d = colorMix3d < 0.5 ? [0.18, 0.83, 0.74] : [0.08, 0.36, 0.62];
+              colorAttribute3d.setXYZ(colorIndex3d,
+                colorStart3d[0] + (colorEnd3d[0] - colorStart3d[0]) * colorPhase3d,
+                colorStart3d[1] + (colorEnd3d[1] - colorStart3d[1]) * colorPhase3d,
+                colorStart3d[2] + (colorEnd3d[2] - colorStart3d[2]) * colorPhase3d
+              );
+            }
+            for (var estuarySeedIndex3d = 0; estuarySeedIndex3d < estuaryMixingCount3d; estuarySeedIndex3d++) {
+              estuaryMixingSeeds3d[estuarySeedIndex3d * 3] = (estuarySeedIndex3d * 0.61803398875) % 1;
+              estuaryMixingSeeds3d[estuarySeedIndex3d * 3 + 1] = ((estuarySeedIndex3d * 17) % 31) / 31;
+              estuaryMixingSeeds3d[estuarySeedIndex3d * 3 + 2] = ((estuarySeedIndex3d * 11) % 29) / 29;
+              setEstuarySalinityColor3d(estuaryMixingGeometry3d.attributes.color, estuarySeedIndex3d,
+                estuaryMixingSeeds3d[estuarySeedIndex3d * 3]);
+            }
+            var estuaryMixing3d = new THREE.Points(estuaryMixingGeometry3d, new THREE.PointsMaterial({
+              vertexColors: true, size: 0.085, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            estuaryMixing3d.visible = false;
+            world3d.add(estuaryMixing3d);
+
+            var estuaryRibbonShape3d = new THREE.Shape();
+            estuaryRibbonShape3d.moveTo(0, -0.06);
+            estuaryRibbonShape3d.bezierCurveTo(-0.55, -0.1, -1.35, -0.48, -2.45, -0.68);
+            estuaryRibbonShape3d.lineTo(-2.45, 0.68);
+            estuaryRibbonShape3d.bezierCurveTo(-1.35, 0.48, -0.55, 0.1, 0, 0.06);
+            var estuaryMixingRibbonGeometry3d = new THREE.ShapeGeometry(estuaryRibbonShape3d, 18);
+            estuaryMixingRibbonGeometry3d.setAttribute('color', new THREE.BufferAttribute(
+              new Float32Array(estuaryMixingRibbonGeometry3d.attributes.position.count * 3), 3
+            ));
+            for (var estuaryRibbonVertex3d = 0; estuaryRibbonVertex3d < estuaryMixingRibbonGeometry3d.attributes.position.count; estuaryRibbonVertex3d++) {
+              setEstuarySalinityColor3d(estuaryMixingRibbonGeometry3d.attributes.color, estuaryRibbonVertex3d,
+                Math.abs(estuaryMixingRibbonGeometry3d.attributes.position.getX(estuaryRibbonVertex3d)) / 2.45);
+            }
+            var estuaryMixingRibbon3d = new THREE.Mesh(estuaryMixingRibbonGeometry3d, new THREE.MeshBasicMaterial({
+              vertexColors: true, transparent: true, opacity: 0,
+              side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            estuaryMixingRibbon3d.rotation.x = -Math.PI / 2;
+            estuaryMixingRibbon3d.position.set(-0.25, -1.115, 1.6);
+            estuaryMixingRibbon3d.userData.salinityProbe = true;
+            estuaryMixingRibbon3d.visible = false;
+            world3d.add(estuaryMixingRibbon3d);
+
+            var estuarySalinityProbeMat3d = new THREE.MeshBasicMaterial({
+              color: 0xe0f7ff, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var estuarySalinityProbe3d = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.025, 6, 36), estuarySalinityProbeMat3d);
+            estuarySalinityProbe3d.rotation.x = Math.PI / 2;
+            estuarySalinityProbe3d.renderOrder = 18;
+            estuarySalinityProbe3d.visible = false;
+            world3d.add(estuarySalinityProbe3d);
+
+            var groundwaterSeepCount3d = 24;
+            var groundwaterSeepSeeds3d = new Float32Array(groundwaterSeepCount3d * 2);
+            var groundwaterSeepGeometry3d = new THREE.BufferGeometry();
+            groundwaterSeepGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(groundwaterSeepCount3d * 3), 3));
+            for (var groundwaterSeepSeedIndex3d = 0; groundwaterSeepSeedIndex3d < groundwaterSeepCount3d; groundwaterSeepSeedIndex3d++) {
+              groundwaterSeepSeeds3d[groundwaterSeepSeedIndex3d * 2] = (groundwaterSeepSeedIndex3d * 0.754877666) % 1;
+              groundwaterSeepSeeds3d[groundwaterSeepSeedIndex3d * 2 + 1] = ((groundwaterSeepSeedIndex3d * 13) % 23) / 23;
+            }
+            var groundwaterSeep3d = new THREE.Points(groundwaterSeepGeometry3d, new THREE.PointsMaterial({
+              color: 0xa5f3fc, size: 0.078, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            groundwaterSeep3d.visible = false;
+            world3d.add(groundwaterSeep3d);
+
+            var surfaceRunoffTributaries3d = new THREE.Group();
+            var surfaceRunoffCurves3d = [];
+            var surfaceRunoffChannels3d = [];
+            var surfaceRunoffMat3d = new THREE.MeshBasicMaterial({
+              color: 0x38bdf8, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            [
+              [[6.8,-0.96,1.6],[5.7,-0.92,0.9],[4.5,-0.9,0.4],[3.5,-0.88,0.2]],
+              [[4.8,-0.96,-3.1],[5.0,-0.92,-2.2],[5.7,-0.86,-1.4]],
+              [[2.6,-0.96,-2.4],[2.7,-0.93,-0.8],[2.1,-0.92,0.55],[1.1,-0.98,1.25]],
+              [[8.0,-0.96,0.6],[7.7,-0.92,-0.5],[7.2,-0.92,-2.0]]
+            ].forEach(function(tributaryPoints3d, tributaryIndex3d) {
+              var tributaryCurve3d = makeJourneyCurve3d(tributaryPoints3d, false);
+              var tributaryMesh3d = new THREE.Mesh(
+                new THREE.TubeGeometry(tributaryCurve3d, 36, 0.026 + tributaryIndex3d * 0.004, 6, false),
+                surfaceRunoffMat3d
+              );
+              tributaryMesh3d.visible = false;
+              surfaceRunoffCurves3d.push(tributaryCurve3d);
+              surfaceRunoffChannels3d.push(tributaryMesh3d);
+              surfaceRunoffTributaries3d.add(tributaryMesh3d);
+            });
+            var surfaceRunoffMarkerCount3d = 24;
+            var surfaceRunoffMarkerGeometry3d = new THREE.BufferGeometry();
+            surfaceRunoffMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(surfaceRunoffMarkerCount3d * 3), 3));
+            var surfaceRunoffMarkers3d = new THREE.Points(surfaceRunoffMarkerGeometry3d, new THREE.PointsMaterial({
+              color: 0xe0f7ff, size: 0.075, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            surfaceRunoffTributaries3d.add(surfaceRunoffMarkers3d);
+            surfaceRunoffTributaries3d.visible = false;
+            world3d.add(surfaceRunoffTributaries3d);
+
+            var runoffConfluenceMat3d = new THREE.MeshBasicMaterial({
+              color: 0xbae6fd, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var runoffConfluenceGroup3d = new THREE.Group();
+            surfaceRunoffCurves3d.forEach(function(tributaryCurve3d) {
+              var confluenceRing3d = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.024, 6, 36), runoffConfluenceMat3d);
+              confluenceRing3d.rotation.x = Math.PI / 2;
+              confluenceRing3d.position.copy(tributaryCurve3d.getPointAt(1));
+              confluenceRing3d.position.y += 0.055;
+              confluenceRing3d.visible = false;
+              runoffConfluenceGroup3d.add(confluenceRing3d);
+            });
+            runoffConfluenceGroup3d.visible = false;
+            world3d.add(runoffConfluenceGroup3d);
 
             var mountainMat = new THREE.MeshStandardMaterial({ color: 0x52636b, roughness: 0.9 });
             var snowMat3d = new THREE.MeshStandardMaterial({ color: 0xeaf7ff, roughness: 0.7 });
@@ -4294,6 +4551,35 @@ const d = labToolData.waterCycle || {};
             distantClouds3d.position.set(-8.5, 5.1, -9.5);
             world3d.add(distantClouds3d);
 
+            var cloudShadowMat3d = new THREE.ShaderMaterial({
+              transparent: true, depthWrite: false,
+              uniforms: { shadowOpacity: { value: 0 } },
+              vertexShader: 'varying vec2 vUv;\nvoid main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+              fragmentShader: 'uniform float shadowOpacity; varying vec2 vUv;\nvoid main(){ float d=length((vUv-0.5)*2.0); float a=(1.0-smoothstep(0.16,1.0,d))*shadowOpacity; gl_FragColor=vec4(0.025,0.08,0.11,a); }'
+            });
+            var cloudShadow3d = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 2.8), cloudShadowMat3d);
+            cloudShadow3d.rotation.x = -Math.PI / 2;
+            cloudShadow3d.position.set(0.5, -0.965, -1.7);
+            cloudShadow3d.renderOrder = 2;
+            world3d.add(cloudShadow3d);
+
+            var rainbowGroup3d = new THREE.Group();
+            var rainbowColors3d = [0xf87171, 0xfb923c, 0xfacc15, 0x4ade80, 0x38bdf8, 0x818cf8, 0xc084fc];
+            rainbowColors3d.forEach(function(rainbowColor3d, rainbowIndex3d) {
+              var rainbowArc3d = new THREE.Mesh(
+                new THREE.TorusGeometry(3.5 - rainbowIndex3d * 0.075, 0.038, 6, 96, Math.PI),
+                new THREE.MeshBasicMaterial({
+                  color: rainbowColor3d, transparent: true, opacity: 0,
+                  depthWrite: false, side: THREE.DoubleSide
+                })
+              );
+              rainbowArc3d.renderOrder = 1;
+              rainbowGroup3d.add(rainbowArc3d);
+            });
+            rainbowGroup3d.position.set(1.2, -0.98, -4.6);
+            rainbowGroup3d.visible = false;
+            world3d.add(rainbowGroup3d);
+
             var plant3d = new THREE.Group();
             var trunk3d = new THREE.Mesh(
               new THREE.CylinderGeometry(0.16, 0.24, 2.5, 12),
@@ -4312,6 +4598,91 @@ const d = labToolData.waterCycle || {};
             }
             plant3d.position.set(5.9, -1.0, 1.25);
             world3d.add(plant3d);
+
+            var plantRootGroup3d = new THREE.Group();
+            var plantRootMat3d = new THREE.MeshStandardMaterial({
+              color: 0x7ddf9b, emissive: 0x166534, emissiveIntensity: 0.18,
+              roughness: 0.72, transparent: true, opacity: 0.34, depthWrite: false
+            });
+            var plantRootCurves3d = [
+              [[4.85,-2.05,0.72],[5.25,-1.68,0.92],[5.68,-1.25,1.14],[5.9,-0.96,1.25]],
+              [[5.2,-2.18,1.72],[5.42,-1.72,1.5],[5.72,-1.25,1.32],[5.9,-0.96,1.25]],
+              [[6.65,-1.95,0.78],[6.35,-1.62,0.96],[6.08,-1.2,1.16],[5.9,-0.96,1.25]],
+              [[6.7,-1.78,1.75],[6.36,-1.55,1.58],[6.08,-1.18,1.36],[5.9,-0.96,1.25]]
+            ].map(function(rootPoints3d) {
+              var rootCurve3d = makeJourneyCurve3d(rootPoints3d, false);
+              plantRootGroup3d.add(new THREE.Mesh(
+                new THREE.TubeGeometry(rootCurve3d, 28, 0.026, 6, false),
+                plantRootMat3d
+              ));
+              return rootCurve3d;
+            });
+            var plantRootPulseGroup3d = new THREE.Group();
+            var plantRootPulseMat3d = new THREE.MeshBasicMaterial({
+              color: 0x86efac, transparent: true, opacity: 0.88,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            for (var rootPulseIndex3d = 0; rootPulseIndex3d < 8; rootPulseIndex3d++) {
+              var rootPulse3d = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), plantRootPulseMat3d);
+              rootPulse3d.userData.curveIndex = rootPulseIndex3d % plantRootCurves3d.length;
+              rootPulse3d.userData.phase = rootPulseIndex3d / 8;
+              plantRootPulseGroup3d.add(rootPulse3d);
+            }
+            plantRootPulseGroup3d.visible = false;
+            plantRootGroup3d.add(plantRootPulseGroup3d);
+            world3d.add(plantRootGroup3d);
+
+            var xylemFlowMat3d = new THREE.MeshBasicMaterial({
+              color: 0x67e8f9, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var xylemFlowGroup3d = new THREE.Group();
+            var xylemFlowCurves3d = [
+              [[5.9,-0.96,1.25],[5.9,-0.25,1.25],[5.95,0.35,1.3],[6.35,0.67,1.68]],
+              [[5.9,-0.96,1.25],[5.88,-0.18,1.28],[5.82,0.55,1.45],[5.74,0.99,1.79]],
+              [[5.9,-0.96,1.25],[5.82,-0.2,1.2],[5.55,0.35,1.08],[5.25,0.67,1.0]],
+              [[5.9,-0.96,1.25],[5.96,-0.18,1.2],[6.18,0.18,1.02],[6.36,0.35,0.83]]
+            ].map(function(xylemPoints3d) {
+              var xylemCurve3d = makeJourneyCurve3d(xylemPoints3d, false);
+              var xylemChannel3d = new THREE.Mesh(new THREE.TubeGeometry(xylemCurve3d, 34, 0.018, 5, false), xylemFlowMat3d);
+              xylemChannel3d.visible = false;
+              xylemFlowGroup3d.add(xylemChannel3d);
+              return xylemCurve3d;
+            });
+            var xylemMarkerCount3d = 20;
+            var xylemMarkerGeometry3d = new THREE.BufferGeometry();
+            xylemMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(xylemMarkerCount3d * 3), 3));
+            var xylemMarkers3d = new THREE.Points(xylemMarkerGeometry3d, new THREE.PointsMaterial({
+              color: 0xd1fae5, size: 0.065, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            xylemFlowGroup3d.add(xylemMarkers3d);
+            xylemFlowGroup3d.visible = false;
+            world3d.add(xylemFlowGroup3d);
+
+            var stomatalReleaseOrigins3d = xylemFlowCurves3d.map(function(xylemCurve3d) { return xylemCurve3d.getPointAt(1); });
+            var stomatalReleaseMat3d = new THREE.MeshBasicMaterial({
+              color: 0x99f6e4, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var stomatalReleaseGroup3d = new THREE.Group();
+            stomatalReleaseOrigins3d.forEach(function(stomatalOrigin3d) {
+              var stomatalRing3d = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.022, 6, 34), stomatalReleaseMat3d);
+              stomatalRing3d.position.copy(stomatalOrigin3d);
+              stomatalReleaseGroup3d.add(stomatalRing3d);
+            });
+            stomatalReleaseGroup3d.visible = false;
+            world3d.add(stomatalReleaseGroup3d);
+
+            var stomatalVaporCount3d = 28;
+            var stomatalVaporGeometry3d = new THREE.BufferGeometry();
+            stomatalVaporGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(stomatalVaporCount3d * 3), 3));
+            var stomatalVapor3d = new THREE.Points(stomatalVaporGeometry3d, new THREE.PointsMaterial({
+              color: 0xccfbf1, size: 0.072, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            stomatalVapor3d.visible = false;
+            world3d.add(stomatalVapor3d);
 
             var forestGroup3d = new THREE.Group();
             var miniTrunkGeometry3d = new THREE.CylinderGeometry(0.07, 0.1, 0.55, 7);
@@ -4383,10 +4754,148 @@ const d = labToolData.waterCycle || {};
             var vapor3d = makePoints3d(90, 0x9ee7ff, 0.095, 5.5, 4.5, 3.2);
             vapor3d.position.set(-2.1, 0.8, 1.0);
             world3d.add(vapor3d);
+            var vaporBasePositions3d = new Float32Array(vapor3d.geometry.attributes.position.array);
             var rain3d = makePoints3d(120, 0x69d7ff, 0.075, 5.2, 5.5, 2.6);
             rain3d.position.set(1.2, 0.75, -0.8);
             world3d.add(rain3d);
             var rainBasePositions3d = new Float32Array(rain3d.geometry.attributes.position.array);
+
+            var rainCurtainCount3d = 72;
+            var rainCurtainSeeds3d = new Float32Array(rainCurtainCount3d * 3);
+            for (var rainCurtainSeedIndex3d = 0; rainCurtainSeedIndex3d < rainCurtainCount3d; rainCurtainSeedIndex3d++) {
+              rainCurtainSeeds3d[rainCurtainSeedIndex3d * 3] = ((rainCurtainSeedIndex3d * 37) % 71) / 70 * 5.2 - 2.6;
+              rainCurtainSeeds3d[rainCurtainSeedIndex3d * 3 + 1] = ((rainCurtainSeedIndex3d * 53) % 67) / 66 * 2.6 - 1.3;
+              rainCurtainSeeds3d[rainCurtainSeedIndex3d * 3 + 2] = ((rainCurtainSeedIndex3d * 29) % 73) / 73;
+            }
+            var rainCurtainGeometry3d = new THREE.BufferGeometry();
+            rainCurtainGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rainCurtainCount3d * 6), 3));
+            var rainCurtain3d = new THREE.LineSegments(rainCurtainGeometry3d, new THREE.LineBasicMaterial({
+              color: 0x9ee7ff, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            rainCurtain3d.position.set(1.2, 0.75, -0.8);
+            rainCurtain3d.visible = false;
+            world3d.add(rainCurtain3d);
+
+            var rainImpactCount3d = 40;
+            var rainImpactSeeds3d = new Float32Array(rainImpactCount3d * 3);
+            for (var rainImpactSeedIndex3d = 0; rainImpactSeedIndex3d < rainImpactCount3d; rainImpactSeedIndex3d++) {
+              rainImpactSeeds3d[rainImpactSeedIndex3d * 3] = ((rainImpactSeedIndex3d * 31) % 41) / 40 * 5.0 - 2.5;
+              rainImpactSeeds3d[rainImpactSeedIndex3d * 3 + 1] = ((rainImpactSeedIndex3d * 23) % 37) / 36 * 2.4 - 1.2;
+              rainImpactSeeds3d[rainImpactSeedIndex3d * 3 + 2] = ((rainImpactSeedIndex3d * 17) % 43) / 43;
+            }
+            var rainImpactGeometry3d = new THREE.BufferGeometry();
+            rainImpactGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rainImpactCount3d * 3), 3));
+            var rainImpactMist3d = new THREE.Points(rainImpactGeometry3d, new THREE.PointsMaterial({
+              color: 0xcffafe, size: 0.06, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            rainImpactMist3d.position.set(1.2, 0, -0.8);
+            rainImpactMist3d.visible = false;
+            world3d.add(rainImpactMist3d);
+
+            var percolationCount3d = 42;
+            var percolationPositions3d = new Float32Array(percolationCount3d * 3);
+            for (var percolationIndex3d = 0; percolationIndex3d < percolationCount3d; percolationIndex3d++) {
+              var percolationColumn3d = percolationIndex3d % 7;
+              var percolationRow3d = Math.floor(percolationIndex3d / 7);
+              percolationPositions3d[percolationIndex3d * 3] = 2.0 + percolationColumn3d * 0.72 + Math.sin(percolationIndex3d * 1.7) * 0.12;
+              percolationPositions3d[percolationIndex3d * 3 + 1] = -1.04 - (percolationIndex3d % 6) * 0.2;
+              percolationPositions3d[percolationIndex3d * 3 + 2] = -2.45 + percolationRow3d * 0.72 + Math.cos(percolationIndex3d * 1.3) * 0.1;
+            }
+            var percolationGeometry3d = new THREE.BufferGeometry();
+            percolationGeometry3d.setAttribute('position', new THREE.BufferAttribute(percolationPositions3d, 3));
+            var soilPercolation3d = new THREE.Points(percolationGeometry3d, new THREE.PointsMaterial({
+              color: 0x7dd3fc, size: 0.075, transparent: true, opacity: 0.62,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            soilPercolation3d.visible = false;
+            world3d.add(soilPercolation3d);
+
+            var windStreams3d = new THREE.Group();
+            var windStreamMat3d = new THREE.LineBasicMaterial({
+              color: 0xbdeeff, transparent: true, opacity: 0.18,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var windStreamCurves3d = [];
+            for (var windLaneIndex3d = 0; windLaneIndex3d < 4; windLaneIndex3d++) {
+              var windLaneY3d = 1.2 + windLaneIndex3d * 0.62;
+              var windCurve3d = makeJourneyCurve3d([
+                [-5.2,windLaneY3d,1.8-windLaneIndex3d*0.45],
+                [-2.4,windLaneY3d+0.22,-0.1-windLaneIndex3d*0.35],
+                [0.7,windLaneY3d-0.1,-1.2-windLaneIndex3d*0.28],
+                [4.0,windLaneY3d+0.2,-0.7-windLaneIndex3d*0.2],
+                [7.4,windLaneY3d,0.4-windLaneIndex3d*0.15]
+              ], false);
+              windStreamCurves3d.push(windCurve3d);
+              windStreams3d.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(windCurve3d.getPoints(52)),
+                windStreamMat3d
+              ));
+            }
+            var windMarkerCount3d = 20;
+            var windMarkerGeometry3d = new THREE.BufferGeometry();
+            windMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(windMarkerCount3d * 3), 3));
+            var windMarkers3d = new THREE.Points(
+              windMarkerGeometry3d,
+              new THREE.PointsMaterial({ color: 0xe0f7ff, size: 0.07, transparent: true, opacity: 0.58, depthWrite: false, blending: THREE.AdditiveBlending })
+            );
+            windStreams3d.add(windMarkers3d);
+            windStreams3d.visible = false;
+            world3d.add(windStreams3d);
+
+            function makeSolarEnergyPath3d(pathPoints3d) {
+              var solarPathGroup3d = new THREE.Group();
+              var solarPathCurves3d = [];
+              var solarBeamMat3d = new THREE.MeshBasicMaterial({
+                color: 0xfde68a, transparent: true, opacity: 0,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              });
+              for (var solarLaneIndex3d = 0; solarLaneIndex3d < 3; solarLaneIndex3d++) {
+                var solarLaneOffset3d = (solarLaneIndex3d - 1) * 0.16;
+                var solarLanePoints3d = pathPoints3d.map(function(solarPoint3d) {
+                  return [solarPoint3d[0] + solarLaneOffset3d, solarPoint3d[1], solarPoint3d[2] - solarLaneOffset3d * 0.45];
+                });
+                var solarLaneCurve3d = makeJourneyCurve3d(solarLanePoints3d, false);
+                solarPathCurves3d.push(solarLaneCurve3d);
+                solarPathGroup3d.add(new THREE.Mesh(
+                  new THREE.TubeGeometry(solarLaneCurve3d, 40, 0.018, 5, false),
+                  solarBeamMat3d
+                ));
+              }
+              var solarMarkerCount3d = 18;
+              var solarMarkerGeometry3d = new THREE.BufferGeometry();
+              solarMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(new Float32Array(solarMarkerCount3d * 3), 3));
+              var solarMarkers3d = new THREE.Points(solarMarkerGeometry3d, new THREE.PointsMaterial({
+                color: 0xfff7c2, size: 0.085, transparent: true, opacity: 0,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              }));
+              solarPathGroup3d.add(solarMarkers3d);
+              solarPathGroup3d.visible = false;
+              world3d.add(solarPathGroup3d);
+              return { group: solarPathGroup3d, curves: solarPathCurves3d, beamMaterial: solarBeamMat3d, markers: solarMarkers3d };
+            }
+            var solarEnergyPaths3d = {
+              ocean: makeSolarEnergyPath3d([[-7.6,6.2,-7.4],[-6.0,4.2,-4.5],[-4.4,2.0,-1.3],[-3.0,-0.82,1.7]]),
+              plant: makeSolarEnergyPath3d([[-7.6,6.2,-7.4],[-3.5,4.5,-4.2],[1.4,2.8,-1.4],[5.9,1.35,1.25]])
+            };
+
+            var latentHeatGroup3d = new THREE.Group();
+            for (var latentRingIndex3d = 0; latentRingIndex3d < 3; latentRingIndex3d++) {
+              var latentRing3d = new THREE.Mesh(
+                new THREE.TorusGeometry(0.72, 0.026, 6, 52),
+                new THREE.MeshBasicMaterial({
+                  color: 0xfbbf24, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                })
+              );
+              if (latentRingIndex3d === 1) latentRing3d.rotation.x = Math.PI / 2;
+              if (latentRingIndex3d === 2) latentRing3d.rotation.y = Math.PI / 2;
+              latentHeatGroup3d.add(latentRing3d);
+            }
+            latentHeatGroup3d.position.set(0.5, 3.15, -1.7);
+            latentHeatGroup3d.visible = false;
+            world3d.add(latentHeatGroup3d);
 
             var starPositions = new Float32Array(240 * 3);
             for (var si3 = 0; si3 < 240; si3++) {
@@ -4472,7 +4981,190 @@ const d = labToolData.waterCycle || {};
             dropletGroup3d.add(halo3d);
             var dropletLight3d = new THREE.PointLight(0x38bdf8, 2.2, 5.5);
             dropletGroup3d.add(dropletLight3d);
+            var vaporShellMat3d = new THREE.MeshBasicMaterial({
+              color: 0xbae6fd, wireframe: true, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var vaporShell3d = new THREE.Mesh(new THREE.IcosahedronGeometry(0.48, 1), vaporShellMat3d);
+            vaporShell3d.visible = false;
+            dropletGroup3d.add(vaporShell3d);
+            var iceCrystal3d = new THREE.Group();
+            var iceCrystalMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0xe0f2fe, emissive: 0x7dd3fc, emissiveIntensity: 0.42,
+              roughness: 0.18, clearcoat: 0.9, transparent: true, opacity: 0.94
+            });
+            iceCrystal3d.add(new THREE.Mesh(new THREE.OctahedronGeometry(0.23, 1), iceCrystalMat3d));
+            for (var iceArmIndex3d = 0; iceArmIndex3d < 3; iceArmIndex3d++) {
+              var iceArm3d = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.82, 7), iceCrystalMat3d);
+              iceArm3d.rotation.z = iceArmIndex3d * Math.PI / 3;
+              iceCrystal3d.add(iceArm3d);
+            }
+            iceCrystal3d.visible = false;
+            dropletGroup3d.add(iceCrystal3d);
+            var fallStreakMat3d = new THREE.MeshBasicMaterial({
+              color: 0x93c5fd, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var fallStreak3d = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.1, 1.05, 9, 1, true), fallStreakMat3d);
+            fallStreak3d.position.y = -0.72;
+            fallStreak3d.visible = false;
+            dropletGroup3d.add(fallStreak3d);
             world3d.add(dropletGroup3d);
+
+            var labelTextures3d = [];
+            var processLabels3d = {};
+            function makeProcessLabel3d(labelKey, labelText, accentColor, position) {
+              var labelCanvas3d = document.createElement('canvas');
+              labelCanvas3d.width = 512;
+              labelCanvas3d.height = 128;
+              var labelContext3d = labelCanvas3d.getContext('2d');
+              if (!labelContext3d) return null;
+              labelContext3d.beginPath();
+              labelContext3d.moveTo(28, 12);
+              labelContext3d.lineTo(484, 12);
+              labelContext3d.quadraticCurveTo(504, 12, 504, 32);
+              labelContext3d.lineTo(504, 96);
+              labelContext3d.quadraticCurveTo(504, 116, 484, 116);
+              labelContext3d.lineTo(28, 116);
+              labelContext3d.quadraticCurveTo(8, 116, 8, 96);
+              labelContext3d.lineTo(8, 32);
+              labelContext3d.quadraticCurveTo(8, 12, 28, 12);
+              labelContext3d.closePath();
+              labelContext3d.fillStyle = 'rgba(3, 18, 31, 0.82)';
+              labelContext3d.fill();
+              labelContext3d.lineWidth = 5;
+              labelContext3d.strokeStyle = accentColor;
+              labelContext3d.stroke();
+              labelContext3d.font = '600 31px system-ui, sans-serif';
+              labelContext3d.textAlign = 'center';
+              labelContext3d.textBaseline = 'middle';
+              labelContext3d.fillStyle = '#f0f9ff';
+              labelContext3d.fillText(labelText, 256, 65);
+              var labelTexture3d = new THREE.CanvasTexture(labelCanvas3d);
+              labelTexture3d.minFilter = THREE.LinearFilter;
+              labelTexture3d.generateMipmaps = false;
+              labelTextures3d.push(labelTexture3d);
+              var labelSprite3d = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: labelTexture3d, transparent: true, opacity: 0.96,
+                depthTest: false, depthWrite: false
+              }));
+              labelSprite3d.position.set(position[0], position[1], position[2]);
+              labelSprite3d.scale.set(2.8, 0.7, 1);
+              labelSprite3d.renderOrder = 20;
+              labelSprite3d.visible = false;
+              processLabels3d[labelKey] = labelSprite3d;
+              world3d.add(labelSprite3d);
+              return labelSprite3d;
+            }
+            makeProcessLabel3d('ocean', 'Ocean storage', '#38bdf8', [-3.0, 0.05, 1.7]);
+            makeProcessLabel3d('evaporation', 'Evaporation', '#fbbf24', [-1.8, 2.25, 0.25]);
+            makeProcessLabel3d('condensation', 'Condensation', '#e0f2fe', [0.2, 4.1, -1.55]);
+            makeProcessLabel3d('precipitation', 'Precipitation', '#60a5fa', [2.7, 1.25, -0.4]);
+            makeProcessLabel3d('land', 'Land pathways', '#f59e0b', [4.3, 0.05, -0.1]);
+            makeProcessLabel3d('river', 'Surface runoff', '#3b82f6', [1.15, -0.1, 1.35]);
+            makeProcessLabel3d('aquifer', 'Groundwater', '#22d3ee', [4.8, -1.45, -0.55]);
+            makeProcessLabel3d('plant', 'Plant uptake', '#4ade80', [5.9, 0.45, 1.25]);
+            makeProcessLabel3d('transpiration', 'Transpiration', '#86efac', [5.9, 2.85, 1.25]);
+            makeProcessLabel3d('cycle', 'Cycle continues', '#67e8f9', [-3.0, 0.65, 1.7]);
+            var estuarySalinityLabelGroup3d = new THREE.Group();
+            var estuarySalinityLabels3d = [];
+            [
+              { key: 'salinity_fresh', zone: 'freshwater', text: 'River water', color: '#7dd3fc', position: [-0.25, -0.38, 1.28] },
+              { key: 'salinity_mix', zone: 'brackish', text: 'Brackish mix', color: '#2dd4bf', position: [-1.25, -0.38, 1.78] },
+              { key: 'salinity_ocean', zone: 'marine', text: 'Ocean water', color: '#0ea5e9', position: [-2.45, -0.38, 2.08] }
+            ].forEach(function(estuaryLabelSpec3d) {
+              var estuaryLabelSprite3d = makeProcessLabel3d(estuaryLabelSpec3d.key, estuaryLabelSpec3d.text,
+                estuaryLabelSpec3d.color, estuaryLabelSpec3d.position);
+              if (!estuaryLabelSprite3d) return;
+              delete processLabels3d[estuaryLabelSpec3d.key];
+              estuaryLabelSprite3d.userData.salinityZone = estuaryLabelSpec3d.zone;
+              estuaryLabelSprite3d.scale.set(1.55, 0.39, 1);
+              estuaryLabelSprite3d.visible = true;
+              estuarySalinityLabels3d.push(estuaryLabelSprite3d);
+              estuarySalinityLabelGroup3d.add(estuaryLabelSprite3d);
+            });
+            estuarySalinityLabelGroup3d.visible = false;
+            world3d.add(estuarySalinityLabelGroup3d);
+            var stateLabelKey3d = {
+              ocean: 'ocean', complete: 'cycle', evaporating: 'evaporation',
+              condensing: 'condensation', precipitating: 'precipitation', ground_choice: 'land',
+              river_runoff: 'river', infiltrating: 'aquifer', aquifer_flow: 'aquifer',
+              plant_absorb: 'plant', transpiring: 'transpiration'
+            };
+
+            var focusBeacon3d = new THREE.Group();
+            var focusRingMat3d = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.52, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+            var focusRing3d = new THREE.Mesh(new THREE.RingGeometry(0.38, 0.5, 36), focusRingMat3d);
+            focusRing3d.rotation.x = -Math.PI / 2;
+            focusBeacon3d.add(focusRing3d);
+            var focusOuterRing3d = new THREE.Mesh(new THREE.RingGeometry(0.58, 0.62, 36), focusRingMat3d.clone());
+            focusOuterRing3d.rotation.x = -Math.PI / 2;
+            focusBeacon3d.add(focusOuterRing3d);
+            var focusBeamMat3d = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending });
+            var focusBeam3d = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.17, 1.4, 14, 1, true), focusBeamMat3d);
+            focusBeam3d.position.y = 0.7;
+            focusBeacon3d.add(focusBeam3d);
+            var focusLight3d = new THREE.PointLight(0x38bdf8, 0.8, 4);
+            focusLight3d.position.y = 0.35;
+            focusBeacon3d.add(focusLight3d);
+            world3d.add(focusBeacon3d);
+
+            var arrivalWaveGroup3d = new THREE.Group();
+            var arrivalWaveMaterials3d = [];
+            for (var arrivalRingIndex3d = 0; arrivalRingIndex3d < 3; arrivalRingIndex3d++) {
+              var arrivalWaveMat3d = new THREE.MeshBasicMaterial({
+                color: 0x38bdf8, transparent: true, opacity: 0,
+                side: THREE.DoubleSide, depthTest: false, depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              var arrivalRing3d = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.29, 36), arrivalWaveMat3d);
+              arrivalRing3d.rotation.x = -Math.PI / 2;
+              arrivalRing3d.userData.delay = arrivalRingIndex3d * 0.13;
+              arrivalWaveMaterials3d.push(arrivalWaveMat3d);
+              arrivalWaveGroup3d.add(arrivalRing3d);
+            }
+            arrivalWaveGroup3d.visible = false;
+            world3d.add(arrivalWaveGroup3d);
+
+            var arrivalSparkPositions3d = new Float32Array(30 * 3);
+            for (var arrivalSparkIndex3d = 0; arrivalSparkIndex3d < 30; arrivalSparkIndex3d++) {
+              var arrivalSparkAngle3d = arrivalSparkIndex3d * 2.39996;
+              var arrivalSparkRadius3d = 0.35 + (arrivalSparkIndex3d % 5) * 0.08;
+              arrivalSparkPositions3d[arrivalSparkIndex3d * 3] = Math.cos(arrivalSparkAngle3d) * arrivalSparkRadius3d;
+              arrivalSparkPositions3d[arrivalSparkIndex3d * 3 + 1] = ((arrivalSparkIndex3d % 7) - 3) * 0.08;
+              arrivalSparkPositions3d[arrivalSparkIndex3d * 3 + 2] = Math.sin(arrivalSparkAngle3d) * arrivalSparkRadius3d;
+            }
+            var arrivalSparkGeometry3d = new THREE.BufferGeometry();
+            arrivalSparkGeometry3d.setAttribute('position', new THREE.BufferAttribute(arrivalSparkPositions3d, 3));
+            var arrivalSpark3d = new THREE.Points(arrivalSparkGeometry3d, new THREE.PointsMaterial({
+              color: 0x7dd3fc, size: 0.075, transparent: true, opacity: 0,
+              depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            arrivalSpark3d.visible = false;
+            world3d.add(arrivalSpark3d);
+
+            var cycleCrown3d = new THREE.Group();
+            var cycleCrownMat3d = new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.62, depthWrite: false, blending: THREE.AdditiveBlending });
+            for (var cycleRingIndex3d = 0; cycleRingIndex3d < 3; cycleRingIndex3d++) {
+              var cycleRing3d = new THREE.Mesh(new THREE.TorusGeometry(0.64 + cycleRingIndex3d * 0.18, 0.026, 8, 48), cycleCrownMat3d.clone());
+              cycleRing3d.rotation.set(Math.PI / 2 + (cycleRingIndex3d - 1) * 0.18, cycleRingIndex3d * 0.28, 0);
+              cycleCrown3d.add(cycleRing3d);
+            }
+            cycleCrown3d.position.set(-3.0, -0.62, 1.7);
+            cycleCrown3d.visible = false;
+            world3d.add(cycleCrown3d);
+
+            var rainRipples3d = new THREE.Group();
+            [[3.35,-0.96,-0.9],[4.15,-0.96,0.15],[5.0,-0.96,-0.55],[3.7,-0.96,0.85]].forEach(function(ripplePosition3d, rippleIndex3d) {
+              var rippleMat3d = new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+              var ripple3d = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.145, 28), rippleMat3d);
+              ripple3d.rotation.x = -Math.PI / 2;
+              ripple3d.position.set(ripplePosition3d[0], ripplePosition3d[1], ripplePosition3d[2]);
+              ripple3d.userData.phase = rippleIndex3d / 4;
+              rainRipples3d.add(ripple3d);
+            });
+            rainRipples3d.visible = false;
+            world3d.add(rainRipples3d);
 
             var stageTargets3d = {
               ocean: [-3.0, -0.72, 1.7], collection: [-3.0, -0.72, 1.7],
@@ -4505,6 +5197,54 @@ const d = labToolData.waterCycle || {};
               transpiring: makeJourneyCurve3d([[5.8,-0.35,1.2],[5.9,0.75,1.2],[5.9,2.0,1.2],[4.1,2.65,0.4],[2.0,3.0,-0.55],[0.25,3.3,-1.55]], false),
               complete: makeJourneyCurve3d([[-3.4,-0.72,1.45],[-2.8,-0.67,1.9],[-2.4,-0.76,1.55],[-3.0,-0.72,1.25]], true)
             };
+
+            var branchPreviewGroup3d = new THREE.Group();
+            var branchPreviewSpecs3d = [
+              { key: 'runoff', labelKey: 'river', color: 0x3b82f6, curve: stateCurves3d.river_runoff, markerGeometry: new THREE.SphereGeometry(0.12, 12, 9) },
+              { key: 'infiltrate', labelKey: 'aquifer', color: 0x22d3ee, curve: stateCurves3d.infiltrating, markerGeometry: new THREE.OctahedronGeometry(0.14, 0) },
+              { key: 'plant', labelKey: 'plant', color: 0x4ade80, curve: stateCurves3d.plant_absorb, markerGeometry: new THREE.TetrahedronGeometry(0.15, 0) }
+            ];
+            branchPreviewSpecs3d.forEach(function(branchSpec3d) {
+              branchSpec3d.routeMaterial = new THREE.MeshBasicMaterial({
+                color: branchSpec3d.color, transparent: true, opacity: 0.42,
+                depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+              });
+              branchSpec3d.routeMesh = new THREE.Mesh(
+                new THREE.TubeGeometry(branchSpec3d.curve, 56, 0.035, 6, false),
+                branchSpec3d.routeMaterial
+              );
+              branchSpec3d.routeMesh.userData.routeChoice = branchSpec3d.key;
+              branchSpec3d.routeMesh.renderOrder = 14;
+              branchSpec3d.routeHitMesh = new THREE.Mesh(
+                new THREE.TubeGeometry(branchSpec3d.curve, 40, 0.16, 5, false),
+                new THREE.MeshBasicMaterial({
+                  transparent: true, opacity: 0, colorWrite: false,
+                  depthTest: false, depthWrite: false
+                })
+              );
+              branchSpec3d.routeHitMesh.userData.routeChoice = branchSpec3d.key;
+              branchSpec3d.markerMaterial = new THREE.MeshBasicMaterial({
+                color: branchSpec3d.color, transparent: true, opacity: 0.92,
+                depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+              });
+              branchSpec3d.markerMesh = new THREE.Mesh(branchSpec3d.markerGeometry, branchSpec3d.markerMaterial);
+              branchSpec3d.markerMesh.userData.routeChoice = branchSpec3d.key;
+              branchSpec3d.markerMesh.userData.labelKey = branchSpec3d.labelKey;
+              branchSpec3d.hitMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(0.44, 10, 8),
+                new THREE.MeshBasicMaterial({
+                  transparent: true, opacity: 0, colorWrite: false,
+                  depthTest: false, depthWrite: false
+                })
+              );
+              branchSpec3d.hitMesh.userData.routeChoice = branchSpec3d.key;
+              branchSpec3d.markerMesh.add(branchSpec3d.hitMesh);
+              branchSpec3d.markerMesh.renderOrder = 15;
+              branchPreviewGroup3d.add(branchSpec3d.routeMesh, branchSpec3d.routeHitMesh, branchSpec3d.markerMesh);
+            });
+            branchPreviewGroup3d.visible = false;
+            world3d.add(branchPreviewGroup3d);
+
             var activeRouteKey3d = '';
             function syncJourneyRoute3d(stateKey) {
               var routeKey = stateCurves3d[stateKey] ? stateKey : 'ocean';
@@ -4563,6 +5303,81 @@ const d = labToolData.waterCycle || {};
               userOrbit3d = false;
             };
 
+            var branchRaycaster3d = new THREE.Raycaster();
+            var branchPointer3d = new THREE.Vector2();
+            var branchPointerDown3d = { x: 0, y: 0 };
+            var branchChoiceEnabled3d = false;
+            var hoveredBranchKey3d = '';
+            var estuaryProbeEnabled3d = false;
+            var hoveredSalinityZone3d = '';
+            var estuaryProbePoint3d = new THREE.Vector3(-0.25, -1.06, 1.6);
+            function setJourneyPointer3d(pointerEvent3d) {
+              var branchRect3d = canvasEl.getBoundingClientRect();
+              if (!branchRect3d.width || !branchRect3d.height) return false;
+              branchPointer3d.set(
+                ((pointerEvent3d.clientX - branchRect3d.left) / branchRect3d.width) * 2 - 1,
+                -((pointerEvent3d.clientY - branchRect3d.top) / branchRect3d.height) * 2 + 1
+              );
+              branchRaycaster3d.setFromCamera(branchPointer3d, camera);
+              return true;
+            }
+            function branchChoiceAtPointer3d(pointerEvent3d) {
+              if (!branchChoiceEnabled3d) return '';
+              if (!setJourneyPointer3d(pointerEvent3d)) return '';
+              var branchHits3d = branchRaycaster3d.intersectObjects(branchPreviewGroup3d.children, true);
+              for (var branchHitIndex3d = 0; branchHitIndex3d < branchHits3d.length; branchHitIndex3d++) {
+                var branchHitObject3d = branchHits3d[branchHitIndex3d].object;
+                while (branchHitObject3d && branchHitObject3d !== branchPreviewGroup3d) {
+                  if (branchHitObject3d.userData && branchHitObject3d.userData.routeChoice) {
+                    return branchHitObject3d.userData.routeChoice;
+                  }
+                  branchHitObject3d = branchHitObject3d.parent;
+                }
+              }
+              return '';
+            }
+            function salinityZoneAtPointer3d(pointerEvent3d) {
+              if (!estuaryProbeEnabled3d || !setJourneyPointer3d(pointerEvent3d)) return '';
+              var salinityHits3d = branchRaycaster3d.intersectObject(estuaryMixingRibbon3d, false);
+              if (!salinityHits3d.length) return '';
+              estuaryProbePoint3d.copy(salinityHits3d[0].point);
+              var salinityMix3d = Math.max(0, Math.min(1, (-0.25 - estuaryProbePoint3d.x) / 2.45));
+              return salinityMix3d < 0.33 ? 'freshwater' : (salinityMix3d < 0.7 ? 'brackish' : 'marine');
+            }
+            function handleBranchPointerDown3d(pointerEvent3d) {
+              branchPointerDown3d.x = pointerEvent3d.clientX;
+              branchPointerDown3d.y = pointerEvent3d.clientY;
+            }
+            function handleBranchPointerMove3d(pointerEvent3d) {
+              hoveredBranchKey3d = branchChoiceAtPointer3d(pointerEvent3d);
+              hoveredSalinityZone3d = hoveredBranchKey3d ? '' : salinityZoneAtPointer3d(pointerEvent3d);
+              canvasEl.dataset.routeHover = hoveredBranchKey3d || 'none';
+              canvasEl.dataset.salinityHover = hoveredSalinityZone3d || 'none';
+              canvasEl.style.cursor = hoveredBranchKey3d ? 'pointer' : (hoveredSalinityZone3d ? 'crosshair' : '');
+            }
+            function handleBranchPointerLeave3d() {
+              hoveredBranchKey3d = '';
+              hoveredSalinityZone3d = '';
+              canvasEl.dataset.routeHover = 'none';
+              canvasEl.dataset.salinityHover = 'none';
+              canvasEl.style.cursor = '';
+            }
+            function handleBranchClick3d(pointerEvent3d) {
+              if (!branchChoiceEnabled3d) return;
+              var branchDragDistance3d = Math.hypot(
+                pointerEvent3d.clientX - branchPointerDown3d.x,
+                pointerEvent3d.clientY - branchPointerDown3d.y
+              );
+              if (branchDragDistance3d > 7) return;
+              var selectedBranchKey3d = branchChoiceAtPointer3d(pointerEvent3d);
+              if (!selectedBranchKey3d) return;
+              canvasEl.dataset.routeChoiceRequest = selectedBranchKey3d;
+            }
+            canvasEl.addEventListener('pointerdown', handleBranchPointerDown3d);
+            canvasEl.addEventListener('pointermove', handleBranchPointerMove3d);
+            canvasEl.addEventListener('pointerleave', handleBranchPointerLeave3d);
+            canvasEl.addEventListener('click', handleBranchClick3d);
+
             var clock3d = new THREE.Clock();
             var resizeObserver3d = null;
             function resizeJourney3d() {
@@ -4596,6 +5411,16 @@ const d = labToolData.waterCycle || {};
               resizeObserver3d = new ResizeObserver(resizeJourney3d);
               resizeObserver3d.observe(canvasEl);
             }
+            var visualTime3d = 0;
+            var lastElapsed3d = 0;
+            var waveFrame3d = 0;
+            var lastUndergroundMode3d = null;
+            var lastArrivalState3d = null;
+            var arrivalAge3d = 2;
+            var rainbowMemory3d = 0;
+            var dropletScaleGoal3d = new THREE.Vector3(1, 1, 1);
+            var vaporSourceGoal3d = new THREE.Vector3(-2.1, 0.8, 1.0);
+
 
             function animateJourney3d() {
               if (!alive3d || !canvasEl.isConnected) return;
@@ -4616,6 +5441,10 @@ const d = labToolData.waterCycle || {};
               var windVisual3d = Math.max(0, Math.min(3, parseFloat(canvasEl.dataset.climWind || '1')));
               var journeyPaused3d = canvasEl.dataset.journeyPaused === 'true';
               var hydroPoints3d = Math.max(0, Math.min(120, parseFloat(canvasEl.dataset.hydroPoints || '0')));
+              var frameDelta3d = lastElapsed3d ? Math.min(0.05, Math.max(0, elapsed3d - lastElapsed3d)) : 0;
+              lastElapsed3d = elapsed3d;
+              if (!motionReduced3d && !journeyPaused3d) visualTime3d += frameDelta3d;
+
               var state3d = rawState3d === 'idle' ? (stageMap3d[stage3d] || stage3d) : rawState3d;
               var targetArray3d = stageTargets3d[state3d] || stageTargets3d.ocean;
               var cameraArray3d = cameraTargets3d[state3d] || cameraTargets3d.idle;
@@ -4626,9 +5455,503 @@ const d = labToolData.waterCycle || {};
               var cameraGoal3d = new THREE.Vector3(cameraArray3d[0], cameraArray3d[1], cameraArray3d[2]);
               syncJourneyRoute3d(state3d);
               canvasEl.dataset.journeyProgress = String(journeyProgress3d);
+              var activeLabelKey3d = stateLabelKey3d[state3d] || 'ocean';
+              var groundChoiceActive3d = state3d === 'ground_choice';
+              branchChoiceEnabled3d = groundChoiceActive3d;
+              if (!groundChoiceActive3d && hoveredBranchKey3d) {
+                hoveredBranchKey3d = '';
+                canvasEl.dataset.routeHover = 'none';
+                canvasEl.style.cursor = '';
+              }
+              Object.keys(processLabels3d).forEach(function(labelKey3d) {
+                var isChoiceLabel3d = labelKey3d === 'river' || labelKey3d === 'aquifer' || labelKey3d === 'plant';
+                var isActiveLabel3d = groundChoiceActive3d ? isChoiceLabel3d : labelKey3d === activeLabelKey3d;
+                processLabels3d[labelKey3d].visible = isActiveLabel3d;
+                if (isActiveLabel3d) {
+                  var labelPulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 2.2) * 0.025;
+                  var labelWidth3d = groundChoiceActive3d ? 2.25 : 2.8;
+                  processLabels3d[labelKey3d].scale.set(labelWidth3d * labelPulse3d, labelWidth3d * 0.25 * labelPulse3d, 1);
+                  var labelBranchKey3d = labelKey3d === 'river' ? 'runoff' : labelKey3d === 'aquifer' ? 'infiltrate' : labelKey3d === 'plant' ? 'plant' : '';
+                  processLabels3d[labelKey3d].material.opacity = groundChoiceActive3d && hoveredBranchKey3d && labelBranchKey3d !== hoveredBranchKey3d
+                    ? 0.5 : 0.96;
+                }
+              });
+              branchPreviewGroup3d.visible = groundChoiceActive3d;
+              branchPreviewSpecs3d.forEach(function(branchSpec3d, branchIndex3d) {
+                var branchMarkerT3d = motionReduced3d ? 0.38 + branchIndex3d * 0.16 :
+                  (0.08 + branchIndex3d * 0.22 + visualTime3d * 0.11) % 1;
+                branchSpec3d.markerMesh.position.copy(branchSpec3d.curve.getPointAt(branchMarkerT3d));
+                branchSpec3d.markerMesh.rotation.set(visualTime3d * 0.3, visualTime3d * 0.42, branchIndex3d * 0.7);
+                var branchPulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 2.5 + branchIndex3d) * 0.18;
+                var branchHovered3d = hoveredBranchKey3d === branchSpec3d.key;
+                var branchMuted3d = !!hoveredBranchKey3d && !branchHovered3d;
+                branchSpec3d.markerMesh.scale.setScalar(branchPulse3d * (branchHovered3d ? 1.34 : branchMuted3d ? 0.86 : 1));
+                branchSpec3d.markerMaterial.opacity = branchMuted3d ? 0.45 : 0.92;
+                branchSpec3d.routeMaterial.opacity = groundChoiceActive3d ?
+                  (branchHovered3d ? 0.7 : branchMuted3d ? 0.16 : 0.34 + (branchPulse3d - 1) * 0.35) : 0;
+              });
+              canvasEl.dataset.routePreview = groundChoiceActive3d ? 'runoff,infiltrate,plant' : 'hidden';
+              canvasEl.dataset.sceneFocus = groundChoiceActive3d ? 'route-choice' : activeLabelKey3d;
+              var stateVisualColor3d = stateColors3d[state3d] || 0x38bdf8;
+              var arrivalStateChanged3d = lastArrivalState3d !== null && lastArrivalState3d !== state3d;
+              if (lastArrivalState3d === null || arrivalStateChanged3d) {
+                arrivalWaveGroup3d.position.set(targetArray3d[0], targetArray3d[1] + 0.02, targetArray3d[2]);
+                arrivalSpark3d.position.copy(arrivalWaveGroup3d.position);
+                arrivalWaveMaterials3d.forEach(function(arrivalColorMat3d) {
+                  arrivalColorMat3d.color.setHex(stateVisualColor3d);
+                });
+                arrivalSpark3d.material.color.setHex(stateVisualColor3d);
+                if (arrivalStateChanged3d) arrivalAge3d = 0;
+                lastArrivalState3d = state3d;
+                canvasEl.dataset.arrivalState = state3d;
+              }
+              if (!motionReduced3d && !journeyPaused3d && arrivalAge3d < 2) {
+                arrivalAge3d += frameDelta3d;
+              }
+              var arrivalWaveActive3d = !motionReduced3d && arrivalAge3d < 1.45;
+              arrivalWaveGroup3d.visible = arrivalWaveActive3d;
+              arrivalWaveGroup3d.children.forEach(function(arrivalRingMesh3d) {
+                var delayedArrivalAge3d = arrivalAge3d - arrivalRingMesh3d.userData.delay;
+                var ringLife3d = Math.max(0, Math.min(1, delayedArrivalAge3d / 1.05));
+                arrivalRingMesh3d.scale.setScalar(0.7 + ringLife3d * 3.2);
+                arrivalRingMesh3d.material.opacity = delayedArrivalAge3d >= 0 && delayedArrivalAge3d < 1.05 ?
+                  (1 - ringLife3d) * 0.58 : 0;
+              });
+              var arrivalSparkActive3d = !motionReduced3d && arrivalAge3d < 0.9;
+              arrivalSpark3d.visible = arrivalSparkActive3d;
+              if (arrivalSparkActive3d) {
+                var arrivalSparkLife3d = Math.max(0, Math.min(1, arrivalAge3d / 0.9));
+                arrivalSpark3d.scale.setScalar(0.75 + arrivalSparkLife3d * 2.1);
+                arrivalSpark3d.material.opacity = (1 - arrivalSparkLife3d) * 0.72;
+              }
+              canvasEl.dataset.arrivalEffect = arrivalWaveActive3d || arrivalSparkActive3d ? 'active' : 'settled';
+
+              var cycleCompleteActive3d = state3d === 'complete';
+              cycleCrown3d.visible = cycleCompleteActive3d;
+              cycleCrown3d.children.forEach(function(cycleRingMesh3d, cycleRingIndex3d) {
+                var cyclePulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 1.8 + cycleRingIndex3d) * 0.08;
+                cycleRingMesh3d.scale.setScalar(cyclePulse3d);
+                cycleRingMesh3d.material.opacity = motionReduced3d ? 0.52 : 0.42 + Math.sin(visualTime3d * 1.4 + cycleRingIndex3d) * 0.16;
+                cycleRingMesh3d.rotation.z = motionReduced3d ? 0 : visualTime3d * (0.2 + cycleRingIndex3d * 0.05) * (cycleRingIndex3d % 2 ? -1 : 1);
+              });
+              canvasEl.dataset.completionEffect = cycleCompleteActive3d ? 'cycle-continues' : 'hidden';
+              var vaporTransfer3d = state3d === 'evaporating' || state3d === 'evaporation' || state3d === 'transpiring' || state3d === 'transpiration';
+              var condensationTransfer3d = state3d === 'condensing' || state3d === 'condensation';
+              var parcelGasBlend3d = condensationTransfer3d ? (1 - journeyProgress3d) : (vaporTransfer3d ? 1 : 0);
+              var precipitationTransfer3d = state3d === 'precipitating' || state3d === 'precipitation';
+              var frozenParcel3d = tempVisual3d < -2 && (precipitationTransfer3d || state3d === 'ground_choice');
+              var rainParcel3d = precipitationTransfer3d && !frozenParcel3d;
+              droplet3d.visible = !frozenParcel3d;
+              dropletCore3d.visible = !frozenParcel3d;
+              dropletHighlight3d.visible = !frozenParcel3d && parcelGasBlend3d < 0.86;
+              vaporShell3d.visible = parcelGasBlend3d > 0.03 && !frozenParcel3d;
+              iceCrystal3d.visible = frozenParcel3d;
+              fallStreak3d.visible = rainParcel3d;
+              if (parcelGasBlend3d > 0.02) {
+                var parcelScale3d = 0.55 + (1 - parcelGasBlend3d) * 0.45;
+                dropletScaleGoal3d.set(parcelScale3d, parcelScale3d * 1.08, parcelScale3d);
+              } else if (rainParcel3d) {
+                dropletScaleGoal3d.set(0.78, 1.28, 0.78);
+              } else {
+                dropletScaleGoal3d.set(1, 1, 1);
+              }
+              droplet3d.scale.lerp(dropletScaleGoal3d, motionReduced3d ? 1 : 0.1);
+              dropletMat3d.opacity += ((0.96 - parcelGasBlend3d * 0.68) - dropletMat3d.opacity) * (motionReduced3d ? 1 : 0.1);
+              vaporShellMat3d.opacity = vaporShell3d.visible ? 0.16 + parcelGasBlend3d * 0.34 : 0;
+              vaporShell3d.scale.setScalar(0.88 + parcelGasBlend3d * 0.24 + (motionReduced3d ? 0 : Math.sin(visualTime3d * 2.4) * 0.04));
+              vaporShell3d.rotation.set(visualTime3d * 0.18, visualTime3d * 0.26, visualTime3d * 0.11);
+              iceCrystal3d.rotation.set(visualTime3d * 0.3, visualTime3d * 0.42, visualTime3d * 0.16);
+              fallStreakMat3d.opacity = rainParcel3d ? 0.2 + rainVisual3d / 300 : 0;
+              halo3d.material.color.setHex(stateVisualColor3d);
+              canvasEl.dataset.parcelPhase = frozenParcel3d ? 'solid' : (parcelGasBlend3d > 0.5 ? 'vapor' : 'liquid');
+              focusBeacon3d.position.set(targetArray3d[0], targetArray3d[1] - 0.04, targetArray3d[2]);
+              focusRingMat3d.color.setHex(stateVisualColor3d);
+              focusOuterRing3d.material.color.setHex(stateVisualColor3d);
+              focusBeamMat3d.color.setHex(stateVisualColor3d);
+              focusLight3d.color.setHex(stateVisualColor3d);
+              var beaconPulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 2.6) * 0.16;
+              focusRing3d.scale.setScalar(beaconPulse3d);
+              focusOuterRing3d.scale.setScalar(1.1 + (motionReduced3d ? 0 : Math.sin(visualTime3d * 1.7) * 0.12));
+              focusBeamMat3d.opacity = 0.07 + (motionReduced3d ? 0 : (Math.sin(visualTime3d * 2.1) + 1) * 0.025);
+              focusLight3d.intensity = 0.55 + hydroPoints3d / 180;
+
+              var undergroundMode3d = state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow' ||
+                state3d === 'plant_absorb';
+              if (undergroundMode3d !== lastUndergroundMode3d) {
+                landMat3d.depthWrite = !undergroundMode3d;
+                groundCoverMat3d.depthWrite = !undergroundMode3d;
+                landMat3d.needsUpdate = true;
+                groundCoverMat3d.needsUpdate = true;
+                strataGroup3d.children.forEach(function(stratumMesh3d) {
+                  stratumMesh3d.material.depthWrite = !undergroundMode3d;
+                  stratumMesh3d.material.needsUpdate = true;
+                });
+                land3d.castShadow = !undergroundMode3d;
+                lastUndergroundMode3d = undergroundMode3d;
+              }
+              var cutawayBlend3d = motionReduced3d ? 1 : 0.09;
+              landMat3d.opacity += ((undergroundMode3d ? 0.28 : 1) - landMat3d.opacity) * cutawayBlend3d;
+              groundCoverMat3d.opacity += ((undergroundMode3d ? 0.2 : 1) - groundCoverMat3d.opacity) * cutawayBlend3d;
+              strataGroup3d.children.forEach(function(stratumMesh3d) {
+                stratumMesh3d.material.opacity += ((undergroundMode3d ? 0.24 : 1) - stratumMesh3d.material.opacity) * cutawayBlend3d;
+              });
+              canvasEl.dataset.cutaway = String(undergroundMode3d);
+
+              var plantTransferActive3d = state3d === 'plant_absorb' || state3d === 'transpiring' || state3d === 'transpiration';
+              var rootTargetOpacity3d = plantTransferActive3d ? (undergroundMode3d ? 0.86 : 0.56) : 0.26;
+              plantRootMat3d.opacity += (rootTargetOpacity3d - plantRootMat3d.opacity) * (motionReduced3d ? 1 : 0.1);
+              plantRootMat3d.emissiveIntensity = plantTransferActive3d ? 0.72 : 0.16;
+              plantRootPulseGroup3d.visible = plantTransferActive3d;
+              plantRootPulseGroup3d.children.forEach(function(rootPulseMesh3d) {
+                var rootPulseCurve3d = plantRootCurves3d[rootPulseMesh3d.userData.curveIndex];
+                var rootPulsePhase3d = (rootPulseMesh3d.userData.phase + visualTime3d * 0.22) % 1;
+                rootPulseMesh3d.position.copy(rootPulseCurve3d.getPointAt(rootPulsePhase3d));
+                rootPulseMesh3d.scale.setScalar(0.75 + (motionReduced3d ? 0 : Math.sin(rootPulsePhase3d * Math.PI) * 0.7));
+              });
+              canvasEl.dataset.rootUptake = String(plantTransferActive3d);
+
+              var stomatalReleaseActive3d = state3d === 'transpiring' || state3d === 'transpiration';
+              var plantFlowStrength3d = Math.max(0.18, Math.min(1, 0.2 + solarVisual3d * 0.34 + windVisual3d * 0.12));
+              var activeXylemCount3d = plantTransferActive3d ? (stomatalReleaseActive3d ? xylemFlowCurves3d.length : 2) : 0;
+              xylemFlowGroup3d.visible = plantTransferActive3d;
+              xylemFlowGroup3d.children.slice(0, xylemFlowCurves3d.length).forEach(function(xylemChannelMesh3d, xylemChannelIndex3d) {
+                xylemChannelMesh3d.visible = xylemChannelIndex3d < activeXylemCount3d;
+              });
+              xylemFlowMat3d.opacity = plantTransferActive3d ? 0.14 + plantFlowStrength3d * 0.34 : 0;
+              xylemMarkers3d.material.opacity = plantTransferActive3d ? 0.3 + plantFlowStrength3d * 0.5 : 0;
+              xylemMarkers3d.material.size = 0.052 + plantFlowStrength3d * 0.035;
+              if (plantTransferActive3d) {
+                var xylemMarkerPosition3d = xylemMarkerGeometry3d.attributes.position;
+                for (var xylemMarkerIndex3d = 0; xylemMarkerIndex3d < xylemMarkerPosition3d.count; xylemMarkerIndex3d++) {
+                  var xylemCurveIndex3d = xylemMarkerIndex3d % activeXylemCount3d;
+                  var xylemMarkerT3d = (xylemMarkerIndex3d / xylemMarkerPosition3d.count + visualTime3d * (0.07 + plantFlowStrength3d * 0.08)) % 1;
+                  var xylemMarkerPoint3d = xylemFlowCurves3d[xylemCurveIndex3d].getPointAt(xylemMarkerT3d);
+                  xylemMarkerPosition3d.setXYZ(xylemMarkerIndex3d, xylemMarkerPoint3d.x, xylemMarkerPoint3d.y, xylemMarkerPoint3d.z);
+                }
+                xylemMarkerPosition3d.needsUpdate = true;
+              }
+
+              stomatalReleaseGroup3d.visible = stomatalReleaseActive3d;
+              stomatalReleaseGroup3d.children.forEach(function(stomatalRingMesh3d, stomatalRingIndex3d) {
+                stomatalRingMesh3d.quaternion.copy(camera.quaternion);
+                var stomatalPulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 2.5 + stomatalRingIndex3d) * 0.2;
+                stomatalRingMesh3d.scale.setScalar(stomatalPulse3d);
+              });
+              stomatalReleaseMat3d.opacity = stomatalReleaseActive3d ? 0.22 + plantFlowStrength3d * 0.38 : 0;
+              stomatalVapor3d.visible = stomatalReleaseActive3d;
+              stomatalVapor3d.material.opacity = stomatalReleaseActive3d ? 0.24 + plantFlowStrength3d * 0.48 : 0;
+              if (stomatalReleaseActive3d) {
+                var stomatalVaporPosition3d = stomatalVaporGeometry3d.attributes.position;
+                for (var stomatalVaporIndex3d = 0; stomatalVaporIndex3d < stomatalVaporPosition3d.count; stomatalVaporIndex3d++) {
+                  var stomatalOriginIndex3d = stomatalVaporIndex3d % stomatalReleaseOrigins3d.length;
+                  var stomatalOriginPoint3d = stomatalReleaseOrigins3d[stomatalOriginIndex3d];
+                  var stomatalLayer3d = Math.floor(stomatalVaporIndex3d / stomatalReleaseOrigins3d.length);
+                  var stomatalPhase3d = (stomatalLayer3d / 7 + visualTime3d * (0.045 + solarVisual3d * 0.025)) % 1;
+                  stomatalVaporPosition3d.setXYZ(stomatalVaporIndex3d,
+                    stomatalOriginPoint3d.x + stomatalPhase3d * windVisual3d * 0.28 + Math.sin(stomatalPhase3d * 8 + stomatalVaporIndex3d) * 0.05,
+                    stomatalOriginPoint3d.y + stomatalPhase3d * (0.58 + solarVisual3d * 0.38),
+                    stomatalOriginPoint3d.z + Math.cos(stomatalPhase3d * 7 + stomatalVaporIndex3d * 0.6) * 0.05
+                  );
+                }
+                stomatalVaporPosition3d.needsUpdate = true;
+              }
+              canvasEl.dataset.xylemFlow = plantTransferActive3d ?
+                (stomatalReleaseActive3d ? 'supplying-stomata' : 'ascending') : 'hidden';
+              canvasEl.dataset.stomatalRelease = stomatalReleaseActive3d ? 'active' : 'hidden';
+
+              var infiltrationFlowActive3d = state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow';
+              var wettingFrontActive3d = state3d === 'infiltrating' || state3d === 'infiltration';
+              var aquiferRechargeActive3d = state3d === 'aquifer_flow';
+              var infiltrationStrength3d = Math.max(0, Math.min(1, infiltrationVisual3d / 100));
+              var wettingDepth3d = wettingFrontActive3d ?
+                0.18 + journeyProgress3d * (0.68 + infiltrationStrength3d * 0.18) :
+                (aquiferRechargeActive3d ? 1.02 : 0);
+              var soilMoistureVisible3d = wettingFrontActive3d || aquiferRechargeActive3d;
+              soilMoistureFrontGroup3d.visible = soilMoistureVisible3d;
+              soilMoistureFrontGroup3d.position.set(4.5, -1.02 - wettingDepth3d * 0.5, -0.4);
+              soilMoistureFrontGroup3d.children.forEach(function(frontLobeMesh3d) {
+                var frontLobeWidth3d = frontLobeMesh3d.userData.baseScale * (0.72 + infiltrationStrength3d * 0.34);
+                frontLobeMesh3d.scale.set(frontLobeWidth3d, Math.max(0.05, wettingDepth3d / 1.4), frontLobeWidth3d * 0.82);
+              });
+              soilMoistureFrontMat3d.opacity = soilMoistureVisible3d ?
+                (aquiferRechargeActive3d ? 0.14 : 0.12 + infiltrationStrength3d * 0.14) : 0;
+
+              var wettingPulse3d = motionReduced3d ? 0 : Math.sin(visualTime3d * 2.4) * 0.045;
+              soilIntakePatch3d.visible = wettingFrontActive3d;
+              var soilIntakeScale3d = 0.72 + journeyProgress3d * 0.42 + infiltrationStrength3d * 0.24 + wettingPulse3d;
+              soilIntakePatch3d.scale.set(soilIntakeScale3d, soilIntakeScale3d * 0.72, 1);
+              soilIntakeMat3d.opacity = wettingFrontActive3d ? 0.14 + infiltrationStrength3d * 0.28 : 0;
+
+              wettingFrontRing3d.visible = soilMoistureVisible3d;
+              wettingFrontRing3d.position.set(4.5, -1.0 - wettingDepth3d, -0.4);
+              wettingFrontRing3d.scale.setScalar((0.68 + infiltrationStrength3d * 0.3) * (1 + wettingPulse3d));
+              wettingFrontRingMat3d.opacity = soilMoistureVisible3d ?
+                (aquiferRechargeActive3d ? 0.22 : 0.34 + infiltrationStrength3d * 0.22) : 0;
+
+              waterTableRecharge3d.visible = aquiferRechargeActive3d;
+              var rechargePulse3d = motionReduced3d ? 0 : Math.sin(visualTime3d * 1.8) * 0.06;
+              waterTableRecharge3d.scale.set(1.45 + rechargePulse3d, 0.82 + rechargePulse3d * 0.5, 1);
+              waterTableRechargeMat3d.opacity = aquiferRechargeActive3d ? 0.24 + infiltrationStrength3d * 0.3 : 0;
+              canvasEl.dataset.soilMoistureFront = wettingFrontActive3d ? 'advancing' :
+                (aquiferRechargeActive3d ? 'recharging-water-table' : 'hidden');
+              canvasEl.dataset.surfaceIntake = soilIntakePatch3d.visible ? 'visible' : 'hidden';
+              var runoffCoverFactor3d = coverVisual3d === 'urban' ? 1.25 : (coverVisual3d === 'forest' ? 0.46 : 0.78);
+              var effectiveRunoff3d = Math.max(0, Math.min(100, runoffVisual3d * runoffCoverFactor3d));
+              var runoffRouteActive3d = state3d === 'river_runoff' && !undergroundMode3d;
+              var activeTributaryCount3d = runoffRouteActive3d ?
+                Math.max(1, Math.min(surfaceRunoffCurves3d.length, Math.ceil(effectiveRunoff3d / 25))) : 0;
+              surfaceRunoffTributaries3d.visible = runoffRouteActive3d;
+              surfaceRunoffChannels3d.forEach(function(tributaryMesh3d, tributaryIndex3d) {
+                tributaryMesh3d.visible = tributaryIndex3d < activeTributaryCount3d;
+              });
+              surfaceRunoffMat3d.opacity = runoffRouteActive3d ? 0.16 + effectiveRunoff3d / 210 : 0;
+              surfaceRunoffMarkers3d.material.opacity = runoffRouteActive3d ? 0.28 + effectiveRunoff3d / 155 : 0;
+              surfaceRunoffMarkers3d.material.size = 0.058 + effectiveRunoff3d / 1250;
+              if (runoffRouteActive3d) {
+                var surfaceRunoffMarkerPosition3d = surfaceRunoffMarkerGeometry3d.attributes.position;
+                for (var surfaceMarkerIndex3d = 0; surfaceMarkerIndex3d < surfaceRunoffMarkerPosition3d.count; surfaceMarkerIndex3d++) {
+                  var surfaceCurveIndex3d = surfaceMarkerIndex3d % activeTributaryCount3d;
+                  var surfaceMarkerT3d = (surfaceMarkerIndex3d / surfaceRunoffMarkerPosition3d.count + visualTime3d * (0.045 + effectiveRunoff3d * 0.0017)) % 1;
+                  var surfaceMarkerPoint3d = surfaceRunoffCurves3d[surfaceCurveIndex3d].getPointAt(surfaceMarkerT3d);
+                  surfaceRunoffMarkerPosition3d.setXYZ(surfaceMarkerIndex3d, surfaceMarkerPoint3d.x, surfaceMarkerPoint3d.y, surfaceMarkerPoint3d.z);
+                }
+                surfaceRunoffMarkerPosition3d.needsUpdate = true;
+              }
+              runoffConfluenceGroup3d.visible = runoffRouteActive3d;
+              runoffConfluenceGroup3d.children.forEach(function(confluenceRingMesh3d, confluenceIndex3d) {
+                confluenceRingMesh3d.visible = confluenceIndex3d < activeTributaryCount3d;
+                var confluencePulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 2.7 + confluenceIndex3d) * 0.18;
+                confluenceRingMesh3d.scale.setScalar(confluencePulse3d);
+              });
+              runoffConfluenceMat3d.opacity = runoffRouteActive3d ? 0.24 + effectiveRunoff3d / 220 : 0;
+              canvasEl.dataset.tributaryCount = String(activeTributaryCount3d);
+              canvasEl.dataset.surfaceDrainage = runoffRouteActive3d ?
+                (coverVisual3d === 'urban' ? 'urban-rapid' : (coverVisual3d === 'forest' ? 'forest-buffered' : 'grass-moderate')) : 'hidden';
+              riverFlow3d.visible = runoffVisual3d > 6 && !undergroundMode3d;
+              riverFlow3d.material.opacity = Math.min(0.92, 0.18 + runoffVisual3d / 125);
+              riverFlow3d.material.size = 0.065 + runoffVisual3d / 1800;
+              var riverMarkerPosition3d = riverMarkerGeometry3d.attributes.position;
+              for (var riverMarkerIndex3d = 0; riverMarkerIndex3d < riverMarkerPosition3d.count; riverMarkerIndex3d++) {
+                var riverMarkerT3d = (riverMarkerIndex3d / riverMarkerPosition3d.count + visualTime3d * (0.025 + runoffVisual3d * 0.0014)) % 1;
+                var riverMarkerPoint3d = riverCurve.getPointAt(riverMarkerT3d);
+                riverMarkerPosition3d.setXYZ(riverMarkerIndex3d, riverMarkerPoint3d.x, riverMarkerPoint3d.y, riverMarkerPoint3d.z);
+              }
+              riverMarkerPosition3d.needsUpdate = true;
+
+              aquiferFlow3d.visible = infiltrationFlowActive3d;
+              aquiferFlow3d.material.opacity = Math.min(0.94, 0.3 + infiltrationVisual3d / 145);
+              var aquiferMarkerPosition3d = aquiferMarkerGeometry3d.attributes.position;
+              for (var aquiferMarkerIndex3d = 0; aquiferMarkerIndex3d < aquiferMarkerPosition3d.count; aquiferMarkerIndex3d++) {
+                var aquiferMarkerT3d = (aquiferMarkerIndex3d / aquiferMarkerPosition3d.count + visualTime3d * (0.008 + infiltrationVisual3d * 0.00042)) % 1;
+                var aquiferMarkerPoint3d = aquiferCurrentCurve3d.getPointAt(aquiferMarkerT3d);
+                aquiferMarkerPosition3d.setXYZ(aquiferMarkerIndex3d, aquiferMarkerPoint3d.x, aquiferMarkerPoint3d.y, aquiferMarkerPoint3d.z);
+              }
+              aquiferMarkerPosition3d.needsUpdate = true;
+
+              var oceanCurrentActive3d = state3d === 'ocean' || state3d === 'complete' ||
+                state3d === 'river_runoff' || state3d === 'aquifer_flow';
+              oceanCurrentGroup3d.visible = oceanCurrentActive3d;
+              var oceanCurrentPulse3d = motionReduced3d ? 0 : Math.sin(visualTime3d * 1.25) * 0.025;
+              oceanCurrentMat3d.opacity = oceanCurrentActive3d ? 0.1 + windVisual3d * 0.035 + oceanCurrentPulse3d : 0;
+              oceanCurrentMarkers3d.material.opacity = oceanCurrentActive3d ? 0.3 + windVisual3d * 0.08 : 0;
+              oceanCurrentMarkers3d.material.size = 0.066 + windVisual3d * 0.009;
+              if (oceanCurrentActive3d) {
+                var oceanCurrentMarkerPosition3d = oceanCurrentMarkerGeometry3d.attributes.position;
+                for (var oceanCurrentMarkerIndex3d = 0; oceanCurrentMarkerIndex3d < oceanCurrentMarkerPosition3d.count; oceanCurrentMarkerIndex3d++) {
+                  var oceanCurrentCurveIndex3d = oceanCurrentMarkerIndex3d % oceanCurrentCurves3d.length;
+                  var oceanCurrentMarkerT3d = (oceanCurrentMarkerIndex3d / oceanCurrentMarkerPosition3d.count +
+                    visualTime3d * (0.018 + windVisual3d * 0.012)) % 1;
+                  var oceanCurrentMarkerPoint3d = oceanCurrentCurves3d[oceanCurrentCurveIndex3d].getPointAt(oceanCurrentMarkerT3d);
+                  oceanCurrentMarkerPosition3d.setXYZ(oceanCurrentMarkerIndex3d,
+                    oceanCurrentMarkerPoint3d.x, oceanCurrentMarkerPoint3d.y, oceanCurrentMarkerPoint3d.z);
+                }
+                oceanCurrentMarkerPosition3d.needsUpdate = true;
+              }
+
+              var estuaryMixingActive3d = state3d === 'river_runoff' && !undergroundMode3d;
+              estuaryProbeEnabled3d = estuaryMixingActive3d;
+              estuaryMixing3d.visible = estuaryMixingActive3d;
+              estuaryMixing3d.material.opacity = estuaryMixingActive3d ? 0.28 + effectiveRunoff3d / 190 : 0;
+              estuaryMixing3d.material.size = 0.065 + effectiveRunoff3d / 1250;
+              estuaryMixingRibbon3d.visible = estuaryMixingActive3d;
+              estuaryMixingRibbon3d.material.opacity = estuaryMixingActive3d ? 0.08 + effectiveRunoff3d / 520 : 0;
+              estuarySalinityLabelGroup3d.visible = estuaryMixingActive3d;
+              if (!estuaryMixingActive3d && hoveredSalinityZone3d) {
+                hoveredSalinityZone3d = '';
+                canvasEl.dataset.salinityHover = 'none';
+                canvasEl.style.cursor = '';
+              }
+              estuarySalinityLabels3d.forEach(function(estuarySalinityLabel3d) {
+                var salinityLabelSelected3d = hoveredSalinityZone3d === estuarySalinityLabel3d.userData.salinityZone;
+                var salinityLabelMuted3d = !!hoveredSalinityZone3d && !salinityLabelSelected3d;
+                estuarySalinityLabel3d.material.opacity = salinityLabelMuted3d ? 0.34 : 0.94;
+                var salinityLabelScale3d = salinityLabelSelected3d ? 1.72 : 1.55;
+                estuarySalinityLabel3d.scale.set(salinityLabelScale3d, salinityLabelScale3d * 0.25, 1);
+              });
+              var salinityProbeVisible3d = estuaryMixingActive3d && !!hoveredSalinityZone3d;
+              estuarySalinityProbe3d.visible = salinityProbeVisible3d;
+              estuarySalinityProbeMat3d.opacity = salinityProbeVisible3d ? 0.86 : 0;
+              if (salinityProbeVisible3d) {
+                estuarySalinityProbe3d.position.copy(estuaryProbePoint3d);
+                estuarySalinityProbe3d.position.y += 0.045;
+                var salinityProbePulse3d = motionReduced3d ? 1 : 1 + Math.sin(visualTime3d * 3.2) * 0.16;
+                estuarySalinityProbe3d.scale.setScalar(salinityProbePulse3d);
+              }
+              if (estuaryMixingActive3d) {
+                var estuaryMixingPosition3d = estuaryMixingGeometry3d.attributes.position;
+                var estuaryMixingColor3d = estuaryMixingGeometry3d.attributes.color;
+                for (var estuaryMixingIndex3d = 0; estuaryMixingIndex3d < estuaryMixingPosition3d.count; estuaryMixingIndex3d++) {
+                  var estuaryPhase3d = (estuaryMixingSeeds3d[estuaryMixingIndex3d * 3] +
+                    visualTime3d * (0.08 + effectiveRunoff3d * 0.001)) % 1;
+                  var estuaryAngle3d = estuaryMixingSeeds3d[estuaryMixingIndex3d * 3 + 1] * Math.PI * 2 + estuaryPhase3d * 2;
+                  var estuarySpread3d = 0.05 + estuaryPhase3d * (0.22 + effectiveRunoff3d * 0.0014);
+                  estuaryMixingPosition3d.setXYZ(estuaryMixingIndex3d,
+                    -0.25 - estuaryPhase3d * (0.72 + effectiveRunoff3d * 0.004) + Math.cos(estuaryAngle3d) * estuarySpread3d * 0.38,
+                    -1.08 - estuaryPhase3d * 0.06 + Math.sin(estuaryPhase3d * Math.PI * 2) * 0.022,
+                    1.6 + Math.sin(estuaryAngle3d) * estuarySpread3d +
+                      (estuaryMixingSeeds3d[estuaryMixingIndex3d * 3 + 2] - 0.5) * 0.08
+                  );
+                  setEstuarySalinityColor3d(estuaryMixingColor3d, estuaryMixingIndex3d, estuaryPhase3d);
+                }
+                estuaryMixingPosition3d.needsUpdate = true;
+                estuaryMixingColor3d.needsUpdate = true;
+              }
+              canvasEl.dataset.salinityGradient = estuaryMixingActive3d ? 'freshwater,brackish,marine' : 'hidden';
+
+              var groundwaterSeepActive3d = state3d === 'aquifer_flow';
+              groundwaterSeep3d.visible = groundwaterSeepActive3d;
+              groundwaterSeep3d.material.opacity = groundwaterSeepActive3d ? 0.3 + infiltrationVisual3d / 190 : 0;
+              groundwaterSeep3d.material.size = 0.062 + infiltrationVisual3d / 1500;
+              if (groundwaterSeepActive3d) {
+                var groundwaterSeepPosition3d = groundwaterSeepGeometry3d.attributes.position;
+                for (var groundwaterSeepIndex3d = 0; groundwaterSeepIndex3d < groundwaterSeepPosition3d.count; groundwaterSeepIndex3d++) {
+                  var groundwaterSeepPhase3d = (groundwaterSeepSeeds3d[groundwaterSeepIndex3d * 2] +
+                    visualTime3d * (0.04 + infiltrationVisual3d * 0.0005)) % 1;
+                  var groundwaterSeepAngle3d = groundwaterSeepSeeds3d[groundwaterSeepIndex3d * 2 + 1] * Math.PI * 2;
+                  groundwaterSeepPosition3d.setXYZ(groundwaterSeepIndex3d,
+                    -0.55 - groundwaterSeepPhase3d * 0.55 + Math.sin(groundwaterSeepAngle3d + groundwaterSeepPhase3d * 4) * 0.08,
+                    -1.3 + groundwaterSeepPhase3d * 0.2,
+                    1.48 + Math.cos(groundwaterSeepAngle3d) * (0.08 + groundwaterSeepPhase3d * 0.18)
+                  );
+                }
+                groundwaterSeepPosition3d.needsUpdate = true;
+              }
+              canvasEl.dataset.oceanExchange = estuaryMixingActive3d ? 'river-mixing' :
+                (groundwaterSeepActive3d ? 'groundwater-discharge' : (oceanCurrentActive3d ? 'collection-currents' : 'hidden'));
+
+              soilPercolation3d.visible = infiltrationFlowActive3d;
+              soilPercolation3d.material.opacity = Math.min(0.88, 0.2 + infiltrationVisual3d / 150);
+              var percolationPosition3d = percolationGeometry3d.attributes.position;
+              for (var soilDropIndex3d = 0; soilDropIndex3d < percolationPosition3d.count; soilDropIndex3d++) {
+                var soilDropPhase3d = (soilDropIndex3d / percolationPosition3d.count + visualTime3d * (0.035 + infiltrationVisual3d * 0.0008)) % 1;
+                percolationPosition3d.setY(soilDropIndex3d, -1.04 - soilDropPhase3d * 1.14);
+              }
+              percolationPosition3d.needsUpdate = true;
+              canvasEl.dataset.surfaceFlow = riverFlow3d.visible ? 'moving' : 'quiet';
+              canvasEl.dataset.groundwaterFlow = aquiferFlow3d.visible ? 'moving' : 'hidden';
+              canvasEl.dataset.percolation = soilPercolation3d.visible ? 'visible' : 'hidden';
+
+              var atmosphericTransfer3d = vaporTransfer3d || condensationTransfer3d || precipitationTransfer3d;
+              var showWindField3d = atmosphericTransfer3d && windVisual3d > 0.12;
+              windStreams3d.visible = showWindField3d;
+              windStreamMat3d.opacity = 0.07 + Math.min(0.28, windVisual3d * 0.08);
+              windMarkers3d.material.opacity = 0.24 + Math.min(0.56, windVisual3d * 0.18);
+              var windMarkerPosition3d = windMarkerGeometry3d.attributes.position;
+              for (var windMarkerIndex3d = 0; windMarkerIndex3d < windMarkerPosition3d.count; windMarkerIndex3d++) {
+                var windCurveIndex3d = windMarkerIndex3d % windStreamCurves3d.length;
+                var windMarkerT3d = (windMarkerIndex3d / windMarkerPosition3d.count + visualTime3d * (0.025 + windVisual3d * 0.035)) % 1;
+                var windMarkerPoint3d = windStreamCurves3d[windCurveIndex3d].getPointAt(windMarkerT3d);
+                windMarkerPosition3d.setXYZ(windMarkerIndex3d, windMarkerPoint3d.x, windMarkerPoint3d.y, windMarkerPoint3d.z);
+              }
+              windMarkerPosition3d.needsUpdate = true;
+              canvasEl.dataset.windField = showWindField3d ? 'visible' : 'hidden';
+
+              var vaporFromPlant3d = state3d === 'transpiring' || state3d === 'transpiration';
+              if (condensationTransfer3d) vaporSourceGoal3d.set(0.2, 3.15, -1.5);
+              else if (vaporFromPlant3d) vaporSourceGoal3d.set(5.9, 1.15, 1.25);
+              else vaporSourceGoal3d.set(-2.1, 0.8, 1.0);
+              vapor3d.position.lerp(vaporSourceGoal3d, motionReduced3d ? 1 : 0.08);
+              canvasEl.dataset.moistureSource = condensationTransfer3d ? 'cloud' : (vaporFromPlant3d ? 'plant' : 'ocean');
+
+              var activeSolarEnergyKey3d = vaporTransfer3d ? (vaporFromPlant3d ? 'plant' : 'ocean') : '';
+              var solarEnergyActive3d = !!activeSolarEnergyKey3d && solarVisual3d > 0.12 && !undergroundMode3d;
+              Object.keys(solarEnergyPaths3d).forEach(function(solarPathKey3d) {
+                var solarPathSpec3d = solarEnergyPaths3d[solarPathKey3d];
+                var solarPathVisible3d = solarEnergyActive3d && solarPathKey3d === activeSolarEnergyKey3d;
+                solarPathSpec3d.group.visible = solarPathVisible3d;
+                solarPathSpec3d.beamMaterial.opacity = solarPathVisible3d ? Math.min(0.54, 0.08 + solarVisual3d * 0.23) : 0;
+                solarPathSpec3d.markers.material.opacity = solarPathVisible3d ? Math.min(0.86, 0.24 + solarVisual3d * 0.28) : 0;
+                solarPathSpec3d.markers.material.size = 0.065 + solarVisual3d * 0.024;
+                if (solarPathVisible3d) {
+                  var solarMarkerPosition3d = solarPathSpec3d.markers.geometry.attributes.position;
+                  for (var solarMarkerIndex3d = 0; solarMarkerIndex3d < solarMarkerPosition3d.count; solarMarkerIndex3d++) {
+                    var solarCurveIndex3d = solarMarkerIndex3d % solarPathSpec3d.curves.length;
+                    var solarMarkerT3d = (solarMarkerIndex3d / solarMarkerPosition3d.count + visualTime3d * (0.13 + solarVisual3d * 0.045)) % 1;
+                    var solarMarkerPoint3d = solarPathSpec3d.curves[solarCurveIndex3d].getPointAt(solarMarkerT3d);
+                    solarMarkerPosition3d.setXYZ(solarMarkerIndex3d, solarMarkerPoint3d.x, solarMarkerPoint3d.y, solarMarkerPoint3d.z);
+                  }
+                  solarMarkerPosition3d.needsUpdate = true;
+                }
+              });
+
+              var latentHeatVisible3d = condensationTransfer3d && !undergroundMode3d;
+              latentHeatGroup3d.visible = latentHeatVisible3d;
+              latentHeatGroup3d.position.copy(cloudGroup3d.position);
+              latentHeatGroup3d.children.forEach(function(latentRingMesh3d, latentRingIndex3d) {
+                var latentHeatPhase3d = motionReduced3d ? 0.32 + latentRingIndex3d * 0.12 :
+                  (visualTime3d * 0.38 + latentRingIndex3d * 0.29) % 1;
+                latentRingMesh3d.scale.setScalar(0.72 + latentHeatPhase3d * 1.35);
+                latentRingMesh3d.material.opacity = latentHeatVisible3d ?
+                  (motionReduced3d ? 0.24 : (1 - latentHeatPhase3d) * (0.28 + journeyProgress3d * 0.18)) : 0;
+              });
+              canvasEl.dataset.energyDriver = latentHeatVisible3d ? 'latent-heat-release' :
+                (solarEnergyActive3d ? 'solar-' + activeSolarEnergyKey3d : 'none');
+
+              if (activeCurve3d) {
+                var markerPositionAttribute3d = routeMarkers3d.geometry.attributes.position;
+                for (var markerIndex3d = 0; markerIndex3d < markerPositionAttribute3d.count; markerIndex3d++) {
+                  var markerT3d = (markerIndex3d / markerPositionAttribute3d.count + visualTime3d * (0.035 + windVisual3d * 0.006)) % 1;
+                  var markerPoint3d = activeCurve3d.getPointAt(markerT3d);
+                  markerPositionAttribute3d.setXYZ(markerIndex3d, markerPoint3d.x, markerPoint3d.y, markerPoint3d.z);
+                }
+                markerPositionAttribute3d.needsUpdate = true;
+                var trailPositionAttribute3d = dropletTrail3d.geometry.attributes.position;
+                for (var trailIndex3d = 0; trailIndex3d < trailPositionAttribute3d.count; trailIndex3d++) {
+                  var trailT3d = journeyProgress3d - (trailIndex3d + 1) * 0.014;
+                  if (activeCurve3d.closed) trailT3d = (trailT3d + 1) % 1;
+                  else trailT3d = Math.max(0, trailT3d);
+                  var trailPoint3d = activeCurve3d.getPointAt(trailT3d);
+                  trailPositionAttribute3d.setXYZ(trailIndex3d, trailPoint3d.x, trailPoint3d.y, trailPoint3d.z);
+                }
+                trailPositionAttribute3d.needsUpdate = true;
+                dropletTrail3d.visible = rawState3d !== 'idle';
+                if (rawState3d !== 'idle') {
+                  var tangent3d = activeCurve3d.getTangentAt(journeyProgress3d).normalize();
+                  var dropletDirection3d = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), tangent3d);
+                  dropletGroup3d.quaternion.slerp(dropletDirection3d, motionReduced3d ? 1 : 0.08);
+                }
+              } else {
+                dropletTrail3d.visible = false;
+              }
+
               var daylight3d = Math.max(0, Math.min(1, solarVisual3d / 1.35));
-              scene.background.setHSL(0.56, 0.56, 0.07 + daylight3d * 0.09);
+              var storminess3d = Math.max(0, Math.min(1, rainVisual3d / 100));
+              scene.background.setHSL(0.57, 0.55, 0.045 + daylight3d * 0.09);
               scene.fog.color.copy(scene.background);
+              scene.fog.density = 0.022 + storminess3d * 0.018 + (1 - daylight3d) * 0.006;
+              skyUniforms3d.topColor.value.setHSL(0.59, 0.56, 0.055 + daylight3d * 0.15);
+              skyUniforms3d.horizonColor.value.setHSL(0.54, 0.5 - storminess3d * 0.12, 0.1 + daylight3d * 0.28 - storminess3d * 0.045);
+              sun3d.intensity = 0.35 + daylight3d * 1.85;
+              hemi3d.intensity = 0.48 + daylight3d * 0.95;
+              fill3d.intensity = 0.75 + daylight3d * 0.85;
+              renderer.toneMappingExposure = 0.86 + daylight3d * 0.3;
+              sunDiscMat3d.opacity = 0.12 + daylight3d * 0.88;
+              sunHaloMat3d.opacity = 0.03 + daylight3d * 0.2;
+              sunOrb3d.position.y = 5.5 + daylight3d * 5.2;
+              sunOrb3d.scale.setScalar(1 + Math.sin(visualTime3d * 0.7) * 0.025);
+              moonMat3d.opacity = Math.max(0, (0.42 - daylight3d) * 1.8);
+              stars3d.material.opacity = Math.max(0.04, (1 - daylight3d) * 0.78);
+              distantCloudMat3d.opacity = 0.16 + storminess3d * 0.28;
               var lerp3d = motionReduced3d ? 1 : 0.045;
               dropletGroup3d.position.lerp(target3d, lerp3d);
               if (!userOrbit3d) camera.position.lerp(cameraGoal3d, motionReduced3d ? 1 : 0.025);
@@ -4637,28 +5960,158 @@ const d = labToolData.waterCycle || {};
               dropletLight3d.intensity = 1.8 + hydroPoints3d / 55;
               halo3d.material.opacity = 0.10 + hydroPoints3d / 600;
               route3d.material.opacity = 0.18 + hydroPoints3d / 800;
+              routeGlow3d.material.opacity = 0.09 + hydroPoints3d / 900;
+              routeMarkers3d.material.opacity = 0.46 + hydroPoints3d / 600;
+              dropletTrail3d.material.opacity = 0.3 + hydroPoints3d / 500;
+              dropletMat3d.emissiveIntensity = 0.52 + hydroPoints3d / 260;
+              dropletCore3d.material.opacity = 0.14 + hydroPoints3d / 900;
+              oceanMat.color.setHSL(0.54, 0.78, 0.18 + daylight3d * 0.09);
+              oceanMat.roughness = Math.min(0.55, 0.14 + windVisual3d * 0.11);
+              foam3d.material.opacity = 0.42 + Math.sin(visualTime3d * 1.7) * 0.12 + windVisual3d * 0.035;
+              cloudMat3d.color.setHSL(0.55, 0.35, 0.88 - storminess3d * 0.22);
+              cloudShadeMat3d.color.setHSL(0.56, 0.28, 0.62 - storminess3d * 0.18);
+              cloudShadeMat3d.opacity = 0.34 + storminess3d * 0.34;
+              cloudGroup3d.scale.set(1 + storminess3d * 0.06, 1 + storminess3d * 0.12, 1 + storminess3d * 0.06);
+              cloudShadow3d.position.x = cloudGroup3d.position.x;
+              cloudShadow3d.scale.set(1 + storminess3d * 0.3, 1 + storminess3d * 0.2, 1);
+              cloudShadow3d.visible = daylight3d > 0.06 && !undergroundMode3d;
+              cloudShadowMat3d.uniforms.shadowOpacity.value = cloudShadow3d.visible ?
+                daylight3d * (0.045 + storminess3d * 0.13) : 0;
+              canvasEl.dataset.cloudShadow = cloudShadow3d.visible ? 'visible' : 'hidden';
+
+              var rainbowWeather3d = rainVisual3d >= 25 && solarVisual3d >= 0.7 && tempVisual3d > 1;
+              var rainbowTrigger3d = rainbowWeather3d && (precipitationTransfer3d || state3d === 'ground_choice');
+              if (motionReduced3d) rainbowMemory3d = rainbowTrigger3d ? 1 : 0;
+              else if (!journeyPaused3d) {
+                rainbowMemory3d = rainbowTrigger3d ?
+                  Math.min(1, rainbowMemory3d + frameDelta3d * 1.2) :
+                  Math.max(0, rainbowMemory3d - frameDelta3d * 0.055);
+              }
+              var rainbowVisible3d = rainbowMemory3d > 0.02 && !undergroundMode3d;
+              var rainbowOpacity3d = rainbowMemory3d * Math.min(0.64, 0.18 + solarVisual3d * 0.28);
+              rainbowGroup3d.visible = rainbowVisible3d;
+              rainbowGroup3d.children.forEach(function(rainbowArcMesh3d, rainbowArcIndex3d) {
+                rainbowArcMesh3d.material.opacity = rainbowVisible3d ?
+                  rainbowOpacity3d * (0.92 - rainbowArcIndex3d * 0.035) : 0;
+              });
+              canvasEl.dataset.weatherOptics = rainbowVisible3d ? 'rainbow' : 'none';
+              forestGroup3d.visible = coverVisual3d === 'forest' && !undergroundMode3d;
+              urbanGroup3d.visible = coverVisual3d === 'urban' && !undergroundMode3d;
+              meadowGroup3d.visible = coverVisual3d === 'grass' && !undergroundMode3d;
+              var pondingStrength3d = Math.max(0, Math.min(1, (runoffVisual3d + rainVisual3d - 70) / 130));
+              urbanPonding3d.visible = coverVisual3d === 'urban' && pondingStrength3d > 0.04 && tempVisual3d >= 0 && !undergroundMode3d;
+              pondingMat3d.opacity = 0.12 + pondingStrength3d * 0.58;
+              urbanPonding3d.children.forEach(function(pondingMesh3d, pondingIndex3d) {
+                var pondingPulse3d = motionReduced3d ? 0 : Math.sin(visualTime3d * 1.2 + pondingIndex3d) * 0.035;
+                var pondingScale3d = pondingMesh3d.userData.baseScale * (0.5 + pondingStrength3d * 0.9 + pondingPulse3d);
+                pondingMesh3d.scale.set(pondingScale3d, pondingScale3d * 0.72, 1);
+              });
+              canvasEl.dataset.ponding = urbanPonding3d.visible ? 'visible' : 'hidden';
+              var snowCoverTarget3d = tempVisual3d < 0 && !undergroundMode3d ? Math.min(0.88, 0.42 + Math.abs(tempVisual3d) / 35) : 0;
+              snowCoverMat3d.opacity += (snowCoverTarget3d - snowCoverMat3d.opacity) * (motionReduced3d ? 1 : 0.08);
+              snowCover3d.visible = snowCoverMat3d.opacity > 0.01;
               if (!motionReduced3d && !journeyPaused3d) {
-                dropletGroup3d.position.y += Math.sin(elapsed3d * 2.8) * 0.0025;
-                halo3d.scale.setScalar(1 + Math.sin(elapsed3d * 3.2) * 0.12);
-                cloudGroup3d.position.x = 0.5 + Math.sin(elapsed3d * (0.12 + windVisual3d * 0.09)) * (0.18 + windVisual3d * 0.18);
-                vapor3d.rotation.y += 0.0008 + windVisual3d * 0.0007;
+                dropletGroup3d.position.y += Math.sin(visualTime3d * 2.8) * 0.0025;
+                halo3d.scale.setScalar(1 + Math.sin(visualTime3d * 3.2) * 0.12);
+                dropletHighlight3d.material.opacity = 0.68 + Math.sin(visualTime3d * 2.1) * 0.16;
+                cloudGroup3d.position.x = 0.5 + Math.sin(visualTime3d * (0.12 + windVisual3d * 0.09)) * (0.18 + windVisual3d * 0.18);
+                distantClouds3d.position.x = -8.5 + (visualTime3d * (0.055 + windVisual3d * 0.08)) % 15;
+                var vaporPositionAttribute3d = vapor3d.geometry.attributes.position;
+                var vaporRiseRate3d = 0.06 + solarVisual3d * 0.035 + Math.max(0, tempVisual3d) * 0.001 + windVisual3d * 0.018;
+                for (var vaporIndex3d = 0; vaporIndex3d < vaporPositionAttribute3d.count; vaporIndex3d++) {
+                  var vaporBaseX3d = vaporBasePositions3d[vaporIndex3d * 3];
+                  var vaporBaseY3d = vaporBasePositions3d[vaporIndex3d * 3 + 1];
+                  var vaporBaseZ3d = vaporBasePositions3d[vaporIndex3d * 3 + 2];
+                  var vaporPhase3d = ((vaporBaseY3d + 2.25) / 4.5 + visualTime3d * vaporRiseRate3d) % 1;
+                  vaporPositionAttribute3d.setXYZ(vaporIndex3d,
+                    vaporBaseX3d + vaporPhase3d * windVisual3d * 0.24 + Math.sin(vaporPhase3d * 8 + vaporIndex3d) * 0.06,
+                    -1.35 + vaporPhase3d * 3.6,
+                    vaporBaseZ3d + Math.cos(vaporPhase3d * 7 + vaporIndex3d * 0.4) * 0.05
+                  );
+                }
+                vaporPositionAttribute3d.needsUpdate = true;
+                plant3d.rotation.z = Math.sin(visualTime3d * (0.7 + windVisual3d * 0.22)) * Math.min(0.04, windVisual3d * 0.012);
+                waveFrame3d += 1;
+                if (waveFrame3d % 2 === 0) {
+                  var oceanPositionAttribute3d = oceanGeometry3d.attributes.position;
+                  for (var oceanVertexIndex3d = 0; oceanVertexIndex3d < oceanPositionAttribute3d.count; oceanVertexIndex3d++) {
+                    var oceanBaseX3d = oceanBasePositions3d[oceanVertexIndex3d * 3];
+                    var oceanBaseY3d = oceanBasePositions3d[oceanVertexIndex3d * 3 + 1];
+                    var waveHeight3d = Math.sin(oceanBaseX3d * 0.72 + visualTime3d * (0.8 + windVisual3d * 0.18)) * (0.035 + windVisual3d * 0.014) +
+                      Math.cos(oceanBaseY3d * 0.92 - visualTime3d * 0.65) * 0.028;
+                    oceanPositionAttribute3d.setZ(oceanVertexIndex3d, waveHeight3d);
+                  }
+                  oceanPositionAttribute3d.needsUpdate = true;
+                  if (waveFrame3d % 4 === 0) oceanGeometry3d.computeVertexNormals();
+                }
                 var rainPos3d = rain3d.geometry.attributes.position;
+                var snowMode3d = tempVisual3d < 0;
                 for (var ri3 = 0; ri3 < rainPos3d.count; ri3++) {
-                  var rainY3d = rainPos3d.getY(ri3) - (0.018 + rainVisual3d / 5000);
+                  var rainY3d = rainPos3d.getY(ri3) - (snowMode3d ? 0.006 : 0.018 + rainVisual3d / 5000);
                   if (rainY3d < -2.6) rainY3d = 2.7;
+                  var rainBaseX3d = rainBasePositions3d[ri3 * 3];
+                  rainPos3d.setX(ri3, rainBaseX3d + (snowMode3d ? Math.sin(visualTime3d * 1.4 + ri3 * 0.67) * 0.22 : 0));
                   rainPos3d.setY(ri3, rainY3d);
                 }
                 rainPos3d.needsUpdate = true;
               }
-              vapor3d.visible = state3d === 'evaporating' || state3d === 'transpiring' || state3d === 'evaporation' || state3d === 'transpiration';
-              rain3d.visible = state3d === 'precipitating' || state3d === 'precipitation' || state3d === 'ground_choice';
-              rain3d.material.opacity = 0.3 + rainVisual3d / 145;
+              vapor3d.visible = vaporTransfer3d || condensationTransfer3d;
+              var precipitationFieldActive3d = state3d === 'precipitating' || state3d === 'precipitation' || state3d === 'ground_choice';
+              var liquidRainActive3d = precipitationFieldActive3d && tempVisual3d >= 0;
+              var snowDriftActive3d = precipitationFieldActive3d && tempVisual3d < 0;
+              rain3d.visible = snowDriftActive3d;
+              rain3d.material.opacity = snowDriftActive3d ? Math.min(0.9, 0.32 + rainVisual3d / 150) : 0;
+              rainCurtain3d.visible = liquidRainActive3d;
+              rainCurtain3d.material.opacity = liquidRainActive3d ? Math.min(0.86, 0.18 + rainVisual3d / 140) : 0;
+              rainCurtain3d.position.x = 1.2 + cloudGroup3d.position.x - 0.5;
+              rainImpactMist3d.visible = liquidRainActive3d;
+              rainImpactMist3d.material.opacity = liquidRainActive3d ? Math.min(0.72, 0.12 + rainVisual3d / 150) : 0;
+              rainImpactMist3d.material.size = 0.04 + rainVisual3d / 1800;
+              rainImpactMist3d.position.x = rainCurtain3d.position.x;
+              if (liquidRainActive3d) {
+                var rainCurtainPosition3d = rainCurtainGeometry3d.attributes.position;
+                var rainStreakLength3d = 0.22 + rainVisual3d / 120;
+                var rainWindSlant3d = windVisual3d * 0.11;
+                for (var rainCurtainIndex3d = 0; rainCurtainIndex3d < rainCurtainCount3d; rainCurtainIndex3d++) {
+                  var rainCurtainPhase3d = (rainCurtainSeeds3d[rainCurtainIndex3d * 3 + 2] + visualTime3d * (0.3 + rainVisual3d / 180)) % 1;
+                  var rainCurtainX3d = rainCurtainSeeds3d[rainCurtainIndex3d * 3] + rainCurtainPhase3d * windVisual3d * 0.08;
+                  var rainCurtainZ3d = rainCurtainSeeds3d[rainCurtainIndex3d * 3 + 1];
+                  var rainCurtainY3d = 2.65 - rainCurtainPhase3d * 4.1;
+                  rainCurtainPosition3d.setXYZ(rainCurtainIndex3d * 2, rainCurtainX3d, rainCurtainY3d, rainCurtainZ3d);
+                  rainCurtainPosition3d.setXYZ(rainCurtainIndex3d * 2 + 1, rainCurtainX3d + rainWindSlant3d, rainCurtainY3d - rainStreakLength3d, rainCurtainZ3d);
+                }
+                rainCurtainPosition3d.needsUpdate = true;
+
+                var rainImpactPosition3d = rainImpactGeometry3d.attributes.position;
+                for (var rainImpactIndex3d = 0; rainImpactIndex3d < rainImpactCount3d; rainImpactIndex3d++) {
+                  var rainImpactPhase3d = (rainImpactSeeds3d[rainImpactIndex3d * 3 + 2] + visualTime3d * (0.65 + rainVisual3d * 0.008)) % 1;
+                  rainImpactPosition3d.setXYZ(rainImpactIndex3d,
+                    rainImpactSeeds3d[rainImpactIndex3d * 3] + rainImpactPhase3d * windVisual3d * 0.08,
+                    -0.98 + Math.sin(rainImpactPhase3d * Math.PI) * (0.04 + rainVisual3d * 0.0012),
+                    rainImpactSeeds3d[rainImpactIndex3d * 3 + 1]
+                  );
+                }
+                rainImpactPosition3d.needsUpdate = true;
+              }
+              canvasEl.dataset.hydrometeorMode = snowDriftActive3d ? 'snow-drift' : (liquidRainActive3d ? 'rain-streaks' : 'hidden');
+              var showRainRipples3d = liquidRainActive3d;
+              rainRipples3d.visible = showRainRipples3d;
+              if (showRainRipples3d) {
+                rainRipples3d.children.forEach(function(rippleMesh3d) {
+                  var ripplePhase3d = (visualTime3d * 0.78 + rippleMesh3d.userData.phase) % 1;
+                  rippleMesh3d.scale.setScalar(0.55 + ripplePhase3d * 2.4);
+                  rippleMesh3d.material.opacity = (1 - ripplePhase3d) * (0.16 + rainVisual3d / 500);
+                });
+              }
               river3d.material.opacity = 0.3 + runoffVisual3d / 145;
+              river3d.material.emissiveIntensity = 0.1 + runoffVisual3d / 420;
               aquifer3d.material.opacity = Math.min(0.92, 0.28 + infiltrationVisual3d / 180 +
                 ((state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.2 : 0));
-              vapor3d.material.opacity = Math.min(0.92, 0.28 + solarVisual3d * 0.2 + Math.max(0, tempVisual3d) / 180);
-              rain3d.material.color.setHex(tempVisual3d < -2 ? 0xe0f2fe : tempVisual3d <= 3 ? 0x93c5fd : 0x69d7ff);
-              rain3d.material.size = tempVisual3d < -2 ? 0.105 : 0.075;
+              aquifer3d.material.emissiveIntensity = 0.12 + infiltrationVisual3d / 300;
+              vapor3d.material.opacity = Math.min(0.92, 0.28 + solarVisual3d * 0.2 + Math.max(0, tempVisual3d) / 180) *
+                (condensationTransfer3d ? Math.max(0.08, parcelGasBlend3d) : 1);
+              rain3d.material.color.setHex(snowDriftActive3d ? 0xe0f2fe : tempVisual3d <= 3 ? 0x93c5fd : 0x69d7ff);
+              rain3d.material.size = snowDriftActive3d ? 0.105 : 0.075;
               grass3d.material.color.setHex(coverVisual3d === 'forest' ? 0x245c3a : coverVisual3d === 'urban' ? 0x68737d : 0x5d8f3b);
               if (controls3d) {
                 if (!userOrbit3d) controls3d.target.lerp(target3d, motionReduced3d ? 1 : 0.035);
@@ -4676,6 +6129,11 @@ const d = labToolData.waterCycle || {};
               alive3d = false;
               if (frame3d) cancelAnimationFrame(frame3d);
               if (resizeObserver3d) resizeObserver3d.disconnect();
+              canvasEl.removeEventListener('pointerdown', handleBranchPointerDown3d);
+              canvasEl.removeEventListener('pointermove', handleBranchPointerMove3d);
+              canvasEl.removeEventListener('pointerleave', handleBranchPointerLeave3d);
+              canvasEl.removeEventListener('click', handleBranchClick3d);
+              canvasEl.style.cursor = '';
               if (controls3d) controls3d.dispose();
               scene.traverse(function(obj) {
                 if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
@@ -4684,6 +6142,7 @@ const d = labToolData.waterCycle || {};
                   materials.forEach(function(mat) { if (mat && mat.dispose) mat.dispose(); });
                 }
               });
+              labelTextures3d.forEach(function(labelTexture3d) { if (labelTexture3d && labelTexture3d.dispose) labelTexture3d.dispose(); });
               renderer.dispose();
               canvasEl._wc3dCleanup = null;
               canvasEl._wc3dResetCamera = null;
@@ -4769,7 +6228,7 @@ const d = labToolData.waterCycle || {};
           var journeyLensMap = {
             ocean: { state: 'Liquid storage', driver: 'Solar energy begins the next transfer', pace: 'Variable residence' },
             evaporating: { state: 'Liquid to gas', driver: 'Net surface energy', pace: 'Energy dependent' },
-            condensing: { state: 'Gas to liquid or ice', driver: 'Cooling toward saturation', pace: 'Cloud microphysics' },
+            condensing: { state: 'Gas to liquid or ice', driver: 'Cooling; latent heat released', pace: 'Cloud microphysics' },
             precipitating: { state: 'Liquid or solid', driver: 'Gravity after particle growth', pace: 'Minutes to hours' },
             ground_choice: { state: 'Liquid at the surface', driver: 'Gravity plus land properties', pace: 'Path dependent' },
             river_runoff: { state: 'Liquid surface flow', driver: 'Gravity over terrain', pace: 'Usually fast' },
@@ -4888,6 +6347,14 @@ const d = labToolData.waterCycle || {};
             e.preventDefault();
             e.stopPropagation();
             controlJourneyCamera(action);
+          }
+          function handleJourney3dSceneClick(e) {
+            var journeyCanvas = e.currentTarget;
+            var requestedPath = journeyCanvas.dataset.routeChoiceRequest || '';
+            if (!requestedPath) return;
+            journeyCanvas.dataset.routeChoiceRequest = '';
+            if (journeyCanvas._wc3dResetCamera) journeyCanvas._wc3dResetCamera();
+            chooseJourneyPath(requestedPath);
           }
 
           function renderLandSegments(label, stateKey, options, selected) {
@@ -5165,7 +6632,7 @@ const d = labToolData.waterCycle || {};
                 }
               }),
               journeyView === '3d' && React.createElement("p", { id: "wcJourney3dInstructions", className: "sr-only" },
-                "Use left and right arrows to rotate, up and down arrows to zoom, and F to resume the guided droplet camera."
+                "Use left and right arrows to rotate, up and down arrows to zoom, and F to resume the guided droplet camera. At the land decision, select a highlighted route in the scene or use the route buttons. During river runoff, move across the estuary plume to compare river water, brackish mixing, and ocean water."
               ),
               journeyView === '3d' && React.createElement("canvas", {
                 role: "img",
@@ -5173,6 +6640,7 @@ const d = labToolData.waterCycle || {};
                 "aria-label": "Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. Drag or use arrow keys to explore the scene.",
                 "aria-describedby": "wcJourney3dInstructions",
                 onKeyDown: handleJourney3dKey,
+                onClick: handleJourney3dSceneClick,
                 ref: journey3dRef,
                 id: "wcJourney3d",
                 className: "wc-journey-3d",
@@ -5222,6 +6690,7 @@ const d = labToolData.waterCycle || {};
                 React.createElement("div", { className: "wc-viewport-choice-grid" },
                   React.createElement("button", {
                     type: "button",
+                    "data-route-choice": "runoff",
                     "aria-label": "Choose River Runoff path. Runoff tendency " + landIndexBand(runoffTendency),
                     onClick: function() { chooseJourneyPath('runoff'); }
                   },
@@ -5230,6 +6699,7 @@ const d = labToolData.waterCycle || {};
                   ),
                   React.createElement("button", {
                     type: "button",
+                    "data-route-choice": "infiltrate",
                     "aria-label": "Choose Underground infiltration path. Infiltration opportunity " + landIndexBand(infiltrationOpportunity),
                     onClick: function() { chooseJourneyPath('infiltrate'); }
                   },
@@ -5238,6 +6708,7 @@ const d = labToolData.waterCycle || {};
                   ),
                   React.createElement("button", {
                     type: "button",
+                    "data-route-choice": "plant",
                     "aria-label": "Choose Plant absorption path",
                     onClick: function() { chooseJourneyPath('plant'); }
                   },

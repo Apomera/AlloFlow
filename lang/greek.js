@@ -20938,7 +20938,8 @@
       "navigate": "Πλοήγηση",
       "pipeline": "Αποτελέσματα pipeline",
       "tools": "Άνοιγμα εργαλείου",
-      "voice": "Φωνή"
+      "voice": "Φωνή",
+      "recent": "Recent"
     },
     "input_aria": "Αναζήτηση εντολών",
     "list_aria": "Εντολές που ταιριάζουν",

@@ -192,8 +192,23 @@ window.StemLab = window.StemLab || {
     { id: 'key', label: 'Brass key', icon: '\uD83D\uDD11', volume: 8, mass: 67, initial: 36, note: 'Small and irregular; displacement is easier than modeling every notch.' },
     { id: 'eraser', label: 'Rubber eraser', icon: '\u25B0', volume: 12, mass: 15, initial: 50, note: 'A compact classroom object that sinks when fully submerged.' },
     { id: 'clay', label: 'Clay figure', icon: '\uD83D\uDDFF', volume: 26, mass: 49, initial: 31, note: 'Its shape can change while its amount of material stays the same.' },
-    { id: 'block', label: 'Acrylic block', icon: '\uD83E\uDDCA', volume: 24, mass: 29, initial: 45, formula: '4 x 3 x 2 = 24 cm\u00B3', note: 'A regular solid: compare displacement with the geometric formula.' }
+    { id: 'block', label: 'Acrylic block', icon: '\uD83E\uDDCA', volume: 24, mass: 29, initial: 45, formula: '4 x 3 x 2 = 24 cm\u00B3', note: 'A regular solid: compare displacement with the geometric formula.' },
+    { id: 'cork', label: 'Cork stopper', icon: '\uD83E\uDEB5', volume: 20, mass: 5, initial: 38, floats: true, sinkerVolume: 6, middleOnly: true, note: 'Less dense than water, so it floats unless a sinker holds it below the surface.' }
   ];
+
+  var CLAY_SHAPES = [
+    { id: 'lump', label: 'Rounded lump', description: 'a rounded lump' },
+    { id: 'patty', label: 'Flat patty', description: 'a flat patty' },
+    { id: 'column', label: 'Tall column', description: 'a tall column' }
+  ];
+
+  function nextClayShapeId(currentId) {
+    var currentIndex = CLAY_SHAPES.findIndex(function(shape) { return shape.id === currentId; });
+    if (currentIndex < 0) currentIndex = 0;
+    return CLAY_SHAPES[(currentIndex + 1) % CLAY_SHAPES.length].id;
+  }
+
+
 
   var DISPLACEMENT_CONDITIONS = {
     careful: { label: 'Careful setup', short: 'Accurate trial', explanation: 'Eye level, no trapped air, and the object is fully submerged.' },
@@ -221,11 +236,109 @@ window.StemLab = window.StemLab || {
     };
   }
 
+
+  function calculateSinkerCorrectionTrial(initial, objectVolume, sinkerVolume) {
+    var safeInitial = Number.isFinite(Number(initial)) ? Math.max(0, Number(initial)) : 0;
+    var safeObjectVolume = Number.isFinite(Number(objectVolume)) ? Math.max(0, Number(objectVolume)) : 0;
+    var safeSinkerVolume = Number.isFinite(Number(sinkerVolume)) ? Math.max(0, Number(sinkerVolume)) : 0;
+    var sinkerOnly = safeInitial + safeSinkerVolume;
+    var final = sinkerOnly + safeObjectVolume;
+    return {
+      initial: safeInitial,
+      sinkerOnly: sinkerOnly,
+      final: final,
+      measuredVolume: final - sinkerOnly,
+      acceptedVolume: safeObjectVolume,
+      error: final - sinkerOnly - safeObjectVolume,
+      totalDisplacement: safeSinkerVolume + safeObjectVolume
+    };
+  }
+
+
+  function assessCylinderCapacity(initial, displacedVolume, capacity) {
+    var numericCapacity = Number(capacity);
+    var numericInitial = Number(initial);
+    var numericDisplaced = Number(displacedVolume);
+    var safeCapacity = Number.isFinite(numericCapacity) && numericCapacity > 0 ? numericCapacity : 100;
+    var safeInitial = Number.isFinite(numericInitial) ? Math.max(0, numericInitial) : 0;
+    var safeDisplaced = Number.isFinite(numericDisplaced) ? Math.max(0, numericDisplaced) : 0;
+    var final = Math.round((safeInitial + safeDisplaced) * 100) / 100;
+    var headroom = Math.round(Math.max(0, safeCapacity - safeInitial) * 100) / 100;
+    var overflowAmount = Math.round(Math.max(0, final - safeCapacity) * 100) / 100;
+    return {
+      capacity: safeCapacity,
+      initial: safeInitial,
+      displacedVolume: safeDisplaced,
+      final: final,
+      headroom: headroom,
+      overflow: overflowAmount > 0,
+      overflowAmount: overflowAmount,
+      readableFinal: overflowAmount > 0 ? null : final
+    };
+  }
+
+
+  function summarizeDisplacementTrials(trials) {
+    var valid = (Array.isArray(trials) ? trials : []).map(function(trial) {
+      if (!trial || trial.measured == null || trial.accepted == null) return null;
+      var measured = Number(trial.measured);
+      var accepted = Number(trial.accepted);
+      if (!Number.isFinite(measured) || !Number.isFinite(accepted)) return null;
+      var storedError = trial.error == null ? NaN : Number(trial.error);
+      var error = Number.isFinite(storedError) ? storedError : measured - accepted;
+      error = Math.round(error * 100) / 100;
+      return {
+        error: error,
+        absoluteError: Math.round(Math.abs(error) * 100) / 100
+      };
+    }).filter(Boolean);
+
+    var count = valid.length;
+    var accurate = valid.filter(function(item) { return item.absoluteError < 0.001; }).length;
+    var over = valid.filter(function(item) { return item.error > 0.001; }).length;
+    var under = valid.filter(function(item) { return item.error < -0.001; }).length;
+    var meanError = count
+      ? Math.round((valid.reduce(function(sum, item) { return sum + item.error; }, 0) / count) * 100) / 100
+      : 0;
+    var meanAbsoluteError = count
+      ? Math.round((valid.reduce(function(sum, item) { return sum + item.absoluteError; }, 0) / count) * 100) / 100
+      : 0;
+    var largestAbsoluteError = count
+      ? Math.max.apply(null, valid.map(function(item) { return item.absoluteError; }))
+      : 0;
+    var conclusion = 'Record a completed trial to compare measurement accuracy.';
+    if (count && accurate === count) {
+      conclusion = 'All recorded trials matched the accepted volume.';
+    } else if (over && under) {
+      conclusion = 'The record includes both overestimates and underestimates. Setup choices changed the direction of the error.';
+    } else if (over) {
+      conclusion = 'The biased trials overestimated volume. Look for trapped air or a reading taken above eye level.';
+    } else if (under) {
+      conclusion = 'The biased trials underestimated volume. Check whether the object was fully submerged.';
+    }
+
+    return {
+      count: count,
+      accurate: accurate,
+      over: over,
+      under: under,
+      meanError: meanError,
+      meanAbsoluteError: meanAbsoluteError,
+      largestAbsoluteError: largestAbsoluteError,
+      conclusion: conclusion
+    };
+  }
+
   // Deterministic seams for focused science tests.
   window.__alloVolumePure = {
     displacementOffset: displacementOffset,
     calculateDisplacementTrial: calculateDisplacementTrial,
-    displacementObjects: DISPLACEMENT_OBJECTS
+    calculateSinkerCorrectionTrial: calculateSinkerCorrectionTrial,
+    assessCylinderCapacity: assessCylinderCapacity,
+    summarizeDisplacementTrials: summarizeDisplacementTrials,
+    displacementObjects: DISPLACEMENT_OBJECTS,
+    clayShapes: CLAY_SHAPES,
+    nextClayShapeId: nextClayShapeId
   };
   // ── Badge definitions ──
   var BADGES = [
@@ -319,12 +432,38 @@ window.StemLab = window.StemLab || {
       var showCompare = _v.showCompare || false;  // square-cube-law comparison panel
 
       // Water-displacement lab state.
-      var dispObjectId = _v.dispObjectId || 'stone';
-      var dispObject = DISPLACEMENT_OBJECTS.find(function(o) { return o.id === dispObjectId; }) || DISPLACEMENT_OBJECTS[0];
       var dispLevel = _v.dispLevel || 'elementary';
-      var dispCondition = dispLevel === 'middle' ? (_v.dispCondition || 'careful') : 'careful';
+      var availableDisplacementObjects = DISPLACEMENT_OBJECTS.filter(function(object) {
+        return dispLevel === 'middle' || !object.middleOnly;
+      });
+      var requestedDispObjectId = _v.dispObjectId || 'stone';
+      var dispObject = availableDisplacementObjects.find(function(o) { return o.id === requestedDispObjectId; }) || availableDisplacementObjects[0];
+      var requestedClayShapeId = _v.dispClayShape || 'lump';
+      var dispClayShapeIndex = CLAY_SHAPES.findIndex(function(shape) { return shape.id === requestedClayShapeId; });
+      var dispClayShapeMeta = CLAY_SHAPES[dispClayShapeIndex < 0 ? 0 : dispClayShapeIndex];
+      var dispClayReshaped = !!_v.dispClayReshaped;
+
+      var dispObjectId = dispObject.id;
+      var dispUsesSinker = !!dispObject.floats;
+      var dispCondition = dispLevel === 'middle' && !dispUsesSinker ? (_v.dispCondition || 'careful') : 'careful';
       var dispConditionMeta = DISPLACEMENT_CONDITIONS[dispCondition] || DISPLACEMENT_CONDITIONS.careful;
-      var dispTrial = calculateDisplacementTrial(dispObject.initial, dispObject.volume, dispCondition);
+      var dispCapacity = 100;
+      var storedDispInitial = Number(_v.dispInitial);
+      var dispInitial = dispLevel === 'middle' && Number.isFinite(storedDispInitial)
+        ? Math.max(10, Math.min(90, storedDispInitial))
+        : dispObject.initial;
+      var dispTrial = dispUsesSinker
+        ? calculateSinkerCorrectionTrial(dispInitial, dispObject.volume, dispObject.sinkerVolume)
+        : calculateDisplacementTrial(dispInitial, dispObject.volume, dispCondition);
+      var dispCapacityAssessment = assessCylinderCapacity(dispTrial.initial, dispTrial.final - dispTrial.initial, dispCapacity);
+      var dispOverflow = dispCapacityAssessment.overflow;
+      var dispBaselineReading = dispUsesSinker ? dispTrial.sinkerOnly : dispTrial.initial;
+      var dispReferenceTrial = dispUsesSinker
+        ? calculateSinkerCorrectionTrial(dispObject.initial, dispObject.volume, dispObject.sinkerVolume)
+        : calculateDisplacementTrial(dispObject.initial, dispObject.volume, dispCondition);
+      var dispReferenceBaseline = dispUsesSinker ? dispReferenceTrial.sinkerOnly : dispReferenceTrial.initial;
+      var dispInitialAdjusted = dispLevel === 'middle' && Math.abs(dispTrial.initial - dispObject.initial) > 0.001;
+
       var dispSubmerged = !!_v.dispSubmerged;
       var dispPrediction = _v.dispPrediction || '';
       var dispAnswer = _v.dispAnswer || '';
@@ -996,8 +1135,13 @@ window.StemLab = window.StemLab || {
         upd({ showAI: true, aiLoading: true, aiResponse: '' });
         var prompt = 'You are a friendly STEM tutor helping a student understand volume. ';
         if (isDisplacement) {
-          prompt += 'They are measuring a ' + dispObject.label + ' by water displacement. Initial reading ' + dispTrial.initial + ' mL; recorded final reading ' + dispTrial.final + ' mL. ';
-          prompt += 'Explain final minus initial and that 1 mL equals 1 cubic centimeter. ';
+          if (dispUsesSinker) {
+            prompt += 'They are measuring a floating ' + dispObject.label + ' by sinker correction. Sinker-only reading ' + dispTrial.sinkerOnly + ' mL; sinker-plus-object reading ' + dispTrial.final + ' mL. ';
+            prompt += 'Explain why combined minus sinker-only isolates the object volume, and connect density below 1 g/cm3 with floating. ';
+          } else {
+            prompt += 'They are measuring a ' + dispObject.label + ' by water displacement. Initial reading ' + dispTrial.initial + ' mL; recorded final reading ' + dispTrial.final + ' mL. ';
+            prompt += 'Explain final minus initial and that 1 mL equals 1 cubic centimeter. ';
+          }
           if (dispCondition !== 'careful') prompt += 'The trial includes this measurement issue: ' + dispConditionMeta.explanation + ' ';
         } else if (isSlider) {
           prompt += 'They are looking at a ' + dims.l + '\u00d7' + dims.w + '\u00d7' + dims.h + ' rectangular prism. ';
@@ -1356,7 +1500,7 @@ window.StemLab = window.StemLab || {
         );
       };
 
-      function renderDisplacementCylinder(label, reading, showObject, waiting) {
+      function renderDisplacementCylinder(label, reading, objectMode, waiting, overflowing) {
         var safeReading = Math.max(0, Math.min(100, Number(reading) || 0));
         var waterY = 310 - safeReading * 2.5;
         var ticks = [];
@@ -1374,12 +1518,21 @@ window.StemLab = window.StemLab || {
             fontSize: 10, fontFamily: 'monospace', fill: '#334155'
           }, String(mark)));
         }
-        var partialImmersion = showObject && dispCondition === 'partial';
-        var objectY = partialImmersion ? waterY + 3 : 286;
+        var showObject = objectMode === true || objectMode === 'object' || objectMode === 'combined';
+        var showSinker = objectMode === 'sinker' || objectMode === 'combined';
+        var partialImmersion = showObject && !showSinker && dispCondition === 'partial';
+        var objectY = partialImmersion ? waterY + 3 : (showSinker ? 260 : 286);
         var immersionText = partialImmersion ? ' only partly submerged.' : ' fully submerged.';
+        var specimenDescription = dispObject.id === 'clay' ? dispObject.label + ' shaped as ' + dispClayShapeMeta.description : dispObject.label;
+        var contentsText = '.';
+        if (showSinker && showObject) contentsText = ', with the metal sinker and ' + specimenDescription + ' fully submerged.';
+        else if (showSinker) contentsText = ', with the metal sinker submerged.';
+        else if (showObject) contentsText = ', with the ' + specimenDescription + immersionText;
         var cylinderAria = waiting
           ? label + '. Final reading is hidden until the object is lowered into the water.'
-          : label + '. Bottom of the water meniscus reads ' + safeReading + ' milliliters' + (showObject ? ', with the ' + dispObject.label + immersionText : '.');
+          : overflowing
+            ? label + '. Water overflowed past the 100 milliliter cylinder capacity, so no valid final reading is available.'
+            : label + '. Bottom of the water meniscus reads ' + safeReading + ' milliliters' + contentsText;
         return h('figure', { className: 'm-0 min-w-0 text-center' },
           h('svg', {
             viewBox: '0 0 220 350',
@@ -1398,17 +1551,33 @@ window.StemLab = window.StemLab || {
               fill: 'none', stroke: waiting ? '#93c5fd' : '#0284c7', strokeWidth: 3
             }),
             ticks,
-            showObject && h('g', { 'aria-hidden': 'true', 'data-immersion': partialImmersion ? 'partial' : 'full' },
-              h('ellipse', { cx: 110, cy: objectY, rx: 24, ry: 16, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
-              h('text', { x: 110, y: objectY + 5, textAnchor: 'middle', fontSize: 20 }, dispObject.icon)
+            showSinker && h('g', { 'aria-hidden': 'true', 'data-sinker-state': showObject ? 'combined' : 'alone' },
+              h('line', { x1: 138, y1: 44, x2: 138, y2: 286, stroke: '#64748b', strokeWidth: 2 }),
+              h('rect', { x: 126, y: 284, width: 24, height: 22, rx: 4, fill: '#64748b', stroke: '#0f172a', strokeWidth: 2 }),
+              h('text', { x: 138, y: 299, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#ffffff' }, 'S')
             ),
-            !waiting && h('line', { x1: 174, y1: waterY, x2: 204, y2: waterY, stroke: '#0369a1', strokeWidth: 2 }),
-            !waiting && h('text', { x: 207, y: waterY + 4, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#075985' }, safeReading + ' mL'),
+
+            showObject && h('g', { 'aria-hidden': 'true', 'data-immersion': partialImmersion ? 'partial' : 'full', 'data-clay-shape': dispObject.id === 'clay' ? dispClayShapeMeta.id : undefined },
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'lump' && h('ellipse', { cx: 110, cy: objectY, rx: 27, ry: 16, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'patty' && h('rect', { x: 70, y: objectY - 9, width: 80, height: 18, rx: 9, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'column' && h('rect', { x: 98, y: objectY - 30, width: 24, height: 60, rx: 10, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id !== 'clay' && h('ellipse', { cx: 110, cy: objectY, rx: 24, ry: 16, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
+              dispObject.id !== 'clay' && h('text', { x: 110, y: objectY + 5, textAnchor: 'middle', fontSize: 20 }, dispObject.icon)
+            ),
+            !waiting && !overflowing && h('line', { x1: 174, y1: waterY, x2: 204, y2: waterY, stroke: '#0369a1', strokeWidth: 2 }),
+            !waiting && !overflowing && h('text', { x: 207, y: waterY + 4, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#075985' }, safeReading + ' mL'),
+            overflowing && h('g', { 'aria-hidden': 'true', 'data-cylinder-overflow': 'true' },
+              h('path', { d: 'M38 48 Q54 34 70 48 T102 48 T134 48 T182 48', fill: 'none', stroke: '#dc2626', strokeWidth: 5, strokeLinecap: 'round' }),
+              h('text', { x: 110, y: 82, textAnchor: 'middle', fontSize: 16, fontWeight: 900, fill: '#991b1b' }, 'OVERFLOW')
+            ),
+
             waiting && h('text', { x: 110, y: 175, textAnchor: 'middle', fontSize: 52, fontWeight: 900, fill: '#94a3b8' }, '?'),
             h('text', { x: 110, y: 342, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'Read the bottom of the meniscus')
           ),
           h('figcaption', { className: 'mt-1 text-xs font-bold text-sky-900' },
-            waiting ? 'Reading hidden until measurement' : safeReading + ' mL'
+            waiting
+              ? 'Reading hidden until measurement'
+              : (overflowing ? 'Overflow - final reading unavailable' : safeReading + ' mL')
           )
         );
       }
@@ -1425,22 +1594,45 @@ window.StemLab = window.StemLab || {
         }
 
         function chooseSpecimen(id) {
-          var next = DISPLACEMENT_OBJECTS.find(function(o) { return o.id === id; }) || DISPLACEMENT_OBJECTS[0];
-          resetDisplacementTrial({ dispObjectId: next.id });
-          announceToSR(next.label + ' selected. Initial water reading ' + next.initial + ' milliliters.');
+          var next = availableDisplacementObjects.find(function(o) { return o.id === id; }) || availableDisplacementObjects[0];
+          resetDisplacementTrial({
+            dispObjectId: next.id,
+            dispInitial: next.initial,
+            dispCondition: 'careful',
+            dispClayShape: 'lump',
+            dispClayReshaped: false
+          });
+          announceToSR(next.floats ? next.label + ' selected. It floats, so use the metal sinker correction method.' : next.label + ' selected. Initial water reading ' + next.initial + ' milliliters.');
         }
+
+        function reshapeClay() {
+          if (dispObject.id !== 'clay') return;
+          var nextId = nextClayShapeId(dispClayShapeMeta.id);
+          var nextMeta = CLAY_SHAPES.find(function(shape) { return shape.id === nextId; });
+          upd({ dispClayShape: nextId, dispClayReshaped: true });
+          announceToSR('Clay reshaped as ' + nextMeta.description + '. No clay was added or removed, so its volume stays ' + dispObject.volume + ' cubic centimeters.');
+        }
+
 
         function lowerSpecimen() {
           upd({ dispSubmerged: true, dispAnswer: '', dispFeedback: null });
           playSound('place');
-          announceToSR(dispObject.label + (dispCondition === 'partial' ? ' partly submerged. ' : ' fully submerged. ') + 'Final reading ' + dispTrial.final + ' milliliters. Subtract the initial reading of ' + dispTrial.initial + ' milliliters.');
+          if (dispOverflow) {
+            announceToSR('The water overflowed past the 100 milliliter cylinder capacity. There is no valid final reading. Lower the initial water level and repeat the trial.');
+          } else {
+            if (dispUsesSinker) {
+              announceToSR('Sinker-only reading ' + dispTrial.sinkerOnly + ' milliliters. Sinker plus ' + dispObject.label + ' reading ' + dispTrial.final + ' milliliters. Subtract the sinker-only reading.');
+            } else {
+              announceToSR(dispObject.label + (dispCondition === 'partial' ? ' partly submerged. ' : ' fully submerged. ') + 'Final reading ' + dispTrial.final + ' milliliters. Subtract the initial reading of ' + dispTrial.initial + ' milliliters.');
+            }
+          }
         }
 
         function checkDisplacementAnswer() {
-          if (!dispSubmerged || (dispFeedback && dispFeedback.correct)) return;
+          if (!dispSubmerged || dispOverflow || (dispFeedback && dispFeedback.correct)) return;
           var parsed = Number(dispAnswer);
           if (!Number.isFinite(parsed)) {
-            upd({ dispFeedback: { correct: false, msg: 'Enter a number for final reading minus initial reading.' } });
+            upd({ dispFeedback: { correct: false, msg: 'Enter a number for the final reading minus the subtraction baseline.' } });
             announceToSR('Enter a number first.');
             return;
           }
@@ -1448,8 +1640,8 @@ window.StemLab = window.StemLab || {
           var newStreak = ok ? streak + 1 : 0;
           var patch = {
             dispFeedback: ok
-              ? { correct: true, msg: 'Correct: ' + dispTrial.final + ' - ' + dispTrial.initial + ' = ' + dispTrial.measuredVolume + ' mL, so the observed displaced volume is ' + dispTrial.measuredVolume + ' cm\u00B3.' }
-              : { correct: false, msg: 'Use the change in water level: final (' + dispTrial.final + ' mL) - initial (' + dispTrial.initial + ' mL). Do not use the final reading by itself.' },
+              ? { correct: true, msg: 'Correct: ' + dispTrial.final + ' - ' + dispBaselineReading + ' = ' + dispTrial.measuredVolume + ' mL, so the observed displaced volume is ' + dispTrial.measuredVolume + ' cm\u00B3.' }
+              : { correct: false, msg: 'Use the change in water level: final (' + dispTrial.final + ' mL) - ' + (dispUsesSinker ? 'sinker-only' : 'initial') + ' (' + dispBaselineReading + ' mL). Do not use the final reading by itself.' },
             score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
             streak: newStreak,
             attemptHist: (_v.attemptHist || []).concat([ok ? 1 : 0]).slice(-24)
@@ -1459,12 +1651,15 @@ window.StemLab = window.StemLab || {
             patch.dispSolved = nextSolved;
             patch.dispTrials = dispTrials.concat([{
               id: Date.now(),
-              object: dispObject.label,
+              object: dispObject.label + (dispObject.id === 'clay' ? ' - ' + dispClayShapeMeta.label : ''),
               initial: dispTrial.initial,
+              baseline: dispBaselineReading,
+              method: dispUsesSinker ? 'Sinker correction' : 'Direct displacement',
               final: dispTrial.final,
               measured: dispTrial.measuredVolume,
               accepted: dispTrial.acceptedVolume,
-              condition: dispConditionMeta.label
+              error: dispTrial.error,
+              condition: dispUsesSinker ? 'Sinker correction (careful setup)' : dispConditionMeta.label
             }]).slice(-6);
             playSound('correct');
             if (typeof awardStemXP === 'function') awardStemXP('volume', 5, 'water displacement');
@@ -1472,20 +1667,103 @@ window.StemLab = window.StemLab || {
             announceToSR('Correct. Observed displaced volume ' + dispTrial.measuredVolume + ' cubic centimeters.');
           } else {
             playSound('wrong');
-            announceToSR('Try again. Subtract the initial reading from the final reading.');
+            announceToSR(dispUsesSinker ? 'Try again. Subtract the sinker-only reading from the combined reading.' : 'Try again. Subtract the initial reading from the final reading.');
           }
           upd(patch);
         }
 
         function nextSpecimen() {
-          var currentIndex = DISPLACEMENT_OBJECTS.findIndex(function(o) { return o.id === dispObject.id; });
-          chooseSpecimen(DISPLACEMENT_OBJECTS[(currentIndex + 1) % DISPLACEMENT_OBJECTS.length].id);
+          var currentIndex = availableDisplacementObjects.findIndex(function(o) { return o.id === dispObject.id; });
+          chooseSpecimen(availableDisplacementObjects[(currentIndex + 1) % availableDisplacementObjects.length].id);
         }
 
         var density = Math.round((dispObject.mass / dispObject.volume) * 100) / 100;
         var predictionNumber = Number(dispPrediction);
         var predictionReady = dispPrediction !== '' && Number.isFinite(predictionNumber);
         var predictionDifference = predictionReady ? Math.abs(predictionNumber - dispTrial.measuredVolume) : null;
+
+        var startingLevelComparison = '';
+        if (dispInitialAdjusted) {
+          if (!dispSubmerged) {
+            startingLevelComparison = 'Starting water changed from ' + dispObject.initial + ' to ' + dispTrial.initial + ' mL. Predict whether ' + (dispUsesSinker ? 'combined - sinker-only' : 'final - initial') + ' will change.';
+          } else if (dispOverflow) {
+            startingLevelComparison = 'Overflow: water passed the 100 mL mark. Starting water changed from ' + dispObject.initial + ' to ' + dispTrial.initial + ' mL, so this trial cannot test the difference. Lower the initial water level and repeat.';
+          } else if (dispUsesSinker) {
+            startingLevelComparison = 'Reference sinker-only ' + dispReferenceBaseline + ' \u2192 combined ' + dispReferenceTrial.final + '; adjusted sinker-only ' + dispBaselineReading + ' \u2192 combined ' + dispTrial.final + '. Both change by ' + dispTrial.measuredVolume + ' mL. Starting water changes the readings, not their difference.';
+          } else {
+            startingLevelComparison = dispReferenceBaseline + ' \u2192 ' + dispReferenceTrial.final + ' and ' + dispBaselineReading + ' \u2192 ' + dispTrial.final + ' both change by ' + dispTrial.measuredVolume + ' mL. Starting level changes the readings, not their difference.';
+          }
+        }
+
+
+        var trialSummary = summarizeDisplacementTrials(dispTrials);
+
+        function formatDisplacementError(value) {
+          var number = Number(value);
+          if (!Number.isFinite(number) || Math.abs(number) < 0.001) return '0';
+          return (number > 0 ? '+' : '') + number;
+        }
+
+        function renderTrialErrorPlot() {
+          var comparable = dispTrials.slice(-6).map(function(trial) {
+            if (!trial || trial.measured == null || trial.accepted == null) return null;
+            var measured = Number(trial.measured);
+            var accepted = Number(trial.accepted);
+            if (!Number.isFinite(measured) || !Number.isFinite(accepted)) return null;
+            var storedError = trial.error == null ? NaN : Number(trial.error);
+            return {
+              id: trial.id,
+              object: trial.object || 'Specimen',
+              condition: trial.condition || 'Unknown condition',
+              error: Number.isFinite(storedError) ? storedError : measured - accepted
+            };
+          }).filter(Boolean);
+          if (!comparable.length) return null;
+
+          var rowHeight = 46;
+          var chartHeight = 38 + comparable.length * rowHeight;
+          var centerX = 410;
+          var maxBarWidth = 155;
+          var maxError = Math.max(3, trialSummary.largestAbsoluteError);
+          var aria = 'Measurement error plot. ' + comparable.map(function(trial) {
+            return trial.object + ', ' + trial.condition + ', error ' + formatDisplacementError(trial.error) + ' cubic centimeters.';
+          }).join(' ');
+
+          return h('figure', { className: 'mt-3', 'data-trial-error-plot': 'true' },
+            h('svg', {
+              viewBox: '0 0 720 ' + chartHeight,
+              role: 'img',
+              'aria-label': aria,
+              className: 'h-auto w-full rounded-lg border border-violet-200 bg-white'
+            },
+              h('line', { x1: centerX, y1: 24, x2: centerX, y2: chartHeight - 12, stroke: '#475569', strokeWidth: 2 }),
+              h('text', { x: centerX, y: 16, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#334155' }, '0 cm\u00B3 error'),
+              comparable.map(function(trial, index) {
+                var y = 42 + index * rowHeight;
+                var barWidth = Math.abs(trial.error) / maxError * maxBarWidth;
+                var isAccurate = Math.abs(trial.error) < 0.001;
+                var fill = isAccurate ? '#059669' : (trial.error > 0 ? '#d97706' : '#4f46e5');
+                return h('g', { key: trial.id || index, 'data-error-direction': isAccurate ? 'accurate' : (trial.error > 0 ? 'over' : 'under') },
+                  h('line', { x1: 218, y1: y + 9, x2: 602, y2: y + 9, stroke: '#e2e8f0', strokeWidth: 1 }),
+                  h('text', { x: 12, y: y, fontSize: 12, fontWeight: 700, fill: '#0f172a' }, String(trial.object).slice(0, 24)),
+                  h('text', { x: 12, y: y + 15, fontSize: 10, fill: '#475569' }, String(trial.condition).slice(0, 32)),
+                  isAccurate
+                    ? h('circle', { cx: centerX, cy: y + 7, r: 7, fill: fill })
+                    : h('rect', {
+                        x: trial.error < 0 ? centerX - barWidth : centerX,
+                        y: y,
+                        width: barWidth,
+                        height: 14,
+                        rx: 4,
+                        fill: fill
+                      }),
+                  h('text', { x: 620, y: y + 11, fontSize: 12, fontWeight: 800, fill: '#0f172a' }, formatDisplacementError(trial.error) + ' cm\u00B3')
+                );
+              })
+            ),
+            h('figcaption', { className: 'mt-1 text-[11px] text-slate-600' }, 'Bars left of zero underestimate volume; bars right of zero overestimate it. A dot on zero matches the accepted volume.')
+          );
+        }
 
         return h('section', {
           'data-displacement-lab': 'true',
@@ -1495,7 +1773,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-col gap-3 rounded-xl border border-sky-200 bg-white p-3 lg:flex-row lg:items-end lg:justify-between' },
             h('div', { className: 'min-w-0 flex-1' },
               h('h3', { id: 'volume-displacement-heading', className: 'text-lg font-black text-sky-900' }, '\uD83E\uDDEA Water Displacement Lab'),
-              h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, 'Measure an object that is hard to describe with a formula. With careful setup and full submersion, the rise in water level equals the object volume.'),
+              h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, dispUsesSinker
+                ? 'Measure a floating object by comparing the sinker-only reading with the sinker-plus-object reading.'
+                : 'Measure an object that is hard to describe with a formula. With careful setup and full submersion, the rise in water level equals the object volume.'),
               h('p', { className: 'mt-2 inline-flex rounded-full border border-teal-300 bg-teal-50 px-3 py-1 text-xs font-black text-teal-900' }, '1 milliliter (mL) = 1 cubic centimeter (cm\u00B3)')
             ),
             h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:w-[28rem]' },
@@ -1506,7 +1786,7 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { chooseSpecimen(e.target.value); },
                   'aria-label': 'Choose an object to measure',
                   className: 'min-h-[2.75rem] w-full rounded-lg border-2 border-sky-300 bg-white px-3 py-2 text-sm font-bold text-sky-900'
-                }, DISPLACEMENT_OBJECTS.map(function(o) {
+                }, availableDisplacementObjects.map(function(o) {
                   return h('option', { key: o.id, value: o.id }, o.label);
                 }))
               ),
@@ -1522,7 +1802,12 @@ window.StemLab = window.StemLab || {
                       key: level.id,
                       type: 'button',
                       onClick: function() {
-                        resetDisplacementTrial({ dispLevel: level.id, dispCondition: 'careful' });
+                        var levelPatch = { dispLevel: level.id, dispCondition: 'careful' };
+                        if (level.id === 'elementary' && dispUsesSinker) {
+                          levelPatch.dispObjectId = DISPLACEMENT_OBJECTS[0].id;
+                          levelPatch.dispInitial = DISPLACEMENT_OBJECTS[0].initial;
+                        }
+                        resetDisplacementTrial(levelPatch);
                         announceToSR(level.label + ' learning level selected.');
                       },
                       'aria-pressed': active,
@@ -1534,7 +1819,7 @@ window.StemLab = window.StemLab || {
             )
           ),
 
-          dispLevel === 'middle' && h('fieldset', { className: 'm-0 rounded-xl border border-violet-200 bg-white p-3' },
+          dispLevel === 'middle' && !dispUsesSinker && h('fieldset', { className: 'm-0 rounded-xl border border-violet-200 bg-white p-3' },
             h('legend', { className: 'px-1 text-xs font-black text-violet-900' }, 'Measurement conditions'),
             h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
               Object.keys(DISPLACEMENT_CONDITIONS).map(function(key) {
@@ -1558,6 +1843,63 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'mt-2 text-xs leading-relaxed text-violet-900', role: 'note' }, dispConditionMeta.explanation)
           ),
 
+          dispLevel === 'middle' && dispUsesSinker && h('section', {
+            className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-3',
+            'data-sinker-method': 'true',
+            'aria-labelledby': 'volume-sinker-method-heading'
+          },
+            h('h4', { id: 'volume-sinker-method-heading', className: 'text-sm font-black text-indigo-950' }, 'Floating object: sinker correction'),
+            h('p', { className: 'mt-1 text-xs leading-relaxed text-indigo-950' }, 'The cork floats, so a metal sinker holds it fully underwater. Subtract the sinker\'s own displacement so only the cork volume remains.'),
+            h('ol', { className: 'mt-2 grid gap-2 text-xs sm:grid-cols-3' },
+              h('li', { className: 'rounded-lg bg-white p-2' }, h('strong', null, '1. Sinker alone: '), dispTrial.sinkerOnly + ' mL'),
+              h('li', { className: 'rounded-lg bg-white p-2' }, h('strong', null, '2. Sinker + cork: '), dispSubmerged && !dispOverflow ? dispTrial.final + ' mL' : 'hidden until measured'),
+              h('li', { className: 'rounded-lg bg-white p-2' }, h('strong', null, '3. Subtract: '), 'combined - sinker-only')
+            )
+          ),
+
+
+          dispLevel === 'middle' && h('section', {
+            className: 'rounded-xl border border-cyan-200 bg-white p-3',
+            'data-cylinder-setup': 'true',
+            'aria-labelledby': 'volume-cylinder-setup-heading'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('h4', { id: 'volume-cylinder-setup-heading', className: 'text-sm font-black text-cyan-950' }, 'Experimental setup'),
+              h('span', { className: 'rounded-full bg-cyan-50 px-2 py-1 text-xs font-black text-cyan-900' }, dispTrial.initial + ' mL starting water')
+            ),
+            h('label', { htmlFor: 'volume-initial-water', className: 'mt-2 block text-xs font-bold text-slate-700' }, 'Adjust the initial water level'),
+            h('input', {
+              id: 'volume-initial-water',
+              type: 'range',
+              min: 10,
+              max: 90,
+              step: 1,
+              value: dispTrial.initial,
+              onChange: function(e) { resetDisplacementTrial({ dispInitial: Number(e.target.value) }); },
+              'aria-label': 'Initial water level in milliliters',
+              'aria-describedby': 'volume-cylinder-capacity-note' + (dispInitialAdjusted ? ' volume-starting-level-comparison' : ''),
+              className: 'mt-2 w-full accent-cyan-700'
+            }),
+            h('p', { id: 'volume-cylinder-capacity-note', className: 'mt-1 text-xs text-cyan-950' },
+              'Cylinder capacity: 100 mL. Empty space above the water: ', h('strong', null, dispCapacityAssessment.headroom + ' mL'), '.'
+            ),
+            dispInitialAdjusted && h('p', {
+              id: 'volume-starting-level-comparison',
+              className: 'mt-2 rounded-lg border p-2 text-xs font-bold leading-relaxed ' + (dispSubmerged && dispOverflow ? 'border-rose-300 bg-rose-50 text-rose-900' : 'border-cyan-300 bg-cyan-50 text-cyan-950'),
+              role: dispSubmerged && dispOverflow ? 'alert' : 'status',
+              'aria-live': dispSubmerged && dispOverflow ? undefined : 'polite',
+              'data-starting-level-comparison': 'true',
+              'data-comparison-state': !dispSubmerged ? 'prediction' : (dispOverflow ? 'overflow' : 'observed'),
+              'data-overflow-feedback': dispSubmerged && dispOverflow ? 'true' : undefined
+            }, startingLevelComparison),
+            dispSubmerged && dispOverflow && !dispInitialAdjusted && h('p', {
+              className: 'mt-2 rounded-lg border border-rose-300 bg-rose-50 p-2 text-xs font-bold text-rose-900',
+              role: 'alert',
+              'data-overflow-feedback': 'true'
+            }, 'Overflow: water passed the 100 mL mark, so the final reading is unavailable. Lower the initial water level and repeat the trial.')
+          ),
+
+
           h('div', { className: 'grid gap-4 xl:grid-cols-[1.15fr_0.85fr]' },
             h('div', { className: 'rounded-xl border border-sky-200 bg-white p-3' },
               h('div', { className: 'mb-3 flex flex-wrap items-center justify-between gap-2' },
@@ -1565,15 +1907,40 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-base font-black text-slate-900' }, dispObject.icon + ' ' + dispObject.label),
                   h('p', { className: 'mt-0.5 text-xs text-slate-600' }, dispObject.note)
                 ),
-                h('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700' }, dispSubmerged ? (dispCondition === 'partial' ? 'Partly submerged' : 'Fully submerged') : 'Ready to measure')
+                h('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700' }, dispSubmerged ? (dispUsesSinker ? 'Sinker + object submerged' : (dispCondition === 'partial' ? 'Partly submerged' : 'Fully submerged')) : 'Ready to measure')
               ),
-              h('div', { className: 'grid grid-cols-2 gap-2' },
-                renderDisplacementCylinder('Initial reading', dispTrial.initial, false, false),
-                renderDisplacementCylinder('Final reading', dispSubmerged ? dispTrial.final : dispTrial.initial, dispSubmerged, !dispSubmerged)
+              dispObject.id === 'clay' && h('div', { className: 'mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2', 'data-clay-conservation': 'true' },
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('p', { className: 'text-xs font-black text-amber-950' }, 'Same clay, different shape: ' + dispClayShapeMeta.label),
+                  h('p', { className: 'mt-0.5 text-xs leading-relaxed text-amber-900', role: dispClayReshaped ? 'status' : undefined, 'aria-live': 'polite' }, dispClayReshaped
+                    ? (dispSubmerged && dispOverflow
+                      ? 'No clay was added or removed, so its volume should stay the same. Overflow prevents a valid comparison; lower the initial water level and repeat.'
+                      : (dispSubmerged ? 'No clay was added or removed. The shape changed, but accepted volume stays ' + dispObject.volume + ' cm\u00B3 and the final reading stays ' + dispTrial.final + ' mL.' : 'No clay was added or removed. The shape changed, but its volume should stay the same. Lower it to test your prediction.'))
+                    : 'Reshape the same clay. Predict whether the water-level change will stay the same.')
+                ),
+                h('button', { type: 'button', onClick: reshapeClay, 'aria-label': 'Reshape clay; current shape ' + dispClayShapeMeta.label, className: 'min-h-[2.5rem] rounded-lg border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100' }, 'Reshape clay')
               ),
-              dispSubmerged && h('div', { className: 'mt-3 rounded-xl border border-sky-300 bg-sky-50 p-3 text-center', role: 'status', 'aria-live': 'polite' },
-                h('div', { className: 'font-mono text-lg font-black text-sky-950' }, dispTrial.final + ' mL - ' + dispTrial.initial + ' mL = ?'),
-                h('p', { className: 'mt-1 text-xs text-sky-800' }, dispTrial.error === 0 ? 'With careful setup, the change in liquid volume is the object volume.' : 'This setup changes the reading. Calculate the observed change, then compare it with the accepted volume.')
+
+              h('div', { className: 'grid gap-2 ' + (dispUsesSinker ? 'grid-cols-3' : 'grid-cols-2') },
+                renderDisplacementCylinder('Initial reading', dispTrial.initial, false, false, false),
+                dispUsesSinker && renderDisplacementCylinder('Sinker only', dispTrial.sinkerOnly, 'sinker', false, false),
+                renderDisplacementCylinder(dispUsesSinker ? 'Sinker + object' : 'Final reading', dispSubmerged ? dispTrial.final : dispBaselineReading, dispUsesSinker ? 'combined' : 'object', !dispSubmerged, dispSubmerged && dispOverflow)
+              ),
+              dispSubmerged && h('div', {
+                className: 'mt-3 rounded-xl border p-3 text-center ' + (dispOverflow ? 'border-rose-300 bg-rose-50' : 'border-sky-300 bg-sky-50'),
+                role: 'status',
+                'aria-live': 'polite'
+              },
+                h('div', { className: 'font-mono text-lg font-black ' + (dispOverflow ? 'text-rose-950' : 'text-sky-950') },
+                  dispOverflow ? 'Final reading unavailable - revise the setup' : dispTrial.final + ' mL - ' + dispBaselineReading + ' mL = ?'
+                ),
+                h('p', { className: 'mt-1 text-xs ' + (dispOverflow ? 'text-rose-900' : 'text-sky-800') },
+                  dispOverflow
+                    ? 'Liquid left the cylinder, so the required subtraction cannot be calculated from this trial.'
+                    : (dispUsesSinker
+                      ? 'The sinker appears in both readings, so subtraction removes its displacement and leaves the object volume.'
+                      : (dispTrial.error === 0 ? 'With careful setup, the change in liquid volume is the object volume.' : 'This setup changes the reading. Calculate the observed change, then compare it with the accepted volume.'))
+                )
               )
             ),
 
@@ -1602,20 +1969,20 @@ window.StemLab = window.StemLab || {
                   onClick: lowerSpecimen,
                   disabled: dispSubmerged,
                   className: 'mt-2 min-h-[2.75rem] w-full rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-800 disabled:cursor-default disabled:bg-sky-200 disabled:text-sky-700'
-                }, dispSubmerged ? (dispCondition === 'partial' ? '\u2713 Object partly submerged' : '\u2713 Object submerged') : (dispCondition === 'partial' ? '\u2193 Lower object partway into water' : '\u2193 Lower object into water')),
-                dispSubmerged && predictionReady && h('p', { className: 'mt-2 text-xs text-slate-700' },
+                }, dispUsesSinker ? (dispSubmerged ? '\u2713 Sinker and cork submerged' : '\u2193 Lower cork with sinker') : (dispSubmerged ? (dispCondition === 'partial' ? '\u2713 Object partly submerged' : '\u2713 Object submerged') : (dispCondition === 'partial' ? '\u2193 Lower object partway into water' : '\u2193 Lower object into water'))),
+                dispSubmerged && !dispOverflow && predictionReady && h('p', { className: 'mt-2 text-xs text-slate-700' },
                   'Your prediction: ', h('strong', null, predictionNumber + ' cm\u00B3'), '. Difference from this reading: ', h('strong', null, predictionDifference + ' cm\u00B3'), '.'
                 )
               ),
 
               h('div', { className: 'rounded-xl border border-teal-200 bg-white p-3' },
                 h('label', { className: 'block text-sm font-black text-teal-900' },
-                  '3. Calculate final - initial',
+                  dispUsesSinker ? '3. Calculate combined - sinker-only' : '3. Calculate final - initial',
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
                     h('input', {
                       type: 'number', min: 0, max: 100, step: 1,
                       value: dispAnswer,
-                      disabled: !dispSubmerged || !!(dispFeedback && dispFeedback.correct),
+                      disabled: !dispSubmerged || dispOverflow || !!(dispFeedback && dispFeedback.correct),
                       onChange: function(e) { upd({ dispAnswer: e.target.value, dispFeedback: null }); },
                       onKeyDown: function(e) { if (e.key === 'Enter') checkDisplacementAnswer(); },
                       'aria-label': 'Calculated displaced volume in cubic centimeters',
@@ -1625,7 +1992,7 @@ window.StemLab = window.StemLab || {
                     h('button', {
                       type: 'button',
                       onClick: checkDisplacementAnswer,
-                      disabled: !dispSubmerged || dispAnswer === '' || !!(dispFeedback && dispFeedback.correct),
+                      disabled: !dispSubmerged || dispOverflow || dispAnswer === '' || !!(dispFeedback && dispFeedback.correct),
                       className: 'min-h-[2.75rem] rounded-lg bg-teal-700 px-4 py-2 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-40'
                     }, 'Check')
                   )
@@ -1651,7 +2018,9 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'font-bold text-slate-600' }, 'Measurement error'), h('dd', { className: 'font-mono font-black text-slate-900' }, (dispTrial.error > 0 ? '+' : '') + dispTrial.error + ' cm\u00B3')),
                   h('div', { className: 'col-span-2 rounded-lg bg-white p-2' }, h('dt', { className: 'font-bold text-slate-600' }, 'Density = mass / accepted volume'), h('dd', { className: 'font-mono font-black text-slate-900' }, dispObject.mass + ' g / ' + dispObject.volume + ' cm\u00B3 = ' + density + ' g/cm\u00B3'))
                 ),
-                h('p', { className: 'mt-2 text-xs text-violet-900' }, density + ' g/cm\u00B3 is greater than water\'s density (about 1 g/cm\u00B3), so this specimen tends to sink.')
+                h('p', { className: 'mt-2 text-xs text-violet-900' }, density < 1
+                  ? density + ' g/cm\u00B3 is less than water\'s density (about 1 g/cm\u00B3), so this specimen floats. The sinker holds it fully underwater without counting the sinker as part of its volume.'
+                  : density + ' g/cm\u00B3 is greater than water\'s density (about 1 g/cm\u00B3), so this specimen tends to sink.')
               ),
 
               h('div', { className: 'flex flex-wrap gap-2' },
@@ -1680,7 +2049,7 @@ window.StemLab = window.StemLab || {
             h('aside', { className: 'rounded-xl border border-cyan-200 bg-cyan-50 p-3', 'aria-label': 'Water displacement reminders' },
               h('h4', { className: 'text-sm font-black text-cyan-950' }, 'Measurement reminders'),
               h('ul', { className: 'mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed text-cyan-950' },
-                h('li', null, 'Use final - initial, not the final reading alone.'),
+                h('li', null, dispUsesSinker ? 'Use combined - sinker-only, not combined - initial.' : 'Use final - initial, not the final reading alone.'),
                 h('li', null, 'Read water at the bottom of its curved meniscus and at eye level.'),
                 h('li', null, 'The object must be fully submerged without trapping air.'),
                 h('li', null, 'Use this method only when the object does not dissolve or absorb water.')
@@ -1688,24 +2057,58 @@ window.StemLab = window.StemLab || {
             )
           ),
 
+          dispLevel === 'middle' && trialSummary.count > 0 && h('section', {
+            className: 'rounded-xl border border-violet-200 bg-violet-50 p-3',
+            'aria-labelledby': 'volume-accuracy-evidence-heading'
+          },
+            h('h4', { id: 'volume-accuracy-evidence-heading', className: 'text-sm font-black text-violet-950' }, 'Accuracy evidence across trials'),
+            h('p', { className: 'mt-1 text-xs leading-relaxed text-violet-950', role: 'status' }, trialSummary.conclusion),
+            h('dl', { className: 'mt-2 grid gap-2 text-xs sm:grid-cols-3' },
+              h('div', { className: 'rounded-lg bg-white p-2' },
+                h('dt', { className: 'font-bold text-slate-600' }, 'Mean signed error'),
+                h('dd', { className: 'font-mono font-black text-slate-900' }, formatDisplacementError(trialSummary.meanError) + ' cm\u00B3')
+              ),
+              h('div', { className: 'rounded-lg bg-white p-2' },
+                h('dt', { className: 'font-bold text-slate-600' }, 'Mean absolute error'),
+                h('dd', { className: 'font-mono font-black text-slate-900' }, trialSummary.meanAbsoluteError + ' cm\u00B3')
+              ),
+              h('div', { className: 'rounded-lg bg-white p-2' },
+                h('dt', { className: 'font-bold text-slate-600' }, 'Matched accepted volume'),
+                h('dd', { className: 'font-mono font-black text-slate-900' }, trialSummary.accurate + ' of ' + trialSummary.count)
+              )
+            ),
+            renderTrialErrorPlot()
+          ),
+
+
           dispTrials.length > 0 && h('div', { className: 'rounded-xl border border-slate-200 bg-white p-3' },
             h('div', { className: 'flex items-center justify-between gap-2' },
               h('h4', { className: 'text-sm font-black text-slate-900' }, 'Trial record'),
               h('span', { className: 'text-xs font-bold text-sky-800' }, dispSolved + ' completed')
             ),
             h('div', { className: 'mt-2 overflow-x-auto' },
-              h('table', { className: 'w-full min-w-[620px] border-collapse text-left text-xs' },
+              h('table', { className: 'w-full min-w-[780px] border-collapse text-left text-xs' },
                 h('thead', null, h('tr', { className: 'bg-slate-100 text-slate-700' },
-                  ['Specimen', 'Initial', 'Final', 'Measured volume', 'Condition'].map(function(head) {
+                  ['Specimen', 'Baseline reading', 'Final', 'Measured volume', 'Accepted volume', 'Error', 'Condition'].map(function(head) {
                     return h('th', { key: head, scope: 'col', className: 'border border-slate-200 px-2 py-1.5 font-black' }, head);
                   })
                 )),
                 h('tbody', null, dispTrials.slice().reverse().map(function(trial) {
+
+                  var accepted = trial.accepted == null ? NaN : Number(trial.accepted);
+                  var baseline = trial.baseline == null ? Number(trial.initial) : Number(trial.baseline);
+                  var measured = trial.measured == null ? NaN : Number(trial.measured);
+                  var storedError = trial.error == null ? NaN : Number(trial.error);
+                  var error = Number.isFinite(storedError)
+                    ? storedError
+                    : (Number.isFinite(measured) && Number.isFinite(accepted) ? measured - accepted : NaN);
                   return h('tr', { key: trial.id },
                     h('th', { scope: 'row', className: 'border border-slate-200 px-2 py-1.5 font-bold text-slate-900' }, trial.object),
-                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono' }, trial.initial + ' mL'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono' }, Number.isFinite(baseline) ? baseline + ' mL' : '\u2014'),
                     h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono' }, trial.final + ' mL'),
                     h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono font-bold' }, trial.measured + ' cm\u00B3'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono' }, Number.isFinite(accepted) ? accepted + ' cm\u00B3' : '\u2014'),
+                    h('td', { className: 'border border-slate-200 px-2 py-1.5 font-mono font-bold' }, Number.isFinite(error) ? formatDisplacementError(error) + ' cm\u00B3' : '\u2014'),
                     h('td', { className: 'border border-slate-200 px-2 py-1.5' }, trial.condition)
                   );
                 }))
@@ -1723,7 +2126,15 @@ window.StemLab = window.StemLab || {
       var bgClass = isDisplacement ? 'allo-vol-bg-displacement' : (isWord ? 'allo-vol-bg-word' : (isFreeform ? 'allo-vol-bg-freeform' : 'allo-vol-bg-slider'));
       var volumeModeLabel = isDisplacement ? 'Displacement' : (isWord ? 'Word problem' : (isFreeform ? 'Freeform' : 'Dimensions'));
       var volumeNext = isDisplacement
-        ? (dispSubmerged ? 'Subtract the initial reading from the final reading, then explain what the change represents.' : (dispCondition === 'partial' ? 'Predict the specimen volume, then lower it only partway to observe the resulting error.' : 'Predict the specimen volume, then lower it fully into the water.'))
+        ? (dispSubmerged && dispOverflow
+          ? 'Lower the initial water level and repeat so the final reading stays within the cylinder.'
+          : (dispObject.id === 'clay' && !dispClayReshaped
+            ? 'Reshape the clay without adding or removing material, then predict whether its volume will change.'
+            : (dispInitialAdjusted && !dispSubmerged
+              ? 'Predict whether changing the starting water level will change the displacement difference.'
+              : (dispUsesSinker
+                ? (dispSubmerged ? 'Subtract the sinker-only reading from the sinker-plus-object reading, then explain why the sinker cancels out.' : 'Predict the cork volume, then record the sinker-only reading before lowering both together.')
+                : (dispSubmerged ? 'Subtract the initial reading from the final reading, then explain what the change represents.' : (dispCondition === 'partial' ? 'Predict the specimen volume, then lower it only partway to observe the resulting error.' : 'Predict the specimen volume, then lower it fully into the water.'))))))
         : isFreeform && positions.length === 0
         ? 'Place unit cubes, count one layer, then predict the total before finishing.'
         : isWord
@@ -1857,6 +2268,7 @@ window.StemLab = window.StemLab || {
                 paintSurfaceArea: false,
                 wpAnswer: '', wpFeedback: null, wpCtxIdx: 0,
                 dispObjectId: 'stone', dispLevel: 'elementary', dispCondition: 'careful', dispSubmerged: false, dispPrediction: '', dispAnswer: '', dispFeedback: null, dispExplanation: '',
+                dispClayShape: 'lump', dispClayReshaped: false,
                 shape: 'prism', showCrossSection: false, showNet: false, showCompare: false, netFold: 0
               });
               announceToSR('Volume explorer reset');
@@ -1928,7 +2340,7 @@ window.StemLab = window.StemLab || {
             slider:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83C\uDF9A', title: __alloT('stem.volume.slider_v_l_w_h_watch_it_grow', 'Slider \u2014 V = l \u00d7 w \u00d7 h, watch it grow'),     hint: __alloT('stem.volume.sliders_snap_to_integer_dimensions_gre', 'Sliders snap to integer dimensions \u2014 great for the early visual: doubling each side multiplies volume by 8 (2\u00b3). Surface area scales as 2\u00b2; volume as 2\u00b3. The square-cube law explains why elephants have thick legs and shrews can fall safely.') },
             freeform: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: __alloT('stem.volume.freeform_build_any_shape_count_cubes', 'Freeform \u2014 build any shape, count cubes'),         hint: __alloT('stem.volume.l_blocks_hollow_shapes_irregular_prism', 'L-blocks, hollow shapes, irregular prisms. Volume = total cubes regardless of arrangement. CCSS 5.MD.5: relate volume of a right rectangular prism to multiplication and addition (V = b\u00d7h or as the sum of partial volumes).') },
             word:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: __alloT('stem.volume.word_problems_volume_in_the_real_world', 'Word Problems \u2014 volume in the real world'),        hint: __alloT('stem.volume.a_fish_tank_with_5_3_4_60_cubes_of_wat', 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.') },
-            displacement: { accent: '#0369a1', soft: 'rgba(2,132,199,0.12)', icon: '\uD83E\uDDEA', title: 'Displacement Lab - measure volume with water', hint: 'Predict, read the bottom of the meniscus, fully submerge the specimen, and use final minus initial. The change in milliliters equals the object volume in cubic centimeters.' }
+            displacement: { accent: '#0369a1', soft: 'rgba(2,132,199,0.12)', icon: '\uD83E\uDDEA', title: 'Displacement Lab - measure volume with water', hint: dispUsesSinker ? 'Predict, record the sinker-only reading, fully submerge the cork with the sinker, and use combined minus sinker-only. The change in milliliters equals the cork volume in cubic centimeters.' : 'Predict, read the bottom of the meniscus, fully submerge the specimen, and use final minus initial. The change in milliliters equals the object volume in cubic centimeters.' }
           };
           var modeKey = isDisplacement ? 'displacement' : (isWord ? 'word' : (isFreeform ? 'freeform' : 'slider'));
           var meta = MODE_META[modeKey];

@@ -20598,7 +20598,8 @@
       "navigate": "Điều hướng",
       "pipeline": "Kết quả quy trình",
       "tools": "Mở một công cụ",
-      "voice": "Giọng nói"
+      "voice": "Giọng nói",
+      "recent": "Recent"
     },
     "input_aria": "Tìm kiếm lệnh",
     "list_aria": "Lệnh phù hợp",

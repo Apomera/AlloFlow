@@ -20811,6 +20811,7 @@
       "navigate": "Navigi",
       "pipeline": "Ĉenstabaj rezultoj",
       "tools": "Malfermi ilon",
+      "recent": "Recent",
       "voice": "Voĉo"
     },
     "input_aria": "Serĉi komandojn",

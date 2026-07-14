@@ -20930,7 +20930,8 @@
       "navigate": "လမ်းညွှန်ပါ",
       "pipeline": "Pipeline ရလဒ်များ",
       "tools": "ကိရိယာတစ်ခု ဖွင့်ပါ",
-      "voice": "အသံ"
+      "voice": "အသံ",
+      "recent": "Recent"
     },
     "input_aria": "အမိန့်များ ရှာဖွေပါ",
     "list_aria": "ကိုက်ညီသော အမိန့်များ",

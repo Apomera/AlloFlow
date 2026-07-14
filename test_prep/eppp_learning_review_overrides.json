@@ -681,6 +681,138 @@
         "bias-and-context": "editorial-pass",
         "expert-review": "pending-independent-cognitive-assessment-review"
       }
+    },
+    "ch-3": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://www.upress.umn.edu/test-division/mmpi-3/",
+        "https://www.parinc.com/products/pai",
+        "https://www.parinc.com/products/NEO-PI-3-NU",
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Millon-Clinical-Multiaxial-Inventory-IV/p/100001362",
+        "https://r-pas.org/Home/About",
+        "https://pubmed.ncbi.nlm.nih.gov/22925137/",
+        "https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf"
+      ],
+      "reviewNote": "Corrected objective/projective false dichotomies, version-specific MMPI structure and suffixes, RC demoralization wording, lie-detector interpretations of validity scales, PAI scope, the current NEO-PI-3 normative update, MCMI clinical norms and BR-score overclaims, global Rorschach validity claims, unsupported TAT and drawing inferences, Bender diagnostic overreach, fixed best-test shortcuts, and speculative AI-personality analogies; added an accessible evidence-to-inference workflow and an intended-use knowledge check.",
+      "checks": {
+        "source-support": "editorial-pass-primary-and-authoritative-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-response-quality-and-intended-use-checks",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-personality-assessment-review"
+      }
+    },
+    "ch-4": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/",
+        "https://sites.ed.gov/idea/idea-files/qa-addressing-the-needs-of-children-with-disabilities-and-idea-discipline-provisions/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7070124/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC10976622/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7314895/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC9163273/",
+        "https://www.nccih.nih.gov/health/providers/digest/headaches-and-complementary-health-approaches-science",
+        "https://www.nccih.nih.gov/health/providers/digest/complementary-health-approaches-for-hypertension-science"
+      ],
+      "reviewNote": "Corrected ABC observation versus functional inference, distinguished broad functional behavioral assessment from experimental functional analysis, added IDEA discipline nuance, restored the original Iwata attention-demand-alone-play arrangement, qualified sampling bias and ecological momentary assessment, removed psychophysiological truth-detector and broad biofeedback efficacy claims, grounded CBT assessment in testable formulation, and added an accessible function-based support cycle plus two inference checks.",
+      "checks": {
+        "source-support": "editorial-pass-primary-and-authoritative-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-functional-inference-and-measurement-checks",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-behavioral-assessment-review"
+      }
+    },
+    "ch-29": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5104682/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6197939/",
+        "https://pubmed.ncbi.nlm.nih.gov/11705346/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5626621/",
+        "https://doi.org/10.1037/0003-066X.34.10.906",
+        "https://pubmed.ncbi.nlm.nih.gov/30802096/",
+        "https://doi.org/10.1037/0022-3514.77.6.1121",
+        "https://pubmed.ncbi.nlm.nih.gov/27474142/",
+        "https://pubmed.ncbi.nlm.nih.gov/34520296/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6050075/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4469089/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC8908911/"
+      ],
+      "reviewNote": "Corrected single-test localization and task-purity claims, deterministic age-25 and adolescent-risk explanations, diagnostic overreach in the TBI case, a deficit-only account of Dunning-Kruger findings, broad ego-depletion and marshmallow-test predictions, hot-versus-cool developmental absolutes, and exclusive cocktail-party-model conclusions; added an accessible executive-function inference ladder and revised all four knowledge checks around defensible inference.",
+      "checks": {
+        "source-support": "editorial-pass-primary-and-peer-reviewed-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-task-impurity-calibration-replication-and-attention-checks",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass-development-culture-language-disability-and-material-context",
+        "expert-review": "pending-independent-cognitive-neuropsychology-and-metacognition-review"
+      }
+    },
+    "ch-30": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://pubmed.ncbi.nlm.nih.gov/3903815/",
+        "https://pubmed.ncbi.nlm.nih.gov/17073526/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2894680/",
+        "https://pubmed.ncbi.nlm.nih.gov/31847790/",
+        "https://doi.org/10.1177/014616727900500407",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7506872/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6348335/",
+        "https://doi.org/10.1037/h0055756",
+        "https://doi.org/10.3102/00028312005001019",
+        "https://doi.org/10.1080/13803611.2018.1550834",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2860190/"
+      ],
+      "reviewNote": "Corrected person-versus-entity-versus-circumstance precision in Kelley’s model, deterministic Weiner emotion claims, universal fundamental-attribution and actor-observer claims, culture-as-binary language, a single-cause just-world formulation of victim blaming, fixed primacy and social-comparison effects, and causal/mechanistic overreach in the Pygmalion example and AI coda; added an accessible covariation inference map and three revised inference checks.",
+      "checks": {
+        "source-support": "editorial-pass-primary-classic-meta-analytic-and-cross-cultural-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-covariation-bias-moderator-and-expectancy-checks",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass-culture-power-consent-trauma-and-victim-blaming-context",
+        "expert-review": "pending-independent-social-cultural-and-forensic-psychology-review"
+      }
+    },
+    "ch-31": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12372704/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4086295/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3976349/",
+        "https://pubmed.ncbi.nlm.nih.gov/31380664/",
+        "https://pubmed.ncbi.nlm.nih.gov/6356198/",
+        "https://pubmed.ncbi.nlm.nih.gov/34292010/",
+        "https://pubmed.ncbi.nlm.nih.gov/1960649/",
+        "https://pubmed.ncbi.nlm.nih.gov/28355799/",
+        "https://doi.org/10.1037/0022-3514.50.6.1141",
+        "https://doi.org/10.1002/bdm.3960030402",
+        "https://pubmed.ncbi.nlm.nih.gov/21534650/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6790599/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6628641/",
+        "https://doi.org/10.1037/h0025589"
+      ],
+      "reviewNote": "Corrected deterministic conformity motives and single-best-reducer claims, Milgram lethal-shock and universal-65-percent wording, agentic-state and personality diagnoses, the Stanford Prison study as clean proof of automatic role effects, fixed social-facilitation and loafing rules, classic deindividuation as inevitable antisocial behavior, group polarization and groupthink certainty, a universal bystander rule, unsafe emergency framing, guaranteed compliance techniques, and literal AI-psychology equivalences; added an accessible evidence-to-inference map and three checks with option-specific feedback.",
+      "checks": {
+        "source-support": "editorial-pass-primary-classic-meta-analytic-and-critical-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-conformity-obedience-and-bystander-inference-checks",
+        "accessibility": "shared-renderer-pass-svg-labelled-described-and-safe-action-text",
+        "bias-and-context": "editorial-pass-culture-identity-authority-safety-and-nondiagnostic-language",
+        "expert-review": "pending-independent-social-cultural-and-research-methods-review"
+      }
     }
   }
 }

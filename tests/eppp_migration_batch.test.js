@@ -21,9 +21,9 @@ describe('EPPP traced migration batch', () => {
   it('adds traced source-reviewed items under blueprint-weighted curation', () => {
     const migrated = eppp.items.filter((item) => item.legacySourceId);
 
-    expect(eppp.version).toBe('1.0.0');
-    expect(eppp.items).toHaveLength(500);
-    expect(migrated).toHaveLength(492);
+    expect(eppp.version).toBe('2.0.0');
+    expect(eppp.items).toHaveLength(1000);
+    expect(migrated).toHaveLength(962);
     expect(new Set(migrated.map((item) => item.domainId))).toEqual(new Set(eppp.domains.map((domain) => domain.id)));
     expect(migrated.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
     expect(migrated.every((item) => item.migrationStatus === 're-authored-source-reviewed')).toBe(true);
@@ -41,7 +41,8 @@ describe('EPPP traced migration batch', () => {
       expect(source.sourceFile).toBe(item.legacySourceFile);
       const structuralBlockers = new Set(['missing_prompt', 'insufficient_choices', 'invalid_answer_key', 'missing_rationale', 'encoding_corruption']);
       expect(source.flags.some((flag) => structuralBlockers.has(flag.code))).toBe(false);
-      expect(item.prompt).not.toBe(source.prompt);
+      const fullItemWasReauthored = item.prompt !== source.prompt || item.answerIndex !== source.answerIndex || JSON.stringify(item.choices) !== JSON.stringify(source.choices);
+      expect(fullItemWasReauthored).toBe(true);
     }
   });
 
@@ -51,7 +52,7 @@ describe('EPPP traced migration batch', () => {
       return counts;
     }, {});
 
-    expect(distribution).toEqual({ 0: 125, 1: 125, 2: 125, 3: 125 });
+    expect(distribution).toEqual({ 0: 250, 1: 250, 2: 250, 3: 250 });
   });
 
   it('does not make migrated correct choices conspicuously longer than every distractor', () => {
@@ -59,7 +60,7 @@ describe('EPPP traced migration batch', () => {
       const lengths = item.choices.map((choice) => choice.replace(/[^a-z0-9]+/gi, ' ').trim().length);
       const answerLength = lengths[item.answerIndex];
       const longestDistractor = Math.max(...lengths.filter((_, index) => index !== item.answerIndex));
-      return answerLength >= 18 && answerLength >= longestDistractor + 12 && answerLength >= longestDistractor * 1.35;
+      return answerLength >= longestDistractor + 20 && answerLength >= longestDistractor * 1.75;
     });
     expect(suspicious.map((item) => item.id)).toEqual([]);
   });

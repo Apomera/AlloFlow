@@ -20938,7 +20938,8 @@
       "navigate": "Rìnnà",
       "pipeline": "Àbájáde ìṣàn",
       "tools": "Ṣí irinṣẹ́ kan",
-      "voice": "Ohùn"
+      "voice": "Ohùn",
+      "recent": "Recent"
     },
     "input_aria": "Wá àwọn àṣẹ",
     "list_aria": "Àwọn àṣẹ tó bára mu",

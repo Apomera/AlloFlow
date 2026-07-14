@@ -20604,7 +20604,8 @@
       "navigate": "ນຳທາງ",
       "pipeline": "ຜົນລັບ Pipeline",
       "tools": "ເປີດເຄື່ອງມື",
-      "voice": "ສຽງ"
+      "voice": "ສຽງ",
+      "recent": "Recent"
     },
     "input_aria": "ຄົ້ນຫາຄຳສັ່ງ",
     "list_aria": "ຄຳສັ່ງທີ່ກົງກັນ",

@@ -557,6 +557,12 @@
         return h('div', { style: { padding: 24, color: '#94a3b8', textAlign: 'center' } }, __alloT('stem.astronomy.initializing_night_sky_lab', '🔭 Initializing Night Sky Lab...'));
       }
       var d = labToolData.astronomy;
+      var observingList = Array.isArray(d.observingList) ? d.observingList.reduce(function(validIds, rawId) {
+        if (typeof rawId !== 'string') return validIds;
+        if (!CONSTELLATIONS.some(function(constellation) { return constellation.id === rawId; })) return validIds;
+        if (validIds.indexOf(rawId) === -1) validIds.push(rawId);
+        return validIds;
+      }, []) : [];
 
       function upd(patch) {
         setLabToolData(function(prev) {
@@ -564,7 +570,53 @@
           return Object.assign({}, prev, { astronomy: s });
         });
       }
+      function setObservingTarget(constellationId, shouldSave) {
+        var target = CONSTELLATIONS.find(function(constellation) { return constellation.id === constellationId; });
+        if (!target) return;
+        var alreadySaved = observingList.indexOf(constellationId) !== -1;
+        var nextList = shouldSave
+          ? (alreadySaved ? observingList.slice() : observingList.concat([constellationId]))
+          : observingList.filter(function(savedId) { return savedId !== constellationId; });
+        if (alreadySaved === shouldSave) return;
+        upd({ observingList: nextList });
+        if (addToast) addToast((shouldSave ? 'Added ' : 'Removed ') + target.name + (shouldSave ? ' to' : ' from') + ' your observing list', shouldSave ? 'success' : 'info');
+      }
+      var restoredBortleClass = Number(d.bortleClass);
+      var bortleClass = Number.isInteger(restoredBortleClass) && restoredBortleClass >= 1 && restoredBortleClass <= 9 ? restoredBortleClass : 5;
 
+      var astronomyAskInput = typeof d.askInput === 'string' ? d.askInput.slice(0, 500) : '';
+      var astronomyAskResponse = typeof d.askResponse === 'string' ? d.askResponse.slice(0, 5000) : '';
+      var astronomyAskPending = window.__alloAstronomyAiPending || null;
+      var astronomyAskLoading = !!astronomyAskPending;
+      var astronomyAskInterrupted = d.askLoading === true && !astronomyAskPending;
+
+      function sendAstronomyQuestion(questionText) {
+        var cleanQuestion = typeof questionText === 'string' ? questionText.trim().slice(0, 500) : '';
+        if (!callGemini || !cleanQuestion || window.__alloAstronomyAiPending) return;
+
+        var requestToken = 'astronomy-ai-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+        window.__alloAstronomyAiPending = requestToken;
+        upd({ askInput: cleanQuestion, askResponse: '', askLoading: true });
+
+        var prompt = 'You are a friendly, expert astronomy guide answering a middle-school or high-school student. ' +
+          'Answer their question in 3-6 sentences. Be accurate and curious. Include one specific observable detail they could go look for tonight if relevant. ' +
+          'If the question involves safety (looking at the Sun, eclipse viewing), include the safety note. ' +
+          'Use plain language, no jargon without quick definition. Identity-first language where relevant. No em dashes (use commas or colons).\n\n' +
+          'STUDENT QUESTION: ' + cleanQuestion;
+
+        Promise.resolve().then(function() {
+          return callGemini(prompt, false);
+        }).then(function(response) {
+          if (window.__alloAstronomyAiPending !== requestToken) return;
+          window.__alloAstronomyAiPending = null;
+          var cleanResponse = typeof response === 'string' && response.trim() ? response.trim().slice(0, 5000) : '(no response)';
+          upd({ askResponse: cleanResponse, askLoading: false });
+        }).catch(function() {
+          if (window.__alloAstronomyAiPending !== requestToken) return;
+          window.__alloAstronomyAiPending = null;
+          upd({ askResponse: 'Sorry — the AI is unavailable right now. Try again, or check a free resource like NASA\'s sky watching page.', askLoading: false });
+        });
+      }
       var INDIGO = '#6366f1', INDIGO_LIGHT = '#eef2ff', INDIGO_DARK = '#3730a3';
       var BG = 'var(--allo-stem-canvas, #0f172a)';
 
@@ -590,17 +642,37 @@
         { id: 'hrDiagram',    icon: '⭐', label: __alloT('stem.astronomy.hr_diagram', 'HR Diagram') }
       ];
 
+      var requestedTab = typeof d.tab === 'string' ? d.tab : 'tonight';
+      var activeTab = TABS.some(function(tab) { return tab.id === requestedTab; }) ? requestedTab : 'tonight';
+      function activateAstronomyTab(tabId) {
+        if (!TABS.some(function(tab) { return tab.id === tabId; })) return;
+        upd({ tab: tabId });
+      }
+      function handleAstronomyTabKey(event) {
+        if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) === -1) return;
+        event.preventDefault();
+        var currentIndex = TABS.findIndex(function(tab) { return tab.id === activeTab; });
+        var nextIndex = currentIndex;
+        if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = TABS.length - 1;
+        else if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % TABS.length;
+        else nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+        activateAstronomyTab(TABS[nextIndex].id);
+        var tabButtons = event.currentTarget.querySelectorAll('[role="tab"]');
+        if (tabButtons[nextIndex] && typeof tabButtons[nextIndex].focus === 'function') tabButtons[nextIndex].focus();
+      }
+
       var tabBar = h('div', {
-        role: 'tablist', 'aria-label': __alloT('stem.astronomy.astronomy_sections', 'Astronomy sections'),
+        role: 'tablist', 'aria-label': __alloT('stem.astronomy.astronomy_sections', 'Astronomy sections'), 'aria-orientation': 'horizontal', onKeyDown: handleAstronomyTabKey,
         style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid #1e293b', overflowX: 'auto', flexShrink: 0, background: 'var(--allo-stem-deeper, #0a0e1a)' }
       },
         TABS.map(function(t) {
-          var active = d.tab === t.id;
+          var active = activeTab === t.id;
           return h('button', {
-            key: t.id, role: 'tab', 'aria-selected': active,
-            'aria-label': t.label,
+            key: t.id, id: 'astronomy-tab-' + t.id, role: 'tab', 'aria-selected': active, tabIndex: active ? 0 : -1,
+            'aria-controls': 'astronomy-main', 'aria-label': t.label,
             className: 'astr-focus astr-btn',
-            onClick: function() { upd({ tab: t.id }); },
+            onClick: function() { activateAstronomyTab(t.id); },
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none',
               background: active ? 'rgba(99,102,241,0.25)' : 'transparent',
@@ -747,41 +819,57 @@
           ),
 
           sectionCard('🤖 Ask the sky',
-            h('div', null,
+            h('div', { 'aria-busy': astronomyAskLoading ? 'true' : 'false' },
               h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, lineHeight: 1.55 } }, __alloT('stem.astronomy.ask_anything_what_is_that_bright_thing', 'Ask anything: "What is that bright thing in the south right now?" "How do I find the Pleiades?" "Why does the moon look different colors?"')),
               h('textarea', {
-                value: d.askInput || '',
-                onChange: function(e) { upd({ askInput: e.target.value }); },
+                value: astronomyAskInput,
+                onChange: function(e) { upd({ askInput: typeof e.target.value === 'string' ? e.target.value.slice(0, 500) : '' }); },
+                onKeyDown: function(e) {
+                  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    sendAstronomyQuestion(e.currentTarget.value);
+                  }
+                },
                 placeholder: __alloT('stem.astronomy.your_question', 'Your question...'),
-                rows: 3,
+                rows: 3, maxLength: 500,
+                'aria-label': 'Question for the sky guide', 'aria-describedby': 'astronomy-ask-help',
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
               }),
-              h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' } },
+              h('div', { id: 'astronomy-ask-help', style: { marginTop: 5, fontSize: 11, color: '#94a3b8' } }, '500 characters maximum. Press Ctrl+Enter or Command+Enter to ask.'),
+              astronomyAskInterrupted ? h('div', {
+                role: 'status', 'aria-live': 'polite',
+                style: { marginTop: 8, padding: '8px 10px', borderRadius: 7, background: 'rgba(245,158,11,0.12)', color: '#fde68a', fontSize: 12 }
+              }, 'The previous AI request was interrupted. You can ask again.') : null,
+              h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                 h('button', {
-                  onClick: function() {
-                    if (!callGemini || !(d.askInput || '').trim()) return;
-                    upd({ askLoading: true, askResponse: '' });
-                    var prompt = 'You are a friendly, expert astronomy guide answering a middle-school or high-school student. ' +
-                      'Answer their question in 3-6 sentences. Be accurate and curious. Include one specific observable detail they could go look for tonight if relevant. ' +
-                      'If the question involves safety (looking at the Sun, eclipse viewing), include the safety note. ' +
-                      'Use plain language, no jargon without quick definition. Identity-first language where relevant. No em dashes (use commas or colons).\n\n' +
-                      'STUDENT QUESTION: ' + d.askInput.trim();
-                    callGemini(prompt, false).then(function(r) {
-                      upd({ askResponse: r ? r.trim() : '(no response)', askLoading: false });
-                    }).catch(function() {
-                      upd({ askResponse: 'Sorry — the AI is unavailable right now. Try again, or check a free resource like NASA\'s sky watching page.', askLoading: false });
-                    });
-                  },
+                  type: 'button', 'aria-label': astronomyAskLoading ? 'Sky guide is thinking' : 'Ask the sky guide',
+                  onClick: function() { sendAstronomyQuestion(astronomyAskInput); },
                   className: 'astr-focus astr-btn',
-                  disabled: d.askLoading || !(d.askInput || '').trim() || !callGemini,
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: callGemini && (d.askInput || '').trim() && !d.askLoading ? INDIGO : '#475569', color: '#fff', fontWeight: 700, fontSize: 13, cursor: callGemini && (d.askInput || '').trim() && !d.askLoading ? 'pointer' : 'not-allowed' }
-                }, d.askLoading ? 'Thinking…' : '🔭 Ask'),
-                !callGemini ? h('div', { style: { fontSize: 11, color: '#94a3b8' } }, __alloT('stem.astronomy.ai_unavailable_in_this_session', '(AI unavailable in this session)')) : null
+                  disabled: astronomyAskLoading || !astronomyAskInput.trim() || !callGemini,
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: callGemini && astronomyAskInput.trim() && !astronomyAskLoading ? INDIGO : '#475569', color: '#fff', fontWeight: 700, fontSize: 13, cursor: callGemini && astronomyAskInput.trim() && !astronomyAskLoading ? 'pointer' : 'not-allowed' }
+                }, astronomyAskLoading ? 'Thinking…' : '🔭 Ask'),
+                astronomyAskLoading ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, color: '#c7d2fe' } }, 'Preparing a sky guide answer…') : null,
+                !callGemini ? h('div', { role: 'status', style: { fontSize: 11, color: '#94a3b8' } }, __alloT('stem.astronomy.ai_unavailable_in_this_session', '(AI unavailable in this session)')) : null
               ),
-              d.askResponse ? h('div', { style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #334155', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, d.askResponse) : null
+              astronomyAskResponse ? h('div', {
+                role: 'region', 'aria-label': 'Sky guide answer',
+                style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #334155' }
+              },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', marginBottom: 7 } },
+                  h('div', { style: { color: '#c7d2fe', fontSize: 12, fontWeight: 800 } }, 'Sky guide answer'),
+                  h('button', {
+                    type: 'button', className: 'astr-focus astr-btn',
+                    onClick: function() {
+                      window.__alloAstronomyAiPending = null;
+                      upd({ askResponse: '', askLoading: false });
+                    },
+                    style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontSize: 11, cursor: 'pointer' }
+                  }, 'Clear answer')
+                ),
+                h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, astronomyAskResponse)
+              ) : null
             )
-          )
-        );
+          )        );
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -797,9 +885,16 @@
       ];
       function azCompass(az) { return ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'][Math.round(rev(az) / 22.5) % 16]; }
       function renderSkyMap() {
-        var loc = SKY_LOCS.find(function (l) { return l.id === (d.skyLoc || 'portland'); }) || SKY_LOCS[0];
-        var hourOff = (typeof d.skyHourOffset === 'number') ? d.skyHourOffset : 0;
-        var dayOff = (typeof d.skyDayOffset === 'number') ? d.skyDayOffset : 0;
+        function boundedSkyOffset(value, min, max, step) {
+          if (value === null || value === '' || typeof value === 'boolean') return 0;
+          var numericValue = Number(value);
+          if (!Number.isFinite(numericValue)) return 0;
+          var boundedValue = Math.min(max, Math.max(min, numericValue));
+          return step ? Math.round(boundedValue / step) * step : boundedValue;
+        }
+        var loc = SKY_LOCS.find(function (l) { return l.id === (typeof d.skyLoc === 'string' ? d.skyLoc : 'portland'); }) || SKY_LOCS[0];
+        var hourOff = boundedSkyOffset(d.skyHourOffset, -12, 12, 0.5);
+        var dayOff = boundedSkyOffset(d.skyDayOffset, -365, 365, 1);
         var base = new Date(); base.setUTCDate(base.getUTCDate() + dayOff);
         var ut = base.getUTCHours() + base.getUTCMinutes() / 60 + hourOff;
         var sky = skyNow(base.getUTCFullYear(), base.getUTCMonth() + 1, base.getUTCDate(), ut, loc.lat, loc.lon);
@@ -811,10 +906,10 @@
         var domeFill = night ? '#070b18' : '#1d3a63';
         var els = [];
         // alt rings + cardinal points
-        [30, 60].forEach(function (a) { els.push(h('circle', { key: 'ring' + a, cx: cx, cy: cy, r: R * (90 - a) / 90, fill: 'none', stroke: '#1e293b', strokeWidth: 1 })); });
+        [30, 60].forEach(function (a) { var ringRadius = R * (90 - a) / 90; els.push(h('circle', { key: 'ring' + a, cx: cx, cy: cy, r: ringRadius, fill: 'none', stroke: '#334155', strokeWidth: 1 })); els.push(h('text', { key: 'ring-label' + a, x: cx + ringRadius - 4, y: cy - 4, fill: '#64748b', fontSize: 8, textAnchor: 'end' }, a + '\u00B0')); });
         [['N', 0], ['E', 90], ['S', 180], ['W', 270]].forEach(function (c) { var p = proj(0, c[1]); els.push(h('text', { key: 'c' + c[0], x: p[0], y: p[1], dx: c[1] === 90 ? -8 : (c[1] === 270 ? 8 : 0), dy: c[1] === 0 ? -4 : (c[1] === 180 ? 12 : 4), fill: '#64748b', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, c[0])); });
         // stars (only above the horizon)
-        sky.stars.forEach(function (s, i) { if (s.alt <= 0) return; var p = proj(s.alt, s.az); var rad = Math.max(0.6, 2.7 - s.mag * 0.55); els.push(h('circle', { key: 'st' + i, cx: p[0], cy: p[1], r: rad, fill: '#fff', opacity: night ? Math.max(0.4, 1 - s.mag * 0.18) : 0.25 })); if (s.mag < 0.6) els.push(h('text', { key: 'stl' + i, x: p[0] + 4, y: p[1] + 3, fill: '#cbd5e1', fontSize: 8.5, opacity: night ? 0.8 : 0.3 }, s.name)); });
+        sky.stars.forEach(function (s, i) { if (s.alt <= 0) return; var p = proj(s.alt, s.az); var rad = Math.max(0.6, 2.7 - s.mag * 0.55); els.push(h('circle', { key: 'st' + i, cx: p[0], cy: p[1], r: rad, fill: '#fff', opacity: night ? Math.min(1, Math.max(0.4, 1 - s.mag * 0.18)) : 0.25 })); if (s.mag < 0.6) els.push(h('text', { key: 'stl' + i, x: p[0] + 4, y: p[1] + 3, fill: '#cbd5e1', fontSize: 8.5, opacity: night ? 0.8 : 0.3 }, s.name)); });
         // planets
         sky.planets.forEach(function (pl, i) { if (pl.alt <= 0) return; var p = proj(pl.alt, pl.az); els.push(h('circle', { key: 'pl' + i, cx: p[0], cy: p[1], r: 3.6, fill: pl.color, stroke: '#0b1220', strokeWidth: 0.6 })); els.push(h('text', { key: 'pll' + i, x: p[0] + 5, y: p[1] + 3.5, fill: pl.color, fontSize: 10, fontWeight: 700 }, pl.icon + ' ' + pl.name)); });
         // moon (drawn as its phase)
@@ -833,28 +928,32 @@
           ['The sky turns because EARTH spins', 'Stars rise in the east and set in the west because Earth rotates west-to-east — the stars aren’t moving. Drag the time slider to spin the sky.'],
           ['Five planets, no telescope', 'Mercury, Venus, Mars, Jupiter and Saturn are all bright enough to see with just your eyes — Venus is often the brilliant “evening/morning star.”']
         ];
-        function ctrlBtn(label, on, onClick, key) { return h('button', { key: key, onClick: onClick, className: 'astr-focus astr-btn', style: { padding: '5px 10px', borderRadius: 7, border: '1px solid ' + (on ? INDIGO : '#334155'), background: on ? 'rgba(99,102,241,0.25)' : 'transparent', color: on ? '#c7d2fe' : '#94a3b8', fontWeight: on ? 700 : 500, fontSize: 11.5, cursor: 'pointer', whiteSpace: 'nowrap' } }, label); }
+        function ctrlBtn(label, on, onClick, key, isToggle, disabled) { return h('button', { key: key, type: 'button', 'aria-label': label, 'aria-pressed': isToggle ? on : undefined, disabled: disabled || undefined, onClick: onClick, className: 'astr-focus astr-btn', style: { padding: '5px 10px', borderRadius: 7, border: '1px solid ' + (on ? INDIGO : '#334155'), background: on ? 'rgba(99,102,241,0.25)' : 'transparent', color: on ? '#c7d2fe' : '#94a3b8', fontWeight: on ? 700 : 500, fontSize: 11.5, cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' } }, label); }
         return h('div', { style: { padding: 16 } },
           h('div', { style: { fontSize: 12.5, color: '#94a3b8', marginBottom: 10, lineHeight: 1.6 } }, __alloT('stem.astronomy.skymap_intro', 'The real sky overhead, computed for your place and time — Sun, Moon (with its true phase), the five naked-eye planets, and the brightest stars. Hold it over your head facing North: this is an overhead view, so East is on your left.')),
           // location + time controls
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }, role: 'group', 'aria-label': 'Location' },
-            SKY_LOCS.map(function (l) { return ctrlBtn(l.name, l.id === loc.id, function () { upd({ skyLoc: l.id }); }, l.id); })),
-          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 } },
-            ctrlBtn('● Now', hourOff === 0 && dayOff === 0, function () { upd({ skyHourOffset: 0, skyDayOffset: 0 }); }, 'now'),
+            SKY_LOCS.map(function (l) { return ctrlBtn(l.name, l.id === loc.id, function () { upd({ skyLoc: l.id }); }, l.id, true, false); })),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 }, role: 'group', 'aria-label': 'Sky time controls' },
+            ctrlBtn('● Now', hourOff === 0 && dayOff === 0, function () { upd({ skyHourOffset: 0, skyDayOffset: 0 }); }, 'now', true, false),
             h('label', { style: { fontSize: 11.5, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6 } }, __alloT('stem.astronomy.spin_time', 'Spin time'),
-              h('input', { type: 'range', min: -12, max: 12, step: 0.5, value: hourOff, 'aria-label': 'Hours from now', onChange: function (e) { upd({ skyHourOffset: parseFloat(e.target.value) }); }, style: { width: 130 } }),
+              h('input', { type: 'range', min: -12, max: 12, step: 0.5, value: hourOff, 'aria-label': 'Hours from now', 'aria-valuetext': hourOff === 0 ? 'Now' : (hourOff > 0 ? '+' : '') + hourOff + ' hours from now', onChange: function (e) { upd({ skyHourOffset: boundedSkyOffset(e.target.value, -12, 12, 0.5) }); }, style: { width: 130 } }),
               h('span', { style: { color: '#cbd5e1', minWidth: 64 } }, (hourOff >= 0 ? '+' : '') + hourOff + 'h')),
-            ctrlBtn('◀ day', false, function () { upd({ skyDayOffset: dayOff - 1 }); }, 'dprev'),
-            h('span', { style: { fontSize: 11.5, color: '#cbd5e1', minWidth: 30, textAlign: 'center' } }, (dayOff >= 0 ? '+' : '') + dayOff + 'd'),
-            ctrlBtn('day ▶', false, function () { upd({ skyDayOffset: dayOff + 1 }); }, 'dnext')),
+            ctrlBtn('◀ day', false, function () { upd({ skyDayOffset: Math.max(-365, dayOff - 1) }); }, 'dprev', false, dayOff <= -365),
+            h('span', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Days from now', style: { fontSize: 11.5, color: '#cbd5e1', minWidth: 30, textAlign: 'center' } }, (dayOff >= 0 ? '+' : '') + dayOff + 'd'),
+            ctrlBtn('day ▶', false, function () { upd({ skyDayOffset: Math.min(365, dayOff + 1) }); }, 'dnext', false, dayOff >= 365)),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14 } },
             // the dome
             h('div', null,
-              h('svg', { viewBox: '0 0 330 350', width: 330, height: 350, role: 'img', 'aria-label': skyAria(sky, loc, localShown), style: { maxWidth: '100%' } },
+              h('svg', { viewBox: '0 0 330 350', width: 330, height: 350, role: 'img', 'aria-label': skyAria(sky, loc, localShown), 'aria-describedby': 'astronomy-sky-map-help', style: { maxWidth: '100%' } },
                 h('circle', { cx: cx, cy: cy, r: R, fill: domeFill, stroke: '#334155', strokeWidth: 1.5 }),
                 els,
                 sky.daytime ? h('text', { x: cx, y: 332, fill: '#fbbf24', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.astronomy.daytime_note', '☀ Daytime — stars are up but the Sun outshines them')) :
-                  h('text', { x: cx, y: 332, fill: '#64748b', fontSize: 11, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' · ' + loc.name))),
+                  h('text', { x: cx, y: 332, fill: '#64748b', fontSize: 11, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' · ' + loc.name)),
+              h('div', { id: 'astronomy-sky-map-help', style: { maxWidth: 330, marginTop: 6, padding: '7px 9px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', color: '#94a3b8', fontSize: 10.5, lineHeight: 1.5 } },
+                h('strong', { style: { color: '#cbd5e1' } }, 'Diagram guide: '),
+                'North is at the top and east is on the left. The outer circle is the horizon; inner rings mark 30\u00B0 and 60\u00B0 altitude; the center is directly overhead.'
+              )),
             // what's up
             h('div', { style: { flex: 1, minWidth: 220 } },
               sectionCard('🌙 ' + __alloT('stem.astronomy.the_moon', 'The Moon'),
@@ -875,27 +974,42 @@
         );
       }
       function skyAria(sky, loc, when) {
-        var ups = sky.planets.filter(function (p) { return p.alt > 0; }).map(function (p) { return p.name; });
-        return 'Computed sky for ' + loc.name + '. ' + (sky.daytime ? 'Daytime. ' : 'Night. ') + 'Moon: ' + sky.moon.phase.name + ', ' + Math.round(sky.moon.phase.illum * 100) + '% lit. ' + (ups.length ? 'Planets up: ' + ups.join(', ') + '.' : 'No naked-eye planets above the horizon.');
+        function positionText(name, body) {
+          if (!body || !Number.isFinite(body.alt) || body.alt <= 0) return null;
+          return name + ' is ' + Math.round(body.alt) + ' degrees above the ' + azCompass(body.az) + ' horizon';
+        }
+        var positions = [
+          positionText('Sun', sky.sun),
+          positionText('Moon', sky.moon)
+        ].concat(sky.planets.map(function(planet) { return positionText(planet.name, planet); })).filter(Boolean);
+        var visibleStarCount = sky.stars.filter(function(star) { return star.alt > 0; }).length;
+        return 'Computed sky for ' + loc.name + '. ' + (sky.daytime ? 'Daytime. ' : 'Night. ') +
+          'Overhead chart: north at top, east at left, horizon at the outer circle, zenith at the center. ' +
+          'Moon phase: ' + sky.moon.phase.name + ', ' + Math.round(sky.moon.phase.illum * 100) + '% lit. ' +
+          (positions.length ? positions.join('. ') + '. ' : 'No Sun, Moon, or naked-eye planets are above the horizon. ') +
+          visibleStarCount + ' reference stars are above the horizon.';
       }
 
       // ──────────────────────────────────────────────────────────────
       // CONSTELLATIONS
       // ──────────────────────────────────────────────────────────────
       function renderConstellations() {
-        var selected = d.selectedConstellation ? CONSTELLATIONS.find(function(c) { return c.id === d.selectedConstellation; }) : null;
+        var selected = typeof d.selectedConstellation === 'string' ? (CONSTELLATIONS.find(function(c) { return c.id === d.selectedConstellation; }) || null) : null;
+        var selectedSaved = !!selected && observingList.indexOf(selected.id) !== -1;
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             __alloT('stem.astronomy.constellations_are_patterns_ancient_pe', 'Constellations are patterns ancient people connected with stories. Modern astronomy uses 88 official constellations as a sky-mapping convention, but every culture has named the same stars differently. Below: ten major constellations, each with the Greek story AND a teaching from another tradition.')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
             CONSTELLATIONS.map(function(c) {
-              var active = d.selectedConstellation === c.id;
+              var active = !!selected && selected.id === c.id;
               return h('button', {
-                key: c.id,
+                key: c.id, type: 'button',
                 onClick: function() { upd({ selectedConstellation: c.id }); },
                 className: 'astr-focus astr-btn',
                 'aria-label': c.name + ', ' + c.common,
+                'aria-pressed': active,
+                'aria-controls': 'astronomy-constellation-detail',
                 style: {
                   padding: 10, borderRadius: 8, textAlign: 'left',
                   background: active ? 'rgba(99,102,241,0.25)' : '#1e293b',
@@ -908,7 +1022,7 @@
               );
             })
           ),
-          selected ? h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+          selected ? h('div', { id: 'astronomy-constellation-detail', role: 'region', 'aria-live': 'polite', 'aria-label': selected.name + ' details', style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
             h('h3', { style: { margin: '0 0 4px', color: '#c7d2fe', fontSize: 18 } }, selected.name),
             h('div', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, selected.common + ' · ' + selected.season),
 
@@ -931,18 +1045,13 @@
 
             h('div', { style: { marginTop: 12 } },
               h('button', {
-                onClick: function() {
-                  var list = (d.observingList || []).slice();
-                  if (list.indexOf(selected.id) < 0) {
-                    list.push(selected.id);
-                    upd({ observingList: list });
-                    if (addToast) addToast('Added ' + selected.name + ' to your observing list', 'success');
-                  } else {
-                    if (addToast) addToast('Already on your observing list', 'info');
-                  }
-                },
-                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + INDIGO, background: 'rgba(99,102,241,0.15)', color: '#c7d2fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
-              }, __alloT('stem.astronomy.add_to_observing_list', '+ Add to observing list'))
+                type: 'button',
+                'aria-label': (selectedSaved ? 'Remove ' : 'Add ') + selected.name + (selectedSaved ? ' from' : ' to') + ' observing list',
+                'aria-pressed': selectedSaved,
+                onClick: function() { setObservingTarget(selected.id, !selectedSaved); },
+                className: 'astr-focus astr-btn',
+                style: { padding: '7px 14px', borderRadius: 7, border: '1px solid ' + (selectedSaved ? '#22c55e' : INDIGO), background: selectedSaved ? 'rgba(34,197,94,0.14)' : 'rgba(99,102,241,0.15)', color: selectedSaved ? '#86efac' : '#c7d2fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+              }, selectedSaved ? '\u2713 Saved \u00B7 Remove' : '\u2606 Save to observing list')
             )
           ) : h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px dashed #334155', color: '#94a3b8', fontStyle: 'italic', fontSize: 13 } }, __alloT('stem.astronomy.select_a_constellation_to_see_its_stor', 'Select a constellation to see its story across traditions, how to find it, and the science behind it.')),
           allConstellations88Section()
@@ -1139,7 +1248,9 @@
       // MOON PHASES
       // ──────────────────────────────────────────────────────────────
       function renderMoon() {
-        var phase = MOON_PHASES[d.moonPhaseIdx];
+        var restoredMoonPhaseIdx = Number(d.moonPhaseIdx);
+        var moonPhaseIdx = Number.isInteger(restoredMoonPhaseIdx) && restoredMoonPhaseIdx >= 0 && restoredMoonPhaseIdx < MOON_PHASES.length ? restoredMoonPhaseIdx : 0;
+        var phase = MOON_PHASES[moonPhaseIdx];
         // SVG of moon phase
         function moonSvg() {
           var R = 70;
@@ -1148,10 +1259,15 @@
           var isWaxing = ['waxing_cresc', 'first_quarter', 'waxing_gibb'].indexOf(phase.id) >= 0;
           var isFull = phase.id === 'full';
           var isNew = phase.id === 'new';
+          var phaseDiagramDescription = isNew
+            ? 'The visible disc is dark because the sunlit half faces away from Earth.'
+            : isFull
+              ? 'The entire visible face is illuminated.'
+              : 'As drawn for a Northern Hemisphere observer, illumination is concentrated on the ' + (isWaxing ? 'right, waxing side.' : 'left, waning side.');
           // For visualization
           return h('svg', { viewBox: '-100 -100 200 200', width: 180, height: 180, role: 'img', 'aria-labelledby': 'moonSvgTitle moonSvgDesc' },
             h('title', { id: 'moonSvgTitle' }, phase.name + ' phase'),
-            h('desc', { id: 'moonSvgDesc' }, 'Moon disc showing ' + phase.pct + '% illumination, with the lit portion ' + (isWaxing ? 'on the right (waxing)' : 'on the left (waning)') + '.'),
+            h('desc', { id: 'moonSvgDesc' }, 'Moon disc showing ' + phase.pct + '% illumination. ' + phaseDiagramDescription),
             // Dark moon backdrop
             h('circle', { cx: 0, cy: 0, r: R, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
             // Lit half via overlay
@@ -1190,11 +1306,13 @@
         return h('div', { style: { padding: 16 } },
           softNote('The moon doesn\'t generate light. It reflects sunlight. Phases happen because the moon orbits Earth, and we see different fractions of the lit half over the ~29.5-day lunar cycle.'),
 
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 20, alignItems: 'start', marginBottom: 16 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 20, alignItems: 'start', marginBottom: 16 } },
             h('div', { style: { textAlign: 'center' } },
               moonSvg(),
-              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginTop: 8 } }, phase.name),
-              h('div', { style: { fontSize: 11, color: '#94a3b8' } }, phase.pct + '% illuminated · day ' + phase.age + ' of ~29.5')
+              h('div', { id: 'astronomy-moon-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginTop: 8 } }, phase.name),
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, phase.pct + '% illuminated · day ' + phase.age + ' of ~29.5')
+              )
             ),
             h('div', null,
               h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, __alloT('stem.astronomy.' + (phase.id) + '_desc', phase.desc)),
@@ -1208,9 +1326,10 @@
           h('div', { style: { marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginBottom: 6 } }, __alloT('stem.astronomy.slide_through_the_lunar_cycle', 'Slide through the lunar cycle:')),
             h('input', {
-              type: 'range', min: 0, max: 7, value: d.moonPhaseIdx,
+              type: 'range', min: 0, max: MOON_PHASES.length - 1, value: moonPhaseIdx,
               onChange: function(e) { upd({ moonPhaseIdx: parseInt(e.target.value, 10) }); },
               'aria-label': __alloT('stem.astronomy.moon_phase_position', 'Moon phase position'),
+              'aria-valuetext': phase.name + ', ' + phase.pct + '% illuminated', 'aria-describedby': 'astronomy-moon-phase-status',
               style: { width: '100%', accentColor: INDIGO }
             }),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 4 } },
@@ -2214,9 +2333,11 @@
       // SEASONS
       // ──────────────────────────────────────────────────────────────
       function renderSeasons() {
-        var month = d.seasonMonth || 6;
+        var restoredSeasonMonth = Number(d.seasonMonth);
+        var month = Number.isInteger(restoredSeasonMonth) && restoredSeasonMonth >= 1 && restoredSeasonMonth <= 12 ? restoredSeasonMonth : 6;
         // Earth's axial tilt orientation through the year
         var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var monthFullNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         var phase = (month - 1) / 12; // 0 to 1
         var orbitAngle = phase * 2 * Math.PI;
         var earthX = 80 * Math.cos(orbitAngle);
@@ -2233,11 +2354,11 @@
         return h('div', { style: { padding: 16 } },
           softNote('Seasons are caused by Earth\'s axial tilt (23.5°), NOT by distance from the Sun. The hemisphere tipped toward the Sun gets more direct sunlight per square meter AND longer days. Earth is actually slightly farther from the Sun during Northern Hemisphere summer.'),
 
-          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 14 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 16, marginBottom: 14 } },
             h('div', { style: { padding: 14, borderRadius: 12, background: '#0a0e1a', border: '1px solid #334155', textAlign: 'center' } },
-              h('svg', { viewBox: '-130 -130 260 260', width: 260, height: 260, role: 'img', 'aria-labelledby': 'seasonSvgTitle seasonSvgDesc' },
-                h('title', { id: 'seasonSvgTitle' }, 'Earth\'s orbital position in ' + monthNames[month - 1]),
-                h('desc', { id: 'seasonSvgDesc' }, 'Schematic of Earth\'s orbit around the Sun. Earth is shown at its orbital position for ' + monthNames[month - 1] + '. In Northern Hemisphere it is ' + nSeason + '.'),
+              h('svg', { viewBox: '-130 -130 260 260', width: 260, height: 260, role: 'img', 'aria-labelledby': 'seasonSvgTitle seasonSvgDesc', style: { maxWidth: '100%', height: 'auto' } },
+                h('title', { id: 'seasonSvgTitle' }, 'Earth\'s orbital position in ' + monthFullNames[month - 1]),
+                h('desc', { id: 'seasonSvgDesc' }, 'Schematic of Earth\'s orbit around the Sun. Earth is shown at its orbital position for ' + monthFullNames[month - 1] + '. In the Northern Hemisphere it is ' + nSeason + '; in the Southern Hemisphere it is ' + sSeason + '.'),
                 // Orbit ellipse
                 h('ellipse', { cx: 0, cy: 0, rx: 80, ry: 80, fill: 'none', stroke: '#334155', strokeWidth: 1, strokeDasharray: '3 3' }),
                 // Sun
@@ -2253,11 +2374,11 @@
               )
             ),
             h('div', null,
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'Month: ' + monthNames[month - 1]),
+              h('div', { id: 'astronomy-season-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'Month: ' + monthFullNames[month - 1] + '. Northern Hemisphere: ' + nSeason + '. Southern Hemisphere: ' + sSeason + '.'),
               h('input', {
                 type: 'range', min: 1, max: 12, value: month,
                 onChange: function(e) { upd({ seasonMonth: parseInt(e.target.value, 10) }); },
-                'aria-label': __alloT('stem.astronomy.month_of_year', 'Month of year'),
+                'aria-label': __alloT('stem.astronomy.month_of_year', 'Month of year'), 'aria-valuetext': monthFullNames[month - 1], 'aria-describedby': 'astronomy-season-status',
                 style: { width: '100%', accentColor: INDIGO, marginBottom: 12 }
               }),
               h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
@@ -5433,7 +5554,7 @@
       // OBSERVING
       // ──────────────────────────────────────────────────────────────
       function renderObserve() {
-        var bortle = BORTLE.find(function(b) { return b.class === d.bortleClass; }) || BORTLE[4];
+        var bortle = BORTLE.find(function(b) { return b.class === bortleClass; }) || BORTLE[4];
 
         // Telescope ray-diagram simulator
         function telescopeSim() {
@@ -5654,12 +5775,13 @@
               ),
               h('div', { style: { display: 'flex', gap: 4, marginBottom: 10 } },
                 BORTLE.map(function(b) {
-                  var active = d.bortleClass === b.class;
+                  var active = bortleClass === b.class;
                   var bgColor = b.class <= 3 ? '#0f172a' : b.class <= 5 ? '#1e3a5f' : b.class <= 7 ? '#3b3b6e' : '#7c3aed';
                   return h('button', {
                     key: b.class,
                     onClick: function() { upd({ bortleClass: b.class }); },
                     'aria-label': 'Bortle class ' + b.class + ': ' + b.name,
+                    'aria-pressed': active,
                     style: { flex: 1, padding: '8px 4px', borderRadius: 6, background: bgColor, border: '2px solid ' + (active ? '#fbbf24' : 'transparent'), color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
                   }, String(b.class));
                 })
@@ -5681,21 +5803,28 @@
             INDIGO
           ),
 
-          d.observingList && d.observingList.length > 0 ? sectionCard('⭐ Your observing list',
+          observingList.length > 0 ? sectionCard('\u2B50 Your observing list',
             h('div', null,
-              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#94a3b8' } }, __alloT('stem.astronomy.constellations_you_have_marked_to_obse', 'Constellations you have marked to observe. Add more from the Constellations tab.')),
+              h('p', { role: 'status', 'aria-live': 'polite', style: { margin: '0 0 8px', fontSize: 12, color: '#94a3b8' } }, observingList.length + (observingList.length === 1 ? ' target saved. ' : ' targets saved. ') + 'Use the printable kit when you are ready to observe.'),
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.85 } },
-                d.observingList.map(function(id, i) {
+                observingList.map(function(id) {
                   var c = CONSTELLATIONS.find(function(c2) { return c2.id === id; });
                   if (!c) return null;
-                  return h('li', { key: i },
+                  return h('li', { key: id },
                     c.name + ' (' + c.season + ')',
                     h('button', {
-                      onClick: function() { upd({ observingList: d.observingList.filter(function(x) { return x !== id; }) }); },
-                      style: { marginLeft: 8, fontSize: 10, color: '#94a3b8', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
-                    }, 'remove')
+                      type: 'button',
+                      'aria-label': 'Remove ' + c.name + ' from observing list',
+                      onClick: function() { setObservingTarget(id, false); },
+                      className: 'astr-focus astr-btn',
+                      style: { marginLeft: 8, padding: '2px 6px', fontSize: 10, color: '#cbd5e1', background: 'transparent', border: '1px solid #475569', borderRadius: 5, cursor: 'pointer' }
+                    }, 'Remove')
                   );
                 })
+              ),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+                h('button', { type: 'button', onClick: function() { activateAstronomyTab('print'); }, className: 'astr-focus astr-btn', style: { padding: '7px 11px', borderRadius: 7, border: '1px solid #6366f1', background: 'rgba(99,102,241,0.16)', color: '#c7d2fe', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDDA8 Open printable kit'),
+                h('button', { type: 'button', onClick: function() { activateAstronomyTab('constellations'); }, className: 'astr-focus astr-btn', style: { padding: '7px 11px', borderRadius: 7, border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2606 Add another target')
               )
             )
           ) : null,
@@ -6727,9 +6856,12 @@
       // QUIZ
       // ──────────────────────────────────────────────────────────────
       function renderQuiz() {
-        var idx = d.quizIdx || 0;
-        var answers = d.quizAnswers || [];
-        var done = d.quizSubmitted;
+        var answers = Array.isArray(d.quizAnswers) ? QUIZ_QUESTIONS.map(function(question, questionIndex) {
+          var restoredAnswer = Number(d.quizAnswers[questionIndex]);
+          return Number.isInteger(restoredAnswer) && restoredAnswer >= 0 && restoredAnswer < question.choices.length ? restoredAnswer : null;
+        }) : QUIZ_QUESTIONS.map(function() { return null; });
+        var allAnswered = QUIZ_QUESTIONS.every(function(_, questionIndex) { return answers[questionIndex] !== null; });
+        var done = d.quizSubmitted === true && allAnswered;
 
         function selectChoice(qIdx, cIdx) {
           var newAns = answers.slice();
@@ -6737,6 +6869,7 @@
           upd({ quizAnswers: newAns });
         }
         function submit() {
+          if (!allAnswered) return;
           var correct = 0;
           QUIZ_QUESTIONS.forEach(function(q, i) {
             if (answers[i] === q.answer) correct++;
@@ -6750,9 +6883,9 @@
         }
 
         if (done) {
-          var correct = d.quizCorrect || 0;
+          var correct = QUIZ_QUESTIONS.reduce(function(total, question, questionIndex) { return total + (answers[questionIndex] === question.answer ? 1 : 0); }, 0);
           var pct = Math.round(correct / QUIZ_QUESTIONS.length * 100);
-          return h('div', { style: { padding: 16 } },
+          return h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 16 } },
             h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center', marginBottom: 16 } },
               h('div', { style: { fontSize: 36, marginBottom: 4 } }, pct >= 80 ? '🌟' : pct >= 60 ? '⭐' : '🌙'),
               h('h2', { style: { margin: '0 0 4px', color: '#c7d2fe', fontSize: 22 } }, correct + ' / ' + QUIZ_QUESTIONS.length),
@@ -6772,17 +6905,17 @@
           );
         }
 
-        var allAnswered = QUIZ_QUESTIONS.every(function(_, i) { return answers[i] != null; });
+
 
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions covering everything in this tool. Take your time.'),
           QUIZ_QUESTIONS.map(function(q, i) {
-            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#c7d2fe' } }, 'Q' + (i + 1) + '. '), q.q),
+            return h('div', { key: i, role: 'group', 'aria-labelledby': 'astronomy-quiz-q-' + i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
+              h('div', { id: 'astronomy-quiz-q-' + i, style: { fontSize: 13, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#c7d2fe' } }, 'Q' + (i + 1) + '. '), q.q),
               q.choices.map(function(c, ci) {
                 var picked = answers[i] === ci;
                 return h('button', {
-                  key: ci,
+                  key: ci, type: 'button', 'aria-pressed': picked, 'aria-describedby': 'astronomy-quiz-q-' + i,
                   onClick: function() { selectChoice(i, ci); },
                   style: { display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(99,102,241,0.20)' : '#0f172a', border: '1px solid ' + (picked ? INDIGO : '#334155'), color: '#e2e8f0', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
                 }, c);
@@ -6800,8 +6933,38 @@
 
       // === H7b'' inquiry widget: HR diagram discovery ===
       function renderHRDiagram() {
-        var iq = d.hrHunt || { mass: 1, tempK: 5800, lumin: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) { upd({ hrHunt: Object.assign({}, iq, patch) }); }
+        var HR_CATEGORY_IDS = ['redDwarf', 'sunLike', 'redGiant', 'supergiant', 'mainSeq'];
+        var HR_CATEGORY_LABELS = { redDwarf: 'Red dwarf', sunLike: 'Sun-like', redGiant: 'Red giant', supergiant: 'Supergiant', mainSeq: 'Main sequence' };
+        function boundedHrValue(value, min, max, fallback) {
+          var numeric = Number(value);
+          return Number.isFinite(numeric) ? Math.min(max, Math.max(min, numeric)) : fallback;
+        }
+        function normalizeHrHunt(candidate) {
+          var raw = candidate && typeof candidate === 'object' && !Array.isArray(candidate) ? candidate : {};
+          var normalizedLog = Array.isArray(raw.log) ? raw.log.map(function(entry) {
+            if (!entry || typeof entry !== 'object') return null;
+            var mass = Number(entry.m), temperature = Number(entry.t), luminosity = Number(entry.l);
+            if (!Number.isFinite(mass) || !Number.isFinite(temperature) || !Number.isFinite(luminosity) || HR_CATEGORY_IDS.indexOf(entry.c) < 0) return null;
+            return {
+              m: Math.min(20, Math.max(0.1, mass)),
+              t: Math.min(50000, Math.max(2000, temperature)),
+              l: Math.min(100000, Math.max(0.001, luminosity)),
+              c: entry.c
+            };
+          }).filter(Boolean).slice(-8) : [];
+          return {
+            mass: boundedHrValue(raw.mass, 0.1, 20, 1),
+            tempK: boundedHrValue(raw.tempK, 2000, 50000, 5800),
+            lumin: boundedHrValue(raw.lumin, 0.001, 100000, 1),
+            hypothesis: typeof raw.hypothesis === 'string' ? raw.hypothesis.slice(0, 1000) : '',
+            stuckRevealed: raw.stuckRevealed === true,
+            understood: raw.understood === true,
+            explanation: typeof raw.explanation === 'string' ? raw.explanation.slice(0, 1500) : '',
+            log: normalizedLog
+          };
+        }
+        var iq = normalizeHrHunt(d.hrHunt);
+        function setIQ(patch) { upd({ hrHunt: normalizeHrHunt(Object.assign({}, iq, patch)) }); }
         // Classify into 4 stellar types based on T and L
         var category;
         if (iq.tempK < 4500 && iq.lumin < 1) category = 'redDwarf';
@@ -6817,18 +6980,18 @@
           mainSeq:    { label: __alloT('stem.astronomy.main_sequence_3', '⭐ Main sequence'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.astronomy.stable_hydrogen_burning_specific_class', 'Stable hydrogen-burning. Specific class depends on mass + temp.') }
         }[category];
         function logObs() {
-          setIQ({ log: (iq.log || []).concat([{ m: iq.mass, t: iq.tempK, l: iq.lumin, c: category }]).slice(-8) });
+          setIQ({ log: iq.log.concat([{ m: iq.mass, t: iq.tempK, l: iq.lumin, c: category }]).slice(-8) });
         }
         return h('div', { style: { padding: 16 } },
           h('div', { style: { padding: 16, background: '#0f172a', borderRadius: 12, color: '#e2e8f0' } },
             h('h3', { style: { fontSize: 16, fontWeight: 800, color: '#fde047', marginBottom: 6 } }, __alloT('stem.astronomy.hr_diagram_discovery', '⭐ HR diagram discovery')),
             h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } },
               __alloT('stem.astronomy.adjust_stellar_mass_surface_temperatur', 'Adjust stellar mass, surface temperature, and luminosity. The widget classifies your star into one of five discrete categories. No score, no reveal — sweep and notice.')),
-            h('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: catMeta.bg, border: '2px solid ' + catMeta.border, marginBottom: 12 } },
+            h('div', { id: 'astronomy-hr-classification', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 12, borderRadius: 8, textAlign: 'center', background: catMeta.bg, border: '2px solid ' + catMeta.border, marginBottom: 12 } },
               h('div', { style: { fontSize: 15, fontWeight: 900, color: catMeta.color } }, catMeta.label),
               h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, catMeta.desc)
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 10, marginBottom: 12 } },
               [
                 { key: 'mass',   label: __alloT('stem.astronomy.mass_m', 'Mass (M☉)'),          val: iq.mass,   min: 0.1, max: 20, step: 0.1 },
                 { key: 'tempK',  label: __alloT('stem.astronomy.surface_t_k', 'Surface T (K)'),      val: iq.tempK,  min: 2000, max: 50000, step: 100 },
@@ -6839,37 +7002,40 @@
                     s.label + ': ', h('span', { style: { color: '#fde047', fontFamily: 'monospace' } }, s.val)),
                   h('input', { id: 'hr-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
                     onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
-                    style: { width: '100%' }, 'aria-label': s.label }));
+                    style: { width: '100%' }, 'aria-label': s.label, 'aria-describedby': 'astronomy-hr-classification',
+                    'aria-valuetext': s.key === 'tempK' ? s.val + ' kelvin' : s.val + (s.key === 'mass' ? ' solar masses' : ' solar luminosities') }));
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
-              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.astronomy.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ mass: 1, tempK: 5800, lumin: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, __alloT('stem.astronomy.reset', '↺ Reset')),
-              (iq.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
+              h('button', { type: 'button', onClick: logObs, 'aria-label': 'Log this star observation', className: 'astr-focus astr-btn', style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.astronomy.log', '📋 Log')),
+              h('button', { type: 'button', onClick: function() { setIQ({ mass: 1, tempK: 5800, lumin: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, 'aria-label': 'Reset H-R diagram investigation', className: 'astr-focus astr-btn', style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, __alloT('stem.astronomy.reset', '↺ Reset')),
+              h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, iq.log.length > 0 ? iq.log.length + ' logged' : 'No observations logged yet')
             ),
-            (iq.log || []).length > 0 && h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 12 } },
-              h('thead', null, h('tr', { style: { background: '#1e293b' } }, ['mass', 'T (K)', 'L', 'category'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+            iq.log.length > 0 && h('table', { 'aria-label': 'Logged H-R diagram observations', style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 12 } },
+              h('caption', { style: { textAlign: 'left', color: '#94a3b8', padding: '0 0 5px' } }, 'Recent star observations, newest at the bottom'),
+              h('thead', null, h('tr', { style: { background: '#1e293b' } }, ['mass', 'T (K)', 'L', 'category'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
               h('tbody', null, iq.log.map(function(o, idx) {
                 return h('tr', { key: 'lr' + idx },
                   h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.m),
                   h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.t),
                   h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.l),
-                  h('td', { style: { padding: '4px 6px' } }, o.c));
+                  h('td', { style: { padding: '4px 6px' } }, HR_CATEGORY_LABELS[o.c] || o.c));
               }))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.astronomy.hypothesis_free_text_what_relationship', 'Hypothesis (free text): What relationships among mass, temp, luminosity define each star type?'),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value.slice(0, 1000) }); }, placeholder: __alloT('stem.astronomy.hypothesis_free_text_what_relationship', 'Hypothesis (free text): What relationships among mass, temp, luminosity define each star type?'),
+              'aria-label': 'H-R diagram hypothesis', maxLength: 1000,
               style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.astronomy.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+            h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, 'aria-expanded': iq.stuckRevealed, 'aria-controls': 'astronomy-hr-prompts', className: 'astr-focus astr-btn', style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, iq.stuckRevealed ? 'Hide investigation prompts' : __alloT('stem.astronomy.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),            iq.stuckRevealed && h('div', { id: 'astronomy-hr-prompts', role: 'region', 'aria-label': 'H-R diagram investigation prompts', style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
               h('ul', { style: { margin: 0, paddingLeft: 18 } },
                 h('li', null, __alloT('stem.astronomy.set_mass_1_m_and_vary_temp_luminosity_', 'Set mass = 1 M☉ and vary temp + luminosity. Where does the Sun sit?')),
                 h('li', null, __alloT('stem.astronomy.find_two_stars_in_different_categories', 'Find two stars in different categories. What do they have in common?')),
                 h('li', null, __alloT('stem.astronomy.real_stars_cluster_on_the_main_sequenc', 'Real stars cluster on the "main sequence." Investigate why.')))),
             h('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
               h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, 'aria-controls': 'astronomy-hr-explanation' }),
                 __alloT('stem.astronomy.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.astronomy.explain_how_mass_temperature_and_lumin', 'Explain how mass, temperature, and luminosity define a stellar category.'),
+              iq.understood && h('textarea', { id: 'astronomy-hr-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value.slice(0, 1500) }); }, placeholder: __alloT('stem.astronomy.explain_how_mass_temperature_and_lumin', 'Explain how mass, temperature, and luminosity define a stellar category.'),
+                'aria-label': 'Explain your H-R diagram understanding', maxLength: 1500,
                 style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
             h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },
               __alloT('stem.astronomy.design_note_discrete_5_category_star_m', 'Design note: discrete 5-category star marker; no luminosity-class score; no reveal — by design.'))
@@ -6881,8 +7047,8 @@
       // PRINT
       // ──────────────────────────────────────────────────────────────
       function renderPrint() {
-        var bortle = BORTLE.find(function(b) { return b.class === d.bortleClass; }) || BORTLE[4];
-        var obsList = (d.observingList || []).map(function(id) { return CONSTELLATIONS.find(function(c) { return c.id === id; }); }).filter(Boolean);
+        var bortle = BORTLE.find(function(b) { return b.class === bortleClass; }) || BORTLE[4];
+        var obsList = observingList.map(function(id) { return CONSTELLATIONS.find(function(c) { return c.id === id; }); }).filter(Boolean);
         return h('div', { style: { padding: 16 } },
           h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.4)', borderRight: '1px solid rgba(99,102,241,0.4)', borderBottom: '1px solid rgba(99,102,241,0.4)', borderLeft: '3px solid ' + INDIGO, marginBottom: 12, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.65 } },
             h('strong', null, __alloT('stem.astronomy.observing_kit', '🖨 Observing kit. ')),
@@ -6920,7 +7086,10 @@
                   );
                 })
               )
-            ) : null,
+            ) : h('div', { role: 'status', style: { padding: 12, border: '2px dashed #94a3b8', borderRadius: 10, marginBottom: 12, color: '#334155', fontSize: 12, lineHeight: 1.6 } },
+              h('strong', null, 'No observing targets saved yet. '),
+              'Open the Constellations section, choose a realistic seasonal target, and save it before printing.'
+            ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.astronomy.naked_eye_seasonal_sky_northern_hemisp', 'Naked-eye seasonal sky (Northern Hemisphere)')),
@@ -6988,7 +7157,7 @@
       // Dispatch
       // ──────────────────────────────────────────────────────────────
       var body;
-      switch (d.tab) {
+      switch (activeTab) {
         case 'skymap':         body = renderSkyMap(); break;
         case 'constellations': body = renderConstellations(); break;
         case 'moon':           body = renderMoon(); break;
@@ -7007,10 +7176,10 @@
         default:               body = renderTonight();
       }
 
-      var currentTabMeta = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
-      var observingCount = (d.observingList || []).length;
-      var nextSkyMission = d.tab === 'tonight' ? { icon: '🧭', title: 'Open the computed sky map', detail: 'Set place and time, then identify what is actually above your horizon.' }
-        : d.tab === 'skymap' ? { icon: '⭐', title: 'Choose one target to recognize', detail: 'Move from position data to a constellation, planet, Moon feature, or bright star.' }
+      var currentTabMeta = TABS.find(function(tab) { return tab.id === activeTab; }) || TABS[0];
+      var observingCount = observingList.length;
+      var nextSkyMission = activeTab === 'tonight' ? { icon: '🧭', title: 'Open the computed sky map', detail: 'Set place and time, then identify what is actually above your horizon.' }
+        : activeTab === 'skymap' ? { icon: '⭐', title: 'Choose one target to recognize', detail: 'Move from position data to a constellation, planet, Moon feature, or bright star.' }
         : observingCount === 0 ? { icon: '🔭', title: 'Build a one-target observing plan', detail: 'Save one realistic target before trying to learn the whole sky.' }
         : { icon: '📝', title: 'Observe, record, and compare', detail: 'Use your saved list and record conditions, evidence, and change over time.' };
 
@@ -7035,7 +7204,7 @@
               h('h2', { id: 'astronomy-command-title', style: { margin: '7px 0 3px', color: '#fff', fontSize: 20, fontWeight: 900 } }, nextSkyMission.icon + ' ' + nextSkyMission.title),
               h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, nextSkyMission.detail),
               h('div', { className: 'mt-3 grid grid-cols-3 gap-2', 'aria-label': 'Astronomy learning progress' },
-                [[TABS.length, 'Sections'], [observingCount, 'Saved targets'], [d.bortleClass || 5, 'Bortle class']].map(function(metric) { return h('div', { key: metric[1], style: { padding: '9px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,.09)', background: 'rgba(255,255,255,.045)' } }, h('div', { style: { color: '#fff', fontSize: 17, fontWeight: 900 } }, metric[0]), h('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, metric[1])); })
+                [[TABS.length, 'Sections'], [observingCount, 'Saved targets'], [bortleClass, 'Bortle class']].map(function(metric) { return h('div', { key: metric[1], style: { padding: '9px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,.09)', background: 'rgba(255,255,255,.045)' } }, h('div', { style: { color: '#fff', fontSize: 17, fontWeight: 900 } }, metric[0]), h('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, metric[1])); })
               )
             ),
             h('aside', { style: { padding: 12, borderRadius: 12, background: 'rgba(2,6,23,.35)', border: '1px solid rgba(56,189,248,.18)' }, 'aria-label': 'Observation evidence route' },
@@ -7045,7 +7214,7 @@
           )
         ),
         tabBar,
-        h('main', { id: 'astronomy-main', tabIndex: -1, style: { flex: 1, overflow: 'auto' } }, body)
+        h('main', { id: 'astronomy-main', role: 'tabpanel', 'aria-labelledby': 'astronomy-tab-' + activeTab, tabIndex: -1, style: { flex: 1, overflow: 'auto' } }, body)
       );
     }
   });

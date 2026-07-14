@@ -20953,7 +20953,8 @@
       "navigate": "ניווט",
       "pipeline": "תוצאות הצינור",
       "tools": "פתח כלי",
-      "voice": "קול"
+      "voice": "קול",
+      "recent": "Recent"
     },
     "input_aria": "חפש פקודות",
     "list_aria": "פקודות תואמות",
