@@ -230,6 +230,11 @@ function AdventureView(props) {
   var inventoryDialogRef = React.useRef(null);
   useAdventureDialogFocus(showLedger, ledgerDialogRef, handleSetShowLedgerToFalse);
   useAdventureDialogFocus(!!selectedInventoryItem, inventoryDialogRef, handleSetSelectedInventoryItemToNull);
+  var xpMax = Math.max(1, Number(adventureState.xpToNextLevel) || 1);
+  var xpValue = Math.max(0, Math.min(xpMax, Number(adventureState.xp) || 0));
+  var xpProgressPercent = Math.max(0, Math.min(100, xpValue / xpMax * 100));
+  var energyValue = Math.max(0, Math.min(100, Number(adventureState.energy) || 0));
+  var debateMomentumValue = Math.max(0, Math.min(100, Number(adventureState.debateMomentum) || 0));
   return /*#__PURE__*/React.createElement(ErrorBoundary, {
     title: t('adventure.error.title'),
     fallbackMessage: t('adventure.error.fallback'),
@@ -305,8 +310,13 @@ function AdventureView(props) {
     className: `bg-indigo-900 p-4 rounded-lg border border-indigo-800 flex flex-col md:flex-row justify-between items-center shadow-md shrink-0 gap-4 relative overflow-x-auto ${adventureState.isImmersiveMode ? 'hidden' : ''}`
   }, adventureEffects.levelUp && /*#__PURE__*/React.createElement("div", {
     className: "absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[1px]"
-  }, /*#__PURE__*/React.createElement(ConfettiExplosion, null), /*#__PURE__*/React.createElement("div", {
-    className: "bg-yellow-400 text-indigo-900 px-8 py-4 rounded-2xl border-4 border-white shadow-2xl font-black text-2xl animate-in zoom-in duration-300 rotate-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement(ConfettiExplosion, null)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-yellow-400 text-indigo-900 px-8 py-4 rounded-2xl border-4 border-white shadow-2xl font-black text-2xl animate-in zoom-in duration-300 rotate-3 motion-reduce:animate-none motion-reduce:transform-none",
+    role: "status",
+    "aria-live": "assertive",
+    "aria-atomic": "true"
   }, t('adventure.feedback.level_up', {
     level: adventureEffects.levelUp
   }))), /*#__PURE__*/React.createElement("div", {
@@ -317,49 +327,83 @@ function AdventureView(props) {
     className: "font-bold flex items-center gap-2 shrink-0 whitespace-nowrap"
   }, /*#__PURE__*/React.createElement(MapIcon, {
     size: 18,
-    className: "text-yellow-700"
+    className: "text-yellow-300",
+    "aria-hidden": "true"
   }), " ", t('adventure.title')), adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
-    className: "bg-gradient-to-r from-amber-600 to-amber-800 text-amber-100 border border-amber-400/50 px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 flex items-center gap-1 animate-pulse"
-  }, /*#__PURE__*/React.createElement("span", null, "🏛️"), " System Sim"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-amber-600 to-amber-800 text-amber-100 border border-amber-400/50 px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 flex items-center gap-1 animate-pulse motion-reduce:animate-none"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🏛️"), " ", t('adventure.system_simulation')), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-2 relative shrink-0"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-yellow-700"
-  }, "Lvl ", adventureState.level), /*#__PURE__*/React.createElement("div", {
-    className: "w-20 h-2 bg-indigo-950 rounded-full overflow-hidden"
+    className: "text-yellow-300"
+  }, t('common.level_abbrev') || 'Lvl', " ", adventureState.level), /*#__PURE__*/React.createElement("div", {
+    className: "w-20 h-2 bg-indigo-950 rounded-full overflow-hidden",
+    role: "progressbar",
+    "aria-label": t('common.xp') || 'XP',
+    "aria-valuemin": 0,
+    "aria-valuemax": xpMax,
+    "aria-valuenow": xpValue,
+    "aria-valuetext": t('adventure.tooltips.xp', {
+      current: xpValue,
+      next: xpMax
+    })
   }, /*#__PURE__*/React.createElement("div", {
-    className: "h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 ease-out",
+    className: "h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 ease-out motion-reduce:transition-none",
+    "aria-hidden": "true",
     style: {
-      width: `${Math.min(100, adventureState.xp / adventureState.xpToNextLevel * 100)}%`
+      width: xpProgressPercent + '%'
     }
   })), adventureEffects.xp !== null && /*#__PURE__*/React.createElement("div", {
-    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-300 font-black text-lg animate-[ping_0.8s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.xp < 0 ? 'text-red-400' : 'text-yellow-300'}`
-  }, adventureEffects.xp > 0 ? '+' : '', adventureEffects.xp, " XP")), /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-300 font-black text-lg animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.xp < 0 ? 'text-red-400' : 'text-yellow-300'}`
+  }, adventureEffects.xp > 0 ? '+' : '', adventureEffects.xp, " ", t('common.xp') || 'XP')), /*#__PURE__*/React.createElement("div", {
     className: `px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-2 relative shrink-0 transition-all duration-200 ${adventureInputMode === 'system' ? 'bg-amber-900/60 border-amber-600' : adventureEffects.energy < 0 ? 'animate-shake border-red-500 bg-red-900/50 shadow-[0_0_15px_rgba(239,68,68,0.6)]' : 'bg-indigo-800 border-indigo-600'}`,
-    title: adventureInputMode === 'system' ? `Stability: ${adventureState.energy}%` : t('adventure.tooltips.energy', {
-      value: adventureState.energy
+    title: adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
+      value: energyValue
+    }) : t('adventure.tooltips.energy', {
+      value: energyValue
     })
   }, /*#__PURE__*/React.createElement(Zap, {
     size: 12,
-    className: `fill-current transition-colors duration-200 ${adventureInputMode === 'system' ? 'text-amber-400' : adventureEffects.energy < 0 ? 'text-red-400' : 'text-yellow-400'}`
+    "aria-hidden": "true",
+    className: `fill-current transition-colors duration-200 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'text-amber-400' : adventureEffects.energy < 0 ? 'text-red-400' : 'text-yellow-400'}`
   }), /*#__PURE__*/React.createElement("span", {
     className: `w-6 text-right transition-colors duration-200 ${adventureInputMode === 'system' ? 'text-amber-300' : adventureEffects.energy < 0 ? 'text-red-300' : 'text-yellow-400'}`
   }, /*#__PURE__*/React.createElement(AnimatedNumber, {
-    value: adventureState.energy
+    value: energyValue
   })), /*#__PURE__*/React.createElement("div", {
-    className: "w-16 h-2 bg-indigo-950 rounded-full overflow-hidden relative"
+    className: "w-16 h-2 bg-indigo-950 rounded-full overflow-hidden relative",
+    role: "progressbar",
+    "aria-label": adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
+      value: energyValue
+    }) : t('adventure.tooltips.energy', {
+      value: energyValue
+    }),
+    "aria-valuemin": 0,
+    "aria-valuemax": 100,
+    "aria-valuenow": energyValue
   }, /*#__PURE__*/React.createElement("div", {
-    className: `h-full transition-all duration-500 ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : adventureState.energy < 20 || adventureEffects.energy < 0 ? 'bg-red-500 animate-pulse' : 'bg-yellow-400'}`,
+    "aria-hidden": "true",
+    className: `h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : adventureState.energy < 20 || adventureEffects.energy < 0 ? 'bg-red-500 animate-pulse' : 'bg-yellow-400'}`,
     style: {
-      width: `${adventureState.energy}%`
+      width: energyValue + '%'
     }
   })), adventureEffects.energy !== null && /*#__PURE__*/React.createElement("div", {
-    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg animate-[ping_0.8s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.energy > 0 ? 'text-green-400' : 'text-red-500'}`
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.energy > 0 ? 'text-green-400' : 'text-red-500'}`
   }, adventureEffects.energy > 0 ? '+' : '', adventureEffects.energy)), /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-1.5 text-yellow-700 shadow-sm shrink-0",
+    className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-1.5 text-yellow-300 shadow-sm shrink-0",
     title: t('adventure.tooltips.gold', {
       value: adventureState.gold
     })
-  }, /*#__PURE__*/React.createElement("span", null, "💰"), " ", adventureState.gold, adventureState.activeGoldBuffTurns > 0 && /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "💰"), " ", adventureState.gold, adventureState.activeGoldBuffTurns > 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] ml-1 bg-yellow-400 text-black px-1 rounded-full"
   }, adventureState.activeGoldBuffTurns)), /*#__PURE__*/React.createElement(InventoryGrid, {
     inventory: adventureState.inventory,
@@ -370,8 +414,10 @@ function AdventureView(props) {
     key: `fr-${idx}`,
     className: "bg-amber-900/50 border border-amber-600/40 rounded px-1.5 py-0.5 flex items-center gap-1 text-[11px]",
     title: `${resource.name}: ${resource.quantity}${resource.unit || ''}`
-  }, /*#__PURE__*/React.createElement("span", null, resource.icon || '📦'), /*#__PURE__*/React.createElement("span", {
-    className: "text-amber-700 font-bold"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, resource.icon || '📦'), /*#__PURE__*/React.createElement("span", {
+    className: "text-amber-200 font-bold"
   }, resource.quantity, resource.unit ? /*#__PURE__*/React.createElement("span", {
     className: "text-amber-300/70 font-normal ml-0.5"
   }, resource.unit) : ''))), adventureState.systemResources.length > 5 && /*#__PURE__*/React.createElement("span", {
@@ -379,99 +425,130 @@ function AdventureView(props) {
   }, "+", adventureState.systemResources.length - 5))), adventureInputMode === 'debate' && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "relative w-full h-4 bg-slate-700 rounded-full border border-slate-600 overflow-hidden shadow-inner"
+    className: "relative w-full h-4 bg-slate-700 rounded-full border border-slate-600 overflow-hidden shadow-inner",
+    role: "progressbar",
+    "aria-label": t('adventure.debate_you') + ' / ' + t('adventure.debate_opponent'),
+    "aria-valuemin": 0,
+    "aria-valuemax": 100,
+    "aria-valuenow": debateMomentumValue,
+    "aria-valuetext": t('adventure.debate_you') + ': ' + debateMomentumValue + '; ' + t('adventure.debate_opponent') + ': ' + (100 - debateMomentumValue)
   }, /*#__PURE__*/React.createElement("div", {
-    className: `h-full transition-all duration-500 ease-out ${adventureState.debateMomentum > 60 ? 'bg-green-500' : adventureState.debateMomentum < 40 ? 'bg-red-500' : 'bg-yellow-500'}`,
+    "aria-hidden": "true",
+    className: `h-full transition-all duration-500 ease-out motion-reduce:transition-none ${adventureState.debateMomentum > 60 ? 'bg-green-500' : adventureState.debateMomentum < 40 ? 'bg-red-500' : 'bg-yellow-500'}`,
     style: {
-      width: `${adventureState.debateMomentum}%`
+      width: debateMomentumValue + '%'
     }
   }), /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10"
+    className: "absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10",
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+    className: "absolute inset-0 flex items-center justify-center z-20 pointer-events-none",
+    "aria-hidden": "true"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-black text-white drop-shadow-md tracking-wider"
-  }, adventureState.debateMomentum, "/100"))), /*#__PURE__*/React.createElement("div", {
+  }, debateMomentumValue, "/100"))), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-[11px] font-bold text-indigo-200 mt-1 px-1 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, t('adventure.debate_opponent')), /*#__PURE__*/React.createElement("span", null, t('adventure.debate_you')))), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-indigo-200 mt-1"
   }, t('adventure.explore_hint'))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3 relative z-10 overflow-x-auto min-w-0 shrink-0"
+    className: "flex items-center gap-3 relative z-10 overflow-x-auto min-w-0 shrink-0",
+    role: "group",
+    "aria-label": t('adventure.title')
   }, isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "data-help-key": "adventure_edit_options",
     onClick: handleStartOptionEdit,
     disabled: isEditingOptions,
-    className: `flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${isEditingOptions ? 'bg-indigo-900 text-indigo-600 border-indigo-700 opacity-50 cursor-not-allowed' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`,
+    className: `min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${isEditingOptions ? 'bg-indigo-900 text-indigo-600 border-indigo-700 opacity-50 cursor-not-allowed' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`,
     title: t('adventure.edit_options_tooltip'),
     "aria-label": t('adventure.edit_options_tooltip')
   }, /*#__PURE__*/React.createElement(Pencil, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), " ", /*#__PURE__*/React.createElement("span", {
     className: "hidden xl:inline"
   }, t('adventure.edit_options_btn'))), activeSessionCode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "data-help-key": "democracy_toggle",
     onClick: toggleDemocracyMode,
-    className: `flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${sessionData?.democracy?.isActive ? 'bg-teal-700 text-white border-teal-500 ring-2 ring-teal-400' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'}`,
+    className: `min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${sessionData?.democracy?.isActive ? 'bg-teal-700 text-white border-teal-500 ring-2 ring-teal-400' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'}`,
     title: t('adventure.tooltips.democracy_toggle'),
-    "aria-label": t('adventure.tooltips.democracy_toggle')
+    "aria-label": t('adventure.tooltips.democracy_toggle'),
+    "aria-pressed": !!sessionData?.democracy?.isActive
   }, sessionData?.democracy?.isActive ? /*#__PURE__*/React.createElement(Users, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(User, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden xl:inline"
   }, sessionData?.democracy?.isActive ? t('adventure.democracy_on') : t('adventure.democracy_off'))), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.read'),
+    type: "button",
+    "aria-label": t('adventure.ledger_tooltip'),
     onClick: handleSetShowLedgerToTrue,
-    className: "flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white",
+    className: "min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white",
     title: t('adventure.ledger_tooltip')
   }, /*#__PURE__*/React.createElement(BookOpen, {
     size: 14,
-    className: "fill-current"
+    className: "fill-current",
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:inline"
   }, t('adventure.log_button'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive'),
+    "aria-pressed": adventureState.isImmersiveMode,
     onClick: handleToggleAdventureImmersive,
-    className: `flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`,
+    className: `min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`,
     title: adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')
   }, /*#__PURE__*/React.createElement(Monitor, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:inline"
   }, adventureState.isImmersiveMode ? t('adventure.view_standard') : t('adventure.view_immersive'))), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.volume'),
+    type: "button",
+    "aria-label": adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable'),
+    "aria-pressed": adventureAutoRead,
     "data-help-key": "adventure_immersive_autoread",
     onClick: () => {
       const newState = !adventureAutoRead;
       setAdventureAutoRead(newState);
       if (!newState) stopPlayback();
     },
-    className: `flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${adventureAutoRead ? 'bg-yellow-400 text-indigo-900 border-yellow-500 hover:bg-yellow-300' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'}`,
+    className: `min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${adventureAutoRead ? 'bg-yellow-400 text-indigo-900 border-yellow-500 hover:bg-yellow-300' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'}`,
     title: adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')
   }, adventureAutoRead ? /*#__PURE__*/React.createElement(Volume2, {
     size: 14,
-    className: "fill-current animate-pulse"
+    className: "fill-current animate-pulse motion-reduce:animate-none",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(VolumeX, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:inline"
   }, t('adventure.auto_read_status_label'), ": ", adventureAutoRead ? t('common.on') : t('common.off'))), !isZenMode && /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.maximize'),
+    type: "button",
+    "aria-label": t('adventure.maximize_tooltip'),
     onClick: handleSetIsZenModeToTrue,
-    className: "flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white",
+    className: "min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white",
     title: t('adventure.maximize_tooltip')
   }, /*#__PURE__*/React.createElement(Maximize, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:inline"
   }, t('adventure.view_button'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.start_new_adventure'),
     "data-help-key": "adventure_start_btn",
     onClick: handleStartAdventure,
-    className: "flex items-center gap-2 bg-white/10 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/20 transition-colors shadow-sm"
+    className: "min-w-11 min-h-11 flex items-center gap-2 bg-white/10 text-white border border-white/40 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/20 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: adventureState.isLoading ? "animate-spin" : ""
+    className: adventureState.isLoading ? "animate-spin motion-reduce:animate-none" : "",
+    "aria-hidden": "true"
   }), " ", t('adventure.restart')))), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow bg-slate-100 rounded-xl border border-slate-400 shadow-inner overflow-hidden flex flex-col relative"
   }, !adventureState.isImmersiveMode ? /*#__PURE__*/React.createElement("div", {
@@ -893,10 +970,16 @@ function AdventureView(props) {
     });
   })())))), adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center py-8 gap-4"
-  }, /*#__PURE__*/React.createElement(ConfettiExplosion, null), /*#__PURE__*/React.createElement("div", {
-    className: "bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500"
+  }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement(ConfettiExplosion, null)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
   }, /*#__PURE__*/React.createElement(Trophy, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   }), " ", t('adventure.game_over')), /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-600 font-bold"
   }, t('adventure.final_level'), ": ", adventureState.level), adventureState.xp >= studentProjectSettings.adventureMinXP ? /*#__PURE__*/React.createElement("button", {
@@ -949,21 +1032,32 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("span", null, "🏛️"), " ", t('adventure.system_simulation')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm",
     title: adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
-      value: adventureState.energy
+      value: energyValue
     }) : t('adventure.tooltips.energy', {
-      value: adventureState.energy
+      value: energyValue
     })
   }, /*#__PURE__*/React.createElement("div", {
     className: `p-1 rounded-full ${adventureInputMode === 'system' ? 'bg-amber-500/20' : 'bg-yellow-500/20'}`
   }, /*#__PURE__*/React.createElement(Zap, {
     size: 12,
+    "aria-hidden": "true",
     className: `fill-current ${adventureInputMode === 'system' ? 'text-amber-400' : 'text-yellow-400'}`
   })), /*#__PURE__*/React.createElement("div", {
-    className: "w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10"
+    className: "w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10",
+    role: "progressbar",
+    "aria-label": adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
+      value: energyValue
+    }) : t('adventure.tooltips.energy', {
+      value: energyValue
+    }),
+    "aria-valuemin": 0,
+    "aria-valuemax": 100,
+    "aria-valuenow": energyValue
   }, /*#__PURE__*/React.createElement("div", {
-    className: `h-full transition-all duration-500 ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`,
+    "aria-hidden": "true",
+    className: `h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`,
     style: {
-      width: `${adventureState.energy}%`
+      width: energyValue + '%'
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm",
@@ -975,108 +1069,145 @@ function AdventureView(props) {
     className: "bg-indigo-500/20 p-1 rounded-full"
   }, /*#__PURE__*/React.createElement(Trophy, {
     size: 12,
-    className: "text-indigo-600 fill-current"
+    className: "text-indigo-300 fill-current",
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
-    className: "w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10"
+    className: "w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10",
+    role: "progressbar",
+    "aria-label": t('common.xp') || 'XP',
+    "aria-valuemin": 0,
+    "aria-valuemax": xpMax,
+    "aria-valuenow": xpValue,
+    "aria-valuetext": t('adventure.tooltips.xp', {
+      current: xpValue,
+      next: xpMax
+    })
   }, /*#__PURE__*/React.createElement("div", {
-    className: "h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-500",
+    className: "h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-500 motion-reduce:transition-none",
+    "aria-hidden": "true",
     style: {
-      width: `${Math.min(100, adventureState.xp / adventureState.xpToNextLevel * 100)}%`
+      width: xpProgressPercent + '%'
     }
   })))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-end gap-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.volume'),
+    type: "button",
+    "aria-label": adventureAutoRead ? t('adventure.auto_read_off_tooltip') : t('adventure.auto_read_on_tooltip'),
+    "aria-pressed": adventureAutoRead,
     "data-help-key": "adventure_immersive_autoread",
     onClick: () => {
       const newState = !adventureAutoRead;
       setAdventureAutoRead(newState);
       if (!newState) stopPlayback();
     },
-    className: `backdrop-blur-md border p-2 rounded-full transition-all shadow-sm ${adventureAutoRead ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
+    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${adventureAutoRead ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
     title: adventureAutoRead ? t('adventure.auto_read_off_tooltip') : t('adventure.auto_read_on_tooltip')
   }, adventureAutoRead ? /*#__PURE__*/React.createElement(Volume2, {
     size: 16,
-    className: "fill-current"
+    className: "fill-current",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(VolumeX, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.hide'),
+    type: "button",
+    "aria-label": immersiveHideUI ? t('adventure.show_ui') : t('adventure.hide_ui'),
+    "aria-pressed": immersiveHideUI,
     "data-help-key": "adventure_immersive_toggle_ui",
     onClick: handleToggleImmersiveHideUI,
-    className: `backdrop-blur-md border p-2 rounded-full transition-all shadow-sm ${immersiveHideUI ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
+    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${immersiveHideUI ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
     title: immersiveHideUI ? t('adventure.show_ui') : t('adventure.hide_ui')
   }, immersiveHideUI ? /*#__PURE__*/React.createElement(EyeOff, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Eye, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.minimize'),
+    type: "button",
+    "aria-label": t('adventure.tooltips.exit_immersive'),
     "data-help-key": "adventure_immersive_exit",
     onClick: handleExitAdventureImmersive,
-    className: "bg-black/50 backdrop-blur-md text-white border border-white/20 p-2 rounded-full hover:bg-white/20 transition-all shadow-sm",
+    className: "min-w-11 min-h-11 bg-black/50 backdrop-blur-md text-white border border-white/40 p-2 rounded-full hover:bg-white/20 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
     title: t('adventure.tooltips.exit_immersive')
   }, /*#__PURE__*/React.createElement(Minimize, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-black/50 backdrop-blur-md text-yellow-700 border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm"
+    className: "bg-black/50 backdrop-blur-md text-yellow-300 border border-yellow-500/60 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm"
+    className: "text-sm",
+    "aria-hidden": "true"
   }, "💰"), " ", adventureState.gold), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('adventure.inventory'),
+    "aria-expanded": showImmersiveInventory,
+    "aria-controls": "adventure-immersive-inventory",
     "data-help-key": "adventure_immersive_inventory",
     onClick: e => {
       e.stopPropagation();
       setShowImmersiveInventory(!showImmersiveInventory);
     },
-    className: `backdrop-blur-md border p-2 rounded-full transition-all shadow-sm ${showImmersiveInventory ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white border-white/20 hover:bg-white/20'}`,
+    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${showImmersiveInventory ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white border-white/20 hover:bg-white/20'}`,
     title: t('adventure.inventory')
   }, /*#__PURE__*/React.createElement(Backpack, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   })), showImmersiveInventory && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-full right-0 mt-2 w-56 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-2 shadow-xl z-50 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2"
+    id: "adventure-immersive-inventory",
+    role: "region",
+    "aria-label": t('adventure.inventory'),
+    className: "absolute top-full right-0 mt-2 w-56 bg-black/80 backdrop-blur-md border border-white/40 rounded-xl p-2 shadow-xl z-50 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 motion-reduce:animate-none"
   }, adventureInputMode === 'system' && enableFactionResources && /*#__PURE__*/React.createElement("div", {
     className: "border-b border-amber-500/30 pb-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1 flex items-center gap-1"
-  }, /*#__PURE__*/React.createElement("span", null, "📊"), " ", t('adventure.system_state')), (adventureState.systemResources || []).length > 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "text-[11px] font-bold text-amber-200 uppercase tracking-wide mb-1 flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📊"), " ", t('adventure.system_state')), (adventureState.systemResources || []).length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-1"
   }, adventureState.systemResources.map((resource, idx) => /*#__PURE__*/React.createElement("div", {
     key: `${resource.name}-${idx}`,
     className: "bg-gradient-to-r from-amber-900/40 to-amber-800/20 border border-amber-600/30 rounded-lg px-2 py-1 flex items-center gap-1.5 hover:border-amber-400/50 transition-all cursor-default",
     title: `${resource.name}: ${resource.quantity}${resource.unit || ''} (${resource.type || 'strategic'})`
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm"
+    className: "text-sm",
+    "aria-hidden": "true"
   }, resource.icon || '📊'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col leading-none"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-amber-200/80 truncate max-w-[60px]"
   }, resource.name), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-amber-700 font-bold"
+    className: "text-xs text-amber-200 font-bold"
   }, resource.quantity, resource.unit && /*#__PURE__*/React.createElement("span", {
     className: "text-amber-400/70 font-normal ml-0.5 text-[11px]"
   }, resource.unit)))))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-[11px] text-amber-200/50 py-1 italic"
   }, "No state variables yet")), /*#__PURE__*/React.createElement("div", null, adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-300 uppercase tracking-wide mb-1 flex items-center gap-1"
-  }, /*#__PURE__*/React.createElement("span", null, "📜"), " Policies & Agreements"), adventureState.inventory.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📜"), " Policies & Agreements"), adventureState.inventory.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-4 gap-2"
   }, adventureState.inventory.map(item => /*#__PURE__*/React.createElement("button", {
     key: item.id,
+    type: "button",
+    "aria-label": item.name,
     onClick: e => {
       e.stopPropagation();
       setSelectedInventoryItem(item);
       setShowImmersiveInventory(false);
     },
-    className: "group relative w-10 h-10 bg-white/10 rounded-lg border border-white/10 hover:bg-indigo-600 hover:border-indigo-400 flex items-center justify-center transition-all overflow-hidden",
+    className: "group relative w-11 h-11 bg-white/10 rounded-lg border border-white/40 hover:bg-indigo-600 hover:border-indigo-400 flex items-center justify-center transition-all overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
     title: item.name
   }, item.image ? /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: item.image,
-    alt: item.name,
+    alt: "",
     className: "w-full h-full object-contain p-1"
   }) : /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-white"
@@ -1151,22 +1282,24 @@ function AdventureView(props) {
       const totalVotes = Object.keys(votes).length;
       const percent = totalVotes > 0 ? Math.round(voteCount / totalVotes * 100) : 0;
       const isReadingThisOption = isPlaying && playingContentId === 'adventure-active' && playbackState.currentIdx === textSentenceCount + idx;
-      return /*#__PURE__*/React.createElement("button", {
+      return /*#__PURE__*/React.createElement("div", {
         key: idx,
-        "data-help-key": "adventure_choice_btn",
-        onClick: () => handleAdventureChoice(opt),
-        disabled: adventureState.isLoading,
-        className: `bg-white/10 hover:bg-white/20 border text-left p-4 rounded-xl text-white text-sm font-bold transition-all active:scale-95 backdrop-blur-sm group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed
+        className: `bg-white/10 hover:bg-white/20 border text-left p-4 rounded-xl text-white text-sm font-bold transition-all backdrop-blur-sm group relative overflow-hidden motion-reduce:transform-none
                                                                 ${isReadingThisOption ? 'border-yellow-400 ring-2 ring-yellow-400/50 bg-white/20 shadow-lg scale-[1.02] z-10' : 'border-white/30 hover:border-white'}`
       }, isDemocracy && voteCount > 0 && /*#__PURE__*/React.createElement("div", {
-        className: "absolute left-0 top-0 bottom-0 bg-indigo-500/30 transition-all duration-500",
+        "aria-hidden": "true",
+        className: "absolute left-0 top-0 bottom-0 bg-indigo-500/30 transition-all duration-500 motion-reduce:transition-none",
         style: {
           width: `${percent}%`
         }
       }), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-between relative z-10 w-full"
-      }, /*#__PURE__*/React.createElement("span", {
-        className: "flex items-center gap-3 flex-grow"
+      }, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-help-key": "adventure_choice_btn",
+        onClick: () => handleAdventureChoice(opt),
+        disabled: adventureState.isLoading,
+        className: "min-h-11 flex items-center gap-3 flex-grow text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
       }, /*#__PURE__*/React.createElement("span", {
         className: `bg-white/20 px-2.5 py-1 rounded text-xs opacity-70 group-hover:bg-white group-hover:text-black transition-colors ${isReadingThisOption ? 'bg-yellow-400 text-black opacity-100' : ''}`
       }, idx + 1), /*#__PURE__*/React.createElement("span", {
@@ -1174,16 +1307,18 @@ function AdventureView(props) {
       }, typeof opt === 'object' && opt?.action ? opt.action : opt)), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2"
       }, typeof opt === 'object' && opt?.audio && /*#__PURE__*/React.createElement("button", {
-        "aria-label": t('common.volume'),
+        type: "button",
+        "aria-label": (t('common.listen') || 'Listen') + ': ' + (typeof opt === 'object' && opt?.action ? opt.action : opt),
         onClick: e => {
           e.stopPropagation();
           const audio = new Audio(opt.audio);
           audio.play();
         },
-        className: "p-1.5 rounded-full bg-white/10 hover:bg-white/30 text-white/70 hover:text-white transition-colors",
+        className: "min-w-11 min-h-11 rounded-full bg-white/10 hover:bg-white/30 text-white hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         title: t('common.listen')
       }, /*#__PURE__*/React.createElement(Volume2, {
-        size: 16
+        size: 16,
+        "aria-hidden": "true"
       })), isDemocracy && /*#__PURE__*/React.createElement("span", {
         className: `text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${voteCount > 0 ? 'bg-indigo-500 text-white shadow-sm' : 'opacity-40'}`
       }, t('adventure.vote_status', {

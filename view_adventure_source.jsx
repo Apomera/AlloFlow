@@ -149,6 +149,11 @@ function AdventureView(props) {
   var inventoryDialogRef = React.useRef(null);
   useAdventureDialogFocus(showLedger, ledgerDialogRef, handleSetShowLedgerToFalse);
   useAdventureDialogFocus(!!selectedInventoryItem, inventoryDialogRef, handleSetSelectedInventoryItemToNull);
+  var xpMax = Math.max(1, Number(adventureState.xpToNextLevel) || 1);
+  var xpValue = Math.max(0, Math.min(xpMax, Number(adventureState.xp) || 0));
+  var xpProgressPercent = Math.max(0, Math.min(100, (xpValue / xpMax) * 100));
+  var energyValue = Math.max(0, Math.min(100, Number(adventureState.energy) || 0));
+  var debateMomentumValue = Math.max(0, Math.min(100, Number(adventureState.debateMomentum) || 0));
   return (
                   <ErrorBoundary
                       title={t('adventure.error.title')}
@@ -213,31 +218,31 @@ function AdventureView(props) {
                       <div className={`bg-indigo-900 p-4 rounded-lg border border-indigo-800 flex flex-col md:flex-row justify-between items-center shadow-md shrink-0 gap-4 relative overflow-x-auto ${adventureState.isImmersiveMode ? 'hidden' : ''}`}>
                         {adventureEffects.levelUp && (
                             <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[1px]">
-                                <ConfettiExplosion />
-                                <div className="bg-yellow-400 text-indigo-900 px-8 py-4 rounded-2xl border-4 border-white shadow-2xl font-black text-2xl animate-in zoom-in duration-300 rotate-3">
+                                <div aria-hidden="true"><ConfettiExplosion /></div>
+                                <div className="bg-yellow-400 text-indigo-900 px-8 py-4 rounded-2xl border-4 border-white shadow-2xl font-black text-2xl animate-in zoom-in duration-300 rotate-3 motion-reduce:animate-none motion-reduce:transform-none" role="status" aria-live="assertive" aria-atomic="true">
                                     {t('adventure.feedback.level_up', { level: adventureEffects.levelUp })}
                                 </div>
                             </div>
                         )}
                         <div className="text-white flex-grow relative z-10">
                             <div className="flex items-center gap-3 overflow-x-auto min-w-0 pb-1">
-                                <h3 className="font-bold flex items-center gap-2 shrink-0 whitespace-nowrap"><MapIcon size={18} className="text-yellow-700"/> {t('adventure.title')}</h3>
+                                <h3 className="font-bold flex items-center gap-2 shrink-0 whitespace-nowrap"><MapIcon size={18} className="text-yellow-300" aria-hidden="true"/> {t('adventure.title')}</h3>
                                 {adventureInputMode === 'system' && (
-                                    <div className="bg-gradient-to-r from-amber-600 to-amber-800 text-amber-100 border border-amber-400/50 px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 flex items-center gap-1 animate-pulse">
-                                        <span>🏛️</span> System Sim
+                                    <div className="bg-gradient-to-r from-amber-600 to-amber-800 text-amber-100 border border-amber-400/50 px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 flex items-center gap-1 animate-pulse motion-reduce:animate-none">
+                                        <span aria-hidden="true">🏛️</span> {t('adventure.system_simulation')}
                                     </div>
                                 )}
                                 <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-2 relative shrink-0">
-                                    <span className="text-yellow-700">Lvl {adventureState.level}</span>
-                                    <div className="w-20 h-2 bg-indigo-950 rounded-full overflow-hidden">
+                                    <span className="text-yellow-300">{t('common.level_abbrev') || 'Lvl'} {adventureState.level}</span>
+                                    <div className="w-20 h-2 bg-indigo-950 rounded-full overflow-hidden" role="progressbar" aria-label={t('common.xp') || 'XP'} aria-valuemin={0} aria-valuemax={xpMax} aria-valuenow={xpValue} aria-valuetext={t('adventure.tooltips.xp', { current: xpValue, next: xpMax })}>
                                         <div
-                                            className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 ease-out"
-                                            style={{ width: `${Math.min(100, (adventureState.xp / adventureState.xpToNextLevel) * 100)}%` }}
+                                            className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 ease-out motion-reduce:transition-none" aria-hidden="true"
+                                            style={{ width: xpProgressPercent + '%' }}
                                         ></div>
                                     </div>
                                     {adventureEffects.xp !== null && (
-                                        <div className={`absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-300 font-black text-lg animate-[ping_0.8s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.xp < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
-                                            {adventureEffects.xp > 0 ? '+' : ''}{adventureEffects.xp} XP
+                                        <div role="status" aria-live="polite" aria-atomic="true" className={`absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-300 font-black text-lg animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.xp < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
+                                            {adventureEffects.xp > 0 ? '+' : ''}{adventureEffects.xp} {t('common.xp') || 'XP'}
                                         </div>
                                     )}
                                 </div>
@@ -249,9 +254,9 @@ function AdventureView(props) {
                                                 ? 'animate-shake border-red-500 bg-red-900/50 shadow-[0_0_15px_rgba(239,68,68,0.6)]'
                                                 : 'bg-indigo-800 border-indigo-600'
                                     }`}
-                                    title={adventureInputMode === 'system' ? `Stability: ${adventureState.energy}%` : t('adventure.tooltips.energy', { value: adventureState.energy })}
+                                    title={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })}
                                 >
-                                    <Zap size={12} className={`fill-current transition-colors duration-200 ${
+                                    <Zap size={12} aria-hidden="true" className={`fill-current transition-colors duration-200 motion-reduce:transition-none ${
                                         adventureInputMode === 'system'
                                             ? 'text-amber-400'
                                             : adventureEffects.energy < 0
@@ -265,28 +270,28 @@ function AdventureView(props) {
                                                 ? 'text-red-300'
                                                 : 'text-yellow-400'
                                     }`}>
-                                        <AnimatedNumber value={adventureState.energy} />
+                                        <AnimatedNumber value={energyValue} />
                                     </span>
-                                    <div className="w-16 h-2 bg-indigo-950 rounded-full overflow-hidden relative">
+                                    <div className="w-16 h-2 bg-indigo-950 rounded-full overflow-hidden relative" role="progressbar" aria-label={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={energyValue}>
                                         <div
-                                            className={`h-full transition-all duration-500 ${
+                                            aria-hidden="true" className={`h-full transition-all duration-500 motion-reduce:transition-none ${
                                                 adventureInputMode === 'system'
                                                     ? 'bg-gradient-to-r from-amber-400 to-amber-600'
                                                     : adventureState.energy < 20 || adventureEffects.energy < 0
                                                         ? 'bg-red-500 animate-pulse'
                                                         : 'bg-yellow-400'
                                             }`}
-                                            style={{ width: `${adventureState.energy}%` }}
+                                            style={{ width: energyValue + '%' }}
                                         ></div>
                                     </div>
                                     {adventureEffects.energy !== null && (
-                                        <div className={`absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg animate-[ping_0.8s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.energy > 0 ? 'text-green-400' : 'text-red-500'}`}>
+                                        <div role="status" aria-live="polite" aria-atomic="true" className={`absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.energy > 0 ? 'text-green-400' : 'text-red-500'}`}>
                                             {adventureEffects.energy > 0 ? '+' : ''}{adventureEffects.energy}
                                         </div>
                                     )}
                                 </div>
-                                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-1.5 text-yellow-700 shadow-sm shrink-0" title={t('adventure.tooltips.gold', { value: adventureState.gold })}>
-                                    <span>💰</span> {adventureState.gold}
+                                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 flex items-center gap-1.5 text-yellow-300 shadow-sm shrink-0" title={t('adventure.tooltips.gold', { value: adventureState.gold })}>
+                                    <span aria-hidden="true">💰</span> {adventureState.gold}
                                     {adventureState.activeGoldBuffTurns > 0 && (
                                         <span className="text-[11px] ml-1 bg-yellow-400 text-black px-1 rounded-full">
                                             {adventureState.activeGoldBuffTurns}
@@ -305,8 +310,8 @@ function AdventureView(props) {
                                                 className="bg-amber-900/50 border border-amber-600/40 rounded px-1.5 py-0.5 flex items-center gap-1 text-[11px]"
                                                 title={`${resource.name}: ${resource.quantity}${resource.unit || ''}`}
                                             >
-                                                <span>{resource.icon || '📦'}</span>
-                                                <span className="text-amber-700 font-bold">{resource.quantity}{resource.unit ? <span className="text-amber-300/70 font-normal ml-0.5">{resource.unit}</span> : ''}</span>
+                                                <span aria-hidden="true">{resource.icon || '📦'}</span>
+                                                <span className="text-amber-200 font-bold">{resource.quantity}{resource.unit ? <span className="text-amber-300/70 font-normal ml-0.5">{resource.unit}</span> : ''}</span>
                                             </div>
                                         ))}
                                         {adventureState.systemResources.length > 5 && (
@@ -317,19 +322,19 @@ function AdventureView(props) {
                             </div>
                             {adventureInputMode === 'debate' && (
                                 <div className="w-full mt-3">
-                                    <div className="relative w-full h-4 bg-slate-700 rounded-full border border-slate-600 overflow-hidden shadow-inner">
+                                    <div className="relative w-full h-4 bg-slate-700 rounded-full border border-slate-600 overflow-hidden shadow-inner" role="progressbar" aria-label={t('adventure.debate_you') + ' / ' + t('adventure.debate_opponent')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={debateMomentumValue} aria-valuetext={t('adventure.debate_you') + ': ' + debateMomentumValue + '; ' + t('adventure.debate_opponent') + ': ' + (100 - debateMomentumValue)}>
                                         <div
-                                            className={`h-full transition-all duration-500 ease-out ${
+                                            aria-hidden="true" className={`h-full transition-all duration-500 ease-out motion-reduce:transition-none ${
                                                 adventureState.debateMomentum > 60 ? 'bg-green-500' :
                                                 adventureState.debateMomentum < 40 ? 'bg-red-500' :
                                                 'bg-yellow-500'
                                             }`}
-                                            style={{ width: `${adventureState.debateMomentum}%` }}
+                                            style={{ width: debateMomentumValue + '%' }}
                                         ></div>
-                                        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10"></div>
-                                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10" aria-hidden="true"></div>
+                                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none" aria-hidden="true">
                                             <span className="text-[11px] font-black text-white drop-shadow-md tracking-wider">
-                                                {adventureState.debateMomentum}/100
+                                                {debateMomentumValue}/100
                                             </span>
                                         </div>
                                     </div>
@@ -341,80 +346,84 @@ function AdventureView(props) {
                             )}
                             <p className="text-xs text-indigo-200 mt-1">{t('adventure.explore_hint')}</p>
                         </div>
-                        <div className="flex items-center gap-3 relative z-10 overflow-x-auto min-w-0 shrink-0">
+                        <div className="flex items-center gap-3 relative z-10 overflow-x-auto min-w-0 shrink-0" role="group" aria-label={t('adventure.title')}>
                             {isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && (
-                                <button
+                                <button type="button"
                                     data-help-key="adventure_edit_options" onClick={handleStartOptionEdit}
                                     disabled={isEditingOptions}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${isEditingOptions ? 'bg-indigo-900 text-indigo-600 border-indigo-700 opacity-50 cursor-not-allowed' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`}
+                                    className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${isEditingOptions ? 'bg-indigo-900 text-indigo-600 border-indigo-700 opacity-50 cursor-not-allowed' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`}
                                     title={t('adventure.edit_options_tooltip')}
                                     aria-label={t('adventure.edit_options_tooltip')}
                                 >
-                                    <Pencil size={14} /> <span className="hidden xl:inline">{t('adventure.edit_options_btn')}</span>
+                                    <Pencil size={14} aria-hidden="true" /> <span className="hidden xl:inline">{t('adventure.edit_options_btn')}</span>
                                 </button>
                             )}
                             {activeSessionCode && (
-                                <button
+                                <button type="button"
                                     data-help-key="democracy_toggle" onClick={toggleDemocracyMode}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${
+                                    className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${
                                         sessionData?.democracy?.isActive
                                         ? 'bg-teal-700 text-white border-teal-500 ring-2 ring-teal-400'
                                         : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'
                                     }`}
                                     title={t('adventure.tooltips.democracy_toggle')}
                                     aria-label={t('adventure.tooltips.democracy_toggle')}
+                                    aria-pressed={!!sessionData?.democracy?.isActive}
                                 >
-                                    {sessionData?.democracy?.isActive ? <Users size={14} /> : <User size={14} />}
+                                    {sessionData?.democracy?.isActive ? <Users size={14} aria-hidden="true" /> : <User size={14} aria-hidden="true" />}
                                     <span className="hidden xl:inline">{sessionData?.democracy?.isActive ? t('adventure.democracy_on') : t('adventure.democracy_off')}</span>
                                 </button>
                             )}
-                            <button
-                                aria-label={t('common.read')}
+                            <button type="button"
+                                aria-label={t('adventure.ledger_tooltip')}
                                 onClick={handleSetShowLedgerToTrue}
-                                className="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white"
+                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white"
                                 title={t('adventure.ledger_tooltip')}
                             >
-                                <BookOpen size={14} className="fill-current"/>
+                                <BookOpen size={14} className="fill-current" aria-hidden="true"/>
                                 <span className="hidden sm:inline">{t('adventure.log_button')}</span>
                             </button>
-                            <button
+                            <button type="button"
+                                aria-label={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
+                                aria-pressed={adventureState.isImmersiveMode}
                                 onClick={handleToggleAdventureImmersive}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`}
+                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${adventureState.isImmersiveMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white'}`}
                                 title={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersive')}
                             >
-                                <Monitor size={14}/>
+                                <Monitor size={14} aria-hidden="true"/>
                                 <span className="hidden sm:inline">{adventureState.isImmersiveMode ? t('adventure.view_standard') : t('adventure.view_immersive')}</span>
                             </button>
-                            <button
-                                aria-label={t('common.volume')}
+                            <button type="button"
+                                aria-label={adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')}
+                                aria-pressed={adventureAutoRead}
                                 data-help-key="adventure_immersive_autoread"
                                 onClick={() => {
                                     const newState = !adventureAutoRead;
                                     setAdventureAutoRead(newState);
                                     if (!newState) stopPlayback();
                                 }}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${adventureAutoRead ? 'bg-yellow-400 text-indigo-900 border-yellow-500 hover:bg-yellow-300' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'}`}
+                                className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${adventureAutoRead ? 'bg-yellow-400 text-indigo-900 border-yellow-500 hover:bg-yellow-300' : 'bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700'}`}
                                 title={adventureAutoRead ? t('adventure.auto_read_disable') : t('adventure.auto_read_enable')}
                             >
-                                {adventureAutoRead ? <Volume2 size={14} className="fill-current animate-pulse"/> : <VolumeX size={14}/>}
+                                {adventureAutoRead ? <Volume2 size={14} className="fill-current animate-pulse motion-reduce:animate-none" aria-hidden="true"/> : <VolumeX size={14} aria-hidden="true"/>}
                                 <span className="hidden sm:inline">{t('adventure.auto_read_status_label')}: {adventureAutoRead ? t('common.on') : t('common.off')}</span>
                             </button>
                             {!isZenMode && (
-                            <button
-                                aria-label={t('common.maximize')}
+                            <button type="button"
+                                aria-label={t('adventure.maximize_tooltip')}
                                 onClick={handleSetIsZenModeToTrue}
-                                className="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white"
+                                className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-indigo-800 text-indigo-300 border-indigo-600 hover:bg-indigo-700 hover:text-white"
                                 title={t('adventure.maximize_tooltip')}
                             >
-                                <Maximize size={14}/>
+                                <Maximize size={14} aria-hidden="true"/>
                                 <span className="hidden sm:inline">{t('adventure.view_button')}</span>
                             </button>
                             )}
-                            <button aria-label={t('common.start_new_adventure')}
+                            <button type="button" aria-label={t('common.start_new_adventure')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                className="flex items-center gap-2 bg-white/10 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/20 transition-colors shadow-sm"
+                                className="min-w-11 min-h-11 flex items-center gap-2 bg-white/10 text-white border border-white/40 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/20 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900"
                             >
-                                <RefreshCw size={14} className={adventureState.isLoading ? "animate-spin" : ""} /> {t('adventure.restart')}
+                                <RefreshCw size={14} className={adventureState.isLoading ? "animate-spin motion-reduce:animate-none" : ""} aria-hidden="true" /> {t('adventure.restart')}
                             </button>
                         </div>
                     </div>
@@ -829,9 +838,9 @@ function AdventureView(props) {
                             )}
                             {adventureState.isGameOver && (
                                 <div className="flex flex-col items-center justify-center py-8 gap-4">
-                                    <ConfettiExplosion />
-                                    <div className="bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500">
-                                        <Trophy size={18}/> {t('adventure.game_over')}
+                                    <div aria-hidden="true"><ConfettiExplosion /></div>
+                                    <div className="bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none" role="status" aria-live="polite" aria-atomic="true">
+                                        <Trophy size={18} aria-hidden="true"/> {t('adventure.game_over')}
                                     </div>
                                     <div className="text-sm text-slate-600 font-bold">{t('adventure.final_level')}: {adventureState.level}</div>
                                     {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
@@ -890,85 +899,90 @@ function AdventureView(props) {
                                                 <span>🏛️</span> {t('adventure.system_simulation')}
                                             </div>
                                         )}
-                                        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm" title={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: adventureState.energy }) : t('adventure.tooltips.energy', { value: adventureState.energy })}>
+                                        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm" title={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })}>
                                             <div className={`p-1 rounded-full ${adventureInputMode === 'system' ? 'bg-amber-500/20' : 'bg-yellow-500/20'}`}>
-                                                <Zap size={12} className={`fill-current ${adventureInputMode === 'system' ? 'text-amber-400' : 'text-yellow-400'}`} />
+                                                <Zap size={12} aria-hidden="true" className={`fill-current ${adventureInputMode === 'system' ? 'text-amber-400' : 'text-yellow-400'}`} />
                                             </div>
-                                            <div className="w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                                            <div className="w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10" role="progressbar" aria-label={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={energyValue}>
                                                 <div
-                                                    className={`h-full transition-all duration-500 ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`}
-                                                    style={{ width: `${adventureState.energy}%` }}
+                                                    aria-hidden="true" className={`h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`}
+                                                    style={{ width: energyValue + '%' }}
                                                 ></div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20 pr-3 shadow-sm" title={t('adventure.tooltips.xp', { current: adventureState.xp, next: adventureState.xpToNextLevel })}>
                                             <div className="bg-indigo-500/20 p-1 rounded-full">
-                                                <Trophy size={12} className="text-indigo-600 fill-current" />
+                                                <Trophy size={12} className="text-indigo-300 fill-current" aria-hidden="true" />
                                             </div>
-                                            <div className="w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                                            <div className="w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10" role="progressbar" aria-label={t('common.xp') || 'XP'} aria-valuemin={0} aria-valuemax={xpMax} aria-valuenow={xpValue} aria-valuetext={t('adventure.tooltips.xp', { current: xpValue, next: xpMax })}>
                                                 <div
-                                                    className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-500"
-                                                    style={{ width: `${Math.min(100, (adventureState.xp / adventureState.xpToNextLevel) * 100)}%` }}
+                                                    className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-500 motion-reduce:transition-none" aria-hidden="true"
+                                                    style={{ width: xpProgressPercent + '%' }}
                                                 ></div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-2">
-                                            <button
-                                                aria-label={t('common.volume')}
+                                            <button type="button"
+                                                aria-label={adventureAutoRead ? t('adventure.auto_read_off_tooltip') : t('adventure.auto_read_on_tooltip')}
+                                                aria-pressed={adventureAutoRead}
                                                 data-help-key="adventure_immersive_autoread"
                                                 onClick={() => {
                                                     const newState = !adventureAutoRead;
                                                     setAdventureAutoRead(newState);
                                                     if (!newState) stopPlayback();
                                                 }}
-                                                className={`backdrop-blur-md border p-2 rounded-full transition-all shadow-sm ${adventureAutoRead ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`}
+                                                className={`min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${adventureAutoRead ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`}
                                                 title={adventureAutoRead ? t('adventure.auto_read_off_tooltip') : t('adventure.auto_read_on_tooltip')}
                                             >
-                                                {adventureAutoRead ? <Volume2 size={16} className="fill-current" /> : <VolumeX size={16} />}
+                                                {adventureAutoRead ? <Volume2 size={16} className="fill-current" aria-hidden="true" /> : <VolumeX size={16} aria-hidden="true" />}
                                             </button>
-                                            <button
-                                                aria-label={t('common.hide')}
+                                            <button type="button"
+                                                aria-label={immersiveHideUI ? t('adventure.show_ui') : t('adventure.hide_ui')}
+                                                aria-pressed={immersiveHideUI}
                                                 data-help-key="adventure_immersive_toggle_ui" onClick={handleToggleImmersiveHideUI}
-                                                className={`backdrop-blur-md border p-2 rounded-full transition-all shadow-sm ${immersiveHideUI ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`}
+                                                className={`min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${immersiveHideUI ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`}
                                                 title={immersiveHideUI ? t('adventure.show_ui') : t('adventure.hide_ui')}
                                             >
-                                                {immersiveHideUI ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                {immersiveHideUI ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
                                             </button>
-                                            <button
-                                                aria-label={t('common.minimize')}
+                                            <button type="button"
+                                                aria-label={t('adventure.tooltips.exit_immersive')}
                                                 data-help-key="adventure_immersive_exit" onClick={handleExitAdventureImmersive}
-                                                className="bg-black/50 backdrop-blur-md text-white border border-white/20 p-2 rounded-full hover:bg-white/20 transition-all shadow-sm"
+                                                className="min-w-11 min-h-11 bg-black/50 backdrop-blur-md text-white border border-white/40 p-2 rounded-full hover:bg-white/20 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                                                 title={t('adventure.tooltips.exit_immersive')}
                                             >
-                                                <Minimize size={16} />
+                                                <Minimize size={16} aria-hidden="true" />
                                             </button>
                                         </div>
-                                        <div className="bg-black/50 backdrop-blur-md text-yellow-700 border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
-                                            <span className="text-sm">💰</span> {adventureState.gold}
+                                        <div className="bg-black/50 backdrop-blur-md text-yellow-300 border border-yellow-500/60 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+                                            <span className="text-sm" aria-hidden="true">💰</span> {adventureState.gold}
                                         </div>
                                         <div className="relative">
-                                            <button
+                                            <button type="button"
+                                                aria-label={t('adventure.inventory')}
+                                                aria-expanded={showImmersiveInventory}
+                                                aria-controls="adventure-immersive-inventory"
                                                 data-help-key="adventure_immersive_inventory" onClick={(e) => {
                                                     e.stopPropagation();
                                                     setShowImmersiveInventory(!showImmersiveInventory);
                                                 }}
-                                                className={`backdrop-blur-md border p-2 rounded-full transition-all shadow-sm ${
+                                                className={`min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
                                                     showImmersiveInventory
                                                     ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50'
                                                     : 'bg-black/50 text-white border-white/20 hover:bg-white/20'
                                                 }`}
                                                 title={t('adventure.inventory')}
                                             >
-                                                <Backpack size={16} />
+                                                <Backpack size={16} aria-hidden="true" />
                                             </button>
                                             {showImmersiveInventory && (
-                                                <div className="absolute top-full right-0 mt-2 w-56 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-2 shadow-xl z-50 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                                                <div id="adventure-immersive-inventory" role="region" aria-label={t('adventure.inventory')} className="absolute top-full right-0 mt-2 w-56 bg-black/80 backdrop-blur-md border border-white/40 rounded-xl p-2 shadow-xl z-50 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 motion-reduce:animate-none">
                                                     {adventureInputMode === 'system' && enableFactionResources && (
                                                         <div className="border-b border-amber-500/30 pb-2">
-                                                            <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1 flex items-center gap-1">
-                                                                <span>📊</span> {t('adventure.system_state')}
+                                                            <div className="text-[11px] font-bold text-amber-200 uppercase tracking-wide mb-1 flex items-center gap-1">
+                                                                <span aria-hidden="true">📊</span> {t('adventure.system_state')}
                                                             </div>
                                                             {(adventureState.systemResources || []).length > 0 ? (
                                                                 <div className="grid grid-cols-2 gap-1">
@@ -978,10 +992,10 @@ function AdventureView(props) {
                                                                             className="bg-gradient-to-r from-amber-900/40 to-amber-800/20 border border-amber-600/30 rounded-lg px-2 py-1 flex items-center gap-1.5 hover:border-amber-400/50 transition-all cursor-default"
                                                                             title={`${resource.name}: ${resource.quantity}${resource.unit || ''} (${resource.type || 'strategic'})`}
                                                                         >
-                                                                            <span className="text-sm">{resource.icon || '📊'}</span>
+                                                                            <span className="text-sm" aria-hidden="true">{resource.icon || '📊'}</span>
                                                                             <div className="flex flex-col leading-none">
                                                                                 <span className="text-[11px] text-amber-200/80 truncate max-w-[60px]">{resource.name}</span>
-                                                                                <span className="text-xs text-amber-700 font-bold">{resource.quantity}{resource.unit && <span className="text-amber-400/70 font-normal ml-0.5 text-[11px]">{resource.unit}</span>}</span>
+                                                                                <span className="text-xs text-amber-200 font-bold">{resource.quantity}{resource.unit && <span className="text-amber-400/70 font-normal ml-0.5 text-[11px]">{resource.unit}</span>}</span>
                                                                             </div>
                                                                         </div>
                                                                     ))}
@@ -996,7 +1010,7 @@ function AdventureView(props) {
                                                     <div>
                                                         {adventureInputMode === 'system' && (
                                                             <div className="text-[11px] font-bold text-indigo-300 uppercase tracking-wide mb-1 flex items-center gap-1">
-                                                                <span>📜</span> Policies & Agreements
+                                                                <span aria-hidden="true">📜</span> Policies & Agreements
                                                             </div>
                                                         )}
                                                         {adventureState.inventory.length > 0 ? (
@@ -1004,16 +1018,18 @@ function AdventureView(props) {
                                                                 {adventureState.inventory.map((item) => (
                                                                     <button
                                                                         key={item.id}
+                                                                        type="button"
+                                                                        aria-label={item.name}
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             setSelectedInventoryItem(item);
                                                                             setShowImmersiveInventory(false);
                                                                         }}
-                                                                        className="group relative w-10 h-10 bg-white/10 rounded-lg border border-white/10 hover:bg-indigo-600 hover:border-indigo-400 flex items-center justify-center transition-all overflow-hidden"
+                                                                        className="group relative w-11 h-11 bg-white/10 rounded-lg border border-white/40 hover:bg-indigo-600 hover:border-indigo-400 flex items-center justify-center transition-all overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                                                                         title={item.name}
                                                                     >
                                                                         {item.image ? (
-                                                                            <img loading="lazy" src={item.image} alt={item.name} className="w-full h-full object-contain p-1" />
+                                                                            <img loading="lazy" src={item.image} alt="" className="w-full h-full object-contain p-1" />
                                                                         ) : (
                                                                             <span className="text-xs font-bold text-white">{item.icon || item.name.charAt(0)}</span>
                                                                         )}
@@ -1104,37 +1120,35 @@ function AdventureView(props) {
                                                                                     playingContentId === 'adventure-active' &&
                                                                                     playbackState.currentIdx === (textSentenceCount + idx);
                                                         return (
-                                                            <button
+                                                            <div
                                                                 key={idx}
-                                                                data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)}
-                                                                disabled={adventureState.isLoading}
-                                                                className={`bg-white/10 hover:bg-white/20 border text-left p-4 rounded-xl text-white text-sm font-bold transition-all active:scale-95 backdrop-blur-sm group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed
+                                                                className={`bg-white/10 hover:bg-white/20 border text-left p-4 rounded-xl text-white text-sm font-bold transition-all backdrop-blur-sm group relative overflow-hidden motion-reduce:transform-none
                                                                 ${isReadingThisOption ? 'border-yellow-400 ring-2 ring-yellow-400/50 bg-white/20 shadow-lg scale-[1.02] z-10' : 'border-white/30 hover:border-white'}`}
                                                             >
                                                                 {isDemocracy && voteCount > 0 && (
-                                                                    <div
-                                                                        className="absolute left-0 top-0 bottom-0 bg-indigo-500/30 transition-all duration-500"
+                                                                    <div aria-hidden="true"
+                                                                        className="absolute left-0 top-0 bottom-0 bg-indigo-500/30 transition-all duration-500 motion-reduce:transition-none"
                                                                         style={{ width: `${percent}%` }}
                                                                     ></div>
                                                                 )}
                                                                                 <div className="flex items-center justify-between relative z-10 w-full">
-                                                                                    <span className="flex items-center gap-3 flex-grow">
+                                                                                    <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading} className="min-h-11 flex items-center gap-3 flex-grow text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed">
                                                                                         <span className={`bg-white/20 px-2.5 py-1 rounded text-xs opacity-70 group-hover:bg-white group-hover:text-black transition-colors ${isReadingThisOption ? 'bg-yellow-400 text-black opacity-100' : ''}`}>{idx + 1}</span>
                                                                                         <span className="text-left">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
-                                                                                    </span>
+                                                                                    </button>
                                                                                     <div className="flex items-center gap-2">
                                                                                         {typeof opt === 'object' && opt?.audio && (
-                                                                                            <button
-                                                                                                aria-label={t('common.volume')}
+                                                                                            <button type="button"
+                                                                                                aria-label={(t('common.listen') || 'Listen') + ': ' + (typeof opt === 'object' && opt?.action ? opt.action : opt)}
                                                                                                 onClick={(e) => {
                                                                                                     e.stopPropagation();
                                                                                                     const audio = new Audio(opt.audio);
                                                                                                     audio.play();
                                                                                                 }}
-                                                                                                className="p-1.5 rounded-full bg-white/10 hover:bg-white/30 text-white/70 hover:text-white transition-colors"
+                                                                                                className="min-w-11 min-h-11 rounded-full bg-white/10 hover:bg-white/30 text-white hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                                                                                                 title={t('common.listen')}
                                                                                             >
-                                                                                                <Volume2 size={16} />
+                                                                                                <Volume2 size={16} aria-hidden="true" />
                                                                                             </button>
                                                                                         )}
                                                                                         {isDemocracy && (
@@ -1144,7 +1158,7 @@ function AdventureView(props) {
                                                                                         )}
                                                                                     </div>
                                                                                 </div>
-                                                                            </button>
+                                                                            </div>
                                                                         );
                                                                     });
                                                                 })()}
