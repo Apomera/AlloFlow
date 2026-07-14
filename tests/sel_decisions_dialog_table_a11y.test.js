@@ -41,4 +41,10 @@ describe('Decisions tool dialog and table accessibility', () => {
     expect((text.match(/h\('th', \{ scope: 'col'/g) || []).length).toBe(3);
     expect(text).toContain("h('th', { scope: 'row'");
   });
+
+  it('dismisses only from direct backdrop clicks', () => {
+    const text = source();
+    expect((text.match(/e.target === e.currentTarget/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(text).not.toContain("onClick: function(e) { e.stopPropagation(); }");
+  });
 });
