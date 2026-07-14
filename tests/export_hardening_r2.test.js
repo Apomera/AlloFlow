@@ -14,6 +14,7 @@ const viewAuditMod = R('view_pdf_audit_module.js');
 const viewPreview = R('view_export_preview_source.jsx');
 const loaderRoot = R('liblouis_braille_loader.js');
 const loaderMirror = R('prismflow-deploy/public/liblouis_braille_loader.js');
+const exportHandlers = R('export_handlers_module.js');
 
 describe('plain-language summary popup — XSS + language hardening (R2 #1/#2)', () => {
   it('escapes the model summary before it enters the same-origin popup document', () => {
@@ -122,5 +123,31 @@ describe('ePub validity — well-formed XHTML + namespaced root (R2 #7/#8)', () 
   it('remediation nav labels are escaped and the read-along SMIL seq has epub:textref', () => {
     expect(viewAudit).toMatch(/_navEsc\(m\[2\]\)/);
     expect(viewAudit).toMatch(/<seq epub:textref="content\.xhtml">/);
+  });
+});
+
+describe('audio export — partial-failure is disclosed, never a silent gap (R2 #12)', () => {
+  it('the asset builder tracks missing sections and fully-failed variants', () => {
+    // Missing = chunks that produced no blob; anyPartial / failedVariants surface it.
+    expect(exportHandlers).toMatch(/const _missing = _total - blobs\.length/);
+    expect(exportHandlers).toMatch(/if \(_missing > 0\) out\.anyPartial = true/);
+    expect(exportHandlers).toMatch(/out\.failedVariants = \(out\.failedVariants \|\| \[\]\)\.concat\(plan\.label\)/);
+    // The download record carries the counts.
+    expect(exportHandlers).toMatch(/missing: _missing, total: _total/);
+  });
+
+  it('the on-page download card warns when a file is missing sections', () => {
+    expect(exportHandlers).toMatch(/if \(item\.missing > 0 && item\.total\)/);
+    expect(exportHandlers).toMatch(/sections are missing from this file/);
+  });
+
+  it('the export toasts a warning instead of a clean success when audio is incomplete', () => {
+    expect(exportHandlers).toMatch(/built\.anyPartial/);
+    expect(exportHandlers).toMatch(/built\.failedVariants && built\.failedVariants\.length/);
+    expect(exportHandlers).toMatch(/embeddedCount < audioJobs\.length/);
+  });
+
+  it('the module and its public mirror stay in sync', () => {
+    expect(exportHandlers).toBe(R('prismflow-deploy/public/export_handlers_module.js'));
   });
 });

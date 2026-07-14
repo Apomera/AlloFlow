@@ -547,8 +547,19 @@
         if (blob) blobs.push(blob);
         state.done++;
       }
+      // Honesty (export-format review R2 #12): a failed TTS chunk is simply
+      // absent from `blobs`, so the concatenated file silently drops those
+      // sections. Track how many are missing so the caller and the on-page
+      // download card can say so instead of reporting a clean success.
+      const _total = plan.chunks.length;
+      const _missing = _total - blobs.length;
       let combined = await _alloConcatAudioBlobs(blobs);
-      if (!combined) continue;
+      if (!combined) {
+        // Every section of this variant failed — no file to offer; record it.
+        out.failedVariants = (out.failedVariants || []).concat(plan.label);
+        continue;
+      }
+      if (_missing > 0) out.anyPartial = true;
       if (compressAudio) {
         if (progress) progress.update(state.done, state.total, 'Compressing ' + plan.label.toLowerCase() + '...');
         combined = await _alloCompressAudioBlob(combined);
@@ -559,7 +570,7 @@
       let href = path;
       if (singleFile) href = await _alloBlobToDataUrl(combined);
       else out.assets.push({ path: path, blob: combined });
-      out.downloads.push({ variant: plan.variant, label: plan.label, description: plan.description, href: href, download: filename, type: combined.type || 'audio/' + ext, size: combined.size || 0 });
+      out.downloads.push({ variant: plan.variant, label: plan.label, description: plan.description, href: href, download: filename, type: combined.type || 'audio/' + ext, size: combined.size || 0, missing: _missing, total: _total });
     }
     return out;
   };
@@ -599,6 +610,15 @@
       desc.style.cssText = 'font-size:0.84rem;color:#475569;line-height:1.35;';
       row.appendChild(link);
       row.appendChild(desc);
+      // #12: if some sections could not be voiced, say so on the card itself so a
+      // teacher does not hand out audio that silently skips part of the document.
+      if (item.missing > 0 && item.total) {
+        const warn = doc.createElement('span');
+        warn.setAttribute('role', 'note');
+        warn.textContent = '⚠ ' + item.missing + ' of ' + item.total + ' sections are missing from this file (audio could not be generated for them).';
+        warn.style.cssText = 'flex-basis:100%;font-size:0.82rem;color:#b45309;font-weight:700;line-height:1.35;';
+        row.appendChild(warn);
+      }
       aside.appendChild(row);
     }
     const st = root.querySelector && root.querySelector('#alloflow-audio-download-style');
@@ -760,11 +780,17 @@
         try { if (processed[r].abox) processed[r].abox.remove(); } catch (e) {}
       }
       if (addToast) addToast('Could not generate inline passage audio, so that playback control was removed.', 'info');
+    } else if (audioJobs.length && embeddedCount < audioJobs.length) {
+      // #12: some passages voiced, some did not — the rest still play, but say so.
+      if (addToast) addToast('Audio could not be generated for ' + (audioJobs.length - embeddedCount) + ' of ' + audioJobs.length + ' passages; the others play normally.', 'info');
     }
     const built = await _alloBuildAudioDownloadAssets(downloadPlans, { callTTS: callTTS, selectedVoice: selectedVoice, quality: audioConfig.quality, singleFile: !!opts.singleFile, language: docLanguage }, progress, progressState);
     result.assets = built.assets || [];
     result.downloads = built.downloads || [];
     if (result.downloads.length) _alloInsertAudioDownloads(root, result.downloads);
+    // #12: never report a clean success when the downloadable audio is incomplete.
+    if (addToast && built.failedVariants && built.failedVariants.length) addToast('Some audio versions could not be generated (' + built.failedVariants.join(', ') + ') and were skipped. The exported document still opens normally.', 'error');
+    if (addToast && built.anyPartial) addToast('Heads up: the downloadable audio is missing the sections that could not be voiced (the download card shows how many).', 'info');
     if (progress) progress.done('Audio ready. Starting download...');
     return result;
   };
