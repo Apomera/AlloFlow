@@ -979,7 +979,17 @@ function AIBackendModal(props) {
     /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
     /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        if (typeof window.__alloOpenDeviceStorageProbe === "function") window.__alloOpenDeviceStorageProbe();
+      },
+      className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+    },
+    "\u{1F50C} ",
+    t("canvas_settings.device_storage_btn") || "Manage device storage"
+  )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
     try {
       const c = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
       return c.backend ? c.backend.charAt(0).toUpperCase() + c.backend.slice(1) + (c.baseUrl ? " \u2192 " + c.baseUrl : "") : "Gemini (default)";
