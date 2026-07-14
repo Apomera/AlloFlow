@@ -179,6 +179,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Corrected shared formatted-text links used across generated content: Markdown links nested inside bold or italic text are no longer falsely exposed as modal dialogs, and both nested and top-level branches retain native external-link semantics with consistent URL tooltips and safe new-tab attributes. Links are now underlined rather than identified by color alone, use stronger light/dark-surface contrast, and provide a two-pixel visible focus ring with surface-aware offset (WCAG 1.3.1, 1.4.1, 1.4.3, 2.1.1, 2.4.4, 2.4.7, 4.1.2).
 
+- Rebuilt the global level-up overlay as a named and described modal instead of two nested simulated buttons: focus now enters on Continue Learning, remains contained with Tab and Shift+Tab, closes with Escape or the backdrop, and returns to the launcher. XP-to-milestone progress is numerically bounded and exposed as an accurate progressbar with matching visual width; Continue uses its visible localized name, explicit button behavior, a 44 CSS-pixel target, and strong focus; the dialog scrolls at constrained heights; small-text contrast is strengthened; decorative trophy, badge, radial effect, and confetti are hidden from assistive technology; and confetti, entry, pulse, bounce, rotation, hover scaling, and meter motion honor reduced-motion preferences (WCAG 1.1.1, 1.3.1, 1.4.3, 1.4.10, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
