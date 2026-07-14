@@ -15,6 +15,23 @@ describe('Kokoro offer modal accessibility', () => {
     expect(source).toContain("if (event.key !== 'Tab') return");
     expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
   });
+  it('associates its explanation and supports reflow and reduced motion', () => {
+    expect(source).toContain('aria-describedby="kokoro-offer-reason kokoro-offer-description kokoro-offer-note"');
+    expect(source).toContain('max-h-[calc(100vh-2rem)] overflow-y-auto');
+    expect(source).toContain('motion-reduce:animate-none');
+    expect(source).toContain('flex flex-col sm:flex-row gap-3');
+    expect(source).not.toContain('duration-200 focus:outline-none');
+    expect(source).toContain("{'\\uD83C\\uDFA4'}");
+  });
+
+  it('reports every loader outcome through the accessible toast channel', () => {
+    expect(source).toContain("typeof window.__loadKokoroTTS !== 'function'");
+    expect(source).toContain("addToast('Downloading Kokoro voice model (~40MB)...', 'info')");
+    expect(source).toContain("addToast('Kokoro voice ready! Switching to offline voice.', 'success')");
+    expect(source).toContain('.catch(() => {');
+    expect(source).toContain("addToast('Download failed; please try again later.', 'error')");
+  });
+
   it('synchronizes the deployable module', () => {
     expect(fs.readFileSync('prismflow-deploy/public/view_kokoro_offer_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_kokoro_offer_modal_module.js', 'utf8'));
   });

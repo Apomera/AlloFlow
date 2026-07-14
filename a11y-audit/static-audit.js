@@ -102,7 +102,7 @@ const CHECKS = [
       const hasDynamic = /onClick|onChange|setState|upd\(/.test(content);
       if (!hasDynamic) return false;
       // Check for aria-live or announceToSR
-      const hasLive = /aria-live|announceToSR|role.*['"](?:status|alert|log)['"]/.test(content);
+      const hasLive = /aria-live|announceToSR|addToast\s*\(|role.*['"](?:status|alert|log)['"]/.test(content);
       return !hasLive;
     },
     fix: 'Add <div role="status" aria-live="polite" className="sr-only">{statusText}</div> and announce state changes.',
