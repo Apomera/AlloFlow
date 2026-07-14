@@ -4,15 +4,18 @@ import fs from 'node:fs';
 const source = fs.readFileSync('word_sounds_setup_source.jsx', 'utf8');
 
 describe('Word Sounds source selector keyboard behavior', () => {
-  it('provides Enter and Space behavior for all active source toggles', () => {
-    expect(source.match(/aria-pressed=\{include(?:Glossary|Family|Custom|SightWords|AI)\} onKeyDown=/g)?.length).toBe(5);
-    expect(source.match(/e\.key === 'Enter' \|\| e\.key === ' '/g)?.length).toBeGreaterThanOrEqual(6);
+  it('uses a named group of native checkboxes for all active source toggles', () => {
+    expect(source).toContain('role="group" aria-labelledby="word-sounds-active-sources-label"');
+    expect(source.match(/type="checkbox" checked=\{include(?:Glossary|Family|Custom|SightWords|AI)\}/g)?.length).toBe(5);
+    expect(source).not.toMatch(/aria-pressed=\{include(?:Glossary|Family|Custom|SightWords|AI)\}/);
+    expect(source).not.toContain('<div role="button" tabIndex={0} aria-pressed={include');
   });
 
-  it('removes the disabled lesson-plan selector from sequential focus', () => {
-    expect(source).toContain("tabIndex={sessionType === 'assessment' ? -1 : 0}");
-    expect(source).toContain('aria-disabled={sessionType === \'assessment\'} aria-pressed={includeLessonPlan}');
-    expect(source).toContain("sessionType !== 'assessment' && (e.key === 'Enter' || e.key === ' ')");
+  it('uses native disabled and checked state for the lesson-plan toggle', () => {
+    expect(source).toContain('type="checkbox" checked={includeLessonPlan} disabled={sessionType === \'assessment\'}');
+    expect(source).not.toContain('aria-disabled={sessionType === \'assessment\'} aria-pressed={includeLessonPlan}');
+    expect(source).not.toContain("sessionType !== 'assessment' && (e.key === 'Enter' || e.key === ' ')");
+    expect(source.match(/focus-within:ring-2/g)?.length).toBeGreaterThanOrEqual(6);
   });
 
   it('synchronizes both generated module copies', () => {

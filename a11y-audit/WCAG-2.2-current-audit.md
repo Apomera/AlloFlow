@@ -191,6 +191,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Added a pointer-independent reorder path to Word Sounds advanced lesson plans: the activity sequence is now a named semantic list, every draggable activity has native 44 CSS-pixel Move up and Move down controls with boundary-aware disabled states and strong visible focus, the drag grip is decorative to assistive technology, and successful keyboard moves announce the activity's new position and total count through an atomic polite status (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Replaced Word Sounds Active Sources and advanced lesson-plan simulated buttons with full-row native checkboxes. The five source choices are contained in a programmatically named group, checked state is conveyed by the native control, assessment mode uses the checkbox's native disabled state, custom checkbox decoration is hidden from assistive technology, and each label provides at least a 44 CSS-pixel target with a strong focus-within indicator (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
