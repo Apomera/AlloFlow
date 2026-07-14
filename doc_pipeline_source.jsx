@@ -11903,6 +11903,26 @@ Return ONLY valid JSON:
     const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${_zipQueue.length} PDFs</span><span class="stat">${done.length} Processed</span><span class="stat">\u2705 ${_zipVerificationSummary.fullyVerified || 0} Fully verified</span><span class="stat">\u26a0 ${_zipVerificationSummary.reviewRequired || 0} Need review</span><span class="stat">Avg: ${_zipSummary?.avgBefore||'?'}\u2192${_zipSummary?.avgAfter||'?'}</span><span class="stat">${_zipVerificationSummary.above90Verified || 0} verified at 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Verification</th><th>Tagged PDF</th><th>Processing Status</th></tr></thead><tbody>${_zipQueue.map((f,i)=>{const r=f.result;const v=_zipVerificationFor(r);const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+', '+(r.secondEngineAudit.reviewFindingCount||0)+' review)') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+(v.verificationState==='complete'?'pass':'warn')+'">'+_escRpt(v.verificationState)+(v.reviewCount>0?' ('+v.reviewCount+' review)':'')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?(v.verificationState==='complete'?'\u2705 Processed · fully verified':'\u26a0 Processed · review required'):f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
+    // \u2500\u2500 Standalone remediation edition (Electron) \u2014 the ONLY deviation from the
+    // upstream pipeline: blob downloads don't work in the packaged app, so save
+    // the same artifact set to a user-chosen local folder via IPC instead.
+    // Web builds fall through to the stock ZIP download below.
+    if (window.alloAPI && window.alloAPI.remediation && window.alloAPI.remediation.saveFiles) {
+      const _payloadFiles = [];
+      for (const _zn of Object.keys(zip.files)) {
+        const _ze = zip.files[_zn];
+        if (_ze.dir) continue;
+        _payloadFiles.push({ name: _zn, data: await _ze.async('base64'), encoding: 'base64' });
+      }
+      const _saveRes = await window.alloAPI.remediation.saveFiles({
+        folderName: `AlloFlow_Remediated_${new Date().toISOString().slice(0, 10)}`,
+        files: _payloadFiles,
+      });
+      if (!_saveRes || _saveRes.canceled) return;
+      if (_saveRes.error) { addToast('Save failed: ' + _saveRes.error, 'error'); return; }
+      addToast(`\ud83d\udcc1 Saved ${_saveRes.saved} file(s) to ${_saveRes.folder}` + (_taggedCount > 0 ? ` (incl. ${_taggedCount} tagged PDF)` : '') + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
+      try { window.alloAPI.remediation.revealPath && window.alloAPI.remediation.revealPath(_saveRes.folder); } catch (_) {}
+    } else {
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -11911,6 +11931,7 @@ Return ONLY valid JSON:
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} processed file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
+    }
     // C5 (deep dive 2026-07-01 \u2192 fixed 2026-07-02): files whose tagged PDF was EXCLUDED
     // (failed verification) or failed to generate used to be disclosed only as a CSV notes
     // column \u2014 easy to miss on an unattended batch. Name them in their own warning toast.

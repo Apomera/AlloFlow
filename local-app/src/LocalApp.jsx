@@ -20954,7 +20954,9 @@ Return ONLY valid JSON:
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
-  const buildBatchDashboardHtml = _docPipeline ? _docPipeline.buildBatchDashboardHtml : () => '';
+  // Optional — not part of the upstream pipeline (the saved batch_report.html is
+  // the canonical report). Button renders only if a pipeline build provides it.
+  const buildBatchDashboardHtml = (_docPipeline && _docPipeline.buildBatchDashboardHtml) || null;
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
   const parseAuditJson = _docPipeline ? _docPipeline.parseAuditJson : () => ({});
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
@@ -52739,7 +52741,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             {window.alloAPI?.remediation?.saveFiles ? '\ud83d\udcc1 Save to Folder' : '\ud83d\udce5 Download All (ZIP)'}
                           </button>
                           <button onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">New Batch</button>
-                          <button onClick={() => {
+                          {buildBatchDashboardHtml && <button onClick={() => {
                             const win = window.open('', '_blank');
                             if (!win) { addToast('Pop-up blocked', 'error'); return; }
                             win.document.write(buildBatchDashboardHtml(pdfBatchQueue, pdfBatchSummary));
@@ -52747,7 +52749,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             addToast('📊 Dashboard opened', 'success');
                           }} className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
                             📊 Dashboard
-                          </button>
+                          </button>}
                         </>
                       )}
                     </div>
