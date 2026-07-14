@@ -416,8 +416,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           REFLECTION_PROMPTS.map(function(p) {
             var current = (d.reflectionAnswers || {})[p.id] || '';
             return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _cnsBg('#0f172a'), borderLeft: '3px solid #fda4af', marginBottom: 10 } },
-              h('p', { style: { margin: '0 0 8px', color: _cnsFg('#fecaca'), fontSize: 13.5, lineHeight: 1.65, fontStyle: 'italic' } }, '“' + p.text + '”'),
-              h('textarea', { value: current,
+              h('label', { htmlFor: 'cc-reflection-' + p.id, style: { display: 'block', margin: '0 0 8px', color: _cnsFg('#fecaca'), fontSize: 13.5, lineHeight: 1.65, fontStyle: 'italic' } }, '\u201c' + p.text + '\u201d'),
+              h('textarea', { id: 'cc-reflection-' + p.id, value: current,
                 onChange: function(e) {
                   var ra = Object.assign({}, d.reflectionAnswers || {}, { [p.id]: e.target.value });
                   setCC({ reflectionAnswers: ra });
