@@ -108,8 +108,10 @@ function LaunchPadView(props) {
             @keyframes cardPop { from { opacity: 0; transform: scale(0.85) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
             body.alloflow-launchpad-active #allo-err-badge { display: none !important; }
             .lp-root { justify-content: center; padding: 32px 0 40px; }
-            .lp-card { backdrop-filter: blur(20px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 32px 28px; cursor: pointer; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; animation: cardPop 0.5s ease-out both; }
-            .lp-card:hover { transform: translateY(-6px) scale(1.03); background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); box-shadow: 0 20px 60px rgba(99,102,241,0.3); }
+            .lp-card { appearance: none; width: 100%; min-height: 44px; font: inherit; color: inherit; text-align: center; backdrop-filter: blur(20px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.3); border-radius: 24px; padding: 32px 28px; cursor: pointer; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; animation: cardPop 0.5s ease-out both; }
+            .lp-card:hover { transform: translateY(-6px) scale(1.03); background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.5); box-shadow: 0 20px 60px rgba(99,102,241,0.3); }
+            .lp-card:focus-visible { outline: 3px solid #facc15; outline-offset: 4px; background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.65); box-shadow: 0 0 0 2px #1e1b4b; }
+            .lp-card:active { transform: translateY(-2px) scale(0.99); }
             @media (max-width: 600px), (max-height: 820px) { .lp-root { justify-content: flex-start !important; } }
             @media (max-width: 600px) {
               .lp-root { padding: 16px 0 28px !important; }
@@ -125,7 +127,10 @@ function LaunchPadView(props) {
               .lp-ai-settings { margin-top: 24px !important; }
             }
             .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: 24px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent, rgba(99,102,241,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
-            .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #818cf8, #6366f1); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
+            .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
+            @media (prefers-reduced-motion: reduce) {
+              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge { animation: none !important; transition: none !important; transform: none !important; }
+            }
             .lp-lang-item:hover:not([disabled]) { background: rgba(99,102,241,0.2) !important; }
           `}</style>
           {/* ── Compact Language Switcher (top-right) ── */}
@@ -266,29 +271,29 @@ function LaunchPadView(props) {
             </div>
           )}
           <div className="lp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '620px', width: '100%', padding: '0 24px' }}>
-            <div className="lp-card" style={{ animationDelay: '0.1s' }} role="button" tabIndex={0} aria-label={fullTitle + '. ' + fullDesc} onClick={() => { setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }} aria-hidden="true">🚀</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{fullTitle}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{fullDesc}</p>
-            </div>
-            <div className="lp-card" style={{ animationDelay: '0.2s' }} role="button" tabIndex={0} aria-label={guidedTitle + ' (recommended). ' + guidedDesc} onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge">{copy('launch_pad.badge_recommended', 'Recommended')}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '0.5s' }} aria-hidden="true">🧭</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{guidedTitle}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{guidedDesc}</p>
-            </div>
-            <div className="lp-card" style={{ animationDelay: '0.3s' }} role="button" tabIndex={0} aria-label={learningToolsTitle + '. ' + learningToolsDesc} onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #34d399, #059669)' }}>{copy('launch_pad.badge_3_tools', '8 Tools')}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }} aria-hidden="true">{'\uD83E\uDDE9'}</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{learningToolsTitle}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{learningToolsDesc}</p>
-            </div>
-            <div className="lp-card" style={{ animationDelay: '0.4s' }} role="button" tabIndex={0} aria-label={educatorToolsTitle + '. ' + educatorToolsDesc} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>{APP_CONFIG._cfg_validation_key ? copy('launch_pad.badge_educator', 'Educator') : copy('launch_pad.badge_educator_open', 'Educator')}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1.5s' }} aria-hidden="true">🛠️</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{educatorToolsTitle}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{educatorToolsDesc}</p>
-            </div>
+            <button type="button" className="lp-card" style={{ animationDelay: '0.1s' }} aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc" onClick={() => { setHasSelectedMode(true); }}>
+              <span className="lp-card-icon" style={{ display: 'block', fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }} aria-hidden="true">🚀</span>
+              <span id="launch-pad-full-title" style={{ display: 'block', fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{fullTitle}</span>
+              <span id="launch-pad-full-desc" style={{ display: 'block', fontSize: '12px', color: '#e0e7ff', lineHeight: '1.6', margin: 0 }}>{fullDesc}</span>
+            </button>
+            <button type="button" className="lp-card" style={{ animationDelay: '0.2s' }} aria-labelledby="launch-pad-guided-title" aria-describedby="launch-pad-guided-badge launch-pad-guided-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }}>
+              <span id="launch-pad-guided-badge" style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge">{copy('launch_pad.badge_recommended', 'Recommended')}</span></span>
+              <span className="lp-card-icon" style={{ display: 'block', fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '0.5s' }} aria-hidden="true">🧭</span>
+              <span id="launch-pad-guided-title" style={{ display: 'block', fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{guidedTitle}</span>
+              <span id="launch-pad-guided-desc" style={{ display: 'block', fontSize: '12px', color: '#e0e7ff', lineHeight: '1.6', margin: 0 }}>{guidedDesc}</span>
+            </button>
+            <button type="button" className="lp-card" style={{ animationDelay: '0.3s' }} aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-badge launch-pad-learning-desc" onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }}>
+              <span id="launch-pad-learning-badge" style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #047857, #065f46)' }}>{copy('launch_pad.badge_3_tools', '8 Tools')}</span></span>
+              <span className="lp-card-icon" style={{ display: 'block', fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }} aria-hidden="true">🧩</span>
+              <span id="launch-pad-learning-title" style={{ display: 'block', fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{learningToolsTitle}</span>
+              <span id="launch-pad-learning-desc" style={{ display: 'block', fontSize: '12px', color: '#e0e7ff', lineHeight: '1.6', margin: 0 }}>{learningToolsDesc}</span>
+            </button>
+            <button type="button" className="lp-card" style={{ animationDelay: '0.4s' }} aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-badge launch-pad-educator-desc" onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }}>
+              <span id="launch-pad-educator-badge" style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}>{APP_CONFIG._cfg_validation_key ? copy('launch_pad.badge_educator', 'Educator') : copy('launch_pad.badge_educator_open', 'Educator')}</span></span>
+              <span className="lp-card-icon" style={{ display: 'block', fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1.5s' }} aria-hidden="true">🛠️</span>
+              <span id="launch-pad-educator-title" style={{ display: 'block', fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{educatorToolsTitle}</span>
+              <span id="launch-pad-educator-desc" style={{ display: 'block', fontSize: '12px', color: '#e0e7ff', lineHeight: '1.6', margin: 0 }}>{educatorToolsDesc}</span>
+            </button>
           </div>
           <p style={{ marginTop: '48px', fontSize: '11px', color: 'rgba(199,210,254,0.85)', fontWeight: 500 }}>{switchHint}</p>
           {!_isCanvasEnv && (
