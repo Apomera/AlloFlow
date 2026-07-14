@@ -37299,6 +37299,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 {window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
                     t, _isCanvasEnv, GEMINI_MODELS
                 })}
+                {/* Device storage (2026-07-14): permanent, discoverable home for the
+                    on-device storage manager — the probe/review panel is otherwise only
+                    reachable via Ctrl+Alt+Shift+D. The button click doubles as the user
+                    gesture popup-channel operations need. */}
+                <div className="border-t border-slate-100 pt-4">
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
+                    <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
+                    <button
+                        onClick={() => { if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe(); }}
+                        className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+                    >
+                        🔌 {t('canvas_settings.device_storage_btn') || 'Manage device storage'}
+                    </button>
+                </div>
                 <div className="flex justify-end pt-2">
                     <button
                         onClick={() => setShowAIBackendModal(false)}
