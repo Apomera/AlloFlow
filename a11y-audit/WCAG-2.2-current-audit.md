@@ -183,6 +183,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Converted the launch pad's four primary mode cards from simulated controls with hand-authored Enter/Space handling to native buttons containing valid phrasing content. Each card is named by its visible title and described by its supporting text plus relevant badge; decorative mode icons are hidden; card and badge contrast is strengthened; the full card remains a large pointer target; narrow screens retain the single-column layout; and keyboard focus receives a high-contrast three-pixel indicator. Entry, card, icon-float, badge-shimmer, hover-lift, and pressed motion is disabled for reduced-motion users (WCAG 1.1.1, 1.3.1, 1.4.3, 2.1.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Repaired the launch pad's language and setup utilities: the language popup now uses a valid named list of native toggle buttons instead of interactive buttons nested in listbox options, identifies its controlled popup, moves focus to the selected language when opened, closes with Escape or outside activation, and restores focus to its trigger. Language, microphone, skip, and AI-settings controls now expose explicit button behavior, 44 CSS-pixel minimum targets, high-contrast focus indicators, and reduced-motion behavior. The asynchronous microphone action remains focusable while busy, blocks duplicate activation, exposes matching busy/disabled and state-dependent naming, uses stronger text contrast, and announces granted or denied results as atomic polite status updates (WCAG 1.3.1, 1.4.3, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.3, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

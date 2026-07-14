@@ -64,6 +64,16 @@
   var _langMenu = useState(false);
   var langMenuOpen = _langMenu[0];
   var setLangMenuOpen = _langMenu[1];
+  var langTriggerRef = React.useRef(null);
+  var langListRef = React.useRef(null);
+  var closeLanguageMenu = function () {
+    setLangMenuOpen(false);
+    if (typeof window !== 'undefined') {
+      window.setTimeout(function () {
+        if (langTriggerRef.current) langTriggerRef.current.focus();
+      }, 0);
+    }
+  };
   // Dynamically loaded from the language pack manifest so the list stays in
   // sync with what's actually deployed. Falls back to a curated default if the
   // manifest is unreachable. Mirrors the pattern in ui_language_selector_module.js.
@@ -101,6 +111,24 @@
       cancelled = true;
     };
   }, []);
+  React.useEffect(function () {
+    if (!langMenuOpen || typeof document === 'undefined') return;
+    var list = langListRef.current;
+    var selectedButton = list && list.querySelector('button[aria-pressed="true"]');
+    var firstButton = list && list.querySelector('button:not([disabled])');
+    var focusTarget = selectedButton || firstButton;
+    if (focusTarget) focusTarget.focus();
+    var handleLanguageKeyDown = function (event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeLanguageMenu();
+      }
+    };
+    document.addEventListener('keydown', handleLanguageKeyDown);
+    return function () {
+      document.removeEventListener('keydown', handleLanguageKeyDown);
+    };
+  }, [langMenuOpen]);
   React.useEffect(function () {
     if (typeof document === 'undefined') return;
     var body = document.body;
@@ -163,9 +191,11 @@
             .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: 24px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent, rgba(99,102,241,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
             @media (prefers-reduced-motion: reduce) {
-              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge { animation: none !important; transition: none !important; transform: none !important; }
+              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
             }
             .lp-lang-item:hover:not([disabled]) { background: rgba(99,102,241,0.2) !important; }
+            .lp-lang-trigger:focus-visible, .lp-lang-item:focus-visible, .lp-mic-actions button:focus-visible, .lp-ai-settings:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
+            .lp-lang-trigger, .lp-lang-item, .lp-mic-actions button, .lp-ai-settings { min-height: 44px; }
           `), /*#__PURE__*/React.createElement("div", {
     className: "lp-lang-switcher",
     style: {
@@ -176,11 +206,16 @@
     }
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => setLangMenuOpen(!langMenuOpen),
+    ref: langTriggerRef,
+    className: "lp-lang-trigger",
+    onClick: () => {
+      if (!isTranslating) setLangMenuOpen(!langMenuOpen);
+    },
     "aria-label": (t('launch_pad.change_language') || 'Change language') + '. ' + (t('launch_pad.current_language') || 'Current') + ': ' + currentUiLanguage,
     "aria-expanded": langMenuOpen,
-    "aria-haspopup": "listbox",
-    disabled: isTranslating,
+    "aria-haspopup": "true",
+    "aria-controls": "launch-pad-language-list",
+    "aria-disabled": isTranslating,
     style: {
       display: 'inline-flex',
       alignItems: 'center',
@@ -226,7 +261,7 @@
       opacity: 0.7
     }
   }, langMenuOpen ? '▲' : '▼')), langMenuOpen && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    onClick: () => setLangMenuOpen(false),
+    onClick: closeLanguageMenu,
     "aria-hidden": "true",
     style: {
       position: 'fixed',
@@ -234,7 +269,8 @@
       zIndex: 99999
     }
   }), /*#__PURE__*/React.createElement("ul", {
-    role: "listbox",
+    id: "launch-pad-language-list",
+    ref: langListRef,
     "aria-label": t('launch_pad.available_languages') || 'Available languages',
     style: {
       position: 'absolute',
@@ -257,17 +293,16 @@
     var selected = langName === currentUiLanguage;
     return /*#__PURE__*/React.createElement("li", {
       key: langName,
-      role: "option",
-      "aria-selected": selected,
       style: {
         margin: 0
       }
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "lp-lang-item",
+      "aria-pressed": selected,
       disabled: isTranslating,
       onClick: () => {
-        setLangMenuOpen(false);
+        closeLanguageMenu();
         if (!selected) setUiLanguage(langName);
       },
       style: {
@@ -395,15 +430,19 @@
       justifyContent: 'center'
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: requestMicPermission,
-    disabled: micPermissionStatus === 'requesting',
-    "aria-label": "Enable microphone access",
+    type: "button",
+    onClick: () => {
+      if (micPermissionStatus !== 'requesting') requestMicPermission();
+    },
+    "aria-disabled": micPermissionStatus === 'requesting',
+    "aria-busy": micPermissionStatus === 'requesting',
+    "aria-label": micPermissionStatus === 'requesting' ? copy('launch_pad.mic_requesting', 'Requesting microphone access') : copy('launch_pad.mic_enable', 'Enable microphone access'),
     style: {
       padding: '10px 24px',
       borderRadius: '14px',
       border: 'none',
-      cursor: 'pointer',
-      background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+      cursor: micPermissionStatus === 'requesting' ? 'wait' : 'pointer',
+      background: 'linear-gradient(135deg, #4f46e5, #3730a3)',
       color: 'white',
       fontSize: '13px',
       fontWeight: 700,
@@ -412,6 +451,7 @@
       boxShadow: '0 4px 20px rgba(99,102,241,0.4)'
     }
   }, micPermissionStatus === 'requesting' ? '⏳ Requesting...' : '🎤 Enable Microphone'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => setMicBannerDismissed(true),
     "aria-label": "Skip microphone setup",
     style: {
@@ -426,6 +466,9 @@
       transition: 'all 0.2s'
     }
   }, "Skip for Now")), micPermissionStatus === 'granted' && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     style: {
       fontSize: '11px',
       color: '#34d399',
@@ -433,9 +476,12 @@
       fontWeight: 700
     }
   }, "✅ Microphone enabled!"), micPermissionStatus === 'denied' && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     style: {
       fontSize: '11px',
-      color: '#f87171',
+      color: '#fca5a5',
       margin: 0,
       fontWeight: 600
     }
@@ -659,6 +705,7 @@
       fontWeight: 500
     }
   }, switchHint), !_isCanvasEnv && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       setShowAIBackendModal(true);

@@ -41,6 +41,16 @@ function LaunchPadView(props) {
   var _langMenu = useState(false);
   var langMenuOpen = _langMenu[0];
   var setLangMenuOpen = _langMenu[1];
+  var langTriggerRef = React.useRef(null);
+  var langListRef = React.useRef(null);
+  var closeLanguageMenu = function() {
+    setLangMenuOpen(false);
+    if (typeof window !== 'undefined') {
+      window.setTimeout(function() {
+        if (langTriggerRef.current) langTriggerRef.current.focus();
+      }, 0);
+    }
+  };
   // Dynamically loaded from the language pack manifest so the list stays in
   // sync with what's actually deployed. Falls back to a curated default if the
   // manifest is unreachable. Mirrors the pattern in ui_language_selector_module.js.
@@ -77,6 +87,22 @@ function LaunchPadView(props) {
     })();
     return function() { cancelled = true; };
   }, []);
+  React.useEffect(function() {
+    if (!langMenuOpen || typeof document === 'undefined') return;
+    var list = langListRef.current;
+    var selectedButton = list && list.querySelector('button[aria-pressed="true"]');
+    var firstButton = list && list.querySelector('button:not([disabled])');
+    var focusTarget = selectedButton || firstButton;
+    if (focusTarget) focusTarget.focus();
+    var handleLanguageKeyDown = function(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeLanguageMenu();
+      }
+    };
+    document.addEventListener('keydown', handleLanguageKeyDown);
+    return function() { document.removeEventListener('keydown', handleLanguageKeyDown); };
+  }, [langMenuOpen]);
   React.useEffect(function() {
     if (typeof document === 'undefined') return;
     var body = document.body;
@@ -129,19 +155,24 @@ function LaunchPadView(props) {
             .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: 24px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent, rgba(99,102,241,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
             @media (prefers-reduced-motion: reduce) {
-              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge { animation: none !important; transition: none !important; transform: none !important; }
+              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
             }
             .lp-lang-item:hover:not([disabled]) { background: rgba(99,102,241,0.2) !important; }
+            .lp-lang-trigger:focus-visible, .lp-lang-item:focus-visible, .lp-mic-actions button:focus-visible, .lp-ai-settings:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
+            .lp-lang-trigger, .lp-lang-item, .lp-mic-actions button, .lp-ai-settings { min-height: 44px; }
           `}</style>
           {/* ── Compact Language Switcher (top-right) ── */}
           <div className="lp-lang-switcher" style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 2147483001 }}>
             <button
               type="button"
-              onClick={() => setLangMenuOpen(!langMenuOpen)}
+              ref={langTriggerRef}
+              className="lp-lang-trigger"
+              onClick={() => { if (!isTranslating) setLangMenuOpen(!langMenuOpen); }}
               aria-label={(t('launch_pad.change_language') || 'Change language') + '. ' + (t('launch_pad.current_language') || 'Current') + ': ' + currentUiLanguage}
               aria-expanded={langMenuOpen}
-              aria-haspopup="listbox"
-              disabled={isTranslating}
+              aria-haspopup="true"
+              aria-controls="launch-pad-language-list"
+              aria-disabled={isTranslating}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '6px',
                 padding: '8px 12px', borderRadius: '12px',
@@ -161,8 +192,8 @@ function LaunchPadView(props) {
             </button>
             {langMenuOpen && (
               <>
-                <div onClick={() => setLangMenuOpen(false)} aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 99999 }} />
-                <ul role="listbox" aria-label={t('launch_pad.available_languages') || 'Available languages'} style={{
+                <div onClick={closeLanguageMenu} aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 99999 }} />
+                <ul id="launch-pad-language-list" ref={langListRef} aria-label={t('launch_pad.available_languages') || 'Available languages'} style={{
                   position: 'absolute', top: 'calc(100% + 6px)', right: 0,
                   background: 'rgba(15,23,42,0.96)', backdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px',
@@ -173,12 +204,13 @@ function LaunchPadView(props) {
                   {LAUNCH_PAD_LANGS.map((langName) => {
                     var selected = langName === currentUiLanguage;
                     return (
-                      <li key={langName} role="option" aria-selected={selected} style={{ margin: 0 }}>
+                      <li key={langName} style={{ margin: 0 }}>
                         <button
                           type="button"
                           className="lp-lang-item"
+                          aria-pressed={selected}
                           disabled={isTranslating}
-                          onClick={() => { setLangMenuOpen(false); if (!selected) setUiLanguage(langName); }}
+                          onClick={() => { closeLanguageMenu(); if (!selected) setUiLanguage(langName); }}
                           style={{
                             display: 'block', width: '100%', textAlign: 'start',
                             padding: '9px 12px', borderRadius: '8px', border: 'none',
@@ -234,12 +266,14 @@ function LaunchPadView(props) {
                 )}
                 <div className="lp-mic-actions" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
                   <button
-                    onClick={requestMicPermission}
-                    disabled={micPermissionStatus === 'requesting'}
-                    aria-label="Enable microphone access"
+                    type="button"
+                    onClick={() => { if (micPermissionStatus !== 'requesting') requestMicPermission(); }}
+                    aria-disabled={micPermissionStatus === 'requesting'}
+                    aria-busy={micPermissionStatus === 'requesting'}
+                    aria-label={micPermissionStatus === 'requesting' ? copy('launch_pad.mic_requesting', 'Requesting microphone access') : copy('launch_pad.mic_enable', 'Enable microphone access')}
                     style={{
-                      padding: '10px 24px', borderRadius: '14px', border: 'none', cursor: 'pointer',
-                      background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                      padding: '10px 24px', borderRadius: '14px', border: 'none', cursor: micPermissionStatus === 'requesting' ? 'wait' : 'pointer',
+                      background: 'linear-gradient(135deg, #4f46e5, #3730a3)',
                       color: 'white', fontSize: '13px', fontWeight: 700,
                       opacity: micPermissionStatus === 'requesting' ? 0.6 : 1,
                       transition: 'all 0.2s',
@@ -249,6 +283,7 @@ function LaunchPadView(props) {
                     {micPermissionStatus === 'requesting' ? '⏳ Requesting...' : '🎤 Enable Microphone'}
                   </button>
                   <button
+                    type="button"
                     onClick={() => setMicBannerDismissed(true)}
                     aria-label="Skip microphone setup"
                     style={{
@@ -262,10 +297,10 @@ function LaunchPadView(props) {
                   </button>
                 </div>
                 {micPermissionStatus === 'granted' && (
-                  <p style={{ fontSize: '11px', color: '#34d399', margin: 0, fontWeight: 700 }}>✅ Microphone enabled!</p>
+                  <p role="status" aria-live="polite" aria-atomic="true" style={{ fontSize: '11px', color: '#34d399', margin: 0, fontWeight: 700 }}>✅ Microphone enabled!</p>
                 )}
                 {micPermissionStatus === 'denied' && (
-                  <p style={{ fontSize: '11px', color: '#f87171', margin: 0, fontWeight: 600 }}>Microphone was denied. You can enable it later in browser settings.</p>
+                  <p role="status" aria-live="polite" aria-atomic="true" style={{ fontSize: '11px', color: '#fca5a5', margin: 0, fontWeight: 600 }}>Microphone was denied. You can enable it later in browser settings.</p>
                 )}
               </div>
             </div>
@@ -298,6 +333,7 @@ function LaunchPadView(props) {
           <p style={{ marginTop: '48px', fontSize: '11px', color: 'rgba(199,210,254,0.85)', fontWeight: 500 }}>{switchHint}</p>
           {!_isCanvasEnv && (
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); setShowAIBackendModal(true); }}
               className="lp-ai-settings"
               style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#312e81', border: '1px solid rgba(165,180,252,0.4)', borderRadius: '16px', padding: '10px 20px', color: '#e0e7ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s', backdropFilter: 'blur(10px)' }}
