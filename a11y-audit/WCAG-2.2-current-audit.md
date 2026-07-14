@@ -171,6 +171,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Adventure active-turn controls across standard and immersive modes: choice and free-response actions now prevent duplicate submission while loading, Enter submission follows the same guard, immersive choice-view and dictation toggles expose their state and accurate action names, pending choices and failures are announced, live vote totals are surfaced, and redundant generic loading announcements are suppressed. Teacher option fields and removal actions identify their option, the misleading Broadcast label was removed, controls use explicit native button behavior with larger targets and strong focus, decorative icons are hidden, contrast is strengthened, and active-turn motion respects reduced-motion preferences (WCAG 1.1.1, 1.3.1, 1.4.3, 2.1.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 3.2.2, 4.1.2, 4.1.3).
 
+- Remediated Adventure's ledger and inventory-detail dialogs: both reuse contained initial focus, Tab cycling, Escape closure, and launcher focus restoration; dialogs now have programmatic descriptions, narrow-height scrolling, reduced-motion entry, 44 CSS-pixel Close and action targets, and strong visible focus. The ledger narrative is a named keyboard-scrollable region, Storybook export has an accurate name and busy state, disabled key items and usable items retain their visible names, contrast is strengthened, and duplicated item imagery plus decorative book, close, lock, glow, loading, download, and use symbols are hidden from assistive technology (WCAG 1.1.1, 1.3.1, 1.4.3, 1.4.10, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

@@ -179,35 +179,35 @@ function AdventureView(props) {
                       </ErrorBoundary>
                       )}
                       {showLedger && (
-                        <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
-                            <div ref={ledgerDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-ledger-title" onClick={e => e.stopPropagation()}>
-                                <button type="button" onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
+                        <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowLedgerToFalse}>
+                            <div ref={ledgerDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-ledger-title" aria-describedby="adventure-ledger-subtitle" onClick={e => e.stopPropagation()}>
+                                <button type="button" onClick={handleSetShowLedgerToFalse} className="absolute top-2 right-2 sm:top-3 sm:right-3 min-w-11 min-h-11 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
                                 <div className="flex flex-col items-center text-center mb-4">
                                     <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-2">
-                                        <BookOpen size={24} />
+                                        <BookOpen size={24} aria-hidden="true" />
                                     </div>
                                     <h3 id="adventure-ledger-title" className="text-xl font-black text-indigo-900">{t('adventure.ledger_title')}</h3>
-                                    <p className="text-xs text-slate-600">{t('adventure.ledger_subtitle')}</p>
+                                    <p id="adventure-ledger-subtitle" className="text-xs text-slate-700">{t('adventure.ledger_subtitle')}</p>
                                 </div>
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-400 text-sm text-slate-700 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif">
+                                <div role="region" aria-label={t('adventure.ledger_title')} tabIndex={0} className="bg-slate-50 p-4 rounded-xl border border-slate-400 text-sm text-slate-700 leading-relaxed max-h-[50vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">
                                     {adventureState.narrativeLedger || t('adventure.ledger_empty')}
                                 </div>
                                 <div className="mt-4 flex flex-col gap-2">
-                                    <button
-                                        aria-label={t('common.refresh')}
+                                    <button type="button"
+                                        aria-label={t('adventure.storybook')}
                                         onClick={() => {
                                             setShowLedger(false);
                                             setShowStorybookExportModal(true);
                                         }}
                                         disabled={isProcessing || adventureState.history.length === 0} aria-busy={isProcessing}
-                                        className="w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="min-h-11 w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                     >
-                                        {isProcessing ? <RefreshCw size={18} className="animate-spin"/> : <Download size={18} />}
+                                        {isProcessing ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Download size={18} aria-hidden="true" />}
                                         {t('adventure.storybook')}
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={handleSetShowLedgerToFalse}
-                                        className="w-full px-6 py-2 text-slate-600 font-bold hover:text-slate-700 transition-colors"
+                                        className="min-h-11 w-full px-6 py-2 text-slate-700 font-bold hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2 rounded-xl"
                                     >
                                         {t('common.close')}
                                     </button>
@@ -1425,41 +1425,39 @@ function AdventureView(props) {
                         )}
                     </div>
                     {selectedInventoryItem && (
-                        <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
-                            <div ref={inventoryDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-inventory-item-title" onClick={e => e.stopPropagation()}>
-                                <button type="button" onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
+                        <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetSelectedInventoryItemToNull}>
+                            <div ref={inventoryDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-inventory-item-title" aria-describedby="adventure-inventory-item-description" onClick={e => e.stopPropagation()}>
+                                <button type="button" onClick={handleSetSelectedInventoryItemToNull} className="absolute top-2 right-2 sm:top-3 sm:right-3 min-w-11 min-h-11 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-24 h-24 bg-indigo-50 rounded-xl border-2 border-indigo-100 flex items-center justify-center mb-4 shadow-inner relative overflow-hidden group">
                                         {selectedInventoryItem.image ? (
-                                            <img loading="lazy" src={selectedInventoryItem.image} alt={selectedInventoryItem.name} className="w-full h-full object-contain pixelated" style={STYLE_IMAGE_PIXELATED} />
+                                            <img loading="lazy" src={selectedInventoryItem.image} alt="" className="w-full h-full object-contain pixelated" style={STYLE_IMAGE_PIXELATED} />
                                         ) : (
                                             <span className="text-4xl" aria-hidden="true">{selectedInventoryItem.icon || "📦"}</span>
                                         )}
-                                        <div className="absolute inset-0 bg-indigo-500/10 blur-xl rounded-full"></div>
+                                        <div aria-hidden="true" className="absolute inset-0 bg-indigo-500/10 blur-xl rounded-full"></div>
                                     </div>
                                     <h3 id="adventure-inventory-item-title" className="text-xl font-black text-indigo-900 mb-1">{selectedInventoryItem.name}</h3>
-                                    <span className="text-[11px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full mb-3 border border-indigo-200">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full mb-3 border border-indigo-300">
                                         {t(`adventure.effects.${selectedInventoryItem.effectType}`) || selectedInventoryItem.effectType || "Consumable"}
                                     </span>
-                                    <p className="text-sm text-slate-600 mb-6 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 w-full">
+                                    <p id="adventure-inventory-item-description" className="text-sm text-slate-700 mb-6 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-300 w-full">
                                         {selectedInventoryItem.description || t('adventure.inventory_fallback_desc')}
                                     </p>
                                     <div className="flex gap-3 w-full">
                                         {selectedInventoryItem.effectType === 'key_item' ? (
-                                            <button
-                                                aria-label={t('common.locked')}
+                                            <button type="button"
                                                 disabled
-                                                className="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl border-2 border-slate-200 cursor-not-allowed flex items-center justify-center gap-2"
+                                                className="min-h-11 flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl border-2 border-slate-300 cursor-not-allowed flex items-center justify-center gap-2"
                                             >
-                                                <Lock size={16}/> {t('adventure.key_item_btn')}
+                                                <Lock size={16} aria-hidden="true"/> {t('adventure.key_item_btn')}
                                             </button>
                                         ) : (
-                                            <button
-                                                aria-label={t('common.use_item')}
+                                            <button type="button"
                                                 onClick={handleUseItem}
-                                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                                className="min-h-11 flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                             >
-                                                <Sparkles size={16} className="text-yellow-700 fill-current"/> {t('adventure.use_item')}
+                                                <Sparkles size={16} aria-hidden="true"/> {t('adventure.use_item')}
                                             </button>
                                         )}
                                     </div>
