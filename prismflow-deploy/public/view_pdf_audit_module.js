@@ -10443,13 +10443,26 @@ ${text}
 
 Return ONLY the plain language summary in ${lang}.`, false);
         if (summary) {
-          const summaryHtml = summary.replace(/\n\n/g, "</p><p>").replace(/\n- /g, "</p><li>").replace(/\n/g, "<br>");
-          const dir = ["Arabic", "Hebrew", "Farsi", "Persian", "Urdu", "Dari"].some((l) => lang.includes(l)) ? "rtl" : "ltr";
+          const _escSum = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+          const _summaryHtml = _escSum(summary).split(/\n{2,}/).map((para) => {
+            const _ls = para.split("\n");
+            if (_ls.some((l) => /^\s*-\s+/.test(l)) && _ls.every((l) => !l.trim() || /^\s*-\s+/.test(l))) {
+              const _lis = _ls.filter((l) => l.trim()).map((l) => "<li>" + l.replace(/^\s*-\s+/, "") + "</li>").join("");
+              return _lis ? "<ul>" + _lis + "</ul>" : "";
+            }
+            return "<p>" + _ls.filter((l) => l.length).join("<br>") + "</p>";
+          }).filter(Boolean).join("");
+          let _langCode = "";
+          try { const _u = typeof languageToTTSCode === "function" ? languageToTTSCode(lang) : ""; if (_u && !(_u === "en" && !/english/i.test(lang))) _langCode = _u; } catch (_) {}
+          const dir = /^(ar|he|iw|fa|ur|ps|sd|ug|yi|dv|ckb)([-_]|$)/i.test(_langCode) ? "rtl" : "ltr";
+          const _langAttr = _langCode ? ` lang="${_langCode}"` : "";
+          const _safeLang = _escSum(lang);
+          const _safeName = _escSum(pendingPdfFile?.name || "document");
           const win = window.open("", "_blank");
           if (win) {
-            win.document.write(`<!DOCTYPE html><html lang="${lang === "English" ? "en" : lang.substring(0, 2).toLowerCase()}" dir="${dir}"><head><meta charset="UTF-8"><title>Plain Language Summary \u2014 ${lang}</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:${level === "3" ? "18" : "16"}px;direction:${dir}}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-flex;gap:6px;align-items:center;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">\u{1F4D6} ${lang} \xB7 ${gradeLabel}</div><h1>${lang === "English" ? "Easy-to-Read Summary" : "Summary"}</h1><p>${summaryHtml}</p><div class="footer"><p>Source: ${pendingPdfFile?.name || "document"} \xB7 Generated ${(/* @__PURE__ */ new Date()).toLocaleDateString()} by AlloFlow</p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">\u{1F5A8}\uFE0F Print</button></div></body></html>`);
+            win.document.write(`<!DOCTYPE html><html${_langAttr} dir="${dir}"><head><meta charset="UTF-8"><title>Plain Language Summary: ${_safeLang}</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:${level === "3" ? "18" : "16"}px;direction:${dir}}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-flex;gap:6px;align-items:center;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">\u{1F4D6} ${_safeLang} \xB7 ${gradeLabel}</div><h1>${lang === "English" ? "Easy-to-Read Summary" : "Summary"}</h1>${_summaryHtml}<div class="footer"><p>Source: ${_safeName} \xB7 Generated ${(/* @__PURE__ */ new Date()).toLocaleDateString()} by AlloFlow</p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">\u{1F5A8}\uFE0F Print</button></div></body></html>`);
             win.document.close();
-            addToast(`\u{1F4D6} ${lang} summary generated!`, "success");
+            addToast(`\u{1F4D6} ${_safeLang} summary generated!`, "success");
           }
         }
       } catch (e) {
