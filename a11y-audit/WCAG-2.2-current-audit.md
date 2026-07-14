@@ -207,6 +207,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Preserved Glossary interactive-flashcard heading structure while retaining read-aloud activation: four term headings no longer overwrite their semantic level with button roles and instead contain native speech buttons. Redundant Enter/Space emulation was removed, all speech targets provide at least 44 CSS pixels with high-contrast visible focus, the dark-card focus offset is explicit, and translated speech is disabled when no translated term exists (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Preserved paragraph semantics for all five Glossary flashcard definition, translated-definition, and word-root read-aloud surfaces by moving activation to nested native buttons. Removed redundant Enter/Space emulation, added term/language/action context to accessible names, provided 44 CSS-pixel speech targets, and supplied high-contrast focus rings with explicit offsets for the white, blue, and indigo card surfaces (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

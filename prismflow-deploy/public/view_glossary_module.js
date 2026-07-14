@@ -1291,22 +1291,16 @@ function GlossaryView(props) {
     "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, generatedContent?.data[flashcardIndex].term)), /*#__PURE__*/React.createElement("p", {
-    className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-lg' : 'text-2xl'} text-slate-600 leading-relaxed max-w-2xl hover:text-indigo-500 transition-colors line-clamp-4`,
+    className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-lg' : 'text-2xl'} text-slate-600 leading-relaxed max-w-2xl hover:text-indigo-500 transition-colors line-clamp-4`
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-front-def');
     },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-front-def');
-      }
-    },
-    tabIndex: 0,
-    role: "button",
-    "aria-label": t('common.click_read_aloud')
-  }, generatedContent?.data[flashcardIndex].def)), /*#__PURE__*/React.createElement("div", {
+    "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+  }, generatedContent?.data[flashcardIndex].def))), /*#__PURE__*/React.createElement("div", {
     className: "absolute bottom-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse motion-reduce:animate-none"
   }, t('flashcards.flip_hint'), " ", /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10
@@ -1370,75 +1364,55 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] font-black text-white uppercase tracking-widest mb-1"
   }, "Lesson definition"), /*#__PURE__*/React.createElement("p", {
-    className: "text-xl md:text-3xl font-medium leading-relaxed hover:text-blue-50 transition-colors cursor-pointer",
+    className: "text-xl md:text-3xl font-medium leading-relaxed hover:text-blue-50 transition-colors cursor-pointer"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-back-def');
     },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-back-def');
-      }
-    },
-    tabIndex: 0,
-    role: "button",
-    "aria-label": t('common.read_translated_definition'),
-    title: t('flashcards.tooltip_audio')
-  }, generatedContent?.data[flashcardIndex].def), /*#__PURE__*/React.createElement("p", {
+    "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
+    title: t('flashcards.tooltip_audio'),
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
+  }, generatedContent?.data[flashcardIndex].def)), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[11px] leading-snug text-blue-50"
   }, "Provenance: generated from this lesson's source text and selected grade level.")), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-white uppercase mb-2"
   }, standardDeckLang), /*#__PURE__*/React.createElement("p", {
-    className: "text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer",
+    className: "text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
       const def = fullTrans.includes(':') ? fullTrans.split(':')[1].trim() : fullTrans;
       handleSpeak(def, `fc-back-def-${standardDeckLang}`);
     },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
-        const def = fullTrans.includes(':') ? fullTrans.split(':')[1].trim() : fullTrans;
-        handleSpeak(def, `fc-back-def-${standardDeckLang}`);
-      }
-    },
-    tabIndex: 0,
-    role: "button",
-    "aria-label": t('common.read_translated_definition')
+    "aria-label": `${t('common.read_translated_definition')}: ${standardDeckLang}`,
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
   }, (() => {
     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "Translation not available";
     if (fullTrans.includes(":")) {
       return fullTrans.split(":")[1].trim();
     }
     return fullTrans;
-  })())), generatedContent?.data[flashcardIndex]?.etymology && /*#__PURE__*/React.createElement("div", {
+  })()))), generatedContent?.data[flashcardIndex]?.etymology && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-white uppercase mb-1"
   }, "📜 ", t('glossary.etymology_label') || 'Word roots'), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer",
+    className: "text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
     },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
-      }
-    },
-    tabIndex: 0,
-    role: "button",
-    "aria-label": t('glossary.etymology_label') || 'Word roots'
-  }, generatedContent.data[flashcardIndex].etymology)), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, setFlashcardDictAudioKey))) : (() => {
+    "aria-label": `${t('common.click_read_aloud')}: ${t('glossary.etymology_label') || 'Word roots'}`,
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
+  }, generatedContent.data[flashcardIndex].etymology))), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, setFlashcardDictAudioKey))) : (() => {
     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[flashcardLang] || "Translation not available";
     let transTerm = "";
     let transDef = fullTrans;
@@ -1462,22 +1436,16 @@ function GlossaryView(props) {
       "aria-label": `Read ${flashcardLang} term`,
       className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
     }, transTerm)), /*#__PURE__*/React.createElement("p", {
-      className: "text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer",
+      className: "text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: e => {
         e.stopPropagation();
         handleSpeak(transDef, 'fc-back-def');
       },
-      onKeyDown: e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSpeak(transDef, 'fc-back-def');
-        }
-      },
-      tabIndex: 0,
-      role: "button",
-      "aria-label": `Read ${flashcardLang} definition`
-    }, transDef));
+      "aria-label": `${t('common.read_translated_definition')}: ${flashcardLang}`,
+      className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
+    }, transDef)));
   })()))), renderFlashcardActionBar(), renderFlashcardEditDrawer())), isMemoryGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Memory Game encountered an error."
   }, /*#__PURE__*/React.createElement(MemoryGame, {
