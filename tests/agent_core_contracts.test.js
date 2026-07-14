@@ -158,6 +158,37 @@ describe('Blueprint contract + legacy round-trip', () => {
   });
 });
 
+describe('Artifact contract', () => {
+  it('validates a resource artifact envelope and normalizes predictably', () => {
+    const r = C.validateArtifact({
+      schemaVersion: '1.0', artifactId: 'art-quiz-1', type: 'quiz',
+      title: 'Water Cycle Quiz', language: 'English', data: { questions: [] },
+    });
+    expect(r.errors).toEqual([]);
+    expect(r.ok).toBe(true);
+    expect(r.value.type).toBe('quiz');
+    expect(C.validateArtifact({ schemaVersion: '1.0', artifactId: 'p1', type: 'allopack' }).ok).toBe(true);
+  });
+
+  it('fails closed on unknown types, oversize payloads, and secret-like fields', () => {
+    expect(C.validateArtifact({ schemaVersion: '1.0', artifactId: 'a', type: 'malware' }).errors[0].code)
+      .toBe('unknown-artifact-type');
+    const big = C.validateArtifact({ schemaVersion: '1.0', artifactId: 'a', type: 'quiz', data: 'x'.repeat(2000001) });
+    expect(big.errors.some((e) => e.code === 'data-too-large')).toBe(true);
+    const leaky = C.validateArtifact({ schemaVersion: '1.0', artifactId: 'a', type: 'quiz', data: { apiKey: 'sk-x' } });
+    expect(leaky.errors.some((e) => e.code === 'secret-like-field')).toBe(true);
+  });
+
+  it('rejects provenance that stores prompts', () => {
+    const r = C.validateArtifact({
+      schemaVersion: '1.0', artifactId: 'a', type: 'quiz',
+      provenance: { provider: 'gemini', prompt: 'hidden' },
+    });
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((e) => e.code === 'forbidden-provenance-field')).toBe(true);
+  });
+});
+
 describe('Job and Provenance contracts', () => {
   it('validates a job and clamps progress; result artifacts are IDs only', () => {
     const r = C.validateJob({

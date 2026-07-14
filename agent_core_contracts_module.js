@@ -454,6 +454,68 @@
     };
   }
 
+  // ── Artifact ───────────────────────────────────────────────────────────
+
+  var ARTIFACT_KNOWN_FIELDS = ['schemaVersion', 'artifactId', 'type', 'title', 'language', 'data', 'provenance'];
+  var ARTIFACT_MAX_DATA_CHARS = 2000000; // ~2MB serialized; larger payloads belong in files, not contract messages
+
+  /**
+   * Validate + normalize a minimal Artifact envelope: a generated resource
+   * (one Blueprint plan item's output) or a whole AlloPack. `data` is an
+   * opaque payload — the envelope is what the agent surface validates;
+   * per-tool payload schemas are a later, per-tool concern.
+   */
+  function validateArtifact(input, opts) {
+    var options = opts || {};
+    var knownTools = Array.isArray(options.knownTools) && options.knownTools.length ? options.knownTools : FALLBACK_TOOL_IDS;
+    var knownTypes = knownTools.concat(['allopack']);
+    var errors = [];
+    var warnings = [];
+    if (!isPlainObject(input)) {
+      return { ok: false, errors: [err('not-an-object', '', 'Artifact must be an object.')], warnings: [], value: null };
+    }
+    if (input.schemaVersion !== SCHEMA_VERSION) {
+      errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '", got "' + input.schemaVersion + '".'));
+    }
+    if (typeof input.artifactId !== 'string' || !input.artifactId.trim()) {
+      errors.push(err('missing-artifact-id', 'artifactId', 'artifactId is required.'));
+    }
+    if (knownTypes.indexOf(input.type) === -1) {
+      errors.push(err('unknown-artifact-type', 'type', 'type must be a known tool id or "allopack".'));
+    }
+    if (input.data !== undefined) {
+      var size = 0;
+      try { size = typeof input.data === 'string' ? input.data.length : JSON.stringify(input.data).length; }
+      catch (_) { errors.push(err('unserializable-data', 'data', 'data must be JSON-serializable.')); }
+      if (size > ARTIFACT_MAX_DATA_CHARS) {
+        errors.push(err('data-too-large', 'data', 'data exceeds ' + ARTIFACT_MAX_DATA_CHARS + ' serialized characters; reference a file instead.'));
+      }
+    }
+    scanUnsafeFields(input, '', errors, 0);
+    if (input.provenance !== undefined) {
+      var prov = validateProvenance(input.provenance);
+      if (!prov.ok) errors = errors.concat(prov.errors.map(function (e) { return err(e.code, 'provenance.' + e.path, e.message); }));
+    }
+    Object.keys(input).forEach(function (k) {
+      if (ARTIFACT_KNOWN_FIELDS.indexOf(k) === -1) warnings.push(err('unknown-field-dropped', k, 'Unknown field "' + k + '" was dropped.'));
+    });
+    if (errors.length) return { ok: false, errors: errors, warnings: warnings, value: null };
+    return {
+      ok: true,
+      errors: [],
+      warnings: warnings,
+      value: {
+        schemaVersion: SCHEMA_VERSION,
+        artifactId: input.artifactId,
+        type: input.type,
+        title: typeof input.title === 'string' ? input.title.slice(0, 300) : '',
+        language: typeof input.language === 'string' ? input.language.slice(0, 100) : '',
+        data: input.data === undefined ? null : input.data,
+        provenance: isPlainObject(input.provenance) ? input.provenance : {}
+      }
+    };
+  }
+
   var API = {
     SCHEMA_VERSION: SCHEMA_VERSION,
     DEPLOYMENT_MODES: DEPLOYMENT_MODES,
@@ -475,7 +537,8 @@
     fromLegacyConfig: fromLegacyConfig,
     toLegacyConfig: toLegacyConfig,
     validateJob: validateJob,
-    validateProvenance: validateProvenance
+    validateProvenance: validateProvenance,
+    validateArtifact: validateArtifact
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
