@@ -691,11 +691,11 @@ window.SelHub = window.SelHub || {
           chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: _peC('#94a3b8'), flexShrink: 0 } }, '⏳ Analyzing your OARS skills...'),
           // Input
           !chatFeedback && h('div', { style: { display: 'flex', gap: '6px', flexShrink: 0 } },
-            h('input', { type: 'text', value: chatInput, onChange: function(ev) { setChatInput(ev.target.value); },
+            h('input', { type: 'text', 'aria-label': 'Your response using OARS skills', value: chatInput, onChange: function(ev) { setChatInput(ev.target.value); },
               onKeyDown: function(ev) { if (ev.key === 'Enter' && chatInput.trim() && !chatLoading) sendChat(chatInput); },
               placeholder: 'What would you say? Use your OARS skills...', disabled: chatLoading,
-              style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '13px', outline: 'none' },
-              'aria-label': 'Your response using OARS skills' }),
+              style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '13px' },
+ }),
             ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && h('button', { onClick: function() {
               // Phase 3v.M — shared module path with inline fallback
               var append = function(t) { setChatInput(function(p) { return p ? p + ' ' + t : t; }); };
@@ -713,7 +713,7 @@ window.SelHub = window.SelHub || {
               rec.onresult = function(ev) { append(ev.results[0][0].transcript); };
               rec.start(); addToast && addToast('Listening...', 'info');
             }, style: btn(_peC('#f1f5f9'), _peC('#374151'), chatLoading), 'aria-label': 'Voice input' }, '🎤'),
-            h('button', { onClick: function() { if (chatInput.trim()) sendChat(chatInput); }, disabled: !chatInput.trim() || chatLoading,
+            h('button', { 'aria-label': 'Send OARS response', onClick: function() { if (chatInput.trim()) sendChat(chatInput); }, disabled: !chatInput.trim() || chatLoading,
               style: btn('#059669', '#fff', !chatInput.trim() || chatLoading) }, '→')
           ),
           !chatFeedback && chatTurns >= 3 && h('div', { style: { textAlign: 'center', marginTop: '6px', flexShrink: 0 } },
