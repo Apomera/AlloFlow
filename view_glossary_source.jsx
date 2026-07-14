@@ -611,44 +611,24 @@
                     setIsFlashcardQuizMode(!isFlashcardQuizMode);
                     setFlashcardOptions([]);
                     setFlashcardFeedback(null);
-                  }} className={`min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`}><Brain size={16} aria-hidden="true" /></button></div></div>{renderFlashcardProgressDots()}</div><div className="relative w-full aspect-[3/2] cursor-pointer group" onClick={handleToggleIsFlashcardFlipped}><div key={flashcardTransitionKey} className={`w-full h-full animate-in fade-in zoom-in-95 motion-reduce:animate-none transition-all motion-reduce:transition-none duration-500 transform-style-3d shadow-2xl rounded-3xl ${isFlashcardFlipped ? 'rotate-y-180' : 'rotate-y-0'}`}><div className="absolute inset-0 backface-hidden bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center border-4 border-blue-100 shadow-inner">{flashcardMode === 'standard' ? <><div className="absolute top-6 left-6 text-xs font-bold text-blue-700 uppercase tracking-widest">{t('flashcards.front_label_term')}</div>{showFlashcardImages && generatedContent?.data[flashcardIndex].image && <div className="mb-4 max-h-[55%] w-auto flex justify-center"><img loading="lazy" src={generatedContent?.data[flashcardIndex].image} alt={t('flashcards.alt_visual')} className="max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100" decoding="async" /></div>}<h2 className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-5xl' : 'text-5xl md:text-8xl'} font-black text-slate-800 hover:text-blue-600 transition-colors`} onClick={e => {
+                  }} className={`min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`}><Brain size={16} aria-hidden="true" /></button></div></div>{renderFlashcardProgressDots()}</div><div className="relative w-full aspect-[3/2] cursor-pointer group" onClick={handleToggleIsFlashcardFlipped}><div key={flashcardTransitionKey} className={`w-full h-full animate-in fade-in zoom-in-95 motion-reduce:animate-none transition-all motion-reduce:transition-none duration-500 transform-style-3d shadow-2xl rounded-3xl ${isFlashcardFlipped ? 'rotate-y-180' : 'rotate-y-0'}`}><div className="absolute inset-0 backface-hidden bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center border-4 border-blue-100 shadow-inner">{flashcardMode === 'standard' ? <><div className="absolute top-6 left-6 text-xs font-bold text-blue-700 uppercase tracking-widest">{t('flashcards.front_label_term')}</div>{showFlashcardImages && generatedContent?.data[flashcardIndex].image && <div className="mb-4 max-h-[55%] w-auto flex justify-center"><img loading="lazy" src={generatedContent?.data[flashcardIndex].image} alt={t('flashcards.alt_visual')} className="max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100" decoding="async" /></div>}<h2 className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-5xl' : 'text-5xl md:text-8xl'} font-black text-slate-800 hover:text-blue-600 transition-colors`}><button type="button" onClick={e => {
                       e.stopPropagation();
                       handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front');
-                    }} onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front');
-                      }
-                    }} tabIndex={0} role="button" aria-label={`Read term: ${generatedContent?.data[flashcardIndex].term}`} title={t('flashcards.tooltip_audio')}>{generatedContent?.data[flashcardIndex].term}</h2>{standardDeckLang !== 'English Only' && <div className="mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"><p className="text-xs font-bold text-indigo-600 uppercase mb-1">{standardDeckLang}</p><h3 className="text-3xl md:text-4xl font-bold text-indigo-600" onClick={e => {
+                    }} aria-label={`Read term: ${generatedContent?.data[flashcardIndex].term}`} title={t('flashcards.tooltip_audio')} className="min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{generatedContent?.data[flashcardIndex].term}</button></h2>{standardDeckLang !== 'English Only' && <div className="mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"><p className="text-xs font-bold text-indigo-600 uppercase mb-1">{standardDeckLang}</p><h3 className="text-3xl md:text-4xl font-bold text-indigo-600"><button type="button" onClick={e => {
                         e.stopPropagation();
                         const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
                         const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
                         if (term) handleSpeak(term, `fc-front-${standardDeckLang}`);
-                      }} onKeyDown={e => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
-                          const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
-                          if (term) handleSpeak(term, `fc-front-${standardDeckLang}`);
-                        }
-                      }} tabIndex={0} role="button" aria-label={t('common.click_read_aloud')}>{(() => {
+                      }} disabled={!((generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").includes(":") && (generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").split(":")[0].trim())} aria-label={`${t('common.click_read_aloud')}: ${standardDeckLang}`} className="min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{(() => {
                           const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
                           if (fullTrans.includes(":")) {
                             return fullTrans.split(":")[0].trim();
                           }
                           return "";
-                        })()}</h3></div>}</> : <><div className="absolute top-6 left-6 text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2"><Globe size={14} /> English</div>{showFlashcardImages && generatedContent?.data[flashcardIndex].image && <div className="mb-2 max-h-[45%] w-auto flex justify-center"><img loading="lazy" src={generatedContent?.data[flashcardIndex].image} alt="Visual" className="max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100" decoding="async" /></div>}<h2 className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-4xl' : 'text-4xl md:text-6xl'} font-black text-slate-800 mb-2 hover:text-indigo-600 transition-colors`} onClick={e => {
+                        })()}</button></h3></div>}</> : <><div className="absolute top-6 left-6 text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2"><Globe size={14} /> English</div>{showFlashcardImages && generatedContent?.data[flashcardIndex].image && <div className="mb-2 max-h-[45%] w-auto flex justify-center"><img loading="lazy" src={generatedContent?.data[flashcardIndex].image} alt="Visual" className="max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100" decoding="async" /></div>}<h2 className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-4xl' : 'text-4xl md:text-6xl'} font-black text-slate-800 mb-2 hover:text-indigo-600 transition-colors`}><button type="button" onClick={e => {
                       e.stopPropagation();
                       handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front-term');
-                    }} onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front-term');
-                      }
-                    }} tabIndex={0} role="button" aria-label={`Read term: ${generatedContent?.data[flashcardIndex].term}`}>{generatedContent?.data[flashcardIndex].term}</h2><p className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-lg' : 'text-2xl'} text-slate-600 leading-relaxed max-w-2xl hover:text-indigo-500 transition-colors line-clamp-4`} onClick={e => {
+                    }} aria-label={`Read term: ${generatedContent?.data[flashcardIndex].term}`} className="min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{generatedContent?.data[flashcardIndex].term}</button></h2><p className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-lg' : 'text-2xl'} text-slate-600 leading-relaxed max-w-2xl hover:text-indigo-500 transition-colors line-clamp-4`} onClick={e => {
                       e.stopPropagation();
                       handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-front-def');
                     }} onKeyDown={e => {
@@ -731,16 +711,10 @@
                       transTerm = fullTrans.substring(0, splitIdx).trim();
                       transDef = fullTrans.substring(splitIdx + 1).trim();
                     }
-                    return <><div className="absolute top-6 left-6 text-xs font-bold text-indigo-200 uppercase tracking-widest flex items-center gap-2"><Globe size={14} /> {flashcardLang}</div>{transTerm && <h2 className="text-4xl md:text-6xl font-black text-white mb-6 hover:text-indigo-200 transition-colors cursor-pointer" onClick={e => {
+                    return <><div className="absolute top-6 left-6 text-xs font-bold text-indigo-200 uppercase tracking-widest flex items-center gap-2"><Globe size={14} /> {flashcardLang}</div>{transTerm && <h2 className="text-4xl md:text-6xl font-black text-white mb-6 hover:text-indigo-200 transition-colors cursor-pointer"><button type="button" onClick={e => {
                         e.stopPropagation();
                         handleSpeak(transTerm, 'fc-back-term');
-                      }} onKeyDown={e => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSpeak(transTerm, 'fc-back-term');
-                        }
-                      }} tabIndex={0} role="button" aria-label={`Read ${flashcardLang} term`}>{transTerm}</h2>}<p className="text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer" onClick={e => {
+                      }} aria-label={`Read ${flashcardLang} term`} className="min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2">{transTerm}</button></h2>}<p className="text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer" onClick={e => {
                         e.stopPropagation();
                         handleSpeak(transDef, 'fc-back-def');
                       }} onKeyDown={e => {

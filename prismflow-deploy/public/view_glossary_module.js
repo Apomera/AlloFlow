@@ -1235,53 +1235,40 @@ function GlossaryView(props) {
     className: "max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100",
     decoding: "async"
   })), /*#__PURE__*/React.createElement("h2", {
-    className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-5xl' : 'text-5xl md:text-8xl'} font-black text-slate-800 hover:text-blue-600 transition-colors`,
+    className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-5xl' : 'text-5xl md:text-8xl'} font-black text-slate-800 hover:text-blue-600 transition-colors`
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front');
     },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front');
-      }
-    },
-    tabIndex: 0,
-    role: "button",
     "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
-    title: t('flashcards.tooltip_audio')
-  }, generatedContent?.data[flashcardIndex].term), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
+    title: t('flashcards.tooltip_audio'),
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+  }, generatedContent?.data[flashcardIndex].term)), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-indigo-600 uppercase mb-1"
   }, standardDeckLang), /*#__PURE__*/React.createElement("h3", {
-    className: "text-3xl md:text-4xl font-bold text-indigo-600",
+    className: "text-3xl md:text-4xl font-bold text-indigo-600"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
       const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
       if (term) handleSpeak(term, `fc-front-${standardDeckLang}`);
     },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
-        const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
-        if (term) handleSpeak(term, `fc-front-${standardDeckLang}`);
-      }
-    },
-    tabIndex: 0,
-    role: "button",
-    "aria-label": t('common.click_read_aloud')
+    disabled: !((generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").includes(":") && (generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").split(":")[0].trim()),
+    "aria-label": `${t('common.click_read_aloud')}: ${standardDeckLang}`,
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, (() => {
     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
     if (fullTrans.includes(":")) {
       return fullTrans.split(":")[0].trim();
     }
     return "";
-  })()))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  })())))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-6 left-6 text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14
@@ -1294,22 +1281,16 @@ function GlossaryView(props) {
     className: "max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100",
     decoding: "async"
   })), /*#__PURE__*/React.createElement("h2", {
-    className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-4xl' : 'text-4xl md:text-6xl'} font-black text-slate-800 mb-2 hover:text-indigo-600 transition-colors`,
+    className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-4xl' : 'text-4xl md:text-6xl'} font-black text-slate-800 mb-2 hover:text-indigo-600 transition-colors`
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.stopPropagation();
       handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front-term');
     },
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front-term');
-      }
-    },
-    tabIndex: 0,
-    role: "button",
-    "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`
-  }, generatedContent?.data[flashcardIndex].term), /*#__PURE__*/React.createElement("p", {
+    "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+  }, generatedContent?.data[flashcardIndex].term)), /*#__PURE__*/React.createElement("p", {
     className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-lg' : 'text-2xl'} text-slate-600 leading-relaxed max-w-2xl hover:text-indigo-500 transition-colors line-clamp-4`,
     onClick: e => {
       e.stopPropagation();
@@ -1471,22 +1452,16 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement(Globe, {
       size: 14
     }), " ", flashcardLang), transTerm && /*#__PURE__*/React.createElement("h2", {
-      className: "text-4xl md:text-6xl font-black text-white mb-6 hover:text-indigo-200 transition-colors cursor-pointer",
+      className: "text-4xl md:text-6xl font-black text-white mb-6 hover:text-indigo-200 transition-colors cursor-pointer"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: e => {
         e.stopPropagation();
         handleSpeak(transTerm, 'fc-back-term');
       },
-      onKeyDown: e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSpeak(transTerm, 'fc-back-term');
-        }
-      },
-      tabIndex: 0,
-      role: "button",
-      "aria-label": `Read ${flashcardLang} term`
-    }, transTerm), /*#__PURE__*/React.createElement("p", {
+      "aria-label": `Read ${flashcardLang} term`,
+      className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
+    }, transTerm)), /*#__PURE__*/React.createElement("p", {
       className: "text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer",
       onClick: e => {
         e.stopPropagation();

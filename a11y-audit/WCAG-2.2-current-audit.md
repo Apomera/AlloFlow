@@ -205,6 +205,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Repaired the Glossary Health Check header by replacing a simulated disclosure that contained nested buttons with three sibling native controls. The disclosure now exposes expanded state and controls a named results region; Re-analyze exposes busy state; processing is a polite status; disclosure, analysis, and dismissal actions have 44 CSS-pixel targets and strong visible focus; the control row wraps for narrow reflow; and spinner, chevron, and panel motion honor reduced-motion preferences (WCAG 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Preserved Glossary interactive-flashcard heading structure while retaining read-aloud activation: four term headings no longer overwrite their semantic level with button roles and instead contain native speech buttons. Redundant Enter/Space emulation was removed, all speech targets provide at least 44 CSS pixels with high-contrast visible focus, the dark-card focus offset is explicit, and translated speech is disabled when no translated term exists (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
