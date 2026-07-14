@@ -16193,7 +16193,7 @@ window.SelHub = window.SelHub || {
         fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box'
+        borderRadius: 6, boxSizing: 'border-box'
       }, config.style)
     }, config.props));
   }
@@ -16207,7 +16207,7 @@ window.SelHub = window.SelHub || {
         fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box',
+        borderRadius: 6, boxSizing: 'border-box',
         fontFamily: 'inherit', resize: 'vertical'
       }, config.style)
     }, config.props));
