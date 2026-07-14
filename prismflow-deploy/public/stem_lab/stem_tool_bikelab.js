@@ -1766,21 +1766,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'text-[11px] text-slate-600 mb-3' }, t('stem.bikelab.lower_easier_climbing_higher_faster_to', 'Lower = easier (climbing); higher = faster (top speed). Green→red = easy→hard. Click any cell to select that gear.')),
                 h('div', { className: 'overflow-x-auto' },
                   h('table', { className: 'border-collapse text-[11px]' },
+                    h('caption', { className: 'sr-only' }, 'Bike gearing matrix in gear inches. Choose a chainring and cog combination.'),
                     h('thead', null,
                       h('tr', null,
-                        h('th', { className: 'p-1 text-slate-500 font-mono text-right' }, t('stem.bikelab.ring_cog', 'ring \ cog')),
-                        bike.cassetteT.map(function(cg, j) { return h('th', { key: j, className: 'p-1 text-center font-mono font-bold ' + (j === cogIdx ? 'text-fuchsia-600' : 'text-slate-500') }, cg); })
+                        h('th', { scope: 'col', className: 'p-1 text-slate-500 font-mono text-right' }, t('stem.bikelab.ring_cog', 'ring \ cog')),
+                        bike.cassetteT.map(function(cg, j) { return h('th', { key: j, scope: 'col', className: 'p-1 text-center font-mono font-bold ' + (j === cogIdx ? 'text-fuchsia-600' : 'text-slate-500') }, cg); })
                       )
                     ),
                     h('tbody', null,
                       bike.chainringT.map(function(ct, i) {
                         return h('tr', { key: i },
-                          h('td', { className: 'p-1 text-right font-mono font-bold ' + (i === ringIdx ? 'text-violet-600' : 'text-slate-500') }, ct + 'T'),
+                          h('th', { scope: 'row', className: 'p-1 text-right font-mono font-bold ' + (i === ringIdx ? 'text-violet-600' : 'text-slate-500') }, ct + 'T'),
                           bike.cassetteT.map(function(cg, j) {
                             var gi = giOf(ct, cg), isCur = i === ringIdx && j === cogIdx;
-                            return h('td', { key: j, onClick: function() { setRingIdx(i); setCogIdx(j); },
-                              className: 'p-1 text-center font-mono cursor-pointer ' + (isCur ? 'ring-2 ring-violet-600 font-black text-slate-900' : 'text-slate-700 hover:opacity-80'),
-                              style: { background: heat(gi) } }, Math.round(gi));
+                            return h('td', { key: j, className: 'p-0 text-center font-mono' },
+                              h('button', {
+                                type: 'button',
+                                'aria-label': 'Select ' + ct + '-tooth chainring and ' + cg + '-tooth cog, ' + Math.round(gi) + ' gear inches',
+                                'aria-pressed': isCur ? 'true' : 'false',
+                                onClick: function() { setRingIdx(i); setCogIdx(j); },
+                                className: 'w-full min-h-6 p-1 text-center font-mono cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-violet-600 ' + (isCur ? 'ring-2 ring-violet-600 font-black text-slate-900' : 'text-slate-700 hover:opacity-80'),
+                                style: { background: heat(gi) }
+                              }, Math.round(gi))
+                            );
                           })
                         );
                       })
@@ -2122,7 +2130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', { className: 'lg:col-span-3 space-y-3' },
                 h('div', { className: 'bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl shadow-lg text-white p-5' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, t('stem.bikelab.your_fit', 'Your Fit')),
-                  h('svg', { viewBox: '0 0 420 240', className: 'w-full h-48' },
+                  h('svg', { role: 'img', 'aria-label': 'Bike fit diagram showing saddle height ' + saddleHeight.toFixed(1) + ' centimeters, reach ' + reachCm.toFixed(1) + ' centimeters, saddle setback ' + setback + ' centimeters, and handlebar drop ' + drop + ' centimeters', viewBox: '0 0 420 240', className: 'w-full h-48' },
                     h('circle', { cx: 80, cy: 190, r: 36, fill: 'none', stroke: '#fff', strokeWidth: 3 }),
                     h('circle', { cx: 340, cy: 190, r: 36, fill: 'none', stroke: '#fff', strokeWidth: 3 }),
                     h('line', { x1: 80, y1: 190, x2: 210, y2: 90, stroke: '#fff', strokeWidth: 2 }),
@@ -2466,16 +2474,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         }).length;
 
         function signalSvg(kind) {
-          var common = { viewBox: '0 0 80 80', className: 'w-16 h-16 mx-auto' };
+          var signalLabels = { left_straight: 'Left arm extended straight for a left turn', left_up: 'Left arm bent upward for a right turn', left_down: 'Left arm bent downward for slowing or stopping', right_straight: 'Right arm extended straight for a right turn', both_out: 'Both arms extended outward' };
+          var common = { role: 'img', viewBox: '0 0 80 80', className: 'w-16 h-16 mx-auto' };
           if (kind === 'left_straight') {
-            return h('svg', common,
+            return h('svg', Object.assign({}, common, { 'aria-label': signalLabels[kind] }),
               h('circle', { cx: 40, cy: 28, r: 8, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 35, y: 36, width: 10, height: 20, fill: '#3b82f6', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 5, y: 42, width: 30, height: 6, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 })
             );
           }
           if (kind === 'left_up') {
-            return h('svg', common,
+            return h('svg', Object.assign({}, common, { 'aria-label': signalLabels[kind] }),
               h('circle', { cx: 40, cy: 28, r: 8, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 35, y: 36, width: 10, height: 20, fill: '#3b82f6', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 18, y: 42, width: 6, height: 18, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 }),
@@ -2483,21 +2492,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             );
           }
           if (kind === 'left_down') {
-            return h('svg', common,
+            return h('svg', Object.assign({}, common, { 'aria-label': signalLabels[kind] }),
               h('circle', { cx: 40, cy: 28, r: 8, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 35, y: 36, width: 10, height: 20, fill: '#3b82f6', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 20, y: 42, width: 6, height: 30, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 })
             );
           }
           if (kind === 'right_straight') {
-            return h('svg', common,
+            return h('svg', Object.assign({}, common, { 'aria-label': signalLabels[kind] }),
               h('circle', { cx: 40, cy: 28, r: 8, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 35, y: 36, width: 10, height: 20, fill: '#3b82f6', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 45, y: 42, width: 30, height: 6, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 })
             );
           }
           if (kind === 'both_out') {
-            return h('svg', common,
+            return h('svg', Object.assign({}, common, { 'aria-label': signalLabels[kind] }),
               h('circle', { cx: 40, cy: 28, r: 8, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 35, y: 36, width: 10, height: 20, fill: '#3b82f6', stroke: '#0f172a', strokeWidth: 2 }),
               h('rect', { x: 5, y: 42, width: 30, height: 6, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 2 }),
@@ -3093,7 +3102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-5 gap-4' },
               h('div', { className: 'lg:col-span-3 bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.click_any_part_of_the_bike', 'Click any part of the bike')),
-                h('svg', { viewBox: '0 0 500 300', className: 'w-full h-auto', style: { maxHeight: '420px' } },
+                h('svg', { role: 'img', 'aria-label': 'Bicycle parts diagram. Selected part: ' + selected.name + '. Use the Parts by category buttons to select a part.', viewBox: '0 0 500 300', className: 'w-full h-auto', style: { maxHeight: '420px' } },
                   h('line', { x1: 170, y1: 95, x2: 175, y2: 165, stroke: '#334155', strokeWidth: 3 }),
                   h('line', { x1: 175, y1: 95, x2: 300, y2: 95, stroke: '#334155', strokeWidth: 3 }),
                   h('line', { x1: 175, y1: 165, x2: 300, y2: 240, stroke: '#334155', strokeWidth: 3 }),
@@ -3226,14 +3235,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         // Chin strap height drives apparent slack (lower hanging = more slack)
         var chinY = 178 + slack * 24;            // 178 = snug, 202 = loose
 
-        var sliderRow = function(label, value, setter, min, max, step, statusText, statusColor) {
+        var sliderRow = function(id, label, value, setter, min, max, step, statusText, statusColor) {
           return h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-300' },
-            h('label', { className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
+            h('label', { htmlFor: id, className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
               h('span', null, label),
               h('span', { className: 'normal-case text-[11px] font-semibold ' + statusColor }, statusText)
             ),
             h('input', {
-              type: 'range', min: min, max: max, step: step, value: value,
+              id: id, type: 'range', min: min, max: max, step: step, value: value,
               onChange: function(e) {
                 var v = parseFloat(e.target.value);
                 setter(isFinite(v) ? v : 0);
@@ -3322,9 +3331,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               ),
               // Right: controls + reference
               h('div', { className: 'space-y-3' },
-                sliderRow('1. Helmet Position', pos, setPos, 0, 1, 0.01, posLabel, posOk ? 'text-emerald-700' : pos < 0.6 ? 'text-amber-700' : 'text-rose-700'),
-                sliderRow('2. Side-Strap Angle', strapAngle, setStrapAngle, -1, 1, 0.02, angleLabel, angleOk ? 'text-emerald-700' : 'text-rose-700'),
-                sliderRow('3. Chin-Strap Slack', slack, setSlack, 0, 1, 0.01, slackLabel, slackOk ? 'text-emerald-700' : 'text-rose-700'),
+                sliderRow('bikelab-helmet-position', '1. Helmet Position', pos, setPos, 0, 1, 0.01, posLabel, posOk ? 'text-emerald-700' : pos < 0.6 ? 'text-amber-700' : 'text-rose-700'),
+                sliderRow('bikelab-strap-angle', '2. Side-Strap Angle', strapAngle, setStrapAngle, -1, 1, 0.02, angleLabel, angleOk ? 'text-emerald-700' : 'text-rose-700'),
+                sliderRow('bikelab-chin-slack', '3. Chin-Strap Slack', slack, setSlack, 0, 1, 0.01, slackLabel, slackOk ? 'text-emerald-700' : 'text-rose-700'),
                 h('div', { className: 'bg-pink-50 border border-pink-300 rounded-xl p-4' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-pink-800 mb-2' }, t('stem.bikelab.the_2v1_rule', '📏 The 2V1 Rule')),
                   h('ul', { className: 'space-y-2 text-sm text-slate-700' },
