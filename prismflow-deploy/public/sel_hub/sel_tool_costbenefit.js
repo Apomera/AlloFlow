@@ -365,22 +365,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
             ),
 
             // 2x2 layout
-            h('table', { style: { width: '100%', borderCollapse: 'collapse', marginBottom: 18 } },
+            h('table', { 'aria-label': 'Short-term and long-term pros and cons', style: { width: '100%', borderCollapse: 'collapse', marginBottom: 18 } },
               h('thead', null,
                 h('tr', null,
-                  h('th', { style: { width: '15%' } }),
-                  h('th', { style: { padding: 8, background: _cobBg('#15803d'), color: _cobFg('#fff'), fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'PROS'),
-                  h('th', { style: { padding: 8, background: _cobBg('#dc2626'), color: _cobFg('#fff'), fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'CONS')
+                  h('th', { scope: 'col', 'aria-label': 'Time frame', style: { width: '15%' } }),
+                  h('th', { scope: 'col', style: { padding: 8, background: _cobBg('#15803d'), color: _cobFg('#fff'), fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'PROS'),
+                  h('th', { scope: 'col', style: { padding: 8, background: _cobBg('#dc2626'), color: _cobFg('#fff'), fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'CONS')
                 )
               ),
               h('tbody', null,
                 h('tr', null,
-                  h('td', { style: { padding: 8, background: _cobBg('#f8fafc'), fontSize: 11, fontWeight: 800, color: _cobFg('#0f172a'), writingMode: 'vertical-rl', textAlign: 'center', verticalAlign: 'middle' } }, 'SHORT-TERM'),
+                  h('th', { scope: 'row', style: { padding: 8, background: _cobBg('#f8fafc'), fontSize: 11, fontWeight: 800, color: _cobFg('#0f172a'), writingMode: 'vertical-rl', textAlign: 'center', verticalAlign: 'middle' } }, 'SHORT-TERM'),
                   printCell(cells.stPros, '#22c55e'),
                   printCell(cells.stCons, '#f59e0b')
                 ),
                 h('tr', null,
-                  h('td', { style: { padding: 8, background: _cobBg('#f8fafc'), fontSize: 11, fontWeight: 800, color: _cobFg('#0f172a'), writingMode: 'vertical-rl', textAlign: 'center', verticalAlign: 'middle' } }, 'LONG-TERM'),
+                  h('th', { scope: 'row', style: { padding: 8, background: _cobBg('#f8fafc'), fontSize: 11, fontWeight: 800, color: _cobFg('#0f172a'), writingMode: 'vertical-rl', textAlign: 'center', verticalAlign: 'middle' } }, 'LONG-TERM'),
                   printCell(cells.ltPros, '#16a34a'),
                   printCell(cells.ltCons, _cobBg('#dc2626'))
                 )
