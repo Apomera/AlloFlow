@@ -693,8 +693,9 @@ window.SelHub = window.SelHub || {
           // Add goal form
           h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
             h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: '11px', fontWeight: 600, color: _gmC('#94a3b8'), marginBottom: '3px' } }, 'I can\u2019t __________ YET.'),
+              h('label', { htmlFor: 'gm-new-goal', style: { display: 'block', fontSize: '11px', fontWeight: 600, color: _gmC('#94a3b8'), marginBottom: '3px' } }, 'I can\u2019t __________ YET.'),
               h('input', {
+                id: 'gm-new-goal',
                 type: 'text', value: newGoalText,
                 onChange: function(ev) { upd('newGoalText', ev.target.value); },
                 onKeyDown: function(ev) {
@@ -706,7 +707,6 @@ window.SelHub = window.SelHub || {
                   }
                 },
                 placeholder: band === 'elementary' ? 'e.g. do long division' : band === 'middle' ? 'e.g. write a persuasive essay' : 'e.g. solve differential equations',
-                'aria-label': 'New growth goal',
                 style: { width: '100%', border: '2px solid #a7f3d0', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               })
             ),
@@ -828,6 +828,7 @@ window.SelHub = window.SelHub || {
           // Input
           h('div', { style: { display: 'flex', gap: '8px' } },
             h('input', {
+              'aria-label': 'Message the growth coach',
               type: 'text', value: coachInput,
               onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
@@ -879,7 +880,6 @@ window.SelHub = window.SelHub || {
               },
               disabled: coachLoading || !callGemini,
               placeholder: coachLoading ? 'Thinking...' : 'Tell me what you\u2019re struggling with...',
-              'aria-label': 'Message the growth coach',
               style: { flex: 1, border: '2px solid #a7f3d0', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
@@ -980,6 +980,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: '12px', color: _gmC('#92400e'), fontWeight: 600, marginBottom: '4px' } }, dateStr),
             h('div', { style: { fontSize: '13px', color: _gmC('#92400e'), fontStyle: 'italic', marginBottom: '12px' } }, 'Dear Future Me,'),
             h('textarea', {
+              'aria-label': 'Write a letter to your future self',
               value: letterDraft,
               onChange: function(ev) { upd('letterDraft', ev.target.value); },
               placeholder: band === 'elementary'
@@ -987,8 +988,7 @@ window.SelHub = window.SelHub || {
                 : band === 'middle'
                 ? 'Here\u2019s what I\u2019m working on right now... What\u2019s hard for me is... What I want you (future me) to remember is...'
                 : 'Where I am right now... What I\u2019m struggling with... What I\u2019m choosing to believe about my ability to grow...',
-              'aria-label': 'Write a letter to your future self',
-              style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _gmC('#78350f'), resize: 'vertical', minHeight: '120px', boxSizing: 'border-box', outline: 'none' }
+              style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _gmC('#78350f'), resize: 'vertical', minHeight: '120px', boxSizing: 'border-box' }
             }),
             h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
               h('button', {
