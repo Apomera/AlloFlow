@@ -2808,7 +2808,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             >🗑️</button>
                                         </div>
                                         <span className="text-xs font-mono text-slate-600 w-6">{idx + 1}.</span>
-                                        <button data-help-key="word_sounds_review_play_word"
+                                        <button
+                                            type="button"
+                                            aria-label={`${t('word_sounds.play_word') || 'Play word'}: ${word.targetWord || word.word}`}
+                                            aria-busy={playingWordIndex === idx}
+                                            data-help-key="word_sounds_review_play_word"
                                             onClick={async (e) => {
                                                 e.stopPropagation();
                                                 if (!onPlayAudio || playingWordIndex !== null) return;
@@ -2828,7 +2832,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 }
                                             }}
                                             disabled={playingWordIndex !== null || !word.ttsReady}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                                            className={`min-w-11 min-h-11 rounded-full flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-600 focus-visible:ring-offset-2 ${
                                                 word._ttsFailed
                                                     ? 'bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-300'
                                                     : playingWordIndex === idx
@@ -2843,7 +2847,8 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         </button>
                                         {word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && (
                                             <button
-                                                aria-label={t('common.play_phoneme_sequence')}
+                                                type="button"
+                                                aria-label={`${t('common.play_phoneme_sequence')}: ${word.targetWord || word.word}`}
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
                                                     if (onPlayAudio) {
@@ -2859,13 +2864,13 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         }
                                                     }
                                                 }}
-                                                className="w-10 h-10 bg-violet-100 hover:bg-violet-200 text-violet-600 rounded-full flex items-center justify-center transition-colors"
+                                                className="min-w-11 min-h-11 bg-violet-100 hover:bg-violet-200 text-violet-600 rounded-full flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
                                                 data-help-key="word_sounds_review_play_phonemes" title={t('common.play_phoneme_sequence')}
                                             >
                                                 <span className="text-sm font-bold">🔤</span>
                                             </button>
                                         )}
-                                        <div role="button" tabIndex={0} className="relative group/img" onClick={(e) => e.stopPropagation()}>
+                                        <div className="relative group/img" onClick={(e) => e.stopPropagation()}>
                                             {word.image && !word.imageFailed ? (
                                                 <div className="relative">
                                                     <img loading="lazy"
@@ -2878,13 +2883,15 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         }}
                                                     />
                                                     <button
-                                                        aria-label={t('common.regenerate_image')}
+                                                        type="button"
+                                                        aria-label={`${t('common.regenerate_image')}: ${word.targetWord || word.word}`}
+                                                        aria-busy={generatingImageIndex === idx}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
                                                         }}
                                                         disabled={generatingImageIndex === idx}
-                                                        className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-indigo-200"
+                                                        className="absolute -top-3 -right-3 min-w-11 min-h-11 bg-white rounded-full shadow-lg flex items-center justify-center border border-indigo-300 text-indigo-600 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                                         data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
                                                     >
                                                         {generatingImageIndex === idx ? <RefreshCw size={10} className="animate-spin text-indigo-500"/> : <RefreshCw size={10} className="text-indigo-500"/>}
@@ -2892,13 +2899,15 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 </div>
                                             ) : (
                                                 <button
-                                                    aria-label={t('common.generate_image_for_this_word')}
+                                                    type="button"
+                                                    aria-label={`${t('common.generate_image_for_this_word')}: ${word.targetWord || word.word}`}
+                                                    aria-busy={generatingImageIndex === idx}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
                                                     }}
                                                     disabled={generatingImageIndex === idx}
-                                                    className={`px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all ${
+                                                    className={`min-h-11 px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${
                                                         generatingImageIndex === idx
                                                             ? 'border-indigo-400 bg-indigo-100 text-indigo-600 animate-pulse'
                                                             : 'border-dashed border-indigo-300 text-indigo-500 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105'
@@ -2920,11 +2929,11 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 title="Phoneme data could not be generated, so this word's sounds were estimated from phonics rules. Expand and use Re-check to fix it before using it for assessment."
                                             >⚠️ estimated sounds</span>
                                         )}
-                                        <select aria-label={t('common.selection')}
+                                        <select aria-label={`${t('common.selection')}: ${word.targetWord || word.word}`}
                                             value={word.difficulty || 'medium'}
-                                            role="dialog" onClick={(e) => e.stopPropagation()}
+                                            onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => onUpdateWord(idx, { ...word, difficulty: e.target.value })}
-                                            className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none ${
+                                            className={`min-h-11 text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${
                                                 word.difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-300' :
                                                 word.difficulty === 'hard' ? 'bg-red-100 text-red-700 border-red-300' :
                                                 'bg-yellow-100 text-yellow-700 border-yellow-300'

@@ -199,6 +199,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Simplified Text Definition and Revision popups as named, focus-contained dialogs: Close receives initial focus, Tab and Shift+Tab remain contained, Escape closes from within the popup, and focus returns to the invoking word or revision action after dismissal. Close and Apply Revision actions now use explicit native behavior, 44 CSS-pixel targets, and strong visible focus; popup motion respects reduced-motion preferences; and the two click-catcher backdrops are hidden from assistive technology and removed from sequential focus (WCAG 1.3.1, 2.1.1, 2.1.2, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Synchronized the Word Sounds setup-source review-row actions with accessible native semantics: removed an inert simulated button around image controls and false dialog semantics from the difficulty select; kept image regeneration persistently visible; added word-specific accessible names and busy states to audio/image actions; and provided 44 CSS-pixel audio, image, and select targets with strong visible focus (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
