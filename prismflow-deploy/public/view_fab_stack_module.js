@@ -62,6 +62,22 @@ function FabStack(props) {
     studentAiFeaturesHidden,
     t
   } = props;
+  const panelRef = React.useRef(null);
+  const toggleRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!isFabExpanded) return void 0;
+    const focusTimer = window.setTimeout(() => {
+      const firstTool = panelRef.current?.querySelector("button:not([disabled])");
+      if (firstTool) firstTool.focus();
+    }, 0);
+    return () => window.clearTimeout(focusTimer);
+  }, [isFabExpanded]);
+  const handlePanelKeyDown = (event) => {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    handleToggleIsFabExpanded();
+    toggleRef.current?.focus();
+  };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `
         body.alloflow-launchpad-active .alloflow-fab-stack {
           display: none !important;
@@ -102,11 +118,16 @@ function FabStack(props) {
             grid-column: 1 / -1 !important;
           }
         }
-      `), /* @__PURE__ */ React.createElement("div", { "data-floating-control": "fab-stack", style: { zIndex: 180 }, className: `alloflow-floating-control alloflow-fab-stack fixed bottom-24 md:bottom-8 z-[180] flex flex-col items-end gap-4 no-print transition-all duration-300 ${runTour ? "right-[530px]" : "right-6"}` }, isFabExpanded && /* @__PURE__ */ React.createElement(
+      `), /* @__PURE__ */ React.createElement("div", { "data-floating-control": "fab-stack", style: { zIndex: 180 }, className: `alloflow-floating-control alloflow-fab-stack fixed bottom-24 md:bottom-8 z-[180] flex flex-col items-end gap-4 no-print transition-all duration-300 motion-reduce:transition-none ${runTour ? "right-[530px]" : "right-6"}` }, isFabExpanded && /* @__PURE__ */ React.createElement(
     "div",
     {
+      id: "alloflow-student-tools-panel",
+      ref: panelRef,
+      role: "group",
+      "aria-label": "Student tools",
+      onKeyDown: handlePanelKeyDown,
       "data-help-toggle": "true",
-      className: "alloflow-fab-panel flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-400 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar"
+      className: "alloflow-fab-panel flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-400 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 motion-reduce:animate-none max-h-[75vh] overflow-y-auto custom-scrollbar"
     },
     !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
       "button",
@@ -114,10 +135,11 @@ function FabStack(props) {
         onClick: handleToggleShowSocraticChat,
         className: `px-4 py-3 rounded-full transition-all shadow-sm flex items-center gap-2 ${showSocraticChat ? "bg-teal-700 text-white ring-2 ring-teal-400" : "bg-teal-100 text-teal-700 hover:bg-teal-200 border border-teal-200"}`,
         title: t("socratic.title"),
-        "aria-label": t("socratic.title"),
+        "aria-label": t("socratic.ask_for_help"),
+        "aria-pressed": showSocraticChat,
         "data-help-key": "socratic_toggle"
       },
-      /* @__PURE__ */ React.createElement(MessageCircleQuestion, { size: 20 }),
+      /* @__PURE__ */ React.createElement(MessageCircleQuestion, { size: 20, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", { className: "fab-label text-sm font-bold" }, t("socratic.ask_for_help"))
     ),
     activeView === "simplified" && generatedContent && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "fab-section-label text-[11px] font-black text-slate-600 uppercase text-center tracking-widest pt-1" }, t("simplified.mode_label")), /* @__PURE__ */ React.createElement(
@@ -134,9 +156,10 @@ function FabStack(props) {
         className: `p-3 rounded-full transition-all shadow-sm ${interactionMode === "read" && !isCompareMode && !isFluencyMode ? "bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("simplified.tip_read"),
         "aria-label": t("simplified.read_mode"),
+        "aria-pressed": interactionMode === "read" && !isCompareMode && !isFluencyMode,
         "data-help-key": "tool_read_mode"
       },
-      /* @__PURE__ */ React.createElement(Volume2, { size: 20 })
+      /* @__PURE__ */ React.createElement(Volume2, { size: 20, "aria-hidden": "true" })
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -150,9 +173,10 @@ function FabStack(props) {
         className: `p-3 rounded-full transition-all shadow-sm ${interactionMode === "define" && !isCompareMode ? "bg-yellow-100 text-yellow-800 ring-2 ring-yellow-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("simplified.tip_define"),
         "aria-label": t("simplified.define_mode"),
+        "aria-pressed": interactionMode === "define" && !isCompareMode,
         "data-help-key": "tool_define_mode"
       },
-      /* @__PURE__ */ React.createElement(Search, { size: 20 })
+      /* @__PURE__ */ React.createElement(Search, { size: 20, "aria-hidden": "true" })
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -165,9 +189,10 @@ function FabStack(props) {
         className: `p-3 rounded-full transition-all shadow-sm ${interactionMode === "explain" && !isCompareMode ? "bg-teal-100 text-teal-800 ring-2 ring-teal-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("simplified.tip_explain"),
         "aria-label": t("simplified.explain_mode"),
+        "aria-pressed": interactionMode === "explain" && !isCompareMode,
         "data-help-key": "tool_explain_mode"
       },
-      /* @__PURE__ */ React.createElement(HelpCircle, { size: 20 })
+      /* @__PURE__ */ React.createElement(HelpCircle, { size: 20, "aria-hidden": "true" })
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -177,8 +202,8 @@ function FabStack(props) {
         "aria-label": t("games.syntax.title"),
         "data-help-key": "tool_syntax_game"
       },
-      /* @__PURE__ */ React.createElement(Gamepad2, { size: 20 })
-    ), /* @__PURE__ */ React.createElement("div", { className: "fab-divider h-px w-full bg-slate-200 my-1" })),
+      /* @__PURE__ */ React.createElement(Gamepad2, { size: 20, "aria-hidden": "true" })
+    ), /* @__PURE__ */ React.createElement("div", { className: "fab-divider h-px w-full bg-slate-200 my-1", "aria-hidden": "true" })),
     /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -186,9 +211,10 @@ function FabStack(props) {
         className: `p-3 rounded-full transition-all shadow-sm ${readingRuler ? "bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("a11y.toggle_ruler"),
         "aria-label": t("a11y.toggle_ruler"),
+        "aria-pressed": readingRuler,
         "data-help-key": "fab_ruler"
       },
-      /* @__PURE__ */ React.createElement(ScanLine, { size: 20 })
+      /* @__PURE__ */ React.createElement(ScanLine, { size: 20, "aria-hidden": "true" })
     ),
     /* @__PURE__ */ React.createElement(
       "button",
@@ -197,9 +223,10 @@ function FabStack(props) {
         className: `p-3 rounded-full transition-all shadow-sm ${isStudyTimerRunning ? "bg-green-100 text-green-700 ring-2 ring-green-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("a11y.task_timer"),
         "aria-label": t("a11y.task_timer"),
+        "aria-pressed": isStudyTimerRunning,
         "data-help-key": "fab_timer"
       },
-      /* @__PURE__ */ React.createElement(Clock, { size: 20 })
+      /* @__PURE__ */ React.createElement(Clock, { size: 20, "aria-hidden": "true" })
     ),
     /* @__PURE__ */ React.createElement(
       "button",
@@ -208,9 +235,10 @@ function FabStack(props) {
         className: `p-3 rounded-full transition-all shadow-sm ${focusMode ? "bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("a11y.toggle_focus"),
         "aria-label": t("a11y.toggle_focus"),
+        "aria-pressed": focusMode,
         "data-help-key": "fab_focus"
       },
-      /* @__PURE__ */ React.createElement(Eye, { size: 20 })
+      /* @__PURE__ */ React.createElement(Eye, { size: 20, "aria-hidden": "true" })
     ),
     /* @__PURE__ */ React.createElement(
       "button",
@@ -218,9 +246,10 @@ function FabStack(props) {
         onClick: handleToggleVisualSupports,
         className: `p-3 rounded-full transition-all shadow-sm ${showVisualSupports ? "bg-purple-100 text-purple-600 ring-2 ring-purple-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("fab.visual_supports") || "Visual Supports",
-        "aria-label": t("fab.visual_supports") || "Visual Supports"
+        "aria-label": t("fab.visual_supports") || "Visual Supports",
+        "aria-pressed": showVisualSupports
       },
-      /* @__PURE__ */ React.createElement("span", { style: { fontSize: 20, lineHeight: 1 } }, "\u{1F5BC}\uFE0F")
+      /* @__PURE__ */ React.createElement("span", { style: { fontSize: 20, lineHeight: 1 }, "aria-hidden": "true" }, "\u{1F5BC}\uFE0F")
     ),
     activeView === "simplified" && /* @__PURE__ */ React.createElement(
       "button",
@@ -232,9 +261,10 @@ function FabStack(props) {
         className: `p-3 rounded-full transition-all shadow-sm ${isLineFocusMode ? "bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("a11y.toggle_line_focus"),
         "aria-label": t("a11y.toggle_line_focus"),
+        "aria-pressed": isLineFocusMode,
         "data-help-key": "fab_line_focus"
       },
-      /* @__PURE__ */ React.createElement(AlignJustify, { size: 20 })
+      /* @__PURE__ */ React.createElement(AlignJustify, { size: 20, "aria-hidden": "true" })
     ),
     (isTeacherMode || studentProjectSettings.allowDictation) && /* @__PURE__ */ React.createElement(
       "button",
@@ -249,22 +279,27 @@ function FabStack(props) {
           }
           setIsDictationMode(!isDictationMode);
         },
-        className: `p-3 rounded-full transition-all shadow-sm ${isDictationMode ? "bg-red-700 text-white animate-pulse shadow-red-500/50" : "bg-white text-slate-600 hover:bg-slate-100"}`,
+        className: `p-3 rounded-full transition-all shadow-sm ${isDictationMode ? "bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-red-500/50" : "bg-white text-slate-600 hover:bg-slate-100"}`,
         title: t("toolbar.dictation_toggle"),
         "aria-label": isDictationMode ? t("toolbar.dictation_stop") : t("toolbar.dictation_start"),
+        "aria-pressed": isDictationMode,
         "data-help-key": "fab_dictation"
       },
-      isDictationMode ? /* @__PURE__ */ React.createElement(Mic, { size: 20 }) : /* @__PURE__ */ React.createElement(MicOff, { size: 20 })
+      isDictationMode ? /* @__PURE__ */ React.createElement(Mic, { size: 20, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(MicOff, { size: 20, "aria-hidden": "true" })
     )
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      ref: toggleRef,
+      type: "button",
+      "aria-expanded": isFabExpanded,
+      "aria-controls": "alloflow-student-tools-panel",
       onClick: handleToggleIsFabExpanded,
-      className: "w-12 h-12 bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-full shadow-lg shadow-indigo-600/30 flex items-center justify-center transition-transform hover:scale-110 active:scale-95",
+      className: "w-12 h-12 bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-full shadow-lg shadow-indigo-600/30 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 motion-reduce:transform-none",
       "aria-label": isFabExpanded ? t("toolbar.student_tools_close") : t("toolbar.student_tools_open"),
       "data-help-key": "fab_toggle"
     },
-    /* @__PURE__ */ React.createElement(Wrench, { size: 24 })
+    /* @__PURE__ */ React.createElement(Wrench, { size: 24, "aria-hidden": "true" })
   )));
 }
 
