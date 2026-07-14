@@ -39,6 +39,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
   }
 
+  // Imported personal data stays out of persisted tool state until replacement is confirmed.
+  var pendingSelfAdvocacyImport = null;
+
   // Print-friendly CSS + accessibility CSS (reduced motion, skip link, focus, contrast)
   (function() {
     if (document.getElementById('allo-selfadvocacy-print-css')) return;
@@ -1627,6 +1630,136 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
       var activeTab = d.activeTab || 'menu';
       var viewBand = d.viewBand || band;
+      var confirmAction = d.confirmAction || null;
+      var PERSONAL_FIELDS = ['profile', 'card', 'actionPlan', 'meeting', 'milestones', 'journalEntries', 'letterFields', 'big5Answers', 'pScenarioId', 'pResponse', 'pCritique'];
+
+      function focusSelfAdvocacyControl(id) {
+        setTimeout(function() {
+          var target = document.getElementById(id);
+          if (target && target.focus) target.focus();
+        }, 50);
+      }
+      function openDestructiveConfirm(action) {
+        upd('confirmAction', action);
+        focusSelfAdvocacyControl('selfadv-confirm-cancel');
+      }
+      function closeDestructiveConfirm() {
+        var triggerId = confirmAction && confirmAction.triggerId;
+        if (confirmAction && confirmAction.type === 'import-data') pendingSelfAdvocacyImport = null;
+        upd('confirmAction', null);
+        if (triggerId) focusSelfAdvocacyControl(triggerId);
+      }
+      function commitDestructiveAction() {
+        if (!confirmAction) return;
+        var patch = { confirmAction: null };
+        var focusId = 'selfadv-tabpanel';
+        var message = '';
+        if (confirmAction.type === 'clear-profile') {
+          patch.profile = {};
+          focusId = 'selfadv-profile-heading';
+          message = 'Learning profile cleared.';
+        } else if (confirmAction.type === 'clear-meeting') {
+          patch.meeting = {};
+          focusId = 'selfadv-meeting-heading';
+          message = 'Meeting worksheet cleared.';
+        } else if (confirmAction.type === 'delete-journal') {
+          patch.journalEntries = (d.journalEntries || []).filter(function(entry) { return entry.id !== confirmAction.entryId; });
+          focusId = 'selfadv-journey-heading';
+          message = 'Journal entry deleted.';
+        } else if (confirmAction.type === 'clear-card') {
+          patch.card = {};
+          focusId = 'selfadv-card-heading';
+          message = 'Accommodation card cleared.';
+        } else if (confirmAction.type === 'clear-action-plan') {
+          patch.actionPlan = {};
+          focusId = 'selfadv-plan-heading';
+          message = 'Action plan cleared.';
+        } else if (confirmAction.type === 'import-data') {
+          if (!pendingSelfAdvocacyImport) {
+            upd('confirmAction', null);
+            addToast({ message: 'The selected import is no longer available. Choose the backup file again.', type: 'error' });
+            focusSelfAdvocacyControl('selfadv-import-trigger');
+            return;
+          }
+          Object.keys(pendingSelfAdvocacyImport).forEach(function(key) { patch[key] = pendingSelfAdvocacyImport[key]; });
+          pendingSelfAdvocacyImport = null;
+          focusId = 'selfadv-data-heading';
+          message = 'Data import complete. Previous content was replaced.';
+          addToast({ message: 'Imported. Your previous data has been replaced.', type: 'success' });
+        } else if (confirmAction.type === 'reset-all') {
+          PERSONAL_FIELDS.forEach(function(key) {
+            if (key === 'milestones' || key === 'profile' || key === 'card' || key === 'actionPlan' || key === 'meeting' || key === 'big5Answers' || key === 'letterFields') patch[key] = {};
+            else if (key === 'journalEntries') patch[key] = [];
+            else patch[key] = '';
+          });
+          patch.pCritique = '';
+          patch.pScenarioId = null;
+          focusId = 'selfadv-data-heading';
+          message = 'All your personal data has been cleared.';
+          addToast({ message: 'Everything has been reset.', type: 'success' });
+        } else {
+          closeDestructiveConfirm();
+          return;
+        }
+        upd(patch);
+        announceSR(message);
+        focusSelfAdvocacyControl(focusId);
+      }
+      function handleConfirmKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeDestructiveConfirm();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var buttons = event.currentTarget.querySelectorAll('button:not([disabled])');
+        if (!buttons.length) return;
+        var first = buttons[0];
+        var last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      function renderDestructiveConfirm() {
+        if (!confirmAction) return null;
+        var copy = {
+          'clear-profile': ['Clear learning profile?', 'This permanently clears everything in your learning profile. This cannot be undone.', 'Clear profile'],
+          'clear-meeting': ['Clear meeting worksheet?', 'This permanently clears every response in your meeting worksheet. This cannot be undone.', 'Clear worksheet'],
+          'delete-journal': ['Delete journal entry?', 'This permanently deletes this advocacy journey journal entry. This cannot be undone.', 'Delete entry'],
+          'clear-card': ['Clear accommodation card?', 'This permanently clears every field on your accommodation card. This cannot be undone.', 'Clear card'],
+          'clear-action-plan': ['Clear action plan?', 'This permanently clears every field in your action plan. This cannot be undone.', 'Clear plan'],
+          'import-data': ['Replace current data?', 'Importing this backup permanently replaces your current Self-Advocacy Studio data. Export first if you may need the current version.', 'Replace and import'],
+          'reset-all': ['Reset all personal data?', 'This permanently clears your Learning Profile, Accommodation Card, Action Plan, Meeting Prep, Journey milestones and journal entries, letter drafts, Big 5 answers, and practice responses. This cannot be undone unless you exported first.', 'Reset all data']
+        }[confirmAction.type];
+        if (!copy) return null;
+        return h('div', {
+          id: 'selfadv-destructive-confirm',
+          className: 'fixed inset-0 z-[10003] flex items-center justify-center bg-slate-950/80 p-4 no-print',
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'selfadv-confirm-title',
+          'aria-describedby': 'selfadv-confirm-description',
+          onKeyDown: handleConfirmKeyDown
+        }, h('div', { className: 'w-full max-w-lg rounded-2xl border-2 border-rose-400 bg-slate-900 p-5 text-slate-100 shadow-2xl' },
+          h('h2', { id: 'selfadv-confirm-title', className: 'text-xl font-black text-rose-200 mb-2' }, copy[0]),
+          h('p', { id: 'selfadv-confirm-description', className: 'text-sm leading-relaxed text-slate-200 mb-5' }, copy[1]),
+          h('div', { className: 'flex flex-wrap justify-end gap-3' },
+            h('button', {
+              id: 'selfadv-confirm-cancel',
+              onClick: closeDestructiveConfirm,
+              className: 'min-h-11 rounded-lg border border-slate-400 bg-slate-700 px-4 py-2 font-bold text-white hover:bg-slate-600'
+            }, 'Cancel'),
+            h('button', {
+              onClick: commitDestructiveAction,
+              className: 'min-h-11 rounded-lg border border-rose-400 bg-rose-700 px-4 py-2 font-black text-white hover:bg-rose-600'
+            }, copy[2])
+          )
+        ));
+      }
 
       // Practice state
       var pScenarioId = d.pScenarioId || null;
@@ -1956,8 +2089,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           updLP((function() { var o = {}; o[field] = next; return o; })());
         };
         var clearProfile = function() {
-          if (typeof window !== 'undefined' && window.confirm && !window.confirm('Clear everything in your learning profile? This can\'t be undone.')) return;
-          upd({ profile: {} });
+          openDestructiveConfirm({ type: 'clear-profile', triggerId: 'selfadv-clear-profile' });
         };
 
         var checklistSection = function(title, field, items, colorClass, helpText) {
@@ -2050,7 +2182,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           printableOnePager,
           h('div', { className: 'no-print' },
-            h('h2', { className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83D\uDC64 My Learning Profile'),
+            h('h2', { id: 'selfadv-profile-heading', tabIndex: -1, className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83D\uDC64 My Learning Profile'),
             h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, 'A one-page portrait of you as a learner. Fill what applies, skip what doesn\'t. When you\'re done, print it and share it with teachers, a counselor, or whoever needs to understand how to work with you. You control what goes in and who sees it.'),
             renderBandSelector(),
             h('div', { className: 'mt-3 p-3 rounded-lg bg-amber-900/30 border border-amber-500/40 text-xs text-amber-100' },
@@ -2104,6 +2236,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               className: 'flex-1 py-2 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-500'
             }, '\uD83D\uDDA8 Print one-pager / Save as PDF'),
             h('button', {
+              id: 'selfadv-clear-profile',
               onClick: clearProfile,
               className: 'py-2 px-4 rounded-lg bg-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-600'
             }, 'Clear everything')
@@ -2986,8 +3119,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           upd({ meeting: Object.assign({}, m, patch) });
         };
         var clearMeeting = function() {
-          if (typeof window !== 'undefined' && window.confirm && !window.confirm('Clear the meeting worksheet? This can\'t be undone.')) return;
-          upd({ meeting: {} });
+          openDestructiveConfirm({ type: 'clear-meeting', triggerId: 'selfadv-clear-meeting' });
         };
         var selectedType = MEETING_TYPES.find(function(t) { return t.id === m.meetingType; });
         var typeLabel = selectedType ? selectedType.name : (m.meetingType === 'other' && m.otherType ? m.otherType : 'meeting');
@@ -3063,7 +3195,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           printable,
           h('div', { className: 'no-print' },
-            h('h2', { className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83D\uDCDD Meeting Prep Worksheet'),
+            h('h2', { id: 'selfadv-meeting-heading', tabIndex: -1, className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83D\uDCDD Meeting Prep Worksheet'),
             h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, 'Fill in what applies. Skip what doesn\'t. When you\'re done, print it and bring it to the meeting. Even if you don\'t read from it out loud, having it in front of you can make a big difference.')
           ),
 
@@ -3142,6 +3274,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               className: 'flex-1 py-2 rounded-lg bg-teal-600 text-white text-sm font-bold hover:bg-teal-500'
             }, '\uD83D\uDDA8 Print worksheet / Save as PDF'),
             h('button', {
+              id: 'selfadv-clear-meeting',
               onClick: clearMeeting,
               className: 'py-2 px-4 rounded-lg bg-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-600'
             }, 'Clear worksheet')
@@ -3540,9 +3673,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           announceSR('Entry saved');
         };
         var deleteEntry = function(id) {
-          if (typeof window !== 'undefined' && window.confirm && !window.confirm('Delete this journal entry? Can\'t be undone.')) return;
-          var next = entries.filter(function(e) { return e.id !== id; });
-          upd('journalEntries', next);
+          openDestructiveConfirm({ type: 'delete-journal', entryId: id, triggerId: 'selfadv-delete-journal-' + id });
         };
 
         // Count totals
@@ -3551,7 +3682,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         var pctDone = totalMilestones > 0 ? Math.round((doneMilestones / totalMilestones) * 100) : 0;
 
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
-          h('h2', { className: 'text-2xl font-black text-indigo-200' }, '\uD83D\uDDFA\uFE0F My Advocacy Journey'),
+          h('h2', { id: 'selfadv-journey-heading', tabIndex: -1, className: 'text-2xl font-black text-indigo-200' }, '\uD83D\uDDFA\uFE0F My Advocacy Journey'),
           h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Your personal space for tracking growth over time. Check off milestones as you reach them. Write short journal entries when something happens worth remembering. Nothing here is graded. You control what\'s in it, and you control who sees it.'),
 
           h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-violet-900/40 to-fuchsia-900/40 border border-violet-500/30' },
@@ -3659,6 +3790,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                       );
                     }),
                     h('button', {
+                      id: 'selfadv-delete-journal-' + entry.id,
                       onClick: function() { deleteEntry(entry.id); },
                       className: 'mt-2 text-xs text-rose-400 hover:text-rose-300 no-print'
                     }, 'Delete')
@@ -3681,8 +3813,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           upd({ card: Object.assign({}, c, patch) });
         };
         var clearCard = function() {
-          if (typeof window !== 'undefined' && window.confirm && !window.confirm('Clear the card? This can\'t be undone.')) return;
-          upd('card', {});
+          openDestructiveConfirm({ type: 'clear-card', triggerId: 'selfadv-clear-card' });
         };
         var accomList = (c.accommodations || '').split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s; });
 
@@ -3700,7 +3831,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           printable,
           h('div', { className: 'no-print' },
-            h('h2', { className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83D\uDCB3 Accommodation Card'),
+            h('h2', { id: 'selfadv-card-heading', tabIndex: -1, className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83D\uDCB3 Accommodation Card'),
             h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, 'A wallet-sized reference. Fill in the fields, print, and trim to business-card size. Keep it in your backpack, wallet, or phone case. When a sub teacher or anyone else doesn\'t know your plan, you can hand it over. Low drama, high clarity.')
           ),
 
@@ -3821,6 +3952,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               className: 'flex-1 py-2 rounded-lg bg-amber-600 text-white text-sm font-bold hover:bg-amber-500'
             }, '\uD83D\uDDA8 Print card'),
             h('button', {
+              id: 'selfadv-clear-card',
               onClick: clearCard,
               className: 'py-2 px-4 rounded-lg bg-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-600'
             }, 'Clear')
@@ -3976,8 +4108,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           upd({ actionPlan: Object.assign({}, ap, patch) });
         };
         var clearAP = function() {
-          if (typeof window !== 'undefined' && window.confirm && !window.confirm('Clear the action plan? This can\'t be undone.')) return;
-          upd('actionPlan', {});
+          openDestructiveConfirm({ type: 'clear-action-plan', triggerId: 'selfadv-clear-action-plan' });
         };
         var hasContent = !!(ap.goal || ap.step1 || ap.step2 || ap.step3);
 
@@ -4023,7 +4154,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           printable,
           h('div', { className: 'no-print' },
-            h('h2', { className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83C\uDFAF Action Plan Builder'),
+            h('h2', { id: 'selfadv-plan-heading', tabIndex: -1, className: 'text-2xl font-black text-indigo-200 mb-1' }, '\uD83C\uDFAF Action Plan Builder'),
             h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, 'Self-advocacy in the abstract is overwhelming. Self-advocacy with one specific thing to work on for the next two weeks is doable. Pick one. Break it down. Set a check-in. Print it. Tape it somewhere you\'ll see it.')
           ),
 
@@ -4078,6 +4209,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               className: 'flex-1 py-2 rounded-lg bg-lime-600 text-white text-sm font-bold hover:bg-lime-500'
             }, '\uD83D\uDDA8 Print plan'),
             h('button', {
+              id: 'selfadv-clear-action-plan',
               onClick: clearAP,
               className: 'py-2 px-4 rounded-lg bg-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-600'
             }, 'Clear plan')
@@ -4407,10 +4539,6 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
       // ── My Data view (privacy / export / import / reset) ──
       function renderData() {
-        // Personal data fields we treat as the student's content
-        var PERSONAL_FIELDS = ['profile', 'card', 'actionPlan', 'meeting', 'milestones', 'journalEntries', 'letterFields', 'big5Answers', 'pScenarioId', 'pResponse', 'pCritique'];
-        // Stable settings we preserve across reset
-        var SETTINGS_FIELDS = ['viewBand'];
 
         var allData = {};
         PERSONAL_FIELDS.forEach(function(k) {
@@ -4454,61 +4582,43 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         };
 
         var doImport = function(event) {
-          var file = event.target.files && event.target.files[0];
+          var input = event.target;
+          var file = input.files && input.files[0];
           if (!file) return;
-          if (typeof window !== 'undefined' && window.confirm && !window.confirm('Importing will REPLACE your current data with the data from the file. Continue?')) {
-            event.target.value = '';
-            return;
-          }
           var reader = new FileReader();
           reader.onload = function(ev) {
             try {
               var parsed = JSON.parse(ev.target.result);
               if (!parsed || parsed.tool !== 'selfAdvocacyStudio' || !parsed.data) {
                 addToast({ message: 'That doesn\'t look like a Self-Advocacy Studio export file.', type: 'error' });
-                event.target.value = '';
+                input.value = '';
                 return;
               }
               var patch = {};
               PERSONAL_FIELDS.forEach(function(k) {
                 if (parsed.data[k] !== undefined) patch[k] = parsed.data[k];
               });
-              upd(patch);
-              addToast({ message: 'Imported. Your previous data has been replaced.', type: 'success' });
-              announceSR('Data import complete. Previous content was replaced.');
+              pendingSelfAdvocacyImport = patch;
+              input.value = '';
+              openDestructiveConfirm({ type: 'import-data', triggerId: 'selfadv-import-trigger' });
             } catch (e) {
               addToast({ message: 'Import failed: ' + (e && e.message ? e.message : 'invalid JSON'), type: 'error' });
+              input.value = '';
             }
-            event.target.value = '';
           };
           reader.onerror = function() {
             addToast({ message: 'Could not read the file.', type: 'error' });
-            event.target.value = '';
+            input.value = '';
           };
           reader.readAsText(file);
         };
 
         var doReset = function() {
-          if (typeof window !== 'undefined' && window.confirm) {
-            if (!window.confirm('Reset ALL your data? This wipes Learning Profile, Card, Action Plan, Meeting Prep, Journey milestones and journal entries, Letter drafts, Big 5 answers, and Practice responses. Cannot be undone unless you exported first. Continue?')) return;
-            if (!window.confirm('Are you SURE? Last chance.')) return;
-          }
-          var clearPatch = {};
-          PERSONAL_FIELDS.forEach(function(k) {
-            if (k === 'milestones' || k === 'profile' || k === 'card' || k === 'actionPlan' || k === 'meeting' || k === 'big5Answers' || k === 'letterFields') clearPatch[k] = {};
-            else if (k === 'journalEntries') clearPatch[k] = [];
-            else clearPatch[k] = '';
-          });
-          // Also clear cached results
-          clearPatch.pCritique = '';
-          clearPatch.pScenarioId = null;
-          upd(clearPatch);
-          addToast({ message: 'Everything has been reset.', type: 'success' });
-          announceSR('All your personal data has been cleared.');
+          openDestructiveConfirm({ type: 'reset-all', triggerId: 'selfadv-reset-all' });
         };
 
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
-          h('h2', { className: 'text-2xl font-black text-indigo-200' }, '\uD83D\uDD12 My Data'),
+          h('h2', { id: 'selfadv-data-heading', tabIndex: -1, className: 'text-2xl font-black text-indigo-200' }, '\uD83D\uDD12 My Data'),
           h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Self-advocacy includes deciding what happens to information about you. This page gives you direct control: see what\'s here, take it with you, restore from a backup, or wipe everything. Nothing on this page sends data to any server.'),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-emerald-500/30' },
@@ -4537,10 +4647,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/30' },
             h('h3', { className: 'text-sm font-black text-amber-300 mb-2' }, 'Import a backup'),
             h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Have a previous export from this tool? Pick the JSON file to restore. Importing replaces whatever\'s in the tool right now.'),
-            h('label', { htmlFor: 'data-import-file', className: 'inline-flex items-center px-5 py-2 rounded-lg font-bold text-sm bg-amber-600 text-white hover:bg-amber-500 cursor-pointer' }, '\uD83D\uDCE4 Choose a backup file'),
+            h('button', {
+              id: 'selfadv-import-trigger',
+              type: 'button',
+              onClick: function() {
+                var input = document.getElementById('data-import-file');
+                if (input && input.click) input.click();
+              },
+              className: 'inline-flex min-h-11 items-center px-5 py-2 rounded-lg font-bold text-sm bg-amber-600 text-white hover:bg-amber-500'
+            }, '\uD83D\uDCE4 Choose a backup file'),
             h('input', {
               id: 'data-import-file',
               type: 'file',
+              tabIndex: -1,
+              'aria-hidden': 'true',
               accept: '.json,application/json',
               onChange: doImport,
               className: 'sr-only'
@@ -4550,11 +4670,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           h('section', { className: 'p-4 rounded-xl bg-rose-900/30 border border-rose-500/40' },
             h('h3', { className: 'text-sm font-black text-rose-300 mb-2' }, 'Reset everything'),
             h('p', { className: 'text-xs text-slate-200 leading-relaxed mb-3' }, 'Clear all your personal content from this tool. Useful if: you\'re finishing a school year and want a fresh start, you\'re using a shared device and want to remove your data before the next person uses it, or you want to retake an inventory without your old answers showing.'),
-            h('p', { className: 'text-xs text-amber-200 mb-3' }, h('strong', null, 'Heads up: '), 'This cannot be undone unless you exported first. Two confirmation dialogs will protect you from accidents.'),
+            h('p', { className: 'text-xs text-amber-200 mb-3' }, h('strong', null, 'Heads up: '), 'This cannot be undone unless you exported first. An accessible confirmation dialog will protect you from accidents.'),
             h('button', {
+              id: 'selfadv-reset-all',
               onClick: doReset,
               disabled: !hasAnyData,
-              'aria-label': hasAnyData ? 'Reset all personal data, with two confirmation dialogs' : 'Nothing to reset',
+              'aria-label': hasAnyData ? 'Reset all personal data, with confirmation' : 'Nothing to reset',
               className: 'px-5 py-2 rounded-lg font-bold text-sm ' + (hasAnyData ? 'bg-rose-600 text-white hover:bg-rose-500' : 'bg-slate-700 text-slate-400 cursor-not-allowed')
             }, '\uD83D\uDDD1\uFE0F Reset all my data'),
             !hasAnyData && h('div', { className: 'text-xs text-slate-300 mt-2 italic' }, 'Nothing to reset.')
@@ -4616,7 +4737,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           role: 'tabpanel',
           'aria-labelledby': 'selfadv-tab-' + activeTab,
           tabIndex: 0
-        }, body))
+        }, body)),
+        renderDestructiveConfirm()
       );
     }
   });
