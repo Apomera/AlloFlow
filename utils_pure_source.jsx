@@ -216,6 +216,50 @@ const _dsMirrorSet = (key, storedValue) => {
   _dsBridge().then((ds) => ds.set('app_kv', key, storedValue))
     .catch((e) => warnLog(`storageDB bridge mirror failed [${key}]:`, e?.code || e?.message || e));
 };
+// ── Canvas localStorage continuity (2026-07-14) ────────────────────────
+// Settings and toggles all over the app (theme, voice, a11y, per-tool
+// preferences) live in plain localStorage, which resets every Canvas
+// session with the throwaway origin. On Canvas surfaces: hydrate
+// localStorage from the bridge at load (only keys the session hasn't
+// already written — never clobber fresher values), then snapshot the whole
+// store back periodically and on hide/unload. window.__alloPrefsHydrated +
+// the allo-prefs-hydrated event let the monolith's mount gate hold first
+// paint briefly so boot-time reads (theme, a11y) see restored values.
+if (_dsBridgeWanted && typeof window !== 'undefined') {
+  const _finishPrefsHydration = (applied) => {
+    window.__alloPrefsHydrated = true;
+    try { window.dispatchEvent(new CustomEvent('allo-prefs-hydrated', { detail: { applied } })); } catch (_) {}
+  };
+  _dsBridge().then((ds) => ds.get('ls_prefs', 'all')).then((snap) => {
+    let applied = 0;
+    if (snap && typeof snap === 'object') {
+      Object.keys(snap).forEach((k) => {
+        try {
+          if (typeof snap[k] === 'string' && localStorage.getItem(k) === null) {
+            localStorage.setItem(k, snap[k]);
+            applied++;
+          }
+        } catch (_) {}
+      });
+    }
+    _finishPrefsHydration(applied);
+  }).catch(() => _finishPrefsHydration(0));
+  const _lsSnapshot = () => {
+    try {
+      const dump = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k) dump[k] = localStorage.getItem(k);
+      }
+      _dsBridge().then((ds) => ds.set('ls_prefs', 'all', dump)).catch(() => {});
+    } catch (_) {}
+  };
+  setInterval(_lsSnapshot, 30000);
+  window.addEventListener('pagehide', _lsSnapshot);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') _lsSnapshot();
+  });
+}
 const storageDB = {
   get: async (key) => {
     try {

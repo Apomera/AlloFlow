@@ -15007,13 +15007,36 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return createSelfContainedHomeworkLink();
       }
   }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, hostPackOnMailbox, mbConfig, generatedContent, history, sourceTopic, user?.uid]);
-  const testHomeworkAsStudent = useCallback(() => {
-      const url = qrShareModal?.url;
+  const openStudentQrPreview = useCallback((url, label = 'student link') => {
       if (!url || typeof window === 'undefined') return;
       const preview = window.open(url, '_blank');
       if (preview) { try { preview.opener = null; } catch (_) {} }
-      else addToast('Allow pop-ups to test this homework link as a student.', 'info');
-  }, [qrShareModal?.url, addToast]);
+      else addToast('Allow pop-ups to test this ' + label + '.', 'info');
+  }, [addToast]);
+  const printQrSheet = useCallback((svg, heading, detail, modeLabel, fallbackCode = '') => {
+      if (!svg || typeof window === 'undefined') {
+          addToast('Wait for the QR code to finish loading before printing.', 'info');
+          return;
+      }
+      const popup = window.open('', '_blank', 'width=720,height=900');
+      if (!popup) {
+          addToast('Allow pop-ups to print this QR code.', 'info');
+          return;
+      }
+      try { popup.opener = null; } catch (_) {}
+      const escapeText = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      const safeHeading = escapeText(heading);
+      const safeDetail = escapeText(detail);
+      const safeMode = escapeText(modeLabel);
+      const safeCode = escapeText(String(fallbackCode || '').replace(/[^A-Z0-9-]/gi, ''));
+      popup.document.open();
+      popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeHeading}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.detail{font-size:18px;font-weight:700;margin-bottom:8px}.mode{font-weight:700;color:#6d28d9;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 52px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>${safeHeading}</h1><div class="detail">${safeDetail}</div><div class="mode">${safeMode}</div><div class="qr">${svg}</div>${safeCode ? '<div>Fallback class code</div><div class="code">' + safeCode + '</div>' : ''}<div class="note">Scan with a phone or tablet camera. If scanning is unavailable, ask the teacher for the link${safeCode ? ' or class code' : ''}.</div></body></html>`);
+      popup.document.close();
+      setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
+  }, [addToast]);
+  const testHomeworkAsStudent = useCallback(() => {
+      openStudentQrPreview(qrShareModal?.url, 'homework link as a student');
+  }, [openStudentQrPreview, qrShareModal?.url]);
   const revokeHomeworkAssignment = useCallback(async () => {
       const current = qrShareModal;
       if (!current || current.type === 'assignment-pack') return;
@@ -25089,7 +25112,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
               } catch (e) {
                   warnLog('Homework QR load failed:', e);
-                  if (!cancelled) addToast('Could not load this homework QR assignment.', 'error');
+                  if (!cancelled) {
+                      const message = String(e?.message || '').toLowerCase();
+                      const code = String(e?.code || '').toLowerCase();
+                      const recovery = message.includes('expired')
+                          ? 'This homework link has expired. Ask your teacher for a new QR code.'
+                          : message.includes('not found')
+                              ? 'This homework link was revoked or is no longer available. Ask your teacher for a new QR code.'
+                              : message.includes('no resources') || message.includes('no openable')
+                                  ? 'This homework link is incomplete. Ask your teacher to create it again.'
+                                  : code.includes('permission-denied')
+                                      ? 'This homework link cannot access the teacher class storage. Ask your teacher to use a Class Mailbox or self-contained QR.'
+                                      : 'Could not load this homework assignment. Check the connection, then retry or ask your teacher for a new QR code.';
+                      addToast(recovery, 'error');
+                  }
               }
           };
           loadAssignment();
@@ -25137,9 +25173,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } catch (e) {
               warnLog('Self-contained homework load failed:', e);
               if (!cancelled) {
+                  const errorMessage = String(e?.message || '').toLowerCase();
                   const message = e?.code === 'allo/pack-unsupported-browser'
                       ? 'This browser is too old to open compressed homework links. Try another device or browser.'
-                      : 'Could not open this homework link. Ask your teacher for a new one.';
+                      : errorMessage.includes('expired')
+                          ? 'This homework link has expired. Ask your teacher for a new QR code.'
+                          : errorMessage.includes('no resources')
+                              ? 'This homework link is incomplete. Ask your teacher to create it again.'
+                              : 'Could not open this homework link. It may be damaged or truncated; ask your teacher for a new one.';
                   addToast(message, 'error');
               }
           }
@@ -32771,10 +32812,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               <p className="text-xs font-black text-violet-950">Students scan to open the assignment on their own time.</p>
               <p className="text-[11px] text-violet-800 mt-0.5">This QR does not join your class, show a session code, or connect to live pacing.</p>
             </div>
-            <p className="text-[11px] text-slate-500 mb-3">Expires {qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : '14 days after creation'}.</p>
-            <button onClick={testHomeworkAsStudent} className="w-full mb-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-500 rounded-lg p-2 transition-all">
-              Test as student <ExternalLink size={12}/>
-            </button>
+            <p className="text-[11px] text-slate-500 mb-3">{qrShareSvg ? 'Ready to scan' : qrShareError ? 'QR unavailable - use the link below' : 'Validating QR code...'} &middot; Expires {qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : '14 days after creation'}.</p>
+            <div className="mb-2 grid grid-cols-2 gap-2">
+              <button onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
+                Test as student <ExternalLink size={12}/>
+              </button>
+              <button onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, 'Teacher-prepared resources · Student AI off · No live session')} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                Print QR <Printer size={12}/>
+              </button>
+            </div>
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
               {qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
             </button>
@@ -32963,8 +33009,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <div className="bg-white border border-slate-200 rounded-xl p-3 w-48 h-48 [&_svg]:w-full [&_svg]:h-full shadow-sm" dangerouslySetInnerHTML={{ __html: mbQrSvg }} />
                   </div>
                 ) : (
-                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="w-full mb-3 text-xs font-bold text-indigo-700 underline underline-offset-2">Copy join link</button>
+                  <p className="mb-3 text-center text-xs font-bold text-indigo-700">Validating live-session QR...</p>
                 )}
+                <p className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? 'Ready to scan · AI tools off · Active until you end the session' : 'The class code remains available while the QR loads.'}</p>
+                <div className="mb-3 grid grid-cols-3 gap-2">
+                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
+                    Copy link <Copy size={12}/>
+                  </button>
+                  <button onClick={() => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] font-bold text-emerald-900 hover:border-emerald-500">
+                    Test <ExternalLink size={12}/>
+                  </button>
+                  <button onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, 'Class Mailbox QR join · Student AI off', mbLive.code)} disabled={!mbQrSvg} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-[11px] font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                    Print <Printer size={12}/>
+                  </button>
+                </div>
                 <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Connected students ({Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
                   {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">Waiting for students to scan…</p>}
@@ -39209,18 +39267,34 @@ export default function WrappedApp() {
 if (typeof __firebase_config !== 'undefined') {
   const container = document.getElementById('root');
   if (container) {
-    if (ReactDOM.createRoot) {
-       const originalConsoleError = console.error;
-       console.error = (...args) => {
-         if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
-           return;
-         }
-         originalConsoleError(...args);
-       };
-       const root = ReactDOM.createRoot(container);
-       root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
+    const _alloMountApp = () => {
+      if (ReactDOM.createRoot) {
+         const originalConsoleError = console.error;
+         console.error = (...args) => {
+           if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
+             return;
+           }
+           originalConsoleError(...args);
+         };
+         const root = ReactDOM.createRoot(container);
+         root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
+      } else {
+         ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
+      }
+    };
+    // Canvas localStorage hydration gate (2026-07-14): boot-time useState
+    // initializers read prefs (theme, a11y, voice) synchronously, but on
+    // Canvas the origin's localStorage starts empty every session. UtilsPure
+    // restores it from the device-storage bridge and announces via
+    // window.__alloPrefsHydrated / the allo-prefs-hydrated event — hold
+    // first paint for that (1.5s cap so a blocked bridge never stalls boot).
+    if (_isCanvasEnv && !window.__alloPrefsHydrated) {
+      let _alloMounted = false;
+      const _alloGo = () => { if (!_alloMounted) { _alloMounted = true; _alloMountApp(); } };
+      window.addEventListener('allo-prefs-hydrated', _alloGo, { once: true });
+      setTimeout(_alloGo, 1500);
     } else {
-       ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
+      _alloMountApp();
     }
   }
 }

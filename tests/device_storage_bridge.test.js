@@ -75,6 +75,22 @@ describe('device storage bridge — file contracts', () => {
     }
   });
 
+  it('restores localStorage prefs in Canvas and gates first paint on hydration', () => {
+    const upSource = readFileSync(resolve(process.cwd(), 'utils_pure_source.jsx'), 'utf8');
+    const upModule = readFileSync(resolve(process.cwd(), 'utils_pure_module.js'), 'utf8');
+    for (const src of [upSource, upModule]) {
+      expect(src).toContain("'ls_prefs'");
+      expect(src).toContain('__alloPrefsHydrated');
+      expect(src).toContain('allo-prefs-hydrated');
+      // hydration must never clobber values the session already wrote
+      expect(src).toContain('localStorage.getItem(k) === null');
+    }
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    expect(anti).toContain('_isCanvasEnv && !window.__alloPrefsHydrated');
+    expect(anti).toContain("window.addEventListener('allo-prefs-hydrated', _alloGo, { once: true })");
+    expect(anti).toContain('setTimeout(_alloGo, 1500)');
+  });
+
   it('ships the on-screen probe panel and its keyboard bootstrap', () => {
     expect(moduleSrc).toContain('__openProbePanel');
     const tuSource = readFileSync(resolve(process.cwd(), 'text_utility_helpers_source.jsx'), 'utf8');
