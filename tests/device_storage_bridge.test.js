@@ -61,6 +61,20 @@ describe('device storage bridge — file contracts', () => {
     }
   });
 
+  it('mirrors the app-wide storageDB autosave layer through the bridge in Canvas', () => {
+    const upSource = readFileSync(resolve(process.cwd(), 'utils_pure_source.jsx'), 'utf8');
+    const upModule = readFileSync(resolve(process.cwd(), 'utils_pure_module.js'), 'utf8');
+    const upDeployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/utils_pure_module.js'), 'utf8');
+    expect(upDeployed).toBe(upModule);
+    for (const src of [upSource, upModule]) {
+      expect(src).toContain('_dsBridgeWanted');
+      expect(src).toContain("'app_kv'");
+      expect(src).toContain('_dsMirrorSet(key, valToStore)');
+      expect(src).toContain("clearNamespace('app_kv')");
+      expect(src).toContain('allo_device_storage_module.js?v=');
+    }
+  });
+
   it('ships the on-screen probe panel and its keyboard bootstrap', () => {
     expect(moduleSrc).toContain('__openProbePanel');
     const tuSource = readFileSync(resolve(process.cwd(), 'text_utility_helpers_source.jsx'), 'utf8');

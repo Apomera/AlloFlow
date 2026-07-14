@@ -179,12 +179,68 @@ const unflattenObject = (data) => {
     }
     return result;
 };
+// ── Device-storage bridge mirror (2026-07-14) ──────────────────────────
+// In Canvas the app origin is EPHEMERAL: idbKeyval's IndexedDB vanishes
+// between sessions, so the automatic autosave/restore that quietly works on
+// stable origins loses everything there. When the surface looks like Canvas,
+// storageDB writes through to the device-storage bridge (silent partitioned-
+// iframe channel on alloflow-cdn.pages.dev — probe-verified 2026-07-14 to
+// persist across Canvas sessions) and falls back to it on read misses,
+// backfilling the fast local IDB. Values cross the bridge in their stored
+// form (LZString-compressed strings), so both sides stay byte-compatible.
+// Stable origins never load the bridge — zero behavior change outside Canvas.
+const _dsBridgeWanted = (() => {
+  try {
+    const host = window.location.hostname || '';
+    if ((window.location.href || '').startsWith('blob:')) return true;
+    return host.includes('googleusercontent') || host.includes('scf.usercontent') ||
+           host.includes('code-server') || host.includes('idx.google') || host.includes('run.app');
+  } catch (_) { return false; }
+})();
+const _dsBridge = () => {
+  if (!window.__alloDeviceStoragePromise) {
+    window.__alloDeviceStoragePromise = window.alloDeviceStorage
+      ? Promise.resolve(window.alloDeviceStorage)
+      : new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+          s.onload = () => {
+            // Pages answers missing files with its SPA index as HTML 200 —
+            // verify the global actually appeared (lame.min.js lesson).
+            if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
+            else reject(new Error('device storage module missing after load'));
+          };
+          s.onerror = () => reject(new Error('device storage module failed to load'));
+          document.head.appendChild(s);
+        });
+  }
+  return window.__alloDeviceStoragePromise.then((ds) => ds.ready().then(() => ds));
+};
+const _dsMirrorSet = (key, storedValue) => {
+  if (!_dsBridgeWanted) return;
+  _dsBridge().then((ds) => ds.set('app_kv', key, storedValue))
+    .catch((e) => warnLog(`storageDB bridge mirror failed [${key}]:`, e?.code || e?.message || e));
+};
 const storageDB = {
   get: async (key) => {
     try {
       if (typeof window === 'undefined') return null;
       if (!window.idbKeyval) { warnLog("storageDB.get: IDB not yet loaded, returning null for", key); return null; }
-      const val = await window.idbKeyval.get(key);
+      let val = await window.idbKeyval.get(key);
+      if ((val === undefined || val === null) && _dsBridgeWanted) {
+        // Fresh Canvas session: local IDB is empty but the bridge may hold
+        // the previous session's autosave. Backfill local so later reads hit
+        // the fast path.
+        try {
+          val = await _dsBridge().then((ds) => ds.get('app_kv', key));
+          if (val !== undefined && val !== null) {
+            try { await window.idbKeyval.set(key, val); } catch (_) {}
+          }
+        } catch (e) {
+          warnLog(`storageDB bridge read failed [${key}]:`, e?.code || e?.message || e);
+          val = null;
+        }
+      }
       if (val === undefined || val === null) return null;
       if (typeof val === 'object') return val;
       if (window.LZString) {
@@ -211,9 +267,16 @@ const storageDB = {
       const stringified = JSON.stringify(value);
       const valToStore = window.LZString ? window.LZString.compressToUTF16(stringified) : stringified;
       await window.idbKeyval.set(key, valToStore);
+      _dsMirrorSet(key, valToStore);
       return true;
     } catch (e) {
       warnLog(`storageDB Write Error [${key}]:`, e);
+      // Local quota blew but the bridge bucket has its own (usually larger)
+      // quota — still try to land the durable copy there.
+      try {
+        const stringified = JSON.stringify(value);
+        _dsMirrorSet(key, window.LZString ? window.LZString.compressToUTF16(stringified) : stringified);
+      } catch (_) {}
       return false;
     }
   },
@@ -221,11 +284,19 @@ const storageDB = {
     try {
       if (typeof window !== 'undefined' && window.idbKeyval) await window.idbKeyval.del(key);
     } catch (e) { warnLog(`storageDB Del Error [${key}]:`, e); }
+    if (_dsBridgeWanted) {
+      _dsBridge().then((ds) => ds.remove('app_kv', key))
+        .catch((e) => warnLog(`storageDB bridge del failed [${key}]:`, e?.code || e?.message || e));
+    }
   },
   clear: async () => {
     try {
       if (typeof window !== 'undefined' && window.idbKeyval) await window.idbKeyval.clear();
     } catch (e) { warnLog("storageDB Clear Error:", e); }
+    if (_dsBridgeWanted) {
+      _dsBridge().then((ds) => ds.clearNamespace('app_kv'))
+        .catch((e) => warnLog('storageDB bridge clear failed:', e?.code || e?.message || e));
+    }
   }
 };
 const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, perRequestTimeoutMs = 120000) => {
