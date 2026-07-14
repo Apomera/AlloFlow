@@ -24023,7 +24023,7 @@ if (activeTab === 'breath_studio') {
       })
     ),
     // SVG breath circle
-    h('svg', { width: '100%', height: 320, viewBox: '0 0 320 320', style: { display: 'block', background: _minBg('#0f172a'), borderRadius: 12 } },
+    h('svg', { role: 'img', 'aria-label': pattern.name + ' breathing guide. ' + (currentPhase ? currentPhase.name + ', ' + Math.max(0, Math.ceil(currentPhase.sec - bsCount)) + ' seconds remaining' : 'Ready'), width: '100%', height: 320, viewBox: '0 0 320 320', style: { display: 'block', background: _minBg('#0f172a'), borderRadius: 12 } },
       h('defs', null,
         h('radialGradient', { id: 'breath-grad' },
           h('stop', { offset: '0%', stopColor: pattern.color, stopOpacity: 0.8 }),
@@ -24114,7 +24114,7 @@ if (activeTab === 'body_scan_studio') {
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) 2fr', gap: 16 } },
       h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#0f172a') } },
-        h('svg', { width: 220, height: 380, viewBox: '0 0 200 360', style: { display: 'block', margin: '0 auto' } },
+        h('svg', { role: 'group', 'aria-label': 'Body scan regions', width: 220, height: 380, viewBox: '0 0 200 360', style: { display: 'block', margin: '0 auto' } },
           // body outline
           h('path', { d: 'M 100 30 Q 80 30 80 50 Q 80 70 95 80 L 95 90 L 70 95 Q 50 100 45 130 L 50 200 Q 55 230 65 235 L 60 320 Q 60 340 75 345 L 90 345 Q 95 345 95 340 L 95 250 Q 100 245 105 250 L 105 340 Q 105 345 110 345 L 125 345 Q 140 340 140 320 L 135 235 Q 145 230 150 200 L 155 130 Q 150 100 130 95 L 105 90 L 105 80 Q 120 70 120 50 Q 120 30 100 30 Z',
             fill: _minBg('#1e293b'), stroke: _minFg('#475569'), strokeWidth: 1.5 }),
@@ -24122,13 +24122,16 @@ if (activeTab === 'body_scan_studio') {
           BODY_SCAN_REGIONS.map(function(r, i) {
             var isCurrent = bssStep === i;
             var isPast = bssStep > i;
-            return h('circle', { key: r.id,
-              cx: r.x, cy: r.y, r: r.r,
+            return h('circle', { key: r.id, role: 'button', tabIndex: 0, focusable: 'true',
+              'aria-label': r.label + (isCurrent ? ', current region' : ''),
+              'aria-current': isCurrent ? 'step' : undefined,
+              cx: r.x, cy: r.y, r: Math.max(r.r, 12),
               fill: isCurrent ? 'rgba(251,191,36,0.6)' : (isPast ? 'rgba(94,234,212,0.3)' : 'rgba(94,234,212,0.1)'),
               stroke: isCurrent ? '#fbbf24' : (isPast ? '#5eead4' : _minFg('#475569')),
               strokeWidth: isCurrent ? 3 : 1,
               style: { cursor: 'pointer', transition: 'all 0.4s' },
-              onClick: function() { upd({ bssStep: i, bssRunning: false }); if (soundEnabled) sfxClick(); }
+              onClick: function() { upd({ bssStep: i, bssRunning: false }); if (soundEnabled) sfxClick(); },
+              onKeyDown: function(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); upd({ bssStep: i, bssRunning: false }); if (soundEnabled) sfxClick(); } }
             });
           })
         )
@@ -24283,7 +24286,7 @@ if (activeTab === 'mandala') {
       })
     ),
     h('div', { style: { background: _minBg('#0f172a'), borderRadius: 12, padding: 12, textAlign: 'center' } },
-      h('svg', { width: 400, height: 400, viewBox: '0 0 400 400',
+      h('svg', { role: 'img', 'aria-label': mdStyle + ' rotating mandala focus image', width: 400, height: 400, viewBox: '0 0 400 400',
         className: mdRunning ? 'sel-mind-spin' : '',
         style: { maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto', animation: mdRunning ? 'sel-mind-spin ' + spinDuration + 's linear infinite' : 'none' }
       },
@@ -24637,7 +24640,7 @@ if (activeTab === 'trataka') {
     ),
     h('div', { style: { padding: 0, borderRadius: 12, background: trBg === 'dark' ? '#000' : (trBg === 'dawn' ? '#3b0764' : _minBg('#7c2d12')), textAlign: 'center', minHeight: 360, position: 'relative', overflow: 'hidden' } },
       // candle
-      h('svg', { width: 200, height: 360, viewBox: '0 0 200 360', style: { margin: '0 auto', display: 'block' } },
+      h('svg', { role: 'img', 'aria-label': 'Candle-gazing focus image', width: 200, height: 360, viewBox: '0 0 200 360', style: { margin: '0 auto', display: 'block' } },
         // wax body
         h('rect', { x: 80, y: 200, width: 40, height: 130, fill: '#fef3c7', stroke: '#d97706', strokeWidth: 1 }),
         h('rect', { x: 75, y: 195, width: 50, height: 10, fill: '#fbbf24' }),
@@ -24852,7 +24855,7 @@ if (activeTab === 'ground5421') {
       // input
       h('form', { onSubmit: function(e) { e.preventDefault(); var t = e.target.querySelector('input').value; _addItem(t); e.target.reset(); } },
         h('div', { style: { display: 'flex', gap: 6 } },
-          h('input', { type: 'text', autoFocus: true, placeholder: 'Type and press Enter...',
+          h('input', { type: 'text', 'aria-label': currentGround.prompt, autoFocus: true, placeholder: 'Type and press Enter...',
             style: { flex: 1, padding: 10, borderRadius: 6, border: '1px solid ' + currentGround.color, background: _minBg('#1e293b'), color: _minFg('#e2e8f0'), fontSize: 14 }
           }),
           h('button', { type: 'submit',
@@ -25010,7 +25013,7 @@ if (activeTab === 'clouds') {
       // sun
       h('div', { style: { position: 'absolute', top: 20, right: 30, width: 60, height: 60, borderRadius: '50%', background: _minBg('#fde047'), boxShadow: '0 0 40px #fbbf24' } }),
       // clouds drifting
-      h('svg', { width: '100%', height: 280, viewBox: '0 0 800 280', style: { display: 'block' } },
+      h('svg', { role: 'img', 'aria-label': 'Clouds drifting across the sky to represent thoughts passing', width: '100%', height: 280, viewBox: '0 0 800 280', style: { display: 'block' } },
         Array.from({ length: 5 }, function(_, i) {
           var dur = 30 + i * 8;
           var topY = 40 + i * 30;
@@ -25245,7 +25248,7 @@ if (activeTab === 'mudra') {
     var common = { fill: '#fef3c7', stroke: '#d97706', strokeWidth: 1.5 };
     var nail = { fill: '#fbbf24' };
     if (id === 'anjali') {
-      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
+      return h('svg', { role: 'img', 'aria-label': selected.name + ' hand position illustration', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         // two palms together
         h('path', Object.assign({}, common, { d: 'M 60 30 L 80 30 L 90 100 L 90 170 L 50 170 L 50 100 Z' })),
         h('path', Object.assign({}, common, { d: 'M 120 30 L 140 30 L 150 100 L 150 170 L 110 170 L 110 100 Z' })),
@@ -25253,7 +25256,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'dhyana') {
-      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
+      return h('svg', { role: 'img', 'aria-label': selected.name + ' hand position illustration', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         // cupped hands
         h('ellipse', Object.assign({}, common, { cx: 100, cy: 130, rx: 60, ry: 25 })),
         h('ellipse', Object.assign({}, common, { cx: 100, cy: 110, rx: 50, ry: 18 })),
@@ -25263,7 +25266,7 @@ if (activeTab === 'mudra') {
     }
     if (id === 'jnana' || id === 'chin') {
       var rotate = id === 'chin' ? 180 : 0;
-      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto', transform: 'rotate(' + rotate + 'deg)' } },
+      return h('svg', { role: 'img', 'aria-label': selected.name + ' hand position illustration', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto', transform: 'rotate(' + rotate + 'deg)' } },
         // hand with circle made by thumb + index
         h('path', Object.assign({}, common, { d: 'M 80 80 Q 60 80 60 100 L 60 160 Q 60 175 75 175 L 130 175 Q 145 175 145 160 L 145 100 Q 145 80 125 80 L 80 80 Z' })),
         // index finger extended down (rotated up via parent rotate for chin)
@@ -25277,7 +25280,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'prana') {
-      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
+      return h('svg', { role: 'img', 'aria-label': selected.name + ' hand position illustration', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         h('path', Object.assign({}, common, { d: 'M 80 80 Q 60 80 60 100 L 60 160 Q 60 175 75 175 L 130 175 Q 145 175 145 160 L 145 100 Q 145 80 125 80 L 80 80 Z' })),
         h('rect', Object.assign({}, common, { x: 70, y: 50, width: 10, height: 35, rx: 5 })),
         h('rect', Object.assign({}, common, { x: 85, y: 45, width: 10, height: 40, rx: 5 })),
@@ -25287,7 +25290,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'surya') {
-      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
+      return h('svg', { role: 'img', 'aria-label': selected.name + ' hand position illustration', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         h('path', Object.assign({}, common, { d: 'M 80 80 Q 60 80 60 100 L 60 160 Q 60 175 75 175 L 130 175 Q 145 175 145 160 L 145 100 Q 145 80 125 80 L 80 80 Z' })),
         h('rect', Object.assign({}, common, { x: 70, y: 50, width: 10, height: 35, rx: 5 })),
         h('rect', Object.assign({}, common, { x: 85, y: 45, width: 10, height: 40, rx: 5 })),
@@ -25297,7 +25300,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'open') {
-      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
+      return h('svg', { role: 'img', 'aria-label': selected.name + ' hand position illustration', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         h('path', Object.assign({}, common, { d: 'M 40 130 L 60 80 Q 70 70 80 75 L 150 75 Q 165 75 170 90 L 170 145 Q 170 160 155 160 L 60 160 Q 40 160 40 145 Z' })),
         // fingers visible
         Array.from({ length: 4 }, function(_, i) {
@@ -25306,7 +25309,7 @@ if (activeTab === 'mudra') {
       );
     }
     if (id === 'heart') {
-      return h('svg', { width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
+      return h('svg', { role: 'img', 'aria-label': selected.name + ' hand position illustration', width: '100%', height: 'auto', viewBox: '0 0 200 200', style: { maxWidth: 200, display: 'block', margin: '0 auto' } },
         // body torso outline (simplified)
         h('rect', { x: 60, y: 60, width: 80, height: 120, rx: 30, fill: _minBg('#1e293b'), stroke: _minFg('#475569'), strokeWidth: 1 }),
         // heart
@@ -25385,7 +25388,7 @@ if (activeTab === 'scripts_lib') {
           }, c);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search scripts...', value: d.slSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search guided meditation scripts', placeholder: '🔎 Search scripts...', value: d.slSearch || '',
         onChange: function(e) { upd({ slSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
@@ -25455,7 +25458,7 @@ if (activeTab === 'mantras') {
           }, c);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search...', value: d.mtSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search mantras and focal phrases', placeholder: '🔎 Search...', value: d.mtSearch || '',
         onChange: function(e) { upd({ mtSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
@@ -25516,7 +25519,7 @@ if (activeTab === 'living') {
           }, s);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search scenarios...', value: d.lvSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search mindful living scenarios', placeholder: '🔎 Search scenarios...', value: d.lvSearch || '',
         onChange: function(e) { upd({ lvSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
@@ -25586,7 +25589,7 @@ if (activeTab === 'research') {
           }, f);
         })
       ),
-      h('input', { type: 'search', placeholder: '🔎 Search...', value: d.rsSearch || '',
+      h('input', { type: 'search', 'aria-label': 'Search mindfulness research', placeholder: '🔎 Search...', value: d.rsSearch || '',
         onChange: function(e) { upd({ rsSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
