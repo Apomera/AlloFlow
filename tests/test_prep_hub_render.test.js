@@ -188,6 +188,21 @@ describe('Test Prep Hub render flow', () => {
     expect(findButton('Practice options')).toBeTruthy();
     await expectNoAxeViolations('EPPP bank 15');
   }, 30_000);
+  it('builds a balanced custom quiz through the shared pack UI', async () => {
+    await mount();
+    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
+    await act(async () => { openButtons[1].click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Custom quiz builder');
+    expect(host.textContent).toContain('reproducible variation');
+    expect(host.querySelector('input[aria-label="Custom quiz question count"]')).toBeTruthy();
+    expect(host.querySelector('select[aria-label="Custom quiz variation"]')).toBeTruthy();
+    await clickButton('Start custom quiz');
+    expect(host.textContent).toContain('Custom quiz · 20 questions · variation 1');
+    expect(host.textContent).toContain('Question 1 of 20');
+    await expectNoAxeViolations('custom quiz practice');
+  }, 30_000);
   it('browses, filters, and opens the native EPPP learning catalog', async () => {
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
@@ -201,6 +216,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('255');
     expect(host.querySelector('input[type="search"]')).toBeTruthy();
     expect(host.querySelector('select')).toBeTruthy();
+    expect(findButton('Search all')).toBeTruthy();
     const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Behavioral Assessment & Functional Analysis'));
     expect(chapterCard).toBeTruthy();
     await expectNoAxeViolations('learning library catalog');
@@ -219,12 +235,14 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Flashcards');
     expect(host.textContent).toContain('Flashcard study');
+    expect(host.textContent).toContain('Show due cards only');
+    expect(host.textContent).toContain('415 due now');
     expect(host.textContent).toContain('1 of 415 matching cards');
     await clickButton('Reveal answer');
     expect(host.textContent).toContain('Answer:');
     await clickButton('Know it');
     const saved = JSON.parse(localStorage.getItem('alloflow_test_prep_flashcards_eppp-part-one_v1'));
-    expect(Object.values(saved)).toContain('know');
+    expect(Object.values(saved).some((entry) => entry.rating === 'know' && entry.intervalDays === 1 && entry.dueAt > entry.lastReviewedAt)).toBe(true);
     await expectNoAxeViolations('flashcard study mode');
 
     await clickButton('Memory aids');

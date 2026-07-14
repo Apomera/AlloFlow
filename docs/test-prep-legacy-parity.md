@@ -19,11 +19,11 @@ The native AlloFlow Test Prep Hub should reuse the legacy Pass the EPPP content 
 | Transparent smart review | Complete | `buildReviewSet` prioritizes confident misses, prior misses, low-confidence correct answers, weaker domains, and unseen items while maintaining domain coverage. It is not CAT. |
 | Progress backup and restore | Complete | Versioned export/import includes normalized attempts, per-item learning signals, and saved-review IDs for all packs. |
 | Learning chapters, diagrams, checks, flashcards, and memory aids | Structurally migrated | All 49 EPPP chapters are source-reviewed. The broader legacy flashcard, memory-aid, term-definition, and diagram inventories still have separate review gates. |
-| Learning-library search and filters | Partial | Native chapter/flashcard/memory-aid search exists; a single global search across questions, notes, and all learning objects does not. |
-| Flashcard ratings | Partial | Ratings persist per pack, but due-date scheduling and a transparent spaced-repetition queue remain to be built. |
+| Unified released-content search and filters | Complete for released pack content | One pack-wide index searches released questions, chapters, flashcards, memory aids, and written-response workshops. Quarantined legacy content remains excluded; future learner notes will join the index when notes are implemented. |
+| Transparent flashcard scheduling | Complete | Existing Know/Again ratings migrate into a pack-scoped schedule. Due queues use disclosed 10-minute and 1/3/7/14/30/60/120-day intervals without implying readiness. |
 | Notes and highlights | Not yet native | Legacy notes/highlights should be redesigned with exportable, pack-scoped records and accessible annotation controls. |
 | Goals, streaks, and study calendar | Not yet native | Future goals should emphasize activity and retrieval plans without implying exam readiness. |
-| Custom domain quiz builder | Not yet native | The engine supports targeted skills and smart review; learner-selected domains, lengths, and deterministic shuffle are the next reusable practice-builder layer. |
+| Custom domain quiz builder | Complete | Learners select domains, a 1–100 item length, and a visible variation. The engine balances domains and deterministically reproduces the same set from the same choices. |
 | Community feedback | Not migrated | Requires moderation, privacy, abuse handling, and an evidence workflow before it belongs in AlloFlow. |
 | Legacy CAT and scaled/pass estimates | Deliberately excluded | The legacy heuristics are not psychometrically calibrated and must not be presented as ability estimates, official scaled scores, or pass predictions. |
 
@@ -41,7 +41,9 @@ A new pack can register through `registerPack` after `normalizePack`/`validatePa
 
 - `arrangeBalancedBatches`, `batchMeta`, and `buildBatchDiagnostic`
 - `scoreAttempt`, `recordAttempt`, and `recordBatchAttempt`
-- `buildProgressAnalytics` and `buildReviewSet`
+- `buildProgressAnalytics`, `buildReviewSet`, and `buildCustomQuiz`
+- `searchPack` across released questions and learning objects
+- `normalizeFlashcardSchedule`, `rateFlashcard`, and `buildFlashcardQueue` for transparent retrieval scheduling
 - `exportProgress`, `importProgress`, and `normalizeReviewItems`
 - shared simulation, saved-question, session-resume, learning-library, source-display, and accessibility UI
 

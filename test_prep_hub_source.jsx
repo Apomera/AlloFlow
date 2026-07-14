@@ -606,7 +606,7 @@ function testPrepNormalizeItemResults(value) {
 function testPrepAttemptMetadata(metadata) {
   const input = metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
   return {
-    mode: ['standard', 'diagnostic', 'targeted', 'review', 'simulation'].includes(input.mode) ? input.mode : 'standard',
+    mode: ['standard', 'diagnostic', 'targeted', 'custom', 'review', 'simulation'].includes(input.mode) ? input.mode : 'standard',
     label: String(input.label || '').trim().slice(0, 120),
     targetSkillId: testPrepSlug(input.targetSkillId, ''),
     sourceStartIndex: Math.max(0, Math.floor(testPrepFinite(input.sourceStartIndex, 0))),
@@ -664,7 +664,7 @@ function normalizeTestPrepProgress(value) {
     itemResults: testPrepNormalizeItemResults(attempt && attempt.itemResults),
     byDomain: testPrepNormalizeBreakdown(attempt && attempt.byDomain),
     bySkill: testPrepNormalizeBreakdown(attempt && attempt.bySkill),
-    mode: ['standard', 'diagnostic', 'targeted', 'review', 'simulation'].includes(attempt && attempt.mode) ? attempt.mode : 'standard',
+    mode: ['standard', 'diagnostic', 'targeted', 'custom', 'review', 'simulation'].includes(attempt && attempt.mode) ? attempt.mode : 'standard',
     label: String(attempt && attempt.label || '').trim().slice(0, 120),
     targetSkillId: testPrepSlug(attempt && attempt.targetSkillId, ''),
     sourceStartIndex: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.sourceStartIndex, 0))),
@@ -923,6 +923,162 @@ function testPrepBuildReviewSet(progress, pack, options) {
   };
 }
 
+function testPrepSeedNumber(value) {
+  const text = String(value == null ? '' : value).slice(0, 200);
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function testPrepSeededShuffle(items, seed) {
+  const output = items.slice();
+  let state = testPrepSeedNumber(seed) || 1;
+  for (let index = output.length - 1; index > 0; index -= 1) {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    const swapIndex = state % (index + 1);
+    const temporary = output[index];
+    output[index] = output[swapIndex];
+    output[swapIndex] = temporary;
+  }
+  return output;
+}
+
+function testPrepBuildCustomQuiz(pack, options) {
+  const normalizedPack = normalizeTestPrepPack(pack);
+  const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+  const availableDomainIds = normalizedPack.domains.map((domain) => domain.id);
+  const requestedDomainIds = Array.from(new Set((Array.isArray(input.domainIds) ? input.domainIds : [])
+    .map((id) => testPrepSlug(id, '')).filter((id) => availableDomainIds.includes(id))));
+  const domainIds = requestedDomainIds.length ? requestedDomainIds : availableDomainIds;
+  const eligible = normalizedPack.items.filter((item) => domainIds.includes(item.domainId));
+  const requestedLength = Math.max(1, Math.min(100, Math.floor(testPrepFinite(input.limit, Math.min(20, eligible.length || 1)))));
+  const limit = Math.min(requestedLength, eligible.length);
+  const seed = String(input.seed == null ? normalizedPack.id + '-custom-1' : input.seed).slice(0, 120);
+  const groups = Object.fromEntries(domainIds.map((domainId) => [domainId, testPrepSeededShuffle(eligible.filter((item) => item.domainId === domainId), seed + ':' + domainId)]));
+  const selected = [];
+  while (selected.length < limit) {
+    let added = false;
+    domainIds.forEach((domainId) => {
+      if (selected.length >= limit || !groups[domainId].length) return;
+      selected.push(groups[domainId].shift());
+      added = true;
+    });
+    if (!added) break;
+  }
+  const domainCounts = Object.fromEntries(domainIds.map((domainId) => [domainId, selected.filter((item) => item.domainId === domainId).length]));
+  return {
+    strategy: 'balanced-custom-v1',
+    packId: normalizedPack.id,
+    seed,
+    requestedLength,
+    limit,
+    domainIds,
+    domainCounts,
+    items: selected,
+    itemIds: selected.map((item) => item.id),
+    limitation: 'This is a reproducible learner-selected practice set, not an official test form, readiness estimate, or pass prediction.',
+  };
+}
+
+function testPrepSearchPack(pack, learningLibrary, query, options) {
+  const normalizedPack = normalizeTestPrepPack(pack);
+  const library = learningLibrary && typeof learningLibrary === 'object' && !Array.isArray(learningLibrary) ? learningLibrary : {};
+  const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+  const normalizedQuery = String(query || '').trim().toLowerCase().slice(0, 120);
+  const limit = Math.max(1, Math.min(100, Math.floor(testPrepFinite(input.limit, 40))));
+  const results = [];
+  const add = (type, id, title, snippet, domain, searchText, reviewStatus) => {
+    if (!normalizedQuery || !String(searchText || '').toLowerCase().includes(normalizedQuery)) return;
+    results.push({
+      type,
+      id: String(id || '').slice(0, 180),
+      title: String(title || '').slice(0, 300),
+      snippet: String(snippet || '').replace(/\s+/g, ' ').trim().slice(0, 360),
+      domain: String(domain || '').slice(0, 180),
+      reviewStatus: String(reviewStatus || '').slice(0, 120),
+    });
+  };
+  normalizedPack.items.forEach((item) => add('question', item.id, item.prompt, item.explanation, item.domainId, [item.prompt].concat(item.choices, item.optionFeedback, item.skillIds, item.chapterIds, item.explanation).join(' '), item.reviewStatus));
+  (Array.isArray(library.chapters) ? library.chapters : []).forEach((chapter) => add('chapter', chapter.id, chapter.title, (chapter.sections || []).map((section) => section.heading).join(' · '), chapter.domain, JSON.stringify(chapter), chapter.reviewStatus));
+  (Array.isArray(library.flashcards) ? library.flashcards : []).forEach((card) => add('flashcard', card.id, card.front, card.back, card.domain, [card.front, card.back, card.domain].join(' '), card.reviewStatus));
+  (Array.isArray(library.memoryAids) ? library.memoryAids : []).forEach((aid) => add('memory-aid', aid.id, aid.title, aid.content, aid.domain, [aid.title, aid.content].concat(aid.tags || []).join(' '), aid.reviewStatus));
+  (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus || 'source-reviewed-editorial-pass'));
+  const typeOrder = { question: 0, chapter: 1, flashcard: 2, 'memory-aid': 3, 'constructed-response': 4 };
+  results.sort((left, right) => (typeOrder[left.type] - typeOrder[right.type]) || left.title.localeCompare(right.title));
+  const counts = {};
+  results.forEach((result) => { counts[result.type] = (counts[result.type] || 0) + 1; });
+  return { query: normalizedQuery, total: results.length, counts, results: results.slice(0, limit), limit };
+}
+
+function normalizeTestPrepFlashcardSchedule(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const output = {};
+  Object.keys(input).slice(0, 5000).forEach((rawId) => {
+    const id = testPrepSlug(rawId, '');
+    if (!id) return;
+    const raw = input[rawId];
+    if (raw === 'know' || raw === 'again') {
+      output[id] = { rating: raw, repetitions: raw === 'know' ? 1 : 0, intervalDays: 0, lastReviewedAt: 0, dueAt: 0 };
+      return;
+    }
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
+    const rating = ['again', 'learning', 'know'].includes(raw.rating) ? raw.rating : 'again';
+    output[id] = {
+      rating,
+      repetitions: Math.max(0, Math.min(100, Math.floor(testPrepFinite(raw.repetitions, 0)))),
+      intervalDays: Math.max(0, Math.min(3650, testPrepFinite(raw.intervalDays, 0))),
+      lastReviewedAt: Math.max(0, Math.floor(testPrepFinite(raw.lastReviewedAt, 0))),
+      dueAt: Math.max(0, Math.floor(testPrepFinite(raw.dueAt, 0))),
+    };
+  });
+  return output;
+}
+
+function testPrepRateFlashcard(schedule, cardId, rating, now) {
+  const normalized = normalizeTestPrepFlashcardSchedule(schedule);
+  const id = testPrepSlug(cardId, '');
+  if (!id || !['again', 'learning', 'know'].includes(rating)) return normalized;
+  const reviewedAt = Math.max(0, Math.floor(testPrepFinite(now, Date.now())));
+  const previous = normalized[id] || { repetitions: 0 };
+  const day = 24 * 60 * 60 * 1000;
+  let repetitions = 0;
+  let intervalDays = 0;
+  let dueAt = reviewedAt + 10 * 60 * 1000;
+  if (rating === 'learning') {
+    repetitions = Math.max(1, previous.repetitions || 0);
+    intervalDays = 1;
+    dueAt = reviewedAt + day;
+  } else if (rating === 'know') {
+    repetitions = Math.max(0, previous.repetitions || 0) + 1;
+    const intervals = [1, 3, 7, 14, 30, 60, 120];
+    intervalDays = intervals[Math.min(repetitions - 1, intervals.length - 1)];
+    dueAt = reviewedAt + intervalDays * day;
+  }
+  normalized[id] = { rating, repetitions, intervalDays, lastReviewedAt: reviewedAt, dueAt };
+  return normalized;
+}
+
+function testPrepBuildFlashcardQueue(cards, schedule, options) {
+  const source = Array.isArray(cards) ? cards : [];
+  const normalized = normalizeTestPrepFlashcardSchedule(schedule);
+  const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+  const now = Math.max(0, Math.floor(testPrepFinite(input.now, Date.now())));
+  const query = String(input.query || '').trim().toLowerCase().slice(0, 120);
+  const domain = String(input.domain || 'all');
+  const filtered = source.filter((card) => (domain === 'all' || card.domain === domain) && (!query || [card.front, card.back, card.domain].join(' ').toLowerCase().includes(query)));
+  const due = filtered.filter((card) => !normalized[card.id] || normalized[card.id].dueAt <= now);
+  const visible = input.dueOnly ? due : filtered;
+  const originalIndex = new Map(source.map((card, index) => [card.id, index]));
+  const sorted = visible.slice().sort((left, right) => {
+    const leftDue = normalized[left.id] ? normalized[left.id].dueAt : 0;
+    const rightDue = normalized[right.id] ? normalized[right.id].dueAt : 0;
+    return leftDue - rightDue || (originalIndex.get(left.id) || 0) - (originalIndex.get(right.id) || 0);
+  });
+  return { items: sorted, total: filtered.length, dueCount: due.length, scheduledCount: filtered.length - due.length, now, schedule: normalized };
+}
 function testPrepExportProgress(progress, reviewItems, now) {
   return {
     schemaVersion: 1,
@@ -1049,6 +1205,10 @@ function TestPrepHub(props) {
   const [flashcardIndex, setFlashcardIndex] = React.useState(0);
   const [flashcardRevealed, setFlashcardRevealed] = React.useState(false);
   const [flashcardRatings, setFlashcardRatings] = React.useState({});
+  const [flashcardDueOnly, setFlashcardDueOnly] = React.useState(false);
+  const [customQuizDomainIds, setCustomQuizDomainIds] = React.useState([]);
+  const [customQuizLength, setCustomQuizLength] = React.useState(20);
+  const [customQuizVariant, setCustomQuizVariant] = React.useState(1);
   const [memoryAidOpen, setMemoryAidOpen] = React.useState('');
   const dialogRef = React.useRef(null);
   const [chapterCheckAnswers, setChapterCheckAnswers] = React.useState({});
@@ -1064,13 +1224,19 @@ function TestPrepHub(props) {
   const currentItemSavedForReview = !!(currentItem && savedReviewItemIds.includes(currentItem.id));
   const progressAnalytics = testPrepBuildProgressAnalytics(progress, selectedPackId);
   const smartReviewPlan = selectedPack ? testPrepBuildReviewSet(progress, selectedPack, { limit: Math.min(20, selectedPack.items.length) }) : null;
+  const customQuizPlan = selectedPack ? testPrepBuildCustomQuiz(selectedPack, { domainIds: customQuizDomainIds, limit: customQuizLength, seed: selectedPack.id + '-custom-' + customQuizVariant }) : null;
+  const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60 }) : { query: '', total: 0, counts: {}, results: [] };
   const skillById = Object.fromEntries((learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : []).map((skill) => [skill.id, skill]));
   const domainById = Object.fromEntries((selectedPack ? selectedPack.domains : []).map((domain) => [domain.id, domain]));
 
   React.useEffect(() => {
     const key = 'alloflow_test_prep_flashcards_' + (selectedPack ? selectedPack.id : 'none') + '_v1';
-    try { setFlashcardRatings(JSON.parse(localStorage.getItem(key) || '{}') || {}); }
+    try { setFlashcardRatings(normalizeTestPrepFlashcardSchedule(JSON.parse(localStorage.getItem(key) || '{}') || {})); }
     catch (_) { setFlashcardRatings({}); }
+    setFlashcardDueOnly(false);
+    setCustomQuizDomainIds([]);
+    setCustomQuizLength(Math.min(20, selectedPack && selectedPack.items.length ? selectedPack.items.length : 20));
+    setCustomQuizVariant(1);
   }, [selectedPackId]);
 
   React.useEffect(() => {
@@ -1285,6 +1451,55 @@ function TestPrepHub(props) {
     });
   }
 
+  function toggleCustomQuizDomain(domainId) {
+    if (!selectedPack) return;
+    const allIds = selectedPack.domains.map((domain) => domain.id);
+    const active = customQuizDomainIds.length ? customQuizDomainIds : allIds;
+    const next = active.includes(domainId) ? active.filter((id) => id !== domainId) : active.concat(domainId);
+    setCustomQuizDomainIds(next.length === allIds.length ? [] : next);
+  }
+
+  function startCustomQuiz() {
+    if (!customQuizPlan || !customQuizPlan.items.length) { announce('Choose at least one domain with available questions.', 'info'); return; }
+    startPracticeSet({
+      mode: 'custom',
+      label: 'Custom quiz · ' + customQuizPlan.items.length + ' questions · variation ' + customQuizVariant,
+      items: customQuizPlan.items,
+    });
+  }
+
+  function openLibrarySearchResult(searchResult) {
+    if (!searchResult) return;
+    if (searchResult.type === 'question') {
+      const item = itemLookup.get(searchResult.id);
+      if (item) startPracticeSet({ mode: 'custom', label: 'Search result practice', items: [item] });
+      return;
+    }
+    if (searchResult.type === 'chapter') {
+      setLibraryMode('chapters');
+      setLibraryChapterId(searchResult.id);
+      return;
+    }
+    if (searchResult.type === 'flashcard') {
+      setLibraryMode('flashcards');
+      setLibraryDomain('all');
+      setLibrarySearch(searchResult.title);
+      setFlashcardIndex(0);
+      setFlashcardRevealed(false);
+      return;
+    }
+    if (searchResult.type === 'memory-aid') {
+      setLibraryMode('memory-aids');
+      setLibraryDomain('all');
+      setLibrarySearch(searchResult.title);
+      setMemoryAidOpen(searchResult.id);
+      return;
+    }
+    if (searchResult.type === 'constructed-response') {
+      setLibraryMode('constructed-response');
+      setLibrarySearch('');
+    }
+  }
   function exportPracticeProgress() {
     try {
       const payload = testPrepExportProgress(progress, reviewItems, Date.now());
@@ -1738,7 +1953,24 @@ function TestPrepHub(props) {
                       <label className="mt-3 block text-sm font-bold text-slate-800">Skill<select value={targetSkillId} onChange={(event) => setTargetSkillId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-violet-600"><option value="">Choose a skill</option>{(learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : []).map((skill) => <option key={skill.id} value={skill.id}>{skill.domain}: {skill.label}</option>)}</select></label>
                       <button type="button" disabled={!targetSkillId} onClick={() => startTargetedPractice(targetSkillId)} className="mt-4 rounded-lg bg-violet-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">Start targeted set</button>
                     </article>
-                    {!!selectedPack.simulationItemCount && !!selectedPack.simulationTimeMinutes && (
+                    <article className="rounded-xl border border-cyan-300 bg-cyan-50 p-4 md:col-span-2 lg:col-span-3">
+                      <p className="text-xs font-black uppercase tracking-wide text-cyan-900">Custom quiz builder</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">Choose domains, length, and a reproducible variation</h5>
+                      <p className="mt-2 text-sm leading-relaxed text-cyan-950">The engine balances selected domains and uses a visible variation number, so the same choices reproduce the same set. It does not create an official form or readiness estimate.</p>
+                      <fieldset className="mt-4">
+                        <legend className="text-sm font-black text-slate-900">Domains</legend>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                          {selectedPack.domains.map((domain) => <label key={domain.id} className="flex items-start gap-2 rounded-lg border border-cyan-200 bg-white p-2 text-sm font-bold text-slate-800"><input type="checkbox" checked={!customQuizDomainIds.length || customQuizDomainIds.includes(domain.id)} onChange={() => toggleCustomQuizDomain(domain.id)} className="mt-1 h-4 w-4 rounded border-slate-400 text-cyan-800 focus:ring-cyan-700" /><span>{domain.label}</span></label>)}
+                        </div>
+                        <button type="button" onClick={() => setCustomQuizDomainIds([])} className="mt-2 text-xs font-black text-cyan-900 underline focus:outline-none focus:ring-2 focus:ring-cyan-700">Select all domains</button>
+                      </fieldset>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm font-bold text-slate-800">Number of questions<input aria-label="Custom quiz question count" type="number" min="1" max="100" value={customQuizLength} onChange={(event) => setCustomQuizLength(Math.max(1, Math.min(100, Math.floor(Number(event.target.value) || 1))))} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-cyan-700" /></label>
+                        <label className="text-sm font-bold text-slate-800">Variation<select aria-label="Custom quiz variation" value={customQuizVariant} onChange={(event) => setCustomQuizVariant(Math.max(1, Math.min(5, Number(event.target.value) || 1)))} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-cyan-700">{[1, 2, 3, 4, 5].map((variant) => <option key={variant} value={variant}>Variation {variant}</option>)}</select></label>
+                      </div>
+                      <p className="mt-3 text-xs font-bold text-cyan-950" role="status">Ready: {customQuizPlan ? customQuizPlan.items.length : 0} questions across {customQuizPlan ? customQuizPlan.domainIds.length : 0} selected domains.</p>
+                      <button type="button" disabled={!customQuizPlan || !customQuizPlan.items.length} onClick={startCustomQuiz} className="mt-4 rounded-lg bg-cyan-900 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-700 focus:ring-offset-2">Start custom quiz</button>
+                    </article>                    {!!selectedPack.simulationItemCount && !!selectedPack.simulationTimeMinutes && (
                       <article className="rounded-xl border border-amber-400 bg-amber-50 p-4">
                         <p className="text-xs font-black uppercase tracking-wide text-amber-900">{selectedPack.simulationLabel || 'Optional timed simulation'}</p>
                         <h5 className="mt-1 text-lg font-black text-slate-900">{selectedPack.simulationItemCount} questions / {selectedPack.simulationTimeMinutes} minutes</h5>
@@ -1910,12 +2142,31 @@ function TestPrepHub(props) {
               </div>
 
               <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
-                {([['chapters', 'Chapters'], ['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']].concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
+                {([['search', 'Search all'], ['chapters', 'Chapters'], ['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']].concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
               </nav>
 
               {learningLibraryStatus === 'loading' && <p className="rounded-xl border border-indigo-200 bg-white p-5 text-sm font-bold text-indigo-900" role="status">Loading the learning library…</p>}
               {learningLibraryStatus === 'unavailable' && <p className="rounded-xl border border-rose-300 bg-rose-50 p-5 text-sm text-rose-950" role="alert">The learning catalog is unavailable in this preview. Practice questions remain available from the Practice tab.</p>}
 
+              {learningLibrary && !libraryChapterId && libraryMode === 'search' && (
+                <section className="space-y-4" aria-labelledby="library-global-search-title">
+                  <div className="rounded-2xl border border-indigo-300 bg-indigo-50 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-indigo-800">One pack-wide index</p>
+                    <h4 id="library-global-search-title" className="mt-1 text-xl font-black text-slate-900">Search questions and learning resources</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-indigo-950">Searches released practice questions, chapters, flashcards, memory aids, and written-response workshops for this pack. Search does not unlock quarantined legacy content.</p>
+                    <label className="mt-4 block text-sm font-black text-slate-900">Search the complete released pack<input aria-label="Search the complete released pack" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-3 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Try assessment, phonology, ethics, evidence…" /></label>
+                  </div>
+                  {globalSearch.query ? <p className="text-sm font-bold text-slate-700" role="status">Found {globalSearch.total} result{globalSearch.total === 1 ? '' : 's'}; showing {globalSearch.results.length}.</p> : <p className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-700">Enter a word or phrase to search all released content in this pack.</p>}
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {globalSearch.results.map((searchResult) => {
+                      const typeLabel = searchResult.type === 'memory-aid' ? 'Memory aid' : searchResult.type === 'constructed-response' ? 'Written-response workshop' : searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1);
+                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : 'Open workshops';
+                      return <article key={searchResult.type + '-' + searchResult.id} className="flex flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{typeLabel}</span>{searchResult.domain && <span className="text-xs font-bold text-slate-600">{searchResult.domain}</span>}</div><h5 className="mt-2 font-black text-slate-900">{searchResult.title}</h5>{searchResult.snippet && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{searchResult.snippet}</p>}<button type="button" onClick={() => openLibrarySearchResult(searchResult)} className="mt-4 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{actionLabel}</button></article>;
+                    })}
+                  </div>
+                  {globalSearch.query && !globalSearch.results.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No released questions or learning resources match that search.</p>}
+                </section>
+              )}
               {learningLibrary && !libraryChapterId && libraryMode === 'chapters' && (() => {
                 const domains = Array.from(new Set(learningLibrary.chapters.map((chapter) => chapter.domain))).sort();
                 const query = librarySearch.trim().toLowerCase();
@@ -1941,36 +2192,38 @@ function TestPrepHub(props) {
               })()}
 
               {learningLibrary && libraryMode === 'flashcards' && (() => {
-                const query = librarySearch.trim().toLowerCase();
-                const cards = learningLibrary.flashcards.filter((card) => (libraryDomain === 'all' || card.domain === libraryDomain) && (!query || (card.front + ' ' + card.back + ' ' + card.domain).toLowerCase().includes(query)));
+                const queue = testPrepBuildFlashcardQueue(learningLibrary.flashcards, flashcardRatings, { query: librarySearch, domain: libraryDomain, dueOnly: flashcardDueOnly, now: Date.now() });
+                const cards = queue.items;
                 const safeIndex = cards.length ? Math.min(flashcardIndex, cards.length - 1) : 0;
                 const card = cards[safeIndex];
-                const known = cards.filter((item) => flashcardRatings[item.id] === 'know').length;
+                const known = learningLibrary.flashcards.filter((item) => flashcardRatings[item.id] && flashcardRatings[item.id].rating === 'know').length;
+                const cardSchedule = card && flashcardRatings[card.id];
                 const rate = (rating) => {
                   if (!card) return;
-                  const next = Object.assign({}, flashcardRatings, { [card.id]: rating });
+                  const next = testPrepRateFlashcard(flashcardRatings, card.id, rating, Date.now());
                   setFlashcardRatings(next);
                   try { localStorage.setItem('alloflow_test_prep_flashcards_' + selectedPack.id + '_v1', JSON.stringify(next)); } catch (_) {}
                   setFlashcardRevealed(false);
-                  if (cards.length) setFlashcardIndex((safeIndex + 1) % cards.length);
+                  if (cards.length) setFlashcardIndex(Math.min(safeIndex, Math.max(0, cards.length - 2)));
                 };
                 return <section className="space-y-4" aria-labelledby="flashcard-study-title">
-                  <div><h4 id="flashcard-study-title" className="text-lg font-black text-slate-900">Flashcard study</h4><p className="text-sm text-slate-700">Reveal each answer, then mark whether you know it or want to study it again. Ratings stay in this browser and are separate for each test pack.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedFlashcards || 0} source reviewed</p></div>
+                  <div><h4 id="flashcard-study-title" className="text-lg font-black text-slate-900">Flashcard study</h4><p className="text-sm text-slate-700">Reveal each answer, then schedule the next retrieval. “Study again” returns in 10 minutes; “Still learning” returns in 1 day; “Know it” advances through 1, 3, 7, 14, 30, 60, and 120-day intervals. This transparent schedule is not a readiness score.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedFlashcards || 0} source reviewed</p></div>
                   <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
                     <label className="text-sm font-bold text-slate-800">Search cards<input value={librarySearch} onChange={(event) => { setLibrarySearch(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600" /></label>
                     <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => { setLibraryDomain(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(learningLibrary.flashcards.map((item) => item.domain))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><span>{cards.length ? safeIndex + 1 : 0} of {cards.length} matching cards</span><span>{known} marked “Know” in this view</span></div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm font-bold text-slate-800"><span>{queue.dueCount} due now · {queue.scheduledCount} scheduled later · {known} marked Know</span><label className="flex items-center gap-2"><input type="checkbox" checked={flashcardDueOnly} onChange={(event) => { setFlashcardDueOnly(event.target.checked); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="h-4 w-4 rounded border-slate-400 text-indigo-700 focus:ring-indigo-600" />Show due cards only</label></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><span>{cards.length ? safeIndex + 1 : 0} of {cards.length} matching cards</span><span>{flashcardDueOnly ? 'Due queue' : 'All matching cards'}</span></div>
                   {card ? <article className="rounded-2xl border border-indigo-300 bg-white p-6 text-center shadow-sm" aria-live="polite">
-                    <div className="flex flex-wrap items-center justify-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{card.domain}</span><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (card.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{card.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : 'Review required'}</span></div>
+                    <div className="flex flex-wrap items-center justify-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{card.domain}</span><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (card.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{card.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : 'Review required'}</span>{cardSchedule && <span className="rounded-full border border-sky-300 bg-sky-50 px-2 py-1 text-xs font-black text-sky-900">{cardSchedule.dueAt <= queue.now ? 'Due now' : 'Next review ' + new Date(cardSchedule.dueAt).toLocaleDateString()}</span>}</div>
                     <p className="mx-auto mt-6 max-w-3xl text-xl font-black leading-relaxed text-slate-900">{card.front}</p>
                     {flashcardRevealed ? <div className="mx-auto mt-6 max-w-3xl rounded-xl bg-emerald-50 p-5 text-left text-base leading-relaxed text-emerald-950"><strong>Answer:</strong> {card.back}</div> : <button type="button" onClick={() => setFlashcardRevealed(true)} className="mt-6 rounded-xl bg-indigo-700 px-6 py-3 font-black text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Reveal answer</button>}
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
                       <button type="button" onClick={() => { setFlashcardIndex((safeIndex - 1 + cards.length) % cards.length); setFlashcardRevealed(false); }} className="rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Previous</button>
-                      {flashcardRevealed && <><button type="button" onClick={() => rate('again')} className="rounded-lg border border-rose-400 bg-rose-50 px-4 py-2 font-black text-rose-950 focus:outline-none focus:ring-2 focus:ring-rose-600">Study again</button><button type="button" onClick={() => rate('know')} className="rounded-lg bg-emerald-700 px-4 py-2 font-black text-white focus:outline-none focus:ring-2 focus:ring-emerald-600">Know it</button></>}
+                      {flashcardRevealed && <><button type="button" onClick={() => rate('again')} className="rounded-lg border border-rose-400 bg-rose-50 px-4 py-2 font-black text-rose-950 focus:outline-none focus:ring-2 focus:ring-rose-600">Study again · 10 min</button><button type="button" onClick={() => rate('learning')} className="rounded-lg border border-amber-400 bg-amber-50 px-4 py-2 font-black text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-600">Still learning · 1 day</button><button type="button" onClick={() => rate('know')} className="rounded-lg bg-emerald-700 px-4 py-2 font-black text-white focus:outline-none focus:ring-2 focus:ring-emerald-600">Know it</button></>}
                       <button type="button" onClick={() => { setFlashcardIndex((safeIndex + 1) % cards.length); setFlashcardRevealed(false); }} className="rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Next</button>
                     </div>
-                  </article> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No flashcards match those filters.</p>}
+                  </article> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">{flashcardDueOnly ? 'No flashcards are due for these filters.' : 'No flashcards match those filters.'}</p>}
                 </section>;
               })()}
 
