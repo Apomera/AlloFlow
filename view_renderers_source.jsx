@@ -441,14 +441,14 @@ const renderOutlineContent = (deps) => {
                                  <input aria-label={t('common.enter_it')}
                                      value={it}
                                      onChange={(e) => handleOutlineChange(branchIndex, 'item', e.target.value, i)}
-                                     role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
+                                     onClick={(e) => e.stopPropagation()}
                                      className="w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200 text-xs font-bold"
                                  />
                                  {showEnglish && isNonEnglish && (items_en?.[i] || items_en?.[i] === '') && (
                                      <input aria-label={t('common.enter_items_en')}
                                          value={items_en[i] || ''}
                                          onChange={(e) => handleOutlineChange(branchIndex, 'item', e.target.value, i, true)}
-                                         role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
+                                         onClick={(e) => e.stopPropagation()}
                                          className="w-full bg-white/50 rounded px-2 py-0.5 text-[0.8em] opacity-80 font-normal outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
                                          placeholder={t('common.placeholder_item_trans')}
                                      />
@@ -470,7 +470,7 @@ const renderOutlineContent = (deps) => {
             const renderVennTitle = (title, title_en, branchIndex) => (
                 <>
                     {isEditingOutline ? (
-                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }}} className="flex flex-col gap-1 min-w-[120px]" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-col gap-1 min-w-[120px]" onClick={(e) => e.stopPropagation()}>
                             <input aria-label={t('common.enter_title')}
                                 value={title}
                                 onChange={(e) => handleOutlineChange(branchIndex, 'title', e.target.value)}
@@ -534,13 +534,13 @@ const renderOutlineContent = (deps) => {
                                         placeholder={t('concept_map.venn.add_item_placeholder')}
                                         className="flex-grow text-xs p-2 rounded border border-rose-200 outline-none focus:ring-2 focus:ring-rose-400"
                                     />
-                                    <button onClick={() => handleAddVennItem('setA')} className="bg-rose-200 hover:bg-rose-300 text-rose-800 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500" aria-label={t('common.add')}><Plus size={14}/></button>
+                                    <button type="button" onClick={() => handleAddVennItem('setA')} className="min-h-11 min-w-11 bg-rose-200 hover:bg-rose-300 text-rose-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${setA.title}`}><Plus size={14}/></button>
                                 </div>
                                 <div className="space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1">
                                     {vennGameData.setA.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('setA', i)} className="text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button type="button" onClick={() => handleRemoveVennItem('setA', i)} className="min-h-11 min-w-11 text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
                                     {vennGameData.setA.length === 0 && <p className="text-[11px] text-rose-700 italic text-center">{t('concept_sort.no_items')}</p>}
@@ -557,13 +557,13 @@ const renderOutlineContent = (deps) => {
                                         placeholder={t('concept_map.venn.add_item_placeholder')}
                                         className="flex-grow text-xs p-2 rounded border border-purple-200 outline-none focus:ring-2 focus:ring-purple-400"
                                     />
-                                    <button onClick={() => handleAddVennItem('shared')} className="bg-purple-200 hover:bg-purple-300 text-purple-800 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500" aria-label={t('common.add')}><Plus size={14}/></button>
+                                    <button type="button" onClick={() => handleAddVennItem('shared')} className="min-h-11 min-w-11 bg-purple-200 hover:bg-purple-300 text-purple-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${shared.title || 'Shared'}`}><Plus size={14}/></button>
                                 </div>
                                 <div className="space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1">
                                     {vennGameData.shared.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('shared', i)} className="text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button type="button" onClick={() => handleRemoveVennItem('shared', i)} className="min-h-11 min-w-11 text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
                                     {vennGameData.shared.length === 0 && <p className="text-[11px] text-purple-700 italic text-center">{t('concept_sort.no_items')}</p>}
@@ -580,13 +580,13 @@ const renderOutlineContent = (deps) => {
                                         placeholder={t('concept_map.venn.add_item_placeholder')}
                                         className="flex-grow text-xs p-2 rounded border border-blue-200 outline-none focus:ring-2 focus:ring-blue-400"
                                     />
-                                    <button onClick={() => handleAddVennItem('setB')} className="bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label={t('common.add')}><Plus size={14}/></button>
+                                    <button type="button" onClick={() => handleAddVennItem('setB')} className="min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${setB.title}`}><Plus size={14}/></button>
                                 </div>
                                 <div className="space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1">
                                     {vennGameData.setB.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button onClick={() => handleRemoveVennItem('setB', i)} className="text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" aria-label={t('common.remove')}><X size={12}/></button>
+                                            <button type="button" onClick={() => handleRemoveVennItem('setB', i)} className="min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
                                     {vennGameData.setB.length === 0 && <p className="text-[11px] text-blue-700 italic text-center">{t('concept_sort.no_items')}</p>}

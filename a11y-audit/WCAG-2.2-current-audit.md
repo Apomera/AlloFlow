@@ -195,6 +195,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated the Header Text, Voice, Join Session, and Documents popovers: disclosure triggers now expose expanded state and popup type; Text, Voice, and Join content is programmatically named and handles Escape from within the actual popover with trigger-focus restoration; Documents retains its menu-specific Escape and focus behavior; and all four invisible click-catcher backdrops are non-focusable and hidden from assistive technology instead of being announced as meaningless buttons (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 4.1.2).
 
+- Remediated Venn diagram editing and setup controls in the shared renderer: editable item fields are no longer falsely exposed as modal dialogs, translated title fields are no longer nested in a focusable simulated button, and all three region-specific Add and Remove actions use explicit native button behavior, item/region-specific accessible names, 44 CSS-pixel targets, and strong visible focus indicators (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
