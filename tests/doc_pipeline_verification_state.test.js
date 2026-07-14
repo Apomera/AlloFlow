@@ -103,12 +103,15 @@ describe('canonical remediation verification-state matrix', () => {
     expect(deriveVerificationState(eaUnknown).verificationCoverage.equalAccess).toBe('partial');
   });
 
-  it('lets additional static-source or language limitations force review without discarding engine evidence', () => {
+  it('keeps static-source context visible WITHOUT forcing review; language still gates (B3, 2026-07-13)', () => {
+    // B3: extraReasons are CONTEXT — counting them as review findings made
+    // 'complete' unreachable for every web audit and left the success branches
+    // dead. The caveat still renders (reasons), it just no longer gates.
     const extra = deriveVerificationState({ ...completeEvidence(), extraReasons: ['static-source-audit'] });
-    expect(extra.verificationState).toBe('review-required');
-    expect(extra.reviewCount).toBe(1);
+    expect(extra.verificationState).toBe('complete');
+    expect(extra.reviewCount).toBe(0);
+    expect(extra.reasons).toContain('static-source-audit');
     expect(extra.verificationCoverage.ai).toBe('complete');
-    expect(extra.afterScoreVerified).toBe(false);
 
     const language = deriveVerificationState({ ...completeEvidence(), languageReviewRequired: true });
     expect(language.verificationState).toBe('review-required');

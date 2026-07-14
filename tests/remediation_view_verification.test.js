@@ -33,6 +33,7 @@ const helpers = new Function('crypto', 'TextEncoder',
   extractFunction('_viewRehydrateVerificationHtmlBinding') + '\n' +
   extractFunction('_viewBindFreshVerificationResult') + '\n' +
   extractFunction('_viewBindValidationToHtml') + '\n' +
+  "const _viewUtf8LenMemo = typeof WeakMap !== 'undefined' ? new WeakMap() : null;\n" +
   extractFunction('_viewValidationMatchesHtml') + '\n' +
   extractFunction('_viewAttachTaggedArtifactProof') + '\n' +
   extractFunction('_viewTaggedArtifactProofMatches') + '\n' +
@@ -130,14 +131,16 @@ describe('remediation view verification state', () => {
     expect(eaResult.reasons).toContain('equal-access-review-count-unknown');
   });
 
-  it('retains language, indeterminate-rule, and scalar/static-scope review reasons', () => {
+  it('retains language + indeterminate-rule gates; static-scope context rides reasons without counting (B3)', () => {
     const input = completeInput();
     input.axe.totalIncomplete = 2;
     input.languageReviewRequired = true;
     input.extraReasons = 'Static source excludes interaction behavior.';
     const result = helpers.derive(input, null);
     expect(result.verificationState).toBe('review-required');
-    expect(result.reviewCount).toBe(4);
+    // B3 (2026-07-13): 2 axe incompletes + 1 language gate; the static-scope
+    // caveat is context and no longer counts (was 4).
+    expect(result.reviewCount).toBe(3);
     expect(result.reasons).toContain('document-language-needs-review');
     expect(result.reasons).toContain('Static source excludes interaction behavior.');
   });

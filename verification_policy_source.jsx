@@ -78,7 +78,13 @@ function _alloDeriveVerificationState(input) {
   });
   if (input.languageReviewRequired) reasons.push(String(input.languageReviewReason || 'document-language-needs-review'));
 
-  var reviewCount = axeReviewCount + eaReviewCount + extraReasons.filter(function (r) { return String(r == null ? '' : r).trim(); }).length + (input.languageReviewRequired ? 1 : 0);
+  // B3 (2026-07-13): extraReasons are CONTEXT (e.g. the static-web scope caveat) —
+  // they ride in `reasons` so "Why this status?" names them, but they no longer
+  // count as review findings. Counting them made 'complete' unreachable for every
+  // web audit (the ==='complete' success branches were dead code) and let a
+  // zero-engines-ran result claim 'review-required' over 'unavailable'.
+  // languageReviewRequired stays a genuine gate (a human confirms the language).
+  var reviewCount = axeReviewCount + eaReviewCount + (input.languageReviewRequired ? 1 : 0);
   var allComplete = aiStatus === 'complete' && axeStatus === 'complete' && eaStatus === 'complete';
   var allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
   var hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';

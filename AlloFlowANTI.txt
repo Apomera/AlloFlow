@@ -21875,7 +21875,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         _eaStatus = 'partial';
         _reasons.push('equal-access-review-count-unknown');
       } else {
-        _eaReviewCount = _eaAggregate !== null ? _eaAggregate : ((_eaPotential || 0) + (_eaManual || 0));
+        _eaReviewCount = _eaAggregate !== null ? Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0)) : ((_eaPotential || 0) + (_eaManual || 0)); // B7 parity: matches VerificationPolicy (max, not bare aggregate)
         if (_eaReviewCount > 0) {
           _eaStatus = 'complete-with-review';
           if ((_eaPotential || 0) > 0) _reasons.push('equal-access-potential:' + _eaPotential);
@@ -21896,13 +21896,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     });
     if (_v.languageReviewRequired) _reasons.push(String(_v.languageReviewReason || 'document-language-needs-review'));
 
+    // B3/B7 parity (2026-07-13): extraReasons are context, not review findings —
+    // mirrors the canonical VerificationPolicy exactly (this fallback only runs
+    // when the policy module is unavailable, and it must not be STRICTER).
     const _reviewCount = _axeReviewCount + _eaReviewCount
-      + _extraReasons.filter((reason) => String(reason == null ? '' : reason).trim()).length
       + (_v.languageReviewRequired ? 1 : 0);
     const _allComplete = _aiStatus === 'complete' && _axeStatus === 'complete' && _eaStatus === 'complete';
     const _allUnavailable = _aiStatus === 'unavailable' && _axeStatus === 'unavailable' && _eaStatus === 'unavailable';
     const _hasReviewEvidence = _reviewCount > 0 || _aiStatus === 'complete-with-review' || _axeStatus === 'complete-with-review' || _eaStatus === 'complete-with-review';
-    const _verificationState = _hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : (_allUnavailable ? 'unavailable' : 'partial'));
+    const _verificationState = _allUnavailable ? 'unavailable' : (_hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : 'partial')); // B7 parity: unavailable beats review evidence (a zero-engines result must not claim review-required)
     const _coverage = {
       standard: 'WCAG 2.2 AA',
       ai: _aiStatus,
@@ -22189,6 +22191,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     pdfAutoContinueAbortRef.current = false;
     const _abortCtrl = new AbortController();
     pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
+    // M11 (2026-07-13): save/restore the shared slot like the per-file controller does.
+    // Batch + auto-continue overlap is explicitly supported; overwriting without saving
+    // left the batch's per-call aborts dead for its remaining files once this loop
+    // finished (the slot was nulled, never restored).
+    const _prevAbortSlot = (typeof window !== 'undefined') ? window.__alloPdfAbortSignal : null;
     if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
     // Run-generation guard (acl-1, 2026-06-21): capture the gen at entry. The watchdog fire() bumps
     // window.__alloPdfRunGen when it invalidates a stalled run; if a NEW run then starts, this loop's
@@ -22551,7 +22558,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         pdfAutoContinueAbortCtrlRef.current = null;
       }
       if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
-        window.__alloPdfAbortSignal = null;
+        window.__alloPdfAbortSignal = _prevAbortSlot || null; // M11: hand the slot back to the overlapping origin (an aborted prev correctly aborts its own remaining calls)
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }

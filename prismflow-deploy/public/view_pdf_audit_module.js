@@ -2350,6 +2350,9 @@ function PdfAuditView(props) {
   const [resumableBatch, setResumableBatch] = useState(null);
   const [verificationRefreshBusy, setVerificationRefreshBusy] = useState(false);
   const _projectLoadSelectionRef = useRef(0);
+  React.useEffect(() => {
+    _projectLoadSelectionRef.current++;
+  }, [pendingPdfBase64]);
   const [lastTaggedValidation, _setLastTaggedValidationRaw] = useState(null);
   const _lastTaggedValidationRef = useRef(null);
   const _taggedValidationGenerationRef = useRef(0);
@@ -3915,22 +3918,20 @@ function PdfAuditView(props) {
       const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);
       const _sameBoundHtml = _viewIsLiveVerificationHtmlBound(pdfFixResult, newHtml, _docPipeline);
       const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);
-      let _applied = false;
+      const _curFix = pdfFixResultRef.current;
+      const _applied = !!(_curFix && _curFix.accessibleHtml === newHtml);
       let _verification = _deriveVerificationState({ ai: _wv, axe: _wa, equalAccess: _wea, pdfUaSelfCheck: "not-run" });
-      setPdfFixResult((prev) => {
-        if (!prev) return prev;
-        if (prev.accessibleHtml !== newHtml) return prev;
-        _applied = true;
+      if (_applied) {
         _verification = _deriveVerificationState({
           ai: _wv,
           axe: _wa,
           equalAccess: _wea,
-          pdfUaSelfCheck: _sameBoundHtml ? prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck || "not-run" : "not-run",
-          languageReviewRequired: !!prev.languageReviewRequired,
-          extraReasons: prev.verificationExtraReasons || []
+          pdfUaSelfCheck: _sameBoundHtml ? _curFix.verificationCoverage && _curFix.verificationCoverage.pdfUaSelfCheck || "not-run" : "not-run",
+          languageReviewRequired: !!_curFix.languageReviewRequired,
+          extraReasons: _curFix.verificationExtraReasons || []
         });
         const _next = {
-          ...prev,
+          ..._curFix,
           verificationHtmlBinding: _freshBinding || null,
           verificationAudit: _wvOk ? _wv : null,
           afterScore: Number.isFinite(_wscore) ? _wscore : null,
@@ -3950,9 +3951,9 @@ function PdfAuditView(props) {
           verificationReasons: _verification.reasons,
           verificationReviewCount: _verification.reviewCount,
           requiresManualReview: _verification.requiresManualReview,
-          needsExpertReview: !!(prev.fidelityLimited || prev.expertReviewReason === "content-fidelity" || prev.expertReviewReason === "both" || _waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0 || _weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0 || Number.isFinite(_wscore) && _wscore < 50),
-          expertReviewReason: prev.fidelityLimited || prev.expertReviewReason === "content-fidelity" || prev.expertReviewReason === "both" ? "content-fidelity" : _waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0 || _weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0 || Number.isFinite(_wscore) && _wscore < 50 ? "accessibility" : null,
-          issueResolution: _wvOk && typeof recomputeIssueResolution === "function" ? recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution : prev.issueResolution
+          needsExpertReview: !!(_curFix.fidelityLimited || _curFix.expertReviewReason === "content-fidelity" || _curFix.expertReviewReason === "both" || _waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0 || _weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0 || Number.isFinite(_wscore) && _wscore < 50),
+          expertReviewReason: _curFix.fidelityLimited || _curFix.expertReviewReason === "content-fidelity" || _curFix.expertReviewReason === "both" ? "content-fidelity" : _waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0 || _weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0 || Number.isFinite(_wscore) && _wscore < 50 ? "accessibility" : null,
+          issueResolution: _wvOk && typeof recomputeIssueResolution === "function" ? recomputeIssueResolution(_curFix.issueResolution, _wv) || _curFix.issueResolution : _curFix.issueResolution
         };
         if (_freshBinding) {
           _viewAttachRuntimeBindingProof(_next, newHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
@@ -3967,8 +3968,8 @@ function PdfAuditView(props) {
           requiresManualReview: !!_bound.requiresManualReview,
           reasons: _bound.verificationReasons || _verification.reasons
         };
-        return _bound;
-      });
+        setPdfFixResult((prev) => prev && prev.accessibleHtml === newHtml ? _bound : prev);
+      }
       if (_applied && !_sameBoundHtml) {
         setLastTaggedValidation(null);
         setVeraPdfResult(null);
@@ -6012,7 +6013,7 @@ Return ONLY JSON:
     ))))), pdfAuditResult.passes?.length > 0 && (() => {
       const pc = pdfAuditResult.passes.length;
       return /* @__PURE__ */ React.createElement("section", { "aria-label": `${pc} accessibility checks passed` }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-green-600 uppercase tracking-widest mb-2" }, "Passed Checks (", pc, ")"), /* @__PURE__ */ React.createElement("ul", { className: "list-none space-y-1" }, pdfAuditResult.passes.map((pass, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex items-start gap-2 text-xs text-green-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713"), " ", pass))));
-    })()), !pdfFixResult && pdfAuditResult && pdfAuditResult.pageCount > 10 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mb-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg" }, pdfMultiSession && pdfMultiSession.ranges && pdfMultiSession.ranges.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-900 mb-1" }, "\u{1F4DA} Prior remediated ranges (saved in your browser):"), /* @__PURE__ */ React.createElement("ul", { className: "text-xs text-indigo-800 space-y-0.5" }, pdfMultiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0)).map((r, idx) => /* @__PURE__ */ React.createElement("li", { key: idx }, "\u2713 Pages ", r.pages[0], "\u2013", r.pages[1], r.completedAt && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600" }, " \xB7 ", new Date(r.completedAt).toLocaleDateString()), typeof r.finalScore === "number" && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600" }, " \xB7 score ", r.finalScore, "/100")))), (() => {
+    })()), !pdfFixResult && pdfAuditResult && pdfAuditResult.pageCount > 10 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mb-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg" }, pdfMultiSession && pdfMultiSession.ranges && pdfMultiSession.ranges.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-900 mb-1" }, "\u{1F4DA} Prior remediated ranges (saved in your browser):"), /* @__PURE__ */ React.createElement("ul", { className: "text-xs text-indigo-800 space-y-0.5" }, pdfMultiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0)).map((r, idx) => /* @__PURE__ */ React.createElement("li", { key: idx }, "\u2713 Pages ", r.pages[0], "\u2013", r.pages[1], r.completedAt && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600" }, " \xB7 ", new Date(r.completedAt).toLocaleDateString()), Number.isFinite(r.afterScore ?? r.finalScore) && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600" }, " \xB7 score ", r.afterScore ?? r.finalScore, "/100")))), (() => {
       const completed = pdfMultiSession.ranges.reduce((acc, r) => acc + Math.max(0, r.pages[1] - r.pages[0] + 1), 0);
       const remaining = Math.max(0, (pdfAuditResult.pageCount || 0) - completed);
       return /* @__PURE__ */ React.createElement("div", { className: "text-xs text-indigo-700 mt-1.5 font-bold" }, remaining > 0 ? `${remaining} pages remaining of ${pdfAuditResult.pageCount}` : `\u2713 All ${pdfAuditResult.pageCount} pages complete`);
@@ -7413,7 +7414,19 @@ Return ONLY JSON:
       return /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-violet-300 rounded-xl p-3 text-xs", role: "dialog", "aria-label": t("pdf_audit.imgreview.aria") || "Review AI image description" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-black text-violet-800" }, "\u{1F50D} ", t("pdf_audit.imgreview.heading") || "Image", " ", imgReviewIdx + 1, " / ", imgReviewItems.length, " ", /* @__PURE__ */ React.createElement("span", { className: "ml-2 px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded font-bold uppercase text-[10px]" }, it.kind)), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         setImgReviewIdx(null);
         setImgReviewItems([]);
-      }, className: "text-slate-500 hover:text-red-600 font-bold" }, "\u2715 ", t("pdf_audit.imgreview.close") || "Close")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, it.src && /* @__PURE__ */ React.createElement("img", { src: it.src, alt: "", className: "max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[240px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"), /* @__PURE__ */ React.createElement("textarea", { value: imgReviewDraft, onChange: (e) => setImgReviewDraft(e.target.value), rows: 3, className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" }), it.latex && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.latex_label") || "AI-transcribed math (LaTeX)"), /* @__PURE__ */ React.createElement("code", { className: "block bg-slate-50 border border-slate-200 rounded p-1.5 mt-0.5 text-[11px] break-all" }, it.latex)), (it.hasChartBlock || it.hasMathBlock) && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("pdf_audit.imgreview.blocks_note") || 'This image carries an AI-generated companion block (chart data or MathML) \u2014 "Strip AI extras" removes it if it\u2019s wrong.'))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap mt-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      }, className: "text-slate-500 hover:text-red-600 font-bold" }, "\u2715 ", t("pdf_audit.imgreview.close") || "Close")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, it.src && /* @__PURE__ */ React.createElement("img", { src: it.src, alt: "", className: "max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[240px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"), /* @__PURE__ */ React.createElement("textarea", { value: imgReviewDraft, onChange: (e) => setImgReviewDraft(e.target.value), rows: 3, className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" }), (() => {
+        const _aqFn = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.altQuality || null;
+        let _q = null;
+        try {
+          _q = _aqFn ? _aqFn(imgReviewDraft, {}) : null;
+        } catch (_) {
+          _q = null;
+        }
+        const _issues = _q && Array.isArray(_q.issues) ? _q.issues : [];
+        if (!_issues.length) return null;
+        const _labels = _issues.slice(0, 3).map((x) => x && x.label || x && x.id || String(x)).join("; ");
+        return /* @__PURE__ */ React.createElement("p", { className: `mt-1 text-[11px] font-bold ${_q.severity === "high" ? "text-red-700" : "text-amber-700"}`, role: "status" }, _q.severity === "high" ? "\u{1F6D1}" : "\u26A0", " ", t("pdf_audit.imgreview.quality_flag") || "This description may not help a screen-reader user", ": ", _labels, ". ", t("pdf_audit.imgreview.quality_hint") || "Describe what the image SHOWS, not what it is.");
+      })(), it.latex && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.latex_label") || "AI-transcribed math (LaTeX)"), /* @__PURE__ */ React.createElement("code", { className: "block bg-slate-50 border border-slate-200 rounded p-1.5 mt-0.5 text-[11px] break-all" }, it.latex)), (it.hasChartBlock || it.hasMathBlock) && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("pdf_audit.imgreview.blocks_note") || 'This image carries an AI-generated companion block (chart data or MathML) \u2014 "Strip AI extras" removes it if it\u2019s wrong.'))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap mt-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
         _mutateClassifiedImg(it.i, (im) => {
           im.setAttribute("alt", imgReviewDraft);
         });

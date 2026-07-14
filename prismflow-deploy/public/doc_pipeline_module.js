@@ -229,7 +229,18 @@ function _alloNormalizeStoredVerification(stored, derived) {
   }
   var derivedReasons = Array.isArray(derived.reasons) ? derived.reasons : [];
   var storedReasons = Array.isArray(stored.verificationReasons) ? stored.verificationReasons : [];
-  var reasons = Array.from(new Set(derivedReasons.concat(storedReasons).filter(Boolean)));
+  // C7 (2026-07-13): counted reasons drifted into contradictory pairs — a stored
+  // 'axe-incomplete:3' and a fresh 'axe-incomplete:5' BOTH survived the Set and
+  // rendered side by side in "Why this status?". For any 'prefix:N' reason the
+  // DERIVED (fresh) count wins; stored copies of an already-derived prefix drop.
+  var _countedReasonRe = /^([a-z][a-z0-9-]*):(\d+)$/;
+  var _derivedCountedPrefixes = Object.create(null);
+  derivedReasons.forEach(function (r) { var m = _countedReasonRe.exec(String(r == null ? '' : r)); if (m) _derivedCountedPrefixes[m[1]] = true; });
+  var _keptStoredReasons = storedReasons.filter(function (r) {
+    var m = _countedReasonRe.exec(String(r == null ? '' : r));
+    return !(m && _derivedCountedPrefixes[m[1]]);
+  });
+  var reasons = Array.from(new Set(derivedReasons.concat(_keptStoredReasons).filter(Boolean)));
   if (effectiveState !== derivedState && reasons.length === 0) reasons.push('stored-verification-state:' + effectiveState);
   var derivedCount = Number.isFinite(derived.reviewCount) ? Math.max(0, derived.reviewCount) : 0;
   var storedCount = Number.isFinite(stored.verificationReviewCount) ? Math.max(0, stored.verificationReviewCount) : 0;
@@ -12227,6 +12238,10 @@ Return ONLY valid JSON:
     // immediately (instead of finishing a mid-flight request and only breaking
     // the loop on the next iteration check).
     const _batchAbortCtrl = new AbortController();
+    // M11 (2026-07-13): save/restore the shared slot (same idiom as the per-file
+    // controller and the auto-continue loop) — a batch starting over an in-flight
+    // single-run signal must hand it back when the batch ends, not null it.
+    const _prevBatchAbortSlot = (typeof window !== 'undefined') ? window.__alloPdfAbortSignal : null;
     if (typeof window !== 'undefined') {
       window.__alloPdfBatchAbortCtrl = _batchAbortCtrl;
       window.__alloPdfBatchAbortSignal = _batchAbortCtrl.signal;
@@ -12493,7 +12508,7 @@ Return ONLY valid JSON:
         window.__alloPdfBatchAbortSignal = null;
       }
       if (window.__alloPdfAbortSignal === _batchAbortCtrl.signal) {
-        window.__alloPdfAbortSignal = null;
+        window.__alloPdfAbortSignal = _prevBatchAbortSlot || null; // M11: hand the slot back to the overlapping origin
       }
     }
     // Name up to 3 failed files in the toast; the rest stays in the summary.

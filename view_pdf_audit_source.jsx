@@ -1,4 +1,4 @@
-﻿// view_pdf_audit_source.jsx — PDF Accessibility Audit modal CDN module
+// view_pdf_audit_source.jsx — PDF Accessibility Audit modal CDN module
 // Extracted from AlloFlowANTI.txt L30982-L38171 (May 2026, Round 4 Tier A).
 //
 // This is the single largest extraction in the project — 148 props
@@ -2291,6 +2291,12 @@ function PdfAuditView(props) {
   // A SHA-256 rehydration can finish out of order when two project files are selected quickly.
   // Both project pickers share this token: only the most recently selected file may commit.
   const _projectLoadSelectionRef = useRef(0);
+  // C7 (2026-07-13): a FRESH upload during a project rehydrate await used to lose the
+  // race — the finishing loader committed the project over the newly picked file. Any
+  // pendingPdfBase64 change now invalidates in-flight project loads. Effects run
+  // post-render, so a loader's OWN commit (it sets state only after its final token
+  // check, with no awaits in between) can never self-invalidate.
+  React.useEffect(() => { _projectLoadSelectionRef.current++; }, [pendingPdfBase64]);
   // Tier A #1: most-recent tagged-PDF validation result, populated by the
   // Tagged PDF download flow. Used by the Download Accessibility Report
   // button to assemble an Adobe-style compliance report.
@@ -3609,21 +3615,27 @@ function PdfAuditView(props) {
       const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);
       const _sameBoundHtml = _viewIsLiveVerificationHtmlBound(pdfFixResult, newHtml, _docPipeline);
       const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);
-      let _applied = false;
+      // C7 (2026-07-13): this decision used to be computed INSIDE the setPdfFixResult
+      // updater and read afterwards via closure mutation — React guarantees neither
+      // WHEN nor HOW MANY TIMES an updater runs, so `_applied`/`_verification` were
+      // timing-dependent. Everything is now computed from the host-synced ref FIRST;
+      // the updater is a pure CAS guard+swap. In the sub-millisecond race where a
+      // concurrent commit changes the html between the ref read and the swap, the
+      // updater keeps `prev` (no stomp) and the tagged-validation clearing below is
+      // fail-safe (it only ever WITHHOLDS stale validation state).
+      const _curFix = pdfFixResultRef.current;
+      const _applied = !!(_curFix && _curFix.accessibleHtml === newHtml);
       let _verification = _deriveVerificationState({ ai: _wv, axe: _wa, equalAccess: _wea, pdfUaSelfCheck: 'not-run' });
-      setPdfFixResult(prev => {
-        if (!prev) return prev;
-        if (prev.accessibleHtml !== newHtml) return prev;
-        _applied = true;
+      if (_applied) {
         _verification = _deriveVerificationState({
           ai: _wv,
           axe: _wa,
           equalAccess: _wea,
-          pdfUaSelfCheck: _sameBoundHtml ? ((prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',
-          languageReviewRequired: !!prev.languageReviewRequired,
-          extraReasons: prev.verificationExtraReasons || [],
+          pdfUaSelfCheck: _sameBoundHtml ? ((_curFix.verificationCoverage && _curFix.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',
+          languageReviewRequired: !!_curFix.languageReviewRequired,
+          extraReasons: _curFix.verificationExtraReasons || [],
         });
-        const _next = ({ ...prev,
+        const _next = ({ ..._curFix,
           verificationHtmlBinding: _freshBinding || null,
           verificationAudit: _wvOk ? _wv : null,
           afterScore: Number.isFinite(_wscore) ? _wscore : null,
@@ -3643,13 +3655,13 @@ function PdfAuditView(props) {
           verificationReasons: _verification.reasons,
           verificationReviewCount: _verification.reviewCount,
           requiresManualReview: _verification.requiresManualReview,
-          needsExpertReview: !!(prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both'
+          needsExpertReview: !!(_curFix.fidelityLimited || _curFix.expertReviewReason === 'content-fidelity' || _curFix.expertReviewReason === 'both'
             || (_waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0)
             || (_weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0)
             || (Number.isFinite(_wscore) && _wscore < 50)),
-          expertReviewReason: (prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'content-fidelity'
+          expertReviewReason: (_curFix.fidelityLimited || _curFix.expertReviewReason === 'content-fidelity' || _curFix.expertReviewReason === 'both') ? 'content-fidelity'
             : (((_waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0) || (_weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0) || (Number.isFinite(_wscore) && _wscore < 50)) ? 'accessibility' : null),
-          issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
+          issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(_curFix.issueResolution, _wv) || _curFix.issueResolution) : _curFix.issueResolution,
         });
         if (_freshBinding) {
           _viewAttachRuntimeBindingProof(_next, newHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
@@ -3664,8 +3676,8 @@ function PdfAuditView(props) {
           requiresManualReview: !!_bound.requiresManualReview,
           reasons: _bound.verificationReasons || _verification.reasons,
         };
-        return _bound;
-      });
+        setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);
+      }
       if (_applied && !_sameBoundHtml) {
         setLastTaggedValidation(null);
         setVeraPdfResult(null);
@@ -6543,7 +6555,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <li key={idx}>
                                 ✓ Pages {r.pages[0]}–{r.pages[1]}
                                 {r.completedAt && <span className="text-indigo-600"> · {new Date(r.completedAt).toLocaleDateString()}</span>}
-                                {typeof r.finalScore === 'number' && <span className="text-indigo-600"> · score {r.finalScore}/100</span>}
+                                {/* C7 (2026-07-13): ranges are SAVED with afterScore — the old r.finalScore read had no writer, so per-range scores never displayed. finalScore kept as a legacy fallback. */}
+                                {Number.isFinite(r.afterScore ?? r.finalScore) && <span className="text-indigo-600"> · score {r.afterScore ?? r.finalScore}/100</span>}
                               </li>
                             ))}
                           </ul>
@@ -8761,6 +8774,23 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="flex-1 min-w-[240px]">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.imgreview.alt_label') || 'Description (what a screen reader says)'}</label>
                                 <textarea value={imgReviewDraft} onChange={(e) => setImgReviewDraft(e.target.value)} rows={3} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" />
+                                {(() => {
+                                  // M20 (2026-07-13): live quality feedback on the DRAFT — the same heuristics
+                                  // that flag alts in the final audit run here as the teacher types, so the
+                                  // flag disappears the moment the description is fixed. Window static keeps
+                                  // this independent of the _docPipeline prop contract.
+                                  const _aqFn = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.altQuality) || null;
+                                  let _q = null;
+                                  try { _q = _aqFn ? _aqFn(imgReviewDraft, {}) : null; } catch (_) { _q = null; }
+                                  const _issues = (_q && Array.isArray(_q.issues)) ? _q.issues : [];
+                                  if (!_issues.length) return null;
+                                  const _labels = _issues.slice(0, 3).map((x) => (x && x.label) || (x && x.id) || String(x)).join('; ');
+                                  return (
+                                    <p className={`mt-1 text-[11px] font-bold ${_q.severity === 'high' ? 'text-red-700' : 'text-amber-700'}`} role="status">
+                                      {_q.severity === 'high' ? '🛑' : '⚠'} {t('pdf_audit.imgreview.quality_flag') || 'This description may not help a screen-reader user'}: {_labels}. {t('pdf_audit.imgreview.quality_hint') || 'Describe what the image SHOWS, not what it is.'}
+                                    </p>
+                                  );
+                                })()}
                                 {it.latex && (
                                   <div className="mt-1.5">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.imgreview.latex_label') || 'AI-transcribed math (LaTeX)'}</span>
