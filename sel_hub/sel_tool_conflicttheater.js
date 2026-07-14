@@ -1087,7 +1087,7 @@ window.SelHub = window.SelHub || {
                 var ok = (typeof window.confirm === 'function') ? window.confirm('Make all characters forget your past conversations? This cannot be undone.') : true;
                 if (ok) { upd('memory', {}); announceSR('All character memories cleared.'); }
               },
-              style: { padding: '4px 10px', background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
+              style: { padding: '4px 10px', minHeight: 24, background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
             }, '🧹 Reset all character memory')
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -1488,12 +1488,11 @@ window.SelHub = window.SelHub || {
 
       // Input + send
       var inputRow = h('div', { style: { display: 'flex', gap: 8 } },
-        h('textarea', {
+        h('textarea', { 'aria-label': 'Your message',
           value: studentInput,
           onChange: function(e) { upd('studentInput', e.target.value); },
           onKeyDown: function(e) { if (e.key === 'Enter' && !e.shiftKey && studentInput.trim() && !loading) { e.preventDefault(); sendTurn(); } },
           placeholder: addressing === 'both' ? 'Say something to both of them...' : 'Say something to ' + (CAST[addressing] ? CAST[addressing].name : '...'),
-          'aria-label': 'Your message',
           rows: 2,
           disabled: loading,
           style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #334155', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
