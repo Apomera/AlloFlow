@@ -17765,6 +17765,70 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     return { extractedText, effectivePageCount, forceFullOcr: _forceFullOcr, garbledFallbackText: _garbledFallbackText, officeMediaImages: _officeMediaImages };
   };
 
+  // ── Vision alt-vs-image spot check (2026-07-13) ───────────────────────────
+  // The alt-quality heuristics catch information-FREE alts (boilerplate,
+  // filenames) but are blind to plausible-but-WRONG ones: the text auditor
+  // scores alt text from HTML where image bytes are stripped, so "Bar chart of
+  // rainfall by month" passes even when the image is a photo of a cat. This
+  // samples a few images (heuristic-flagged first, then figures, then document
+  // order) and asks Vision ONE question per image: does this alt match what the
+  // image shows? Disagreements surface through the existing altQuality fidelity
+  // note (panel + verdict + expert-review plumbing). Fail-soft by design: any
+  // error/throttle/abort yields null and the run proceeds exactly as before.
+  // Each call rides the same _geminiCall breaker/pacing as every Vision call.
+  const _visionAltSpotCheck = async (html, opts) => {
+    try {
+      if (!callGeminiVision || typeof DOMParser === 'undefined') return null;
+      const sample = Math.max(1, (opts && opts.sample) || 2);
+      const maxImageBytes = (opts && opts.maxImageBytes) || (1.5 * 1024 * 1024);
+      const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      const imgs = Array.prototype.slice.call(doc.querySelectorAll('img[src^="data:image/"]'));
+      if (!imgs.length) return null;
+      const candidates = [];
+      for (let i = 0; i < imgs.length; i++) {
+        const el = imgs[i];
+        const alt = String(el.getAttribute('alt') || '').trim();
+        if (!alt) continue; // empty alt = decorative or the heuristics' failure class, not ours
+        const m = String(el.getAttribute('src') || '').match(/^data:(image\/(?:png|jpe?g|webp|gif));base64,([\s\S]+)$/i);
+        if (!m) continue;
+        if (m[2].length * 0.75 > maxImageBytes) continue;
+        let flagged = false;
+        try { const q = _alloAltQuality(alt, {}); flagged = !!(q && q.issues && q.issues.length); } catch (_) {}
+        const inFigure = !!(el.closest && el.closest('figure'));
+        candidates.push({ index: i, alt, mime: m[1], b64: m[2], flagged, inFigure });
+      }
+      if (!candidates.length) return null;
+      candidates.sort((a, b) => ((b.flagged ? 1 : 0) - (a.flagged ? 1 : 0)) || ((b.inFigure ? 1 : 0) - (a.inFigure ? 1 : 0)) || (a.index - b.index));
+      const picked = candidates.slice(0, sample);
+      const out = { checked: 0, sampled: picked.length, total: candidates.length, disagreements: [] };
+      for (const c of picked) {
+        if (typeof window !== 'undefined' && window.__alloPdfAbortSignal && window.__alloPdfAbortSignal.aborted) break;
+        let verdict = null;
+        try {
+          const resp = await callGeminiVision(
+            'You are checking IMAGE ALT TEXT accuracy for a screen-reader user. The document gives this image the alt text: "' + c.alt.slice(0, 300) + '". Look at the image. Does that alt text accurately describe what the image actually shows? Wrong subject, wrong data, wrong chart type, or misleading emphasis means NO. Minor wording differences mean YES. Respond ONLY JSON: {"match": true, "reason": "one short sentence"} or {"match": false, "reason": "one short sentence", "betterAlt": "a faithful alt under 20 words"}',
+            c.b64, c.mime
+          );
+          const s = String(resp || '');
+          const a = s.indexOf('{');
+          const b = s.lastIndexOf('}');
+          if (a >= 0 && b > a) verdict = JSON.parse(s.slice(a, b + 1));
+        } catch (_) { verdict = null; }
+        if (!verdict || typeof verdict.match !== 'boolean') continue; // throttled/garbage is NOT evidence either way
+        out.checked++;
+        if (verdict.match === false) {
+          out.disagreements.push({
+            index: c.index,
+            alt: c.alt.slice(0, 120),
+            reason: String(verdict.reason || '').slice(0, 200),
+            suggestion: String(verdict.betterAlt || '').slice(0, 200),
+          });
+        }
+      }
+      return out.checked ? out : null;
+    } catch (_) { return null; }
+  };
+
   const fixAndVerifyPdf = async (batchOverrides = null) => {
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     // S1 step 5: run-entry snapshot. batchOverrides win (the batch runner pins a whole batch
@@ -20996,6 +21060,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
       } catch (_aqErr) { altQualityReport = null; }
+
+      // Vision alt-vs-image spot check (2026-07-13): sampled ground-truth read.
+      // The heuristics above catch information-free alts; this catches
+      // plausible-but-WRONG ones. Fail-soft (throttle/abort → null); 1 sample in
+      // batch mode, 2 single-file; disagreements ride the SAME altQuality note
+      // plumbing so the panel/verdict/expert-review wiring needs no new reader.
+      try {
+        const _altSpot = await _visionAltSpotCheck(accessibleHtml, { sample: _isBatch ? 1 : 2 });
+        if (_altSpot && _altSpot.disagreements.length > 0) {
+          const _top = _altSpot.disagreements.slice(0, 2).map(d => '"' + d.alt.slice(0, 40) + '" (' + (d.reason || 'does not match the image') + (d.suggestion ? '; suggestion: "' + d.suggestion + '"' : '') + ')').join('; ');
+          warnLog('[AltSpotCheck] ' + _altSpot.disagreements.length + '/' + _altSpot.checked + ' sampled image description(s) do NOT match their image: ' + _top);
+          _structuralFidelityNotes.push({ kind: 'altQuality', msg: 'A Vision spot-check compared ' + _altSpot.checked + ' image description(s) against the actual image bytes and ' + _altSpot.disagreements.length + ' did not match — e.g. ' + _top + '. A wrong description is worse than a missing one for a screen-reader user; fix them in the image review panel before distributing.' });
+        } else if (_altSpot) {
+          warnLog('[AltSpotCheck] ' + _altSpot.checked + '/' + _altSpot.sampled + ' sampled image description(s) match their image (of ' + _altSpot.total + ' candidates).');
+        }
+      } catch (_) {}
 
       // ── Document Safety disclosure (dive-1 A1, 2026-07-02) ── the audit's active-content
       // scan travels on _auditResult; surface it through the same fidelity plumbing so the
@@ -33860,6 +33940,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     runAxeAudit: _wrapAsync(runAxeAudit),
     runEqualAccessAudit: _wrapAsync(runEqualAccessAudit),
     equalAccessUnavailable: _equalAccessUnavailable,
+    visionAltSpotCheck: _visionAltSpotCheck, // sampled alt-vs-image ground truth (fail-soft; 2026-07-13)
     describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
     _applyImageIntel,
     createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),
