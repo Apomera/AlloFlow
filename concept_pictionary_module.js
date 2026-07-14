@@ -217,6 +217,9 @@ class PictionaryHost {
             drawerUids: Array.from(this.activeRound.drawerUids),
             startedAt: this.activeRound.startedAt,
             durationMs: this.activeRound.durationMs,
+            isPaused: !!this.activeRound.isPaused,
+            pausedAt: this.activeRound.pausedAt || null,
+            pausedTotalMs: this.activeRound.pausedTotalMs || 0,
             // Host clock at send time: guests anchor their countdown to the
             // host's clock (device clocks skew by minutes in real classrooms).
             hostNow: Date.now()
@@ -241,6 +244,7 @@ class PictionaryHost {
           } else if (parsed.type === "strokeUndo" && parsed.payload && parsed.payload.strokeId) {
             this._onIncomingStrokeUndo(uid, parsed.payload.strokeId);
           } else if (parsed.type === "guess" && parsed.payload) {
+            if (!this.activeRound || this.activeRound.isPaused) return;
             this.onGuess(uid, codename, parsed.payload);
           }
         } catch (_) {
@@ -267,7 +271,7 @@ class PictionaryHost {
     }
   }
   _onIncomingStroke(senderUid, senderCodename, stroke) {
-    if (!this.activeRound || !this.activeRound.drawerUids.has(senderUid)) return;
+    if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     const augmented = { ...stroke, uid: senderUid };
     this.strokeHistory.push(augmented);
     if (this.strokeHistory.length > STROKE_HISTORY_CAP) {
@@ -286,7 +290,7 @@ class PictionaryHost {
     this.onStroke(senderUid, senderCodename, augmented);
   }
   _onIncomingStrokeUndo(senderUid, strokeId) {
-    if (!this.activeRound || !this.activeRound.drawerUids.has(senderUid)) return;
+    if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     const idx = this.strokeHistory.findIndex((s) => s && s.strokeId === strokeId);
     if (idx < 0) return;
     if (this.strokeHistory[idx].uid !== senderUid) return;
@@ -313,31 +317,13 @@ class PictionaryHost {
       drawerUids: drawerSet,
       status: "drawing",
       startedAt,
-      durationMs
+      durationMs,
+      isPaused: false,
+      pausedAt: null,
+      pausedTotalMs: 0
     };
     this.strokeHistory = [];
-    if (this._timeoutHandle) {
-      clearTimeout(this._timeoutHandle);
-      this._timeoutHandle = null;
-    }
-    if (durationMs) {
-      this._timeoutHandle = setTimeout(() => {
-        this._timeoutHandle = null;
-        if (!this.activeRound) return;
-        const snapshot = {
-          concept: this.activeRound.concept,
-          drawerUids: Array.from(this.activeRound.drawerUids),
-          durationMs: this.activeRound.durationMs,
-          startedAt: this.activeRound.startedAt,
-          reason: "timeout"
-        };
-        this.resolveRound({ winnerUid: null, reason: "timeout" });
-        try {
-          this.onRoundAutoResolved(snapshot);
-        } catch (_) {
-        }
-      }, durationMs);
-    }
+    this._armRoundTimer(durationMs);
     this.peers.forEach((peer, uid) => {
       if (!peer.dc || peer.dc.readyState !== "open") return;
       const isDrawer = drawerSet.has(uid);
@@ -349,6 +335,9 @@ class PictionaryHost {
         drawerUids: Array.from(drawerSet),
         startedAt,
         durationMs,
+        isPaused: false,
+        pausedAt: null,
+        pausedTotalMs: 0,
         hostNow: Date.now()
       };
       try {
@@ -356,6 +345,78 @@ class PictionaryHost {
       } catch (_) {
       }
     });
+  }
+  _armRoundTimer(delayMs) {
+    if (this._timeoutHandle) {
+      clearTimeout(this._timeoutHandle);
+      this._timeoutHandle = null;
+    }
+    if (!this.activeRound || delayMs == null) return;
+    this._timeoutHandle = setTimeout(() => {
+      this._timeoutHandle = null;
+      if (!this.activeRound || this.activeRound.isPaused) return;
+      const snapshot = {
+        concept: this.activeRound.concept,
+        drawerUids: Array.from(this.activeRound.drawerUids),
+        durationMs: this.activeRound.durationMs,
+        startedAt: this.activeRound.startedAt,
+        reason: "timeout"
+      };
+      this.resolveRound({ winnerUid: null, reason: "timeout" });
+      try {
+        this.onRoundAutoResolved(snapshot);
+      } catch (_) {
+      }
+    }, Math.max(1, delayMs));
+  }
+  _broadcastRoundTiming() {
+    if (!this.activeRound) return;
+    const payload = {
+      roundId: this.activeRound.roundId,
+      startedAt: this.activeRound.startedAt,
+      durationMs: this.activeRound.durationMs,
+      isPaused: !!this.activeRound.isPaused,
+      pausedAt: this.activeRound.pausedAt || null,
+      pausedTotalMs: this.activeRound.pausedTotalMs || 0,
+      hostNow: Date.now()
+    };
+    const msg = JSON.stringify({ type: "roundTiming", payload });
+    this.peers.forEach((peer) => {
+      if (peer.dc && peer.dc.readyState === "open") {
+        try {
+          peer.dc.send(msg);
+        } catch (_) {
+        }
+      }
+    });
+  }
+  pauseRound() {
+    const round = this.activeRound;
+    if (!round || !round.durationMs || round.isPaused) return false;
+    const now = Date.now();
+    const elapsed = now - round.startedAt - (round.pausedTotalMs || 0);
+    round.isPaused = true;
+    round.pausedAt = now;
+    round.remainingMs = Math.max(0, round.durationMs - elapsed);
+    if (this._timeoutHandle) {
+      clearTimeout(this._timeoutHandle);
+      this._timeoutHandle = null;
+    }
+    this._broadcastRoundTiming();
+    return true;
+  }
+  resumeRound() {
+    const round = this.activeRound;
+    if (!round || !round.durationMs || !round.isPaused) return false;
+    const now = Date.now();
+    round.pausedTotalMs = (round.pausedTotalMs || 0) + Math.max(0, now - round.pausedAt);
+    round.pausedAt = null;
+    round.isPaused = false;
+    const remainingMs = Math.max(0, round.durationMs - (now - round.startedAt - round.pausedTotalMs));
+    round.remainingMs = remainingMs;
+    this._broadcastRoundTiming();
+    this._armRoundTimer(remainingMs);
+    return true;
   }
   resolveRound(result) {
     if (!this.activeRound) return;
@@ -455,6 +516,8 @@ class PictionaryGuest {
     });
     this.onRoundSync = config.onRoundSync || (() => {
     });
+    this.onRoundTiming = config.onRoundTiming || (() => {
+    });
     this.onHostClosed = config.onHostClosed || (() => {
     });
     this.onStroke = config.onStroke || (() => {
@@ -504,6 +567,7 @@ class PictionaryGuest {
         if (parsed.type === "roundStart") this.onRoundStart(parsed.payload);
         else if (parsed.type === "roundResolved") this.onRoundResolved(parsed.payload);
         else if (parsed.type === "roundSync") this.onRoundSync(parsed.payload || {});
+        else if (parsed.type === "roundTiming") this.onRoundTiming(parsed.payload || {});
         else if (parsed.type === "hostClosed") this.onHostClosed(parsed.payload || {});
         else if (parsed.type === "stroke") this.onStroke(parsed.payload);
         else if (parsed.type === "strokeUndo" && parsed.payload && parsed.payload.strokeId) this.onStrokeUndo(parsed.payload.strokeId);
@@ -769,14 +833,22 @@ const RoundCountdown = React.memo((props) => {
   const startedAt = props.startedAt;
   const durationMs = props.durationMs;
   const clockOffsetMs = props.clockOffsetMs || 0;
+  const isPaused = !!props.isPaused;
+  const pausedAt = props.pausedAt || null;
+  const pausedTotalMs = props.pausedTotalMs || 0;
   const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => {
+    setNow(Date.now());
+  }, [isPaused, pausedAt, pausedTotalMs]);
   React.useEffect(() => {
     if (!startedAt || !durationMs) return;
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, [startedAt, durationMs]);
   if (!startedAt || !durationMs) return null;
-  const elapsed = now - clockOffsetMs - startedAt;
+  const hostNow = now - clockOffsetMs;
+  const effectiveNow = isPaused && pausedAt ? pausedAt : hostNow;
+  const elapsed = effectiveNow - startedAt - pausedTotalMs;
   const remaining = Math.max(0, durationMs - elapsed);
   const secs = Math.ceil(remaining / 1e3);
   const pct = Math.max(0, Math.min(100, remaining / durationMs * 100));
@@ -784,7 +856,7 @@ const RoundCountdown = React.memo((props) => {
   const isDone = remaining <= 0;
   const barColor = isDone ? "bg-slate-400" : isUrgent ? "bg-red-500" : "bg-emerald-500";
   const textColor = isDone ? "text-slate-500" : isUrgent ? "text-red-700" : "text-slate-700";
-  return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-xs font-bold", role: "timer", "aria-live": "off", "aria-label": `Time remaining: ${secs} seconds` }, /* @__PURE__ */ React.createElement("span", { className: textColor }, "\u23F1 ", isDone ? "0s" : secs + "s"), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full transition-all duration-200 ${barColor}`, style: { width: `${pct}%` } })));
+  return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-xs font-bold", role: "timer", "aria-live": "off", "aria-label": isPaused ? `Timer paused at ${secs} seconds` : `Time remaining: ${secs} seconds` }, /* @__PURE__ */ React.createElement("span", { className: textColor }, isPaused ? "Paused \xB7 " : "", "\u23F1 ", isDone ? "0s" : secs + "s"), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full transition-all duration-200 motion-reduce:transition-none ${barColor}`, style: { width: `${pct}%` } })));
 });
 const DrawerToolbox = React.memo((props) => {
   const color = props.color || PEN_COLORS[0].hex;
@@ -798,6 +870,7 @@ const DrawerToolbox = React.memo((props) => {
   return /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-3 mb-2 px-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, PEN_COLORS.map((c) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: c.name,
       onClick: () => {
         setColor(c.hex);
@@ -819,6 +892,7 @@ const DrawerToolbox = React.memo((props) => {
   ))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setMode(mode === "eraser" ? "pen" : "eraser"),
       "aria-pressed": mode === "eraser",
       "aria-label": "Eraser",
@@ -828,6 +902,7 @@ const DrawerToolbox = React.memo((props) => {
   ), onUndo ? /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onUndo,
       className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-50",
       "aria-label": "Undo last stroke"
@@ -836,6 +911,7 @@ const DrawerToolbox = React.memo((props) => {
   ) : null, onClear ? /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onClear,
       className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50",
       "aria-label": "Clear canvas"
@@ -1005,7 +1081,7 @@ const PictionaryHostView = React.memo((props) => {
     setGuessFeed([]);
     setRoundActive(true);
     setRoundResolved(null);
-    setActiveRoundMeta(effectiveDuration ? { startedAt, durationMs: effectiveDuration } : null);
+    setActiveRoundMeta(effectiveDuration ? { startedAt, durationMs: effectiveDuration, isPaused: false, pausedAt: null, pausedTotalMs: 0 } : null);
     if (writeToSession && sessionRef) {
       const updates = {
         pictionaryRound: { active: true, roundId: _pic_genId("round"), startedAt: Date.now() }
@@ -1058,6 +1134,19 @@ const PictionaryHostView = React.memo((props) => {
     _appendRoundToLog({ concept, winnerUid, winnerCodename, resolution: "correct" });
     await _clearRolesAndRound();
   };
+  const handleTogglePause = () => {
+    const host = hostRef.current;
+    if (!host || !host.activeRound || !activeRoundMeta) return;
+    const changed = host.activeRound.isPaused ? host.resumeRound() : host.pauseRound();
+    if (!changed || !host.activeRound) return;
+    setActiveRoundMeta({
+      startedAt: host.activeRound.startedAt,
+      durationMs: host.activeRound.durationMs,
+      isPaused: !!host.activeRound.isPaused,
+      pausedAt: host.activeRound.pausedAt || null,
+      pausedTotalMs: host.activeRound.pausedTotalMs || 0
+    });
+  };
   const handleEndRound = async () => {
     if (hostRef.current) hostRef.current.resolveRound({ winnerUid: null, reason: "manual" });
     setRoundResolved({ concept, winnerUid: null, reason: "manual" });
@@ -1077,7 +1166,7 @@ const PictionaryHostView = React.memo((props) => {
   };
   if (!isOpen) return null;
   const rosterEntries = Object.keys(roster).map((uid) => ({ uid, name: roster[uid] && roster[uid].name || "Student", connected: !!connectedGuests[uid] }));
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-label": "Concept Pictionary host dashboard" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/60 backdrop-blur-sm", onClick: onClose, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-label": "Concept Pictionary host dashboard" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "absolute inset-0 bg-slate-900/60 backdrop-blur-sm", onClick: onClose, "aria-label": "Close Concept Pictionary host dashboard" }), /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: containerRef,
@@ -1087,16 +1176,18 @@ const PictionaryHostView = React.memo((props) => {
     /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-rose-50 via-orange-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-wider" }, "Live Game"), /* @__PURE__ */ React.createElement("h2", { className: "text-xl sm:text-2xl font-black text-slate-800 mt-0.5" }, "\u{1F3A8} Concept Pictionary"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 leading-snug hidden sm:block" }, "Multi-drawer collaborative comprehension probe. Strokes + guesses peer-to-peer, never stored.")), /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-1 flex-shrink-0" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: toggleFullscreen,
         className: "text-slate-500 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100",
         "aria-label": isFullscreen ? "Exit fullscreen" : "Enter fullscreen",
         title: isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen the dashboard"
       },
       isFullscreen ? "\u2199" : "\u26F6"
-    ), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": "Close" }, "\u2715"))),
-    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, "\u25CF Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive ? /* @__PURE__ */ React.createElement("button", { onClick: handleEndRound, className: "px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800" }, "End round") : null)), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes, drawingEnabled: false, fullscreenMode: isFullscreen }), roundResolved ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", roundResolved.concept || "(none)", " ", roundResolved.winnerUid && roster[roundResolved.winnerUid] ? /* @__PURE__ */ React.createElement("span", null, "\u2014 first correct: ", /* @__PURE__ */ React.createElement("strong", null, roster[roundResolved.winnerUid].name)) : roundResolved.reason === "timeout" ? /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 \u23F1 time's up") : /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 ended without a winner"), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { onClick: handleResetForNextRound, className: "px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700" }, "Set up next round \u2192"))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "Guesses (", guessFeed.length, ")"), guessFeed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No guesses yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, guessFeed.slice().reverse().map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: `flex items-center gap-2 p-2 rounded ${g.marked === "correct" ? "bg-emerald-50 border border-emerald-200" : "hover:bg-slate-50"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 text-xs flex-shrink-0" }, g.codename, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 text-sm text-slate-800" }, g.text), roundActive && g.marked == null ? /* @__PURE__ */ React.createElement("button", { onClick: () => handleMarkCorrect(g.id), className: "px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2713 correct") : g.marked === "correct" ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\u2713") : null, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": "Close" }, "\u2715"))),
+    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs, isPaused: activeRoundMeta.isPaused, pausedAt: activeRoundMeta.pausedAt, pausedTotalMs: activeRoundMeta.pausedTotalMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { role: "status", className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, activeRoundMeta && activeRoundMeta.isPaused ? "Round paused" : "Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleTogglePause, "aria-pressed": !!activeRoundMeta.isPaused, className: "px-2 py-1 text-xs font-bold rounded bg-amber-100 hover:bg-amber-200 text-amber-900" }, activeRoundMeta.isPaused ? "Resume timer" : "Pause timer") : null, roundActive ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndRound, className: "px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800" }, "End round") : null)), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes, drawingEnabled: false, fullscreenMode: isFullscreen }), roundResolved ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", roundResolved.concept || "(none)", " ", roundResolved.winnerUid && roster[roundResolved.winnerUid] ? /* @__PURE__ */ React.createElement("span", null, "\u2014 first correct: ", /* @__PURE__ */ React.createElement("strong", null, roster[roundResolved.winnerUid].name)) : roundResolved.reason === "timeout" ? /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 \u23F1 time's up") : /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 ended without a winner"), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetForNextRound, className: "px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700" }, "Set up next round \u2192"))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "Guesses (", guessFeed.length, ")"), guessFeed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No guesses yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, guessFeed.slice().reverse().map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: `flex items-center gap-2 p-2 rounded ${g.marked === "correct" ? "bg-emerald-50 border border-emerald-200" : "hover:bg-slate-50"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 text-xs flex-shrink-0" }, g.codename, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 text-sm text-slate-800" }, g.text), roundActive && g.marked == null ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleMarkCorrect(g.id), className: "px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2713 correct") : g.marked === "correct" ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\u2713") : null, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => toggleMuteGuesser(g.uid),
         title: mutedGuessers[g.uid] ? "Unmute this guesser" : "Mute this guesser (their guesses stop appearing here)",
         "aria-label": (mutedGuessers[g.uid] ? "Unmute " : "Mute ") + g.codename,
@@ -1112,11 +1203,12 @@ const PictionaryHostView = React.memo((props) => {
         className: "w-full text-sm border border-slate-300 rounded p-2 outline-none focus:ring-2 focus:ring-rose-300 resize-y min-h-[44px]",
         "aria-label": "Concept to draw"
       }
-    ), callGemini ? /* @__PURE__ */ React.createElement("button", { onClick: handleAISuggestConcepts, disabled: isLoadingIdeas, className: "mt-2 w-full px-2 py-1 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 disabled:opacity-50" }, isLoadingIdeas ? "Thinking\u2026" : "\u2728 Suggest from lesson") : null, conceptIdeas.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mt-2" }, conceptIdeas.map((idea, i) => /* @__PURE__ */ React.createElement("button", { key: i, onClick: () => setConcept(idea), className: "px-2 py-0.5 text-[11px] font-medium rounded-full bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100" }, idea))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "2. Pick drawers (max 4)"), rosterEntries.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No students in the session yet. Drawer assignment opens once they join.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, rosterEntries.map((s) => {
+    ), callGemini ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleAISuggestConcepts, disabled: isLoadingIdeas, className: "mt-2 w-full px-2 py-1 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 disabled:opacity-50" }, isLoadingIdeas ? "Thinking\u2026" : "\u2728 Suggest from lesson") : null, conceptIdeas.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mt-2" }, conceptIdeas.map((idea, i) => /* @__PURE__ */ React.createElement("button", { type: "button", key: i, onClick: () => setConcept(idea), className: "px-2 py-0.5 text-[11px] font-medium rounded-full bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100" }, idea))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "2. Pick drawers (max 4)"), rosterEntries.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No students in the session yet. Drawer assignment opens once they join.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, rosterEntries.map((s) => {
       const isDrawer = drawerUids.includes(s.uid);
       return /* @__PURE__ */ React.createElement("li", { key: s.uid }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: () => toggleDrawer(s.uid),
           disabled: !isDrawer && drawerUids.length >= 4,
           className: `w-full text-left flex items-center justify-between p-2 rounded text-sm border ${isDrawer ? "bg-rose-50 border-rose-300 text-rose-900" : "bg-white border-slate-200 hover:bg-slate-50 disabled:opacity-40"}`
@@ -1141,6 +1233,7 @@ const PictionaryHostView = React.memo((props) => {
     ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-1 leading-snug" }, "When the timer runs out, the round auto-resolves and the concept reveals.")), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleStartRound,
         disabled: !concept.trim() || drawerUids.length === 0,
         className: "w-full px-3 py-2 text-sm font-black rounded-full bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 shadow-lg shadow-rose-500/30"
@@ -1173,6 +1266,7 @@ const PictionaryHostView = React.memo((props) => {
       return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-900 mb-1 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F3C6} Session log"), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: () => setShowRoundLogDetail((v) => !v),
           className: "text-[10px] font-bold text-amber-700 hover:text-amber-900 underline",
           "aria-expanded": showRoundLogDetail
@@ -1258,6 +1352,11 @@ const PictionaryGuestOverlay = React.memo((props) => {
         if (!resolvedRef.current && typeof onCloseRef.current === "function") {
           onCloseRef.current();
         }
+      },
+      onRoundTiming: (timing) => {
+        if (!timing || !timing.roundId) return;
+        const clockOffsetMs = typeof timing.hostNow === "number" ? Date.now() - timing.hostNow : 0;
+        setActiveRound((prev) => prev && prev.roundId === timing.roundId ? { ...prev, ...timing, clockOffsetMs } : prev);
       },
       onRoundStart: (round) => {
         const clockOffsetMs = round && typeof round.hostNow === "number" ? Date.now() - round.hostNow : 0;
@@ -1356,31 +1455,33 @@ const PictionaryGuestOverlay = React.memo((props) => {
     /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-wider" }, isDrawer ? "\u{1F3A8} You are a drawer" : "\u{1F440} You are a guesser"), /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black text-slate-800 mt-0.5" }, "Concept Pictionary"), connState === "connecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1" }, "Connecting\u2026") : null, connState === "reconnecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1", role: "status" }, "Connection lost \u2014 reconnecting\u2026") : null, connState === "failed" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-red-700 mt-1 flex items-center gap-2", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "Can't reach the teacher's device."), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleManualRetry,
         className: "px-2 py-0.5 text-[10px] font-bold rounded border border-red-300 bg-white text-red-700 hover:bg-red-50"
       },
       "Retry"
-    )) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs, clockOffsetMs: activeRound.clockOffsetMs || 0 }) : null, /* @__PURE__ */ React.createElement(
+    )) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs, clockOffsetMs: activeRound.clockOffsetMs || 0, isPaused: activeRound.isPaused, pausedAt: activeRound.pausedAt, pausedTotalMs: activeRound.pausedTotalMs }) : null, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: toggleGuestFullscreen,
         className: "text-slate-500 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100",
         "aria-label": isGuestFullscreen ? "Exit fullscreen" : "Enter fullscreen",
         title: isGuestFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"
       },
       isGuestFullscreen ? "\u2199" : "\u26F6"
-    ), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": "Close" }, "\u2715"))),
-    /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4" }, activeRound && isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-rose-700" }, "Concept to draw together"), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-rose-900 mt-1" }, activeRound.concept), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-rose-700 italic mt-1" }, "No letters or numbers \u2014 just the picture. Other drawers can add to your sketch.")) : null, activeRound && !isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800" }, "Watch the drawing and guess what concept they're representing.")) : null, !activeRound && !resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3 text-center text-sm text-slate-600" }, "Waiting for the teacher to start a round\u2026") : null, resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-emerald-800" }, "Round resolved"), /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-emerald-900 mt-1" }, "Concept was: ", resolved.concept || "(not revealed)")) : null, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": "Close" }, "\u2715"))),
+    /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4" }, activeRound && activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3 text-sm font-bold text-amber-900" }, "Round paused by the teacher. Drawing and guessing will resume with the timer.") : null, activeRound && isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-rose-700" }, "Concept to draw together"), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-rose-900 mt-1" }, activeRound.concept), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-rose-700 italic mt-1" }, "No letters or numbers \u2014 just the picture. Other drawers can add to your sketch.")) : null, activeRound && !isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800" }, "Watch the drawing and guess what concept they're representing.")) : null, !activeRound && !resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3 text-center text-sm text-slate-600" }, "Waiting for the teacher to start a round\u2026") : null, resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-emerald-800" }, "Round resolved"), /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-emerald-900 mt-1" }, "Concept was: ", resolved.concept || "(not revealed)")) : null, /* @__PURE__ */ React.createElement(
       PictionaryCanvas,
       {
         strokes,
-        drawingEnabled: !!(activeRound && isDrawer && activeRound.status === "drawing"),
+        drawingEnabled: !!(activeRound && isDrawer && activeRound.status === "drawing" && !activeRound.isPaused),
         color,
         mode,
         onStrokeBatch: handleStrokeBatch,
         fullscreenMode: isGuestFullscreen
       }
-    ), activeRound && isDrawer ? /* @__PURE__ */ React.createElement(
+    ), activeRound && isDrawer && !activeRound.isPaused ? /* @__PURE__ */ React.createElement(
       DrawerToolbox,
       {
         color,
@@ -1395,6 +1496,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
         type: "text",
         value: guessText,
         onChange: (e) => setGuessText(e.target.value),
+        disabled: !!activeRound.isPaused,
         onKeyDown: (e) => {
           if (e.key === "Enter") handleSubmitGuess();
         },
@@ -1405,8 +1507,9 @@ const PictionaryGuestOverlay = React.memo((props) => {
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleSubmitGuess,
-        disabled: !guessText.trim(),
+        disabled: !guessText.trim() || !!activeRound.isPaused,
         className: "px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
       },
       "Send"

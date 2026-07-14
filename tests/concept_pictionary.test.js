@@ -206,6 +206,7 @@ function linkHostAndGuest(host, guest, uid, codename) {
       } else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) {
         host._onIncomingStrokeUndo(uid, parsed.payload.strokeId);
       } else if (parsed.type === 'guess' && parsed.payload) {
+        if (!host.activeRound || host.activeRound.isPaused) return;
         host.onGuess(uid, codename, parsed.payload);
       }
     } catch (_) {}
@@ -231,6 +232,7 @@ function linkHostAndGuest(host, guest, uid, codename) {
       if (parsed.type === 'roundStart') guest.onRoundStart(parsed.payload);
       else if (parsed.type === 'roundResolved') guest.onRoundResolved(parsed.payload);
       else if (parsed.type === 'roundSync') guest.onRoundSync(parsed.payload || {});
+      else if (parsed.type === 'roundTiming') guest.onRoundTiming(parsed.payload || {});
       else if (parsed.type === 'hostClosed') guest.onHostClosed(parsed.payload || {});
       else if (parsed.type === 'stroke') guest.onStroke(parsed.payload);
       else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) guest.onStrokeUndo(parsed.payload.strokeId);
@@ -272,6 +274,7 @@ describe('PictionaryHost + PictionaryGuest smoke test', () => {
       codename: 'BraveWolf',
       onRoundStart: vi.fn(),
       onRoundResolved: vi.fn(),
+      onRoundTiming: vi.fn(),
       onStroke: vi.fn(),
       onStrokeHistory: vi.fn(),
       onStrokeUndo: vi.fn(),
@@ -283,6 +286,7 @@ describe('PictionaryHost + PictionaryGuest smoke test', () => {
       codename: 'QuickFox',
       onRoundStart: vi.fn(),
       onRoundResolved: vi.fn(),
+      onRoundTiming: vi.fn(),
       onStroke: vi.fn(),
       onStrokeHistory: vi.fn(),
       onStrokeUndo: vi.fn(),
@@ -346,6 +350,7 @@ describe('PictionaryHost + PictionaryGuest smoke test', () => {
       codename: 'SwiftEagle',
       onRoundStart: vi.fn(),
       onRoundResolved: vi.fn(),
+      onRoundTiming: vi.fn(),
       onStroke: vi.fn(),
       onStrokeHistory: vi.fn(),
       onStrokeUndo: vi.fn(),
@@ -398,6 +403,7 @@ describe('PictionaryHost + PictionaryGuest smoke test', () => {
       codename: 'SwiftEagle',
       onRoundStart: vi.fn(),
       onRoundResolved: vi.fn(),
+      onRoundTiming: vi.fn(),
       onStroke: vi.fn(),
       onStrokeHistory: vi.fn(),
       onStrokeUndo: vi.fn(),
@@ -443,6 +449,51 @@ describe('PictionaryHost + PictionaryGuest smoke test', () => {
       expect(guesser.onRoundResolved).toHaveBeenCalledWith(
         expect.objectContaining({ reason: 'timeout', concept: 'mitosis' })
       );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('pauses the authoritative timer, blocks round activity, and resumes the remaining duration', () => {
+    vi.useFakeTimers();
+    try {
+      linkHostAndGuest(host, drawer, 'drawer-1', 'BraveWolf');
+      linkHostAndGuest(host, guesser, 'guesser-1', 'QuickFox');
+      host.startRound({ concept: 'mitosis', drawerUids: ['drawer-1'], durationMs: 30000 });
+      drawer.sendStroke({ strokeId: 'before-pause', color: '#c53030', points: [[1, 1]] });
+
+      vi.advanceTimersByTime(10000);
+      expect(host.pauseRound()).toBe(true);
+      expect(host.activeRound).toMatchObject({ isPaused: true, remainingMs: 20000 });
+      expect(drawer.onRoundTiming).toHaveBeenLastCalledWith(
+        expect.objectContaining({ isPaused: true, durationMs: 30000 })
+      );
+      expect(guesser.onRoundTiming).toHaveBeenLastCalledWith(
+        expect.objectContaining({ isPaused: true, durationMs: 30000 })
+      );
+
+      drawer.sendStroke({ strokeId: 'during-pause', color: '#c53030', points: [[2, 2]] });
+      drawer.sendStrokeUndo('before-pause');
+      guesser.sendGuess('mitosis');
+      expect(hostEvents.strokes).toHaveLength(1);
+      expect(hostEvents.strokeUndos).toHaveLength(0);
+      expect(hostEvents.guesses).toHaveLength(0);
+      expect(host.strokeHistory.map((stroke) => stroke.strokeId)).toEqual(['before-pause']);
+
+      vi.advanceTimersByTime(60000);
+      expect(host.activeRound).not.toBeNull();
+      expect(hostEvents.autoResolves).toHaveLength(0);
+
+      expect(host.resumeRound()).toBe(true);
+      expect(host.activeRound).toMatchObject({ isPaused: false, remainingMs: 20000 });
+      expect(drawer.onRoundTiming).toHaveBeenLastCalledWith(
+        expect.objectContaining({ isPaused: false, pausedTotalMs: 60000 })
+      );
+      vi.advanceTimersByTime(19999);
+      expect(host.activeRound).not.toBeNull();
+      vi.advanceTimersByTime(2);
+      expect(host.activeRound).toBeNull();
+      expect(hostEvents.autoResolves).toHaveLength(1);
     } finally {
       vi.useRealTimers();
     }

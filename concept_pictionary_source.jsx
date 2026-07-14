@@ -211,6 +211,9 @@ class PictionaryHost {
             drawerUids: Array.from(this.activeRound.drawerUids),
             startedAt: this.activeRound.startedAt,
             durationMs: this.activeRound.durationMs,
+            isPaused: !!this.activeRound.isPaused,
+            pausedAt: this.activeRound.pausedAt || null,
+            pausedTotalMs: this.activeRound.pausedTotalMs || 0,
             // Host clock at send time: guests anchor their countdown to the
             // host's clock (device clocks skew by minutes in real classrooms).
             hostNow: Date.now(),
@@ -231,6 +234,7 @@ class PictionaryHost {
           } else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) {
             this._onIncomingStrokeUndo(uid, parsed.payload.strokeId);
           } else if (parsed.type === 'guess' && parsed.payload) {
+            if (!this.activeRound || this.activeRound.isPaused) return;
             this.onGuess(uid, codename, parsed.payload);
           }
         } catch (_) {}
@@ -256,7 +260,7 @@ class PictionaryHost {
   }
   _onIncomingStroke(senderUid, senderCodename, stroke) {
     // Reject strokes from peers not currently assigned as drawers
-    if (!this.activeRound || !this.activeRound.drawerUids.has(senderUid)) return;
+    if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     // Tag with sender uid for downstream filtering / late-joiner replay
     const augmented = { ...stroke, uid: senderUid };
     // Buffer (cap memory)
@@ -275,7 +279,7 @@ class PictionaryHost {
     this.onStroke(senderUid, senderCodename, augmented);
   }
   _onIncomingStrokeUndo(senderUid, strokeId) {
-    if (!this.activeRound || !this.activeRound.drawerUids.has(senderUid)) return;
+    if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     // Only let a drawer undo their own strokes — silently no-op for everyone else.
     const idx = this.strokeHistory.findIndex((s) => s && s.strokeId === strokeId);
     if (idx < 0) return;
@@ -304,28 +308,13 @@ class PictionaryHost {
       status: 'drawing',
       startedAt,
       durationMs,
+      isPaused: false,
+      pausedAt: null,
+      pausedTotalMs: 0,
     };
     this.strokeHistory = [];
-    // Auto-resolve timeout when a duration is set. Clears in resolveRound/stop.
-    if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
-    if (durationMs) {
-      this._timeoutHandle = setTimeout(() => {
-        this._timeoutHandle = null;
-        if (!this.activeRound) return;
-        // Capture round snapshot BEFORE resolveRound nulls activeRound — the
-        // host-side snapshot is the source of truth for the view's round log
-        // (avoids stale React closure over drawerUids/durationMs).
-        const snapshot = {
-          concept: this.activeRound.concept,
-          drawerUids: Array.from(this.activeRound.drawerUids),
-          durationMs: this.activeRound.durationMs,
-          startedAt: this.activeRound.startedAt,
-          reason: 'timeout',
-        };
-        this.resolveRound({ winnerUid: null, reason: 'timeout' });
-        try { this.onRoundAutoResolved(snapshot); } catch (_) {}
-      }, durationMs);
-    }
+    // Auto-resolve timeout when a duration is set. Pause clears this handle; resume re-arms it.
+    this._armRoundTimer(durationMs);
     // Send roundStart to each peer; only drawers receive the concept
     this.peers.forEach((peer, uid) => {
       if (!peer.dc || peer.dc.readyState !== 'open') return;
@@ -338,10 +327,71 @@ class PictionaryHost {
         drawerUids: Array.from(drawerSet),
         startedAt,
         durationMs,
+        isPaused: false,
+        pausedAt: null,
+        pausedTotalMs: 0,
         hostNow: Date.now(),
       };
       try { peer.dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
     });
+  }
+  _armRoundTimer(delayMs) {
+    if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
+    if (!this.activeRound || delayMs == null) return;
+    this._timeoutHandle = setTimeout(() => {
+      this._timeoutHandle = null;
+      if (!this.activeRound || this.activeRound.isPaused) return;
+      const snapshot = {
+        concept: this.activeRound.concept,
+        drawerUids: Array.from(this.activeRound.drawerUids),
+        durationMs: this.activeRound.durationMs,
+        startedAt: this.activeRound.startedAt,
+        reason: 'timeout',
+      };
+      this.resolveRound({ winnerUid: null, reason: 'timeout' });
+      try { this.onRoundAutoResolved(snapshot); } catch (_) {}
+    }, Math.max(1, delayMs));
+  }
+  _broadcastRoundTiming() {
+    if (!this.activeRound) return;
+    const payload = {
+      roundId: this.activeRound.roundId,
+      startedAt: this.activeRound.startedAt,
+      durationMs: this.activeRound.durationMs,
+      isPaused: !!this.activeRound.isPaused,
+      pausedAt: this.activeRound.pausedAt || null,
+      pausedTotalMs: this.activeRound.pausedTotalMs || 0,
+      hostNow: Date.now(),
+    };
+    const msg = JSON.stringify({ type: 'roundTiming', payload });
+    this.peers.forEach((peer) => {
+      if (peer.dc && peer.dc.readyState === 'open') { try { peer.dc.send(msg); } catch (_) {} }
+    });
+  }
+  pauseRound() {
+    const round = this.activeRound;
+    if (!round || !round.durationMs || round.isPaused) return false;
+    const now = Date.now();
+    const elapsed = now - round.startedAt - (round.pausedTotalMs || 0);
+    round.isPaused = true;
+    round.pausedAt = now;
+    round.remainingMs = Math.max(0, round.durationMs - elapsed);
+    if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
+    this._broadcastRoundTiming();
+    return true;
+  }
+  resumeRound() {
+    const round = this.activeRound;
+    if (!round || !round.durationMs || !round.isPaused) return false;
+    const now = Date.now();
+    round.pausedTotalMs = (round.pausedTotalMs || 0) + Math.max(0, now - round.pausedAt);
+    round.pausedAt = null;
+    round.isPaused = false;
+    const remainingMs = Math.max(0, round.durationMs - (now - round.startedAt - round.pausedTotalMs));
+    round.remainingMs = remainingMs;
+    this._broadcastRoundTiming();
+    this._armRoundTimer(remainingMs);
+    return true;
   }
   resolveRound(result) {
     // result: { winnerUid?: string, reason?: 'timeout' | 'manual' }
@@ -425,6 +475,7 @@ class PictionaryGuest {
     this.onRoundStart = config.onRoundStart || (() => {});
     this.onRoundResolved = config.onRoundResolved || (() => {});
     this.onRoundSync = config.onRoundSync || (() => {});
+    this.onRoundTiming = config.onRoundTiming || (() => {});
     this.onHostClosed = config.onHostClosed || (() => {});
     this.onStroke = config.onStroke || (() => {});
     this.onStrokeHistory = config.onStrokeHistory || (() => {});
@@ -463,6 +514,7 @@ class PictionaryGuest {
         if (parsed.type === 'roundStart') this.onRoundStart(parsed.payload);
         else if (parsed.type === 'roundResolved') this.onRoundResolved(parsed.payload);
         else if (parsed.type === 'roundSync') this.onRoundSync(parsed.payload || {});
+        else if (parsed.type === 'roundTiming') this.onRoundTiming(parsed.payload || {});
         else if (parsed.type === 'hostClosed') this.onHostClosed(parsed.payload || {});
         else if (parsed.type === 'stroke') this.onStroke(parsed.payload);
         else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) this.onStrokeUndo(parsed.payload.strokeId);
@@ -735,14 +787,22 @@ const RoundCountdown = React.memo((props) => {
   // receipt; anchors the countdown to the HOST's clock so a guest device
   // whose clock is minutes off still shows the same remaining time.
   const clockOffsetMs = props.clockOffsetMs || 0;
+  const isPaused = !!props.isPaused;
+  const pausedAt = props.pausedAt || null;
+  const pausedTotalMs = props.pausedTotalMs || 0;
   const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => {
+    setNow(Date.now());
+  }, [isPaused, pausedAt, pausedTotalMs]);
   React.useEffect(() => {
     if (!startedAt || !durationMs) return;
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, [startedAt, durationMs]);
   if (!startedAt || !durationMs) return null;
-  const elapsed = (now - clockOffsetMs) - startedAt;
+  const hostNow = now - clockOffsetMs;
+  const effectiveNow = isPaused && pausedAt ? pausedAt : hostNow;
+  const elapsed = effectiveNow - startedAt - pausedTotalMs;
   const remaining = Math.max(0, durationMs - elapsed);
   const secs = Math.ceil(remaining / 1000);
   const pct = Math.max(0, Math.min(100, (remaining / durationMs) * 100));
@@ -751,10 +811,10 @@ const RoundCountdown = React.memo((props) => {
   const barColor = isDone ? 'bg-slate-400' : isUrgent ? 'bg-red-500' : 'bg-emerald-500';
   const textColor = isDone ? 'text-slate-500' : isUrgent ? 'text-red-700' : 'text-slate-700';
   return (
-    <div className="flex items-center gap-2 text-xs font-bold" role="timer" aria-live="off" aria-label={`Time remaining: ${secs} seconds`}>
-      <span className={textColor}>⏱ {isDone ? '0s' : secs + 's'}</span>
+    <div className="flex items-center gap-2 text-xs font-bold" role="timer" aria-live="off" aria-label={isPaused ? `Timer paused at ${secs} seconds` : `Time remaining: ${secs} seconds`}>
+      <span className={textColor}>{isPaused ? 'Paused · ' : ''}⏱ {isDone ? '0s' : secs + 's'}</span>
       <div className="w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-        <div className={`h-full transition-all duration-200 ${barColor}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full transition-all duration-200 motion-reduce:transition-none ${barColor}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -772,7 +832,7 @@ const DrawerToolbox = React.memo((props) => {
     <div className="flex flex-wrap items-center gap-2 mt-3 mb-2 px-2">
       <div className="flex gap-1">
         {PEN_COLORS.map((c) => (
-          <button
+          <button type="button"
             key={c.name}
             onClick={() => { setColor(c.hex); setMode('pen'); }}
             aria-pressed={mode === 'pen' && color === c.hex}
@@ -788,21 +848,21 @@ const DrawerToolbox = React.memo((props) => {
           />
         ))}
       </div>
-      <button
+      <button type="button"
         onClick={() => setMode(mode === 'eraser' ? 'pen' : 'eraser')}
         aria-pressed={mode === 'eraser'}
         aria-label="Eraser"
         className={`px-3 py-1.5 text-xs font-bold rounded-full border ${mode === 'eraser' ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
       >🧽 Eraser</button>
       {onUndo ? (
-        <button
+        <button type="button"
           onClick={onUndo}
           className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
           aria-label="Undo last stroke"
         >↶ Undo</button>
       ) : null}
       {onClear ? (
-        <button
+        <button type="button"
           onClick={onClear}
           className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50"
           aria-label="Clear canvas"
@@ -991,7 +1051,7 @@ const PictionaryHostView = React.memo((props) => {
     setGuessFeed([]);
     setRoundActive(true);
     setRoundResolved(null);
-    setActiveRoundMeta(effectiveDuration ? { startedAt, durationMs: effectiveDuration } : null);
+    setActiveRoundMeta(effectiveDuration ? { startedAt, durationMs: effectiveDuration, isPaused: false, pausedAt: null, pausedTotalMs: 0 } : null);
     // Write Tier-1 role markers to session doc so each peer can identify its role,
     // plus a pictionaryRound aggregate that late-joiners use to auto-open the
     // guest overlay (gets defaulted to 'guesser' on their side).
@@ -1045,6 +1105,19 @@ const PictionaryHostView = React.memo((props) => {
     _appendRoundToLog({ concept, winnerUid, winnerCodename, resolution: 'correct' });
     await _clearRolesAndRound();
   };
+  const handleTogglePause = () => {
+    const host = hostRef.current;
+    if (!host || !host.activeRound || !activeRoundMeta) return;
+    const changed = host.activeRound.isPaused ? host.resumeRound() : host.pauseRound();
+    if (!changed || !host.activeRound) return;
+    setActiveRoundMeta({
+      startedAt: host.activeRound.startedAt,
+      durationMs: host.activeRound.durationMs,
+      isPaused: !!host.activeRound.isPaused,
+      pausedAt: host.activeRound.pausedAt || null,
+      pausedTotalMs: host.activeRound.pausedTotalMs || 0,
+    });
+  };
   const handleEndRound = async () => {
     if (hostRef.current) hostRef.current.resolveRound({ winnerUid: null, reason: 'manual' });
     setRoundResolved({ concept, winnerUid: null, reason: 'manual' });
@@ -1067,7 +1140,7 @@ const PictionaryHostView = React.memo((props) => {
   const rosterEntries = Object.keys(roster).map((uid) => ({ uid, name: (roster[uid] && roster[uid].name) || 'Student', connected: !!connectedGuests[uid] }));
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary host dashboard">
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <button type="button" className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} aria-label="Close Concept Pictionary host dashboard" />
       <div
         ref={containerRef}
         className="relative bg-white shadow-2xl w-full max-w-5xl overflow-y-auto border border-slate-200"
@@ -1083,13 +1156,13 @@ const PictionaryHostView = React.memo((props) => {
             <p className="text-xs text-slate-600 mt-1 leading-snug hidden sm:block">Multi-drawer collaborative comprehension probe. Strokes + guesses peer-to-peer, never stored.</p>
           </div>
           <div className="flex items-start gap-1 flex-shrink-0">
-            <button
+            <button type="button"
               onClick={toggleFullscreen}
               className="text-slate-500 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100"
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen the dashboard'}
             >{isFullscreen ? '↙' : '⛶'}</button>
-            <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+            <button type="button" onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5">
@@ -1099,17 +1172,20 @@ const PictionaryHostView = React.memo((props) => {
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-700">Canvas</div>
                 <div className="flex items-center gap-2">
                   {roundActive && activeRoundMeta ? (
-                    <RoundCountdown startedAt={activeRoundMeta.startedAt} durationMs={activeRoundMeta.durationMs} />
+                    <RoundCountdown startedAt={activeRoundMeta.startedAt} durationMs={activeRoundMeta.durationMs} isPaused={activeRoundMeta.isPaused} pausedAt={activeRoundMeta.pausedAt} pausedTotalMs={activeRoundMeta.pausedTotalMs} />
                   ) : null}
                   {roundActive ? (
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300">● Round live</span>
+                    <span role="status" className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300">{activeRoundMeta && activeRoundMeta.isPaused ? 'Round paused' : 'Round live'}</span>
                   ) : roundResolved ? (
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">Resolved</span>
                   ) : (
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300">Idle</span>
                   )}
+                  {roundActive && activeRoundMeta ? (
+                    <button type="button" onClick={handleTogglePause} aria-pressed={!!activeRoundMeta.isPaused} className="px-2 py-1 text-xs font-bold rounded bg-amber-100 hover:bg-amber-200 text-amber-900">{activeRoundMeta.isPaused ? 'Resume timer' : 'Pause timer'}</button>
+                  ) : null}
                   {roundActive ? (
-                    <button onClick={handleEndRound} className="px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800">End round</button>
+                    <button type="button" onClick={handleEndRound} className="px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800">End round</button>
                   ) : null}
                 </div>
               </div>
@@ -1125,7 +1201,7 @@ const PictionaryHostView = React.memo((props) => {
                     <span className="italic">— ended without a winner</span>
                   )}
                   <div className="mt-2">
-                    <button onClick={handleResetForNextRound} className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700">Set up next round →</button>
+                    <button type="button" onClick={handleResetForNextRound} className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700">Set up next round →</button>
                   </div>
                 </div>
               ) : null}
@@ -1141,11 +1217,11 @@ const PictionaryHostView = React.memo((props) => {
                       <span className="font-bold text-slate-700 text-xs flex-shrink-0">{g.codename}:</span>
                       <span className="flex-1 text-sm text-slate-800">{g.text}</span>
                       {roundActive && g.marked == null ? (
-                        <button onClick={() => handleMarkCorrect(g.id)} className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700">✓ correct</button>
+                        <button type="button" onClick={() => handleMarkCorrect(g.id)} className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700">✓ correct</button>
                       ) : g.marked === 'correct' ? (
                         <span className="text-[10px] font-bold text-emerald-700">✓</span>
                       ) : null}
-                      <button
+                      <button type="button"
                         onClick={() => toggleMuteGuesser(g.uid)}
                         title={mutedGuessers[g.uid] ? 'Unmute this guesser' : 'Mute this guesser (their guesses stop appearing here)'}
                         aria-label={(mutedGuessers[g.uid] ? 'Unmute ' : 'Mute ') + g.codename}
@@ -1170,14 +1246,14 @@ const PictionaryHostView = React.memo((props) => {
                     aria-label="Concept to draw"
                   />
                   {callGemini ? (
-                    <button onClick={handleAISuggestConcepts} disabled={isLoadingIdeas} className="mt-2 w-full px-2 py-1 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 disabled:opacity-50">
+                    <button type="button" onClick={handleAISuggestConcepts} disabled={isLoadingIdeas} className="mt-2 w-full px-2 py-1 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 disabled:opacity-50">
                       {isLoadingIdeas ? 'Thinking…' : '✨ Suggest from lesson'}
                     </button>
                   ) : null}
                   {conceptIdeas.length > 0 ? (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {conceptIdeas.map((idea, i) => (
-                        <button key={i} onClick={() => setConcept(idea)} className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100">
+                        <button type="button" key={i} onClick={() => setConcept(idea)} className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100">
                           {idea}
                         </button>
                       ))}
@@ -1194,7 +1270,7 @@ const PictionaryHostView = React.memo((props) => {
                         const isDrawer = drawerUids.includes(s.uid);
                         return (
                           <li key={s.uid}>
-                            <button
+                            <button type="button"
                               onClick={() => toggleDrawer(s.uid)}
                               disabled={!isDrawer && drawerUids.length >= 4}
                               className={`w-full text-left flex items-center justify-between p-2 rounded text-sm border ${isDrawer ? 'bg-rose-50 border-rose-300 text-rose-900' : 'bg-white border-slate-200 hover:bg-slate-50 disabled:opacity-40'}`}
@@ -1225,7 +1301,7 @@ const PictionaryHostView = React.memo((props) => {
                   </select>
                   <p className="text-[11px] text-slate-500 italic mt-1 leading-snug">When the timer runs out, the round auto-resolves and the concept reveals.</p>
                 </div>
-                <button
+                <button type="button"
                   onClick={handleStartRound}
                   disabled={!concept.trim() || drawerUids.length === 0}
                   className="w-full px-3 py-2 text-sm font-black rounded-full bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 shadow-lg shadow-rose-500/30"
@@ -1286,7 +1362,7 @@ const PictionaryHostView = React.memo((props) => {
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs">
                   <div className="font-bold text-amber-900 mb-1 flex items-center justify-between">
                     <span>🏆 Session log</span>
-                    <button
+                    <button type="button"
                       onClick={() => setShowRoundLogDetail((v) => !v)}
                       className="text-[10px] font-bold text-amber-700 hover:text-amber-900 underline"
                       aria-expanded={showRoundLogDetail}
@@ -1436,6 +1512,11 @@ const PictionaryGuestOverlay = React.memo((props) => {
           onCloseRef.current();
         }
       },
+      onRoundTiming: (timing) => {
+        if (!timing || !timing.roundId) return;
+        const clockOffsetMs = typeof timing.hostNow === 'number' ? (Date.now() - timing.hostNow) : 0;
+        setActiveRound((prev) => prev && prev.roundId === timing.roundId ? { ...prev, ...timing, clockOffsetMs } : prev);
+      },
       onRoundStart: (round) => {
         const clockOffsetMs = (round && typeof round.hostNow === 'number') ? (Date.now() - round.hostNow) : 0;
         setActiveRound(round ? { ...round, clockOffsetMs } : round);
@@ -1540,7 +1621,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
             {connState === 'failed' ? (
               <div className="text-[11px] text-red-700 mt-1 flex items-center gap-2" role="status">
                 <span>Can't reach the teacher's device.</span>
-                <button
+                <button type="button"
                   onClick={handleManualRetry}
                   className="px-2 py-0.5 text-[10px] font-bold rounded border border-red-300 bg-white text-red-700 hover:bg-red-50"
                 >Retry</button>
@@ -1549,18 +1630,21 @@ const PictionaryGuestOverlay = React.memo((props) => {
           </div>
           <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             {activeRound && activeRound.durationMs && activeRound.startedAt ? (
-              <RoundCountdown startedAt={activeRound.startedAt} durationMs={activeRound.durationMs} clockOffsetMs={activeRound.clockOffsetMs || 0} />
+              <RoundCountdown startedAt={activeRound.startedAt} durationMs={activeRound.durationMs} clockOffsetMs={activeRound.clockOffsetMs || 0} isPaused={activeRound.isPaused} pausedAt={activeRound.pausedAt} pausedTotalMs={activeRound.pausedTotalMs} />
             ) : null}
-            <button
+            <button type="button"
               onClick={toggleGuestFullscreen}
               className="text-slate-500 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100"
               aria-label={isGuestFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               title={isGuestFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
             >{isGuestFullscreen ? '↙' : '⛶'}</button>
-            <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+            <button type="button" onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
           </div>
         </div>
         <div className="p-3 sm:p-4">
+          {activeRound && activeRound.isPaused ? (
+            <div role="status" className="bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3 text-sm font-bold text-amber-900">Round paused by the teacher. Drawing and guessing will resume with the timer.</div>
+          ) : null}
           {activeRound && isDrawer ? (
             <div className="bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3">
               <div className="text-[10px] font-bold uppercase tracking-wider text-rose-700">Concept to draw together</div>
@@ -1586,13 +1670,13 @@ const PictionaryGuestOverlay = React.memo((props) => {
           ) : null}
           <PictionaryCanvas
             strokes={strokes}
-            drawingEnabled={!!(activeRound && isDrawer && activeRound.status === 'drawing')}
+            drawingEnabled={!!(activeRound && isDrawer && activeRound.status === 'drawing' && !activeRound.isPaused)}
             color={color}
             mode={mode}
             onStrokeBatch={handleStrokeBatch}
             fullscreenMode={isGuestFullscreen}
           />
-          {activeRound && isDrawer ? (
+          {activeRound && isDrawer && !activeRound.isPaused ? (
             <DrawerToolbox
               color={color}
               setColor={setColor}
@@ -1607,14 +1691,15 @@ const PictionaryGuestOverlay = React.memo((props) => {
                 type="text"
                 value={guessText}
                 onChange={(e) => setGuessText(e.target.value)}
+                disabled={!!activeRound.isPaused}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitGuess(); }}
                 placeholder={(typeof window !== 'undefined' && window.__alloT && window.__alloT("placeholders.type_guess")) || "Type your guess…"}
                 className="flex-1 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300"
                 aria-label="Your guess"
               />
-              <button
+              <button type="button"
                 onClick={handleSubmitGuess}
-                disabled={!guessText.trim()}
+                disabled={!guessText.trim() || !!activeRound.isPaused}
                 className="px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
               >Send</button>
             </div>
