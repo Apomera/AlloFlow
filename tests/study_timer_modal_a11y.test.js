@@ -21,9 +21,27 @@ describe('Study Timer modal accessibility', () => {
 
   it('exposes remaining time and completion progress programmatically', () => {
     expect(source).toContain('role="timer"');
+    expect(source).toContain('aria-live="off"');
     expect(source).toContain('role="progressbar"');
     expect(source).toContain('aria-valuenow={completionPercent}');
     expect(source).toContain('aria-valuetext={`${completionPercent}% complete`}');
+    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
+    expect(source).toContain('{timerStatus}');
+  });
+
+  it('associates the task label and exposes control state accurately', () => {
+    expect(source).toContain('htmlFor="study-timer-task"');
+    expect(source).toContain('id="study-timer-task"');
+    expect(source).toContain('aria-pressed={studyDuration === min * 60 && !customTimerMinutes}');
+    expect(source).toContain("aria-label={isStudyTimerRunning ? t('timer.pause') : t('timer.start')}");
+    expect(source).not.toContain("aria-label={t('common.pause')}");
+  });
+
+  it('respects reduced-motion preferences', () => {
+    expect(source).toContain('motion-reduce:animate-none');
+    expect(source).toContain('motion-reduce:transition-none');
+    expect(source).toContain('motion-reduce:transform-none');
+    expect(source).toContain('motion-reduce:hidden');
   });
 
   it('synchronizes the deployable module', () => {

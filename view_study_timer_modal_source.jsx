@@ -48,19 +48,22 @@ function StudyTimerModal(props) {
   const completionPercent = studyDuration > 0
     ? Math.max(0, Math.min(100, Math.round(((studyDuration - studyTimeLeft) / studyDuration) * 100)))
     : 0;
+  const timerStatus = studyDuration > 0 && studyTimeLeft === 0
+    ? `${t('timer.title')}: complete`
+    : `${t('timer.title')}: ${isStudyTimerRunning ? 'running' : studyDuration > 0 ? 'paused' : 'ready'}`;
 
   return (
         <div
             ref={studyTimerRef}
             role="presentation"
-            className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+            className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"
             onClick={handleSetShowStudyTimerModalToFalse}
         >
-            {showTimerConfetti && <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center"><ConfettiExplosion /></div>}
+            {showTimerConfetti && <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center motion-reduce:hidden" aria-hidden="true"><ConfettiExplosion /></div>}
             <div
                 ref={dialogRef}
                 tabIndex={-1}
-                className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 focus:outline-none"
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none"
                 role="dialog" aria-modal="true" aria-labelledby="study-timer-title" onClick={e => e.stopPropagation()}
             >
                 <button
@@ -76,8 +79,8 @@ function StudyTimerModal(props) {
                     <h3 id="study-timer-title" className="font-black text-lg">{t('timer.title')}</h3>
                 </div>
                 <div className="mb-6">
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('timer.label_task')}</label>
-                    <input aria-label={t('common.enter_study_task_label')}
+                    <label htmlFor="study-timer-task" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('timer.label_task')}</label>
+                    <input id="study-timer-task"
                         data-help-key="timer_task_input"
                         type="text"
                         value={studyTaskLabel}
@@ -92,6 +95,7 @@ function StudyTimerModal(props) {
                         <button
                             data-help-key="timer_duration_btn"
                             key={min}
+                            aria-pressed={studyDuration === min * 60 && !customTimerMinutes}
                             onClick={() => {
                                 setStudyDuration(min * 60);
                                 setStudyTimeLeft(min * 60);
@@ -131,14 +135,14 @@ function StudyTimerModal(props) {
                     </button>
                 </div>
                 <div className="text-center mb-6 relative">
-                    <div className="text-5xl font-black text-slate-700 font-mono tracking-wider" role="timer" aria-label={`${t('timer.title')}: ${formatTime(studyTimeLeft)} remaining`}>
+                    <div className="text-5xl font-black text-slate-700 font-mono tracking-wider" role="timer" aria-live="off" aria-label={`${t('timer.title')}: ${formatTime(studyTimeLeft)} remaining`}>
                         {formatTime(studyTimeLeft)}
                     </div>
                     {studyDuration > 0 && (
                         <div className="mt-3 mx-auto max-w-[200px]">
                             <div className="h-2 bg-slate-200 rounded-full overflow-hidden" role="progressbar" aria-label={t('common.progress')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={completionPercent} aria-valuetext={`${completionPercent}% complete`}>
                                 <div
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-linear"
+                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-linear motion-reduce:transition-none"
                                     style={{ width: `${completionPercent}%` }}
                                 />
                             </div>
@@ -150,7 +154,7 @@ function StudyTimerModal(props) {
                 </div>
                 <div className="flex gap-3">
                     <button
-                        aria-label={t('common.pause')}
+                        aria-label={isStudyTimerRunning ? t('timer.pause') : t('timer.start')}
                         onClick={() => {
                             if (isStudyTimerRunning) {
                                 setIsStudyTimerRunning(false);
@@ -162,7 +166,7 @@ function StudyTimerModal(props) {
                                 setIsStudyTimerRunning(true);
                             }
                         }}
-                        className={`flex-1 py-3 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 ${isStudyTimerRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-700 hover:bg-green-800'}`}
+                        className={`flex-1 py-3 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 ${isStudyTimerRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-700 hover:bg-green-800'}`}
                     >
                         {isStudyTimerRunning ? <Pause size={20} className="fill-current"/> : <Play size={20} className="fill-current"/>}
                         {isStudyTimerRunning ? t('timer.pause') : t('timer.start')}
@@ -181,6 +185,7 @@ function StudyTimerModal(props) {
                         <RefreshCw size={20}/>
                     </button>
                 </div>
+                <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{timerStatus}</div>
             </div>
         </div>
   );
