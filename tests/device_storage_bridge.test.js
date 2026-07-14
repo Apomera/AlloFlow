@@ -39,6 +39,28 @@ describe('device storage bridge — file contracts', () => {
     expect(bridgeSrc).not.toMatch(/prismflow/i);
   });
 
+  it('supports namespace enumeration on both ends (in-panel review of the partitioned bucket)', () => {
+    expect(bridgeSrc).toContain('namespaces:1');
+    expect(bridgeSrc).toContain("case 'namespaces':");
+    expect(moduleSrc).toContain("namespaces: function () { return guarded('namespaces', {}); }");
+    expect(moduleSrc).toContain('View app data');
+  });
+
+  it('wires persona interview resume through the bridge', () => {
+    const viewSource = readFileSync(resolve(process.cwd(), 'view_persona_chat_source.jsx'), 'utf8');
+    const viewModule = readFileSync(resolve(process.cwd(), 'view_persona_chat_module.js'), 'utf8');
+    const viewDeployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_persona_chat_module.js'), 'utf8');
+    expect(viewDeployed).toBe(viewModule);
+    for (const src of [viewSource, viewModule]) {
+      expect(src).toContain("'persona_sessions'");
+      expect(src).toContain('_handleResumeSnapshot');
+      expect(src).toContain('_handleDiscardSnapshot');
+      // both reflection Continue buttons clear the snapshot at session end
+      expect(src.match(/_clearPersonaSnapshot\(\)/g).length).toBeGreaterThanOrEqual(3);
+      expect(src).toContain('allo_device_storage_module.js?v=');
+    }
+  });
+
   it('ships the on-screen probe panel and its keyboard bootstrap', () => {
     expect(moduleSrc).toContain('__openProbePanel');
     const tuSource = readFileSync(resolve(process.cwd(), 'text_utility_helpers_source.jsx'), 'utf8');
@@ -108,7 +130,7 @@ describe('device storage adapter — behavior', () => {
 
   it('queues writes while a bridge backend is disconnected', async () => {
     api.init({ surface: 'canvas' });
-    expect(api.status().backend).toBe('bridge-popup');
+    expect(api.status().backend).toBe('bridge-iframe'); // iframe = default since the 2026-07-14 probe verdict
     const res = await api.set('queued_ns', 'k1', 'v1');
     expect(res).toEqual({ queued: true });
     expect(api.status().queuedWrites).toBe(1);

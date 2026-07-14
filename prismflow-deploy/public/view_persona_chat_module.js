@@ -105,6 +105,115 @@
   var ErrorBoundary = props.ErrorBoundary;
   var CharacterColumn = props.CharacterColumn;
   var HarmonyMeter = props.HarmonyMeter;
+  // ── Interview resume via the device-storage bridge (2026-07-14) ──
+  // Canvas origins are ephemeral: a refresh loses personaState entirely (it
+  // is plain React state). Snapshot the live interview into on-device
+  // storage (alloDeviceStorage — silent iframe channel, probe-verified to
+  // persist across Canvas sessions) and offer to restore when the view
+  // opens with less conversation than the snapshot holds. Data never
+  // leaves the device; the probe panel (Ctrl+Alt+Shift+D → View app data)
+  // is the review/erase surface for this bucket.
+  var _dsResumeState = React.useState(null);
+  var personaResumeOffer = _dsResumeState[0];
+  var setPersonaResumeOffer = _dsResumeState[1];
+  var _dsCheckedRef = React.useRef(false);
+  var _dsSaveTimerRef = React.useRef(null);
+  var _ensureDeviceStorage = function () {
+    if (!window.__alloDeviceStoragePromise) {
+      window.__alloDeviceStoragePromise = window.alloDeviceStorage ? Promise.resolve(window.alloDeviceStorage) : new Promise(function (resolve, reject) {
+        var s = document.createElement('script');
+        s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+        s.onload = function () {
+          // Pages answers missing files with its SPA index as HTML 200 —
+          // verify the global actually appeared (lame.min.js lesson).
+          if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);else reject(new Error('device storage module missing after load'));
+        };
+        s.onerror = function () {
+          reject(new Error('device storage module failed to load'));
+        };
+        document.head.appendChild(s);
+      });
+    }
+    return window.__alloDeviceStoragePromise.then(function (ds) {
+      return ds.ready().then(function () {
+        return ds;
+      });
+    });
+  };
+  var _clearPersonaSnapshot = function () {
+    _ensureDeviceStorage().then(function (ds) {
+      return ds.remove('persona_sessions', 'active');
+    }).catch(function () {});
+  };
+  var _dsChatLen = (personaState.chatHistory || []).length;
+  React.useEffect(function () {
+    if (_dsCheckedRef.current) return;
+    _dsCheckedRef.current = true;
+    var mountMsgs = _dsChatLen;
+    _ensureDeviceStorage().then(function (ds) {
+      return ds.get('persona_sessions', 'active');
+    }).then(function (snap) {
+      if (!snap || !snap.state || !(snap.state.chatHistory || []).length) return;
+      if ((snap.state.chatHistory || []).length > mountMsgs) setPersonaResumeOffer(snap);
+    }).catch(function () {});
+  }, []);
+  React.useEffect(function () {
+    if (_dsChatLen < 2) return undefined; // nothing worth restoring yet
+    if (personaResumeOffer) return undefined; // don't clobber an undecided offer
+    if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
+    var st = personaState;
+    _dsSaveTimerRef.current = setTimeout(function () {
+      var avatarOk = typeof st.avatarUrl === 'string' && st.avatarUrl.length < 300000;
+      var snap;
+      try {
+        snap = JSON.parse(JSON.stringify({
+          v: 1,
+          savedAt: new Date().toISOString(),
+          state: {
+            mode: st.mode,
+            selectedCharacter: st.selectedCharacter || null,
+            selectedCharacters: st.selectedCharacters || [],
+            chatHistory: st.chatHistory || [],
+            harmonyScore: st.harmonyScore,
+            earnedBadges: st.earnedBadges || [],
+            topicSparkCount: st.topicSparkCount || 0,
+            suggestions: st.suggestions || [],
+            avatarUrl: avatarOk ? st.avatarUrl : null
+          }
+        }));
+      } catch (_) {
+        return;
+      }
+      _ensureDeviceStorage().then(function (ds) {
+        return ds.set('persona_sessions', 'active', snap);
+      }).catch(function () {});
+    }, 1500);
+    return function () {
+      if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
+    };
+  }, [_dsChatLen, personaState.harmonyScore, (personaState.earnedBadges || []).length, !!personaResumeOffer]);
+  var _resumeSnapshotName = personaResumeOffer ? personaResumeOffer.state.selectedCharacter && personaResumeOffer.state.selectedCharacter.name || (personaResumeOffer.state.selectedCharacters || []).map(function (c) {
+    return c && c.name;
+  }).filter(Boolean).join(' & ') || 'your character' : null;
+  var _handleResumeSnapshot = function () {
+    var snap = personaResumeOffer;
+    if (!snap) return;
+    setPersonaState(function (prev) {
+      return {
+        ...prev,
+        ...snap.state,
+        isLoading: false,
+        showReflection: false,
+        reflectionText: '',
+        reflectionSubmitted: false
+      };
+    });
+    setPersonaResumeOffer(null);
+  };
+  var _handleDiscardSnapshot = function () {
+    _clearPersonaSnapshot();
+    setPersonaResumeOffer(null);
+  };
   var activePersonaMessageMatch = typeof playingContentId === 'string' ? playingContentId.match(/^persona-message-(\d+)$/) : null;
   var activePersonaMessageIndex = activePersonaMessageMatch ? parseInt(activePersonaMessageMatch[1], 10) : -1;
   var activePersonaMessage = activePersonaMessageIndex >= 0 ? (personaState.chatHistory || [])[activePersonaMessageIndex] : null;
@@ -128,7 +237,23 @@
       right: 0,
       bottom: 0
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, personaResumeOffer && /*#__PURE__*/React.createElement("div", {
+    role: "region",
+    "aria-label": t('persona.resume_title') || 'Resume saved interview',
+    className: "absolute top-4 left-1/2 -translate-x-1/2 z-[10000] max-w-[94%] bg-amber-50 border-2 border-amber-300 text-amber-900 rounded-xl shadow-2xl px-4 py-2.5 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-300"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-medium"
+  }, "💾 ", (t('persona.resume_prompt') || 'Pick up your earlier interview with {name}?').replace('{name}', _resumeSnapshotName), /*#__PURE__*/React.createElement("span", {
+    className: "opacity-70 ml-1 text-xs"
+  }, "(", (personaResumeOffer.state.chatHistory || []).length, " ", t('persona.resume_messages') || 'messages', personaResumeOffer.savedAt ? ', ' + new Date(personaResumeOffer.savedAt).toLocaleString() : '', " — ", t('persona.resume_device_note') || 'saved on this device only', ")")), /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-2 ml-auto"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: _handleResumeSnapshot,
+    className: "text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-full transition-colors"
+  }, t('persona.resume_btn') || 'Resume'), /*#__PURE__*/React.createElement("button", {
+    onClick: _handleDiscardSnapshot,
+    className: "text-xs font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full transition-colors"
+  }, t('persona.resume_discard_btn') || 'Discard'))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-2xl w-full max-w-7xl relative border-4 border-yellow-200 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-[85vh]"
   }, personaState.mode === 'panel' ? /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 w-full h-full flex flex-col overflow-hidden relative"
@@ -535,6 +660,7 @@
       setReflectionFeedback(null);
       setIsPersonaReflectionOpen(false);
       setPersonaReflectionInput('');
+      _clearPersonaSnapshot();
       setPersonaState(prev => ({
         ...prev,
         selectedCharacter: null,
@@ -1064,6 +1190,7 @@
       setReflectionFeedback(null);
       setIsPersonaReflectionOpen(false);
       setPersonaReflectionInput('');
+      _clearPersonaSnapshot();
       setPersonaState(prev => ({
         ...prev,
         selectedCharacter: null,

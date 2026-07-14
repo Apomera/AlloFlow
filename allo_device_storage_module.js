@@ -66,6 +66,19 @@
     err.code = code;
     return err;
   }
+  // Mirrors the monolith's _isCanvasEnv hostname heuristic (ANTI ~3403) so
+  // consumers can init({}) without plumbing that flag through.
+  function detectSurface() {
+    try {
+      var host = window.location.hostname || '';
+      var href = window.location.href || '';
+      if (href.indexOf('blob:') === 0) return 'canvas';
+      if (host.indexOf('googleusercontent') !== -1 || host.indexOf('scf.usercontent') !== -1 ||
+          host.indexOf('code-server') !== -1 || host.indexOf('idx.google') !== -1 ||
+          host.indexOf('run.app') !== -1) return 'canvas';
+      return 'stable';
+    } catch (_) { return 'canvas'; }
+  }
 
   // ── Transport over postMessage to a bridge window/iframe ────────
   function BridgeTransport(kind) {
@@ -198,7 +211,7 @@
     request: function (op, params) {
       return directDb().then(function (db) {
         return new Promise(function (resolve, reject) {
-          var mode = (op === 'get' || op === 'list' || op === 'getAll') ? 'readonly' : 'readwrite';
+          var mode = (op === 'get' || op === 'list' || op === 'getAll' || op === 'namespaces') ? 'readonly' : 'readwrite';
           var t = db.transaction(DIRECT_STORE, mode);
           var store = t.objectStore(DIRECT_STORE);
           var k = params && (params.ns + ' ' + params.key);
@@ -227,6 +240,17 @@
               var cur = c.result;
               if (cur) { cur.delete(); result++; cur.continue(); }
             };
+          } else if (op === 'namespaces') {
+            var all = store.getAll();
+            all.onsuccess = function () {
+              var by = {};
+              (all.result || []).forEach(function (r) {
+                var b = by[r.ns] = by[r.ns] || { ns: r.ns, count: 0, bytes: 0 };
+                b.count++;
+                try { b.bytes += typeof r.value === 'string' ? r.value.length : JSON.stringify(r.value).length; } catch (_) {}
+              });
+              result = Object.keys(by).sort().map(function (k) { return by[k]; });
+            };
           } else if (op === 'ping') {
             result = { pong: true, proto: PROTO };
           } else {
@@ -254,6 +278,9 @@
         case 'list': return Promise.resolve(Object.keys(bucket));
         case 'getAll': return Promise.resolve(Object.keys(bucket).map(function (k) { return { key: k, value: bucket[k] }; }));
         case 'clearNamespace': { var n = Object.keys(bucket).length; _mem[ns] = {}; return Promise.resolve(n); }
+        case 'namespaces': return Promise.resolve(Object.keys(_mem).sort().map(function (k) {
+          return { ns: k, count: Object.keys(_mem[k]).length, bytes: 0 };
+        }));
         case 'ping': return Promise.resolve({ pong: true, proto: PROTO });
         default: return Promise.reject(storageError('allo/bad-op', 'Unknown op: ' + op));
       }
@@ -308,20 +335,29 @@
   var api = {
     /**
      * Pick a backend. opts:
-     *   surface: 'canvas' | 'stable'  (caller decides — e.g. isCanvasEnv)
+     *   surface: 'canvas' | 'stable'  (omit to auto-detect — same hostname
+     *            heuristic as the monolith's _isCanvasEnv)
      *   bridgeUrl: override the hosted bridge page URL
-     *   mode: 'popup' | 'iframe'      (bridge flavor for Canvas; default popup)
+     *   mode: 'popup' | 'iframe'      (bridge flavor for Canvas; default
+     *            iframe — probe 2026-07-14 verified partitioned iframe
+     *            storage PERSISTS across Canvas sessions, no gesture needed)
      * Does NOT open anything — bridge backends connect lazily via connect().
      */
     init: function (opts) {
       opts = opts || {};
       if (opts.bridgeUrl) state.bridgeUrl = opts.bridgeUrl;
-      if (opts.surface === 'stable') {
+      var surface = opts.surface || detectSurface();
+      if (surface === 'stable') {
         state.backendName = 'direct';
       } else {
-        state.backendName = opts.mode === 'iframe' ? 'bridge-iframe' : 'bridge-popup';
+        state.backendName = opts.mode === 'popup' ? 'bridge-popup' : 'bridge-iframe';
       }
       return api.status();
+    },
+    /** init (if needed) + connect. Gesture-free on the iframe/direct paths. */
+    ready: function () {
+      if (state.backendName === 'unset') api.init({});
+      return api.connect();
     },
     /** Open the bridge (popup needs a user gesture). Resolves when ready. */
     connect: function () {
@@ -352,6 +388,7 @@
     list: function (ns) { return guarded('list', { ns: ns }); },
     getAll: function (ns) { return guarded('getAll', { ns: ns }); },
     clearNamespace: function (ns, opts) { return guarded('clearNamespace', { ns: ns }, opts); },
+    namespaces: function () { return guarded('namespaces', {}); },
     status: function () {
       return {
         backend: state.backendName,
@@ -470,11 +507,65 @@
     reviewBtn.onclick = function () {
       try { window.open(state.bridgeUrl, '_blank', 'noopener'); } catch (_) {}
     };
-    row.appendChild(runBtn); row.appendChild(reviewBtn);
+    // The standalone review page sees the FIRST-PARTY bucket only. The iframe
+    // channel's storage is partitioned under the Canvas top-level site, so
+    // the app's own data must be reviewable from HERE, through the same
+    // transport the app uses.
+    var dataBtn = document.createElement('button');
+    dataBtn.textContent = '📂 View app data';
+    dataBtn.style.cssText = btnCss;
+    row.appendChild(runBtn); row.appendChild(reviewBtn); row.appendChild(dataBtn);
 
     var out = document.createElement('div');
     out.setAttribute('aria-live', 'polite');
     out.style.cssText = 'white-space:pre-wrap;word-break:break-word;font-size:12px;';
+
+    dataBtn.onclick = function () {
+      out.textContent = 'Loading stored data…';
+      api.ready().then(function () { return api.namespaces(); }).then(function (list) {
+        out.textContent = '';
+        if (!list || !list.length) {
+          out.textContent = 'Nothing stored by the app on this device yet (backend: ' + state.backendName + ').';
+          return;
+        }
+        var note = document.createElement('div');
+        note.style.cssText = 'opacity:.75;margin-bottom:6px;';
+        note.textContent = 'Backend: ' + state.backendName + ' — data stays on this device.';
+        out.appendChild(note);
+        list.forEach(function (info) {
+          var line = document.createElement('div');
+          line.style.cssText = 'display:flex;align-items:center;gap:8px;margin:3px 0;';
+          var label = document.createElement('span');
+          label.style.cssText = 'flex:1;';
+          label.textContent = info.ns + ' — ' + info.count + ' record(s), ~' + info.bytes + ' B';
+          var exp = document.createElement('button');
+          exp.textContent = 'Export';
+          exp.style.cssText = btnCss + 'padding:2px 8px;';
+          exp.onclick = function () {
+            api.getAll(info.ns).then(function (rows) {
+              var blob = new Blob([JSON.stringify({ ns: info.ns, exportedAt: new Date().toISOString(), records: rows }, null, 2)], { type: 'application/json' });
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = 'alloflow_' + info.ns + '_export.json';
+              a.click();
+              setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+            }).catch(function (e) { out.appendChild(document.createTextNode('\nExport failed: ' + (e.code || e.message))); });
+          };
+          var del = document.createElement('button');
+          del.textContent = 'Erase';
+          del.style.cssText = btnCss + 'padding:2px 8px;color:#dc2626;';
+          del.onclick = function () {
+            if (window.confirm('Erase all ' + info.count + ' record(s) in ' + info.ns + ' from this device?')) {
+              api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); });
+            }
+          };
+          line.appendChild(label); line.appendChild(exp); line.appendChild(del);
+          out.appendChild(line);
+        });
+      }).catch(function (e) {
+        out.textContent = 'Could not load stored data: ' + (e && (e.code || e.message) || e);
+      });
+    };
 
     runBtn.onclick = function () {
       runBtn.disabled = true;
