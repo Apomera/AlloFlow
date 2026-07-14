@@ -177,6 +177,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Adventure scene, artwork, and playback interactions: mouse-only sentence spans were replaced with separate native read-aloud buttons that preserve independently operable formatted links, identify and control stable sentence targets, expose current playback state, meet WCAG 2.2 AA target size, and provide strong visible focus. Standard and immersive scenes are named regions without continuous live behavior that would compete with audio; generated artwork is consistently decorative because the full scene is adjacent text; image-generation and feedback changes are announced; the image-size slider has an accurate name, pixel value, larger target, and focus indicator; Storybook and Sequel actions use explicit native behavior and accurate names; contrast is strengthened; and scene, image, loading, badge, playback, completion, and sequel motion respects reduced-motion preferences (WCAG 1.1.1, 1.3.1, 1.4.3, 2.1.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Corrected shared formatted-text links used across generated content: Markdown links nested inside bold or italic text are no longer falsely exposed as modal dialogs, and both nested and top-level branches retain native external-link semantics with consistent URL tooltips and safe new-tab attributes. Links are now underlined rather than identified by color alone, use stronger light/dark-surface contrast, and provide a two-pixel visible focus ring with surface-aware offset (WCAG 1.3.1, 1.4.1, 1.4.3, 2.1.1, 2.4.4, 2.4.7, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
