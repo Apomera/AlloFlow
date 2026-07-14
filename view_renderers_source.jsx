@@ -3172,7 +3172,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             }).join('');
             return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
         }).join('');
-        const sheetTitle = _mpEsc(palace.title || data?.main || title || (t('memory_palace') || 'Memory Palace'));
+        const sheetTitle = _mpEsc(palace.title || data?.main || title || 'Memory Palace');
         const html = `<!doctype html><html><head><meta charset="utf-8"><title>${sheetTitle}</title><style>`
             + `body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}`
             + `h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}`
