@@ -1554,8 +1554,8 @@ window.SelHub = window.SelHub || {
           ),
 
           // Loading
-          aiLoading && !compResult && h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-2xl p-8 text-center' },
-            h('div', { className: 'text-3xl mb-2 animate-pulse' }, '\uD83D\uDD0D'),
+          aiLoading && !compResult && h('div', { role: 'status', 'aria-live': 'polite', 'aria-busy': 'true', className: 'bg-cyan-50 border border-cyan-200 rounded-2xl p-8 text-center' },
+            h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, '\uD83D\uDD0D'),
             h('p', { className: 'text-cyan-700 font-bold' }, 'Analyzing cultural connections...')
           ),
 
@@ -1645,7 +1645,7 @@ window.SelHub = window.SelHub || {
 
           // Loading
           aiLoading && !cultureData && h('div', { role: 'status', 'aria-live': 'polite', 'aria-busy': 'true', className: 'bg-cyan-50 border border-cyan-200 rounded-2xl p-12 text-center' },
-            h('div', { className: 'text-4xl mb-3 animate-pulse', 'aria-hidden': 'true' }, '\uD83C\uDF0D'),
+            h('div', { className: 'text-4xl mb-3', 'aria-hidden': 'true' }, '\uD83C\uDF0D'),
             h('p', { className: 'text-cyan-700 font-bold' }, 'Discovering ' + selectedCulture + '...')
           ),
 
@@ -1662,7 +1662,7 @@ window.SelHub = window.SelHub || {
             // Image + Overview
             h('div', { className: 'bg-white rounded-2xl border-2 border-cyan-200 overflow-hidden' },
               (cultureImage || imageLoading) && h('div', { className: 'w-full' },
-                imageLoading ? h('div', { className: 'w-full h-48 bg-cyan-50 flex items-center justify-center' }, h('span', { className: 'text-2xl animate-pulse' }, '\uD83C\uDFA8'))
+                imageLoading ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Generating cultural illustration', className: 'w-full h-48 bg-cyan-50 flex items-center justify-center' }, h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83C\uDFA8'))
                 : cultureImage && h('img', { src: cultureImage, alt: 'Illustration of ' + selectedCulture, className: 'w-full h-48 object-cover' })
               ),
               h('div', { className: 'p-5' },
@@ -1858,7 +1858,7 @@ window.SelHub = window.SelHub || {
                     h('span', {  className: 'text-xs font-bold text-slate-700 flex-1' }, jp.prompt),
                     completed && h('span', {  className: 'text-[10px] text-amber-600 font-bold' }, '\u2713')
                   ),
-                  h('textarea', { value: entryVal, onChange: function(e) {
+                  h('textarea', { 'aria-label': jp.prompt, value: entryVal, onChange: function(e) {
                       var newEntries = {};
                       var k;
                       for (k in journalEntries) { if (journalEntries.hasOwnProperty(k)) newEntries[k] = journalEntries[k]; }
@@ -1867,7 +1867,6 @@ window.SelHub = window.SelHub || {
                     },
                     placeholder: 'Write your thoughts...',
                     className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
-                    'aria-label': jp.prompt
                   }),
                   entryVal.length > 20 && !completed && h('button', { onClick: function() {
                       var newCompleted = journalPromptsCompleted.concat([jp.id]);
