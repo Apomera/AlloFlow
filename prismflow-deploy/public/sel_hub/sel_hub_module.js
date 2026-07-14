@@ -484,8 +484,7 @@
       selA11yStyle.id = 'sel-a11y-css';
       selA11yStyle.textContent = [
         '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
-        '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #8b5cf6 !important; outline-offset: 2px !important; border-radius: 4px; }',
-        '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }'
+        '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #8b5cf6 !important; outline-offset: 2px !important; border-radius: 4px; }',
       ].join('\n');
       document.head.appendChild(selA11yStyle);
     }
@@ -3205,7 +3204,7 @@
                         style: { fontSize: 11, fontWeight: 700, padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid ' + _t.pinkAccent, background: _t.bgCard, color: _t.pinkText, cursor: 'pointer' }
                       }, 'Mark complete')
                     ),
-                    !done && q.type === 'freeResponse' && h('textarea', {
+                    !done && q.type === 'freeResponse' && h('textarea', { 'aria-label': 'Reflection for ' + q.label,
                       value: qp.response || '',
                       onChange: function (ev) {
                         var v = ev.target.value;
@@ -3218,7 +3217,6 @@
                         });
                       },
                       placeholder: (q.params && q.params.prompt) || 'Write a reflection...',
-                      'aria-label': 'Reflection for ' + q.label,
                       rows: 2,
                       style: { width: '100%', marginTop: 6, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
                     })
@@ -3739,16 +3737,15 @@
                     onChange: function (ev) { setBuilderName(ev.target.value); },
                     placeholder: 'Station name (e.g. "Friday SEL Routine")',
                     'aria-label': 'Station name',
-                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 12, outline: 'none', boxSizing: 'border-box' }
+                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 12, boxSizing: 'border-box' }
                   }),
                   // Teacher note
-                  h('textarea', {
+                  h('textarea', { 'aria-label': 'Teacher note',
                     value: builderNote,
                     onChange: function (ev) { setBuilderNote(ev.target.value); },
                     placeholder: 'Optional teacher note (instructions students see when they activate this station)',
-                    'aria-label': 'Teacher note',
                     rows: 4,
-                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
+                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
                   }),
                   h('div', {
                     role: 'status',
