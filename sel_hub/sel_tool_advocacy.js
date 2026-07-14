@@ -17626,47 +17626,47 @@ window.SelHub = window.SelHub || {
         }
         vocabContent = h('div', { style: { padding: 20, maxWidth: 700, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '📚 Advocacy Vocabulary'),
-          h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ADVOCACY_VOCABULARY.length + ' terms. Click the card to flip. Mark terms as learned. Words you can name are words you can use.'),
+          h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ADVOCACY_VOCABULARY.length + ' terms. Activate the card to flip it. Keyboard users can press Enter or Space. Mark terms as learned. Words you can name are words you can use.'),
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap', justifyContent: 'center' } },
             vocabCats.map(function(c) {
               var active = vocabCat === c.id;
-              return h('button', { key: c.id, onClick: function() { upd('vocabCat', c.id); upd('vocabIdx', 0); upd('vocabFlipped', false); },
+              return h('button', { key: c.id, 'aria-pressed': active ? 'true' : 'false', onClick: function() { upd('vocabCat', c.id); upd('vocabIdx', 0); upd('vocabFlipped', false); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? _advFg('#fbbf24') : _advBg('#334155')),
                   background: active ? 'rgba(251,191,36,0.18)' : '#0f172a', color: active ? _advFg('#fcd34d') : _advFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, c.label);
             })
           ),
-          h('div', { style: { textAlign: 'center', fontSize: 11, color: _advFg('#94a3b8'), marginBottom: 10 } },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { textAlign: 'center', fontSize: 11, color: _advFg('#94a3b8'), marginBottom: 10 } },
             (vocabIdx + 1) + ' / ' + filtered.length + ' · ' + learned.length + ' learned'),
           // Flashcard
-          h('div', { onClick: function() { upd('vocabFlipped', !vocabFlipped); },
-            'aria-label': 'Flashcard — click to flip', 'aria-pressed': vocabFlipped,
-            style: { padding: 24, background: vocabFlipped ? 'linear-gradient(135deg, #1e293b, #312e81)' : 'linear-gradient(135deg, #312e81, #1e293b)',
+          h('button', { type: 'button', onClick: function() { upd('vocabFlipped', !vocabFlipped); },
+            'aria-label': (vocabFlipped ? 'Show term for ' : 'Show definition for ') + current.word,
+            'aria-expanded': vocabFlipped ? 'true' : 'false', 'aria-controls': 'advocacy-vocab-card-content',
+            style: { width: '100%', padding: 24, background: vocabFlipped ? 'linear-gradient(135deg, #1e293b, #312e81)' : 'linear-gradient(135deg, #312e81, #1e293b)',
               borderRadius: 16, marginBottom: 14, cursor: 'pointer', minHeight: 240, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-              border: '2px solid ' + (vocabFlipped ? '#a5b4fc' : _advFg('#fbbf24')), transition: 'all 0.3s' } },
+              border: '2px solid ' + (vocabFlipped ? '#a5b4fc' : _advFg('#fbbf24')), transition: 'all 0.3s', textAlign: 'inherit', fontFamily: 'inherit' } },
             !vocabFlipped
-              ? h('div', { style: { textAlign: 'center' } },
-                  h('div', { style: { fontSize: 11, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } }, 'TERM'),
-                  h('div', { style: { fontSize: 24, color: _advFg('#fff'), fontWeight: 900, marginBottom: 16 } }, current.word),
-                  h('div', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, 'Click to flip ↻')
+              ? h('span', { id: 'advocacy-vocab-card-content', style: { display: 'block', textAlign: 'center' } },
+                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } }, 'TERM'),
+                  h('span', { style: { display: 'block', fontSize: 24, color: _advFg('#fff'), fontWeight: 900, marginBottom: 16 } }, current.word),
+                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, 'Activate to show definition ↻')
                 )
-              : h('div', null,
-                  h('div', { style: { fontSize: 11, color: _advFg('#a5b4fc'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'DEFINITION'),
-                  h('p', { style: { fontSize: 14, color: _advFg('#fff'), lineHeight: 1.6, margin: '0 0 12px' } }, current.def),
-                  current.example && h('div', null,
-                    h('div', { style: { fontSize: 10, color: _advFg('#86efac'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Example'),
-                    h('p', { style: { fontSize: 13, color: _advFg('#bbf7d0'), fontStyle: 'italic', margin: '0 0 12px' } }, current.example)
+              : h('span', { id: 'advocacy-vocab-card-content', style: { display: 'block' } },
+                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#a5b4fc'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'DEFINITION'),
+                  h('span', { style: { display: 'block', fontSize: 14, color: _advFg('#fff'), lineHeight: 1.6, margin: '0 0 12px' } }, current.def),
+                  current.example && h('span', { style: { display: 'block' } },
+                    h('span', { style: { display: 'block', fontSize: 10, color: _advFg('#86efac'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Example'),
+                    h('span', { style: { display: 'block', fontSize: 13, color: _advFg('#bbf7d0'), fontStyle: 'italic', margin: '0 0 12px' } }, current.example)
                   ),
-                  h('div', null,
-                    h('div', { style: { fontSize: 10, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it matters'),
-                    h('p', { style: { fontSize: 12, color: _advFg('#fde68a'), margin: 0, lineHeight: 1.6 } }, current.why)
+                  h('span', { style: { display: 'block' } },
+                    h('span', { style: { display: 'block', fontSize: 10, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it matters'),
+                    h('span', { style: { display: 'block', fontSize: 12, color: _advFg('#fde68a'), margin: 0, lineHeight: 1.6 } }, current.why)
                   )
                 )
-          ),
-          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+          ),          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
             h('button', { onClick: function() { upd('vocabIdx', (vocabIdx - 1 + filtered.length) % filtered.length); upd('vocabFlipped', false); },
               style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '← Previous'),
-            h('button', { onClick: markLearned,
+            h('button', { 'aria-pressed': learned.indexOf(current.word) >= 0 ? 'true' : 'false', onClick: markLearned,
               style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: learned.indexOf(current.word) >= 0 ? _advFg('#22c55e') : _advFg('#fbbf24'), color: _advFg('#0f172a'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               learned.indexOf(current.word) >= 0 ? '✓ Learned' : 'Mark learned'),
             h('button', { onClick: function() { upd('vocabIdx', (vocabIdx + 1) % filtered.length); upd('vocabFlipped', false); },
