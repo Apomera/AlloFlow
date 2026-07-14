@@ -237,7 +237,7 @@ function StickerNode({ s, draggable, onMove }) {
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: "absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] select-none z-50 hover:scale-110 transition-transform" + pointerClass + dragClass + ringClass,
+      className: "absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] motion-reduce:animate-none select-none z-50 hover:scale-110 transition-transform motion-reduce:transition-none motion-reduce:transform-none" + pointerClass + dragClass + ringClass,
       style: { top: s.y - 15, left: s.x - 15, touchAction: isDraggable ? "none" : void 0 },
       title: title || icon,
       "aria-label": (title ? icon + " \u2014 " + title : icon) + (isDraggable ? ". Use arrow keys to move; hold Shift for a larger step." : ""),
@@ -284,7 +284,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
     return /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: "absolute z-50 select-none transition-transform " + (isDraggable ? "cursor-grab active:cursor-grabbing hover:scale-110" : "cursor-pointer hover:scale-110"),
+        className: "absolute z-50 select-none transition-transform motion-reduce:transition-none motion-reduce:transform-none " + (isDraggable ? "cursor-grab active:cursor-grabbing hover:scale-110" : "cursor-pointer hover:scale-110"),
         style: { top: a.y - 14, left: a.x - 14, width: 28, height: 28, touchAction: isDraggable ? "none" : void 0 },
         title: (a.content ? a.content + " \u2014 " : "") + title,
         "aria-label": "Sticky note from " + title + (a.content ? ": " + a.content : "") + (isDraggable ? ". Use arrow keys to move; hold Shift for a larger step." : ""),
@@ -368,7 +368,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         onBlur: commit,
         placeholder: t("placeholders.type_note"),
         rows: 3,
-        className: "w-full p-2 text-xs resize-y bg-transparent outline-none",
+        className: "w-full p-2 text-xs resize-y bg-transparent outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600",
         style: { color: palette.text, minHeight: 60 },
         "aria-label": t("a11y.note_content")
       }
@@ -397,7 +397,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
     return /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: "absolute z-50 select-none transition-transform " + (isDraggable ? "cursor-grab active:cursor-grabbing hover:scale-110" : "cursor-pointer hover:scale-110"),
+        className: "absolute z-50 select-none transition-transform motion-reduce:transition-none motion-reduce:transform-none " + (isDraggable ? "cursor-grab active:cursor-grabbing hover:scale-110" : "cursor-pointer hover:scale-110"),
         style: { top: a.y - 14, left: a.x - 14, width: 28, height: 28, touchAction: isDraggable ? "none" : void 0 },
         title: title + (dur != null ? " \u2022 " + dur + "s" : ""),
         "aria-label": "Voice note from " + title + (dur != null ? ", " + dur + " seconds" : "") + (isDraggable ? ". Use arrow keys to move; hold Shift for a larger step." : ""),
@@ -489,6 +489,8 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
     "div",
     {
       className: "absolute z-[55] shadow-xl rounded-lg",
+      role: "region",
+      "aria-label": "Voice note recording in progress",
       style: {
         top: (y || 0) - 14,
         left: (x || 0) - 14,
@@ -501,8 +503,8 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
         e.stopPropagation();
       }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-t-lg", style: { background: "#dc2626", color: "white" } }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-white animate-pulse" }), /* @__PURE__ */ React.createElement("span", null, "RECORDING"), /* @__PURE__ */ React.createElement("span", { className: "ms-auto font-mono" }, Math.floor(elapsedSec || 0), "s / ", VOICE_MAX_SECONDS, "s")),
-    /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 rounded-full bg-slate-200 overflow-hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-red-500 transition-all", style: { width: pct + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end gap-2 mt-2" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-t-lg", style: { background: "#dc2626", color: "white" } }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-white animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, "RECORDING"), /* @__PURE__ */ React.createElement("span", { className: "ms-auto font-mono" }, Math.floor(elapsedSec || 0), "s / ", VOICE_MAX_SECONDS, "s")),
+    /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 rounded-full bg-slate-200 overflow-hidden", role: "progressbar", "aria-label": "Voice note recording time", "aria-valuemin": 0, "aria-valuemax": VOICE_MAX_SECONDS, "aria-valuenow": Math.min(VOICE_MAX_SECONDS, Math.floor(elapsedSec || 0)) }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-red-500 transition-all motion-reduce:transition-none", style: { width: pct + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end gap-2 mt-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -576,7 +578,7 @@ function HighlightOverlay({ a, onDelete }) {
           e.stopPropagation();
           onDelete(a.id);
         },
-        className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity",
+        className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none",
         style: {
           top: -12,
           right: -12,
@@ -698,7 +700,7 @@ function DrawingOverlay({ a, onDelete }) {
           e.stopPropagation();
           onDelete(a.id);
         },
-        className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity",
+        className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none",
         style: {
           top: 0,
           right: 0,
@@ -1020,8 +1022,9 @@ function Toolbar(props) {
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleStickerMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "sticker" ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "sticker" ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200" : "text-slate-600 hover:bg-slate-100"),
       title: tt("toolbar.stickers_tooltip"),
       "aria-pressed": mode === "sticker"
     },
@@ -1031,8 +1034,9 @@ function Toolbar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleNoteMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "note" ? "bg-amber-100 text-amber-700 ring-2 ring-amber-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "note" ? "bg-amber-100 text-amber-700 ring-2 ring-amber-200" : "text-slate-600 hover:bg-slate-100"),
       title: "Sticky note: click anywhere to leave a note",
       "aria-pressed": mode === "note"
     },
@@ -1042,8 +1046,9 @@ function Toolbar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleHighlightMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "highlight" ? "bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "highlight" ? "bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300" : "text-slate-600 hover:bg-slate-100"),
       title: "Highlighter: select text to highlight",
       "aria-pressed": mode === "highlight"
     },
@@ -1053,8 +1058,9 @@ function Toolbar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleVoiceMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "voice" ? "bg-red-100 text-red-700 ring-2 ring-red-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "voice" ? "bg-red-100 text-red-700 ring-2 ring-red-200" : "text-slate-600 hover:bg-slate-100"),
       title: "Voice note: click to start recording (max 60s, stays local)",
       "aria-pressed": mode === "voice"
     },
@@ -1064,47 +1070,51 @@ function Toolbar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleDrawMode,
-      className: "p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "draw" ? "bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200" : "text-slate-600 hover:bg-slate-100"),
+      className: "p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 " + (mode === "draw" ? "bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200" : "text-slate-600 hover:bg-slate-100"),
       title: "Drawing: freehand pen overlay",
       "aria-pressed": mode === "draw"
     },
     /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F"),
     " ",
     "Draw"
-  ), mode === "sticker" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, STICKER_TYPES.map(function(type) {
+  ), mode === "sticker" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, STICKER_TYPES.map(function(type) {
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "aria-label": type,
         key: type,
         onClick: function() {
           onPickType(type);
         },
-        className: "w-6 h-6 flex items-center justify-center rounded-full text-sm hover:scale-125 transition-transform " + (stickerType === type ? "bg-indigo-50 shadow-sm scale-110 ring-1 ring-indigo-200" : "opacity-60 hover:opacity-100")
+        className: "w-6 h-6 flex items-center justify-center rounded-full text-sm hover:scale-125 transition-transform motion-reduce:transition-none motion-reduce:transform-none " + (stickerType === type ? "bg-indigo-50 shadow-sm scale-110 ring-1 ring-indigo-200" : "opacity-60 hover:opacity-100")
       },
       STICKER_ICONS[type]
     );
   }), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onClear,
       className: "w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full",
       title: tt("toolbar.clear_stickers"),
       "aria-label": tt("toolbar.clear_stickers")
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
-  )), mode === "note" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, NOTE_COLOR_KEYS.map(function(key) {
+  )), mode === "note" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, NOTE_COLOR_KEYS.map(function(key) {
     const palette = NOTE_COLORS[key];
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key,
         "aria-label": "Note color " + key,
         onClick: function() {
           onPickNoteColor(key);
         },
-        className: "w-6 h-6 rounded transition-transform hover:scale-125 " + (noteColor === key ? "ring-2 ring-amber-500 scale-110" : "opacity-70 hover:opacity-100"),
+        className: "w-6 h-6 rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 " + (noteColor === key ? "ring-2 ring-amber-500 scale-110" : "opacity-70 hover:opacity-100"),
         style: { background: palette.fill, border: "2px solid " + palette.border },
         title: key
       }
@@ -1128,23 +1138,25 @@ function Toolbar(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onClear,
       className: "w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full",
       title: "Clear all annotations",
       "aria-label": t("a11y.clear_all_annotations")
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
-  )), mode === "highlight" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, HIGHLIGHT_COLOR_KEYS.map(function(key) {
+  )), mode === "highlight" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, HIGHLIGHT_COLOR_KEYS.map(function(key) {
     const palette = HIGHLIGHT_COLORS[key];
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key,
         "aria-label": "Highlight color " + key,
         onClick: function() {
           onPickHighlightColor(key);
         },
-        className: "w-6 h-6 rounded transition-transform hover:scale-125 " + (highlightColor === key ? "ring-2 ring-yellow-500 scale-110" : "opacity-70 hover:opacity-100"),
+        className: "w-6 h-6 rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 " + (highlightColor === key ? "ring-2 ring-yellow-500 scale-110" : "opacity-70 hover:opacity-100"),
         style: { background: palette.fill, border: "2px solid " + palette.border },
         title: key
       }
@@ -1152,23 +1164,25 @@ function Toolbar(props) {
   }), /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onClear,
       className: "w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full",
       title: "Clear all annotations",
       "aria-label": t("a11y.clear_all_annotations")
     },
     Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
-  )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, DRAW_SHAPES.map(function(sh) {
+  )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, DRAW_SHAPES.map(function(sh) {
     const isErase = sh === "erase";
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: sh,
         "aria-label": DRAW_SHAPE_LABELS[sh] || sh,
         onClick: function() {
           onPickDrawShape(sh);
         },
-        className: "flex items-center justify-center rounded transition-transform hover:scale-125 " + (drawShape === sh ? isErase ? "ring-2 ring-red-500 scale-110 bg-red-50" : "ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50" : "opacity-70 hover:opacity-100"),
+        className: "flex items-center justify-center rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 " + (drawShape === sh ? isErase ? "ring-2 ring-red-500 scale-110 bg-red-50" : "ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50" : "opacity-70 hover:opacity-100"),
         style: { width: 24, height: 24, fontSize: 14 },
         title: DRAW_SHAPE_LABELS[sh]
       },
@@ -1179,12 +1193,13 @@ function Toolbar(props) {
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key,
         "aria-label": "Draw color " + key,
         onClick: function() {
           onPickDrawColor(key);
         },
-        className: "w-6 h-6 rounded-full transition-transform hover:scale-125 " + (drawColor === key ? "ring-2 ring-fuchsia-500 scale-110" : "opacity-70 hover:opacity-100"),
+        className: "w-6 h-6 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 " + (drawColor === key ? "ring-2 ring-fuchsia-500 scale-110" : "opacity-70 hover:opacity-100"),
         style: { background: c, border: "2px solid " + c },
         title: key
       }
@@ -1195,7 +1210,7 @@ function Toolbar(props) {
     return /* @__PURE__ */ React.createElement(
       "label",
       {
-        className: "relative w-6 h-6 rounded-full overflow-hidden transition-transform hover:scale-125 cursor-pointer " + (isCustom ? "ring-2 ring-fuchsia-500 scale-110" : "opacity-70 hover:opacity-100"),
+        className: "relative w-6 h-6 rounded-full overflow-hidden transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 cursor-pointer " + (isCustom ? "ring-2 ring-fuchsia-500 scale-110" : "opacity-70 hover:opacity-100"),
         style: {
           // Rainbow gradient hint that this swatch picks any color
           background: "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)",
@@ -1234,12 +1249,13 @@ function Toolbar(props) {
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: "w" + w,
         "aria-label": "Line width " + w + "px",
         onClick: function() {
           onPickDrawWidth(w);
         },
-        className: "flex items-center justify-center rounded transition-transform hover:scale-125 " + (drawWidth === w ? "ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50" : "opacity-70 hover:opacity-100"),
+        className: "flex items-center justify-center rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 " + (drawWidth === w ? "ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50" : "opacity-70 hover:opacity-100"),
         style: { width: 24, height: 24 },
         title: w + "px"
       },
@@ -1248,6 +1264,7 @@ function Toolbar(props) {
   })) : null, /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 bg-slate-200 mx-1" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onClear,
       className: "w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full",
       title: "Clear all annotations",
@@ -1593,7 +1610,7 @@ function Sidebar(props) {
         onClick: function() {
           setFilter(key);
         },
-        className: "px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
+        className: "px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors motion-reduce:transition-none " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
         "aria-pressed": active
       },
       label,
@@ -1640,7 +1657,7 @@ function Sidebar(props) {
         "div",
         {
           key: a.id,
-          className: "group px-2 py-1.5 mb-0.5 rounded-md text-xs cursor-pointer transition-colors " + (isTeacherAnno ? "bg-indigo-50/60 hover:bg-indigo-100 border-s-2 border-indigo-400" : "bg-amber-50/40 hover:bg-amber-100 border-s-2 border-amber-300"),
+          className: "group px-2 py-1.5 mb-0.5 rounded-md text-xs cursor-pointer transition-colors motion-reduce:transition-none " + (isTeacherAnno ? "bg-indigo-50/60 hover:bg-indigo-100 border-s-2 border-indigo-400" : "bg-amber-50/40 hover:bg-amber-100 border-s-2 border-amber-300"),
           onClick: function() {
             onFocus(a.id);
           },
@@ -1662,7 +1679,7 @@ function Sidebar(props) {
               e.stopPropagation();
               onDelete(a.id);
             },
-            className: "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-0.5 text-slate-600 hover:text-red-500 rounded",
+            className: "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded",
             "aria-label": "Delete " + annotationPreview(a),
             title: "Delete"
           },
