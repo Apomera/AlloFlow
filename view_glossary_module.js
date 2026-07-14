@@ -1778,53 +1778,65 @@ function GlossaryView(props) {
     className: "mb-4 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm overflow-hidden",
     "data-help-key": "glossary_health_check"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full flex flex-wrap items-center gap-2 px-2 py-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleShowHealthCheckPanel,
-    className: "w-full flex items-center justify-between px-4 py-3 hover:bg-amber-100/50 transition-colors cursor-pointer",
-    role: "button",
-    tabIndex: 0
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2"
+    "aria-expanded": showHealthCheckPanel,
+    "aria-controls": "glossary-health-check-details",
+    className: "min-h-11 min-w-0 flex flex-1 items-center justify-between gap-2 rounded-md px-2 text-left hover:bg-amber-100/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-lg"
-  }, "📊"), /*#__PURE__*/React.createElement("span", {
+    className: "flex min-w-0 flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-lg",
+    "aria-hidden": "true"
+  }, "ðŸ“Š"), /*#__PURE__*/React.createElement("span", {
+    id: "glossary-health-check-title",
     className: "font-bold text-amber-900 text-sm"
   }, t('glossary_health.composite_accuracy') || 'Glossary Health Check'), isRunningHealthCheck && /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin text-amber-600"
+    className: "animate-spin motion-reduce:animate-none text-amber-600",
+    "aria-hidden": "true"
   }), glossaryHealthCheck && !glossaryHealthCheck.error && !isRunningHealthCheck && /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-full font-medium"
-  }, glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : '', " — ", glossaryHealthCheck.definitionGradeLevel || 'Analyzed')), /*#__PURE__*/React.createElement("div", {
+  }, glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : '', " â€” ", glossaryHealthCheck.definitionGradeLevel || 'Analyzed')), /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 16,
+    "aria-hidden": "true",
+    className: `shrink-0 text-amber-600 transition-transform motion-reduce:transition-none ${showHealthCheckPanel ? 'rotate-180' : ''}`
+  })), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.re_run_analysis'),
-    onClick: e => {
-      e.stopPropagation();
+    "aria-busy": isRunningHealthCheck,
+    onClick: () => {
       if (generatedContent?.type === 'glossary' && Array.isArray(generatedContent?.data)) {
-        const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-        runGlossaryHealthCheck(generatedContent?.data, history.slice().reverse().find(h => h && h.type === 'analysis')?.data?.originalText || inputText || '');
+        runGlossaryHealthCheck(generatedContent.data, history.slice().reverse().find(h => h && h.type === 'analysis')?.data?.originalText || inputText || '');
       }
     },
     disabled: isRunningHealthCheck,
-    className: "text-xs font-bold text-amber-700 hover:text-amber-900 bg-amber-200/50 hover:bg-amber-300/50 px-2 py-1 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1",
+    className: "min-h-11 px-3 text-xs font-bold text-amber-700 hover:text-amber-900 bg-amber-200/50 hover:bg-amber-300/50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
     title: t('common.re_run_analysis')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 10
+    size: 14,
+    "aria-hidden": "true"
   }), " Re-analyze"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.dismiss_analysis'),
-    onClick: e => {
-      e.stopPropagation();
+    onClick: () => {
       setGlossaryHealthCheck(null);
       setShowHealthCheckPanel(false);
     },
-    className: "text-xs text-amber-700 hover:text-amber-900 p-0.5 rounded-full hover:bg-amber-200/50 transition-colors",
+    className: "min-h-11 min-w-11 text-amber-700 hover:text-amber-900 rounded-full hover:bg-amber-200/50 transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
     title: t('common.dismiss_analysis')
   }, /*#__PURE__*/React.createElement(X, {
-    size: 14
-  })), /*#__PURE__*/React.createElement(ChevronDown, {
     size: 16,
-    className: `text-amber-600 transition-transform ${showHealthCheckPanel ? 'rotate-180' : ''}`
-  }))), showHealthCheckPanel && glossaryHealthCheck && !glossaryHealthCheck.error && /*#__PURE__*/React.createElement("div", {
-    className: "px-4 pb-4 space-y-3 border-t border-amber-200/50 animate-in slide-in-from-top-2 duration-200"
+    "aria-hidden": "true"
+  })))), showHealthCheckPanel && glossaryHealthCheck && !glossaryHealthCheck.error && /*#__PURE__*/React.createElement("div", {
+    id: "glossary-health-check-details",
+    role: "region",
+    "aria-labelledby": "glossary-health-check-title",
+    className: "px-4 pb-4 space-y-3 border-t border-amber-200/50 animate-in slide-in-from-top-2 motion-reduce:animate-none duration-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-800 italic pt-2"
   }, glossaryHealthCheck.summary), glossaryHealthCheck.definitionGradeLevel && /*#__PURE__*/React.createElement("div", {
@@ -1917,12 +1929,20 @@ function GlossaryView(props) {
   }, (cc.connectedTerms || []).join(', '))), cc.note && /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mt-0.5"
   }, cc.note)))))), showHealthCheckPanel && glossaryHealthCheck && glossaryHealthCheck.error && /*#__PURE__*/React.createElement("div", {
+    id: "glossary-health-check-details",
+    role: "region",
+    "aria-labelledby": "glossary-health-check-title",
     className: "px-4 pb-3 text-sm text-amber-600 italic border-t border-amber-200/50 pt-2"
   }, "Analysis could not be completed. Click \"Re-analyze\" to try again."), showHealthCheckPanel && isRunningHealthCheck && !glossaryHealthCheck && /*#__PURE__*/React.createElement("div", {
+    id: "glossary-health-check-details",
+    role: "status",
+    "aria-live": "polite",
+    "aria-labelledby": "glossary-health-check-title",
     className: "px-4 pb-3 text-sm text-amber-600 border-t border-amber-200/50 pt-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none",
+    "aria-hidden": "true"
   }), " Analyzing glossary quality...")), !isMemoryGame && /*#__PURE__*/React.createElement("div", {
     "data-help-key": "glossary_terms_table",
     className: "overflow-hidden rounded-lg border border-slate-400 shadow-sm"

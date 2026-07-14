@@ -203,6 +203,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Reworked Info/About Feature Guide navigation: converted every simulated feature card to a full-width native button with a 44 CSS-pixel minimum target and strong visible focus; removed redundant Enter/Space emulation; moved focus to the Back action when details replace the card grid; and restored focus to the exact originating feature card when returning to the guide (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Repaired the Glossary Health Check header by replacing a simulated disclosure that contained nested buttons with three sibling native controls. The disclosure now exposes expanded state and controls a named results region; Re-analyze exposes busy state; processing is a polite status; disclosure, analysis, and dismissal actions have 44 CSS-pixel targets and strong visible focus; the control row wraps for narrow reflow; and spinner, chevron, and panel motion honor reduced-motion preferences (WCAG 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
