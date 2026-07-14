@@ -847,7 +847,7 @@ window.SelHub = window.SelHub || {
           // Ring + readout
           h('div', { style: { display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', marginBottom: 14 } },
             h('div', { style: { position: 'relative', width: ringSize, height: ringSize } },
-              h('svg', { width: ringSize, height: ringSize, style: { transform: 'rotate(-90deg)' } },
+              h('svg', { width: ringSize, height: ringSize, 'aria-hidden': 'true', focusable: 'false', style: { transform: 'rotate(-90deg)' } },
                 h('circle', { cx: ringSize / 2, cy: ringSize / 2, r: ringR, fill: 'none', stroke: _efC('#e2e8f0'), strokeWidth: ringStroke }),
                 h('circle', { cx: ringSize / 2, cy: ringSize / 2, r: ringR, fill: 'none', stroke: ringColor, strokeWidth: ringStroke, strokeLinecap: 'round',
                   strokeDasharray: ringC, strokeDashoffset: ringOffset, style: { transition: 'stroke-dashoffset 0.4s ease' } })
@@ -1196,7 +1196,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px' } },
-              h('input', {
+              h('input', { 'aria-label': 'Tell the coach what is hard',
                 type: 'text', value: coachInput,
                 onChange: function(ev) { upd('coachInput', ev.target.value); },
                 onKeyDown: function(ev) {
@@ -1214,7 +1214,6 @@ window.SelHub = window.SelHub || {
                 },
                 disabled: coachLoading || !callGemini,
                 placeholder: coachLoading ? 'Coach is thinking...' : 'What is hard right now?',
-                'aria-label': 'Tell the coach what is hard',
                 style: { flex: 1, border: '2px solid #cffafe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               h('button', {
