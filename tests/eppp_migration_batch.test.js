@@ -21,7 +21,7 @@ describe('EPPP traced migration batch', () => {
   it('adds traced source-reviewed items under blueprint-weighted curation', () => {
     const migrated = eppp.items.filter((item) => item.legacySourceId);
 
-    expect(eppp.version).toBe('3.0.0');
+    expect(eppp.version).toBe('3.1.0');
     expect(eppp.items).toHaveLength(1500);
     expect(migrated).toHaveLength(1443);
     expect(new Set(migrated.map((item) => item.domainId))).toEqual(new Set(eppp.domains.map((domain) => domain.id)));

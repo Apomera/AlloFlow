@@ -11,6 +11,7 @@ The native AlloFlow Test Prep Hub should reuse the legacy Pass the EPPP content 
 | Capability | Native status | Notes |
 | --- | --- | --- |
 | Independent practice banks | Complete | EPPP has fifteen selectable, blueprint-balanced banks of 100. Other packs use the same `batchSize` contract. |
+| Blueprint versioning and transition notice | Complete for current EPPP pack | The pack identifies the current eight-domain Part 1-Knowledge blueprint used during 2026-2027 and links to ASPPB's scheduled integrated six-domain EPPP transition in the fourth quarter of 2027. |
 | Answer explanations and option feedback | Complete for released native packs | Sources, full source names, credibility explanations, and review metadata travel with each item. |
 | Timed simulation | Complete where pack metadata provides it | Uses `simulationItemCount` and `simulationTimeMinutes`; results are explicitly not official scores or pass predictions. |
 | Resume an interrupted set | Complete | A normalized session record works with any registered pack. |
@@ -30,10 +31,12 @@ The native AlloFlow Test Prep Hub should reuse the legacy Pass the EPPP content 
 ## Remaining content work
 
 - 1,443 of 2,933 legacy questions have entered the native QA-passed bank; 1,490 remain quarantined.
+- The next 500 quarantined candidates are organized into five blueprint-weighted editorial batches. Each carries explicit automated risks and review tasks; none is learner-visible or counted as reviewed merely because it appears in the docket.
 - All 49 textbook chapters have source-review status, but independent qualified psychology/assessment review is still pending.
 - Only a small reviewed subset of the 415 flashcards and 255 memory aids is release-ready; the rest remain preserved but gated.
 - Diagram templates and term definitions are inventoried, but need claim-level source review and accessible interaction review before broad native release.
 - Released questions still require production validation and, if meaningful score interpretations are ever desired, real psychometric calibration using response data and qualified expertise.
+- The current pack must remain labeled Part 1-Knowledge. ASPPB says the current Part 1 and Part 2 blueprints continue during 2026 and 2027, while an integrated six-domain EPPP becomes operational in the fourth quarter of 2027; that future exam requires a separate versioned pack rather than silently remapping this bank.
 
 ## Reusable engine contract
 

@@ -111,7 +111,7 @@ const EPPP_PART_ONE_SCAFFOLD = {
   shortTitle: 'EPPP Part 1',
   description: 'Fifteen hundred source-reviewed practice items across all eight Part 1 domains, organized into fifteen balanced 100-question banks with feedback after each bank.',
   credentialOwner: 'Association of State and Provincial Psychology Boards',
-  version: '3.0.0',
+  version: '3.1.0',
   status: 'ready',
   accent: 'violet',
   contentReview: '1,500 source-reviewed practice items; independent expert review pending',
@@ -119,12 +119,18 @@ const EPPP_PART_ONE_SCAFFOLD = {
   legacyAuditUrl: './test_prep/eppp_legacy/content_audit.json',
   legacyInventoryUrl: './test_prep/eppp_legacy/content_inventory.json',
   legacyReviewLedgerUrl: './test_prep/eppp_legacy/review_ledger.json',
+  nextReviewDocketUrl: './test_prep/eppp_legacy/next_review_docket.json',
   curation500Url: './test_prep/eppp_legacy/curation_500.json',
   curation1000Url: './test_prep/eppp_legacy/curation_1500.json',
   expansionAuditUrl: './test_prep/eppp_native_expansion_1500_audit.json',
   nativeQaUrl: './test_prep/eppp_native_qa.json',
   learningLibraryUrl: './test_prep/eppp_learning_library.json',
   learningLibraryQaUrl: './test_prep/eppp_learning_library_qa.json',
+  blueprintLabel: 'EPPP Part 1-Knowledge current blueprint (2026-2027)',
+  blueprintEffective: 'Current Part 1 blueprint used during 2026 and 2027 administrations',
+  officialBlueprintUrl: 'https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/',
+  transitionNotice: 'ASPPB plans an integrated six-domain EPPP for the fourth quarter of 2027. This pack follows the current eight-domain Part 1-Knowledge blueprint and is not an integrated-EPPP pack.',
+  transitionUrl: 'https://asppb.net/future-eppp-content-areas-2027/',
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ASPPB. Practice results are not official scores or pass predictions.',
   domains: [
     { id: 'biological', label: 'Biological bases of behavior', weight: 0.10 },
@@ -395,12 +401,18 @@ function normalizeTestPrepPack(pack) {
     legacyAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyAuditUrl || '').trim()) && !String(input.legacyAuditUrl || '').includes('..') ? String(input.legacyAuditUrl).trim() : '',
     legacyInventoryUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyInventoryUrl || '').trim()) && !String(input.legacyInventoryUrl || '').includes('..') ? String(input.legacyInventoryUrl).trim() : '',
     legacyReviewLedgerUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyReviewLedgerUrl || '').trim()) && !String(input.legacyReviewLedgerUrl || '').includes('..') ? String(input.legacyReviewLedgerUrl).trim() : '',
+    nextReviewDocketUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.nextReviewDocketUrl || '').trim()) && !String(input.nextReviewDocketUrl || '').includes('..') ? String(input.nextReviewDocketUrl).trim() : '',
     curation500Url: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.curation500Url || '').trim()) && !String(input.curation500Url || '').includes('..') ? String(input.curation500Url).trim() : '',
     curation1000Url: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.curation1000Url || '').trim()) && !String(input.curation1000Url || '').includes('..') ? String(input.curation1000Url).trim() : '',
     expansionAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.expansionAuditUrl || '').trim()) && !String(input.expansionAuditUrl || '').includes('..') ? String(input.expansionAuditUrl).trim() : '',
     nativeQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.nativeQaUrl || '').trim()) && !String(input.nativeQaUrl || '').includes('..') ? String(input.nativeQaUrl).trim() : '',
     learningLibraryUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryUrl || '').trim()) && !String(input.learningLibraryUrl || '').includes('..') ? String(input.learningLibraryUrl).trim() : '',
     learningLibraryQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryQaUrl || '').trim()) && !String(input.learningLibraryQaUrl || '').includes('..') ? String(input.learningLibraryQaUrl).trim() : '',
+    blueprintLabel: String(input.blueprintLabel || '').trim().slice(0, 180),
+    blueprintEffective: String(input.blueprintEffective || '').trim().slice(0, 240),
+    officialBlueprintUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.officialBlueprintUrl || '').trim()) ? String(input.officialBlueprintUrl).trim() : '',
+    transitionNotice: String(input.transitionNotice || '').trim().slice(0, 800),
+    transitionUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.transitionUrl || '').trim()) ? String(input.transitionUrl).trim() : '',
     domains,
     sections,
     items,
@@ -1993,6 +2005,7 @@ function TestPrepHub(props) {
                       <TestPrepStatusBadge status={pack.status} />
                     </div>
                     <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-700">{pack.description}</p>
+                    {pack.blueprintLabel && <p className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-2 text-xs leading-relaxed text-sky-950"><strong>Blueprint:</strong> {pack.blueprintLabel}{pack.officialBlueprintUrl && <> | <a href={pack.officialBlueprintUrl} target="_blank" rel="noreferrer" className="font-black underline">Official specification</a></>}</p>}
                     <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
                       <div className="rounded-lg bg-slate-100 p-2"><dt className="font-bold text-slate-700">Domains</dt><dd className="text-slate-900">{pack.domains.length}</dd></div>
                       <div className="rounded-lg bg-slate-100 p-2"><dt className="font-bold text-slate-700">Practice items</dt><dd className="text-slate-900">{pack.items.length}</dd></div>
@@ -2049,6 +2062,14 @@ function TestPrepHub(props) {
                 </section>
               )}
 
+              {selectedPack.transitionNotice && (
+                <section className="mb-4 rounded-lg border border-sky-300 bg-sky-50 px-3 py-3 text-sm leading-relaxed text-sky-950" aria-labelledby="blueprint-transition-title">
+                  <p id="blueprint-transition-title" className="font-black">Blueprint version and scheduled transition</p>
+                  <p className="mt-1">{selectedPack.blueprintEffective || selectedPack.blueprintLabel}</p>
+                  <p className="mt-2">{selectedPack.transitionNotice} {selectedPack.transitionUrl && <a href={selectedPack.transitionUrl} target="_blank" rel="noreferrer" className="font-black underline">Read the official future blueprint.</a>}</p>
+                </section>
+              )}
+
               {selectedPack.legacyUrl && (
                 <section className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3" aria-labelledby="legacy-audit-title">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -2075,7 +2096,7 @@ function TestPrepHub(props) {
                   <div className="mt-3 border-t border-amber-300 pt-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h4 className="font-black text-amber-950">Legacy learning-library inventory</h4>
-                      <div className="flex flex-wrap gap-3">{selectedPack.legacyInventoryUrl && <a href={selectedPack.legacyInventoryUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open content inventory</a>}{selectedPack.legacyReviewLedgerUrl && <a href={selectedPack.legacyReviewLedgerUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open full review ledger</a>}{selectedPack.curation1000Url && <a href={selectedPack.curation1000Url.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open {selectedPack.items.length.toLocaleString()}-question curation record</a>}{selectedPack.expansionAuditUrl && <a href={selectedPack.expansionAuditUrl} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open latest 500-item expansion audit</a>}{selectedPack.curation500Url && <a href={selectedPack.curation500Url.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open historical 500-question curation record</a>}</div>
+                      <div className="flex flex-wrap gap-3">{selectedPack.legacyInventoryUrl && <a href={selectedPack.legacyInventoryUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open content inventory</a>}{selectedPack.legacyReviewLedgerUrl && <a href={selectedPack.legacyReviewLedgerUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open full review ledger</a>}{selectedPack.nextReviewDocketUrl && <a href={selectedPack.nextReviewDocketUrl.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open next-500 editorial docket</a>}{selectedPack.curation1000Url && <a href={selectedPack.curation1000Url.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open {selectedPack.items.length.toLocaleString()}-question curation record</a>}{selectedPack.expansionAuditUrl && <a href={selectedPack.expansionAuditUrl} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open latest 500-item expansion audit</a>}{selectedPack.curation500Url && <a href={selectedPack.curation500Url.replace(/\.json(?:\?.*)?$/, '.md')} target="_blank" rel="noreferrer" className="text-xs font-black text-indigo-800 underline">Open historical 500-question curation record</a>}</div>
                     </div>
                     {legacyInventory && legacyInventory.summary ? (
                       <div className="mt-3" aria-live="polite">

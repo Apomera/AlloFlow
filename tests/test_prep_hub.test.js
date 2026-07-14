@@ -38,9 +38,13 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(eppp.items.slice(500).every((item) => item.choiceRationales.length === item.choices.length)).toBe(true);
     expect(eppp.legacyUrl).toBe('./test_prep/eppp_legacy/index.html?embedded=1');
     expect(eppp.legacyAuditUrl).toBe('./test_prep/eppp_legacy/content_audit.json');
+    expect(eppp.nextReviewDocketUrl).toBe('./test_prep/eppp_legacy/next_review_docket.json');
     expect(eppp.curation500Url).toBe('./test_prep/eppp_legacy/curation_500.json');
     expect(eppp.curation1000Url).toBe('./test_prep/eppp_legacy/curation_1500.json');
     expect(eppp.expansionAuditUrl).toBe('./test_prep/eppp_native_expansion_1500_audit.json');
+    expect(eppp.blueprintLabel).toContain('2026-2027');
+    expect(eppp.officialBlueprintUrl).toMatch(/^https:\/\/asppb\.net\//);
+    expect(eppp.transitionNotice).toContain('integrated six-domain EPPP');
     expect(eppp.disclaimer).toContain('not official scores or pass predictions');
   });
 
