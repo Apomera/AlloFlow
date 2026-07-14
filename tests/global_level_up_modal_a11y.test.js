@@ -42,6 +42,9 @@ describe('Global level-up modal accessibility', () => {
     expect(source).toContain('motion-reduce:animate-none');
     expect(source).toContain('motion-reduce:transition-none');
     expect(source).toContain('<div aria-hidden="true" className="motion-reduce:hidden"><ConfettiExplosion /></div>');
+    expect(source).not.toContain('motion-reduce:transform-none focus:outline-none');
+    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
+    expect(source).toContain("{t('feedback.level_reached', { level: adventureState.level })}");
   });
 
   it('keeps generated global level-up modules synchronized', () => {

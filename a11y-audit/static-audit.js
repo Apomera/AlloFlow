@@ -54,6 +54,14 @@ const CHECKS = [
       const context = lines.slice(lineNum - 1, lineNum + 3).join(' ');
       if (/role\s*[:=]/.test(context) && /tabIndex\s*[:=]/.test(context)) return false;
       if (/onKeyDown\s*[:=]/.test(context) || /onKeyPress\s*[:=]/.test(context)) return false;
+      // A modal backdrop can be pointer-only when the dialog provides both an
+      // Escape path and a semantic button that performs the same close action.
+      const fileText = lines.join(' ');
+      const isDialogBackdrop = /role\s*:\s*["']presentation["']/.test(context)
+        && /role\s*:\s*["']dialog["']/.test(fileText)
+        && /event\.key\s*===\s*["']Escape["']/.test(fileText)
+        && /createElement\(\s*["']button["']/.test(fileText);
+      if (isDialogBackdrop) return false;
       // Check for a11yClick which provides all three
       if (/a11yClick/.test(context)) return false;
       return true;
@@ -215,7 +223,7 @@ const CHECKS = [
       if (!/animate-pulse|animate-bounce|animate-spin/.test(line)) return false;
       // Check surrounding context for reduced motion check
       const context = lines.slice(Math.max(0, lineNum - 5), lineNum + 2).join(' ');
-      if (/useReducedMotion|prefers-reduced-motion|reducedMotion/.test(context)) return false;
+      if (/useReducedMotion|prefers-reduced-motion|reducedMotion|motion-reduce:animate-none/.test(context)) return false;
       return true;
     },
     fix: 'Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).',

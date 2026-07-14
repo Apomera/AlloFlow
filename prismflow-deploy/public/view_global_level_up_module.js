@@ -71,7 +71,7 @@ function GlobalLevelUpModal({
       "aria-modal": "true",
       "aria-labelledby": "global-level-up-title",
       "aria-describedby": "global-level-up-description",
-      className: "bg-white rounded-3xl p-5 sm:p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-y-auto max-h-[calc(100vh-1rem)] max-w-sm w-full transform transition-all animate-in zoom-in-50 duration-500 motion-reduce:animate-none motion-reduce:transform-none focus:outline-none",
+      className: "bg-white rounded-3xl p-5 sm:p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-y-auto max-h-[calc(100vh-1rem)] max-w-sm w-full transform transition-all animate-in zoom-in-50 duration-500 motion-reduce:animate-none motion-reduce:transform-none",
       onClick: (event) => event.stopPropagation()
     },
     /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(250,204,21,1)0%,rgba(255,255,255,0)70%)] animate-pulse motion-reduce:animate-none" }),
@@ -104,7 +104,7 @@ function GlobalLevelUpModal({
         className: "min-h-11 w-full py-3 rounded-xl bg-indigo-600 text-white font-bold text-lg shadow-lg hover:bg-indigo-700 hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
       },
       t("feedback.continue_learning")
-    ))
+    ), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("feedback.level_reached", { level: adventureState.level })))
   ));
 }
 
