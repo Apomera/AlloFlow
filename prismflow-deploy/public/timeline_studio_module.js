@@ -636,8 +636,10 @@
     function modeBtn(id, label) {
       var active = inputMode === id;
       return h('button', {
-        onClick: function () { setInputMode(id); setStatus('idle'); },
-        className: 'px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ' + (active
+        type: 'button',
+        onClick: function () { if (!busy) { setInputMode(id); setStatus('idle'); } },
+        'aria-disabled': busy ? 'true' : 'false',
+        className: 'min-h-11 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 ' + (active
           ? 'bg-rose-600 text-white'
           : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'),
         'aria-pressed': active ? 'true' : 'false'
@@ -654,16 +656,18 @@
         role: 'dialog',
         tabIndex: -1,
         'aria-modal': 'true',
-        'aria-label': tr(t, 'timeline_studio.title', 'Timeline Studio'),
+        'aria-labelledby': 'timeline-studio-title',
+        'aria-describedby': 'timeline-studio-description',
         onClick: function (e) { e.stopPropagation(); },
         onKeyDown: handleDialogKeyDown
       },
         h('div', { className: 'flex items-start justify-between gap-4 px-6 py-5 border-b border-slate-200 bg-slate-50' },
           h('div', null,
-            h('h2', { className: 'text-xl font-black text-slate-900' }, tr(t, 'timeline_studio.title', 'Timeline Studio')),
-            h('p', { className: 'text-sm text-slate-600 mt-1 max-w-2xl' }, tr(t, 'timeline_studio.subtitle', 'Turn a reading, biography, or historical passage into an interactive timeline.'))
+            h('h2', { id: 'timeline-studio-title', className: 'text-xl font-black text-slate-900' }, tr(t, 'timeline_studio.title', 'Timeline Studio')),
+            h('p', { id: 'timeline-studio-description', className: 'text-sm text-slate-600 mt-1 max-w-2xl' }, tr(t, 'timeline_studio.subtitle', 'Turn a reading, biography, or historical passage into an interactive timeline.'))
           ),
           h('button', {
+            type: 'button',
             ref: closeButtonRef,
             onClick: onClose,
             className: 'min-w-11 min-h-11 p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 transition-colors text-xl',
@@ -722,12 +726,13 @@
             )
           ),
           h('div', { className: 'flex flex-wrap items-center gap-3' },
-            h('label', { className: 'text-sm text-slate-700 flex items-center gap-2' },
+            h('label', { className: 'text-sm text-slate-700 flex items-center gap-2', htmlFor: 'allo-timeline-grade' },
               tr(t, 'timeline_studio.reading_level', 'Reading level'),
               h('select', {
+                id: 'allo-timeline-grade',
                 value: grade,
                 onChange: function (e) { setGrade(e.target.value); },
-                className: 'rounded-lg bg-white border border-slate-300 px-2 py-2 text-sm text-slate-900'
+                className: 'min-h-11 rounded-lg bg-white border border-slate-300 px-2 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2'
               },
                 h('option', { value: 'early-elementary' }, tr(t, 'timeline_studio.lvl_early', 'Early elementary')),
                 h('option', { value: 'upper-elementary' }, tr(t, 'timeline_studio.lvl_upper', 'Upper elementary')),
@@ -736,23 +741,27 @@
               )
             ),
             h('button', {
+              type: 'button',
               onClick: isTopic ? generateTopic : generate,
-              disabled: busy,
-              className: 'px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 transition-colors',
-              'aria-label': isTopic
+              'aria-disabled': busy ? 'true' : 'false',
+              'aria-busy': busy ? 'true' : 'false',
+              'aria-describedby': 'timeline-studio-status timeline-studio-summary',
+              className: 'min-h-11 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 aria-disabled:opacity-60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2',
+              title: isTopic
                 ? tr(t, 'timeline_studio.generate_topic_title', 'Research the topic and build a fact-checked timeline')
                 : tr(t, 'timeline_studio.generate_title', 'Generate an interactive timeline from the pasted text')
             }, busy
               ? tr(t, 'timeline_studio.generating', 'Building...')
               : (isTopic ? tr(t, 'timeline_studio.generate_topic', 'Research & build') : tr(t, 'timeline_studio.generate', 'Build the timeline'))),
             h('button', {
+              type: 'button',
               onClick: openPopup,
-              className: 'px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 border border-slate-300 hover:bg-slate-200 transition-colors',
-              'aria-label': tr(t, 'timeline_studio.manual_title', 'Open the timeline window to build one by hand')
+              className: 'min-h-11 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 border border-slate-300 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2',
+              title: tr(t, 'timeline_studio.manual_title', 'Open the timeline window to build one by hand')
             }, tr(t, 'timeline_studio.manual', 'Build by hand'))
           ),
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true' }, statusLine()),
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true' }, summaryLine()),
+          h('div', { id: 'timeline-studio-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, statusLine()),
+          h('div', { id: 'timeline-studio-summary', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, summaryLine()),
           h('div', { className: 'bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm text-slate-700 space-y-1.5' },
             h('p', null, aiOn
               ? (isTopic
