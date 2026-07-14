@@ -1187,9 +1187,11 @@ window.SelHub = window.SelHub || {
 
           // Current step
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-            h('h4', { className: 'text-sm font-bold text-teal-700' }, PLANNER_STEPS[plannerStep].label),
-            h('p', { className: 'text-xs text-slate-600' }, PLANNER_STEPS[plannerStep].prompt),
+            h('h4', { id: 'cv-planner-step-label', className: 'text-sm font-bold text-teal-700' }, PLANNER_STEPS[plannerStep].label),
+            h('p', { id: 'cv-planner-step-prompt', className: 'text-xs text-slate-600' }, PLANNER_STEPS[plannerStep].prompt),
             h('textarea', {
+              'aria-labelledby': 'cv-planner-step-label',
+              'aria-describedby': 'cv-planner-step-prompt',
               value: plannerData[PLANNER_STEPS[plannerStep].id] || '',
               onChange: function(e) {
                 var newData = {};
@@ -1198,8 +1200,7 @@ window.SelHub = window.SelHub || {
                 upd('plannerData', newData);
               },
               placeholder: 'Write your response here...',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
-              'aria-label': PLANNER_STEPS[plannerStep].label
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300'
             }),
             h('div', { className: 'flex justify-between' },
               plannerStep > 0 ? h('button', { 'aria-label': 'Previous',
@@ -1384,11 +1385,15 @@ window.SelHub = window.SelHub || {
                   var pct = Math.round(val / 1000000 * 100);
                   return h('div', { key: cat.id, className: 'space-y-1' },
                     h('div', { className: 'flex justify-between items-center' },
-                      h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
+                      h('span', { id: 'cv-budget-label-' + cat.id, className: 'text-xs font-bold text-slate-700' }, cat.label),
                       h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString() + ' (' + pct + '%)')
                     ),
-                    h('p', { className: 'text-[10px] text-slate-600' }, cat.desc),
+                    h('p', { id: 'cv-budget-desc-' + cat.id, className: 'text-[10px] text-slate-600' }, cat.desc),
                     h('input', {
+                      id: 'cv-budget-' + cat.id,
+                      'aria-labelledby': 'cv-budget-label-' + cat.id,
+                      'aria-describedby': 'cv-budget-desc-' + cat.id,
+                      'aria-valuetext': '$' + val.toLocaleString() + ', ' + pct + ' percent of budget',
                       type: 'range',
                       min: 0,
                       max: 500000,
@@ -1400,8 +1405,7 @@ window.SelHub = window.SelHub || {
                         newAlloc[cat.id] = parseInt(e.target.value, 10);
                         upd('budgetAlloc', newAlloc);
                       },
-                      className: 'w-full accent-teal-600',
-                      'aria-label': cat.label + ' budget'
+                      className: 'w-full accent-teal-600'
                     })
                   );
                 }),
@@ -1716,14 +1720,14 @@ window.SelHub = window.SelHub || {
 
           // Custom question builder
           h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
-            h('h4', { className: 'text-xs font-bold text-amber-700 uppercase tracking-widest' }, '\u270d\ufe0f Write Your Own Question'),
+            h('h4', { id: 'cv-custom-question-heading', className: 'text-xs font-bold text-amber-700 uppercase tracking-widest' }, '\u270d\ufe0f Write Your Own Question'),
             h('input', {
+              'aria-labelledby': 'cv-custom-question-heading',
               type: 'text',
               value: surveyCustomQ,
               onChange: function(e) { upd('surveyCustomQ', e.target.value); },
               placeholder: 'Type your question here...',
-              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
-              'aria-label': 'Custom survey question'
+              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
             }),
             h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Open-ended',
@@ -1930,14 +1934,15 @@ window.SelHub = window.SelHub || {
 
               // Scenario / reflection prompt (only if item has scenario)
               item && item.scenario && h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
-                h('h5', { className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 ' + (activeSection.id === 'reflection' ? 'Reflect' : 'What do you think?')),
-                h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, item.scenario),
+                h('h5', { id: 'cv-rights-prompt-heading', className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 ' + (activeSection.id === 'reflection' ? 'Reflect' : 'What do you think?')),
+                h('p', { id: 'cv-rights-prompt-text', className: 'text-sm text-slate-700 leading-relaxed italic' }, item.scenario),
                 h('textarea', {
+                  'aria-labelledby': 'cv-rights-prompt-heading',
+                  'aria-describedby': 'cv-rights-prompt-text',
                   value: rightsScenarioAnswer,
                   onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
                   placeholder: 'Write your response here.',
-                  className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
-                  'aria-label': 'Your response to the prompt'
+                  className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300'
                 }),
                 rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', {
                   'aria-label': 'Get feedback on your response',
@@ -2025,14 +2030,15 @@ window.SelHub = window.SelHub || {
                     }, '\ud83d\udd0a Hear this read aloud')
                   ),
                   h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
-                    h('h5', { className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 What Would You Do?'),
-                    h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, right.scenario),
+                    h('h5', { id: 'cv-right-scenario-heading', className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 What Would You Do?'),
+                    h('p', { id: 'cv-right-scenario-text', className: 'text-sm text-slate-700 leading-relaxed italic' }, right.scenario),
                     h('textarea', {
+                      'aria-labelledby': 'cv-right-scenario-heading',
+                      'aria-describedby': 'cv-right-scenario-text',
                       value: rightsScenarioAnswer,
                       onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
                       placeholder: 'Write your response here. Think about rights and responsibilities...',
-                      className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
-                      'aria-label': 'Your response to the scenario'
+                      className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300'
                     }),
                     rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', { 'aria-label': 'Get feedback on your response',
                       onClick: function() {
@@ -2131,11 +2137,13 @@ window.SelHub = window.SelHub || {
 
               // Current phase
               h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-                h('h4', { className: 'text-sm font-bold text-teal-700' }, currentPhase.label + ': ' + currentPhase.desc),
+                h('h4', { id: 'cv-service-phase-label', className: 'text-sm font-bold text-teal-700' }, currentPhase.label + ': ' + currentPhase.desc),
                 h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
-                  h('p', { className: 'text-xs text-teal-800 leading-relaxed' }, '\ud83d\udccb Task: ' + currentStep.task)
+                  h('p', { id: 'cv-service-task', className: 'text-xs text-teal-800 leading-relaxed' }, '\ud83d\udccb Task: ' + currentStep.task)
                 ),
                 h('textarea', {
+                  'aria-labelledby': 'cv-service-phase-label',
+                  'aria-describedby': 'cv-service-task',
                   value: serviceNotes[currentPhase.id] || '',
                   onChange: function(e) {
                     var newNotes = {};
@@ -2144,8 +2152,7 @@ window.SelHub = window.SelHub || {
                     upd('serviceNotes', newNotes);
                   },
                   placeholder: 'Write your notes, plans, and progress here...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
-                  'aria-label': currentPhase.label + ' notes'
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300'
                 }),
 
                 // Hour tracker
@@ -2757,14 +2764,15 @@ window.SelHub = window.SelHub || {
 
           // Vision exercise
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-rose-50 rounded-2xl border border-amber-200 p-5' },
-            h('h4', { className: 'text-sm font-bold text-amber-700 mb-2' }, '\ud83d\udd2e Your Vision for the Future'),
-            h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Close your eyes for a moment. Imagine the world you want to live in 20 years from now. What does it look like?'),
+            h('h4', { id: 'cv-vision-heading', className: 'text-sm font-bold text-amber-700 mb-2' }, '\ud83d\udd2e Your Vision for the Future'),
+            h('p', { id: 'cv-vision-prompt', className: 'text-xs text-slate-600 mb-3' }, 'Close your eyes for a moment. Imagine the world you want to live in 20 years from now. What does it look like?'),
             h('textarea', {
+              'aria-labelledby': 'cv-vision-heading',
+              'aria-describedby': 'cv-vision-prompt',
               value: d.visionText || '',
               onChange: function(e) { upd('visionText', e.target.value); },
               placeholder: 'Describe the world you want to help create...',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
-              'aria-label': 'Your vision for the future'
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300'
             }),
             d.visionText && d.visionText.length > 20 && h('button', { 'aria-label': 'Save My Vision',
               onClick: function() {
