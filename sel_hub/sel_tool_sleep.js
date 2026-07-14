@@ -598,21 +598,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             // Diary entries table
             diary.length > 0 ? h('div', { style: { marginBottom: 18 } },
               h('div', { style: { background: _sleBg('#0ea5e9'), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary entries'),
-              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, color: _sleFg('#0f172a') } },
+              h('table', { 'aria-label': 'Sleep diary entries', style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, color: _sleFg('#0f172a') } },
                 h('thead', null,
                   h('tr', { style: { borderBottom: '2px solid #cbd5e1' } },
-                    h('th', { style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Date'),
-                    h('th', { style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Bedtime'),
-                    h('th', { style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Wake'),
-                    h('th', { style: { padding: 6, textAlign: 'right', fontWeight: 700 } }, 'Hours'),
-                    h('th', { style: { padding: 6, textAlign: 'right', fontWeight: 700 } }, 'Quality'),
-                    h('th', { style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Notes')
+                    h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Date'),
+                    h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Bedtime'),
+                    h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Wake'),
+                    h('th', { scope: 'col', style: { padding: 6, textAlign: 'right', fontWeight: 700 } }, 'Hours'),
+                    h('th', { scope: 'col', style: { padding: 6, textAlign: 'right', fontWeight: 700 } }, 'Quality'),
+                    h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Notes')
                   )
                 ),
                 h('tbody', null,
                   diary.map(function(e, i) {
                     return h('tr', { key: i, style: { borderBottom: '1px solid #e2e8f0' } },
-                      h('td', { style: { padding: 5, fontFamily: 'ui-monospace, monospace' } }, e.date),
+                      h('th', { scope: 'row', style: { padding: 5, fontFamily: 'ui-monospace, monospace', textAlign: 'left', fontWeight: 600 } }, e.date),
                       h('td', { style: { padding: 5 } }, e.bedtime || '–'),
                       h('td', { style: { padding: 5 } }, e.waketime || '–'),
                       h('td', { style: { padding: 5, textAlign: 'right', fontWeight: 700 } }, e.hours || '–'),
