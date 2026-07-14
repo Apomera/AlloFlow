@@ -1649,11 +1649,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       function switchTab(tabId, label) {
         upd('activeTab', tabId);
         announceSR('Now viewing: ' + (label || tabId));
-        // Move focus to main content region after re-render
+        // Move focus to the newly displayed tab panel after pointer activation.
         setTimeout(function() {
-          var main = document.getElementById('selfadv-main-content');
-          if (main && main.focus) {
-            try { main.focus({ preventScroll: false }); } catch(e) { try { main.focus(); } catch(e2) {} }
+          var panel = document.getElementById('selfadv-tabpanel');
+          if (panel && panel.focus) {
+            try { panel.focus({ preventScroll: false }); } catch(e) { try { panel.focus(); } catch(e2) {} }
           }
         }, 50);
       }
@@ -1685,14 +1685,34 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           { id: 'packet', label: 'Print Packet', icon: '\uD83D\uDCE6' },
           { id: 'data', label: 'My Data', icon: '\uD83D\uDD12' }
         ];
-        return h('nav', { className: 'flex flex-wrap gap-1 p-2 no-print', role: 'navigation', 'aria-label': 'Self-Advocacy Studio sections' },
-          tabs.map(function(t) {
+        return h('nav', { className: 'flex flex-wrap gap-1 p-2 no-print', role: 'tablist', 'aria-label': 'Self-Advocacy Studio sections' },
+          tabs.map(function(t, tabIndex) {
             var sel = activeTab === t.id;
             return h('button', {
               key: t.id,
+              id: 'selfadv-tab-' + t.id,
+              role: 'tab',
               onClick: function() { switchTab(t.id, t.label); },
-              'aria-current': sel ? 'page' : undefined,
-              'aria-label': t.label + (sel ? ' (current section)' : ''),
+              onKeyDown: function(e) {
+                var nextIndex = tabIndex;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = tabs.length - 1;
+                else return;
+                e.preventDefault();
+                var nextTab = tabs[nextIndex];
+                upd('activeTab', nextTab.id);
+                announceSR('Now viewing: ' + nextTab.label);
+                setTimeout(function() {
+                  var tab = document.getElementById('selfadv-tab-' + nextTab.id);
+                  if (tab && tab.focus) tab.focus();
+                }, 50);
+              },
+              'aria-selected': sel,
+              'aria-controls': 'selfadv-tabpanel',
+              tabIndex: sel ? 0 : -1,
+              'aria-label': t.label,
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (sel ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700')
             }, h('span', { 'aria-hidden': 'true' }, t.icon + ' '), t.label);
           })
@@ -4590,9 +4610,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           id: 'selfadv-main-content',
           tabIndex: -1,
           role: 'main',
-          'aria-label': 'Self-Advocacy Studio main content',
-          style: { outline: 'none' }
-        }, body)
+          'aria-label': 'Self-Advocacy Studio main content'
+        }, h('div', {
+          id: 'selfadv-tabpanel',
+          role: 'tabpanel',
+          'aria-labelledby': 'selfadv-tab-' + activeTab,
+          tabIndex: 0
+        }, body))
       );
     }
   });
