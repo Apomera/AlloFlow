@@ -122,6 +122,29 @@ describe('Test Prep Hub render flow', () => {
     await expectNoAxeViolations('practice question');
   }, 30_000);
 
+  it('opens contextual notes and a non-predictive weekly activity plan', async () => {
+    await mount();
+    const firstOpen = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Open practice pack'));
+    await act(async () => { firstOpen.click(); });
+    await waitForText('Question 1 of 5');
+
+    expect(findButton('Notes & highlights')).toBeTruthy();
+    await clickButton('Add note or highlight');
+    expect(host.textContent).toContain('Portable study workspace');
+    expect(host.textContent).toContain('Attached to question');
+    expect(host.querySelector('textarea[aria-label="Study annotation text"]')).toBeTruthy();
+    expect(findButton('Save annotation').disabled).toBe(true);
+    await expectNoAxeViolations('notes and highlights workspace');
+
+    await clickButton('Progress');
+    expect(host.textContent).toContain('Weekly study plan');
+    expect(host.textContent).toContain('Activity goals only');
+    expect(host.querySelector('input[aria-label="Weekly question goal"]')).toBeTruthy();
+    expect(host.querySelector('input[aria-label="Weekly completed-set goal"]')).toBeTruthy();
+    expect(host.querySelector('input[aria-label="Weekly active-day goal"]')).toBeTruthy();
+    expect(host.textContent).toContain('do not estimate ability, readiness');
+    await expectNoAxeViolations('weekly study plan');
+  }, 30_000);
   it('persists saved questions and starts a focused review set', async () => {
     await mount();
     await clickButton('Open practice pack');

@@ -96,10 +96,14 @@ describe('reusable Test Prep Hub learning engine', () => {
       memoryAids: [{ id: 'aid-alpha', title: 'Alpha aid', content: 'Remember alpha', domain: 'alpha', tags: ['alpha'], reviewStatus: 'source-reviewed-editorial-pass' }],
       constructedResponseWorkshops: [{ id: 'workshop-alpha', title: 'Alpha workshop', prompt: 'Apply alpha', taskType: 'analysis' }],
     };
-    const search = Hub.searchPack(fixture, library, 'alpha', { limit: 20 });
+    const annotations = { records: [
+      { id: 'note-alpha', packId: fixture.id, targetType: 'question', targetId: 'alpha-1', targetLabel: 'Alpha question note', kind: 'note', text: 'Alpha learner note', createdAt: 1, updatedAt: 1 },
+      { id: 'highlight-alpha', packId: fixture.id, targetType: 'chapter', targetId: 'chapter-alpha', targetLabel: 'Alpha chapter highlight', kind: 'highlight', color: 'blue', text: 'Alpha key passage', createdAt: 1, updatedAt: 1 },
+    ] };
+    const search = Hub.searchPack(fixture, library, 'alpha', { limit: 20, annotations });
 
-    expect(search.total).toBeGreaterThanOrEqual(6);
-    expect(new Set(search.results.map((result) => result.type))).toEqual(new Set(['question', 'chapter', 'flashcard', 'memory-aid', 'constructed-response']));
+    expect(search.total).toBeGreaterThanOrEqual(8);
+    expect(new Set(search.results.map((result) => result.type))).toEqual(new Set(['question', 'chapter', 'flashcard', 'memory-aid', 'constructed-response', 'note', 'highlight']));
     expect(search.results.every((result) => result.id && result.title)).toBe(true);
     expect(Hub.searchPack(fixture, library, '', {}).results).toEqual([]);
   });
@@ -118,14 +122,47 @@ describe('reusable Test Prep Hub learning engine', () => {
     const again = Hub.rateFlashcard(reviewed, 'card-1', 'again', 2_000);
     expect(again['card-1']).toMatchObject({ rating: 'again', repetitions: 0, intervalDays: 0, dueAt: 602_000 });
   });
+  it('normalizes, updates, searches, and deletes portable pack-scoped annotations', () => {
+    const created = Hub.upsertAnnotation({}, { packId: fixture.id, targetType: 'question', targetId: 'alpha-1', targetLabel: 'Question: Alpha one?', kind: 'highlight', color: 'blue', text: 'Distinguish the alpha rule.' }, 1000);
+    expect(created.records).toHaveLength(1);
+    expect(created.records[0]).toMatchObject({ packId: fixture.id, targetType: 'question', targetId: 'alpha-1', kind: 'highlight', color: 'blue', createdAt: 1000, updatedAt: 1000 });
+
+    const updated = Hub.upsertAnnotation(created, { ...created.records[0], text: 'Updated alpha distinction.' }, 2000);
+    expect(updated.records).toHaveLength(1);
+    expect(updated.records[0]).toMatchObject({ text: 'Updated alpha distinction.', createdAt: 1000, updatedAt: 2000 });
+    expect(Hub.deleteAnnotation(updated, updated.records[0].id)).toEqual({ records: [] });
+    expect(Hub.normalizeAnnotations({ records: [{ packId: fixture.id, text: '  ' }, { packId: '', text: 'invalid' }] })).toEqual({ records: [] });
+  });
+
+  it('builds weekly activity goals and streaks without converting activity into readiness', () => {
+    const now = Date.UTC(2026, 5, 17, 12);
+    const progress = { attempts: [
+      { id: 'a1', packId: fixture.id, completedAt: now - 24 * 60 * 60 * 1000, correct: 3, total: 4, percent: 75, mode: 'custom', itemIds: fixture.items.map((item) => item.id) },
+      { id: 'a2', packId: fixture.id, completedAt: now, correct: 5, total: 6, percent: 83, mode: 'review', itemIds: fixture.items.map((item) => item.id) },
+    ] };
+    const plans = { byPack: { [fixture.id]: { weeklyQuestions: 10, weeklySets: 2, activeDays: 2 } } };
+    const status = Hub.buildStudyPlanStatus(progress, plans, fixture.id, now);
+
+    expect(status).toMatchObject({ questionsCompleted: 10, setsCompleted: 2, activeDaysCompleted: 2, activityStreakDays: 2, questionPercent: 100, setPercent: 100, activeDayPercent: 100 });
+    expect(status.plan).toEqual({ weeklyQuestions: 10, weeklySets: 2, activeDays: 2 });
+    expect(status.limitation).toContain('do not estimate readiness');
+    expect(Hub.studyPlanForPack({}, fixture.id)).toEqual({ weeklyQuestions: 100, weeklySets: 3, activeDays: 3 });
+  });
   it('exports and safely restores progress and saved-review IDs without pack-specific code', () => {
     const progress = Hub.recordAttempt({ attempts: [] }, fixture, { 'alpha-1': 0, 'alpha-2': 1, 'beta-1': 0, 'beta-2': 1 }, {}, 4567, { mode: 'review', itemIds: fixture.items.map((item) => item.id) });
-    const payload = Hub.exportProgress(progress, { 'engine-reuse-fixture': ['alpha-1', 'alpha-1', 'beta-2'] }, 9999);
+    const annotations = Hub.upsertAnnotation({}, { packId: fixture.id, targetType: 'general', targetLabel: 'General pack note', text: 'Portable note' }, 9000);
+    const studyPlans = { byPack: { [fixture.id]: { weeklyQuestions: 80, weeklySets: 4, activeDays: 3 } } };
+    const payload = Hub.exportProgress(progress, { 'engine-reuse-fixture': ['alpha-1', 'alpha-1', 'beta-2'] }, 9999, { annotations, studyPlans });
     const restored = Hub.importProgress(JSON.stringify(payload));
 
-    expect(payload).toMatchObject({ schemaVersion: 1, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
+    expect(payload).toMatchObject({ schemaVersion: 2, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
     expect(restored.progress).toEqual(Hub.normalizeProgress(progress));
     expect(restored.reviewItems['engine-reuse-fixture']).toEqual(['alpha-1', 'beta-2']);
+    expect(restored.annotations).toEqual(Hub.normalizeAnnotations(annotations));
+    expect(restored.studyPlans).toEqual(Hub.normalizeStudyPlans(studyPlans));
+    const legacy = Hub.importProgress(JSON.stringify({ schemaVersion: 1, kind: 'alloflow-test-prep-progress', progress, reviewItems: {} }));
+    expect(legacy.annotations).toEqual({ records: [] });
+    expect(legacy.studyPlans).toEqual({ byPack: {} });
     expect(() => Hub.importProgress('{"schemaVersion":99}')).toThrow(/Unsupported AlloFlow/);
   });
 });

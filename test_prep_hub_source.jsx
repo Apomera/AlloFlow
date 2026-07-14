@@ -3,6 +3,8 @@
 const TEST_PREP_SCHEMA_VERSION = 1;
 const TEST_PREP_STORAGE_KEY = 'alloflow_test_prep_progress_v1';
 const TEST_PREP_REVIEW_STORAGE_KEY = 'alloflow_test_prep_review_items_v1';
+const TEST_PREP_ANNOTATIONS_STORAGE_KEY = 'alloflow_test_prep_annotations_v1';
+const TEST_PREP_STUDY_PLANS_STORAGE_KEY = 'alloflow_test_prep_study_plans_v1';
 const TEST_PREP_ITEM_TYPES = ['single-choice'];
 const TEST_PREP_SESSION_STORAGE_KEY = 'alloflow_test_prep_session_v1';
 const TEST_PREP_PACK_STATUSES = ['ready', 'planned', 'research'];
@@ -716,6 +718,137 @@ function writeTestPrepReviewItems(value) {
   return normalized;
 }
 
+function normalizeTestPrepAnnotations(value) {
+  const input = Array.isArray(value) ? { records: value } : (value && typeof value === 'object' && !Array.isArray(value) ? value : {});
+  const records = (Array.isArray(input.records) ? input.records : []).slice(-1000).map((record) => {
+    const entry = record && typeof record === 'object' && !Array.isArray(record) ? record : {};
+    const packId = testPrepSlug(entry.packId, '');
+    const text = String(entry.text || '').trim().slice(0, 4000);
+    if (!packId || !text) return null;
+    return {
+      id: testPrepSlug(entry.id, ''),
+      packId,
+      targetType: ['general', 'question', 'chapter', 'flashcard', 'memory-aid', 'constructed-response'].includes(entry.targetType) ? entry.targetType : 'general',
+      targetId: testPrepSlug(entry.targetId, ''),
+      targetLabel: String(entry.targetLabel || 'General pack note').trim().slice(0, 240),
+      kind: entry.kind === 'highlight' ? 'highlight' : 'note',
+      color: ['yellow', 'blue', 'green', 'pink'].includes(entry.color) ? entry.color : 'yellow',
+      text,
+      createdAt: Math.max(0, Math.floor(testPrepFinite(entry.createdAt, 0))),
+      updatedAt: Math.max(0, Math.floor(testPrepFinite(entry.updatedAt, 0))),
+    };
+  }).filter(Boolean);
+  return { records };
+}
+
+function testPrepUpsertAnnotation(value, annotation, now) {
+  const normalized = normalizeTestPrepAnnotations(value);
+  const input = annotation && typeof annotation === 'object' && !Array.isArray(annotation) ? annotation : {};
+  const timestamp = Math.max(0, Math.floor(testPrepFinite(now, Date.now())));
+  const existingId = testPrepSlug(input.id, '');
+  const existing = existingId ? normalized.records.find((record) => record.id === existingId) : null;
+  const candidate = normalizeTestPrepAnnotations({ records: [Object.assign({}, existing || {}, input, {
+    id: existingId || ('annotation-' + timestamp + '-' + testPrepSeedNumber(String(input.packId || '') + ':' + String(input.targetId || '') + ':' + String(input.text || '')).toString(36)),
+    createdAt: existing ? existing.createdAt : timestamp,
+    updatedAt: timestamp,
+  })] }).records[0];
+  if (!candidate) return normalized;
+  const records = normalized.records.filter((record) => record.id !== candidate.id).concat(candidate).slice(-1000);
+  return { records };
+}
+
+function testPrepDeleteAnnotation(value, annotationId) {
+  const normalized = normalizeTestPrepAnnotations(value);
+  const id = testPrepSlug(annotationId, '');
+  return { records: normalized.records.filter((record) => record.id !== id) };
+}
+
+function readTestPrepAnnotations() {
+  try { return normalizeTestPrepAnnotations(JSON.parse(localStorage.getItem(TEST_PREP_ANNOTATIONS_STORAGE_KEY) || '{}')); }
+  catch (_) { return { records: [] }; }
+}
+
+function writeTestPrepAnnotations(value) {
+  const normalized = normalizeTestPrepAnnotations(value);
+  try { localStorage.setItem(TEST_PREP_ANNOTATIONS_STORAGE_KEY, JSON.stringify(normalized)); } catch (_) {}
+  return normalized;
+}
+
+function normalizeTestPrepStudyPlans(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const source = input.byPack && typeof input.byPack === 'object' && !Array.isArray(input.byPack) ? input.byPack : input;
+  const byPack = {};
+  Object.keys(source).slice(0, 50).forEach((rawPackId) => {
+    const packId = testPrepSlug(rawPackId, '');
+    const plan = source[rawPackId] && typeof source[rawPackId] === 'object' && !Array.isArray(source[rawPackId]) ? source[rawPackId] : {};
+    if (!packId) return;
+    byPack[packId] = {
+      weeklyQuestions: Math.max(1, Math.min(5000, Math.floor(testPrepFinite(plan.weeklyQuestions, 100)))),
+      weeklySets: Math.max(1, Math.min(50, Math.floor(testPrepFinite(plan.weeklySets, 3)))),
+      activeDays: Math.max(1, Math.min(7, Math.floor(testPrepFinite(plan.activeDays, 3)))),
+    };
+  });
+  return { byPack };
+}
+
+function testPrepStudyPlanForPack(value, packId) {
+  const normalized = normalizeTestPrepStudyPlans(value);
+  return normalized.byPack[testPrepSlug(packId, '')] || { weeklyQuestions: 100, weeklySets: 3, activeDays: 3 };
+}
+
+function readTestPrepStudyPlans() {
+  try { return normalizeTestPrepStudyPlans(JSON.parse(localStorage.getItem(TEST_PREP_STUDY_PLANS_STORAGE_KEY) || '{}')); }
+  catch (_) { return { byPack: {} }; }
+}
+
+function writeTestPrepStudyPlans(value) {
+  const normalized = normalizeTestPrepStudyPlans(value);
+  try { localStorage.setItem(TEST_PREP_STUDY_PLANS_STORAGE_KEY, JSON.stringify(normalized)); } catch (_) {}
+  return normalized;
+}
+
+function testPrepBuildStudyPlanStatus(progress, studyPlans, packId, now) {
+  const normalizedProgress = normalizeTestPrepProgress(progress);
+  const safePackId = testPrepSlug(packId, '');
+  const plan = testPrepStudyPlanForPack(studyPlans, safePackId);
+  const timestamp = Math.max(0, Math.floor(testPrepFinite(now, Date.now())));
+  const date = new Date(timestamp);
+  const today = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  const mondayOffset = (date.getDay() + 6) % 7;
+  const weekStart = today - mondayOffset * 24 * 60 * 60 * 1000;
+  const attempts = normalizedProgress.attempts.filter((attempt) => attempt.packId === safePackId && attempt.completedAt >= weekStart && attempt.completedAt <= timestamp);
+  const questionsCompleted = attempts.reduce((sum, attempt) => sum + attempt.total, 0);
+  const activeDayValues = Array.from(new Set(attempts.map((attempt) => {
+    const completed = new Date(attempt.completedAt);
+    return new Date(completed.getFullYear(), completed.getMonth(), completed.getDate()).getTime();
+  })));
+  const allActivityDays = Array.from(new Set(normalizedProgress.attempts.filter((attempt) => attempt.packId === safePackId).map((attempt) => {
+    const completed = new Date(attempt.completedAt);
+    return new Date(completed.getFullYear(), completed.getMonth(), completed.getDate()).getTime();
+  }))).sort((left, right) => right - left);
+  let activityStreakDays = 0;
+  if (allActivityDays.length && allActivityDays[0] >= today - 24 * 60 * 60 * 1000) {
+    let cursor = allActivityDays[0];
+    allActivityDays.forEach((day) => {
+      if (day === cursor) { activityStreakDays += 1; cursor -= 24 * 60 * 60 * 1000; }
+    });
+  }
+  const percent = (value, goal) => Math.min(100, Math.round(value / Math.max(1, goal) * 100));
+  return {
+    packId: safePackId,
+    weekStart,
+    weekEnd: weekStart + 7 * 24 * 60 * 60 * 1000 - 1,
+    plan,
+    questionsCompleted,
+    setsCompleted: attempts.length,
+    activeDaysCompleted: activeDayValues.length,
+    activityStreakDays,
+    questionPercent: percent(questionsCompleted, plan.weeklyQuestions),
+    setPercent: percent(attempts.length, plan.weeklySets),
+    activeDayPercent: percent(activeDayValues.length, plan.activeDays),
+    limitation: 'Goals and streaks describe study activity only; they do not estimate readiness, ability, an official score, or passing.',
+  };
+}
 function scoreTestPrepAttempt(pack, answers) {
   const normalized = normalizeTestPrepPack(pack);
   const responseMap = answers && typeof answers === 'object' && !Array.isArray(answers) ? answers : {};
@@ -1006,7 +1139,8 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
   (Array.isArray(library.flashcards) ? library.flashcards : []).forEach((card) => add('flashcard', card.id, card.front, card.back, card.domain, [card.front, card.back, card.domain].join(' '), card.reviewStatus));
   (Array.isArray(library.memoryAids) ? library.memoryAids : []).forEach((aid) => add('memory-aid', aid.id, aid.title, aid.content, aid.domain, [aid.title, aid.content].concat(aid.tags || []).join(' '), aid.reviewStatus));
   (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus || 'source-reviewed-editorial-pass'));
-  const typeOrder = { question: 0, chapter: 1, flashcard: 2, 'memory-aid': 3, 'constructed-response': 4 };
+  normalizeTestPrepAnnotations(input.annotations).records.filter((record) => record.packId === normalizedPack.id).forEach((record) => add(record.kind, record.id, record.targetLabel || (record.kind === 'highlight' ? 'Highlight' : 'Note'), record.text, record.targetType, [record.targetLabel, record.text, record.targetType].join(' '), 'learner-created'));
+  const typeOrder = { question: 0, chapter: 1, flashcard: 2, 'memory-aid': 3, 'constructed-response': 4, note: 5, highlight: 6 };
   results.sort((left, right) => (typeOrder[left.type] - typeOrder[right.type]) || left.title.localeCompare(right.title));
   const counts = {};
   results.forEach((result) => { counts[result.type] = (counts[result.type] || 0) + 1; });
@@ -1079,25 +1213,30 @@ function testPrepBuildFlashcardQueue(cards, schedule, options) {
   });
   return { items: sorted, total: filtered.length, dueCount: due.length, scheduledCount: filtered.length - due.length, now, schedule: normalized };
 }
-function testPrepExportProgress(progress, reviewItems, now) {
+function testPrepExportProgress(progress, reviewItems, now, extras) {
+  const optional = extras && typeof extras === 'object' && !Array.isArray(extras) ? extras : {};
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     kind: 'alloflow-test-prep-progress',
     exportedAt: Math.max(0, Math.floor(testPrepFinite(now, Date.now()))),
     progress: normalizeTestPrepProgress(progress),
     reviewItems: normalizeTestPrepReviewItems(reviewItems),
+    annotations: normalizeTestPrepAnnotations(optional.annotations),
+    studyPlans: normalizeTestPrepStudyPlans(optional.studyPlans),
   };
 }
 
 function testPrepImportProgress(value) {
   let input = value;
   if (typeof input === 'string') input = JSON.parse(input);
-  if (!input || typeof input !== 'object' || Array.isArray(input) || input.schemaVersion !== 1 || input.kind !== 'alloflow-test-prep-progress') {
+  if (!input || typeof input !== 'object' || Array.isArray(input) || ![1, 2].includes(input.schemaVersion) || input.kind !== 'alloflow-test-prep-progress') {
     throw new Error('Unsupported AlloFlow test-prep progress file.');
   }
   return {
     progress: normalizeTestPrepProgress(input.progress),
     reviewItems: normalizeTestPrepReviewItems(input.reviewItems),
+    annotations: normalizeTestPrepAnnotations(input.annotations),
+    studyPlans: normalizeTestPrepStudyPlans(input.studyPlans),
   };
 }
 
@@ -1190,6 +1329,13 @@ function TestPrepHub(props) {
   const [savedSession, setSavedSession] = React.useState(readTestPrepSession);
   const [progress, setProgress] = React.useState(readTestPrepProgress);
   const [reviewItems, setReviewItems] = React.useState(readTestPrepReviewItems);
+  const [annotations, setAnnotations] = React.useState(readTestPrepAnnotations);
+  const [studyPlans, setStudyPlans] = React.useState(readTestPrepStudyPlans);
+  const [annotationDraft, setAnnotationDraft] = React.useState('');
+  const [annotationKind, setAnnotationKind] = React.useState('note');
+  const [annotationColor, setAnnotationColor] = React.useState('yellow');
+  const [annotationEditingId, setAnnotationEditingId] = React.useState('');
+  const [annotationTarget, setAnnotationTarget] = React.useState({ targetType: 'general', targetId: '', targetLabel: 'General pack note' });
   const [largeText, setLargeText] = React.useState(false);
   const [legacyOpen, setLegacyOpen] = React.useState(false);
   const [legacyAudit, setLegacyAudit] = React.useState(null);
@@ -1225,7 +1371,10 @@ function TestPrepHub(props) {
   const progressAnalytics = testPrepBuildProgressAnalytics(progress, selectedPackId);
   const smartReviewPlan = selectedPack ? testPrepBuildReviewSet(progress, selectedPack, { limit: Math.min(20, selectedPack.items.length) }) : null;
   const customQuizPlan = selectedPack ? testPrepBuildCustomQuiz(selectedPack, { domainIds: customQuizDomainIds, limit: customQuizLength, seed: selectedPack.id + '-custom-' + customQuizVariant }) : null;
-  const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60 }) : { query: '', total: 0, counts: {}, results: [] };
+  const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60, annotations }) : { query: '', total: 0, counts: {}, results: [] };
+  const packAnnotations = selectedPack ? normalizeTestPrepAnnotations(annotations).records.filter((record) => record.packId === selectedPack.id) : [];
+  const currentStudyPlan = selectedPack ? testPrepStudyPlanForPack(studyPlans, selectedPack.id) : { weeklyQuestions: 100, weeklySets: 3, activeDays: 3 };
+  const studyPlanStatus = selectedPack ? testPrepBuildStudyPlanStatus(progress, studyPlans, selectedPack.id, Date.now()) : null;
   const skillById = Object.fromEntries((learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : []).map((skill) => [skill.id, skill]));
   const domainById = Object.fromEntries((selectedPack ? selectedPack.domains : []).map((domain) => [domain.id, domain]));
 
@@ -1237,6 +1386,9 @@ function TestPrepHub(props) {
     setCustomQuizDomainIds([]);
     setCustomQuizLength(Math.min(20, selectedPack && selectedPack.items.length ? selectedPack.items.length : 20));
     setCustomQuizVariant(1);
+    setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' });
+    setAnnotationDraft('');
+    setAnnotationEditingId('');
   }, [selectedPackId]);
 
   React.useEffect(() => {
@@ -1495,14 +1647,77 @@ function TestPrepHub(props) {
       setMemoryAidOpen(searchResult.id);
       return;
     }
+    if (searchResult.type === 'note' || searchResult.type === 'highlight') {
+      const record = normalizeTestPrepAnnotations(annotations).records.find((entry) => entry.id === searchResult.id);
+      if (record) editAnnotation(record);
+      return;
+    }
     if (searchResult.type === 'constructed-response') {
       setLibraryMode('constructed-response');
       setLibrarySearch('');
     }
   }
+  function beginAnnotation(target) {
+    const input = target && typeof target === 'object' ? target : {};
+    setAnnotationTarget({
+      targetType: ['question', 'chapter', 'flashcard', 'memory-aid', 'constructed-response'].includes(input.targetType) ? input.targetType : 'general',
+      targetId: input.targetId || '',
+      targetLabel: input.targetLabel || 'General pack note',
+    });
+    setAnnotationDraft('');
+    setAnnotationKind('note');
+    setAnnotationColor('yellow');
+    setAnnotationEditingId('');
+    setTab('notes');
+  }
+
+  function editAnnotation(record) {
+    if (!record) return;
+    setAnnotationTarget({ targetType: record.targetType, targetId: record.targetId, targetLabel: record.targetLabel });
+    setAnnotationDraft(record.text);
+    setAnnotationKind(record.kind);
+    setAnnotationColor(record.color);
+    setAnnotationEditingId(record.id);
+    setTab('notes');
+  }
+
+  function saveAnnotationDraft() {
+    if (!selectedPack || !annotationDraft.trim()) { announce('Write a note or highlight before saving.', 'info'); return; }
+    const next = testPrepUpsertAnnotation(annotations, {
+      id: annotationEditingId,
+      packId: selectedPack.id,
+      targetType: annotationTarget.targetType,
+      targetId: annotationTarget.targetId,
+      targetLabel: annotationTarget.targetLabel,
+      kind: annotationKind,
+      color: annotationColor,
+      text: annotationDraft,
+    }, Date.now());
+    setAnnotations(writeTestPrepAnnotations(next));
+    setAnnotationDraft('');
+    setAnnotationEditingId('');
+    setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' });
+    announce(annotationEditingId ? 'Study annotation updated.' : 'Study annotation saved.', 'success');
+  }
+
+  function removeAnnotation(annotationId) {
+    setAnnotations(writeTestPrepAnnotations(testPrepDeleteAnnotation(annotations, annotationId)));
+    if (annotationEditingId === annotationId) {
+      setAnnotationDraft('');
+      setAnnotationEditingId('');
+    }
+    announce('Study annotation removed.', 'info');
+  }
+
+  function updateStudyPlan(patch) {
+    if (!selectedPack) return;
+    const next = normalizeTestPrepStudyPlans(studyPlans);
+    next.byPack[selectedPack.id] = Object.assign({}, currentStudyPlan, patch || {});
+    setStudyPlans(writeTestPrepStudyPlans(next));
+  }
   function exportPracticeProgress() {
     try {
-      const payload = testPrepExportProgress(progress, reviewItems, Date.now());
+      const payload = testPrepExportProgress(progress, reviewItems, Date.now(), { annotations, studyPlans });
       if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') throw new Error('File export is unavailable in this browser.');
       const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
       const anchor = document.createElement('a');
@@ -1523,7 +1738,9 @@ function TestPrepHub(props) {
         const imported = testPrepImportProgress(String(reader.result || ''));
         setProgress(writeTestPrepProgress(imported.progress));
         setReviewItems(writeTestPrepReviewItems(imported.reviewItems));
-        announce('Test-prep progress backup restored.', 'success');
+        setAnnotations(writeTestPrepAnnotations(imported.annotations));
+        setStudyPlans(writeTestPrepStudyPlans(imported.studyPlans));
+        announce('Test-prep progress, notes, and plans restored.', 'success');
       } catch (error) { announce(error && error.message ? error.message : 'Progress import failed.', 'warning'); }
       if (event.target) event.target.value = '';
     };
@@ -1749,6 +1966,7 @@ function TestPrepHub(props) {
             ['explore', 'Explore packs'],
             ['practice', 'Practice'],
             ['library', 'Learning library'],
+            ['notes', 'Notes & highlights'],
             ['progress', 'Progress'],
           ].map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={'whitespace-nowrap rounded-t-lg border-x border-t px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (tab === id ? 'border-indigo-300 bg-white text-indigo-900' : 'border-transparent text-slate-700 hover:bg-slate-100')}>
@@ -2055,6 +2273,7 @@ function TestPrepHub(props) {
                     <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">Question {questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">Question bank item {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <p className="mt-1 text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p>}</div>
                     <button type="button" onClick={readQuestion} className="rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} Read question</button>
                     <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'rounded-lg border px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>
+                    <button type="button" onClick={() => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-600">Add note or highlight</button>
                     <button type="button" onClick={chooseAnotherPracticeSet} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">Practice options</button>
                   </div>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full bg-indigo-700" style={{ width: Math.round((questionIndex + 1) / Math.max(1, activePack.items.length) * 100) + '%' }} /></div>
@@ -2138,7 +2357,7 @@ function TestPrepHub(props) {
                   <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-700">{learningLibrary ? learningLibrary.description : 'Loading chapters, study cards, and memory aids for this pack.'}</p>
                   {learningLibrary && <p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedChapters || 0} source reviewed · {(learningLibrary.summary.chapters || 0) - (learningLibrary.summary.sourceReviewedChapters || 0)} review required · independent expert validation pending</p>}
                 </div>
-                {libraryChapterId && <button type="button" onClick={() => setLibraryChapterId('')} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Back to chapter catalog</button>}
+                {libraryChapterId && <div className="flex flex-wrap gap-2"><button type="button" onClick={() => beginAnnotation({ targetType: 'chapter', targetId: libraryChapterId, targetLabel: 'Chapter: ' + (((learningLibrary && learningLibrary.chapters || []).find((chapter) => chapter.id === libraryChapterId) || {}).title || libraryChapterId) })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-600">Add chapter note</button><button type="button" onClick={() => setLibraryChapterId('')} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Back to chapter catalog</button></div>}
               </div>
 
               <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
@@ -2160,7 +2379,7 @@ function TestPrepHub(props) {
                   <div className="grid gap-3 md:grid-cols-2">
                     {globalSearch.results.map((searchResult) => {
                       const typeLabel = searchResult.type === 'memory-aid' ? 'Memory aid' : searchResult.type === 'constructed-response' ? 'Written-response workshop' : searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1);
-                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : 'Open workshops';
+                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : (searchResult.type === 'note' || searchResult.type === 'highlight') ? 'Open annotation' : 'Open workshops';
                       return <article key={searchResult.type + '-' + searchResult.id} className="flex flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{typeLabel}</span>{searchResult.domain && <span className="text-xs font-bold text-slate-600">{searchResult.domain}</span>}</div><h5 className="mt-2 font-black text-slate-900">{searchResult.title}</h5>{searchResult.snippet && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{searchResult.snippet}</p>}<button type="button" onClick={() => openLibrarySearchResult(searchResult)} className="mt-4 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{actionLabel}</button></article>;
                     })}
                   </div>
@@ -2329,6 +2548,24 @@ function TestPrepHub(props) {
             </div>
           )}
 
+          {tab === 'notes' && selectedPack && (
+            <div className="mx-auto max-w-6xl space-y-5">
+              <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-amber-800">Portable study workspace</p><h3 className="text-xl font-black text-slate-900">Notes & highlights</h3><p className="mt-1 max-w-3xl text-sm text-slate-700">Records are scoped to a test pack, searchable with released content, and included in progress backup files. Avoid storing sensitive personal or client information.</p></div><label className="text-sm font-bold text-slate-800">Test pack<select value={selectedPackId} onChange={(event) => setSelectedPackId(event.target.value)} className="mt-1 block rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-amber-600">{packs.map((pack) => <option key={pack.id} value={pack.id}>{pack.shortTitle}</option>)}</select></label></div>
+              <section className="rounded-2xl border border-amber-300 bg-white p-5 shadow-sm" aria-labelledby="annotation-editor-title">
+                <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-amber-800">Attached to {annotationTarget.targetType.replace(/-/g, ' ')}</p><h4 id="annotation-editor-title" className="mt-1 font-black text-slate-900">{annotationTarget.targetLabel}</h4></div>{annotationTarget.targetType !== 'general' && <button type="button" onClick={() => { setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' }); setAnnotationEditingId(''); }} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-600">Use general pack note</button>}</div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <label className="text-sm font-bold text-slate-800">Record type<select value={annotationKind} onChange={(event) => setAnnotationKind(event.target.value === 'highlight' ? 'highlight' : 'note')} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-amber-600"><option value="note">Note</option><option value="highlight">Highlight or key quotation</option></select></label>
+                  <label className="text-sm font-bold text-slate-800">Highlight color<select value={annotationColor} onChange={(event) => setAnnotationColor(event.target.value)} disabled={annotationKind !== 'highlight'} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-600"><option value="yellow">Yellow</option><option value="blue">Blue</option><option value="green">Green</option><option value="pink">Pink</option></select></label>
+                </div>
+                <label className="mt-4 block text-sm font-bold text-slate-800">{annotationKind === 'highlight' ? 'Key passage and why it matters' : 'Study note'}<textarea aria-label="Study annotation text" value={annotationDraft} onChange={(event) => setAnnotationDraft(event.target.value.slice(0, 4000))} rows="5" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-amber-600" placeholder="Write the idea in your own words, record a question, or paste a short key passage with context." /></label>
+                <div className="mt-4 flex flex-wrap items-center gap-3"><button type="button" disabled={!annotationDraft.trim()} onClick={saveAnnotationDraft} className="rounded-lg bg-amber-700 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2">{annotationEditingId ? 'Update annotation' : 'Save annotation'}</button>{annotationEditingId && <button type="button" onClick={() => { setAnnotationDraft(''); setAnnotationEditingId(''); setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' }); }} className="rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-600">Cancel editing</button>}<span className="text-xs font-bold text-slate-600">{annotationDraft.length.toLocaleString()} / 4,000 characters</span></div>
+              </section>
+              <section aria-labelledby="saved-annotations-title"><div className="flex flex-wrap items-end justify-between gap-2"><div><h4 id="saved-annotations-title" className="text-lg font-black text-slate-900">Saved for {selectedPack.shortTitle}</h4><p className="text-sm text-slate-700">{packAnnotations.length} annotation{packAnnotations.length === 1 ? '' : 's'} · searchable from Learning library → Search all</p></div><button type="button" onClick={() => beginAnnotation()} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-600">New general note</button></div>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">{packAnnotations.slice().sort((left, right) => right.updatedAt - left.updatedAt).map((record) => { const colorClass = record.kind !== 'highlight' ? 'border-slate-300 bg-white' : record.color === 'blue' ? 'border-sky-300 bg-sky-50' : record.color === 'green' ? 'border-emerald-300 bg-emerald-50' : record.color === 'pink' ? 'border-pink-300 bg-pink-50' : 'border-amber-300 bg-amber-50'; return <article key={record.id} className={'rounded-xl border p-4 shadow-sm ' + colorClass}><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-white/80 px-2 py-1 text-xs font-black text-slate-800">{record.kind === 'highlight' ? 'Highlight' : 'Note'}</span><span className="text-xs font-bold text-slate-600">{record.targetType.replace(/-/g, ' ')}</span></div><h5 className="mt-2 font-black text-slate-900">{record.targetLabel}</h5><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{record.text}</p><p className="mt-3 text-xs text-slate-600">Updated {record.updatedAt ? new Date(record.updatedAt).toLocaleString() : 'date unavailable'}</p><div className="mt-3 flex gap-2"><button type="button" onClick={() => editAnnotation(record)} className="rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Edit</button><button type="button" onClick={() => removeAnnotation(record.id)} className="rounded-lg border border-rose-400 bg-white px-3 py-2 text-sm font-bold text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-600">Delete</button></div></article>; })}</div>
+                {!packAnnotations.length && <p className="mt-3 rounded-xl border border-dashed border-slate-400 bg-white p-6 text-center text-sm text-slate-700">No annotations for this pack yet. Add a general note here, or attach one directly from a practice question or chapter.</p>}
+              </section>
+            </div>
+          )}
           {tab === 'progress' && (
             <div className="mx-auto max-w-6xl space-y-5">
               <div className="flex flex-wrap items-end justify-between gap-3">
@@ -2339,7 +2576,17 @@ function TestPrepHub(props) {
                   <label htmlFor="test-prep-progress-import" className="cursor-pointer rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus-within:ring-2 focus-within:ring-indigo-600">Import progress<input id="test-prep-progress-import" type="file" accept="application/json,.json" onChange={importPracticeProgressFile} className="sr-only" /></label>
                 </div>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {studyPlanStatus && <section className="rounded-2xl border border-teal-300 bg-white p-5 shadow-sm" aria-labelledby="weekly-study-plan-title">
+                <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-teal-800">Activity goals only</p><h4 id="weekly-study-plan-title" className="mt-1 text-lg font-black text-slate-900">Weekly study plan</h4><p className="mt-1 max-w-3xl text-sm text-slate-700">Set retrieval-practice targets for the current Monday–Sunday week. Goals and streaks describe activity; they do not estimate ability, readiness, an official score, or passing.</p></div><div className="rounded-lg bg-teal-50 px-3 py-2 text-center"><p className="text-2xl font-black text-teal-950">{studyPlanStatus.activityStreakDays}</p><p className="text-xs font-bold text-teal-800">day activity streak</p></div></div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <label className="text-sm font-bold text-slate-800">Weekly questions<input aria-label="Weekly question goal" type="number" min="1" max="5000" value={currentStudyPlan.weeklyQuestions} onChange={(event) => updateStudyPlan({ weeklyQuestions: Number(event.target.value) || 1 })} className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-teal-600" /></label>
+                  <label className="text-sm font-bold text-slate-800">Completed sets<input aria-label="Weekly completed-set goal" type="number" min="1" max="50" value={currentStudyPlan.weeklySets} onChange={(event) => updateStudyPlan({ weeklySets: Number(event.target.value) || 1 })} className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-teal-600" /></label>
+                  <label className="text-sm font-bold text-slate-800">Active study days<input aria-label="Weekly active-day goal" type="number" min="1" max="7" value={currentStudyPlan.activeDays} onChange={(event) => updateStudyPlan({ activeDays: Number(event.target.value) || 1 })} className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-teal-600" /></label>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {[[studyPlanStatus.questionsCompleted, currentStudyPlan.weeklyQuestions, studyPlanStatus.questionPercent, 'Questions'], [studyPlanStatus.setsCompleted, currentStudyPlan.weeklySets, studyPlanStatus.setPercent, 'Completed sets'], [studyPlanStatus.activeDaysCompleted, currentStudyPlan.activeDays, studyPlanStatus.activeDayPercent, 'Active days']].map(([value, goal, percent, label]) => <div key={label} className="rounded-xl border border-teal-200 bg-teal-50 p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-black text-teal-950">{label}</span><span className="text-sm font-bold text-teal-900">{value}/{goal}</span></div><progress aria-label={label + ' weekly progress'} className="mt-2 h-2 w-full accent-teal-700" max="100" value={percent}>{percent}%</progress><p className="mt-1 text-xs font-bold text-teal-800">{percent}% of activity goal</p></div>)}
+                </div>
+              </section>}              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl border border-slate-300 bg-white p-5"><p className="text-3xl font-black text-indigo-900">{totalAttempts}</p><p className="text-sm font-bold text-slate-700">Completed sets</p></div>
                 <div className="rounded-2xl border border-slate-300 bg-white p-5"><p className="text-3xl font-black text-indigo-900">{totalAttempts ? progressAnalytics.averagePercent + '%' : '\u2014'}</p><p className="text-sm font-bold text-slate-700">Average practice accuracy</p></div>
                 <div className="rounded-2xl border border-slate-300 bg-white p-5"><p className="text-3xl font-black text-indigo-900">{progressAnalytics.uniqueItemsAttempted}</p><p className="text-sm font-bold text-slate-700">Unique questions attempted</p></div>

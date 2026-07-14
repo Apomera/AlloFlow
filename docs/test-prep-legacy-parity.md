@@ -17,12 +17,12 @@ The native AlloFlow Test Prep Hub should reuse the legacy Pass the EPPP content 
 | Saved-question review | Complete | Saved IDs are namespaced by pack. |
 | Domain, skill, and confidence diagnostics | Complete | The same analytics functions process every pack. |
 | Transparent smart review | Complete | `buildReviewSet` prioritizes confident misses, prior misses, low-confidence correct answers, weaker domains, and unseen items while maintaining domain coverage. It is not CAT. |
-| Progress backup and restore | Complete | Versioned export/import includes normalized attempts, per-item learning signals, and saved-review IDs for all packs. |
+| Progress backup and restore | Complete | Versioned export/import includes normalized attempts, per-item learning signals, saved-review IDs, learner annotations, and study plans for all packs; v1 files remain importable. |
 | Learning chapters, diagrams, checks, flashcards, and memory aids | Structurally migrated | All 49 EPPP chapters are source-reviewed. The broader legacy flashcard, memory-aid, term-definition, and diagram inventories still have separate review gates. |
-| Unified released-content search and filters | Complete for released pack content | One pack-wide index searches released questions, chapters, flashcards, memory aids, and written-response workshops. Quarantined legacy content remains excluded; future learner notes will join the index when notes are implemented. |
+| Unified released-content search and filters | Complete for released pack content | One pack-wide index searches released questions, chapters, flashcards, memory aids, written-response workshops, and learner-created notes/highlights. Quarantined legacy content remains excluded. |
 | Transparent flashcard scheduling | Complete | Existing Know/Again ratings migrate into a pack-scoped schedule. Due queues use disclosed 10-minute and 1/3/7/14/30/60/120-day intervals without implying readiness. |
-| Notes and highlights | Not yet native | Legacy notes/highlights should be redesigned with exportable, pack-scoped records and accessible annotation controls. |
-| Goals, streaks, and study calendar | Not yet native | Future goals should emphasize activity and retrieval plans without implying exam readiness. |
+| Notes and highlights | Complete | Exportable pack-scoped records can attach to general study, questions, chapters, flashcards, memory aids, and written-response workshops. Contextual question/chapter actions and accessible editing controls are native. |
+| Goals, streaks, and study calendar | Partial | Weekly question, completed-set, and active-day goals plus an activity streak are native and explicitly non-predictive. A future calendar may schedule specific study sessions and reminders. |
 | Custom domain quiz builder | Complete | Learners select domains, a 1–100 item length, and a visible variation. The engine balances domains and deterministically reproduces the same set from the same choices. |
 | Community feedback | Not migrated | Requires moderation, privacy, abuse handling, and an evidence workflow before it belongs in AlloFlow. |
 | Legacy CAT and scaled/pass estimates | Deliberately excluded | The legacy heuristics are not psychometrically calibrated and must not be presented as ability estimates, official scaled scores, or pass predictions. |
@@ -44,6 +44,8 @@ A new pack can register through `registerPack` after `normalizePack`/`validatePa
 - `buildProgressAnalytics`, `buildReviewSet`, and `buildCustomQuiz`
 - `searchPack` across released questions and learning objects
 - `normalizeFlashcardSchedule`, `rateFlashcard`, and `buildFlashcardQueue` for transparent retrieval scheduling
+- `normalizeAnnotations`, `upsertAnnotation`, and `deleteAnnotation` for portable pack-scoped study records
+- `normalizeStudyPlans`, `studyPlanForPack`, and `buildStudyPlanStatus` for non-predictive weekly activity goals
 - `exportProgress`, `importProgress`, and `normalizeReviewItems`
 - shared simulation, saved-question, session-resume, learning-library, source-display, and accessibility UI
 
