@@ -9566,7 +9566,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   learns to distrust the panel. Quality-class notes now get a quality lead. */}
                               {(() => {
                                 const _notes = Array.isArray(pdfFixResult.fidelityNotes) ? pdfFixResult.fidelityNotes : [];
-                                const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1 };
+                                const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1, ocrColumnOrder: 1 };
                                 const _textLossConcern = (cov == null || cov < 97) || pdfFixResult.integrityWarning || _notes.some(n => n && !_qualityKinds[n.kind]);
                                 return _textLossConcern ? (
                                   <p className="text-xs text-sky-800 leading-relaxed mt-1">

@@ -1887,6 +1887,66 @@ function _alloOrderTextItems(items, opts) {
   return _multi;
 }
 
+// ── Column-aware OCR ground truth (H-5's scanned half, 2026-07-13) ──────────
+// _alloOrderTextItems repairs multi-column reading order on the pdf.js TEXT-LAYER
+// path only; scanned documents relied on Tesseract's internal layout analysis,
+// which interleaves columns on plenty of real worksheets/newsletters. This runs a
+// Tesseract-won page's word boxes (origin top-left, so y is NEGATED into the
+// pdf.js "greater = higher" convention) through the same column detector and
+// rebuilds the page text column-aware. DOUBLY conservative:
+//   1. adopts a rebuild only when the word MULTISET is identical (this is a pure
+//      REORDER — it can never add or drop a word), and
+//   2. only when the order MATERIALLY differs (<90% of words in the same slot) —
+//      when Tesseract already read the columns correctly, its own line assembly
+//      is better than ours, so those pages keep the engine text byte-for-byte.
+// Returns { text, columns } or null (keep the engine text).
+function _alloColumnReorderOcrText(words, text) {
+  try {
+    if (!Array.isArray(words) || words.length < 30 || !text) return null;
+    var items = [];
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      if (!w || !String(w.t || '').trim()) continue;
+      var wid = Math.max(0.5, (Number(w.x1) || 0) - (Number(w.x0) || 0));
+      items.push({ str: String(w.t), width: wid, transform: [wid / Math.max(1, String(w.t).length), 0, 0, 1, Number(w.x0) || 0, -(Number(w.y0) || 0)] });
+    }
+    if (items.length < 30) return null;
+    var ord = _alloOrderTextItems(items, {});
+    if (!ord || !ord.applied || ord.columns < 2) return null;
+    // Rebuild lines from the ordered stream: a new line starts when the vertical
+    // gap exceeds ~60% of the median word height.
+    var hs = [];
+    for (var h = 0; h < words.length; h++) { var ww = words[h]; if (ww && Number(ww.y1) > Number(ww.y0)) hs.push(Number(ww.y1) - Number(ww.y0)); }
+    hs.sort(function (a, b) { return a - b; });
+    var lineTol = Math.max(3, (hs.length ? hs[Math.floor(hs.length / 2)] : 10) * 0.6);
+    var lines = [];
+    var cur = [];
+    var curY = null;
+    for (var j = 0; j < ord.items.length; j++) {
+      var it = ord.items[j];
+      if (!it || !String(it.str || '').trim()) continue;
+      var y = -it.transform[5];
+      if (curY !== null && Math.abs(y - curY) > lineTol) { lines.push(cur.join(' ')); cur = []; }
+      cur.push(it.str);
+      curY = y;
+    }
+    if (cur.length) lines.push(cur.join(' '));
+    var rebuilt = lines.join('\n');
+    var tok = function (s) { return String(s || '').split(/\s+/).filter(Boolean); };
+    var a = tok(text);
+    var b = tok(rebuilt);
+    if (!a.length || a.length !== b.length) return null; // tokenization mismatch → unverifiable → keep engine text
+    var bag = Object.create(null);
+    for (var k = 0; k < a.length; k++) bag[a[k]] = (bag[a[k]] || 0) + 1;
+    for (var k2 = 0; k2 < b.length; k2++) { if (!bag[b[k2]]) return null; bag[b[k2]]--; }
+    var same = 0;
+    for (var k3 = 0; k3 < a.length; k3++) { if (a[k3] === b[k3]) same++; }
+    if (same / a.length >= 0.9) return null;
+    var _res = { text: rebuilt, columns: ord.columns };
+    return _res;
+  } catch (_) { return null; }
+}
+
 // Cheap, deterministic document fingerprint (review F1/F5, 2026-07-01). Used to stamp the
 // window.__lastGroundTruth* OCR globals with the document they describe, so the legacy
 // fallback readers can REFUSE another document's pages/method instead of silently
@@ -2758,6 +2818,7 @@ function _alloDistributionVerdict(r, opts) {
   if (kinds.folioLeak) cautions.push('a stray page number may appear inline in the text — search and delete it');
   if (kinds.lowOcrAccuracy || kinds.lowOcrConfidence) cautions.push('this is a scan and parts of the OCR read are low-confidence — skim the output against the original');
   if (kinds.ocrDupeCollapse) cautions.push('repeated-word OCR echoes were auto-collapsed — verify the affected sentences');
+  if (kinds.ocrColumnOrder) cautions.push('multi-column reading order was rebuilt from the scan\'s word positions — skim that the text flows in the intended order');
   if (kinds.pageEdge) cautions.push('repeated page-edge lines (running heads/footers) were removed — restore any real heading from the Diff');
   if (kinds.altQuality) cautions.push('some image descriptions are low-quality — review the alt text in the image panel');
   if (cov != null && cov >= 90 && r.integrityWarning && /missing/i.test(r.integrityWarning)) cautions.push('content coverage is ' + cov + '% — worth a quick Diff check');
@@ -9725,6 +9786,7 @@ var createDocPipeline = function(deps) {
     const disagreements = [];
     const lowConfidence = []; // B5 (2026-06-20): pages whose WINNING OCR is low-confidence — surfaced as a banner
     const _dupeCollapses = []; // #G (2026-07-05): line-wrap word echoes collapsed from a winning page, per page
+    const _columnReorders = []; // H-5 scanned half (2026-07-13): pages whose ground truth was rebuilt column-aware
     for (const _pn of _nums) {
       const _pair = _byNum.get(_pn);
       const tPage = _pair.t || null, vPage = _pair.v || null;
@@ -9789,6 +9851,24 @@ var createDocPipeline = function(deps) {
           _dupeCollapses.push({ pageNum: _pn, words: _dd.collapsed });
           warnLog('[OCR Reconcile] page ' + _pn + ': collapsed ' + _dd.collapsed.length + ' adjacent duplicate token(s) (' + _dd.collapsed.slice(0, 5).join(', ') + ') — the echo is absent from the other engine\'s read');
         }
+      }
+      // H-5's scanned half (2026-07-13): the text-layer path repairs multi-column
+      // reading order at extraction; the OCR path relied on Tesseract's internal
+      // layout analysis, which interleaves columns on real worksheets/newsletters.
+      // When TESSERACT won (its boxes describe the winning text), run the boxes
+      // through the same column detector; the helper is doubly conservative
+      // (identical word multiset + materially-different order required), so
+      // single-column, table, and already-correct pages keep the engine text
+      // byte-for-byte. Disclosed via columnReorders — never silent.
+      if (_winner === 'tesseract' && tPage && Array.isArray(tPage.words) && tPage.words.length) {
+        try {
+          const _cr = _alloColumnReorderOcrText(tPage.words, chosen.text);
+          if (_cr) {
+            chosen.text = _cr.text;
+            _columnReorders.push({ pageNum: _pn, columns: _cr.columns });
+            warnLog('[OCR Reconcile] page ' + _pn + ': rebuilt reading order column-aware (' + _cr.columns + ' columns detected; Tesseract had interleaved them)');
+          }
+        } catch (_) {}
       }
       // Carry the Tesseract word boxes + page dims through reconciliation (Vision has
       // none). These are text+position PAIRS from Tesseract, used to draw a positioned
@@ -9863,7 +9943,7 @@ var createDocPipeline = function(deps) {
     } else {
       _fullText = _edge.texts.filter(Boolean).join('\n\n');
     }
-    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, strippedEdgeLines: _edge.strippedLines || [], dupeCollapses: _dupeCollapses };
+    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, strippedEdgeLines: _edge.strippedLines || [], dupeCollapses: _dupeCollapses, columnReorders: _columnReorders };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction
@@ -18468,6 +18548,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // #G (2026-07-05): remember reconcile-time echo collapses for the fidelity panel — a removal,
         // however safe, is never silent. Overwritten every reconcile, so it can't go stale within a run.
         try { window.__alloOcrDupeCollapses = (rec && rec.dupeCollapses) || []; } catch (_) {}
+        try { window.__alloOcrColumnReorders = (rec && rec.columnReorders) || []; } catch (_) {}
         // H4 (2026-07-09): the edge strip deletes whole LINES (running heads) — disclose their text in
         // the fidelity panel, not just their digits. Overwritten every reconcile, read _heavyScanned-gated.
         try { window.__alloStrippedEdgeLines = (rec && rec.strippedEdgeLines) || []; } catch (_) {}
@@ -20977,6 +21058,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           _ddc.forEach((e) => { ((e && e.words) || []).forEach((w) => { if (_ddWords.length < 8) _ddWords.push(w); }); });
           const _ddN = _ddc.reduce((a, e) => a + (((e && e.words) || []).length), 0);
           _structuralFidelityNotes.push({ kind: 'ocrDupeCollapse', msg: _ddN + ' repeated-word OCR echo(es) collapsed during page reconciliation (' + _ddWords.join(', ') + (_ddN > _ddWords.length ? ', …' : '') + ') — each token appeared twice in a row in one engine\'s read but once in the other\'s. Verify the affected sentence(s) against the original.' });
+        }
+      } catch (_) {}
+      // H-5 scanned half (2026-07-13): disclose column-aware reading-order rebuilds. Same
+      // _heavyScanned staleness gate as the echo-collapse note above.
+      try {
+        const _cro = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloOcrColumnReorders)) ? window.__alloOcrColumnReorders : [];
+        if (_cro.length) {
+          const _croPages = _cro.slice(0, 6).map((e) => e.pageNum).join(', ');
+          _structuralFidelityNotes.push({ kind: 'ocrColumnOrder', msg: 'The reading order on page' + (_cro.length === 1 ? '' : 's') + ' ' + _croPages + (_cro.length > 6 ? ', …' : '') + ' was rebuilt column-aware from the scan\'s word positions (the OCR engine had interleaved the columns line-by-line). No words were added or removed. Skim ' + (_cro.length === 1 ? 'that page' : 'those pages') + ' to confirm the text flows in the intended order.' });
         }
       } catch (_) {}
       // H4 (2026-07-09): disclose the page-edge lines the running-head strip DELETED from the OCR
