@@ -26023,13 +26023,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             }, {}),
           };
           // H-5: reading-order check — fires INDEPENDENTLY of coverage (a scrambled tag tree keeps ~100%
-          // coverage). WARN-first: surfaced as a check + warning, never 'fail' and never flips _roundTrip.ok
-          // (so an uncalibrated heuristic can't false-fail a legit doc). Once the threshold is calibrated on
-          // real multi-column PDFs + veraPDF, raise to 'fail' and withhold pdfuaid at stamp time (follow-up).
+          // coverage). ENFORCEMENT TIER (2026-07-13, the follow-up the note below scheduled): a ratio
+          // below 0.50 is a CATASTROPHIC scramble — a full column interleave scores far below it while
+          // legitimate light reflow stays well above 0.90 (single-column corpus fixtures sit at ~1.0) —
+          // so that tier now FAILS the check and folds into roundTrip.ok, which every existing delivery
+          // gate honors (typeset/tagged download withhold, batch EXCLUDE, decision panel). A scrambled
+          // tag tree no longer ships under an unqualified PDF/UA-1 claim. The 0.50–0.90 band stays
+          // warn/info pending real multi-column Canvas calibration; tightening = raising one constant.
           if (_orderRatio < 0.90) {
-            const _roStatus = _orderRatio < 0.80 ? 'warn' : 'info';
-            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Reading order preserved in the tagged tree (sequence match)', status: _roStatus, detail: Math.round(_orderRatio * 100) + '% of text is in source order — a low value suggests the tagged-PDF reading order was scrambled (common with multi-column layouts). The PDF/UA-1 claim is NOT order-verified; confirm with a PDF/UA validator.' });
+            const _roStatus = _orderRatio < 0.50 ? 'fail' : (_orderRatio < 0.80 ? 'warn' : 'info');
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Reading order preserved in the tagged tree (sequence match)', status: _roStatus, detail: Math.round(_orderRatio * 100) + '% of text is in source order — a low value suggests the tagged-PDF reading order was scrambled (common with multi-column layouts). ' + (_roStatus === 'fail' ? 'This is far below any legitimate reflow; the export is withheld from the verified-delivery gates.' : 'The PDF/UA-1 claim is NOT order-verified; confirm with a PDF/UA validator.') });
             (_roundTrip.warnings = _roundTrip.warnings || []).push('Reading-order signal: ' + Math.round(_orderRatio * 100) + '% of the text is in the same order as the source. A low value can mean the tagged-PDF reading order is scrambled (multi-column streams) — verify with a PDF/UA validator before relying on the PDF/UA-1 declaration.');
+            if (_roStatus === 'fail') _roundTrip.ok = false;
           }
           if (_coverage < 0.99) {
             const _msg = 'Text-level verification: ' + _missing.length + ' tokens missing total (' + Math.round(_coverage * 100) + '% coverage). Of those, ' + _normEquivCount + ' differ only in hyphenation/whitespace/case (likely cosmetic) and ' + _residualCount + ' are residual (review). The [Re-run with restoration] action gates on residual count.';
