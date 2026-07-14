@@ -1072,6 +1072,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     "decoding"
   ]);
   const [draggedActivity, setDraggedActivity] = React.useState(null);
+  const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState("");
+  const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
+    const fromIndex = lessonPlanOrder.indexOf(activityId);
+    const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
+    if (fromIndex < 0 || toIndex < 0 || toIndex >= lessonPlanOrder.length) return;
+    const next = [...lessonPlanOrder];
+    [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
+    setLessonPlanOrder(next);
+    setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
+  };
   const [imageTheme, setImageTheme] = React.useState("");
   const [includeAacImages, setIncludeAacImages] = React.useState(false);
   const [aacDefaultOn, setAacDefaultOn] = React.useState(false);
@@ -2123,7 +2133,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   }, className: "flex items-center justify-between cursor-pointer mb-3", onClick: () => {
     if (sessionType === "assessment") return;
     setIncludeLessonPlan((prev) => !prev);
-  } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? "bg-indigo-600 border-indigo-600" : "border-slate-300"}` }, includeLessonPlan && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.enable_lesson_plan")))), includeLessonPlan && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1" }, lessonPlanOrder.map((actId) => {
+  } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? "bg-indigo-600 border-indigo-600" : "border-slate-300"}` }, includeLessonPlan && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.enable_lesson_plan")))), includeLessonPlan && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1", role: "list", "aria-label": "Lesson plan activity order" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, "Drag activities or use the Move up and Move down buttons to reorder."), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, lessonPlanReorderStatus), lessonPlanOrder.map((actId, activityIndex) => {
     const activityDefs = {
       isolation: { id: "isolation", label: "Find Sounds", icon: ScanSearch },
       blending: { id: "blending", label: "Blending", icon: GripHorizontal },
@@ -2148,6 +2158,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       "div",
       {
         key: activity.id,
+        role: "listitem",
         draggable: true,
         onDragStart: (e) => {
           e.dataTransfer.setData("text/plain", activity.id);
@@ -2173,7 +2184,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         onDragEnd: () => setDraggedActivity(null),
         className: `bg-white p-3 rounded-lg border transition-all cursor-move ${draggedActivity === activity.id ? "border-indigo-500 shadow-lg scale-[1.02]" : "border-indigo-100 hover:border-indigo-300"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14, className: "text-slate-600 cursor-grab active:cursor-grabbing" }), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14, className: "text-slate-600 cursor-grab active:cursor-grabbing", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
         "input",
         {
           "aria-label": t("common.toggle_enabled"),
@@ -2185,7 +2196,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           })),
           className: "accent-indigo-600 w-4 h-4"
         }
-      ), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold text-slate-700" }, activity.label)), lessonPlan[activity.id].enabled && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded" }, lessonPlan[activity.id].count, "x")),
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold text-slate-700" }, activity.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": `Reorder ${activity.label}` }, lessonPlan[activity.id].enabled && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded" }, lessonPlan[activity.id].count, "x"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "up"), disabled: activityIndex === 0, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} up` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2191")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "down"), disabled: activityIndex === lessonPlanOrder.length - 1, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} down` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2193")))),
       lessonPlan[activity.id].enabled && /* @__PURE__ */ React.createElement(
         "input",
         {

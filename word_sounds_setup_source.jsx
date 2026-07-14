@@ -906,6 +906,16 @@
             'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding'
         ]);
         const [draggedActivity, setDraggedActivity] = React.useState(null);
+        const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState('');
+        const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
+            const fromIndex = lessonPlanOrder.indexOf(activityId);
+            const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+            if (fromIndex < 0 || toIndex < 0 || toIndex >= lessonPlanOrder.length) return;
+            const next = [...lessonPlanOrder];
+            [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
+            setLessonPlanOrder(next);
+            setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
+        };
         const [imageTheme, setImageTheme] = React.useState('');
         const [includeAacImages, setIncludeAacImages] = React.useState(false);
         const [aacDefaultOn, setAacDefaultOn] = React.useState(false);
@@ -2158,8 +2168,10 @@
                                         </div>
                                     </div>
                                     {includeLessonPlan && (
-                                        <div className="space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1">
-                                            {lessonPlanOrder.map(actId => {
+                                        <div className="space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order">
+                                            <p className="text-xs text-slate-600">Drag activities or use the Move up and Move down buttons to reorder.</p>
+                                            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{lessonPlanReorderStatus}</div>
+                                            {lessonPlanOrder.map((actId, activityIndex) => {
                                                 const activityDefs = {
                                                     isolation: { id: 'isolation', label: 'Find Sounds', icon: ScanSearch },
                                                     blending: { id: 'blending', label: 'Blending', icon: GripHorizontal },
@@ -2183,6 +2195,7 @@
                                                 return (
                                                 <div
                                                     key={activity.id}
+                                                    role="listitem"
                                                     draggable
                                                     onDragStart={(e) => { e.dataTransfer.setData('text/plain', activity.id); setDraggedActivity(activity.id); }}
                                                     onDragOver={(e) => e.preventDefault()}
@@ -2207,7 +2220,7 @@
                                                 >
                                                     <div className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center gap-2">
-                                                            <GripVertical size={14} className="text-slate-600 cursor-grab active:cursor-grabbing" />
+                                                            <GripVertical size={14} className="text-slate-600 cursor-grab active:cursor-grabbing" aria-hidden="true" />
                                                             <input aria-label={t('common.toggle_enabled')}
                                                                 type="checkbox"
                                                                 checked={lessonPlan[activity.id]?.enabled}
@@ -2219,11 +2232,15 @@
                                                             />
                                                             <span className="text-sm font-semibold text-slate-700">{activity.label}</span>
                                                         </div>
-                                                        {lessonPlan[activity.id].enabled && (
-                                                            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                                                                {lessonPlan[activity.id].count}x
-                                                            </span>
-                                                        )}
+                                                        <div className="flex items-center gap-1" role="group" aria-label={`Reorder ${activity.label}`}>
+                                                            {lessonPlan[activity.id].enabled && (
+                                                                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                                                                    {lessonPlan[activity.id].count}x
+                                                                </span>
+                                                            )}
+                                                            <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'up')} disabled={activityIndex === 0} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} up`}><span aria-hidden="true">↑</span></button>
+                                                            <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'down')} disabled={activityIndex === lessonPlanOrder.length - 1} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} down`}><span aria-hidden="true">↓</span></button>
+                                                        </div>
                                                     </div>
                                                     {lessonPlan[activity.id].enabled && (
                                                         <input aria-label={t('common.adjust_lesson_plan')}

@@ -189,6 +189,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated saved-resource interactions in the History panel: resources are now exposed as a named semantic list with position and count, each item supports an Alt+Arrow keyboard reorder alternative to pointer dragging, synchronized sessions block both reorder paths, and every resource has a native 44 CSS-pixel Open action instead of relying on a mouse-only card. Invalid simulated-button wrappers around nested form controls were removed, while teacher move controls now have accurate item-specific names, filtered-list bounds, 44 CSS-pixel targets, and strong visible focus (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.3, 2.5.7, 2.5.8, 4.1.2).
 
+- Added a pointer-independent reorder path to Word Sounds advanced lesson plans: the activity sequence is now a named semantic list, every draggable activity has native 44 CSS-pixel Move up and Move down controls with boundary-aware disabled states and strong visible focus, the drag grip is decorative to assistive technology, and successful keyboard moves announce the activity's new position and total count through an atomic polite status (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
