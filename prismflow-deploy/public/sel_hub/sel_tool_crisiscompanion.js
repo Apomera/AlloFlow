@@ -790,7 +790,7 @@ window.SelHub = window.SelHub || {
   // Six steps, evidence-based intervention (Stanley & Brown, 2012). Saved
   // locally only. Includes a print-friendly view. The tool strongly encourages
   // building it WITH a clinician — which is the actual evidence-based use.
-  function _SafetyPlan(h, d, upd) {
+  function _SafetyPlan(h, d, upd, requestClear) {
     var STEPS = [
       { id: 'warningSigns', label: '1. Warning signs', sub: 'What thoughts, feelings, or situations tell me a tough wave is coming?', placeholder: 'e.g., "When I haven\'t slept and I\'ve been alone all weekend"' },
       { id: 'internal', label: '2. Things I can do alone (internal coping)', sub: 'Things that have helped me feel even slightly better, that I can do without anyone else.', placeholder: 'e.g., "Listen to a calming playlist, take a walk, splash cold water on my face"' },
@@ -806,10 +806,7 @@ window.SelHub = window.SelHub || {
       lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne);
     }
     function clearAll() {
-      if (typeof window !== 'undefined' && !window.confirm('Clear your saved safety plan? This cannot be undone.')) return;
-      upd('safetyPlan', {});
-      lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
-      announce('Safety plan cleared.');
+      if (requestClear) requestClear();
     }
     function printPlan() {
       try {
@@ -850,7 +847,7 @@ window.SelHub = window.SelHub || {
     }
     var filledCount = STEPS.filter(function(s) { return (entries[s.id] || '').trim().length > 0; }).length;
     return h('div', { style: { background: '#fff', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
-      h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '📋 My safety plan (Stanley-Brown)'),
+      h('h2', { id: 'cc-safety-plan-heading', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '📋 My safety plan (Stanley-Brown)'),
       h('div', { style: { background: _ccC(AMBER_LIGHT), border: '1px solid #fcd34d', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' } },
         h('p', { style: { fontSize: '12px', color: '#78350f', lineHeight: 1.6, margin: 0 } },
           h('strong', null, 'Best built WITH a counselor or therapist. '),
@@ -890,6 +887,7 @@ window.SelHub = window.SelHub || {
           style: { padding: '10px 16px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
         }, '🖨 Print / save as PDF'),
         h('button', {
+          id: 'cc-clear-safety-plan',
           onClick: clearAll,
           'aria-label': 'Clear my saved safety plan',
           style: { padding: '10px 16px', background: '#fff', color: '#9f1239', border: '2px solid ' + ROSE, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
@@ -1000,7 +998,7 @@ window.SelHub = window.SelHub || {
       style: Object.assign({
         width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box'
+        borderRadius: 6, boxSizing: 'border-box'
       }, extra || {})
     }));
   }
@@ -1010,7 +1008,7 @@ window.SelHub = window.SelHub || {
       onChange: function(e) { onChange(e.target.value); },
       style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
+        borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
     });
   }
   function ccSection(icon, title, subtitle, accent) {
@@ -1427,6 +1425,88 @@ window.SelHub = window.SelHub || {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('crisiscompanion', key); else { Object.keys(key).forEach(function(k) { ctx.update && ctx.update('crisiscompanion', k, key[k]); }); } }
         else { ctx.update && ctx.update('crisiscompanion', key, val); }
       };
+      var ccConfirmAction = d.ccConfirmAction || null;
+
+      function focusCrisisControl(id) {
+        setTimeout(function() {
+          var target = document.getElementById(id);
+          if (target && target.focus) target.focus();
+        }, 50);
+      }
+      function openCrisisConfirm(action) {
+        upd('ccConfirmAction', action);
+        focusCrisisControl('cc-confirm-cancel');
+      }
+      function closeCrisisConfirm() {
+        var triggerId = ccConfirmAction && ccConfirmAction.triggerId;
+        upd('ccConfirmAction', null);
+        if (triggerId) focusCrisisControl(triggerId);
+      }
+      function commitCrisisAction() {
+        if (!ccConfirmAction) return;
+        if (ccConfirmAction.type === 'clear-safety-plan') {
+          upd({ ccConfirmAction: null, safetyPlan: {} });
+          lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
+          announce('Safety plan cleared.');
+          focusCrisisControl('cc-safety-plan-heading');
+        } else if (ccConfirmAction.type === 'clear-distress-readings') {
+          upd({ ccConfirmAction: null, distressReadings: [] });
+          announce('All distress readings cleared.');
+          focusCrisisControl('cc-distress-section');
+        } else {
+          closeCrisisConfirm();
+        }
+      }
+      function handleCrisisConfirmKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeCrisisConfirm();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var buttons = event.currentTarget.querySelectorAll('button:not([disabled])');
+        if (!buttons.length) return;
+        var first = buttons[0];
+        var last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      function renderCrisisConfirm() {
+        if (!ccConfirmAction) return null;
+        var clearingPlan = ccConfirmAction.type === 'clear-safety-plan';
+        var title = clearingPlan ? 'Clear your saved safety plan?' : 'Clear all distress readings?';
+        var description = clearingPlan
+          ? 'This permanently removes every step of your saved safety plan from this device. This cannot be undone. Print or save a copy first if you may need it.'
+          : 'This permanently deletes your entire distress-reading history, including notes and trend data. This cannot be undone.';
+        return h('div', {
+          id: 'cc-destructive-confirm',
+          className: 'fixed inset-0 z-[10003] flex items-center justify-center bg-slate-950/80 p-4',
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'cc-confirm-title',
+          'aria-describedby': 'cc-confirm-description',
+          onKeyDown: handleCrisisConfirmKeyDown
+        }, h('div', { style: { width: '100%', maxWidth: 500, padding: 22, borderRadius: 14, border: '2px solid #f87171', background: _ccC('#fff'), color: SLATE_TEXT, boxShadow: '0 20px 60px rgba(0,0,0,0.45)' } },
+          h('h2', { id: 'cc-confirm-title', style: { margin: '0 0 8px', fontSize: 19, fontWeight: 900, color: _ccC('#991b1b') } }, title),
+          h('p', { id: 'cc-confirm-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: SLATE_TEXT } }, description),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+            h('button', {
+              id: 'cc-confirm-cancel',
+              onClick: closeCrisisConfirm,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #64748b', background: _ccC('#f8fafc'), color: SLATE_TEXT, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: commitCrisisAction,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #dc2626', background: '#b91c1c', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+            }, clearingPlan ? 'Clear safety plan' : 'Clear all readings')
+          )
+        ));
+      }
 
       // Hydrate persisted badges
       if (!d._hydrated) {
@@ -1821,7 +1901,7 @@ window.SelHub = window.SelHub || {
           if (announce) announce('Distress reading saved.');
         }
         function removeReading(id) { upd('distressReadings', readings.filter(function(r) { return r.id !== id; })); }
-        function clearAll() { if (confirm('Clear all distress readings?')) upd('distressReadings', []); }
+        function clearAll() { openCrisisConfirm({ type: 'clear-distress-readings', triggerId: 'cc-clear-distress-readings' }); }
 
         var sevenDayReadings = readings.filter(function(r) {
           return new Date(r.time) > new Date(Date.now() - 7 * 86400000);
@@ -1839,7 +1919,7 @@ window.SelHub = window.SelHub || {
           return 'Crisis-level distress';
         };
 
-        content = h('div', null,
+        content = h('div', { id: 'cc-distress-section', tabIndex: -1 },
           sectionHero({ icon: '🌡', label: 'Distress check' }),
           h('div', { style: { background: _ccC('#fff'), borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
             h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
@@ -1926,7 +2006,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              h('button', { onClick: clearAll, style: { marginTop: 8, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _ccC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all readings')
+              h('button', { id: 'cc-clear-distress-readings', onClick: clearAll, style: { marginTop: 8, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _ccC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all readings')
             )
           )
         );
@@ -2405,7 +2485,7 @@ window.SelHub = window.SelHub || {
         } else if (careSubtab === 'toolkit') {
           subContent = _CopingToolkit(h, d, upd);
         } else if (careSubtab === 'safety') {
-          subContent = _SafetyPlan(h, d, upd);
+          subContent = _SafetyPlan(h, d, upd, function() { openCrisisConfirm({ type: 'clear-safety-plan', triggerId: 'cc-clear-safety-plan' }); });
         } else {
           // Default: Read — the existing static content
           subContent = h('div', null,
@@ -2521,6 +2601,7 @@ window.SelHub = window.SelHub || {
       // ── Final view: wrap content with crisis bars + nav strip ──
       return h('div', { className: 'selh-crisiscompanion', style: { padding: '16px', maxWidth: '900px', margin: '0 auto', color: SLATE_TEXT, fontFamily: 'system-ui, -apple-system, sans-serif' } },
         navStrip(),
+        renderCrisisConfirm(),
         withCrisisBars(h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('crisiscompanion', h, ctx) : null),
           content || h('div', null, 'Loading…')
